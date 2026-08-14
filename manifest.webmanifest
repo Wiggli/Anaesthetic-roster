@@ -1,0 +1,20 @@
+{
+  "name": "Anaesthetic Night Roster",
+  "short_name": "Night Roster",
+  "description": "Anaesthetic night assignments and automatically generated breaks.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#eaf4fb",
+  "theme_color": "#0b2942",
+  "orientation": "portrait-primary",
+  "categories": ["medical", "productivity", "utilities"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
