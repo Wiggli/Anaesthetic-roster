@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v15';
+const CACHE_NAME = 'anaesthetic-night-roster-v16';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const APP_SHELL = [
   './icon-maskable-192.png',
   './icon-maskable-512.png',
   './apple-touch-icon.png',
-  './header-background.png'
+  './header-background.jpg'
 ];
 
 self.addEventListener('install', event => {
