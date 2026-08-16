@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v24';
+const CACHE_NAME = 'anaesthetic-night-roster-v25';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,7 +8,9 @@ const APP_SHELL = [
   './icon-maskable-192.png',
   './icon-maskable-512.png',
   './apple-touch-icon.png',
-  './header-background.jpg'
+  './app-v25.js',
+  './anaesthesia-header.jpg',
+  './mater-dei-logo.png'
 ];
 
 self.addEventListener('install', event => {
@@ -20,7 +22,6 @@ self.addEventListener('install', event => {
       }))
     ))
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
@@ -28,13 +29,28 @@ self.addEventListener('activate', event => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: 'window' }))
-      .then(clients => Promise.all(clients.map(client => client.navigate(client.url))))
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'ACTIVATE_UPDATE') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
+      }))
+    );
+    return;
+  }
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
