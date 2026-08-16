@@ -1,13 +1,13 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v25';
+const CACHE_NAME = 'anaesthetic-night-roster-v25-3';
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-192.png',
-  './icon-maskable-512.png',
-  './apple-touch-icon.png',
+  './manifest.webmanifest?v=25.3',
+  './icon-192.png?v=25.3',
+  './icon-512.png?v=25.3',
+  './icon-maskable-192.png?v=25.3',
+  './icon-maskable-512.png?v=25.3',
+  './apple-touch-icon.png?v=25.3',
   './app-v25.js',
   './anaesthesia-header.jpg',
   './mater-dei-logo.png'
