@@ -8,6 +8,8 @@ var reloadTimer=null;
 var updateRegistration=null;
 var reloadForUpdate=false;
 var pendingRemovals={};
+var labourOrders={};
+var labourOrderAvailable=true;
 
 function cur(){
   var base=localCur();
@@ -79,7 +81,7 @@ function applyChanges(r){
   }
   if(plan.overtime.length){
     var pendingNames=plan.unassigned.map(function(o){return o.nurse_name});
-    var pending=plan.count<5?'Uncovered • additional cover required':pendingNames.length?pendingNames.join(' / ')+' • allocation to decide':'Allocation pending';
+    var pending=plan.count<5?'Uncovered • additional cover required':pendingNames.length===1?pendingNames[0]+' • allocation to decide':pendingNames.length?'Allocation to decide • '+pendingNames.length+' overtime nurses available':'Allocation pending';
     plan.unresolved.forEach(function(key){copy[key]=pending});
     if(plan.count===5&&plan.coverageKey)applyFiveVacancy(copy,plan.coverageKey);
     copy.mode=String(Math.max(5,Math.min(7,plan.count)));
@@ -105,19 +107,35 @@ function effective(r){
   return{display:r.mode,fullLW:r.fullLW,alert:alert};
 }
 
+function labourOrderFor(r){
+  if(!r||r.mode==='5')return null;
+  var order=labourOrders[r.date];if(!order)return null;
+  var expected=[String(r.pager).toLowerCase(),String(r.reliever).toLowerCase()].sort().join('|');
+  var stored=[String(order.first_part_name).toLowerCase(),String(order.second_part_name).toLowerCase()].sort().join('|');
+  return expected===stored?order:null;
+}
+
+function labourRoleDetail(name,r){
+  var order=labourOrderFor(r);
+  if(!order)return'Labour Ward part and break to decide';
+  if(String(order.first_part_name).toLowerCase()===String(name).toLowerCase())return'Labour Ward first part • Second break';
+  return'Labour Ward second part • First break';
+}
+
 function render(){
   if(!R.length||!currentUserProfile)return;
   var base=cur(),plan=staffingPlan(base),r=applyChanges(base),e=effective(r),count=plan.count;
+  var labourPending=r.mode!=='5'&&!planIsProvisional(base)&&!labourOrderFor(r);
   var roles=[['bFirst','First part',r.first1+' + '+r.first2,'Works 00:00–03:30 • Second break'],['bSecond','Second part',r.second1+' + '+r.second2,'Works 03:30–07:00 • First break']];
   if(r.mode!=='5'){
-    roles.push(['bPager','Pager',r.pager,'Shares Labour Ward cover with the reliever']);
-    roles.push(['bReliever','Reliever',r.reliever,'Shares Labour Ward cover with the pager']);
+    roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
+    roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
   }
   syncDateInputs(base.date);renderMyName();renderHeaderSummary(r);
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   var alertClass=count<6?'warn':'';
-  byId('alerts').innerHTML='<div class="alert '+alertClass+'">'+esc(e.alert)+'</div>'+(plan.unresolved.length?'<div class="alert gold">'+plan.unresolved.length+' allocation'+(plan.unresolved.length===1?' still requires':'s still require')+' overtime cover or a final role decision.</div>':'');
+  byId('alerts').innerHTML='<div class="alert '+alertClass+'">'+esc(e.alert)+'</div>'+(plan.unresolved.length?'<div class="alert gold">'+plan.unresolved.length+' allocation'+(plan.unresolved.length===1?' still requires':'s still require')+' overtime cover or a final role decision.</div>':'')+(labourPending?'<div class="alert gold">Labour Ward first and second parts still need to be saved.</div>':'');
   if(r.mode==='7')roles.push(['b7','7th nurse',r.seventh,'Additional nurse • Break as required']);
   byId('roles').innerHTML=roles.map(function(c){return '<div class="role '+c[0].replace(/^b/,'r')+' '+(isMine(c[2])?'mine':'')+'"><div class="badge '+c[0]+'">'+esc(c[1])+'</div><div><div class="name">'+esc(c[2])+'</div><div class="time">'+esc(c[3])+'</div></div></div>'}).join('');
   var extras=additionalNurses(plan);
@@ -133,6 +151,38 @@ function earliestOvertimeAdd(date,name){
   var matches=(overtimeHistory[date]||[]).filter(function(h){return h.action==='added'&&String(h.nurse_name).toLowerCase()===String(name).toLowerCase()});
   matches.sort(function(a,b){return new Date(a.changed_at)-new Date(b.changed_at)});
   return matches[0]||null;
+}
+
+function updateLabourSecondSummary(){
+  var pick=byId('labourFirstPick'),summary=byId('labourSecondSummary');if(!pick||!summary)return;
+  var names=JSON.parse(pick.getAttribute('data-labour-names')||'[]'),second=names.find(function(name){return name!==pick.value})||'';
+  summary.innerHTML='<b>Second part</b><span>'+esc(second)+' • First break</span>';
+}
+
+function renderLabourOrder(base,plan){
+  var host=byId('labourOrderStep');if(!host)return;
+  var r=applyChanges(base);
+  if(r.mode==='5'){host.innerHTML='';return}
+  if(!labourOrderAvailable){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="alert warn">Run the Labour Ward order SQL migration in Supabase to save first and second parts across devices.</div></div>';return}
+  if(planIsProvisional(base)){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="time">Complete the required Pager and Reliever allocations first. Their Labour Ward parts can then be divided.</div></div>';return}
+  var names=[r.pager,r.reliever],order=labourOrderFor(r),first=order?order.first_part_name:names[0],second=names.find(function(name){return name!==first})||names[1];
+  host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="time">Choose who works the first part. The other Labour Ward nurse will work the second part automatically.</div><label>First part<select id="labourFirstPick" data-labour-names="'+esc(JSON.stringify(names))+'">'+names.map(function(name){return'<option value="'+esc(name)+'" '+(name===first?'selected':'')+'>'+esc(name)+'</option>'}).join('')+'</select></label><div class="labourOrderGrid"><div class="labourOrderResult"><b>First part</b><span>'+esc(first)+' • Second break</span></div><div class="labourOrderResult" id="labourSecondSummary"><b>Second part</b><span>'+esc(second)+' • First break</span></div></div><button class="primary wide" id="saveLabourOrderBtn" type="button">'+(order?'Update':'Save')+' Labour Ward order</button></div>';
+  byId('labourFirstPick').onchange=function(){var firstResult=host.querySelector('.labourOrderResult');if(firstResult)firstResult.innerHTML='<b>First part</b><span>'+esc(this.value)+' • Second break</span>';updateLabourSecondSummary()};
+  byId('saveLabourOrderBtn').onclick=saveLabourOrder;
+}
+
+async function saveLabourOrder(){
+  if(!requireOnline())return;
+  var base=cur(),r=applyChanges(base),pick=byId('labourFirstPick');if(!pick)return;
+  var names=[r.pager,r.reliever],first=pick.value,second=names.find(function(name){return name!==first});
+  if(!first||!second){toast('Both Labour Ward nurses must be allocated first');return}
+  var button=byId('saveLabourOrderBtn');button.disabled=true;button.textContent='Saving…';setSync('saving','Saving Labour Ward order');
+  try{
+    var result=await timedRequest(supa.from('night_labour_order').upsert({roster_date:base.date,first_part_name:first,second_part_name:second,updated_by:currentUserProfile.display_name,updated_at:new Date().toISOString()},{onConflict:'roster_date'}));
+    if(result.error){rpcError(result);return}
+    await loadSharedData();toast(first+' saved for first part • '+second+' saved for second part');
+  }catch(error){setSync('error','Save failed');toast('The Labour Ward order could not be saved. Please try again.');}
+  finally{if(button&&button.isConnected){button.disabled=false;button.textContent='Save Labour Ward order'}}
 }
 
 function renderChanges(base){
@@ -161,6 +211,7 @@ function renderChanges(base){
     return '<div class="allocationRow"><div><div class="allocationRole">'+esc(allocationLabel(key))+'</div><div class="allocationBreak">'+esc(allocationBreak(key))+'</div></div><select data-final-allocation="'+esc(key)+'" aria-label="Choose nurse for '+esc(allocationLabel(key))+'">'+options+'</select></div>';
   }).join(''):plan.requiresCoverageChoice?'<div class="time">The overtime choices will appear after the reliever allocation is saved.</div>':'<div class="time">There are no required allocations to finalise.</div>';
   byId('saveAllocationsBtn').classList.toggle('hidden',!overtime.length||!plan.availableKeys.length);
+  renderLabourOrder(base,plan);
   var visible=expanded?history:history.slice(0,15);
   byId('changeHistory').innerHTML=history.length?visible.map(function(h){return '<div class="historyItem"><div><span class="historyType '+esc(h.type)+'">'+esc(h.label)+'</span><b>'+esc(h.title)+'</b></div><div class="changeMeta">'+esc(h.detail||'')+' • '+esc(h.changed_by||'Shift member')+' • '+esc(shortTime(h.changed_at))+'</div></div>'}).join('')+(history.length>15?'<button class="historyMore" id="historyMoreBtn" type="button">'+(expanded?'Show recent changes':'Show full history ('+history.length+')')+'</button>':''):'<div class="time">No staffing change history for this night.</div>';
   Array.prototype.forEach.call(document.querySelectorAll('[data-remove-change]'),function(b){b.onclick=function(){removeNightChange(b.getAttribute('data-remove-change'),b)}});
@@ -186,8 +237,15 @@ function breakData(r){
   var first=[r.second1,r.second2],second=[r.first1,r.first2],notes=[];
   if(r.mode==='5')notes.push(r.fullLW+' covers Labour Ward / Pager for the full night and decides their own break when safe.');
   else{
-    notes.push(r.pager+' and '+r.reliever+' decide between themselves who works each part of Labour Ward / Pager.');
-    notes.push('Whoever works the first part takes second break. Whoever works the second part takes first break.');
+    var order=labourOrderFor(r);
+    if(order){
+      first.push(order.second_part_name);second.push(order.first_part_name);
+      notes.push('First part Labour Ward / Pager: '+order.first_part_name+' • Second break.');
+      notes.push('Second part Labour Ward / Pager: '+order.second_part_name+' • First break.');
+    }else{
+      notes.push(r.pager+' and '+r.reliever+' still need to decide who works each part of Labour Ward / Pager.');
+      notes.push('Whoever works the first part takes second break. Whoever works the second part takes first break.');
+    }
     if(r.mode==='7')notes.push(r.seventh+' is the 7th nurse and takes a break as required.');
     var extras=additionalNurses(plan);if(extras.length)notes.push(extras.map(function(o){return o.nurse_name}).join(' + ')+' remain additional staff and take breaks as required.');
   }
@@ -195,31 +253,31 @@ function breakData(r){
 }
 
 function renderBreaks(){
-  var base=cur(),r=applyChanges(base),plan=staffingPlan(base),pending=planIsProvisional(base),count=plan.count,b=pending?{first:[],second:[],notes:['Breaks are pending until the required staffing and allocations are finalised.']}:breakData(r);
+  var base=cur(),r=applyChanges(base),plan=staffingPlan(base),staffingPending=planIsProvisional(base),labourPending=r.mode!=='5'&&!labourOrderFor(r),pending=staffingPending||labourPending,count=plan.count,b=staffingPending?{first:[],second:[],notes:['Breaks are pending until the required staffing and allocations are finalised.']}:breakData(r);
   byId('breakDatePick').value=r.date;byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
-  byId('breakDate').innerHTML='<b>'+fmt(r.date)+'</b> • '+esc(count)+' nurses'+(pending?' • <span class="provisionalFlag">Pending</span>':'');
+  byId('breakDate').innerHTML='<b>'+fmt(r.date)+'</b> • '+esc(count)+' nurses'+(pending?' • <span class="provisionalFlag">'+(labourPending&&!staffingPending?'Labour Ward order pending':'Pending')+'</span>':'');
   byId('breakList').innerHTML='<div class="breakGrid"><div class="breakGroup firstBreak"><h3>First break</h3>'+b.first.map(function(n){return '<div class="breakPerson">'+esc(n)+'</div>'}).join('')+(b.first.length?'':'<div class="breakNote">Pending final allocation</div>')+'</div><div class="breakGroup secondBreak"><h3>Second break</h3>'+b.second.map(function(n){return '<div class="breakPerson">'+esc(n)+'</div>'}).join('')+(b.second.length?'':'<div class="breakNote">Pending final allocation</div>')+'</div></div><div class="breakGroup lwBreak"><h3>Labour Ward / Pager'+(r.mode==='7'?' and additional staffing':'')+'</h3>'+b.notes.map(function(n){return '<div class="breakNote">'+esc(n)+'</div>'}).join('')+'</div>';
   highlightNamed('breakList','.breakPerson');
 }
 
 function setOutputState(base,plan){
-  var pending=planIsProvisional(base);
+  var r=applyChanges(base),pending=planIsProvisional(base)||(r.mode!=='5'&&!labourOrderFor(r));
   Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(button){var span=button.querySelector('span');if(span)span.textContent=pending?'Email provisional roster':'Email roster and breaks';button.classList.toggle('buttonPending',pending)});
   var copy=byId('copyBreaksBtn');if(copy){var span=copy.querySelector('span');if(span)span.textContent=pending?'Copy breaks pending':'Copy breaks';copy.classList.toggle('buttonPending',pending)}
 }
 
 async function copyBreaks(){
-  var base=cur(),r=applyChanges(base),plan=staffingPlan(base),pending=planIsProvisional(base),b=pending?{first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']}:breakData(r);
+  var base=cur(),r=applyChanges(base),plan=staffingPlan(base),staffingPending=planIsProvisional(base),pending=staffingPending||(r.mode!=='5'&&!labourOrderFor(r)),b=staffingPending?{first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']}:breakData(r);
   var txt=(pending?'PROVISIONAL • ':'')+fmt(r.date)+' Breaks • '+plan.count+' nurses\nFirst break: '+(b.first.join(' + ')||'Pending')+'\nSecond break: '+(b.second.join(' + ')||'Pending')+'\n'+b.notes.join('\n');
   try{await navigator.clipboard.writeText(txt);toast(pending?'Pending break plan copied':'Breaks copied')}catch(e){alert(txt)}
 }
 
 function emailRoster(){
-  var base=cur(),r=applyChanges(base),b=breakData(r),changes=changesFor(r.date),overtime=overtimeFor(r.date),plan=staffingPlan(base),pending=planIsProvisional(base),extras=additionalNurses(plan);
+  var base=cur(),r=applyChanges(base),b=breakData(r),changes=changesFor(r.date),overtime=overtimeFor(r.date),plan=staffingPlan(base),staffingPending=planIsProvisional(base),pending=staffingPending||(r.mode!=='5'&&!labourOrderFor(r)),extras=additionalNurses(plan);
   if(pending&&!confirm('Some staffing or allocations are still undecided. Open a clearly marked provisional email anyway?'))return;
-  if(pending)b={first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']};
+  if(staffingPending)b={first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']};
   var subject=(pending?'PROVISIONAL - ':'')+'Anaesthetic Night Roster - '+fmt(r.date),lines=[pending?'PROVISIONAL ANAESTHETIC NIGHT ROSTER':'ANAESTHETIC NIGHT ROSTER',fmt(r.date)+' • '+plan.count+' nurses','','ROSTER','First part theatres: '+r.first1+' + '+r.first2,'Second part theatres: '+r.second1+' + '+r.second2];
-  if(plan.count<5)lines.push('Allocation incomplete: additional overtime cover required');else if(r.mode==='5')lines.push('Full Labour Ward / Pager 00:00–07:00: '+r.fullLW);else lines.push('Pager: '+r.pager,'Reliever: '+r.reliever);
+  if(plan.count<5)lines.push('Allocation incomplete: additional overtime cover required');else if(r.mode==='5')lines.push('Full Labour Ward / Pager 00:00–07:00: '+r.fullLW);else{lines.push('Pager: '+r.pager,'Reliever: '+r.reliever);var lwOrder=labourOrderFor(r);if(lwOrder)lines.push('Labour Ward first part: '+lwOrder.first_part_name,'Labour Ward second part: '+lwOrder.second_part_name)}
   if(r.mode==='7')lines.push('7th nurse: '+r.seventh);
   if(extras.length)lines.push('Additional staff as required: '+extras.map(function(o){return o.nurse_name}).join(' + '));
   if(changes.length){lines.push('','ABSENCES');changes.forEach(function(c){lines.push(c.absent_name+' • '+(c.reason||'Unavailable'))})}
@@ -235,15 +293,15 @@ function renderRoster(){
   var html='';
   R.forEach(function(original,i){
     var base=Object.assign({},original,sharedRoster[original.date]||{});base.mode='6';
-    var r=applyChanges(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),plan=staffingPlan(base),count=plan.count,extras=additionalNurses(plan),liveCount=changes.length+overtime.length;
-    var status=planIsProvisional(base)?'Provisional • staffing decision required':liveCount?liveCount+' live staffing update'+(liveCount>1?'s':''):'Standard calculated rotation';
+    var r=applyChanges(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),plan=staffingPlan(base),count=plan.count,extras=additionalNurses(plan),liveCount=changes.length+overtime.length,labourPending=r.mode!=='5'&&!labourOrderFor(r);
+    var status=planIsProvisional(base)?'Provisional • staffing decision required':labourPending?'Labour Ward order still required':liveCount?liveCount+' live staffing update'+(liveCount>1?'s':''):'Standard calculated rotation';
     var displayMode=String(Math.max(5,Math.min(7,count)));
     if(!((f==='all'||displayMode===f)&&(JSON.stringify(base)+' '+JSON.stringify(r)+' '+JSON.stringify(changes)+' '+JSON.stringify(overtime)).toLowerCase().indexOf(q)>-1))return;
     html+='<article class="card" role="button" tabindex="0" aria-label="Open roster for '+esc(fmt(r.date))+'" data-i="'+i+'"><div class="ctop"><div><div class="date">'+fmt(r.date)+'</div><div class="time">'+esc(status)+'</div></div><span class="pill mode'+esc(displayMode)+'">'+esc(count)+' nurses</span></div>';
     html+='<div class="row"><div class="lab">First part</div><div><span class="tag tFirst">'+esc(r.first1)+'</span><span class="tag tFirst">'+esc(r.first2)+'</span></div></div><div class="row"><div class="lab">Second part</div><div><span class="tag tSecond">'+esc(r.second1)+'</span><span class="tag tSecond">'+esc(r.second2)+'</span></div></div>';
     if(count<5)html+='<div class="row"><div class="lab">Status</div><div><b>Additional overtime cover required</b></div></div>';
     else if(r.mode==='5')html+='<div class="row"><div class="lab">Full LW / Pager</div><div><span class="tag tFull">'+esc(r.fullLW)+'</span></div></div>';
-    else html+='<div class="row"><div class="lab">Pager</div><div><span class="tag tPager">'+esc(r.pager)+'</span></div></div><div class="row"><div class="lab">Reliever</div><div><span class="tag tRel">'+esc(r.reliever)+'</span></div></div>';
+    else{html+='<div class="row"><div class="lab">Pager</div><div><span class="tag tPager">'+esc(r.pager)+'</span></div></div><div class="row"><div class="lab">Reliever</div><div><span class="tag tRel">'+esc(r.reliever)+'</span></div></div>';var order=labourOrderFor(r);if(order)html+='<div class="row"><div class="lab">LW first part</div><div><b>'+esc(order.first_part_name)+'</b> • Second break</div></div><div class="row"><div class="lab">LW second part</div><div><b>'+esc(order.second_part_name)+'</b> • First break</div></div>'}
     if(r.mode==='7')html+='<div class="row"><div class="lab">7th nurse</div><div><span class="tag t7">'+esc(r.seventh)+'</span></div></div>';
     if(extras.length)html+='<div class="row"><div class="lab">Additional</div><div>'+extras.map(function(o){return '<b>'+esc(o.nurse_name)+'</b> • as required'}).join('<br>')+'</div></div>';
     if(changes.length)html+='<div class="row"><div class="lab">Absences</div><div>'+changes.map(function(c){return esc(c.absent_name)+' • <b>'+esc(c.reason||'Unavailable')+'</b>'}).join('<br>')+'</div></div>';
@@ -385,6 +443,35 @@ async function saveFiveCover(){
   if(rpcError(result))return;await loadSharedData();toast(base.reliever+' saved before the overtime allocations');
 }
 
+function desiredAllocationsById(chosen){
+  var desired={};Object.keys(chosen).forEach(function(key){desired[chosen[key]]=key});return desired;
+}
+
+async function readStoredAllocations(date,chosen){
+  var result=await supa.from('night_overtime').select('id,allocation_key').eq('roster_date',date);
+  if(result.error)return result;
+  var desired=desiredAllocationsById(chosen),rows=result.data||[],selectedIds=Object.keys(desired);
+  return{error:null,matches:selectedIds.every(function(id){return rows.some(function(row){return row.id===id})})&&rows.every(function(row){return(row.allocation_key||null)===(desired[row.id]||null)})};
+}
+
+async function saveAllocationsCompatibility(base,chosen,writeHistory){
+  var who=currentUserProfile.display_name,now=new Date().toISOString(),before=overtimeFor(base.date).slice(),desired=desiredAllocationsById(chosen);
+  var cleared=await supa.from('night_overtime').update({allocation_key:null,updated_by:who,updated_at:now}).eq('roster_date',base.date);
+  if(cleared.error)return cleared;
+  for(var key in chosen){
+    var saved=await supa.from('night_overtime').update({allocation_key:key,updated_by:who,updated_at:now}).eq('id',chosen[key]).eq('roster_date',base.date);
+    if(saved.error)return saved;
+  }
+  var check=await readStoredAllocations(base.date,chosen);
+  if(check.error)return check;
+  if(!check.matches)return{error:{message:'The database did not retain the selected allocation values.'}};
+  if(writeHistory){
+    var audit=before.filter(function(o){return(o.allocation_key||null)!==(desired[o.id]||null)}).map(function(o){var next=desired[o.id]||null,action=o.allocation_key&&next?'reallocated':next?'allocated':'unallocated';return{roster_date:base.date,action:action,nurse_name:o.nurse_name,previous_allocation_key:o.allocation_key||null,allocation_key:next,changed_by:who,changed_at:now}});
+    if(audit.length){var history=await supa.from('night_overtime_history').insert(audit);if(history.error)return{error:history.error,partial:true}}
+  }
+  return{error:null,compatibility:true};
+}
+
 async function saveFinalAllocations(){
   if(!requireOnline())return;
   var base=cur(),selects=Array.prototype.slice.call(document.querySelectorAll('[data-final-allocation]')),chosen={},used={};
@@ -392,10 +479,26 @@ async function saveFinalAllocations(){
     var key=selects[i].getAttribute('data-final-allocation'),id=selects[i].value;if(!id)continue;
     if(used[id]){toast('The same overtime nurse cannot be placed in two allocations');return}used[id]=true;chosen[key]=id;
   }
-  setSync('saving','Saving final allocations');byId('saveAllocationsBtn').disabled=true;
-  var result=await supa.rpc('apply_staffing_allocations_v25',{p_roster_date:base.date,p_action:'allocations',p_coverage_key:null,p_assignments:chosen,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever});
-  byId('saveAllocationsBtn').disabled=false;if(rpcError(result))return;
-  await loadSharedData();var plan=staffingPlan(cur());toast(plan.unresolved.length?'Allocations saved, with some still to decide':additionalNurses(plan).length?'Core allocations saved; additional staff remain as required':'Required allocations finalised');
+  var chosenCount=Object.keys(chosen).length;
+  if(!chosenCount){toast('Choose at least one nurse allocation before saving');return}
+  setSync('saving','Saving '+chosenCount+' allocation'+(chosenCount===1?'':'s'));byId('saveAllocationsBtn').disabled=true;byId('saveAllocationsBtn').textContent='Saving…';
+  try{
+    var result=await timedRequest(supa.rpc('apply_staffing_allocations_v25',{p_roster_date:base.date,p_action:'allocations',p_coverage_key:null,p_assignments:chosen,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever}));
+    var usedCompatibility=false;
+    if(missingRpc(result)){result=await timedRequest(saveAllocationsCompatibility(base,chosen,true));usedCompatibility=true}
+    if(rpcError(result))return;
+    if(!usedCompatibility){
+      var check=await timedRequest(readStoredAllocations(base.date,chosen));
+      if(check.error){rpcError(check);return}
+      if(!check.matches){
+        result=await timedRequest(saveAllocationsCompatibility(base,chosen,false));
+        if(rpcError(result))return;
+      }
+    }
+    await loadSharedData();var plan=staffingPlan(cur()),saved=chosenCount-plan.unresolved.filter(function(key){return Object.prototype.hasOwnProperty.call(chosen,key)}).length;
+    toast(plan.unresolved.length?saved+' allocation'+(saved===1?'':'s')+' saved • '+plan.unresolved.length+' still to decide':additionalNurses(plan).length?'Core allocations saved; additional staff remain as required':'Required allocations finalised');
+  }catch(error){setSync('error','Save failed');toast('The allocations could not be confirmed. Your selections remain available to retry.');}
+  finally{byId('saveAllocationsBtn').disabled=false;byId('saveAllocationsBtn').textContent='Save final allocations';updateOfflineControls()}
 }
 
 async function loadNightHistory(date,renderAfter){
@@ -413,13 +516,14 @@ function ensureNightHistory(date){if(!historyLoadedDates[date])loadNightHistory(
 async function loadSharedData(){
   if(sharedLoadPromise){sharedReloadPending=true;return sharedLoadPromise}
   sharedLoadPromise=(async function(){
-    var results=await Promise.all([supa.from('night_changes').select('*').order('updated_at',{ascending:true}),supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),supa.from('night_five_cover').select('*'),supa.from('roster_nights').select('*'),supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),supa.from('rotation_versions').select('*').order('effective_from',{ascending:true})]);
-    if(results.some(function(x){return x.error})){setSync('error','Database update required');toast('Run the V25 SQL migration in Supabase');return}
+    var results=await Promise.all([supa.from('night_changes').select('*').order('updated_at',{ascending:true}),supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),supa.from('night_five_cover').select('*'),supa.from('roster_nights').select('*'),supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),supa.from('rotation_versions').select('*').order('effective_from',{ascending:true}),supa.from('night_labour_order').select('*')]);
+    if(results.slice(0,6).some(function(x){return x.error})){setSync('error','Database update required');toast('Run the V25 SQL migration in Supabase');return}
     nightChanges={};(results[0].data||[]).forEach(function(c){(nightChanges[c.roster_date]||(nightChanges[c.roster_date]=[])).push(c)});
     nightOvertime={};(results[1].data||[]).forEach(function(o){(nightOvertime[o.roster_date]||(nightOvertime[o.roster_date]=[])).push(o)});
     fiveCoverChoices={};(results[2].data||[]).forEach(function(c){fiveCoverChoices[c.roster_date]=c});
     sharedRoster={};(results[3].data||[]).forEach(function(r){sharedRoster[r.date]=r});
     if(results[4].data)rosterSettings=results[4].data;if((results[5].data||[]).length)rotationVersions=results[5].data;
+    labourOrderAvailable=!results[6].error;labourOrders={};if(labourOrderAvailable)(results[6].data||[]).forEach(function(order){labourOrders[order.roster_date]=order});
     rebuildCalculatedRoster();var selected=localStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:startingIndex();
     await loadNightHistory(R[idx].date,false);setSync('','Live and up to date');render();
   })();
@@ -430,7 +534,7 @@ function scheduleSharedReload(){clearTimeout(reloadTimer);reloadTimer=setTimeout
 
 function subscribeToChanges(){
   if(changesChannel)supa.removeChannel(changesChannel);
-  var tables=['night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_nights','roster_settings','rotation_versions'];
+  var tables=['night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_nights','roster_settings','rotation_versions'];if(labourOrderAvailable)tables.push('night_labour_order');
   changesChannel=supa.channel('roster-live-v25');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'){
@@ -444,6 +548,7 @@ function updateOfflineControls(){
   var offline=!navigator.onLine,ids=['saveChangeBtn','addOvertimeBtn','saveAllocationsBtn','saveTeamVersionBtn','previewExtendBtn','extendBtn','addAccountBtn'];
   ids.forEach(function(id){var el=byId(id);if(el)el.disabled=offline});
   var cover=byId('saveFiveCoverBtn');if(cover)cover.disabled=offline;
+  var labour=byId('saveLabourOrderBtn');if(labour)labour.disabled=offline;
 }
 
 function updateNetworkStatus(){
@@ -474,7 +579,7 @@ async function backup(){
   toast('Preparing complete backup');
   var allHistory=await Promise.all([supa.from('night_change_history').select('*').order('changed_at',{ascending:false}),supa.from('night_overtime_history').select('*').order('changed_at',{ascending:false})]);
   if(allHistory.some(function(x){return x.error})){toast('The complete backup could not be prepared');return}
-  download('roster-backup-v25.json',JSON.stringify({created_at:new Date().toISOString(),app_version:APP_VERSION,roster_settings:rosterSettings,rotation_versions:rotationVersions,manual_night_overrides:Object.values(sharedRoster),night_changes:nightChanges,night_overtime:nightOvertime,absence_history:allHistory[0].data||[],overtime_history:allHistory[1].data||[],five_nurse_cover:fiveCoverChoices,authorised_accounts:authorisedAccounts},null,2),'application/json');
+  download('roster-backup-v25.json',JSON.stringify({created_at:new Date().toISOString(),app_version:APP_VERSION,roster_settings:rosterSettings,rotation_versions:rotationVersions,manual_night_overrides:Object.values(sharedRoster),night_changes:nightChanges,night_overtime:nightOvertime,absence_history:allHistory[0].data||[],overtime_history:allHistory[1].data||[],five_nurse_cover:fiveCoverChoices,labour_ward_orders:Object.values(labourOrders),authorised_accounts:authorisedAccounts},null,2),'application/json');
 }
 
 function showUpdate(registration){updateRegistration=registration;byId('updateBanner').classList.remove('hidden')}
@@ -501,7 +606,7 @@ async function authorizeUser(user){
   currentUserProfile=result.data;byId('authGate').classList.add('hidden');document.body.classList.remove('authPending');
   var isAdmin=result.data.user_role==='admin';byId('adminSettingsBtn').classList.toggle('hidden',!isAdmin);document.querySelector('.bottom').style.gridTemplateColumns='repeat(3,1fr)';
   byId('accountBtn').title=result.data.display_name+' • '+result.data.email+' • Sign out';byId('accountInitial').textContent=(result.data.display_name||result.data.email).charAt(0).toUpperCase();
-  subscribeToChanges();await loadSharedData();if(isAdmin)await loadAccounts();
+  await loadSharedData();subscribeToChanges();if(isAdmin)await loadAccounts();
 }
 
 function bind(){
