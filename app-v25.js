@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V25 reliability and workflow refinements. */
+/* Anaesthetic Night Roster V25.14 reliability, workflow and seventh-rotation refinements. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -19,15 +19,12 @@ function prepareChangesView(){
   if(changesViewPrepared)return;
   var today=byId('today'),changes=byId('changes'),roster=byId('roster'),changePanel=today&&today.querySelector('.changePanel'),allocation=changePanel&&changePanel.querySelector('.allocationSection'),action=today&&today.querySelector('.actionPanel'),nav=document.querySelector('.bottom');
   if(!today||!changes||!roster||!changePanel||!allocation||!action||!nav)return;
-  allocation.classList.remove('staffingSection');allocation.classList.add('panel');allocation.querySelector('.stepHeader>span').textContent='✓';allocation.querySelector('.stepHeader h3').textContent='Final allocation and Labour Ward parts';
-  today.insertBefore(allocation,action);
   var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div');shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="soft rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span></button>';if(myNameLabel)selectedPanel.insertBefore(shortcutRow,myNameLabel);
   changes.innerHTML='<div class="panel changesDatePanel"><h2>Selected night</h2><div class="grid2"><label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div></label><div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div></div></div>';
   changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record absences and overtime nurses for the selected night';
-  var historyStep=changePanel.querySelector('.historyStep');if(historyStep)historyStep.textContent='3';
   changes.appendChild(changePanel);
   var rosterButton=nav.querySelector('[data-v="roster"]'),changesButton=document.createElement('button');changesButton.type='button';changesButton.setAttribute('data-v','changes');changesButton.setAttribute('aria-label','Staffing changes');changesButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10"></path><path d="m14 4 3 3-3 3"></path><path d="M17 17H7"></path><path d="m10 14-3 3 3 3"></path></svg><span>Changes</span>';
-  nav.insertBefore(changesButton,rosterButton);rosterButton.remove();nav.style.gridTemplateColumns='repeat(3,1fr)';
+  nav.insertBefore(changesButton,rosterButton);rosterButton.remove();nav.style.gridTemplateColumns='repeat(4,1fr)';nav.querySelector('[data-v="today"]').style.gridColumn='1';changesButton.style.gridColumn='2';nav.querySelector('[data-v="breaks"]').style.gridColumn='4';
   var rosterHeader=document.createElement('div');rosterHeader.className='rosterPageHeader';rosterHeader.innerHTML='<h2>Full roster</h2><button type="button" class="mini" id="closeRosterBtn">Back to Night</button>';roster.insertBefore(rosterHeader,roster.firstChild);
   byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};changesViewPrepared=true;
 }
@@ -52,6 +49,24 @@ function baseForDate(date){
   return merged;
 }
 
+function seventhRotationChoice(base,changes){
+  var scheduled=base.seventh||'OT Nurse';
+  if(scheduled==='OT Nurse')return{scheduled:scheduled,nurse:'OT Nurse',source:'overtime',fallback:false,vacatedKey:'seventh'};
+  var absent=(changes||[]).map(function(c){return String(c.absent_name||'').toLowerCase()});
+  var scheduledKey=allocationKeyForName(base,scheduled);
+  if(scheduledKey&&absent.indexOf(String(scheduled).toLowerCase())<0)return{scheduled:scheduled,nurse:scheduled,source:'permanent',fallback:false,vacatedKey:scheduledKey};
+  var version=versionForDate(base.date),cycle=version&&Array.isArray(version.seventh_cycle)&&version.seventh_cycle.length?version.seventh_cycle:ORIGINAL_SEVENTH;
+  var start=cycle.indexOf(scheduled);if(start<0)start=0;
+  /* calculateNight advances the seventh rotation backwards through the stored cycle. */
+  for(var step=1;step<=cycle.length;step++){
+    var candidate=cycle[((start-step)%cycle.length+cycle.length)%cycle.length];
+    if(!candidate||candidate==='OT Nurse'||absent.indexOf(String(candidate).toLowerCase())>=0)continue;
+    var key=allocationKeyForName(base,candidate);
+    if(key)return{scheduled:scheduled,nurse:candidate,source:'permanent',fallback:true,vacatedKey:key};
+  }
+  return{scheduled:scheduled,nurse:'OT Nurse',source:'overtime',fallback:true,vacatedKey:'seventh'};
+}
+
 function staffingPlan(base){
   var changes=changesFor(base.date),overtime=overtimeFor(base.date),absentKeys=[],openKeys=[],legacyCover=0;
   changes.forEach(function(c){
@@ -62,7 +77,11 @@ function staffingPlan(base){
     else if(openKeys.indexOf(key)<0)openKeys.push(key);
   });
   var count=6-absentKeys.length+legacyCover+overtime.length;
-  if(count>=7&&openKeys.indexOf('seventh')<0)openKeys.push('seventh');
+  var seventhChoice=null;
+  if(count>=7){
+    seventhChoice=seventhRotationChoice(base,changes);
+    if(openKeys.indexOf(seventhChoice.vacatedKey)<0)openKeys.push(seventhChoice.vacatedKey);
+  }
   var coverageKey=null,coverageChoices=[],coverageSource='';
   if(count===5&&openKeys.length){
     if(openKeys.indexOf('reliever')>=0){coverageKey='reliever';coverageSource='automatic'}
@@ -81,7 +100,7 @@ function staffingPlan(base){
   var unassigned=overtime.filter(function(o){return assignedIds.indexOf(o.id)<0});
   var unresolved=availableKeys.filter(function(key){return !validAssignments.some(function(o){return o.allocation_key===key})});
   var coreComplete=!requiresCoverageChoice&&unresolved.length===0&&count>=5;
-  return{changes:changes,overtime:overtime,absentKeys:absentKeys,openKeys:openKeys,availableKeys:availableKeys,count:count,coverageKey:coverageKey,coverageChoices:coverageChoices,coverageSource:coverageSource,requiresCoverageChoice:requiresCoverageChoice,validAssignments:validAssignments,unassigned:unassigned,unresolved:unresolved,coreComplete:coreComplete,extraCount:Math.max(0,count-7),complete:coreComplete};
+  return{changes:changes,overtime:overtime,absentKeys:absentKeys,openKeys:openKeys,availableKeys:availableKeys,count:count,coverageKey:coverageKey,coverageChoices:coverageChoices,coverageSource:coverageSource,requiresCoverageChoice:requiresCoverageChoice,validAssignments:validAssignments,unassigned:unassigned,unresolved:unresolved,coreComplete:coreComplete,extraCount:Math.max(0,count-7),complete:coreComplete,seventhChoice:seventhChoice,seventhNurse:seventhChoice?seventhChoice.nurse:null,seventhVacatedKey:seventhChoice?seventhChoice.vacatedKey:null};
 }
 
 function additionalNurses(plan){
@@ -97,6 +116,7 @@ function applyChanges(r){
   var copy=Object.assign({},r),fields=['first1','first2','second1','second2','pager','reliever','fullLW','seventh'];
   copy.mode='6';
   var changes=changesFor(r.date),plan=staffingPlan(copy);
+  if(plan.count>=7)copy.seventh=plan.seventhNurse;
   changes.filter(function(c){return c.replacement_name}).forEach(function(change){
     fields.forEach(function(k){if(copy[k]===change.absent_name)copy[k]=change.replacement_name});
   });
@@ -125,11 +145,12 @@ function applyChanges(r){
 }
 
 function effective(r){
-  var count=r.understaffedCount||staffingPlan(baseForDate(r.date)).count,alert;
+  var plan=staffingPlan(baseForDate(r.date)),count=r.understaffedCount||plan.count,alert;
   if(count<5)alert=count+' nurses currently recorded: additional overtime cover is required before the allocation and breaks can be finalised.';
   else if(r.mode==='5')alert='5-person model: '+r.fullLW+' covers Labour Ward / Pager 00:00–07:00.';
   else if(count>7)alert=count+' nurses recorded: the core seven-person arrangement is shown, with additional staff allocated as required.';
-  else if(r.mode==='7')alert='7-person model: '+r.seventh+' is the floating extra nurse.';
+  else if(r.mode==='7'&&plan.seventhChoice&&plan.seventhChoice.source==='permanent')alert='7-person model: '+r.seventh+' is the rotating seventh nurse. Overtime fills '+allocationLabel(plan.seventhVacatedKey)+'.';
+  else if(r.mode==='7')alert='7-person model: the seventh rotation selected an overtime nurse for the additional role.';
   else alert='6-person model: Labour Ward / Pager is shared between '+r.pager+' and '+r.reliever+'.';
   return{display:r.mode,fullLW:r.fullLW,alert:alert};
 }
@@ -200,12 +221,11 @@ function labourRoleIsReady(base,key){
   return plan.absentKeys.indexOf(key)<0;
 }
 
-function setLabourOrderDraft(base,changedPart){
-  var firstPick=byId('labourFirstPick'),secondPick=byId('labourSecondPick');if(!firstPick||!secondPick)return;
-  var names=JSON.parse(firstPick.getAttribute('data-labour-names')||'[]'),first=firstPick.value,second=secondPick.value;
-  if(changedPart==='first')second=names.find(function(name){return name!==first})||'';
-  else first=names.find(function(name){return name!==second})||'';
-  firstPick.value=first;secondPick.value=second;labourOrderDrafts[base.date]={first:first,second:second};
+function setLabourOrderDraft(base){
+  var firstPick=byId('labourFirstPick');if(!firstPick)return;
+  var names=JSON.parse(firstPick.getAttribute('data-labour-names')||'[]'),first=firstPick.value,second=names.find(function(name){return name!==first})||'';
+  labourOrderDrafts[base.date]={first:first,second:second};
+  var firstResult=byId('labourFirstResult'),secondResult=byId('labourSecondResult');if(firstResult)firstResult.innerHTML='<b>First part</b><span>'+esc(first)+' • Second break</span>';if(secondResult)secondResult.innerHTML='<b>Second part</b><span>'+esc(second)+' • First break</span>';
   formMessage('allocationFormMessage','Allocations and Labour Ward parts are ready to save.','');
 }
 
@@ -219,9 +239,9 @@ function renderLabourOrder(base,plan){
   if(!names[0]||!names[1]||names[0]===names[1]){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Two different Labour Ward nurses are required before their parts can be divided.</div></div>';return false}
   var draft=labourOrderDrafts[base.date],stored=labourOrderFor(r),first=draft&&names.indexOf(draft.first)>=0?draft.first:stored?stored.first_part_name:names[0];
   var second=names.find(function(name){return name!==first})||names[1];labourOrderDrafts[base.date]={first:first,second:second};
-  var options=function(selected){return names.map(function(name){return'<option value="'+esc(name)+'" '+(name===selected?'selected':'')+'>'+esc(name)+'</option>'}).join('')};
-  host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Choose both parts now. These choices will be saved together with the final allocations.</div><div class="labourOrderGrid"><label>First part<select id="labourFirstPick" data-labour-names="'+esc(JSON.stringify(names))+'">'+options(first)+'</select><span class="time">Second break</span></label><label>Second part<select id="labourSecondPick">'+options(second)+'</select><span class="time">First break</span></label></div></div>';
-  byId('labourFirstPick').onchange=function(){setLabourOrderDraft(base,'first')};byId('labourSecondPick').onchange=function(){setLabourOrderDraft(base,'second')};
+  var options=names.map(function(name,index){return'<option value="'+esc(name)+'" '+(name===first?'selected':'')+'>'+esc(name)+' • '+(index===0?'Pager':'Reliever')+'</option>'}).join('');
+  host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="time">Pager and Reliever are already assigned above. Choose only who works the first part, and the other nurse is placed on the second part automatically.</div><label>Who works the first part?<select id="labourFirstPick" data-labour-names="'+esc(JSON.stringify(names))+'">'+options+'</select></label><div class="labourOrderGrid"><div class="labourOrderResult" id="labourFirstResult"><b>First part</b><span>'+esc(first)+' • Second break</span></div><div class="labourOrderResult" id="labourSecondResult"><b>Second part</b><span>'+esc(second)+' • First break</span></div></div></div>';
+  byId('labourFirstPick').onchange=function(){setLabourOrderDraft(base)};
   return true;
 }
 
@@ -245,13 +265,17 @@ function renderChanges(base){
     return '<div class="overtimeItem"><div class="overtimeTop"><div><div class="overtimeName">'+esc(o.nurse_name)+'</div><span class="overtimeStatus '+(valid||extra?'assigned':'')+'">'+esc(status)+'</span><div class="changeMeta">Added by '+esc(who||'Shift member')+' at '+esc(shortTime(when))+'</div></div><button class="mini" data-remove-overtime="'+esc(o.id)+'">Remove</button></div></div>';
   }).join(''):'<div class="time">No overtime nurses recorded for this night.</div>';
   byId('fiveCoverStep').innerHTML=fiveCoverHtml(base,plan);
-  var extras=additionalNurses(plan),summary;
+  var extras=additionalNurses(plan),summary,seventhInfo='';
+  if(plan.count>=7&&plan.seventhChoice){
+    if(plan.seventhChoice.source==='permanent')seventhInfo='<div class="seventhRotationInfo"><b>7th rotation: '+esc(plan.seventhNurse)+'</b><div class="time">'+(plan.seventhChoice.fallback?esc(plan.seventhChoice.scheduled)+' is absent, so the next available permanent nurse moves into the seventh position. ':'')+'An overtime nurse fills '+esc(allocationLabel(plan.seventhVacatedKey))+'.</div></div>';
+    else seventhInfo='<div class="seventhRotationInfo"><b>7th rotation: overtime nurse</b><div class="time">Choose one overtime nurse for the seventh position. Break as required.</div></div>';
+  }
   if(plan.requiresCoverageChoice)summary='<b>'+plan.count+' nurses expected tonight</b><div class="time">Choose and save the reliever allocation first. The remaining positions will then appear for the overtime nurses.</div>';
   else if(!overtime.length)summary='<b>No overtime allocation required yet</b><div class="time">Add overtime nurses only when they are confirmed as available.</div>';
   else if(plan.unresolved.length)summary='<b>'+plan.count+' nurses expected tonight</b><div class="time">'+plan.unresolved.length+' required allocation'+(plan.unresolved.length===1?' remains':'s remain')+' to be decided.</div>';
   else if(extras.length)summary='<b>Core allocations finalised</b><div class="time">'+extras.length+' additional nurse'+(extras.length===1?' remains':'s remain')+' available as required.</div>';
   else summary='<b>Required allocations finalised</b><div class="time">The reliever and overtime allocations are complete.</div>';
-  byId('allocationSummary').innerHTML=summary;
+  byId('allocationSummary').innerHTML=summary+seventhInfo;
   var allocationDraft=allocationDrafts[base.date]||{};
   byId('allocationList').innerHTML=overtime.length&&plan.availableKeys.length?plan.availableKeys.map(function(key){
     var assigned=plan.validAssignments.find(function(o){return o.allocation_key===key});
@@ -328,7 +352,10 @@ function emailRoster(){
   if(staffingPending)b={first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']};
   var subject=(pending?'PROVISIONAL - ':'')+'Anaesthetic Night Roster - '+fmt(r.date),lines=[pending?'PROVISIONAL ANAESTHETIC NIGHT ROSTER':'ANAESTHETIC NIGHT ROSTER',fmt(r.date)+' • '+plan.count+' nurses','','ROSTER','First part theatres: '+r.first1+' + '+r.first2,'Second part theatres: '+r.second1+' + '+r.second2];
   if(plan.count<5)lines.push('Allocation incomplete: additional overtime cover required');else if(r.mode==='5')lines.push('Full Labour Ward / Pager 00:00–07:00: '+r.fullLW);else{lines.push('Pager: '+r.pager,'Reliever: '+r.reliever);var lwOrder=labourOrderFor(r);if(lwOrder)lines.push('Labour Ward first part: '+lwOrder.first_part_name,'Labour Ward second part: '+lwOrder.second_part_name)}
-  if(r.mode==='7')lines.push('7th nurse: '+r.seventh);
+  if(r.mode==='7'){
+    lines.push('7th nurse: '+r.seventh);
+    if(plan.seventhChoice&&plan.seventhChoice.source==='permanent')lines.push('7th rotation: overtime fills '+allocationLabel(plan.seventhVacatedKey));
+  }
   if(extras.length)lines.push('Additional staff as required: '+extras.map(function(o){return o.nurse_name}).join(' + '));
   if(changes.length){lines.push('','ABSENCES');changes.forEach(function(c){lines.push(c.absent_name+' • '+(c.reason||'Unavailable'))})}
   if(overtime.length){lines.push('','OVERTIME NURSES');overtime.forEach(function(o){var allocated=plan.availableKeys.indexOf(o.allocation_key)>=0,extra=extras.some(function(x){return x.id===o.id});lines.push(o.nurse_name+' • '+(extra?'additional staff as required':allocated?allocationLabel(o.allocation_key):'allocation to decide'))})}
@@ -536,10 +563,10 @@ async function saveFinalAllocationsV2510(event){
       if(used[id]){formMessage('allocationFormMessage','Choose a different nurse for each allocation.','error');toast('The same overtime nurse cannot be placed in two allocations');return false}used[id]=true;chosen[key]=id;
     }
     chosenCount=Object.keys(chosen).length;
-    var firstPick=byId('labourFirstPick'),secondPick=byId('labourSecondPick');
-    if(firstPick||secondPick){
-      var first=firstPick&&firstPick.value,second=secondPick&&secondPick.value;
-      if(!first||!second||first===second){formMessage('allocationFormMessage','Choose two different nurses for the Labour Ward first and second parts.','error');toast('Complete both Labour Ward parts before saving');return false}
+    var firstPick=byId('labourFirstPick');
+    if(firstPick){
+      var labourNames=JSON.parse(firstPick.getAttribute('data-labour-names')||'[]'),first=firstPick.value,second=labourNames.find(function(name){return name!==first})||'';
+      if(!first||!second||first===second){formMessage('allocationFormMessage','Choose who works the Labour Ward first part.','error');toast('Complete the Labour Ward order before saving');return false}
       labourChoice={first:first,second:second};
     }
     if(!chosenCount&&!labourChoice){formMessage('allocationFormMessage','Choose at least one allocation or complete the Labour Ward parts before saving.','error');toast('Nothing has been selected to save');return false}
@@ -674,7 +701,7 @@ async function authorizeUser(user){
   var result=await supa.from('allowed_users').select('email,display_name,user_role,active').eq('email',user.email.toLowerCase()).maybeSingle();
   if(result.error||!result.data||!result.data.active){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth('This email is not authorised for this shift.',true);return}
   currentUserProfile=result.data;byId('authGate').classList.add('hidden');document.body.classList.remove('authPending');
-  var isAdmin=result.data.user_role==='admin';byId('adminSettingsBtn').classList.toggle('hidden',!isAdmin);document.querySelector('.bottom').style.gridTemplateColumns='repeat(3,1fr)';
+  var isAdmin=result.data.user_role==='admin';byId('adminSettingsBtn').classList.toggle('hidden',!isAdmin);document.querySelector('.bottom').style.gridTemplateColumns='repeat(4,1fr)';
   byId('accountBtn').title=result.data.display_name+' • '+result.data.email+' • Sign out';byId('accountInitial').textContent=(result.data.display_name||result.data.email).charAt(0).toUpperCase();
   await loadSharedData();subscribeToChanges();if(isAdmin)await loadAccounts();
 }
