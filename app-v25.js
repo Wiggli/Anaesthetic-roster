@@ -13,6 +13,30 @@ var labourOrderAvailable=true;
 var allocationDrafts={};
 var labourOrderDrafts={};
 var allocationSaveInFlight=false;
+var changesViewPrepared=false;
+
+function prepareChangesView(){
+  if(changesViewPrepared)return;
+  var today=byId('today'),changes=byId('changes'),roster=byId('roster'),changePanel=today&&today.querySelector('.changePanel'),allocation=changePanel&&changePanel.querySelector('.allocationSection'),action=today&&today.querySelector('.actionPanel'),nav=document.querySelector('.bottom');
+  if(!today||!changes||!roster||!changePanel||!allocation||!action||!nav)return;
+  allocation.classList.remove('staffingSection');allocation.classList.add('panel');allocation.querySelector('.stepHeader>span').textContent='✓';allocation.querySelector('.stepHeader h3').textContent='Final allocation and Labour Ward parts';
+  today.insertBefore(allocation,action);
+  var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div');shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="soft rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span></button>';if(myNameLabel)selectedPanel.insertBefore(shortcutRow,myNameLabel);
+  changes.innerHTML='<div class="panel changesDatePanel"><h2>Selected night</h2><div class="grid2"><label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div></label><div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div></div></div>';
+  changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record absences and overtime nurses for the selected night';
+  var historyStep=changePanel.querySelector('.historyStep');if(historyStep)historyStep.textContent='3';
+  changes.appendChild(changePanel);
+  var rosterButton=nav.querySelector('[data-v="roster"]'),changesButton=document.createElement('button');changesButton.type='button';changesButton.setAttribute('data-v','changes');changesButton.setAttribute('aria-label','Staffing changes');changesButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10"></path><path d="m14 4 3 3-3 3"></path><path d="M17 17H7"></path><path d="m10 14-3 3 3 3"></path></svg><span>Changes</span>';
+  nav.insertBefore(changesButton,rosterButton);rosterButton.remove();nav.style.gridTemplateColumns='repeat(3,1fr)';
+  var rosterHeader=document.createElement('div');rosterHeader.className='rosterPageHeader';rosterHeader.innerHTML='<h2>Full roster</h2><button type="button" class="mini" id="closeRosterBtn">Back to Night</button>';roster.insertBefore(rosterHeader,roster.firstChild);
+  byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};changesViewPrepared=true;
+}
+
+function syncDateInputs(date){
+  ['datePick','changesDatePick','breakDatePick'].forEach(function(id){var el=byId(id);if(!el)return;el.min=R[0].date;el.max=R[R.length-1].date;el.value=date});
+  ['prevNightBtn','changesPrevNightBtn','breakPrevNightBtn'].forEach(function(id){var el=byId(id);if(el)el.disabled=idx<=0});
+  ['nextNightBtn','changesNextNightBtn','breakNextNightBtn'].forEach(function(id){var el=byId(id);if(el)el.disabled=idx>=R.length-1});
+}
 
 function cur(){
   var base=localCur();
@@ -136,6 +160,7 @@ function render(){
   }
   syncDateInputs(base.date);renderMyName();renderHeaderSummary(r);
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
+  if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   var alertClass=count<6?'warn':'';
   byId('alerts').innerHTML='<div class="alert '+alertClass+'">'+esc(e.alert)+'</div>'+(plan.unresolved.length?'<div class="alert gold">'+plan.unresolved.length+' allocation'+(plan.unresolved.length===1?' still requires':'s still require')+' overtime cover or a final role decision.</div>':'')+(labourPending?'<div class="alert gold">Labour Ward first and second parts still need to be saved.</div>':'');
@@ -655,12 +680,12 @@ async function authorizeUser(user){
 }
 
 function bind(){
-  initTheme();setupPWA();window.addEventListener('online',function(){updateNetworkStatus();scheduleSharedReload()});window.addEventListener('offline',updateNetworkStatus);
+  initTheme();prepareChangesView();setupPWA();window.addEventListener('online',function(){updateNetworkStatus();scheduleSharedReload()});window.addEventListener('offline',updateNetworkStatus);
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=signOutUser;byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
   byId('saveChangeBtn').onclick=saveNightChange;byId('absentName').onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateOfflineControls()};byId('addOvertimeBtn').onclick=saveOvertime;byId('saveAllocationsBtn').onclick=saveFinalAllocationsV2510;byId('overtimeName').oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','')};byId('overtimeName').onkeydown=function(e){if(e.key==='Enter')saveOvertime()};byId('addAccountBtn').onclick=addAuthorisedAccount;
-  byId('themeBtn').onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
-  byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};
+  byId('themeBtn').onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('changesDatePick').onchange=function(){chooseDate('changesDatePick')};byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
+  byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('changesPrevNightBtn').onclick=function(){changeNight(-1)};byId('changesNextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};
   byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;byId('copyBreaksBtn').onclick=copyBreaks;
   Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(b){b.onclick=emailRoster});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-open]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-open'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
   byId('previewExtendBtn').onclick=previewExtension;byId('extendBtn').onclick=extendRoster;byId('saveTeamVersionBtn').onclick=previewTeamChange;byId('exportBtn').onclick=exportCSV;byId('backupBtn').onclick=backup;
