@@ -10,6 +10,9 @@ var reloadForUpdate=false;
 var pendingRemovals={};
 var labourOrders={};
 var labourOrderAvailable=true;
+var allocationDrafts={};
+var labourOrderDrafts={};
+var allocationSaveInFlight=false;
 
 function cur(){
   var base=localCur();
@@ -153,36 +156,55 @@ function earliestOvertimeAdd(date,name){
   return matches[0]||null;
 }
 
-function updateLabourSecondSummary(){
-  var pick=byId('labourFirstPick'),summary=byId('labourSecondSummary');if(!pick||!summary)return;
-  var names=JSON.parse(pick.getAttribute('data-labour-names')||'[]'),second=names.find(function(name){return name!==pick.value})||'';
-  summary.innerHTML='<b>Second part</b><span>'+esc(second)+' • First break</span>';
+function selectedAllocationId(base,key){
+  var draft=allocationDrafts[base.date]||{};
+  if(Object.prototype.hasOwnProperty.call(draft,key))return draft[key];
+  var assigned=staffingPlan(base).validAssignments.find(function(o){return o.allocation_key===key});
+  return assigned?assigned.id:'';
+}
+
+function allocationPreview(base){
+  var r=applyChanges(base),overtime=overtimeFor(base.date),plan=staffingPlan(base);
+  plan.availableKeys.forEach(function(key){var id=selectedAllocationId(base,key),entry=overtime.find(function(o){return o.id===id});if(entry)r[key]=entry.nurse_name});
+  return r;
+}
+
+function labourRoleIsReady(base,key){
+  var plan=staffingPlan(base);
+  if(plan.availableKeys.indexOf(key)>=0)return!!selectedAllocationId(base,key);
+  return plan.absentKeys.indexOf(key)<0;
+}
+
+function setLabourOrderDraft(base,changedPart){
+  var firstPick=byId('labourFirstPick'),secondPick=byId('labourSecondPick');if(!firstPick||!secondPick)return;
+  var names=JSON.parse(firstPick.getAttribute('data-labour-names')||'[]'),first=firstPick.value,second=secondPick.value;
+  if(changedPart==='first')second=names.find(function(name){return name!==first})||'';
+  else first=names.find(function(name){return name!==second})||'';
+  firstPick.value=first;secondPick.value=second;labourOrderDrafts[base.date]={first:first,second:second};
+  formMessage('allocationFormMessage','Allocations and Labour Ward parts are ready to save.','');
 }
 
 function renderLabourOrder(base,plan){
-  var host=byId('labourOrderStep');if(!host)return;
-  var r=applyChanges(base);
-  if(r.mode==='5'){host.innerHTML='';return}
-  if(!labourOrderAvailable){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="alert warn">Run the Labour Ward order SQL migration in Supabase to save first and second parts across devices.</div></div>';return}
-  if(planIsProvisional(base)){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="time">Complete the required Pager and Reliever allocations first. Their Labour Ward parts can then be divided.</div></div>';return}
-  var names=[r.pager,r.reliever],order=labourOrderFor(r),first=order?order.first_part_name:names[0],second=names.find(function(name){return name!==first})||names[1];
-  host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward order</h3><div class="time">Choose who works the first part. The other Labour Ward nurse will work the second part automatically.</div><label>First part<select id="labourFirstPick" data-labour-names="'+esc(JSON.stringify(names))+'">'+names.map(function(name){return'<option value="'+esc(name)+'" '+(name===first?'selected':'')+'>'+esc(name)+'</option>'}).join('')+'</select></label><div class="labourOrderGrid"><div class="labourOrderResult"><b>First part</b><span>'+esc(first)+' • Second break</span></div><div class="labourOrderResult" id="labourSecondSummary"><b>Second part</b><span>'+esc(second)+' • First break</span></div></div><button class="primary wide" id="saveLabourOrderBtn" type="button">'+(order?'Update':'Save')+' Labour Ward order</button></div>';
-  byId('labourFirstPick').onchange=function(){var firstResult=host.querySelector('.labourOrderResult');if(firstResult)firstResult.innerHTML='<b>First part</b><span>'+esc(this.value)+' • Second break</span>';updateLabourSecondSummary()};
-  byId('saveLabourOrderBtn').onclick=saveLabourOrder;
+  var host=byId('labourOrderStep');if(!host)return false;
+  var r=allocationPreview(base);
+  if(r.mode==='5'||plan.count===5&&plan.coverageKey){host.innerHTML='';return false}
+  if(!labourOrderAvailable){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="alert warn">Run the Labour Ward order SQL migration in Supabase to save first and second parts across devices.</div></div>';return false}
+  if(!labourRoleIsReady(base,'pager')||!labourRoleIsReady(base,'reliever')){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Choose the Pager and Reliever allocations above. The first-part and second-part choices will appear here immediately.</div></div>';return false}
+  var names=[r.pager,r.reliever];
+  if(!names[0]||!names[1]||names[0]===names[1]){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Two different Labour Ward nurses are required before their parts can be divided.</div></div>';return false}
+  var draft=labourOrderDrafts[base.date],stored=labourOrderFor(r),first=draft&&names.indexOf(draft.first)>=0?draft.first:stored?stored.first_part_name:names[0];
+  var second=names.find(function(name){return name!==first})||names[1];labourOrderDrafts[base.date]={first:first,second:second};
+  var options=function(selected){return names.map(function(name){return'<option value="'+esc(name)+'" '+(name===selected?'selected':'')+'>'+esc(name)+'</option>'}).join('')};
+  host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Choose both parts now. These choices will be saved together with the final allocations.</div><div class="labourOrderGrid"><label>First part<select id="labourFirstPick" data-labour-names="'+esc(JSON.stringify(names))+'">'+options(first)+'</select><span class="time">Second break</span></label><label>Second part<select id="labourSecondPick">'+options(second)+'</select><span class="time">First break</span></label></div></div>';
+  byId('labourFirstPick').onchange=function(){setLabourOrderDraft(base,'first')};byId('labourSecondPick').onchange=function(){setLabourOrderDraft(base,'second')};
+  return true;
 }
 
-async function saveLabourOrder(){
-  if(!requireOnline())return;
-  var base=cur(),r=applyChanges(base),pick=byId('labourFirstPick');if(!pick)return;
-  var names=[r.pager,r.reliever],first=pick.value,second=names.find(function(name){return name!==first});
-  if(!first||!second){toast('Both Labour Ward nurses must be allocated first');return}
-  var button=byId('saveLabourOrderBtn');button.disabled=true;button.textContent='Saving…';setSync('saving','Saving Labour Ward order');
-  try{
-    var result=await timedRequest(supa.from('night_labour_order').upsert({roster_date:base.date,first_part_name:first,second_part_name:second,updated_by:currentUserProfile.display_name,updated_at:new Date().toISOString()},{onConflict:'roster_date'}));
-    if(result.error){rpcError(result);return}
-    await loadSharedData();toast(first+' saved for first part • '+second+' saved for second part');
-  }catch(error){setSync('error','Save failed');toast('The Labour Ward order could not be saved. Please try again.');}
-  finally{if(button&&button.isConnected){button.disabled=false;button.textContent='Save Labour Ward order'}}
+function updateAllocationSaveControl(base,plan){
+  var labourReady=renderLabourOrder(base,plan),hasAllocationChoices=overtimeFor(base.date).length&&plan.availableKeys.length,button=byId('saveAllocationsBtn');
+  button.classList.toggle('hidden',!hasAllocationChoices&&!labourReady);
+  if(!allocationSaveInFlight)button.textContent=labourReady?'Save allocations and Labour Ward parts':'Save final allocations';
+  return labourReady;
 }
 
 function renderChanges(base){
@@ -205,18 +227,21 @@ function renderChanges(base){
   else if(extras.length)summary='<b>Core allocations finalised</b><div class="time">'+extras.length+' additional nurse'+(extras.length===1?' remains':'s remain')+' available as required.</div>';
   else summary='<b>Required allocations finalised</b><div class="time">The reliever and overtime allocations are complete.</div>';
   byId('allocationSummary').innerHTML=summary;
+  var allocationDraft=allocationDrafts[base.date]||{};
   byId('allocationList').innerHTML=overtime.length&&plan.availableKeys.length?plan.availableKeys.map(function(key){
     var assigned=plan.validAssignments.find(function(o){return o.allocation_key===key});
-    var options='<option value="">To decide during the shift</option>'+overtime.map(function(o){return '<option value="'+esc(o.id)+'" '+(assigned&&assigned.id===o.id?'selected':'')+'>'+esc(o.nurse_name)+'</option>'}).join('');
+    var selectedId=Object.prototype.hasOwnProperty.call(allocationDraft,key)?allocationDraft[key]:(assigned?assigned.id:'');
+    var options='<option value="" '+(!selectedId?'selected':'')+'>To decide during the shift</option>'+overtime.map(function(o){return '<option value="'+esc(o.id)+'" '+(selectedId===o.id?'selected':'')+'>'+esc(o.nurse_name)+'</option>'}).join('');
     return '<div class="allocationRow"><div><div class="allocationRole">'+esc(allocationLabel(key))+'</div><div class="allocationBreak">'+esc(allocationBreak(key))+'</div></div><select data-final-allocation="'+esc(key)+'" aria-label="Choose nurse for '+esc(allocationLabel(key))+'">'+options+'</select></div>';
   }).join(''):plan.requiresCoverageChoice?'<div class="time">The overtime choices will appear after the reliever allocation is saved.</div>':'<div class="time">There are no required allocations to finalise.</div>';
-  byId('saveAllocationsBtn').classList.toggle('hidden',!overtime.length||!plan.availableKeys.length);
-  renderLabourOrder(base,plan);
+  var labourReady=updateAllocationSaveControl(base,plan);
+  if(!overtime.length&&labourReady)byId('allocationSummary').innerHTML='<b>No overtime allocation required</b><div class="time">Choose the Labour Ward first and second parts below, then save them together.</div>';
   var visible=expanded?history:history.slice(0,15);
   byId('changeHistory').innerHTML=history.length?visible.map(function(h){return '<div class="historyItem"><div><span class="historyType '+esc(h.type)+'">'+esc(h.label)+'</span><b>'+esc(h.title)+'</b></div><div class="changeMeta">'+esc(h.detail||'')+' • '+esc(h.changed_by||'Shift member')+' • '+esc(shortTime(h.changed_at))+'</div></div>'}).join('')+(history.length>15?'<button class="historyMore" id="historyMoreBtn" type="button">'+(expanded?'Show recent changes':'Show full history ('+history.length+')')+'</button>':''):'<div class="time">No staffing change history for this night.</div>';
   Array.prototype.forEach.call(document.querySelectorAll('[data-remove-change]'),function(b){b.onclick=function(){removeNightChange(b.getAttribute('data-remove-change'),b)}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-edit-change]'),function(b){b.onclick=function(){editNightChange(b.getAttribute('data-edit-change'))}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-remove-overtime]'),function(b){b.onclick=function(){removeOvertime(b.getAttribute('data-remove-overtime'),b)}});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-final-allocation]'),function(select){select.onchange=function(){var date=base.date,key=select.getAttribute('data-final-allocation');if(!allocationDrafts[date])allocationDrafts[date]={};allocationDrafts[date][key]=select.value;updateAllocationSaveControl(base,plan);formMessage('allocationFormMessage',byId('labourFirstPick')?'Allocations and Labour Ward parts are ready to save.':'Selections ready to save.','')}});
   var coverButton=byId('saveFiveCoverBtn');if(coverButton)coverButton.onclick=saveFiveCover;
   var more=byId('historyMoreBtn');if(more)more.onclick=function(){historyExpandedDates[base.date]=!expanded;renderChanges(base)};
   updateOfflineControls();
@@ -472,34 +497,54 @@ async function saveAllocationsCompatibility(base,chosen,writeHistory){
   return{error:null,compatibility:true};
 }
 
-async function saveFinalAllocations(){
-  if(!requireOnline())return;
-  var base=cur(),selects=Array.prototype.slice.call(document.querySelectorAll('[data-final-allocation]')),chosen={},used={};
-  for(var i=0;i<selects.length;i++){
-    var key=selects[i].getAttribute('data-final-allocation'),id=selects[i].value;if(!id)continue;
-    if(used[id]){toast('The same overtime nurse cannot be placed in two allocations');return}used[id]=true;chosen[key]=id;
-  }
-  var chosenCount=Object.keys(chosen).length;
-  if(!chosenCount){toast('Choose at least one nurse allocation before saving');return}
-  setSync('saving','Saving '+chosenCount+' allocation'+(chosenCount===1?'':'s'));byId('saveAllocationsBtn').disabled=true;byId('saveAllocationsBtn').textContent='Saving…';
+async function saveFinalAllocationsV2510(event){
+  if(event&&event.preventDefault)event.preventDefault();
+  if(allocationSaveInFlight)return false;
+  var button=byId('saveAllocationsBtn'),base,chosen={},used={},chosenCount=0,labourChoice=null;
+  formMessage('allocationFormMessage','Preparing your allocations…','');
   try{
-    var result=await timedRequest(supa.rpc('apply_staffing_allocations_v25',{p_roster_date:base.date,p_action:'allocations',p_coverage_key:null,p_assignments:chosen,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever}));
-    var usedCompatibility=false;
-    if(missingRpc(result)){result=await timedRequest(saveAllocationsCompatibility(base,chosen,true));usedCompatibility=true}
-    if(rpcError(result))return;
-    if(!usedCompatibility){
-      var check=await timedRequest(readStoredAllocations(base.date,chosen));
-      if(check.error){rpcError(check);return}
-      if(!check.matches){
-        result=await timedRequest(saveAllocationsCompatibility(base,chosen,false));
-        if(rpcError(result))return;
+    if(!requireOnline()){formMessage('allocationFormMessage','Reconnect to the internet, then press Save final allocations again.','error');return false}
+    base=cur();
+    var selects=Array.prototype.slice.call(document.querySelectorAll('[data-final-allocation]'));
+    for(var i=0;i<selects.length;i++){
+      var key=selects[i].getAttribute('data-final-allocation'),id=selects[i].value;if(!id)continue;
+      if(used[id]){formMessage('allocationFormMessage','Choose a different nurse for each allocation.','error');toast('The same overtime nurse cannot be placed in two allocations');return false}used[id]=true;chosen[key]=id;
+    }
+    chosenCount=Object.keys(chosen).length;
+    var firstPick=byId('labourFirstPick'),secondPick=byId('labourSecondPick');
+    if(firstPick||secondPick){
+      var first=firstPick&&firstPick.value,second=secondPick&&secondPick.value;
+      if(!first||!second||first===second){formMessage('allocationFormMessage','Choose two different nurses for the Labour Ward first and second parts.','error');toast('Complete both Labour Ward parts before saving');return false}
+      labourChoice={first:first,second:second};
+    }
+    if(!chosenCount&&!labourChoice){formMessage('allocationFormMessage','Choose at least one allocation or complete the Labour Ward parts before saving.','error');toast('Nothing has been selected to save');return false}
+    allocationSaveInFlight=true;setSync('saving','Saving tonight\'s allocations');button.disabled=true;button.textContent='Saving…';formMessage('allocationFormMessage',labourChoice?'Saving allocations and Labour Ward parts…':'Saving '+chosenCount+' allocation'+(chosenCount===1?'':'s')+'…','');
+    if(chosenCount){
+      var result=await timedRequest(supa.rpc('apply_staffing_allocations_v25',{p_roster_date:base.date,p_action:'allocations',p_coverage_key:null,p_assignments:chosen,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever}));
+      var usedCompatibility=false;
+      if(missingRpc(result)){result=await timedRequest(saveAllocationsCompatibility(base,chosen,true));usedCompatibility=true}
+      if(rpcError(result,'allocationFormMessage'))return false;
+      if(!usedCompatibility){
+        var check=await timedRequest(readStoredAllocations(base.date,chosen));
+        if(check.error){rpcError(check,'allocationFormMessage');return false}
+        if(!check.matches){
+          result=await timedRequest(saveAllocationsCompatibility(base,chosen,false));
+          if(rpcError(result,'allocationFormMessage'))return false;
+        }
       }
     }
-    await loadSharedData();var plan=staffingPlan(cur()),saved=chosenCount-plan.unresolved.filter(function(key){return Object.prototype.hasOwnProperty.call(chosen,key)}).length;
-    toast(plan.unresolved.length?saved+' allocation'+(saved===1?'':'s')+' saved • '+plan.unresolved.length+' still to decide':additionalNurses(plan).length?'Core allocations saved; additional staff remain as required':'Required allocations finalised');
-  }catch(error){setSync('error','Save failed');toast('The allocations could not be confirmed. Your selections remain available to retry.');}
-  finally{byId('saveAllocationsBtn').disabled=false;byId('saveAllocationsBtn').textContent='Save final allocations';updateOfflineControls()}
+    if(labourChoice){
+      var labourResult=await timedRequest(supa.from('night_labour_order').upsert({roster_date:base.date,first_part_name:labourChoice.first,second_part_name:labourChoice.second,updated_by:currentUserProfile.display_name,updated_at:new Date().toISOString()},{onConflict:'roster_date'}));
+      if(rpcError(labourResult,'allocationFormMessage'))return false;
+    }
+    delete allocationDrafts[base.date];delete labourOrderDrafts[base.date];await loadSharedData();var plan=staffingPlan(baseForDate(base.date)),saved=chosenCount-plan.unresolved.filter(function(key){return Object.prototype.hasOwnProperty.call(chosen,key)}).length;
+    var success=plan.unresolved.length?(saved?saved+' allocation'+(saved===1?'':'s')+' saved':'Labour Ward parts saved')+' • '+plan.unresolved.length+' still to decide':labourChoice&&chosenCount?'Allocations and Labour Ward parts saved':labourChoice?'Labour Ward first and second parts saved':additionalNurses(plan).length?'Core allocations saved; additional staff remain as required':'Required allocations finalised';
+    formMessage('allocationFormMessage',success,'success');toast(success);return false;
+  }catch(error){setSync('error','Save failed');formMessage('allocationFormMessage','Save stopped: '+(error&&error.message==='timeout'?'the connection timed out. Your selections are still here, so please try again.':'the allocations could not be confirmed. Your selections are still here, so please try again.'),'error');toast('The allocations could not be saved. Your selections remain available to retry.');return false}
+  finally{allocationSaveInFlight=false;if(button&&button.isConnected){button.disabled=false;button.textContent=byId('labourFirstPick')?'Save allocations and Labour Ward parts':'Save final allocations'}updateOfflineControls()}
 }
+
+function saveFinalAllocations(event){return saveFinalAllocationsV2510(event)}
 
 async function loadNightHistory(date,renderAfter){
   if(!date||historyLoadingDates[date])return;
@@ -613,7 +658,7 @@ function bind(){
   initTheme();setupPWA();window.addEventListener('online',function(){updateNetworkStatus();scheduleSharedReload()});window.addEventListener('offline',updateNetworkStatus);
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=signOutUser;byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
-  byId('saveChangeBtn').onclick=saveNightChange;byId('absentName').onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateOfflineControls()};byId('addOvertimeBtn').onclick=saveOvertime;byId('saveAllocationsBtn').onclick=saveFinalAllocations;byId('overtimeName').oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','')};byId('overtimeName').onkeydown=function(e){if(e.key==='Enter')saveOvertime()};byId('addAccountBtn').onclick=addAuthorisedAccount;
+  byId('saveChangeBtn').onclick=saveNightChange;byId('absentName').onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateOfflineControls()};byId('addOvertimeBtn').onclick=saveOvertime;byId('saveAllocationsBtn').onclick=saveFinalAllocationsV2510;byId('overtimeName').oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','')};byId('overtimeName').onkeydown=function(e){if(e.key==='Enter')saveOvertime()};byId('addAccountBtn').onclick=addAuthorisedAccount;
   byId('themeBtn').onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
   byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};
   byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;byId('copyBreaksBtn').onclick=copyBreaks;
