@@ -7,6 +7,7 @@ var sharedReloadPending=false;
 var reloadTimer=null;
 var updateRegistration=null;
 var reloadForUpdate=false;
+var pendingRemovals={};
 
 function cur(){
   var base=localCur();
@@ -162,9 +163,9 @@ function renderChanges(base){
   byId('saveAllocationsBtn').classList.toggle('hidden',!overtime.length||!plan.availableKeys.length);
   var visible=expanded?history:history.slice(0,15);
   byId('changeHistory').innerHTML=history.length?visible.map(function(h){return '<div class="historyItem"><div><span class="historyType '+esc(h.type)+'">'+esc(h.label)+'</span><b>'+esc(h.title)+'</b></div><div class="changeMeta">'+esc(h.detail||'')+' • '+esc(h.changed_by||'Shift member')+' • '+esc(shortTime(h.changed_at))+'</div></div>'}).join('')+(history.length>15?'<button class="historyMore" id="historyMoreBtn" type="button">'+(expanded?'Show recent changes':'Show full history ('+history.length+')')+'</button>':''):'<div class="time">No staffing change history for this night.</div>';
-  Array.prototype.forEach.call(document.querySelectorAll('[data-remove-change]'),function(b){b.onclick=function(){removeNightChange(b.getAttribute('data-remove-change'))}});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-remove-change]'),function(b){b.onclick=function(){removeNightChange(b.getAttribute('data-remove-change'),b)}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-edit-change]'),function(b){b.onclick=function(){editNightChange(b.getAttribute('data-edit-change'))}});
-  Array.prototype.forEach.call(document.querySelectorAll('[data-remove-overtime]'),function(b){b.onclick=function(){removeOvertime(b.getAttribute('data-remove-overtime'))}});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-remove-overtime]'),function(b){b.onclick=function(){removeOvertime(b.getAttribute('data-remove-overtime'),b)}});
   var coverButton=byId('saveFiveCoverBtn');if(coverButton)coverButton.onclick=saveFiveCover;
   var more=byId('historyMoreBtn');if(more)more.onclick=function(){historyExpandedDates[base.date]=!expanded;renderChanges(base)};
   updateOfflineControls();
@@ -319,14 +320,25 @@ async function saveNightChange(){
   finally{byId('saveChangeBtn').textContent='Save absence';updateOfflineControls()}
 }
 
-async function removeNightChange(id){
+function recordAlreadyRemoved(result){
+  if(!result||!result.error)return false;
+  var message=(result.error.message||'').toLowerCase();
+  return message.indexOf('no longer exists')>=0||message.indexOf('not found')>=0;
+}
+
+async function removeNightChange(id,button){
   if(!requireOnline())return;
+  if(pendingRemovals[id])return;
   var base=cur(),item=changesFor(base.date).find(function(c){return c.id===id});
   if(!item||!confirm('Remove '+item.absent_name+' from the absence list for '+fmt(base.date)+'?'))return;
-  setSync('saving','Removing absence');
-  var allocationKey=allocationKeyForName(base,item.absent_name);
-  var result=await supa.rpc('remove_night_absence_v25',{p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name});
-  if(rpcError(result))return;await loadSharedData();toast('Absence removed');
+  pendingRemovals[id]=true;if(button){button.disabled=true;button.textContent='Removing…'}setSync('saving','Removing absence');
+  try{
+    var allocationKey=allocationKeyForName(base,item.absent_name);
+    var result=await timedRequest(supa.rpc('remove_night_absence_v25',{p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name}));
+    if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
+    await loadSharedData();toast(recordAlreadyRemoved(result)?'Absence was already removed and the list has been refreshed':'Absence removed');
+  }catch(error){setSync('error','Remove failed');toast('The absence could not be removed. Please try again.');}
+  finally{delete pendingRemovals[id];if(button&&button.isConnected){button.disabled=false;button.textContent='Remove'}}
 }
 
 async function saveOvertime(){
@@ -335,6 +347,8 @@ async function saveOvertime(){
   if(!name){markInvalid('overtimeName',true);formMessage('overtimeFormMessage','Type the overtime nurse\'s name before adding.','error');toast('Type the overtime nurse\'s name first');byId('overtimeName').focus();return}
   if(activeNames(base).some(function(n){return n.toLowerCase()===name.toLowerCase()})){formMessage('overtimeFormMessage',name+' is already rostered for this night.','error');toast(name+' is already assigned on this night');return}
   if(overtimeFor(base.date).some(function(o){return o.nurse_name.toLowerCase()===name.toLowerCase()})){formMessage('overtimeFormMessage',name+' is already on the overtime list.','error');toast(name+' is already listed for overtime');return}
+  var similar=overtimeFor(base.date).find(function(o){var a=o.nurse_name.trim().toLowerCase(),b=name.toLowerCase();return a.indexOf(b+' ')===0||b.indexOf(a+' ')===0});
+  if(similar&&!confirm(name+' may be the same person as '+similar.nurse_name+'. Add both names as separate overtime nurses?')){formMessage('overtimeFormMessage','Check the existing entry for '+similar.nurse_name+' before adding another name.','error');return}
   markInvalid('overtimeName',false);formMessage('overtimeFormMessage','Adding '+name+'…','');
   setSync('saving','Adding overtime nurse');byId('addOvertimeBtn').disabled=true;byId('addOvertimeBtn').textContent='Adding…';
   try{
@@ -348,12 +362,18 @@ async function saveOvertime(){
   finally{byId('addOvertimeBtn').textContent='Add overtime';updateOfflineControls()}
 }
 
-async function removeOvertime(id){
+async function removeOvertime(id,button){
   if(!requireOnline())return;
+  if(pendingRemovals[id])return;
   var base=cur(),entry=overtimeFor(base.date).find(function(o){return o.id===id});
   if(!entry||!confirm('Remove '+entry.nurse_name+' from tonight\'s overtime list?'))return;
-  var result=await supa.rpc('remove_night_overtime_v25',{p_overtime_id:id,p_changed_by:currentUserProfile.display_name});
-  if(rpcError(result))return;await loadSharedData();toast(entry.nurse_name+' removed from overtime');
+  pendingRemovals[id]=true;if(button){button.disabled=true;button.textContent='Removing…'}setSync('saving','Removing overtime nurse');
+  try{
+    var result=await timedRequest(supa.rpc('remove_night_overtime_v25',{p_overtime_id:id,p_changed_by:currentUserProfile.display_name}));
+    if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
+    await loadSharedData();toast(recordAlreadyRemoved(result)?entry.nurse_name+' was already removed and the list has been refreshed':entry.nurse_name+' removed from overtime');
+  }catch(error){setSync('error','Remove failed');toast('The overtime nurse could not be removed. Please try again.');}
+  finally{delete pendingRemovals[id];if(button&&button.isConnected){button.disabled=false;button.textContent='Remove'}}
 }
 
 async function saveFiveCover(){
