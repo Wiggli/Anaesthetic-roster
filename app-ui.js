@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V26.0 staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V26.1 staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -53,7 +53,7 @@ function prepareChangesView(){
   if(changesViewPrepared)return;
   var today=byId('today'),changes=byId('changes'),roster=byId('roster'),changePanel=today&&today.querySelector('.changePanel'),allocation=changePanel&&changePanel.querySelector('.allocationSection'),action=today&&today.querySelector('.actionPanel'),nav=document.querySelector('.bottom');
   if(!today||!changes||!roster||!changePanel||!allocation||!action||!nav)return;
-  var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div');shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="soft rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span></button><button type="button" class="soft smartNightBtn" id="smartNightBtn">Open current / next night</button>';if(myNameLabel)selectedPanel.insertBefore(shortcutRow,myNameLabel);
+  var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div');shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="soft rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span></button><button type="button" class="soft rosterShortcutBtn smartNightBtn" id="smartNightBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg><span>Return to roster night</span></button>';if(myNameLabel)selectedPanel.insertBefore(shortcutRow,myNameLabel);
   changes.innerHTML='<div class="panel changesDatePanel"><h2>Selected night</h2><div class="grid2"><label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current / next night</button></label><div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div></div></div>';
   changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record the people first, then complete only the decisions that remain';
   changes.appendChild(changePanel);
@@ -97,8 +97,21 @@ function startingIndex(value){
   return i>-1?i:Math.max(0,R.length-1);
 }
 
+function automaticNightState(value){
+  var autoIndex=startingIndex(value),clock=maltaDateParts(value),target=operationalRosterDate(value),isCurrent=R[autoIndex]&&R[autoIndex].date===target&&(clock.hour<7||clock.hour>=19),selected=idx===autoIndex;
+  return{index:autoIndex,isCurrent:isCurrent,selected:selected,label:selected?(isCurrent?'Current night selected':'Next night selected'):(isCurrent?'Return to current night':'Return to next roster night')};
+}
+
+function updateSmartNightButtons(){
+  var state=automaticNightState();
+  ['smartNightBtn','changesSmartNightBtn'].forEach(function(id){
+    var button=byId(id);if(!button)return;var label=button.querySelector('span');if(label)label.textContent=state.label;else button.textContent=state.label;
+    button.disabled=state.selected;button.classList.toggle('nightSelected',state.selected);button.setAttribute('aria-label',state.label);
+  });
+}
+
 function renderHeaderSummary(r){
-  var autoIndex=startingIndex(),target=operationalRosterDate(),clock=maltaDateParts(),isCurrent=R[autoIndex]&&R[autoIndex].date===target&&(clock.hour<7||clock.hour>=19),label=idx===autoIndex?(isCurrent?'Current night':'Next night'):'Selected',count=r.understaffedCount||staffingPlan(baseForDate(r.date)).count;
+  var state=automaticNightState(),label=state.selected?(state.isCurrent?'Current night':'Next night'):'Selected',count=r.understaffedCount||staffingPlan(baseForDate(r.date)).count;
   byId('headerDateChip').textContent=label+' · '+fmt(r.date);byId('headerModeChip').textContent=count+' nurses';byId('headerModeChip').className='headerChip headerModeChip mode'+r.mode;
 }
 
@@ -301,7 +314,7 @@ function render(){
     roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
     roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
   }
-  syncDateInputs(base.date);renderMyName();renderHeaderSummary(r);
+  syncDateInputs(base.date);renderMyName();renderHeaderSummary(r);updateSmartNightButtons();
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
   if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
