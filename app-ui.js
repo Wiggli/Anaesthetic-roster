@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V26.1 staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V26.2 staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -106,8 +106,9 @@ function updateSmartNightButtons(){
   var state=automaticNightState();
   ['smartNightBtn','changesSmartNightBtn'].forEach(function(id){
     var button=byId(id);if(!button)return;var label=button.querySelector('span');if(label)label.textContent=state.label;else button.textContent=state.label;
-    button.disabled=state.selected;button.classList.toggle('nightSelected',state.selected);button.setAttribute('aria-label',state.label);
+    button.disabled=state.selected;button.classList.toggle('hidden',state.selected);button.setAttribute('aria-label',state.label);
   });
+  var shortcut=byId('smartNightBtn'),row=shortcut&&shortcut.closest('.rosterShortcutRow');if(row)row.classList.toggle('singleShortcut',state.selected);
 }
 
 function renderHeaderSummary(r){
