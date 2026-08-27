@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V31.0 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V31.1 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -23,6 +23,7 @@ var automaticSelectedDate=null;
 var lastResumeRefresh=0;
 
 var RELEASE_HISTORY=[
+  {version:'31.1',date:'28 Aug 2026',title:'Simplified Labour Ward workflow',changes:['Pager now takes Labour Ward first part and second break automatically, with no separate first-part selector to complete.','Reliever now takes Labour Ward second part and first break automatically.','The single Change tonight’s roles editor remains available for agreed night-only swaps across any core allocation.','Allocation instructions no longer ask staff to divide Labour Ward manually.','The complete motto now wraps cleanly on narrow phone screens instead of being cropped.']},
   {version:'31.0',date:'27 Aug 2026',title:'Automatic night roles and clearer summary',changes:['On a standard six-nurse night, the rostered Pager now automatically works Labour Ward first part and takes second break.','The rostered Reliever automatically works Labour Ward second part and takes first break, while an agreed swap can still be saved for that night only.','A new night-only role editor can swap any two core allocations without changing the permanent rotation or later nights.','Night summary now shows nurses, absences, overtime and outstanding tasks in a clearly tappable two-by-two layout.','First Part, Second Part, Pager and Reliever now use role-specific symbols that directly match their meaning.']},
   {version:'30.1',date:'27 Aug 2026',title:'Complete release history',changes:['The update window now keeps a scrollable history of recent releases instead of replacing the previous notes.','Release notes use smaller, more readable mobile typography with the newest version shown first.','Every future entry can describe its actual changes while all earlier entries remain available below it.']},
   {version:'30.0',date:'27 Aug 2026',title:'Unified mobile interface',changes:['Night, Changes and Breaks now share one consistent light design system, with a coherent dark mode when deliberately enabled.','A new matching line-icon family is used for the bottom tabs, staffing summaries and allocation roles.','All summary cards are clearly interactive and open the relevant staffing, allocation or confirmation step.','Workflow steps always retain the numbers 1, 2 and 3, with a separate tick showing completed stages.','The Changes date and staffing controls remain compact and side by side on mobile screens.']},
@@ -393,8 +394,7 @@ function labourOrderFor(r){
 }
 
 function ensureAutomaticLabourOrder(base,r){
-  if(!r||r.mode==='5'||planIsProvisional(base)||labourOrderDrafts[base.date])return;
-  var stored=labourOrders[base.date];if(stored){var expected=[String(r.pager).toLowerCase(),String(r.reliever).toLowerCase()].sort().join('|'),saved=[String(stored.first_part_name).toLowerCase(),String(stored.second_part_name).toLowerCase()].sort().join('|');if(expected===saved)return}
+  if(!r||r.mode==='5'||planIsProvisional(base))return;
   labourOrderDrafts[base.date]={first:r.pager,second:r.reliever,automatic:true};
 }
 
@@ -569,20 +569,11 @@ function renderLabourOrder(base,plan){
   var host=byId('labourOrderStep');if(!host)return false;
   var r=allocationPreview(base);
   if(r.mode==='5'||plan.count===5&&plan.coverageKey){host.innerHTML='';return false}
-  if(!labourOrderAvailable){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="alert warn">Run the Labour Ward order SQL migration in Supabase to save first and second parts across devices.</div></div>';return false}
   if(!labourRoleIsReady(base,'pager')||!labourRoleIsReady(base,'reliever')){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Choose the Pager and Reliever allocations above. The first-part and second-part choices will appear here immediately.</div></div>';return false}
   var names=[r.pager,r.reliever];
   if(!names[0]||!names[1]||names[0]===names[1]){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Two different Labour Ward nurses are required before their parts can be divided.</div></div>';return false}
-  var draft=labourOrderDrafts[base.date],editing=draft&&!draft.automatic,stored=labourOrderFor(r),first=draft&&names.indexOf(draft.first)>=0?draft.first:stored?stored.first_part_name:names[0];
-  var second=names.find(function(name){return name!==first})||names[1];
-  if(!editing){
-    host.innerHTML='<div class="labourOrderBox automatic"><div class="labourOrderHeading"><div><h3>Labour Ward order</h3><span>'+(stored&&stored.automatic?'Automatic from roster roles':'Changed for this night')+'</span></div><button type="button" class="soft" id="changeLabourOrderBtn">Change</button></div><div class="labourOrderGrid"><div class="labourOrderResult"><b>First part · Pager</b><span>'+esc(first)+' · Second break</span></div><div class="labourOrderResult"><b>Second part · Reliever</b><span>'+esc(second)+' · First break</span></div></div></div>';
-    byId('changeLabourOrderBtn').onclick=function(){labourOrderDrafts[base.date]={first:first,second:second,automatic:false};renderChanges(base)};return false;
-  }
-  var options=names.map(function(name,index){return'<option value="'+esc(name)+'" '+(name===first?'selected':'')+'>'+esc(name)+' • '+(index===0?'Pager':'Reliever')+'</option>'}).join('');
-  host.innerHTML='<div class="labourOrderBox"><h3>Change Labour Ward order for this night</h3><div class="time">Pager is first and Reliever is second by default. Change this only when the two nurses agree a different order.</div><label>Who works the first part?<select id="labourFirstPick" data-labour-names="'+esc(JSON.stringify(names))+'">'+options+'</select></label><div class="labourOrderGrid"><div class="labourOrderResult" id="labourFirstResult"><b>First part</b><span>'+esc(first)+' • Second break</span></div><div class="labourOrderResult" id="labourSecondResult"><b>Second part</b><span>'+esc(second)+' • First break</span></div></div></div>';
-  byId('labourFirstPick').onchange=function(){setLabourOrderDraft(base)};
-  return true;
+  host.innerHTML='<div class="labourOrderBox automatic"><div class="labourOrderHeading"><div><h3>Labour Ward order</h3><span>Set automatically from roster roles</span></div></div><div class="labourOrderGrid"><div class="labourOrderResult"><b>First part · Pager</b><span>'+esc(r.pager)+' · Second break</span></div><div class="labourOrderResult"><b>Second part · Reliever</b><span>'+esc(r.reliever)+' · First break</span></div></div><div class="labourAutomaticHint">To change the people, use <b>Change tonight’s roles</b> above.</div></div>';
+  return false;
 }
 
 function updateAllocationSaveControl(base,plan){
@@ -639,7 +630,6 @@ function renderChanges(base){
     return '<div class="allocationRow"><div><div class="allocationRole">'+esc(allocationLabel(key))+'</div><div class="allocationBreak">'+esc(allocationBreak(key))+'</div></div><select data-final-allocation="'+esc(key)+'" aria-label="Choose nurse for '+esc(allocationLabel(key))+'">'+options+'</select></div>';
   }).join(''):plan.requiresCoverageChoice?'<div class="time">The overtime choices will appear after the reliever allocation is saved.</div>':plan.requiresSeventhDecision?'<div class="time">Choose the seventh-nurse option above. The correct overtime allocation will then appear here.</div>':'<div class="time">There are no required allocations to finalise.</div>';
   var labourReady=updateAllocationSaveControl(base,plan);renderOvertimeSuggestions();
-  if(!overtime.length&&labourReady)byId('allocationSummary').innerHTML='<b>No overtime allocation required</b><div class="time">Choose the Labour Ward first and second parts below, then save them together.</div>';
   var visible=expanded?history:history.slice(0,15);
   byId('changeHistory').innerHTML=history.length?visible.map(function(h){return '<div class="historyItem"><div><span class="historyType '+esc(h.type)+'">'+esc(h.label)+'</span><b>'+esc(h.title)+'</b></div><div class="changeMeta">'+esc(h.detail||'')+' • '+esc(h.changed_by||'Shift member')+' • '+esc(shortTime(h.changed_at))+'</div></div>'}).join('')+(history.length>15?'<button class="historyMore" id="historyMoreBtn" type="button">'+(expanded?'Show recent changes':'Show full history ('+history.length+')')+'</button>':''):'<div class="time">No staffing change history for this night.</div>';
   Array.prototype.forEach.call(document.querySelectorAll('[data-remove-change]'),function(b){b.onclick=function(){removeNightChange(b.getAttribute('data-remove-change'),b)}});
