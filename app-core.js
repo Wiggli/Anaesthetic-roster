@@ -1,12 +1,12 @@
-/* Anaesthetic Night Roster V30.1 core and roster foundation. */
+/* Anaesthetic Night Roster V31.0 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = ["shaun.galea.1@gov.mt", "michael.b.galea@gov.mt", "michael.a.debono@gov.mt", "yentl.cutajar.2@gov.mt", "james.galea@gov.mt"];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '30.1';
-var EXPECTED_SCHEMA_VERSION = 26;
+var APP_VERSION = '31.0';
+var EXPECTED_SCHEMA_VERSION = 31;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY) : null;
 var currentUser = null;
 var currentUserProfile = null;
@@ -14,6 +14,7 @@ var nightChanges = {};
 var nightOvertime = {};
 var changeHistory = {};
 var overtimeHistory = {};
+var roleOverrideHistory = {};
 var fiveCoverChoices = {};
 var authorisedAccounts = [];
 var changesChannel = null;
@@ -25,6 +26,7 @@ var activeAdminTab='overview';
 var appSettings={id:1,email_recipients:EMAIL_RECIPIENTS.slice(),shift_start:'19:00',shift_end:'07:00'};
 var schemaVersion=0;
 var nightPlanStatuses={};
+var nightRoleOverrides={};
 var lastSuccessfulSyncAt=null;
 var ORIGINAL_REFERENCE={first:'2026-06-30',last:'2027-12-30',nights:138,transitions:137,hash:'9f1d88bc'};
 var rosterSettings={id:1,published_until:'2027-12-30',updated_by:'Verified original roster',updated_at:null};
@@ -62,7 +64,7 @@ function highlightNamed(rootId,selector){var n=myName();if(!n)return;Array.proto
 function renderMyName(){var el=byId('myNamePick'),selected=myName(),profileName=currentUserProfile&&currentUserProfile.display_name?currentUserProfile.display_name:'';if(!selected&&profileName){var match=TEAM.find(function(n){return n.toLowerCase()===profileName.toLowerCase()});if(match){selected=match;localStorage.setItem('anaes_my_name',match)}}var options='<option value="">Choose your name</option>'+TEAM.map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>'}).join('');el.innerHTML=options;el.value=TEAM.indexOf(selected)>-1?selected:''}
 function fiveArrangementHtml(r){if(r.mode!=='5')return'';if(r.understaffedCount<5)return'<div class="arrangement"><h3>Cover still required</h3><p class="time">Only '+esc(r.understaffedCount)+' nurses are currently recorded. The final five-person allocation and break plan will appear automatically after sufficient overtime cover is added and allocated.</p></div>';return'<div class="arrangement"><h3>Reduced staffing arrangement</h3><p class="time">Five nurses tonight'+(r.automaticAbsence?' • '+esc(r.automaticAbsence)+' unavailable without replacement':'')+' • One nurse covers Labour Ward / Pager for the full night</p><div class="role rFull '+(isMine(r.fullLW)?'mine':'')+'"><div class="badge bFull">Full LW / Pager</div><div><div class="name">'+esc(r.fullLW)+'</div><div class="time">Covers Labour Ward / Pager 00:00–07:00 and takes a break when safe</div></div></div></div>'}
 function shortTime(value){return value?new Date(value).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''}
-function staffingHistoryFor(date){var absence=(changeHistory[date]||[]).map(function(h){return{type:'absence',label:'Absence',title:(h.action==='removed'?'Removed absence for ':'Recorded absence for ')+(h.absent_name||'nurse'),detail:h.reason||'Absence',changed_by:h.changed_by,changed_at:h.changed_at}}),overtime=(overtimeHistory[date]||[]).map(function(h){var previous=h.previous_allocation_key?allocationLabel(h.previous_allocation_key):'Awaiting allocation',next=h.allocation_key?allocationLabel(h.allocation_key):'Awaiting allocation',type=h.action==='allocated'||h.action==='reallocated'||h.action==='unallocated'?'allocation':'overtime',title=h.action==='removed'?'Removed '+h.nurse_name+' from overtime':h.action==='added'?'Added '+h.nurse_name+' for overtime':h.action==='allocated'?'Allocated '+h.nurse_name+' to '+next:h.action==='reallocated'?'Moved '+h.nurse_name+' from '+previous+' to '+next:'Returned '+h.nurse_name+' to awaiting allocation';return{type:type,label:type==='allocation'?'Allocation':'Overtime',title:title,detail:type==='allocation'?previous+' → '+next:'Overtime staffing',changed_by:h.changed_by,changed_at:h.changed_at}});return absence.concat(overtime).sort(function(a,b){return new Date(b.changed_at)-new Date(a.changed_at)})}
+function staffingHistoryFor(date){var absence=(changeHistory[date]||[]).map(function(h){return{type:'absence',label:'Absence',title:(h.action==='removed'?'Removed absence for ':'Recorded absence for ')+(h.absent_name||'nurse'),detail:h.reason||'Absence',changed_by:h.changed_by,changed_at:h.changed_at}}),overtime=(overtimeHistory[date]||[]).map(function(h){var previous=h.previous_allocation_key?allocationLabel(h.previous_allocation_key):'Awaiting allocation',next=h.allocation_key?allocationLabel(h.allocation_key):'Awaiting allocation',type=h.action==='allocated'||h.action==='reallocated'||h.action==='unallocated'?'allocation':'overtime',title=h.action==='removed'?'Removed '+h.nurse_name+' from overtime':h.action==='added'?'Added '+h.nurse_name+' for overtime':h.action==='allocated'?'Allocated '+h.nurse_name+' to '+next:h.action==='reallocated'?'Moved '+h.nurse_name+' from '+previous+' to '+next:'Returned '+h.nurse_name+' to awaiting allocation';return{type:type,label:type==='allocation'?'Allocation':'Overtime',title:title,detail:type==='allocation'?previous+' → '+next:'Overtime staffing',changed_by:h.changed_by,changed_at:h.changed_at}}),roles=(roleOverrideHistory[date]||[]).map(function(h){return{type:'allocation',label:'Night roles',title:h.action==='reset'?'Restored the calculated roster':'Saved a night-only role arrangement',detail:h.reason||'Agreed night arrangement',changed_by:h.changed_by,changed_at:h.changed_at}});return absence.concat(overtime,roles).sort(function(a,b){return new Date(b.changed_at)-new Date(a.changed_at)})}
 function applyTheme(dark){document.body.classList.toggle('dark',dark);byId('themeBtn').innerHTML=dark?'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2z"></path></svg>';byId('themeBtn').setAttribute('aria-label',dark?'Use light mode':'Use dark mode')}
 function initTheme(){var saved=localStorage.getItem('anaes_dark'),dark=saved===null?(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches):saved==='1';applyTheme(dark)}
 function toggleTheme(){var dark=!document.body.classList.contains('dark');localStorage.setItem('anaes_dark',dark?'1':'0');applyTheme(dark)}

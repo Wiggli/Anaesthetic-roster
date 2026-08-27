@@ -342,3 +342,19 @@ body.dark[data-view="today"] .bottom,body.dark[data-view="changes"] .bottom,body
 .releaseEntry li+li{margin-top:5px}
 body.dark .releaseDialog .dialogHead,body.dark .releaseHistory{background:#102734}body.dark .releaseEntry{border-top-color:#29424f}body.dark .releaseEntry.latest{background:#12332f}body.dark .releaseVersion h3{color:#eef6f8}body.dark .releaseEntry ul{color:#b8c8cf}
 @media(max-height:620px){.releaseDialog[open]{max-height:90dvh}.releaseEntry{padding-top:11px;padding-bottom:12px}.releaseEntry ul{font-size:11px}}
+
+/* V31.0 semantic allocation controls and four-part night summary. */
+.nightSummaryTitle{margin:14px 0 8px}.nightSummaryTitle>span{color:var(--app-muted);font-size:9.5px;font-weight:800}
+#today .nightStatusRow{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#today .statusChip{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;justify-items:start;min-height:54px;padding:8px 26px 8px 10px;text-align:left}
+#today .statusChip svg{width:21px;height:21px;margin:0}
+#today .statusChip span{min-width:0}#today .statusChip b{font-size:14px}#today .statusChip small{font-size:9.5px;white-space:nowrap}
+#today .statusChip.overtimeChip svg{color:#a8660a}
+#today .statusChip::after{right:9px;top:50%;transform:translateY(-54%);font-size:17px}
+#today .roleOrdinal{font-size:12px;font-weight:950;letter-spacing:-.04em}
+.labourOrderBox.automatic{border-color:#badbd5;background:#f5fbfa}
+.labourOrderHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.labourOrderHeading h3{margin:0}.labourOrderHeading span{display:block;margin-top:3px;color:#26766f;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}.labourOrderHeading button{min-height:32px;margin:0;padding:5px 10px}
+.nightRoleOverrideStep{margin:0 0 10px}.nightRoleEditor{overflow:hidden;border:1px solid var(--app-line);border-radius:12px;background:#fff}.nightRoleEditor>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;cursor:pointer;list-style:none}.nightRoleEditor>summary::-webkit-details-marker{display:none}.nightRoleEditor>summary span{display:block}.nightRoleEditor>summary b{display:block;color:var(--app-text);font-size:12px}.nightRoleEditor>summary small{display:block;margin-top:3px;color:var(--app-muted);font-size:9px}.nightRoleEditor>summary i{color:#7b909a;font-size:18px;font-style:normal;transition:transform .16s ease}.nightRoleEditor[open]>summary i{transform:rotate(90deg)}
+.nightRoleEditorBody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 12px 12px;border-top:1px solid var(--app-line)}.nightRoleGuidance,.nightRoleReason,.nightRoleActions{grid-column:1/-1}.nightRoleGuidance{padding-top:10px;color:var(--app-muted);font-size:10px;line-height:1.4}.nightRoleEditorBody label>span{display:block;margin-bottom:4px;color:#607581;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.035em}.nightRoleEditorBody select,.nightRoleEditorBody input{width:100%;min-height:39px;padding:7px 9px;border-radius:9px;font-size:11px}.nightRoleActions{display:flex;gap:7px}.nightRoleActions button{flex:1;min-height:38px;margin:0;padding:7px;font-size:10px}.nightRoleNotice{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border:1px solid #e8bd7e;border-radius:11px;background:#fffaf2;color:#6e4b1c}.nightRoleNotice b{font-size:11px}.nightRoleNotice span{font-size:9.5px}
+body.dark .nightRoleEditor,body.dark .labourOrderBox.automatic{background:var(--app-card);border-color:var(--app-line)}body.dark .labourOrderHeading span{color:#80cbc3}
+@media(max-width:360px){.nightRoleEditorBody{grid-template-columns:1fr}#today .statusChip small{font-size:8.8px}}
