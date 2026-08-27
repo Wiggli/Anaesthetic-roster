@@ -235,3 +235,110 @@ body[data-view="breaks"] .bottom button{color:#91a5b1}body[data-view="breaks"] .
 
 @media(min-width:600px){#changes>.changePanel{margin-top:16px}.screenHeader{border-radius:0 0 20px 20px}.breaksScreenHeader{border-radius:0 0 20px 20px}}
 @media(max-width:420px){#changes>.changesDatePanel .grid2,#breaks>.panel>.grid2{grid-template-columns:1fr}.screenHeader{padding-top:calc(14px + env(safe-area-inset-top))}.breakSummaryRow{gap:4px}.breakSummaryItem{min-height:54px}.changesWorkflowTabs small{display:none!important}}
+
+/* V30 unified light product system and explicit interaction language. */
+:root{--app-bg:#eef3f4;--app-card:#fff;--app-text:#112838;--app-muted:#687b88;--app-line:#dce5e9;--app-teal:#087d79;--app-teal-dark:#075b5a}
+body[data-view="today"],body[data-view="changes"],body[data-view="breaks"]{background:var(--app-bg);color:var(--app-text)}
+.screenHeader{background:linear-gradient(145deg,var(--app-teal),var(--app-teal-dark));padding-bottom:13px}
+.screenHeader h1{font-size:19px}.screenHeader p{margin-top:5px}
+
+/* Night uses the hospital identity but the same light working surface as every other tab. */
+body[data-view="today"] main{background:var(--app-bg)}
+#today>.nightOverviewPanel{color:var(--app-text)}
+#today .sectionTitle,#today .sectionHeadingRow .sectionTitle{color:var(--app-text)}
+#today .inlineLive{color:#617781}
+#today .nightDateShell .dateNav>button{border:1px solid var(--app-line);background:#fff;color:#48616e}
+#today .nightDateShell .prettyDateButton{border:1px solid var(--app-line);background:#fff}
+#today .nightDateShell .prettyDateButton strong{color:var(--app-text)}#today .nightDateShell .prettyDateButton small{color:var(--app-muted)}
+#today .personalNightCard{border-color:var(--app-line);box-shadow:0 8px 22px rgba(19,52,66,.08)}
+#today .personalTaskCard{border-color:#e8bd7e;background:#fffaf2}
+#today .personalTaskIcon{width:27px;height:27px;border:0;border-radius:7px;background:#fff0d7;color:#b66a09}
+.personalTaskIcon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#today .nightStatusRow{gap:7px}
+#today .statusChip{position:relative;min-height:66px;padding:8px 6px 7px;border-color:var(--app-line);background:#fff!important;color:var(--app-text)!important;box-shadow:0 4px 12px rgba(19,52,66,.045)}
+#today .statusChip::before{display:none}
+#today .statusChip svg,.breakSummaryItem svg{display:block;width:19px;height:19px;margin:0 auto 4px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+#today .statusChip b,#today .statusChip small{display:block}#today .statusChip b{font-size:13px;line-height:1.1}#today .statusChip small{margin-top:2px;color:var(--app-muted);font-size:9px;font-weight:750}
+#today .statusChip.staffingChip svg{color:#087d79}#today .statusChip.readyChip svg{color:#2b8a4b}#today .statusChip.absenceChip svg{color:#c23a44}#today .statusChip.taskChip svg{color:#c6750b}
+#today .statusChip::after,.breakSummaryItem::after{content:"›";position:absolute;right:5px;top:5px;color:#9aabb4;font-size:13px;font-weight:400}
+#today .role{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:center;min-height:64px;border-color:var(--app-line);box-shadow:0 3px 10px rgba(19,52,66,.035)}
+#today .role::after{right:9px;color:#a4b1b8}
+#today .roleIcon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+#today .roleIcon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#today .roleIcon.first{background:#e0f6f4;color:#087a76}#today .roleIcon.second{background:#f0e8fa;color:#7140ad}#today .roleIcon.pager{background:#fde8e9;color:#b72d38}#today .roleIcon.reliever{background:#e5f5e8;color:#2c853f}#today .roleIcon.seventh{background:#fff0d8;color:#ae6508}
+#today .roleCopy{padding-right:18px}
+#today .rosterShortcutRow .rosterShortcutBtn{border-color:var(--app-line);box-shadow:0 3px 10px rgba(19,52,66,.035)}
+#today .actionPanel .emailRosterBtn{background:var(--app-teal)}
+body[data-view="today"] .bottom{background:#fff;border-top-color:var(--app-line);box-shadow:0 -5px 16px rgba(19,52,66,.08)}
+body[data-view="today"] .bottom button{color:#71838e}body[data-view="today"] .bottom button.active{color:var(--app-teal)}
+
+/* Changes keeps the reference's teal header but removes the oversized mobile stack. */
+.changesScreenHeader{padding-top:calc(14px + env(safe-area-inset-top))}
+#changes>.changesDatePanel{padding:0 13px 12px;background:linear-gradient(145deg,var(--app-teal),var(--app-teal-dark));border-radius:0 0 17px 17px;box-shadow:0 8px 18px rgba(7,91,90,.13)}
+#changes>.changesDatePanel .grid2{grid-template-columns:minmax(0,1fr) 92px;gap:7px}
+#changes>.changesDatePanel .dateNav{grid-template-columns:36px minmax(0,1fr) 36px;gap:5px}
+#changes>.changesDatePanel .dateNav>button,#changes>.changesDatePanel .prettyDateButton{height:44px;min-height:44px}
+#changes>.changesDatePanel .dateNav>button{padding:0;font-size:23px}
+#changes>.changesDatePanel .prettyDateButton strong{font-size:12px}#changes>.changesDatePanel .prettyDateButton small{margin-top:2px;font-size:8.5px}
+#changes>.changesDatePanel .staffingCount{min-height:58px;padding:7px 8px}
+#changes>.changesDatePanel .staffingCount strong{font-size:14px}#changes>.changesDatePanel .staffingCount small{font-size:8.5px}
+#changes>.changesDatePanel .dateResetBtn{margin:3px 0 0;padding:3px 1px;min-height:24px;font-size:9px}
+#changes>.changePanel{border:1px solid var(--app-line);box-shadow:0 6px 18px rgba(19,52,66,.06)}
+#changes .changesWorkflowTabs button.complete>span{font-size:11px}
+#changes .changesWorkflowTabs button.complete>span::before{content:none}
+#changes .changesWorkflowTabs button.complete::after{content:"✓";position:absolute;top:5px;right:8px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:#e4f5e9;color:#288046;font-size:9px;font-weight:950}
+#changes .changesWorkflowState.ready{border-color:#a9d8d3;background:#f0f9f8;color:#175f5c}
+#changes .changesWorkflowState.ready b{color:#075f5c}
+#changes .staffingSection,#changes .confirmationCard{border-color:var(--app-line)}
+#changes .stepHeader>span{border-radius:7px;background:#edf4ff;color:#1672c4}
+body[data-view="changes"] .bottom{border-top-color:var(--app-line)}
+body[data-view="changes"] .bottom button{color:#71838e}body[data-view="changes"] .bottom button.active{color:var(--app-teal)}
+
+/* Breaks now shares the light shell instead of switching the whole app to dark. */
+body[data-view="breaks"] main{background:var(--app-bg)}
+.breaksScreenHeader{background:linear-gradient(145deg,var(--app-teal),var(--app-teal-dark))}
+#breaks>.panel{color:var(--app-text)}
+#breaks>.panel>h2,.breakPlanTitle h2{color:var(--app-text)}
+#breaks>.panel>.grid2 label{color:var(--app-muted)}
+#breaks .dateNav>button,#breaks .prettyDateButton,#breaks .staffingCount{border-color:var(--app-line);background:#fff;color:var(--app-text)}
+#breaks .prettyDateButton strong{color:var(--app-text)}#breaks .prettyDateButton small,#breaks .staffingCount span,#breaks .staffingCount small{color:var(--app-muted)}
+.breakSummaryItem{position:relative;min-height:66px;border-color:var(--app-line);box-shadow:0 4px 12px rgba(19,52,66,.045)}
+.breakSummaryItem b{font-size:11px}.breakSummaryItem small{font-size:8.5px}.breakSummaryItem.staffing svg{color:#087d79}.breakSummaryItem.ready svg{color:#2b8a4b}.breakSummaryItem.absence svg{color:#c23a44}.breakSummaryItem.pending svg{color:#c6750b}
+#breaks #breakDate{border-color:var(--app-line);background:#fff;color:var(--app-text)}
+.breakPlanTitle span{color:var(--app-muted)}
+#breaks .breakGroup{border-color:var(--app-line);border-left-width:4px;background:#fff!important;box-shadow:0 4px 12px rgba(19,52,66,.04)}
+#breaks .breakGroup.firstBreak{border-left-color:#8152bd}#breaks .breakGroup.secondBreak{border-left-color:#12938e}#breaks .breakGroup.lwBreak{border-left-color:#d38317}
+#breaks .firstBreak h3{color:#7041a8}#breaks .secondBreak h3{color:#087d79}#breaks .lwBreak h3{color:#a96108}
+#breaks .breakPerson{border-color:#e5ebee;color:var(--app-text)}#breaks .breakNote{color:var(--app-muted)}
+#breaks .actionPanel button.primary{background:var(--app-teal);color:#fff}#breaks .actionPanel .emailRosterBtn{border-color:var(--app-line);background:#fff;color:var(--app-text)}
+body[data-view="breaks"] .bottom{background:#fff;border-top-color:var(--app-line);box-shadow:0 -5px 16px rgba(19,52,66,.08)}
+body[data-view="breaks"] .bottom button{color:#71838e}body[data-view="breaks"] .bottom button.active{color:var(--app-teal)}
+
+.bottom button svg{stroke-width:1.75}.bottom button.active{background:transparent!important}.bottom button.active svg{filter:none}
+@media(max-width:420px){#changes>.changesDatePanel .grid2,#breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr) 88px}.screenHeader{padding-top:calc(12px + env(safe-area-inset-top))}.screenHeader h1{font-size:18px}#today .nightStatusRow,.breakSummaryRow{gap:5px}#today .statusChip,.breakSummaryItem{min-height:62px}}
+
+/* Keep dark mode coherent across every tab when the user explicitly enables it. */
+body.dark[data-view="today"],body.dark[data-view="changes"],body.dark[data-view="breaks"]{--app-bg:#071722;--app-card:#102734;--app-text:#eef6f8;--app-muted:#a9bbc4;--app-line:#29424f;background:var(--app-bg);color:var(--app-text)}
+body.dark[data-view="today"] main,body.dark[data-view="breaks"] main{background:var(--app-bg)}
+body.dark #today .sectionTitle,body.dark #today .sectionHeadingRow .sectionTitle,body.dark #breaks>.panel>h2,body.dark .breakPlanTitle h2{color:var(--app-text)}
+body.dark #today .nightDateShell .dateNav>button,body.dark #today .nightDateShell .prettyDateButton,body.dark #today .personalNightCard,body.dark #today .statusChip,body.dark #today .role,body.dark #today .rosterShortcutBtn,body.dark #breaks .dateNav>button,body.dark #breaks .prettyDateButton,body.dark #breaks .staffingCount,body.dark .breakSummaryItem,body.dark #breaks #breakDate,body.dark #breaks .breakGroup,body.dark #breaks .actionPanel .emailRosterBtn,body.dark #changes>.changePanel,body.dark #changes .staffingSection,body.dark #changes .confirmationCard{background:var(--app-card)!important;border-color:var(--app-line);color:var(--app-text)}
+body.dark #today .nightDateShell .prettyDateButton strong,body.dark #today .name,body.dark .personalCopy b,body.dark #breaks .prettyDateButton strong,body.dark #breaks .breakPerson{color:var(--app-text)}
+body.dark[data-view="today"] .bottom,body.dark[data-view="changes"] .bottom,body.dark[data-view="breaks"] .bottom{background:#0a1d29;border-top-color:var(--app-line)}
+
+/* V30.1 scrollable Play Store-style release history. */
+.releaseDialog[open]{display:flex;flex-direction:column;width:min(440px,calc(100% - 24px));max-height:min(84dvh,700px);padding:0;overflow:hidden;border-radius:18px}
+.releaseDialog .dialogHead{flex:0 0 auto;align-items:center;padding:15px 16px 12px;border-bottom:1px solid var(--app-line);background:#fff}
+.releaseDialog .dialogHead h2{font-size:18px;letter-spacing:-.02em}.releaseDialog .dialogHead .time{margin-top:3px;font-size:10.5px;line-height:1.3}
+.releaseDialog #closeReleaseNotes{min-height:36px;padding:7px 10px;border-radius:9px;font-size:11px;box-shadow:none}
+.releaseHistory{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#a8bac3 transparent;background:#fff}
+.releaseHistory:focus-visible{outline:3px solid rgba(8,125,121,.3);outline-offset:-3px}
+.releaseEntry{padding:14px 16px 15px;border-top:1px solid #e6ecef}.releaseEntry:first-child{border-top:0}
+.releaseEntry.latest{border-left:3px solid var(--app-teal);background:#f2f9f8}
+.releaseVersion{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.releaseVersion span{display:block;color:var(--app-teal);font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.releaseVersion h3{margin:3px 0 0;color:var(--app-text);font-size:13.5px;line-height:1.25;letter-spacing:-.01em}
+.releaseVersion time{flex:0 0 auto;padding-top:1px;color:var(--app-muted);font-size:9.5px;white-space:nowrap}
+.releaseEntry ul{margin:9px 0 0!important;padding-left:17px!important;color:#40535f;font-size:11.5px;line-height:1.42}
+.releaseEntry li+li{margin-top:5px}
+body.dark .releaseDialog .dialogHead,body.dark .releaseHistory{background:#102734}body.dark .releaseEntry{border-top-color:#29424f}body.dark .releaseEntry.latest{background:#12332f}body.dark .releaseVersion h3{color:#eef6f8}body.dark .releaseEntry ul{color:#b8c8cf}
+@media(max-height:620px){.releaseDialog[open]{max-height:90dvh}.releaseEntry{padding-top:11px;padding-bottom:12px}.releaseEntry ul{font-size:11px}}
