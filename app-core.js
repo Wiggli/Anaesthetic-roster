@@ -1,11 +1,11 @@
-/* Anaesthetic Night Roster V28.0 core and roster foundation. */
+/* Anaesthetic Night Roster V29.0 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = ["shaun.galea.1@gov.mt", "michael.b.galea@gov.mt", "michael.a.debono@gov.mt", "yentl.cutajar.2@gov.mt", "james.galea@gov.mt"];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '28.0';
+var APP_VERSION = '29.0';
 var EXPECTED_SCHEMA_VERSION = 26;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY) : null;
 var currentUser = null;
@@ -42,7 +42,7 @@ function calculateNight(date,versions){var list=versions||rotationVersions,v=lis
 function rebuildCalculatedRoster(){var first=rotationVersions.length?rotationVersions[0].effective_from:'2026-06-30',until=rosterSettings.published_until||'2027-12-30',rows=[],date=first,safety=0;while(date<=until&&safety<10000){rows.push(calculateNight(date));date=addDays(date,4);safety++}R=rows;var names=[];rotationVersions.forEach(function(v){[v.first1,v.first2,v.second1,v.second2,v.pager,v.reliever].concat(v.seventh_cycle||[]).forEach(function(n){if(n&&n!=='OT Nurse'&&names.indexOf(n)<0)names.push(n)})});TEAM=names;var latest=rotationVersions[rotationVersions.length-1];SEVENTH=latest&&Array.isArray(latest.seventh_cycle)?latest.seventh_cycle.slice():ORIGINAL_SEVENTH.slice()}
 function save(){localStorage.removeItem('anaes_admin_roster');localStorage.removeItem('anaes_team');localStorage.removeItem('anaes_seventh')}
 function toast(t){byId('toast').textContent=t;byId('toast').style.display='block';setTimeout(function(){byId('toast').style.display='none'},2200)}
-function setSync(state,text){var el=byId('syncStatus'),header=byId('headerLiveChip'),headerText=byId('headerLiveText'),stamp=lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';if(el){el.className='liveStatus '+(state||'');byId('syncText').textContent=text||'Live'}if(header){header.className='headerChip headerLiveChip '+(state||'');headerText.textContent=state==='saving'?'Saving':state==='offline'?(stamp?'Offline · '+stamp:'Offline'):state==='error'?'Problem':stamp?'Live · '+stamp:'Live';header.title=stamp?'Last refreshed at '+stamp:''}}
+function setSync(state,text){var el=byId('syncStatus'),header=byId('headerLiveChip'),headerText=byId('headerLiveText'),changesLive=byId('changesHeaderLive'),stamp=lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';if(el){el.className='liveStatus '+(state||'');byId('syncText').textContent=text||'Live'}if(header){header.className='headerChip headerLiveChip '+(state||'');headerText.textContent=state==='saving'?'Saving':state==='offline'?(stamp?'Offline · '+stamp:'Offline'):state==='error'?'Problem':stamp?'Live · '+stamp:'Live';header.title=stamp?'Last refreshed at '+stamp:''}if(changesLive)changesLive.textContent=state==='saving'?'Saving changes':state==='offline'?'Offline · saved information':state==='error'?'Connection problem':text||'Live and up to date'}
 function localCur(){return R[idx] || R[0]}
 function changesFor(date){return nightChanges[date]||[]}
 function overtimeFor(date){return nightOvertime[date]||[]}
