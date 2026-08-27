@@ -60,3 +60,69 @@ body.dark .rosterShortcutRow .smartNightBtn.nightSelected{background:#0b263a}
 .dataRefreshing .role,.dataRefreshing .staffingCount,.dataRefreshing .changesWorkflowState{position:relative;overflow:hidden}.dataRefreshing .role::after,.dataRefreshing .staffingCount::after,.dataRefreshing .changesWorkflowState::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.34),transparent);animation:dataShimmer 1.1s infinite}@keyframes dataShimmer{to{transform:translateX(100%)}}
 body.dark{--line:#2a4256;--muted:#a9bac9;--text:#f0f6fb;background:linear-gradient(#061521,#0a1d2b 52%,#061521)}body.dark .panel,body.dark .card,body.dark .role,body.dark .notice{background:rgba(12,30,44,.97)}body.dark input,body.dark select,body.dark textarea,body.dark button{background:#122b3e;border-color:#334c60;color:#f1f7fb}body.dark .prettyDateButton{background:#122b3e}body.dark .statusChip.staffingChip{background:#173d59;color:#a9d8ff}body.dark .statusChip.readyChip,body.dark .confirmationReady{background:#173d2b;color:#bceccc}body.dark .statusChip.absenceChip{background:#482329;color:#ffc4c9}body.dark .statusChip.taskChip,body.dark .confirmationWarning{background:#493719;color:#ffdaa2}body.dark .confirmationCard{background:#0b2537}body.dark .savedPulse{animation:savedPulseDark 1.6s ease}@keyframes savedPulseDark{0%{box-shadow:0 0 0 0 rgba(84,190,124,.55);background:#173d2b}55%{box-shadow:0 0 0 7px rgba(84,190,124,0)}100%{box-shadow:none}}body.dark button:disabled{opacity:.66;color:#a8b5c0;background:#203444}
 @media(max-width:430px){.hospitalStrip img{height:32px}.hospitalStrip span{font-size:8.5px}.headerTitle{font-size:19px}.motto{max-width:255px;font-size:11px}.role{grid-template-columns:70px minmax(0,1fr)}.confirmationRow{grid-template-columns:1fr}.confirmationRow b{text-align:left;margin-top:2px}}
+
+/* V28 Night screen design system: calm clinical contrast, semantic colour, compact hierarchy. */
+:root{--night:#07131f;--night-raised:#0c1c2a;--night-line:#1d3445;--surface:#ffffff;--surface-soft:#f4f7f9;--teal:#0a8f8c;--teal-deep:#056864;--warning:#d98213}
+.srOnly{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+#appHeader{position:relative;padding:calc(10px + env(safe-area-inset-top)) 14px 11px;border:0;border-bottom:1px solid #dfe6eb;border-radius:0;background:#fff;color:#10202d;box-shadow:none;overflow:visible}
+#appHeader .clinicalBackdrop,#appHeader .headerBrand,#appHeader .headerChips{display:none}
+#appHeader .hospitalStrip{margin:0;padding:0;border:0;border-radius:0;background:transparent}
+#appHeader .hospitalStrip img{width:min(220px,62vw);height:47px;object-fit:contain;object-position:left center}
+#appHeader .hospitalStrip span{max-width:116px;color:#27313a;font-size:10px;line-height:1.3;letter-spacing:.035em}
+#appHeader .head{align-items:center;margin-top:5px}
+#appHeader .headerIdentity{flex:1;min-width:0}
+#appHeader .motto{max-width:none;margin:0;color:#52606b;font-size:11.5px;font-weight:560;text-shadow:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#appHeader .headActions{max-width:none;flex-wrap:nowrap;gap:4px}
+#appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share{width:32px;height:32px;border:1px solid #dbe5eb;border-radius:10px;background:#f5f8fa;color:#19384e}
+#appHeader .accountInitial{width:22px;height:22px;border-radius:50%;background:#0b7f7c;color:#fff}
+body[data-view="today"]{background:var(--night);color:#f6f9fb}
+body[data-view="today"] main{padding:0 12px 16px}
+#today{max-width:680px;margin:auto}
+#today>.nightOverviewPanel{margin:0;padding:10px 0 4px;border:0;border-radius:0;background:transparent;box-shadow:none}
+#today .nightDateShell{margin:0 0 10px}
+#today .nightDateShell .grid2{display:block}
+#today .nightDateLabel{margin:0;color:transparent;font-size:0}
+#today .nightDateLabel>.dateNav{font-size:16px}
+#today .nightDateShell .dateNav{grid-template-columns:42px minmax(0,1fr) 42px;gap:3px}
+#today .nightDateShell .dateNav>button{height:46px;min-height:46px;border:0;border-radius:10px;background:transparent;color:#d9e8f0;box-shadow:none;font-size:28px}
+#today .nightDateShell .prettyDateButton{height:46px;min-height:46px;border:0;background:transparent;color:#fff}
+#today .nightDateShell .prettyDateButton strong{color:#fff;font-size:14px}
+#today .nightDateShell .prettyDateButton small{color:#91a5b3}
+.sectionTitle{margin:0 0 8px;font-size:15px;font-weight:800;letter-spacing:-.01em;color:#f4f8fa}
+.personalNight{margin-bottom:12px}
+.personalNightCard{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:11px;align-items:center;min-height:72px;padding:11px 12px;border:1px solid #e2e8ec;border-radius:13px;background:#fff;color:#122331;box-shadow:0 5px 16px rgba(0,0,0,.13)}
+.personalAvatar{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#087d7a;color:#fff;font-size:20px;font-weight:800}
+.personalAvatar i{position:absolute;right:0;bottom:1px;width:11px;height:11px;border:2px solid #fff;border-radius:50%;background:#31b65b}
+.personalCopy{min-width:0}.personalCopy b,.personalCopy span{display:block}.personalCopy b{font-size:17px;line-height:1.2}.personalCopy span{margin-top:4px;color:#4f5f69;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.personalChangeBtn{min-height:40px;padding:8px 3px 8px 10px;border:0;background:transparent;color:#075f5c;box-shadow:none;font-size:11px}.personalChangeBtn span{font-size:20px;vertical-align:-2px}
+.personalNamePicker{display:flex;align-items:flex-end;gap:8px;margin-top:7px;padding:9px 10px;border:1px solid #dce5ea;border-radius:12px;background:#fff;color:#173047}.personalNamePicker .myNameLabel{flex:1;margin:0}.personalNamePicker .myNameLabel select{margin-top:4px}.personalNamePicker button{margin-bottom:0}
+.personalTaskCard{display:grid;grid-template-columns:26px minmax(0,1fr);gap:9px;width:100%;margin-top:7px;padding:11px;border:1px solid #e49a36;border-radius:12px;background:#fff;color:#2b3238;text-align:left;box-shadow:none}
+.personalTaskIcon{width:24px;height:24px;border:1.5px solid #dc8210;border-radius:50%;display:grid;place-items:center;color:#b86700;font-weight:900}
+.personalTaskCard b,.personalTaskCard small,.personalTaskCard strong{display:block}.personalTaskCard b{color:#b56400;font-size:13px}.personalTaskCard small{margin-top:3px;color:#4e5961;font-size:11.5px;line-height:1.35}.personalTaskCard strong{margin-top:5px;color:#075f5c;font-size:11.5px}
+.nightSummaryTitle{margin-top:2px}
+#today .nightStatusRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 12px;padding:0;overflow:visible}
+#today .statusChip{display:flex;align-items:center;justify-content:center;min-width:0;min-height:53px;padding:7px 5px;border:1px solid #e2e8ec;border-radius:10px;background:#fff;color:#182b38;font-size:10.5px;line-height:1.25;text-align:center;white-space:normal}
+#today .statusChip.staffingChip{background:#fff;color:#0b716f}#today .statusChip.readyChip{background:#fff;color:#237643}#today .statusChip.taskChip{background:#fff;color:#a65f00;border-color:#efc17f}#today .statusChip.absenceChip{background:#fff;color:#ad2e38;border-color:#e8b4b8}
+.sectionHeadingRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}.sectionHeadingRow .sectionTitle{margin-bottom:8px}.inlineLive{display:inline-flex;align-items:center;gap:5px;margin-bottom:8px;color:#d4e5eb;font-size:10.5px;font-weight:700}.inlineLive i{width:7px;height:7px;border-radius:50%;background:#37bf65;box-shadow:0 0 0 3px rgba(55,191,101,.16)}
+#today #alerts:empty{display:none}#today #alerts{margin-bottom:7px}
+#today .taskAlert,#today .compactNotice{margin:5px 0;padding:9px 10px;border-radius:10px;background:#182a37;color:#f4d5a4;border-left-color:#db8417}
+#today .roles{gap:5px}
+#today .role{display:block;min-height:60px;padding:9px 11px;border:1px solid #e1e8ec;border-left-width:5px;border-radius:10px;background:#fff;color:#142734;box-shadow:none}
+#today .role.mine{outline:2px solid #5bc9c4;outline-offset:1px}
+#today .roleCopy{min-width:0}#today .name{font-size:15.5px;line-height:1.15;color:#132735}
+#today .roleMeta{display:flex;align-items:center;gap:8px;margin-top:5px;min-width:0}
+#today .role .badge{flex:0 0 auto;padding:3px 6px;border-radius:4px;font-size:8.5px;letter-spacing:.025em}
+#today .role .time{min-width:0;margin:0;color:#5d6870;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#today .role.rFirst{border-left-color:#1aa6a2}#today .role.rSecond{border-left-color:#8456c5}#today .role.rPager{border-left-color:#d8404a}#today .role.rReliever{border-left-color:#35a44f}#today .role.rFull{border-left-color:#35a44f}#today .role.r7{border-left-color:#d98a16}
+#today .bFirst{background:#dff7f5;color:#08736f}#today .bSecond{background:#f0e7fb;color:#6735a3}#today .bPager{background:#fde8ea;color:#ad2733}#today .bReliever,#today .bFull{background:#e5f6e8;color:#257a38}#today .b7{background:#fff0d5;color:#9b5b00}
+#today .rosterShortcutRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0 4px}
+#today .rosterShortcutRow.singleShortcut{grid-template-columns:1fr}
+#today .rosterShortcutRow .rosterShortcutBtn{min-height:44px;border:1px solid #dfe6ea;border-radius:10px;background:#fff;color:#142734;box-shadow:none;font-size:12px}
+#today .rosterShortcutRow .rosterShortcutBtn b{margin-left:auto;font-size:20px;font-weight:400}#today .rosterShortcutRow .rosterShortcutBtn svg{color:#526571}
+#today+.actionPanel{background:transparent}
+#today .actionPanel,#today~.actionPanel{background:transparent}
+#today .emailRosterBtn{min-height:46px;border-radius:10px;background:#078b87;box-shadow:none}
+body[data-view="today"] .bottom{background:#0a1824;border-top-color:#1e3443;box-shadow:0 -6px 16px rgba(0,0,0,.18)}
+body[data-view="today"] .bottom button{color:#92a5b2}body[data-view="today"] .bottom button.active{background:transparent;color:#23b7b2}body[data-view="today"] .bottom .navTaskBadge{color:#fff}
+body.dark #appHeader{background:#fff;color:#10202d;border-bottom-color:#dfe6eb}body.dark #appHeader .motto{color:#52606b}body.dark #appHeader .headActions button,body.dark #appHeader .adminSettingsBtn,body.dark #appHeader .accountBtn,body.dark #appHeader .share{background:#f5f8fa;color:#19384e;border-color:#dbe5eb}
+@media(max-width:390px){#appHeader .hospitalStrip img{width:min(190px,59vw);height:42px}#appHeader .hospitalStrip span{max-width:102px;font-size:8.5px}#appHeader .motto{font-size:10.5px}.personalNightCard{grid-template-columns:44px minmax(0,1fr) auto;padding:10px}.personalAvatar{width:42px;height:42px}.personalCopy b{font-size:16px}.personalCopy span{font-size:11px}.personalChangeBtn{padding-left:4px}#today .statusChip{font-size:9.5px}#today .role .time{font-size:9.8px}}

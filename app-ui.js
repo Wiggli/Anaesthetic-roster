@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V27.0 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V28.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -70,7 +70,15 @@ function prepareChangesView(){
   if(changesViewPrepared)return;
   var today=byId('today'),changes=byId('changes'),roster=byId('roster'),changePanel=today&&today.querySelector('.changePanel'),allocation=changePanel&&changePanel.querySelector('.allocationSection'),action=today&&today.querySelector('.actionPanel'),nav=document.querySelector('.bottom');
   if(!today||!changes||!roster||!changePanel||!allocation||!action||!nav)return;
-  var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div'),statusRow=document.createElement('div');shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="soft rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span></button><button type="button" class="soft rosterShortcutBtn smartNightBtn" id="smartNightBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg><span>Return to roster night</span></button>';statusRow.id='nightStatusRow';statusRow.className='nightStatusRow';if(myNameLabel){selectedPanel.insertBefore(statusRow,myNameLabel);selectedPanel.insertBefore(shortcutRow,myNameLabel)}
+  var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div'),statusRow=document.createElement('div'),dateGrid=selectedPanel&&selectedPanel.querySelector('.grid2'),alerts=byId('alerts'),roles=byId('roles'),fiveArrangement=byId('fiveArrangement');
+  document.body.setAttribute('data-view','today');selectedPanel.classList.add('nightOverviewPanel');selectedPanel.querySelector('h2').classList.add('srOnly');
+  if(dateGrid){var dateShell=document.createElement('div');dateShell.className='nightDateShell';selectedPanel.insertBefore(dateShell,dateGrid);dateShell.appendChild(dateGrid);var dateLabel=dateGrid.querySelector('label');if(dateLabel)dateLabel.classList.add('nightDateLabel')}
+  var personal=document.createElement('section');personal.id='personalNight';personal.className='personalNight';personal.setAttribute('aria-labelledby','personalNightHeading');personal.innerHTML='<h2 id="personalNightHeading" class="sectionTitle">Your night</h2><div id="personalNightCard" class="personalNightCard"></div><div id="personalAllocationNotice"></div><div id="personalNamePicker" class="personalNamePicker hidden"><button type="button" class="mini" id="closeNamePickerBtn">Done</button></div>';
+  if(dateGrid)dateGrid.parentNode.insertAdjacentElement('afterend',personal);else selectedPanel.insertBefore(personal,selectedPanel.firstChild);
+  if(myNameLabel){myNameLabel.firstChild.nodeValue='Choose your name';personal.querySelector('#personalNamePicker').insertBefore(myNameLabel,personal.querySelector('#closeNamePickerBtn'))}
+  var summaryTitle=document.createElement('h2');summaryTitle.className='sectionTitle nightSummaryTitle';summaryTitle.textContent='Night summary';statusRow.id='nightStatusRow';statusRow.className='nightStatusRow';personal.insertAdjacentElement('afterend',summaryTitle);summaryTitle.insertAdjacentElement('afterend',statusRow);
+  var situationTitle=document.createElement('div');situationTitle.className='sectionHeadingRow';situationTitle.innerHTML='<h2 class="sectionTitle">Night situation</h2><span class="inlineLive"><i></i>Live</span>';if(roles)selectedPanel.insertBefore(situationTitle,roles);
+  shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span><b aria-hidden="true">›</b></button><button type="button" class="rosterShortcutBtn smartNightBtn" id="smartNightBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg><span>Return to roster night</span></button>';if(fiveArrangement)fiveArrangement.insertAdjacentElement('afterend',shortcutRow);
   changes.innerHTML='<div class="panel changesDatePanel"><h2>Selected night</h2><div class="grid2"><label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current / next night</button></label><div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div></div></div>';
   changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record the people first, then complete only the decisions that remain';
   changes.appendChild(changePanel);
@@ -93,7 +101,7 @@ function prepareChangesView(){
   var dataPanel=document.querySelector('#adminData .panel');
   if(dataPanel&&!byId('appDiagnostics'))dataPanel.insertAdjacentHTML('beforeend','<details class="advancedBox"><summary>App health and diagnostics</summary><div id="appDiagnostics"></div></details>');
   ['datePick','changesDatePick','breakDatePick'].forEach(enhanceDatePicker);byId('overtimeName').setAttribute('list','overtimeSuggestions');var suggestions=document.createElement('datalist');suggestions.id='overtimeSuggestions';byId('overtimeName').insertAdjacentElement('afterend',suggestions);
-  byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};byId('smartNightBtn').onclick=goToAutomaticNight;byId('changesSmartNightBtn').onclick=goToAutomaticNight;continueButton.onclick=function(){setChangesStep('allocation',true)};confirmButton.onclick=function(){setChangesStep('confirm',true)};Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});changesViewPrepared=true;renderDiagnostics();
+  byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};byId('smartNightBtn').onclick=goToAutomaticNight;byId('changesSmartNightBtn').onclick=goToAutomaticNight;byId('closeNamePickerBtn').onclick=function(){byId('personalNamePicker').classList.add('hidden')};continueButton.onclick=function(){setChangesStep('allocation',true)};confirmButton.onclick=function(){setChangesStep('confirm',true)};Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});var release=byId('releaseNotes');if(release){release.querySelector('.time').textContent='Version 28.0 is ready.';release.querySelector('ul').innerHTML='<li>Redesigned Night screen with a calmer clinical hierarchy</li><li>Personal assignment and break shown immediately</li><li>Compact live staffing and contextual allocation tasks</li>'}changesViewPrepared=true;renderDiagnostics();
 }
 
 function syncDateInputs(date){
@@ -348,24 +356,52 @@ function labourRoleDetail(name,r){
   return'Labour Ward second part • First break';
 }
 
+function sameNurse(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase()}
+
+function personalAllocation(base,r,name){
+  if(!name)return{title:'Choose your name',detail:'See your own role and break at a glance.',pending:false};
+  var absence=changesFor(base.date).find(function(item){return sameNurse(item.absent_name,name)});
+  if(absence)return{title:'Not working tonight',detail:(absence.reason||'Absence')+' recorded',pending:false};
+  if(sameNurse(r.first1,name)||sameNurse(r.first2,name))return{title:'First Part',detail:'00:00–03:30 · Second break',pending:false};
+  if(sameNurse(r.second1,name)||sameNurse(r.second2,name))return{title:'Second Part',detail:'03:30–07:00 · First break',pending:false};
+  if(r.mode==='5'&&sameNurse(r.fullLW,name))return{title:'Labour Ward / Pager',detail:'Full night · Break when safe',pending:false};
+  if(r.mode!=='5'&&(sameNurse(r.pager,name)||sameNurse(r.reliever,name))){
+    var role=sameNurse(r.pager,name)?'Pager':'Reliever',other=sameNurse(r.pager,name)?r.reliever:r.pager,order=labourOrderFor(r);
+    if(!order)return{title:role,detail:'Labour Ward / Pager pending',pending:true,other:other};
+    if(sameNurse(order.first_part_name,name))return{title:role,detail:'Labour Ward first part · Second break',pending:false};
+    return{title:role,detail:'Labour Ward second part · First break',pending:false};
+  }
+  if(r.mode==='7'&&sameNurse(r.seventh,name))return{title:'7th nurse',detail:'Additional allocation · Break as required',pending:false};
+  return{title:'Not allocated tonight',detail:'Open Changes if an assignment is still being decided.',pending:false};
+}
+
+function renderPersonalNight(base,r){
+  var host=byId('personalNightCard'),notice=byId('personalAllocationNotice');if(!host||!notice)return null;
+  var name=myName(),assignment=personalAllocation(base,r,name),initial=name?name.trim().charAt(0).toUpperCase():'?';
+  host.innerHTML='<div class="personalAvatar" aria-hidden="true">'+esc(initial)+'<i></i></div><div class="personalCopy"><b>'+esc(name||'Choose your name')+'</b><span>'+esc(assignment.title+(assignment.detail?' · '+assignment.detail:''))+'</span></div><button type="button" class="personalChangeBtn" id="changePersonalNameBtn">'+(name?'Change':'Choose')+' <span aria-hidden="true">›</span></button>';
+  notice.innerHTML=assignment.pending?'<button type="button" class="personalTaskCard" data-go-allocation><span class="personalTaskIcon" aria-hidden="true">!</span><span><b>Your allocation is not final yet</b><small>Labour Ward / Pager is shared with '+esc(assignment.other)+'.</small><strong>Complete allocation ›</strong></span></button>':'';
+  byId('changePersonalNameBtn').onclick=function(){var picker=byId('personalNamePicker'),opening=picker.classList.contains('hidden');picker.classList.toggle('hidden',!opening);if(opening)setTimeout(function(){byId('myNamePick').focus()},0)};
+  return assignment;
+}
+
 function render(){
   if(!R.length||!currentUserProfile)return;
   var base=cur(),plan=staffingPlan(base),r=applyChanges(base),e=effective(r),count=plan.count;
   var labourPending=r.mode!=='5'&&!planIsProvisional(base)&&!labourOrderFor(r);
-  var roles=[['bFirst','First part',r.first1+' + '+r.first2,'Works 00:00–03:30 • Second break'],['bSecond','Second part',r.second1+' + '+r.second2,'Works 03:30–07:00 • First break']];
+  var roles=[['bFirst','First Part',r.first1+' + '+r.first2,'Works 00:00–03:30 • Second break'],['bSecond','Second Part',r.second1+' + '+r.second2,'Works 03:30–07:00 • First break']];
   if(r.mode!=='5'){
     roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
     roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
   }
-  syncDateInputs(base.date);renderMyName();renderHeaderSummary(r);updateSmartNightButtons();
+  syncDateInputs(base.date);renderMyName();var personal=renderPersonalNight(base,r);renderHeaderSummary(r);updateSmartNightButtons();
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
   if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   var alertClass=count<6?'warn':'';
   var decisionTasks=workflowTaskCount(base,plan,r),confirmNeeded=planNeedsConfirmation(base,decisionTasks),taskCount=decisionTasks+(confirmNeeded?1:0),absenceCount=changesFor(base.date).length,statusRow=byId('nightStatusRow');if(statusRow)statusRow.innerHTML='<span class="statusChip staffingChip">'+count+' nurse'+(count===1?'':'s')+'</span>'+(absenceCount?'<button type="button" class="statusChip absenceChip" data-go-staffing>'+absenceCount+' absent</button>':'<span class="statusChip readyChip">No absences</span>')+(taskCount?'<button type="button" class="statusChip taskChip" '+(decisionTasks?'data-go-allocation':'data-go-confirm')+'>'+taskCount+' task'+(taskCount===1?'':'s')+' remaining</button>':'<span class="statusChip readyChip">Plan confirmed</span>');
-  byId('alerts').innerHTML='<div class="alert compactNotice '+alertClass+'">'+esc(e.alert)+'</div>'+(plan.requiresSeventhDecision?'<button type="button" class="alert gold taskAlert" data-go-allocation>Review the proposed seventh-nurse move <span>Complete now ›</span></button>':'')+(plan.unresolved.length?'<button type="button" class="alert gold taskAlert" data-go-allocation>'+plan.unresolved.length+' allocation'+(plan.unresolved.length===1?' requires':'s require')+' a final decision <span>Complete now ›</span></button>':'')+(labourPending?'<button type="button" class="alert gold taskAlert" data-go-allocation>Labour Ward order required <span>Complete now ›</span></button>':'');
+  byId('alerts').innerHTML=(count!==6?'<div class="alert compactNotice '+alertClass+'">'+esc(e.alert)+'</div>':'')+(plan.requiresSeventhDecision?'<button type="button" class="alert gold taskAlert" data-go-allocation>Review the proposed seventh-nurse move <span>Complete now ›</span></button>':'')+(plan.unresolved.length?'<button type="button" class="alert gold taskAlert" data-go-allocation>'+plan.unresolved.length+' allocation'+(plan.unresolved.length===1?' requires':'s require')+' a final decision <span>Complete now ›</span></button>':'')+(labourPending&&!(personal&&personal.pending)?'<button type="button" class="alert gold taskAlert" data-go-allocation>Labour Ward order required <span>Complete now ›</span></button>':'');
   if(r.mode==='7')roles.push(['b7','7th nurse',r.seventh,'Additional nurse • Break as required']);
-  byId('roles').innerHTML=roles.map(function(c){return '<div class="role '+c[0].replace(/^b/,'r')+' '+(isMine(c[2])?'mine':'')+'"><div class="badge '+c[0]+'">'+esc(c[1])+'</div><div><div class="name">'+esc(c[2])+'</div><div class="time">'+esc(c[3])+'</div></div></div>'}).join('');
+  byId('roles').innerHTML=roles.map(function(c){return '<div class="role '+c[0].replace(/^b/,'r')+' '+(isMine(c[2])?'mine':'')+'"><div class="roleCopy"><div class="name">'+esc(c[2])+'</div><div class="roleMeta"><span class="badge '+c[0]+'">'+esc(c[1])+'</span><span class="time">'+esc(c[3])+'</span></div></div></div>'}).join('');
   var extras=additionalNurses(plan);
   if(extras.length)byId('roles').insertAdjacentHTML('beforeend','<div class="additionalStaff"><b>Additional staff • allocation as required</b>'+extras.map(function(o){return '<span class="additionalName">'+esc(o.nurse_name)+'</span>'}).join('')+'</div>');
   byId('fiveArrangement').innerHTML=fiveArrangementHtml(r);
