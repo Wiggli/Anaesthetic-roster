@@ -672,3 +672,47 @@ body.dark .appDialog,body.dark .releaseDialog .dialogHead,body.dark .releaseHist
   #changes>.changesDatePanel .staffingCount,#breaks .staffingCount{margin-top:4px;padding:8px 0 0;border-left:0;border-top:1px solid var(--ios-separator)}
   #changes .changesWorkflowTabs button{display:grid;justify-items:center;gap:2px}
 }
+
+/* V32.1 controlled glass and native-style motion. */
+:root{--native-spring:cubic-bezier(.2,.8,.2,1);--native-fast:190ms;--native-medium:320ms}
+button,.bottom button svg,.screenInfoButton,.personalNightCard,.changesWorkflowTabs button{transition:transform var(--native-medium) var(--native-spring),background-color var(--native-fast) ease,color var(--native-fast) ease,box-shadow var(--native-fast) ease}
+button:active:not(:disabled){transform:scale(.965)}
+.bottom button:active:not(:disabled) svg{transform:scale(.88)}
+.bottom button.active svg{transform:translateY(-2px) scale(1.08)}
+.view:not(.hidden){animation:nativeScreenIn var(--native-medium) var(--native-spring) both}
+.changesStepPane:not(.hidden){animation:nativePaneIn 260ms var(--native-spring) both}
+.appDialog[open]{animation:nativeSheetIn var(--native-medium) var(--native-spring) both}
+.updateBanner:not(.hidden),.toast[style*="block"]{animation:nativeToastIn 260ms var(--native-spring) both}
+@keyframes nativeScreenIn{from{opacity:.55;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes nativePaneIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+@keyframes nativeSheetIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes nativeToastIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+
+/* Glass is limited to navigation and supporting chrome. */
+.bottom{background:rgba(255,255,255,.78);border-top-color:rgba(255,255,255,.7);box-shadow:0 -1px 0 rgba(60,60,67,.12),0 -10px 30px rgba(20,36,48,.07);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px)}
+.changesScreenHeader,.breaksScreenHeader{position:sticky;top:0;z-index:24;background:rgba(242,242,247,.78);border-bottom-color:rgba(255,255,255,.65);box-shadow:0 1px 0 rgba(60,60,67,.1);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px)}
+.changesScreenHeader::after,.breaksScreenHeader::after,.bottom::after{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid rgba(255,255,255,.36)}
+.changesScreenHeader::after,.breaksScreenHeader::after{border-width:0 0 1px}.bottom::after{border-width:1px 0 0}
+.appDialog{background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.7);-webkit-backdrop-filter:saturate(160%) blur(26px);backdrop-filter:saturate(160%) blur(26px)}
+.updateBanner{background:rgba(32,32,35,.84);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:saturate(150%) blur(18px);backdrop-filter:saturate(150%) blur(18px)}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.bottom{background:#fff}.changesScreenHeader,.breaksScreenHeader{background:var(--ios-bg)}.appDialog{background:#fff}.updateBanner{background:#202023}}
+
+/* The automatic Pager and Reliever order is information, not another task. */
+#changes .labourOrderBox.automatic{padding:12px 13px}
+#changes .labourOrderHeading h3{font-size:14px}
+#changes .labourOrderHeading span{margin-top:2px;font-size:8px}
+#changes .labourOrderGrid{display:block;margin-top:8px;border-top:1px solid var(--ios-separator)}
+#changes .labourOrderResult{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 0;border:0;border-bottom:1px solid var(--ios-separator);border-radius:0;background:transparent}
+#changes .labourOrderResult b{margin:0;color:var(--ios-label);font-size:11px}
+#changes .labourOrderResult span{color:var(--ios-secondary);font-size:10px;text-align:right}
+#changes .labourAutomaticHint{margin-top:8px;padding-top:0;border:0;font-size:9px}
+
+body.dark .bottom{background:rgba(28,28,30,.76);border-top-color:rgba(255,255,255,.12)}
+body.dark .changesScreenHeader,body.dark .breaksScreenHeader{background:rgba(18,18,20,.78);border-bottom-color:rgba(255,255,255,.1)}
+body.dark .appDialog{background:rgba(28,28,30,.9);border-color:rgba(255,255,255,.14)}
+body.dark #changes .labourOrderResult{background:transparent!important;border-color:var(--ios-separator)}
+
+@media(prefers-reduced-motion:reduce){
+  .view:not(.hidden),.changesStepPane:not(.hidden),.appDialog[open],.updateBanner:not(.hidden),.toast[style*="block"]{animation:none!important}
+  button:active:not(:disabled),.bottom button.active svg,.bottom button:active:not(:disabled) svg{transform:none!important}
+}
