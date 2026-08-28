@@ -360,3 +360,315 @@ body.dark .releaseDialog .dialogHead,body.dark .releaseHistory{background:#10273
 .nightRoleEditorBody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 12px 12px;border-top:1px solid var(--app-line)}.nightRoleGuidance,.nightRoleReason,.nightRoleActions{grid-column:1/-1}.nightRoleGuidance{padding-top:10px;color:var(--app-muted);font-size:10px;line-height:1.4}.nightRoleEditorBody label>span{display:block;margin-bottom:4px;color:#607581;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.035em}.nightRoleEditorBody select,.nightRoleEditorBody input{width:100%;min-height:39px;padding:7px 9px;border-radius:9px;font-size:11px}.nightRoleActions{display:flex;gap:7px}.nightRoleActions button{flex:1;min-height:38px;margin:0;padding:7px;font-size:10px}.nightRoleNotice{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border:1px solid #e8bd7e;border-radius:11px;background:#fffaf2;color:#6e4b1c}.nightRoleNotice b{font-size:11px}.nightRoleNotice span{font-size:9.5px}
 body.dark .nightRoleEditor,body.dark .labourOrderBox.automatic{background:var(--app-card);border-color:var(--app-line)}body.dark .labourOrderHeading span{color:#80cbc3}
 @media(max-width:360px){.nightRoleEditorBody{grid-template-columns:1fr}#today .statusChip small{font-size:8.8px}}
+
+/* V31.3 calm, compact Changes workspace. */
+body[data-view="changes"]{background:#f3f6f7;color:var(--app-text)}
+body[data-view="changes"] main{padding:0 12px 84px;background:#f3f6f7}
+#changes{position:relative}
+#changes::before{content:"";display:block;height:5px;margin:0 -12px;background:#075f5c}
+
+.changesScreenHeader{margin:0 -12px;padding:calc(12px + env(safe-area-inset-top)) 17px 11px;background:#fff;color:var(--app-text);border:0;border-bottom:1px solid var(--app-line);border-radius:0;box-shadow:none}
+.changesScreenHeader .screenEyebrow{color:#37716f;font-size:9px;letter-spacing:.085em}
+.changesScreenHeader h1{margin-top:3px;color:var(--app-text);font-size:21px;line-height:1.08;letter-spacing:-.025em}
+.changesScreenHeader p{margin-top:6px;color:#33776f;font-size:10px;font-weight:760}
+.changesScreenHeader p i{width:7px;height:7px;box-shadow:0 0 0 3px #e0f4e8}
+.changesScreenHeader .screenInfoButton{width:38px;height:38px;min-height:38px;margin:0;padding:0;border:1px solid #cbd7db;border-radius:11px;background:#fff;color:#36515e;font-family:Georgia,serif;font-size:19px;box-shadow:none}
+
+#changes>.changesDatePanel{margin:0 -12px;padding:9px 16px 10px;border:0;border-bottom:1px solid var(--app-line);border-radius:0;background:#fff;color:var(--app-text);box-shadow:none}
+#changes>.changesDatePanel .grid2{grid-template-columns:minmax(0,1fr) 104px;gap:10px;align-items:center}
+#changes>.changesDatePanel label{margin:0;color:var(--app-muted);font-size:8.5px;letter-spacing:.065em}
+#changes>.changesDatePanel .dateNav{grid-template-columns:35px minmax(0,1fr) 35px;gap:0;margin-top:4px;overflow:hidden;border:1px solid var(--app-line);border-radius:11px;background:#fff}
+#changes>.changesDatePanel .dateNav>button,#changes>.changesDatePanel .prettyDateButton{height:43px;min-height:43px;margin:0;border:0;border-radius:0;background:#fff;box-shadow:none}
+#changes>.changesDatePanel .dateNav>button{padding:0;color:#48616e;font-size:22px}
+#changes>.changesDatePanel .dateNav>button:first-child{border-right:1px solid var(--app-line)}
+#changes>.changesDatePanel .dateNav>button:last-child{border-left:1px solid var(--app-line)}
+#changes>.changesDatePanel .prettyDateButton{padding:4px 5px}
+#changes>.changesDatePanel .prettyDateButton strong{color:var(--app-text);font-size:11.5px;line-height:1.15}
+#changes>.changesDatePanel .prettyDateButton small{margin-top:2px;color:var(--app-muted);font-size:8.5px}
+#changes>.changesDatePanel .dateResetBtn{width:auto;min-height:20px;margin:3px 0 0;padding:2px 0;border:0;background:transparent;color:#27746f;font-size:8.8px;font-weight:800;text-align:left;box-shadow:none}
+#changes>.changesDatePanel .staffingCount{min-height:54px;margin-top:12px;padding:3px 0 3px 12px;border:0;border-left:1px solid var(--app-line);border-radius:0;background:transparent;color:var(--app-text);box-shadow:none}
+#changes>.changesDatePanel .staffingCount span{color:var(--app-muted);font-size:8px;letter-spacing:.07em}
+#changes>.changesDatePanel .staffingCount strong{margin-top:2px;color:var(--app-text);font-size:15px;line-height:1.1}
+#changes>.changesDatePanel .staffingCount small{margin-top:3px;color:var(--app-muted);font-size:8px;line-height:1.15}
+
+#changes>.changePanel{margin:0 -12px;padding:0 12px 18px;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
+#changes .changesWorkflowTabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 -12px 10px;padding:9px 12px;border-bottom:1px solid var(--app-line);background:#fff}
+#changes .changesWorkflowTabs button{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-height:45px;margin:0;padding:5px 7px;border:0;border-right:1px solid #e3e9ec;border-radius:0;background:transparent;color:#566b76;text-align:center;box-shadow:none}
+#changes .changesWorkflowTabs button:first-child{border-radius:10px 0 0 10px}
+#changes .changesWorkflowTabs button:last-child{border-right:0;border-radius:0 10px 10px 0}
+#changes .changesWorkflowTabs button>span{flex:0 0 25px;width:25px;height:25px;margin:0;border:1px solid #ccd7dc;background:#fff;color:#5a6d77;font-size:10.5px}
+#changes .changesWorkflowTabs button b{display:block;font-size:11px;white-space:nowrap}
+#changes .changesWorkflowTabs button small{display:none}
+#changes .changesWorkflowTabs button.active{background:#e8f4f3;color:#075f5c;box-shadow:inset 0 0 0 1px #c8e3e0}
+#changes .changesWorkflowTabs button.active>span{border-color:#087d79;background:#087d79;color:#fff}
+#changes .changesWorkflowTabs button.complete>span{border-color:#77bd8d;background:#f1faf4;color:#27733f}
+#changes .changesWorkflowTabs button.complete::after{top:4px;right:5px;width:15px;height:15px;background:#e4f5e9;color:#288046;font-size:8px}
+#changes .changesWorkflowState{margin:0 0 10px;padding:10px 12px;border:1px solid #e2c98e;border-radius:10px;box-shadow:none}
+#changes .changesStepPane{padding:0}
+#changes .staffingSection,#changes .confirmationCard{margin-top:9px;border:1px solid var(--app-line);border-left-width:3px;border-radius:12px;background:#fff;box-shadow:none}
+#changes .staffingSection .stepHeader{padding-top:11px}
+
+body.dark[data-view="changes"],body.dark[data-view="changes"] main{background:var(--app-bg)}
+body.dark #changes::before{background:#17918b}
+body.dark .changesScreenHeader,body.dark #changes>.changesDatePanel,body.dark #changes .changesWorkflowTabs{background:#102734;color:var(--app-text);border-color:var(--app-line)}
+body.dark .changesScreenHeader h1,body.dark #changes>.changesDatePanel .prettyDateButton strong,body.dark #changes>.changesDatePanel .staffingCount strong{color:var(--app-text)}
+body.dark .changesScreenHeader .screenInfoButton,body.dark #changes>.changesDatePanel .dateNav,body.dark #changes>.changesDatePanel .dateNav>button,body.dark #changes>.changesDatePanel .prettyDateButton,body.dark #changes .changesWorkflowTabs button>span{background:#102734;color:var(--app-text);border-color:var(--app-line)}
+body.dark #changes>.changesDatePanel .staffingCount{background:transparent!important;border-color:var(--app-line)}
+body.dark #changes .changesWorkflowTabs button{color:#b7c7ce;border-color:var(--app-line)}
+body.dark #changes .changesWorkflowTabs button.active{background:#163b3d;color:#8ee0da;box-shadow:inset 0 0 0 1px #276865}
+body.dark #changes .changesWorkflowTabs button.active>span{border-color:#23a49d;background:#087d79;color:#fff}
+body.dark #changes .changesWorkflowTabs button.complete>span{border-color:#397d51;background:#173c2b;color:#9ce1b8}
+
+@media(max-width:420px){
+  #changes>.changesDatePanel .grid2{grid-template-columns:minmax(0,1fr) 92px;gap:8px}
+  #changes .changesWorkflowTabs{padding-left:10px;padding-right:10px}
+  #changes .changesWorkflowTabs button{gap:5px;padding-left:4px;padding-right:4px}
+  #changes .changesWorkflowTabs button b{font-size:10.5px}
+}
+@media(max-width:345px){
+  #changes>.changesDatePanel .grid2{grid-template-columns:1fr}
+  #changes>.changesDatePanel .staffingCount{margin-top:2px;padding:7px 0 0;border-left:0;border-top:1px solid var(--app-line)}
+  #changes .changesWorkflowTabs button>span{width:22px;height:22px;flex-basis:22px}
+  #changes .changesWorkflowTabs button b{font-size:9.5px}
+}
+
+/* V32.0 Apple-inspired clinical design system. */
+:root{
+  --ios-bg:#f2f2f7;
+  --ios-surface:#ffffff;
+  --ios-surface-raised:#ffffff;
+  --ios-fill:#e9e9ee;
+  --ios-label:#1c1c1e;
+  --ios-secondary:#6e6e73;
+  --ios-tertiary:#8e8e93;
+  --ios-separator:rgba(60,60,67,.18);
+  --ios-accent:#087d79;
+  --ios-accent-soft:#e5f4f2;
+  --ios-green:#248a3d;
+  --ios-red:#d93645;
+  --ios-amber:#b76500;
+  --ios-radius:16px;
+  --ios-radius-small:12px;
+  --ios-shadow:0 1px 2px rgba(0,0,0,.035),0 8px 24px rgba(27,45,58,.045);
+  --app-bg:var(--ios-bg);
+  --app-card:var(--ios-surface);
+  --app-text:var(--ios-label);
+  --app-muted:var(--ios-secondary);
+  --app-line:var(--ios-separator);
+  --app-teal:var(--ios-accent);
+}
+html{background:var(--ios-bg)}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--ios-bg);color:var(--ios-label);letter-spacing:-.005em}
+body[data-view="today"],body[data-view="changes"],body[data-view="breaks"],body[data-view="roster"],body[data-view="admin"]{background:var(--ios-bg);color:var(--ios-label)}
+body[data-view] main{max-width:none;padding:0 12px calc(88px + env(safe-area-inset-bottom));background:var(--ios-bg)}
+.view{max-width:680px;margin-inline:auto}
+
+/* Hospital identity remains exact, while the surrounding shell becomes quieter. */
+#appHeader{padding:calc(8px + env(safe-area-inset-top)) 16px 10px;border:0;border-bottom:1px solid var(--ios-separator);border-radius:0;background:rgba(255,255,255,.98);color:var(--ios-label);box-shadow:none}
+#appHeader .hospitalStrip,#appHeader .head{width:100%;max-width:680px;margin-inline:auto}
+#appHeader .hospitalStrip{display:flex;margin-bottom:6px;padding:0;background:transparent}
+#appHeader .hospitalStrip img{width:min(205px,58vw);height:43px;object-fit:contain;object-position:left center}
+#appHeader .hospitalStrip span{max-width:116px;color:#34343a;font-size:9.5px;font-weight:780;line-height:1.25;letter-spacing:.045em}
+#appHeader .head{align-items:center;margin-top:0}
+#appHeader .motto{max-width:none;margin:0;padding-right:8px;color:var(--ios-secondary);font-size:10px;font-weight:510;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip}
+#appHeader .headActions{gap:5px}
+#appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share{width:34px;height:34px;min-height:34px;border:0;border-radius:50%;background:var(--ios-fill);color:#34343a;box-shadow:none}
+#appHeader .headActions button:active{transform:scale(.96)}
+#appHeader .accountInitial{width:26px;height:26px;background:var(--ios-accent);font-size:11px}
+
+/* Shared controls and surfaces. */
+button,input,select,textarea{font:inherit}
+button{transition:background-color .16s ease,color .16s ease,transform .12s ease}
+button.primary,.primary{border-color:var(--ios-accent);background:var(--ios-accent);color:#fff;box-shadow:none}
+button.primary:active,.primary:active{transform:scale(.985);background:#066d69}
+button.soft,.soft{border-color:transparent;background:var(--ios-fill);color:var(--ios-accent);box-shadow:none}
+input,select,textarea{border:1px solid var(--ios-separator);border-radius:11px;background:#fff;color:var(--ios-label);box-shadow:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(8,125,121,.65);box-shadow:0 0 0 3px rgba(8,125,121,.12);outline:0}
+.panel,.card{border:0;border-radius:var(--ios-radius);background:var(--ios-surface);box-shadow:var(--ios-shadow)}
+.sectionTitle,.sectionHeadingRow .sectionTitle,.breakPlanTitle h2{color:var(--ios-label);font-size:20px;font-weight:760;letter-spacing:-.025em}
+.sectionHeadingRow{margin:18px 2px 8px}.sectionHeadingRow .sectionTitle{margin:0}
+.inlineLive,.breakPlanTitle span{margin:0;color:var(--ios-secondary);font-size:10px}
+
+/* Night: personal allocation, then actionable summary, then the team. */
+body[data-view="today"] main{background:var(--ios-bg)}
+#today>.nightOverviewPanel{margin:0;padding:12px 0 8px;background:transparent;color:var(--ios-label);box-shadow:none}
+#today .nightDateShell{margin:0 0 17px}
+#today .nightDateShell .dateNav{grid-template-columns:42px minmax(0,1fr) 42px;gap:0;overflow:hidden;border:1px solid var(--ios-separator);border-radius:var(--ios-radius-small);background:var(--ios-surface)}
+#today .nightDateShell .dateNav>button,#today .nightDateShell .prettyDateButton{height:48px;min-height:48px;border:0;border-radius:0;background:var(--ios-surface);color:var(--ios-accent);box-shadow:none}
+#today .nightDateShell .dateNav>button:first-child{border-right:1px solid var(--ios-separator)}
+#today .nightDateShell .dateNav>button:last-child{border-left:1px solid var(--ios-separator)}
+#today .nightDateShell .prettyDateButton strong{color:var(--ios-label);font-size:14px;font-weight:720}
+#today .nightDateShell .prettyDateButton small{color:var(--ios-secondary);font-size:9px}
+#today .personalNight{margin-bottom:0}
+#today .personalNight>.sectionTitle{margin:0 2px 8px;color:var(--ios-label);font-size:20px}
+#today .personalNightCard{min-height:76px;padding:12px 13px;border:1px solid var(--ios-separator);border-radius:var(--ios-radius);background:var(--ios-surface);color:var(--ios-label);box-shadow:var(--ios-shadow)}
+#today .personalAvatar{width:48px;height:48px;background:var(--ios-accent);font-size:19px}
+#today .personalCopy b{color:var(--ios-label);font-size:17px;font-weight:720}
+#today .personalCopy span{color:var(--ios-secondary);font-size:11.5px}
+#today .personalChangeBtn{color:var(--ios-accent);font-weight:680}
+#today .personalNamePicker{border-color:var(--ios-separator);border-radius:var(--ios-radius);box-shadow:var(--ios-shadow)}
+#today .personalTaskCard{border:1px solid rgba(183,101,0,.35);border-radius:var(--ios-radius);background:#fff9ef;box-shadow:none}
+#today .nightSummaryTitle{margin-top:19px}
+#today .nightSummaryTitle>span{color:var(--ios-secondary);font-size:9.5px}
+#today .nightStatusRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin:0;overflow:hidden;border:1px solid var(--ios-separator);border-radius:var(--ios-radius);background:var(--ios-surface);box-shadow:var(--ios-shadow)}
+#today .statusChip{min-height:62px;margin:0;padding:9px 26px 9px 12px;border:0;border-radius:0!important;background:var(--ios-surface)!important;color:var(--ios-label)!important;box-shadow:none!important}
+#today .statusChip:nth-child(odd){border-right:1px solid var(--ios-separator)}
+#today .statusChip:nth-child(-n+2){border-bottom:1px solid var(--ios-separator)}
+#today .statusChip svg{color:var(--ios-accent)}
+#today .statusChip.absenceChip svg{color:var(--ios-red)}
+#today .statusChip.readyChip svg{color:var(--ios-green)}
+#today .statusChip.overtimeChip svg{color:var(--ios-amber)}
+#today .statusChip.taskChip svg{color:var(--ios-amber)}
+#today .statusChip b{color:var(--ios-label);font-size:15px;font-weight:750}
+#today .statusChip small{color:var(--ios-secondary);font-size:9.5px}
+#today .statusChip::after{color:#b2b2b7}
+#today .roles{display:block;overflow:hidden;border:1px solid var(--ios-separator);border-radius:var(--ios-radius);background:var(--ios-surface);box-shadow:var(--ios-shadow)}
+#today .role{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;min-height:65px;margin:0;padding:10px 32px 10px 13px;border:0;border-bottom:1px solid var(--ios-separator);border-radius:0;background:var(--ios-surface);color:var(--ios-label);box-shadow:none}
+#today .role:last-child{border-bottom:0}
+#today .role::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 2px 2px 0;background:#9b9ba0}
+#today .role.rFirst::before{background:#0d9c97}#today .role.rSecond::before{background:#7a49b4}#today .role.rPager::before{background:var(--ios-red)}#today .role.rReliever::before,#today .role.rFull::before{background:var(--ios-green)}#today .role.r7::before{background:var(--ios-amber)}
+#today .role.mine{outline:0;background:#f1faf9;box-shadow:inset 3px 0 0 var(--ios-accent)}
+#today .roleIcon{width:36px;height:36px;border-radius:10px}
+#today .name{color:var(--ios-label);font-size:15.5px;font-weight:720}
+#today .role .time{color:var(--ios-secondary);font-size:10.5px}
+#today .role::after{right:11px;color:#b2b2b7}
+#today .additionalStaff{margin:0;padding:12px;border:0;border-top:1px solid var(--ios-separator);border-radius:0;background:#fff9ef}
+#today .rosterShortcutRow{margin:12px 0 0;gap:8px}
+#today .rosterShortcutRow .rosterShortcutBtn{min-height:48px;border:1px solid var(--ios-separator);border-radius:var(--ios-radius-small);background:var(--ios-surface);color:var(--ios-accent);box-shadow:none}
+#today .actionPanel{margin-top:10px;padding:0;background:transparent;box-shadow:none}
+#today .actionPanel .emailRosterBtn{min-height:48px;border-radius:var(--ios-radius-small);background:var(--ios-accent)}
+
+/* Changes: large title, grouped date, one segmented workflow and calm forms. */
+body[data-view="changes"] main{background:var(--ios-bg)}
+#changes::before{display:none}
+.changesScreenHeader,.breaksScreenHeader{margin:0 -12px;padding:calc(14px + env(safe-area-inset-top)) 18px 12px;border:0;border-bottom:1px solid var(--ios-separator);border-radius:0;background:var(--ios-bg);color:var(--ios-label);box-shadow:none}
+.changesScreenHeader .screenEyebrow,.breaksScreenHeader .screenEyebrow{color:var(--ios-secondary);font-size:8.5px;letter-spacing:.075em}
+.changesScreenHeader h1,.breaksScreenHeader h1{margin-top:3px;color:var(--ios-label);font-size:27px;font-weight:760;line-height:1.08;letter-spacing:-.035em}
+.changesScreenHeader p,.breaksScreenHeader p{margin-top:5px;color:var(--ios-secondary);font-size:10px}
+.changesScreenHeader .screenInfoButton,.breaksScreenHeader .screenInfoButton{width:34px;height:34px;min-height:34px;border:0;border-radius:50%;background:var(--ios-fill);color:var(--ios-accent);font-size:17px;box-shadow:none}
+#changes>.changesDatePanel{margin:12px 0;padding:12px;border:0;border-radius:var(--ios-radius);background:var(--ios-surface);color:var(--ios-label);box-shadow:var(--ios-shadow)}
+#changes>.changesDatePanel .grid2{grid-template-columns:minmax(0,1fr) 98px;gap:10px}
+#changes>.changesDatePanel label{color:var(--ios-secondary)}
+#changes>.changesDatePanel .dateNav{margin-top:4px;border-color:var(--ios-separator);background:var(--ios-surface)}
+#changes>.changesDatePanel .dateNav>button,#changes>.changesDatePanel .prettyDateButton{background:var(--ios-surface)}
+#changes>.changesDatePanel .dateNav>button{color:var(--ios-accent)}
+#changes>.changesDatePanel .prettyDateButton strong,#changes>.changesDatePanel .staffingCount strong{color:var(--ios-label)}
+#changes>.changesDatePanel .prettyDateButton small,#changes>.changesDatePanel .staffingCount span,#changes>.changesDatePanel .staffingCount small{color:var(--ios-secondary)}
+#changes>.changesDatePanel .staffingCount{border-color:var(--ios-separator);background:transparent;color:var(--ios-label)}
+#changes>.changesDatePanel .dateResetBtn{color:var(--ios-accent)}
+#changes>.changePanel{margin:0;padding:0 0 18px;background:transparent;box-shadow:none}
+#changes>.changePanel>.ctop{display:none}
+#changes .changesWorkflowTabs{margin:0 0 12px;padding:3px;border:0;border-radius:10px;background:#e3e3e8;box-shadow:inset 0 0 0 1px rgba(60,60,67,.08)}
+#changes .changesWorkflowTabs button{min-height:42px;border:0;border-radius:8px!important;background:transparent;color:var(--ios-secondary)}
+#changes .changesWorkflowTabs button>span{width:23px;height:23px;flex-basis:23px;border:0;background:rgba(255,255,255,.62);color:var(--ios-secondary)}
+#changes .changesWorkflowTabs button.active{background:var(--ios-surface);color:var(--ios-label);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#changes .changesWorkflowTabs button.active>span{background:var(--ios-accent);color:#fff}
+#changes .changesWorkflowTabs button.complete>span{background:#e7f5eb;color:var(--ios-green)}
+#changes .changesWorkflowTabs button.complete::after{top:2px;right:4px;background:var(--ios-green);color:#fff}
+#changes .changesWorkflowState{margin:0 0 12px;padding:11px 13px;border:0;border-radius:var(--ios-radius-small);background:#fff6e5;color:#6d4300;box-shadow:none}
+#changes .changesWorkflowState.ready{border:0;background:var(--ios-accent-soft);color:#155f5b}
+#changes .changesWorkflowState.complete{background:#eaf6ed;color:#236535}
+#changes .staffingSection,#changes .confirmationCard{margin:0 0 12px;padding:14px;border:0;border-radius:var(--ios-radius);background:var(--ios-surface);box-shadow:var(--ios-shadow)}
+#changes .staffingSection+.staffingSection{margin-top:12px}
+#changes .stepHeader>span{border-radius:8px;background:var(--ios-accent-soft);color:var(--ios-accent)}
+#changes .stepHeader h3{color:var(--ios-label);font-size:16px;letter-spacing:-.015em}
+#changes .staffingSection>.time,#changes .confirmationCard>.time{color:var(--ios-secondary);font-size:11px;line-height:1.45}
+#changes .continueWorkflowBtn,#changes #saveAllocationsBtn{min-height:48px;border-radius:var(--ios-radius-small)}
+#changes .nightRoleEditor,#changes .fixedAllocationBox,#changes .labourOrderBox.automatic{border:1px solid var(--ios-separator);border-radius:var(--ios-radius-small);background:var(--ios-surface);box-shadow:none}
+#changes .nightRoleEditor>summary b,#changes .fixedAllocationBox summary{color:var(--ios-label)}
+#changes .historyBox{border-color:var(--ios-separator);border-radius:var(--ios-radius-small);background:var(--ios-surface)}
+
+/* Breaks: the usable plan is the visual focus. */
+body[data-view="breaks"] main{background:var(--ios-bg)}
+#breaks>.panel{margin:12px 0;padding:12px;border:0;border-radius:var(--ios-radius);background:var(--ios-surface);color:var(--ios-label);box-shadow:var(--ios-shadow)}
+#breaks>.panel>h2{margin:0 0 10px;color:var(--ios-label);font-size:20px;letter-spacing:-.025em}
+#breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr) 98px;gap:10px}
+#breaks>.panel>.grid2 label{color:var(--ios-secondary)}
+#breaks .dateNav{overflow:hidden;border:1px solid var(--ios-separator);border-radius:var(--ios-radius-small);background:var(--ios-surface)}
+#breaks .dateNav>button,#breaks .prettyDateButton{border:0;border-radius:0;background:var(--ios-surface);color:var(--ios-accent)}
+#breaks .dateNav>button:first-child{border-right:1px solid var(--ios-separator)}#breaks .dateNav>button:last-child{border-left:1px solid var(--ios-separator)}
+#breaks .prettyDateButton strong,#breaks .staffingCount strong{color:var(--ios-label)}
+#breaks .prettyDateButton small,#breaks .staffingCount span,#breaks .staffingCount small{color:var(--ios-secondary)}
+#breaks .staffingCount{border:0;border-left:1px solid var(--ios-separator);border-radius:0;background:transparent;color:var(--ios-label);box-shadow:none}
+#breaks .breakSummaryRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:12px;overflow:hidden;border:1px solid var(--ios-separator);border-radius:var(--ios-radius-small);background:var(--ios-surface)}
+#breaks .breakSummaryItem{min-height:62px;margin:0;border:0;border-right:1px solid var(--ios-separator);border-radius:0;background:var(--ios-surface);box-shadow:none}
+#breaks .breakSummaryItem:last-child{border-right:0}
+#breaks #breakDate{margin-top:10px;padding:9px 10px;border:0;border-radius:10px;background:var(--ios-fill);color:var(--ios-secondary);font-size:10px}
+#breaks .breakPlanTitle{margin:18px 2px 9px}
+#breaks #breakList{display:grid;gap:10px}
+#breaks .breakGrid{gap:10px}
+#breaks .breakGroup{margin:0;padding:13px 14px;border:0;border-radius:var(--ios-radius);background:var(--ios-surface)!important;box-shadow:var(--ios-shadow)}
+#breaks .breakGroup.firstBreak{border-top:3px solid #7a49b4}#breaks .breakGroup.secondBreak{border-top:3px solid #0d9c97}#breaks .breakGroup.lwBreak{border-top:3px solid var(--ios-amber)}
+#breaks .breakGroup h3{margin-bottom:9px;font-size:14px;letter-spacing:-.01em}
+#breaks .breakPerson{padding:9px 0;border:0;border-top:1px solid var(--ios-separator);border-radius:0;color:var(--ios-label);font-size:13px}
+#breaks .breakPerson:first-of-type{border-top:0}
+#breaks .breakNote{color:var(--ios-secondary);font-size:10.5px;line-height:1.45}
+#breaks>.actionPanel{display:grid;gap:8px;margin:10px 0 0;padding:0;background:transparent;box-shadow:none}
+#breaks>.actionPanel button{min-height:48px;margin:0;border-radius:var(--ios-radius-small)}
+#breaks>.actionPanel .emailRosterBtn{border:1px solid var(--ios-separator);background:var(--ios-surface);color:var(--ios-accent)}
+
+/* Persistent navigation and overlays. */
+.bottom{min-height:66px;padding:5px 18px calc(5px + env(safe-area-inset-bottom));border-top:1px solid var(--ios-separator);background:rgba(255,255,255,.98);box-shadow:none}
+.bottom button{height:50px;margin:0;border:0;border-radius:10px;background:transparent;color:var(--ios-tertiary)}
+.bottom button.active{margin:0;background:transparent!important;color:var(--ios-accent)}
+.bottom button svg{width:23px;height:23px;stroke-width:1.75}.bottom span{font-size:9px;font-weight:670}
+.bottom .navTaskBadge{top:1px;background:var(--ios-red)}
+.appDialog,.releaseDialog[open]{border:0;border-radius:20px;background:var(--ios-surface);color:var(--ios-label);box-shadow:0 24px 80px rgba(0,0,0,.28)}
+.appDialog::backdrop{background:rgba(0,0,0,.42);backdrop-filter:none}
+.releaseDialog .dialogHead,.releaseHistory{background:var(--ios-surface)}
+.releaseEntry.latest{border-left-color:var(--ios-accent);background:var(--ios-accent-soft)}
+.releaseVersion span{color:var(--ios-accent)}
+.toast{border-radius:13px;background:#2c2c2e;color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.2)}
+.authGate{background:var(--ios-bg)}
+.authCard{border:0;border-radius:22px;background:var(--ios-surface);box-shadow:var(--ios-shadow)}
+.authSwitch{padding:3px;border-radius:10px;background:var(--ios-fill)}
+.authSwitch button{border:0;border-radius:8px;background:transparent}.authSwitch button.active{background:var(--ios-surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* Dark mode uses the same hierarchy rather than a separate visual language. */
+body.dark{
+  --ios-bg:#000000;
+  --ios-surface:#1c1c1e;
+  --ios-surface-raised:#2c2c2e;
+  --ios-fill:#2c2c2e;
+  --ios-label:#f5f5f7;
+  --ios-secondary:#aeaeb2;
+  --ios-tertiary:#8e8e93;
+  --ios-separator:rgba(84,84,88,.65);
+  --ios-accent:#5ac8c2;
+  --ios-accent-soft:#143c3a;
+  --app-bg:var(--ios-bg);
+  --app-card:var(--ios-surface);
+  --app-text:var(--ios-label);
+  --app-muted:var(--ios-secondary);
+  --app-line:var(--ios-separator);
+  background:var(--ios-bg);color:var(--ios-label)
+}
+body.dark[data-view] main,body.dark[data-view="today"],body.dark[data-view="changes"],body.dark[data-view="breaks"]{background:var(--ios-bg)}
+body.dark #appHeader,body.dark .changesScreenHeader,body.dark .breaksScreenHeader{background:var(--ios-surface);color:var(--ios-label);border-color:var(--ios-separator)}
+body.dark #appHeader .hospitalStrip span,body.dark .changesScreenHeader h1,body.dark .breaksScreenHeader h1{color:var(--ios-label)}
+body.dark #appHeader .motto{color:var(--ios-secondary)}
+body.dark #appHeader .headActions button,body.dark #appHeader .adminSettingsBtn,body.dark #appHeader .accountBtn,body.dark #appHeader .share{background:var(--ios-fill);color:var(--ios-label)}
+body.dark #today .nightDateShell .dateNav,body.dark #today .nightDateShell .dateNav>button,body.dark #today .nightDateShell .prettyDateButton,body.dark #today .personalNightCard,body.dark #today .personalNamePicker,body.dark #today .nightStatusRow,body.dark #today .statusChip,body.dark #today .roles,body.dark #today .role,body.dark #today .rosterShortcutBtn,body.dark #changes>.changesDatePanel,body.dark #changes>.changesDatePanel .dateNav,body.dark #changes>.changesDatePanel .dateNav>button,body.dark #changes>.changesDatePanel .prettyDateButton,body.dark #changes .staffingSection,body.dark #changes .confirmationCard,body.dark #changes .nightRoleEditor,body.dark #changes .fixedAllocationBox,body.dark #changes .labourOrderBox.automatic,body.dark #breaks>.panel,body.dark #breaks .dateNav,body.dark #breaks .dateNav>button,body.dark #breaks .prettyDateButton,body.dark #breaks .breakSummaryRow,body.dark #breaks .breakSummaryItem,body.dark #breaks .breakGroup,body.dark #breaks>.actionPanel .emailRosterBtn{background:var(--ios-surface)!important;color:var(--ios-label);border-color:var(--ios-separator)}
+body.dark #today .role.mine{background:#12312f!important}body.dark #today .personalTaskCard{background:#33260f;color:var(--ios-label)}
+body.dark #changes .changesWorkflowTabs{background:#2c2c2e}body.dark #changes .changesWorkflowTabs button.active{background:#48484a;color:var(--ios-label)}body.dark #changes .changesWorkflowTabs button>span{background:#3a3a3c;color:var(--ios-secondary)}
+body.dark #breaks #breakDate{background:var(--ios-fill);color:var(--ios-secondary)}
+body.dark .bottom{background:rgba(28,28,30,.98);border-color:var(--ios-separator)}
+body.dark .appDialog,body.dark .releaseDialog .dialogHead,body.dark .releaseHistory,body.dark .authCard{background:var(--ios-surface);color:var(--ios-label)}
+
+@media(max-width:420px){
+  #appHeader{padding-left:13px;padding-right:13px}
+  #appHeader .hospitalStrip img{width:min(188px,56vw);height:39px}
+  #appHeader .hospitalStrip span{max-width:102px;font-size:8.5px}
+  #appHeader .motto{font-size:9.2px}
+  .changesScreenHeader h1,.breaksScreenHeader h1{font-size:25px}
+  #changes>.changesDatePanel .grid2,#breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr) 90px}
+  #changes .changesWorkflowTabs button{gap:4px;padding:4px}
+  #changes .changesWorkflowTabs button b{font-size:10px}
+  #breaks .breakGrid{grid-template-columns:1fr}
+}
+@media(max-width:350px){
+  #appHeader .motto{max-width:190px}
+  #changes>.changesDatePanel .grid2,#breaks>.panel>.grid2{grid-template-columns:1fr}
+  #changes>.changesDatePanel .staffingCount,#breaks .staffingCount{margin-top:4px;padding:8px 0 0;border-left:0;border-top:1px solid var(--ios-separator)}
+  #changes .changesWorkflowTabs button{display:grid;justify-items:center;gap:2px}
+}
