@@ -754,8 +754,8 @@
             <div>
               <h3 id="profileHeading">Personal details</h3>
               <p>
-                Your photo, name and title appear on Night. Shared change
-                history continues to use your approved account identity.
+                Your photo, preferred name and role title appear in Your night.
+                Shared changes still use your approved account identity.
               </p>
               <button type="button" id="changeProfilePhoto">Choose photo</button
               ><button
@@ -775,7 +775,7 @@
           </div>
           <div class="profileFields">
             <label
-              ><span>Name shown in the app</span
+              ><span>Preferred name</span
               ><input
                 id="profileName"
                 maxlength="60"
@@ -783,7 +783,7 @@
                 placeholder="How the app greets you"
             /></label>
             <label
-              ><span>Role or title</span
+              ><span>Role title <small>(optional)</small></span
               ><input
                 id="profileJobTitle"
                 maxlength="80"
@@ -831,6 +831,12 @@
             <span
               ><b>Install app</b
               ><small>Add Night Roster to this device</small></span
+            ><i>›</i>
+          </button>
+          <button type="button" id="accountVersionHistoryBtn">
+            <span
+              ><b>Version history</b
+              ><small>See earlier Night Roster updates</small></span
             ><i>›</i>
           </button>
         </section>
@@ -915,8 +921,8 @@
     <dialog id="releaseNotes" class="appDialog">
       <div class="dialogHead">
         <div>
-          <h2>App updated</h2>
-          <p class="time">Version 34.1 is ready.</p>
+          <h2 id="releaseNotesTitle">App updated</h2>
+          <p class="time" id="releaseNotesIntro">Version 34.1 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
