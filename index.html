@@ -23,10 +23,10 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="manifest" href="manifest.webmanifest?v=34.0" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=34.0" />
+    <link rel="manifest" href="manifest.webmanifest?v=34.1" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=34.1" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=34.0" />
+    <link rel="stylesheet" href="styles.css?v=34.1" />
   </head>
   <body class="authPending">
     <section id="authGate" class="authGate" aria-labelledby="authTitle">
@@ -34,7 +34,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=34.0"
+              src="mater-dei-logo.png?v=34.1"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -140,7 +140,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=34.0" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=34.1" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -195,7 +195,7 @@
             type="button"
             aria-label="Open account"
           >
-            <img id="accountAvatar" class="accountAvatar hidden" alt="" /><span
+            <img id="accountAvatar" class="accountAvatar hidden" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" /><span
               id="accountInitial"
               class="accountInitial"
               >●</span
@@ -741,6 +741,7 @@
               <img
                 id="profilePhotoPreview"
                 class="hidden"
+                src="data:image/gif;base64,R0lGODlhAQABAAAAACw="
                 alt="Your profile photo"
               />
               <span id="profilePhotoInitial">A</span>
@@ -753,8 +754,8 @@
             <div>
               <h3 id="profileHeading">Personal details</h3>
               <p>
-                Your photo and preferred name personalise this app. Shared
-                roster history continues to use your approved account identity.
+                Your photo, name and title appear on Night. Shared change
+                history continues to use your approved account identity.
               </p>
               <button type="button" id="changeProfilePhoto">Choose photo</button
               ><button
@@ -774,7 +775,7 @@
           </div>
           <div class="profileFields">
             <label
-              ><span>Preferred name</span
+              ><span>Name shown in the app</span
               ><input
                 id="profileName"
                 maxlength="60"
@@ -799,7 +800,7 @@
               ><small id="profileEmail"></small>
             </div>
           </div>
-          <button type="button" class="primary wide" id="saveProfileBtn">
+          <button type="button" class="primary wide hidden" id="saveProfileBtn">
             Save profile
           </button>
           <div
@@ -915,7 +916,7 @@
       <div class="dialogHead">
         <div>
           <h2>App updated</h2>
-          <p class="time">Version 34.0 is ready.</p>
+          <p class="time">Version 34.1 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -957,7 +958,7 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
-    <script src="app-core.js?v=34.0"></script>
-    <script src="app-ui.js?v=34.0"></script>
+    <script src="app-core.js?v=34.1"></script>
+    <script src="app-ui.js?v=34.1"></script>
   </body>
 </html>
