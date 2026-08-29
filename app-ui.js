@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V32.1 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V34.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -21,8 +21,13 @@ var activeChangesStep='staffing';
 var initialNightChosen=false;
 var automaticSelectedDate=null;
 var lastResumeRefresh=0;
+var onboardingStep=0;
+var onboardingCandidate=!localStorage.getItem('anaes_onboarding_complete_v34');
+var releaseNotesQueued=false;
+var pendingProfilePhoto=null;
 
 var RELEASE_HISTORY=[
+  {version:'34.0',date:'29 Aug 2026',title:'A clearer roster, personal account and safer sign-in',changes:['Night, Changes and Breaks now use one consistent Apple-inspired interface with clearer typography, restrained translucent navigation, native-style motion and matching light and dark appearances.','An ordinary six-nurse night stays quiet: Pager automatically works the Labour Ward first part with second break, while Reliever automatically works the second part with first break.','Redundant calculated-plan and duplicate Labour Ward panels have been removed, while the agreed night-only role editor remains available whenever people need to swap roles.','The account button now opens a personal sheet containing an editable preferred name, role, roster highlight, profile photo, appearance settings, installation help and the option to replay the introduction.','Profile photographs are resized on the device and stored privately, while shared roster history continues to use each person’s protected approved-account identity.','Recent absence, overtime and agreed night-only role changes now offer a temporary Undo action that reverses the shared change.','Supported devices can use an optional passkey with fingerprint, face recognition, device PIN or a security key, while password sign-in and password recovery remain available.','The introduction now explains passkey privacy clearly and allows a signed-in user to set one up without suggesting that Night Roster receives or stores biometric information.','Sign in, account creation, onboarding, controls, dialogs and wording have been refined as one coherent mobile experience.','All existing roster calculations, staffing rules, navigation, live data, automatic Labour Ward logic and absence and overtime workflows remain preserved.']},
   {version:'32.1',date:'28 Aug 2026',title:'Automatic standard plan and native motion',changes:['A standard six-nurse plan no longer asks for unnecessary confirmation when Pager and Reliever follow their automatic roster order.','Confirmation remains required after absences, overtime allocations, five or seven-nurse decisions, or agreed night-only role changes.','The bottom navigation, screen headers and overlays now use controlled translucent materials with solid clinical content surfaces.','Short spring-style transitions clarify taps, tab changes, sheets and screen navigation without delaying roster information.','Reduced-motion settings continue to remove non-essential movement automatically.']},
   {version:'32.0',date:'28 Aug 2026',title:'Apple-inspired roster redesign',changes:['Night, Changes and Breaks now share one calm mobile design system with grouped surfaces, hairline separators and consistent typography.','Your own allocation remains the first priority on Night, followed by a clearly interactive four-part staffing summary and a compact team list.','Changes now presents the selected night, workflow stages and staffing forms in one coherent working surface without competing coloured panels.','Breaks now prioritises the actual break groups while keeping staffing and Labour Ward status immediately accessible.','The bottom tab bar, controls, dialogs and dark mode were refined together, while all roster calculations, automatic Labour Ward rules and night-only role swaps remain unchanged.']},
   {version:'31.3',date:'28 Aug 2026',title:'Calmer Changes workspace',changes:['Staffing Changes now uses a compact light header with a restrained teal accent instead of an oversized coloured block.','The selected night and live staffing count sit together in one neatly aligned row, keeping more of the working form visible.','Staffing, Allocation and Confirm now form one slim segmented control with the numbers 1, 2 and 3 always visible and completed stages marked separately.','Borders, spacing and shadows were refined throughout the Changes screen for a quieter, more consistent mobile interface.','Dark mode now applies one coherent dark surface across the complete Changes screen instead of mixing dark and white sections.']},
@@ -57,9 +62,72 @@ function installGuideSteps(){
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
 
+function passkeySupported(){return !!(window.PublicKeyCredential&&supa&&supa.auth&&typeof supa.auth.signInWithPasskey==='function')}
+
+async function signInWithPasskey(){
+  if(!passkeySupported()){authMessage('Passkeys are not supported by this browser. You can still sign in with your password.',true);return}
+  var button=byId('authPasskeyBtn');button.disabled=true;authMessage('Use your fingerprint, face recognition or device PIN…');
+  try{var result=await supa.auth.signInWithPasskey();if(result.error)throw result.error;if(result.data&&result.data.user)await authorizeUser(result.data.user)}
+  catch(error){var cancelled=error&&(error.name==='NotAllowedError'||/cancel|not allowed/i.test(error.message||''));authMessage(cancelled?'Passkey sign-in was cancelled.':/disabled|not enabled/i.test(error.message||'')?'Passkeys have not been enabled for this roster yet. Use your password for now.':'Passkey sign-in could not be completed. You can still use your password.',!cancelled)}
+  finally{button.disabled=false}
+}
+
+function privateProfileName(){return currentPrivateProfile&&currentPrivateProfile.profile_name||currentUserProfile&&currentUserProfile.display_name||''}
+
+async function refreshProfileAvatar(){
+  profileAvatarUrl='';var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;
+  if(path&&profileFeatureAvailable){var result=await supa.storage.from('profile-photos').createSignedUrl(path,3600);if(!result.error&&result.data)profileAvatarUrl=result.data.signedUrl||''}
+  applyProfileIdentity();
+}
+
+function applyProfileIdentity(){
+  if(!currentUserProfile)return;var name=privateProfileName(),initial=(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),headerImage=byId('accountAvatar'),headerInitial=byId('accountInitial');
+  headerInitial.textContent=initial;headerImage.classList.toggle('hidden',!profileAvatarUrl);headerInitial.classList.toggle('hidden',!!profileAvatarUrl);if(profileAvatarUrl)headerImage.src=profileAvatarUrl;
+  byId('accountBtn').title=name+' · Open account';var preview=byId('profilePhotoPreview'),previewInitial=byId('profilePhotoInitial');if(preview){preview.classList.toggle('hidden',!profileAvatarUrl);previewInitial.classList.toggle('hidden',!!profileAvatarUrl);previewInitial.textContent=initial;if(profileAvatarUrl)preview.src=profileAvatarUrl}var remove=byId('removeProfilePhoto');if(remove)remove.classList.toggle('hidden',!profileAvatarUrl&&!pendingProfilePhoto);
+}
+
+async function loadOwnProfile(){
+  if(!currentUser)return;var result=await supa.from('user_profiles').select('user_id,profile_name,job_title,avatar_path,updated_at').eq('user_id',currentUser.id).maybeSingle();
+  if(result.error){profileFeatureAvailable=false;currentPrivateProfile=null;return}profileFeatureAvailable=true;currentPrivateProfile=result.data||{user_id:currentUser.id,profile_name:'',job_title:'',avatar_path:null};await refreshProfileAvatar();
+}
+
+function showProfileMessage(message,type){var el=byId('profileMessage');if(!el)return;el.textContent=message||'';el.className='formMessage'+(type?' '+type:'')}
+
+function populateAccountSheet(){
+  var profile=currentPrivateProfile||{},name=privateProfileName();byId('profileName').value=profile.profile_name||'';byId('profileJobTitle').value=profile.job_title||'';byId('profileApprovedName').textContent=currentUserProfile.display_name;byId('profileEmail').textContent=currentUserProfile.email;
+  var rosterName=myName();byId('profileRosterName').innerHTML='<option value="">Do not highlight a name</option>'+TEAM.map(function(item){return'<option value="'+esc(item)+'"'+(sameNurse(item,rosterName)?' selected':'')+'>'+esc(item)+'</option>'}).join('');byId('profilePhotoInitial').textContent=(name||'?').charAt(0).toUpperCase();byId('accountVersion').textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateAppearanceButtons();applyProfileIdentity();
+}
+
+async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
+
+function photoBlob(file){
+  return new Promise(function(resolve,reject){if(!file||!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>8*1024*1024){reject(new Error('Choose a JPEG, PNG or WebP photo smaller than 8 MB.'));return}var image=new Image(),url=URL.createObjectURL(file);image.onload=function(){var size=Math.min(image.naturalWidth,image.naturalHeight),left=(image.naturalWidth-size)/2,top=(image.naturalHeight-size)/2,canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;canvas.getContext('2d').drawImage(image,left,top,size,size,0,0,512,512);URL.revokeObjectURL(url);canvas.toBlob(function(blob){blob?resolve(blob):reject(new Error('The photo could not be prepared.'))},'image/jpeg',.86)};image.onerror=function(){URL.revokeObjectURL(url);reject(new Error('The selected photo could not be opened.'))};image.src=url})
+}
+
+async function chooseProfilePhoto(file){try{pendingProfilePhoto=await photoBlob(file);profileAvatarUrl=URL.createObjectURL(pendingProfilePhoto);applyProfileIdentity();showProfileMessage('Photo ready. Tap Save profile to upload it.','success')}catch(error){showProfileMessage(error.message,'error')}}
+
+async function saveProfile(){
+  if(!requireOnline())return;if(!profileFeatureAvailable){showProfileMessage('Run the V32 profile database upgrade first.','error');return}var button=byId('saveProfileBtn'),name=byId('profileName').value.trim(),title=byId('profileJobTitle').value.trim(),rosterName=byId('profileRosterName').value,path=currentPrivateProfile&&currentPrivateProfile.avatar_path||null;button.disabled=true;button.textContent='Saving…';showProfileMessage('Saving your profile…','');
+  try{if(pendingProfilePhoto){path=currentUser.id+'/avatar.jpg';var uploaded=await supa.storage.from('profile-photos').upload(path,pendingProfilePhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}var result=await supa.from('user_profiles').upsert({user_id:currentUser.id,profile_name:name||null,job_title:title||null,avatar_path:path,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select().single();if(result.error)throw result.error;currentPrivateProfile=result.data;pendingProfilePhoto=null;if(rosterName)localStorage.setItem('anaes_my_name',rosterName);else localStorage.removeItem('anaes_my_name');await refreshProfileAvatar();render();showProfileMessage('Your profile has been saved.','success');toast('Profile saved')}
+  catch(error){showProfileMessage('Your profile could not be saved. '+(error.message||'Please try again.'),'error')}
+  finally{button.disabled=false;button.textContent='Save profile'}
+}
+
+async function removeProfilePhoto(){
+  if(!profileFeatureAvailable)return;pendingProfilePhoto=null;var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;if(path){var removed=await supa.storage.from('profile-photos').remove([path]);if(removed.error){showProfileMessage('The photo could not be removed.','error');return}var updated=await supa.from('user_profiles').update({avatar_path:null,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);if(updated.error){showProfileMessage('The photo record could not be updated.','error');return}currentPrivateProfile.avatar_path=null}profileAvatarUrl='';applyProfileIdentity();showProfileMessage('Profile photo removed.','success')
+}
+
+async function loadPasskeys(){
+  var host=byId('passkeyList'),button=byId('addPasskeyBtn'),message=byId('passkeyMessage');if(!passkeySupported()){host.innerHTML='<p class="accountHelp">Passkeys are not supported by this browser. Password sign-in remains available.</p>';button.classList.add('hidden');return}button.classList.remove('hidden');message.textContent='';var result=await supa.auth.passkey.list();if(result.error){host.innerHTML='<p class="accountHelp">No passkeys are available yet. Your administrator may still need to enable them in Supabase.</p>';return}var list=result.data&&result.data.passkeys||result.data||[];host.innerHTML=list.length?list.map(function(item){var id=item.id||item.passkey_id,label=item.friendly_name||item.friendlyName||'Saved passkey';return'<div class="passkeyRow"><span><b>'+esc(label)+'</b><small>Ready for password-free sign in</small></span><button type="button" data-remove-passkey="'+esc(id)+'">Remove</button></div>'}).join(''):'<p class="accountHelp">No passkey has been added to this account.</p>';Array.prototype.forEach.call(host.querySelectorAll('[data-remove-passkey]'),function(remove){remove.onclick=function(){deletePasskey(remove.getAttribute('data-remove-passkey'))}})
+}
+
+async function addPasskey(){var button=byId('addPasskeyBtn');button.disabled=true;byId('passkeyMessage').textContent='Follow your device instructions…';try{var result=await supa.auth.registerPasskey();if(result.error)throw result.error;if(result.data&&result.data.id)await supa.auth.passkey.update({passkeyId:result.data.id,friendlyName:'Night Roster on '+(navigator.platform||'this device')});byId('passkeyMessage').textContent='Passkey added. You can use it on the sign-in screen.';await loadPasskeys();toast('Passkey added')}catch(error){byId('passkeyMessage').textContent=/cancel|not allowed/i.test(error.message||'')?'Passkey setup was cancelled.':/disabled|not enabled/i.test(error.message||'')?'Passkeys must first be enabled in Supabase Authentication settings.':'The passkey could not be added. '+(error.message||'Please try again.')}finally{button.disabled=false}}
+
+async function deletePasskey(id){if(!id||!confirm('Remove this passkey from your Night Roster account?'))return;var result=await supa.auth.passkey.delete({passkeyId:id});if(result.error){byId('passkeyMessage').textContent='The passkey could not be removed.';return}await loadPasskeys();toast('Passkey removed')}
+
 function showReleaseNotesIfNeeded(){
   var seen=localStorage.getItem('anaes_seen_version'),returning=localStorage.getItem('anaes_selected_date')||localStorage.getItem('anaes_my_name');
-  if(seen===APP_VERSION)return;renderReleaseNotes();localStorage.setItem('anaes_seen_version',APP_VERSION);if(returning){var dialog=byId('releaseNotes');setTimeout(function(){if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal()},900)}
+  if(seen===APP_VERSION)return;renderReleaseNotes();localStorage.setItem('anaes_seen_version',APP_VERSION);if(returning){releaseNotesQueued=true;var dialog=byId('releaseNotes');setTimeout(function(){if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal()},900)}
 }
 
 function renderReleaseNotes(){
@@ -67,6 +135,40 @@ function renderReleaseNotes(){
   var intro=dialog.querySelector('.dialogHead .time');if(intro)intro.textContent='Version '+latest.version+' is ready · Full history below';
   var oldList=dialog.querySelector('ul'),history=dialog.querySelector('.releaseHistory');if(!history){history=document.createElement('div');history.className='releaseHistory';history.setAttribute('tabindex','0');history.setAttribute('aria-label','App release history');if(oldList)oldList.replaceWith(history);else dialog.appendChild(history)}
   history.innerHTML=RELEASE_HISTORY.map(function(entry,index){return'<section class="releaseEntry '+(index===0?'latest':'')+'"><div class="releaseVersion"><div><span>Version '+esc(entry.version)+'</span><h3>'+esc(entry.title)+'</h3></div><time>'+esc(entry.date)+'</time></div><ul>'+entry.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('')+'</ul></section>'}).join('');history.scrollTop=0;
+}
+
+function onboardingPages(){
+  var profileName=currentUserProfile&&currentUserProfile.display_name||'',selected=myName()||TEAM.find(function(name){return sameNurse(name,profileName)})||'',passkeyAction=passkeySupported()?'<button type="button" class="soft onboardingPasskeyButton" id="onboardingPasskeyBtn">Set up a passkey now</button><div id="onboardingPasskeyMessage" class="onboardingPasskeyMessage" role="status" aria-live="polite"></div>':'<div class="onboardingCallout"><b>Password sign-in remains available</b><span>This browser does not currently offer passkey setup.</span></div>';
+  return[
+    '<div class="onboardingVisual welcomeVisual" aria-hidden="true"><span class="onboardingMoon">'+interfaceIcon('first')+'</span></div><span class="onboardingEyebrow">Welcome</span><h2 id="onboardingTitle">Your night comes first.</h2><p>Night Roster opens with your own allocation, followed by the live staffing picture for the whole team.</p><div class="onboardingCallout"><b>One shared roster</b><span>Updates appear across authorised devices.</span></div>',
+    '<div class="onboardingVisual workflowVisual" aria-hidden="true"><span>'+interfaceIcon('staffing')+'</span><i></i><span>'+interfaceIcon('overtime')+'</span><i></i><span>'+interfaceIcon('task')+'</span></div><span class="onboardingEyebrow">When plans change</span><h2 id="onboardingTitle">Only act when needed.</h2><p>The normal six-person plan is automatic. Open Changes only for an absence, confirmed overtime, an unresolved allocation or an agreed night-only role swap.</p><div class="onboardingFeatureList"><div><b>Night</b><span>Your allocation and the team plan</span></div><div><b>Changes</b><span>Staffing and agreed exceptions</span></div><div><b>Breaks</b><span>The live break arrangement</span></div></div>',
+    '<div class="onboardingVisual passkeyVisual" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"></circle><path d="M12 12h9M17 12v3M20 12v2"></path></svg></div><span class="onboardingEyebrow">Optional faster sign-in</span><h2 id="onboardingTitle">Your face stays on your phone.</h2><p>A passkey lets your phone confirm it is you using its normal fingerprint, face recognition or device PIN. Night Roster never receives or stores your fingerprint or facial information, and your password will still work.</p><div class="onboardingPrivacy"><b>Nothing biometric is uploaded</b><span>Your device gives Night Roster only a secure yes or no confirmation.</span></div>'+passkeyAction,
+    '<div class="onboardingVisual identityVisual" aria-hidden="true"><span>'+(selected?esc(selected.charAt(0).toUpperCase()):'?')+'</span></div><span class="onboardingEyebrow">Personalise Night</span><h2 id="onboardingTitle">Which nurse are you?</h2><p>Choose your name so your own allocation is highlighted whenever the app opens.</p><label class="onboardingNameLabel"><span>Your name</span><select id="onboardingNamePick"><option value="">Choose your name</option>'+TEAM.map(function(name){return'<option value="'+esc(name)+'" '+(sameNurse(name,selected)?'selected':'')+'>'+esc(name)+'</option>'}).join('')+'</select></label><p class="onboardingFootnote">You can change this later from your account.</p>'
+  ];
+}
+
+function renderOnboarding(){
+  var dialog=byId('onboardingDialog'),content=byId('onboardingContent'),pages=onboardingPages();if(!dialog||!content)return;
+  onboardingStep=Math.max(0,Math.min(pages.length-1,onboardingStep));content.innerHTML=pages[onboardingStep];content.classList.remove('onboardingContentIn');void content.offsetWidth;content.classList.add('onboardingContentIn');
+  byId('onboardingProgress').innerHTML=pages.map(function(_,index){return'<span class="'+(index===onboardingStep?'active':'')+'" aria-hidden="true"></span>'}).join('');
+  byId('onboardingBackBtn').classList.toggle('hidden',onboardingStep===0);byId('onboardingNextBtn').textContent=onboardingStep===pages.length-1?'Open my night':'Continue';byId('onboardingSkipBtn').classList.toggle('hidden',onboardingStep===pages.length-1);
+  var select=byId('onboardingNamePick');if(select)select.onchange=function(){var visual=document.querySelector('.identityVisual span');if(visual)visual.textContent=select.value?select.value.charAt(0).toUpperCase():'?'};
+  var passkeyButton=byId('onboardingPasskeyBtn');if(passkeyButton)passkeyButton.onclick=addOnboardingPasskey;
+}
+
+async function addOnboardingPasskey(){var button=byId('onboardingPasskeyBtn'),message=byId('onboardingPasskeyMessage');if(!button||!message)return;button.disabled=true;button.textContent='Follow your phone’s instructions…';message.textContent='Your device will handle the secure identity check.';try{var result=await supa.auth.registerPasskey();if(result.error)throw result.error;if(result.data&&result.data.id)await supa.auth.passkey.update({passkeyId:result.data.id,friendlyName:'Night Roster on '+(navigator.platform||'this device')});button.textContent='Passkey added';message.textContent='You can use it next time, while your password remains available.';toast('Passkey added')}catch(error){button.disabled=false;button.textContent='Set up a passkey now';message.textContent=/cancel|not allowed/i.test(error.message||'')?'Setup was cancelled. You can continue and add it later from your account.':/disabled|not enabled/i.test(error.message||'')?'Passkeys are not enabled for this roster yet. Continue using your password for now.':'The passkey could not be added. You can continue using your password.'}}
+
+function finishOnboarding(){
+  var select=byId('onboardingNamePick');if(select&&select.value)localStorage.setItem('anaes_my_name',select.value);localStorage.setItem('anaes_onboarding_complete_v34','1');onboardingCandidate=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast('Your night is ready');
+}
+
+function showOnboardingIfNeeded(){
+  if(!currentUserProfile||releaseNotesQueued||!onboardingCandidate||localStorage.getItem('anaes_onboarding_complete_v34'))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},350);
+}
+
+function bindOnboarding(){
+  var next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
+  next.onclick=function(){var last=onboardingPages().length-1;if(onboardingStep<last){onboardingStep++;renderOnboarding()}else finishOnboarding()};back.onclick=function(){if(onboardingStep>0){onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
 }
 
 function diagnosticsText(){
@@ -102,12 +204,12 @@ function prepareChangesView(){
   var personal=document.createElement('section');personal.id='personalNight';personal.className='personalNight';personal.setAttribute('aria-labelledby','personalNightHeading');personal.innerHTML='<h2 id="personalNightHeading" class="sectionTitle">Your night</h2><div id="personalNightCard" class="personalNightCard"></div><div id="personalAllocationNotice"></div><div id="personalNamePicker" class="personalNamePicker hidden"><button type="button" class="mini" id="closeNamePickerBtn">Done</button></div>';
   if(dateGrid)dateGrid.parentNode.insertAdjacentElement('afterend',personal);else selectedPanel.insertBefore(personal,selectedPanel.firstChild);
   if(myNameLabel){myNameLabel.firstChild.nodeValue='Choose your name';personal.querySelector('#personalNamePicker').insertBefore(myNameLabel,personal.querySelector('#closeNamePickerBtn'))}
-  var summaryTitle=document.createElement('div');summaryTitle.className='sectionHeadingRow nightSummaryTitle';summaryTitle.innerHTML='<h2 class="sectionTitle">Night summary</h2><span>Tap to manage</span>';statusRow.id='nightStatusRow';statusRow.className='nightStatusRow';personal.insertAdjacentElement('afterend',summaryTitle);summaryTitle.insertAdjacentElement('afterend',statusRow);
+  var summaryTitle=document.createElement('div');summaryTitle.className='sectionHeadingRow nightSummaryTitle';summaryTitle.innerHTML='<h2 class="sectionTitle">Night summary</h2><span>Open any item</span>';statusRow.id='nightStatusRow';statusRow.className='nightStatusRow';personal.insertAdjacentElement('afterend',summaryTitle);summaryTitle.insertAdjacentElement('afterend',statusRow);
   var situationTitle=document.createElement('div');situationTitle.className='sectionHeadingRow';situationTitle.innerHTML='<h2 class="sectionTitle">Night situation</h2><span class="inlineLive"><i></i>Live</span>';if(roles)selectedPanel.insertBefore(situationTitle,roles);
   shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span><b aria-hidden="true">›</b></button><button type="button" class="rosterShortcutBtn smartNightBtn" id="smartNightBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg><span>Return to roster night</span></button>';if(fiveArrangement)fiveArrangement.insertAdjacentElement('afterend',shortcutRow);
   changes.innerHTML='<div class="panel changesDatePanel"><h2>Selected night</h2><div class="grid2"><label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current / next night</button></label><div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div></div></div>';
   var changesHeader=document.createElement('div');changesHeader.className='screenHeader changesScreenHeader';changesHeader.innerHTML='<div><span class="screenEyebrow">Anaesthetic Night Roster</span><h1>Staffing changes</h1><p><i></i><span id="changesHeaderLive">Live and up to date</span></p></div><button type="button" class="screenInfoButton" aria-label="Staffing changes information">i</button>';changes.insertBefore(changesHeader,changes.firstChild);
-  changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record the people first, then complete only the decisions that remain';
+  changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record staffing changes first, then resolve only the decisions that remain';
   changes.appendChild(changePanel);
   var absence=changePanel.querySelector('.absenceSection'),overtime=changePanel.querySelector('.overtimeSection'),history=changePanel.querySelector('.historyBox'),ctop=changePanel.querySelector('.ctop');
   var workflowNav=document.createElement('div');workflowNav.className='changesWorkflowTabs';workflowNav.setAttribute('role','tablist');workflowNav.innerHTML='<button type="button" class="active" data-changes-step="staffing" role="tab" aria-selected="true"><span>1</span><b>Staffing</b><small id="staffingStepState">Record people</small></button><button type="button" data-changes-step="allocation" role="tab" aria-selected="false"><span>2</span><b>Allocation</b><small id="allocationStepState">Review roles</small></button><button type="button" data-changes-step="confirm" role="tab" aria-selected="false"><span>3</span><b>Confirm</b><small id="confirmStepState">Review plan</small></button>';
@@ -116,11 +218,11 @@ function prepareChangesView(){
   var allocationPane=document.createElement('div');allocationPane.id='changesAllocationPane';allocationPane.className='changesStepPane hidden';
   var confirmPane=document.createElement('div');confirmPane.id='changesConfirmPane';confirmPane.className='changesStepPane hidden';
   var continueButton=document.createElement('button');continueButton.type='button';continueButton.id='continueToAllocationBtn';continueButton.className='primary wide continueWorkflowBtn';continueButton.textContent='Continue to allocation';
-  var confirmButton=document.createElement('button');confirmButton.type='button';confirmButton.id='continueToConfirmBtn';confirmButton.className='primary wide continueWorkflowBtn';confirmButton.textContent='Review and confirm plan';
+  var confirmButton=document.createElement('button');confirmButton.type='button';confirmButton.id='continueToConfirmBtn';confirmButton.className='primary wide continueWorkflowBtn';confirmButton.textContent='Review changes';
   var fixedBox=document.createElement('details');fixedBox.className='fixedAllocationBox';fixedBox.innerHTML='<summary id="fixedAllocationSummary">Already allocated roles</summary><div id="fixedAllocationList"></div>';
   ctop.insertAdjacentElement('afterend',workflowNav);workflowNav.insertAdjacentElement('afterend',workflowState);workflowState.insertAdjacentElement('afterend',staffingPane);staffingPane.insertAdjacentElement('afterend',allocationPane);allocationPane.insertAdjacentElement('afterend',confirmPane);
   staffingPane.appendChild(absence);staffingPane.appendChild(overtime);staffingPane.appendChild(continueButton);if(history)staffingPane.appendChild(history);
-  var roleOverride=document.createElement('div');roleOverride.id='nightRoleOverrideStep';roleOverride.className='nightRoleOverrideStep';allocationPane.appendChild(roleOverride);allocationPane.appendChild(fixedBox);allocationPane.appendChild(allocation);allocationPane.appendChild(confirmButton);confirmPane.innerHTML='<div class="confirmationCard"><div class="stepHeader"><span>3</span><h3>Confirm tonight’s plan</h3></div><div class="time">Check the names and roles below before publishing the plan for everyone.</div><div id="confirmationPreview" class="confirmationPreview"></div></div>';
+  var roleOverride=document.createElement('div');roleOverride.id='nightRoleOverrideStep';roleOverride.className='nightRoleOverrideStep';allocationPane.appendChild(roleOverride);allocationPane.appendChild(fixedBox);allocationPane.appendChild(allocation);allocationPane.appendChild(confirmButton);confirmPane.innerHTML='<div class="confirmationCard"><div class="stepHeader"><span>3</span><h3>Confirm tonight’s changes</h3></div><div class="time">Check the changed names and roles before sharing them with everyone.</div><div id="confirmationPreview" class="confirmationPreview"></div></div>';
   var saveButton=byId('saveAllocationsBtn'),allocationMessage=byId('allocationFormMessage');confirmPane.querySelector('.confirmationCard').appendChild(saveButton);confirmPane.querySelector('.confirmationCard').appendChild(allocationMessage);confirmPane.insertAdjacentHTML('beforeend','<div class="confirmHint">Night and Breaks update together after the plan is confirmed.</div>');
   var rosterButton=nav.querySelector('[data-v="roster"]'),changesButton=document.createElement('button');changesButton.type='button';changesButton.setAttribute('data-v','changes');changesButton.setAttribute('aria-label','Staffing changes');changesButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11"></path><path d="m13 4 3 3-3 3"></path><path d="M19 17H8"></path><path d="m11 14-3 3 3 3"></path><circle cx="5" cy="17" r="1.5"></circle><circle cx="19" cy="7" r="1.5"></circle></svg><span>Changes</span><em id="changesTaskBadge" class="navTaskBadge hidden">0</em>';
   nav.insertBefore(changesButton,rosterButton);rosterButton.remove();nav.style.gridTemplateColumns='repeat(3,1fr)';nav.querySelector('[data-v="today"]').style.gridColumn='1';changesButton.style.gridColumn='2';nav.querySelector('[data-v="breaks"]').style.gridColumn='3';
@@ -131,7 +233,7 @@ function prepareChangesView(){
   var dataPanel=document.querySelector('#adminData .panel');
   if(dataPanel&&!byId('appDiagnostics'))dataPanel.insertAdjacentHTML('beforeend','<details class="advancedBox"><summary>App health and diagnostics</summary><div id="appDiagnostics"></div></details>');
   ['datePick','changesDatePick','breakDatePick'].forEach(enhanceDatePicker);byId('overtimeName').setAttribute('list','overtimeSuggestions');var suggestions=document.createElement('datalist');suggestions.id='overtimeSuggestions';byId('overtimeName').insertAdjacentElement('afterend',suggestions);
-  byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};byId('smartNightBtn').onclick=goToAutomaticNight;byId('changesSmartNightBtn').onclick=goToAutomaticNight;byId('closeNamePickerBtn').onclick=function(){byId('personalNamePicker').classList.add('hidden')};continueButton.onclick=function(){setChangesStep('allocation',true)};confirmButton.onclick=function(){setChangesStep('confirm',true)};changesHeader.querySelector('.screenInfoButton').onclick=function(){toast('The standard Pager and Reliever order is automatic. Confirm only after staffing or role changes.')};if(breaksHeader)breaksHeader.querySelector('.screenInfoButton').onclick=function(){toast('Breaks update automatically from the active staffing and Labour Ward order.')};Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});renderReleaseNotes();changesViewPrepared=true;renderDiagnostics();
+  byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};byId('smartNightBtn').onclick=goToAutomaticNight;byId('changesSmartNightBtn').onclick=goToAutomaticNight;byId('closeNamePickerBtn').onclick=function(){byId('personalNamePicker').classList.add('hidden')};continueButton.onclick=function(){setChangesStep('allocation',true)};confirmButton.onclick=function(){setChangesStep('confirm',true)};changesHeader.querySelector('.screenInfoButton').onclick=function(){toast('Use Changes for absences, overtime or an agreed role swap.')};if(breaksHeader)breaksHeader.querySelector('.screenInfoButton').onclick=function(){toast('Breaks update automatically when staffing or roles change.')};Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});renderReleaseNotes();changesViewPrepared=true;renderDiagnostics();
 }
 
 function syncDateInputs(date){
@@ -206,10 +308,14 @@ function planNeedsConfirmation(base,decisionTasks){
   return latest>publishedAt;
 }
 
+function workflowHasManualPlan(base){
+  var roleOverride=nightRoleOverrides[base.date];
+  return changesFor(base.date).length>0||overtimeFor(base.date).length>0||!!(roleOverride&&validRoleAssignments(roleOverride.assignments));
+}
+
 function workflowNeedsConfirmation(base,decisionTasks){
   if(decisionTasks)return true;
-  var roleOverride=nightRoleOverrides[base.date],hasManualPlan=changesFor(base.date).length>0||overtimeFor(base.date).length>0||!!(roleOverride&&validRoleAssignments(roleOverride.assignments));
-  return hasManualPlan&&planNeedsConfirmation(base,0);
+  return workflowHasManualPlan(base)&&planNeedsConfirmation(base,0);
 }
 
 function fixedRolesHtml(base,plan){
@@ -222,18 +328,20 @@ function fixedRolesHtml(base,plan){
 
 function updateChangesWorkflow(base,plan){
   if(!changesViewPrepared)return;
-  var r=applyChanges(base),tasks=workflowTaskCount(base,plan,r),confirmNeeded=workflowNeedsConfirmation(base,tasks),changes=changesFor(base.date),overtime=overtimeFor(base.date),staffingState=byId('staffingStepState'),allocationState=byId('allocationStepState'),confirmState=byId('confirmStepState'),state=byId('changesWorkflowState'),badge=byId('changesTaskBadge');
+  var r=applyChanges(base),tasks=workflowTaskCount(base,plan,r),confirmNeeded=workflowNeedsConfirmation(base,tasks),hasManualPlan=workflowHasManualPlan(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),staffingState=byId('staffingStepState'),allocationState=byId('allocationStepState'),confirmState=byId('confirmStepState'),state=byId('changesWorkflowState'),badge=byId('changesTaskBadge');
   staffingState.textContent=changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'No changes';
-  var published=nightPlanStatuses[base.date];allocationState.textContent=tasks?tasks+' task'+(tasks===1?'':'s')+' remaining':'Ready';confirmState.textContent=tasks?'Complete allocation':confirmNeeded?'Ready to publish':published&&published.published_at?'Published':'Automatic';
+  var published=nightPlanStatuses[base.date];allocationState.textContent=tasks?tasks+' task'+(tasks===1?'':'s')+' remaining':'Current roles';confirmState.textContent=tasks?'Resolve tasks':confirmNeeded?'Review changes':published&&published.published_at&&hasManualPlan?'Shared':'Not needed';
   var staffingTab=document.querySelector('[data-changes-step="staffing"]'),allocationTab=document.querySelector('[data-changes-step="allocation"]'),confirmTab=document.querySelector('[data-changes-step="confirm"]');staffingTab.classList.add('complete');allocationTab.classList.toggle('complete',!tasks);allocationTab.classList.toggle('hasTasks',!!tasks);confirmTab.classList.toggle('complete',!confirmNeeded);confirmTab.classList.toggle('hasTasks',!!confirmNeeded);
-  state.innerHTML=tasks?'<b>'+tasks+' decision'+(tasks===1?' remains':'s remain')+'</b><span>Complete only the highlighted items, then confirm the plan.</span>':confirmNeeded?'<b>Ready for final review</b><span>Open Confirm, check the complete plan and publish it for everyone.</span>':published&&published.published_at?'<b>Tonight’s plan is complete</b><span>Published by '+esc(published.published_by||'a shift member')+' at '+esc(shortTime(published.published_at))+'. Night and Breaks are updated for everyone.</span>':'<b>Calculated plan active</b><span>Pager works first part and Reliever works second part automatically. No confirmation is required.</span>';
+  state.innerHTML=tasks?'<b>'+tasks+' decision'+(tasks===1?' remains':'s remain')+'</b><span>Resolve the highlighted '+(tasks===1?'item':'items')+', then review the changes.</span>':confirmNeeded?'<b>Ready to review</b><span>Check tonight’s changes before sharing them with everyone.</span>':published&&published.published_at&&hasManualPlan?'<b>Changes shared</b><span>Updated by '+esc(published.published_by||'a shift member')+' at '+esc(shortTime(published.published_at))+'.</span>':'';
+  state.classList.toggle('hidden',!tasks&&!confirmNeeded&&!hasManualPlan);
   state.classList.toggle('complete',!confirmNeeded);state.classList.toggle('ready',!tasks&&confirmNeeded);
   var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);
-  byId('continueToAllocationBtn').textContent=tasks?'Continue to '+tasks+' allocation task'+(tasks===1?'':'s'):'View calculated allocation';
-  var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent=tasks?'Complete '+tasks+' task'+(tasks===1?'':'s')+' first':'Review and confirm plan';
-  var allocationHeading=document.querySelector('.allocationSection .stepHeader h3');if(allocationHeading)allocationHeading.textContent=tasks||confirmNeeded?'Finalise tonight’s allocations':'Tonight’s calculated allocations';
-  var confirmationHeading=document.querySelector('#changesConfirmPane .stepHeader h3');if(confirmationHeading)confirmationHeading.textContent=confirmNeeded?'Confirm tonight’s plan':'Tonight’s active plan';
-  var fixed=fixedRolesHtml(base,plan),fixedList=byId('fixedAllocationList');fixedList.innerHTML=fixed||'<div class="time">No fixed roles are available while the staffing plan is incomplete.</div>';byId('fixedAllocationSummary').textContent='Already allocated roles · '+(fixed.match(/fixedRoleRow/g)||[]).length;
+  byId('continueToAllocationBtn').textContent=tasks?'Resolve '+tasks+' allocation task'+(tasks===1?'':'s'):'Review roles';
+  var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent=tasks?'Resolve '+tasks+' task'+(tasks===1?'':'s')+' first':'Review changes';
+  var allocationSection=document.querySelector('.allocationSection');if(allocationSection)allocationSection.classList.toggle('hidden',!tasks&&!hasManualPlan);
+  var allocationHeading=document.querySelector('.allocationSection .stepHeader h3');if(allocationHeading)allocationHeading.textContent='Finalise tonight’s allocations';
+  var confirmationHeading=document.querySelector('#changesConfirmPane .stepHeader h3');if(confirmationHeading)confirmationHeading.textContent=confirmNeeded?'Confirm tonight’s changes':'No confirmation needed';
+  var fixed=fixedRolesHtml(base,plan),fixedList=byId('fixedAllocationList');fixedList.innerHTML=fixed||'<div class="time">Roles will appear after the staffing decisions are complete.</div>';byId('fixedAllocationSummary').textContent='Current roles · '+(fixed.match(/fixedRoleRow/g)||[]).length;
   renderConfirmationPreview(base,plan,tasks,confirmNeeded);var save=byId('saveAllocationsBtn');if(save){save.classList.toggle('hidden',!confirmNeeded);save.dataset.workflowBlocked=tasks?'true':'false';save.disabled=!!tasks||!navigator.onLine}
   setChangesStep(activeChangesStep,false);
 }
@@ -246,7 +354,7 @@ function renderConfirmationPreview(base,plan,tasks,confirmNeeded){
   if(r.mode==='5')rows.push(confirmationRow('Full Labour Ward / Pager',r.fullLW,'Break when safe'));
   else{rows.push(confirmationRow('Labour Ward / Pager',r.pager));rows.push(confirmationRow('Labour Ward / Reliever',r.reliever));var order=labourOrderDrafts[base.date]||labourOrderFor(r);if(order){var first=order.first||order.first_part_name,second=order.second||order.second_part_name;rows.push(confirmationRow('Labour Ward first part',first,'Second break'));rows.push(confirmationRow('Labour Ward second part',second,'First break'))}}
   if(r.mode==='7')rows.push(confirmationRow('7th nurse',r.seventh,'Break as required'));
-  var published=nightPlanStatuses[base.date];host.innerHTML=(tasks?'<div class="confirmationWarning">'+tasks+' item'+(tasks===1?' still needs':'s still need')+' attention before this plan can be published.</div>':confirmNeeded?'<div class="confirmationReady">Everything required is ready. Review the names and publish the plan below.</div>':published&&published.published_at?'<div class="confirmationReady">This plan is published and up to date.</div>':'<div class="confirmationReady">This calculated plan is active automatically. No confirmation is required.</div>')+rows.join('');
+  var published=nightPlanStatuses[base.date];host.innerHTML=(tasks?'<div class="confirmationWarning">Resolve '+tasks+' remaining '+(tasks===1?'item':'items')+' before continuing.</div>':confirmNeeded?'<div class="confirmationReady">The changes are ready. Check the names before sharing them.</div>':published&&published.published_at&&workflowHasManualPlan(base)?'<div class="confirmationReady">Tonight’s changes are shared and up to date.</div>':'<div class="confirmationReady">Nothing has changed, so no confirmation is needed.</div>')+rows.join('');
 }
 
 function cur(){
@@ -476,7 +584,7 @@ function render(){
   if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   var alertClass=count<6?'warn':'';
-  var decisionTasks=workflowTaskCount(base,plan,r),confirmNeeded=workflowNeedsConfirmation(base,decisionTasks),taskCount=decisionTasks||(confirmNeeded?1:0),absenceCount=changesFor(base.date).length,overtimeCount=overtimeFor(base.date).length,statusRow=byId('nightStatusRow');if(statusRow)statusRow.innerHTML='<button type="button" class="statusChip staffingChip" data-go-staffing>'+interfaceIcon('staffing')+'<span><b>'+count+'</b><small>Nurses</small></span></button><button type="button" class="statusChip '+(absenceCount?'absenceChip':'readyChip')+'" data-go-staffing>'+interfaceIcon('absence')+'<span><b>'+(absenceCount?absenceCount:'No')+'</b><small>Absence'+(absenceCount===1?'':'s')+'</small></span></button><button type="button" class="statusChip overtimeChip" data-go-staffing>'+interfaceIcon('overtime')+'<span><b>'+overtimeCount+'</b><small>Overtime</small></span></button><button type="button" class="statusChip '+(taskCount?'taskChip':'readyChip')+'" '+(decisionTasks?'data-go-allocation':'data-go-confirm')+'>'+interfaceIcon('task')+'<span><b>'+(taskCount?taskCount:'Plan')+'</b><small>'+(taskCount?'Task'+(taskCount===1?'':'s')+' remaining':'Active')+'</small></span></button>';
+  var decisionTasks=workflowTaskCount(base,plan,r),confirmNeeded=workflowNeedsConfirmation(base,decisionTasks),taskCount=decisionTasks||(confirmNeeded?1:0),absenceCount=changesFor(base.date).length,overtimeCount=overtimeFor(base.date).length,statusRow=byId('nightStatusRow');if(statusRow)statusRow.innerHTML='<button type="button" class="statusChip staffingChip" data-go-staffing>'+interfaceIcon('staffing')+'<span><b>'+count+'</b><small>Nurses</small></span></button><button type="button" class="statusChip '+(absenceCount?'absenceChip':'readyChip')+'" data-go-staffing>'+interfaceIcon('absence')+'<span><b>'+(absenceCount?absenceCount:'No')+'</b><small>Absence'+(absenceCount===1?'':'s')+'</small></span></button><button type="button" class="statusChip overtimeChip" data-go-staffing>'+interfaceIcon('overtime')+'<span><b>'+overtimeCount+'</b><small>Overtime</small></span></button><button type="button" class="statusChip '+(taskCount?'taskChip':'readyChip')+'" '+(confirmNeeded&&!decisionTasks?'data-go-confirm':'data-go-allocation')+'>'+interfaceIcon('task')+'<span><b>'+(taskCount?taskCount:'No')+'</b><small>Task'+(taskCount===1?'':'s')+'</small></span></button>';
   byId('alerts').innerHTML=(count!==6?'<div class="alert compactNotice '+alertClass+'">'+esc(e.alert)+'</div>':'')+(plan.requiresSeventhDecision?'<button type="button" class="alert gold taskAlert" data-go-allocation>Review the proposed seventh-nurse move <span>Complete now ›</span></button>':'')+(plan.unresolved.length?'<button type="button" class="alert gold taskAlert" data-go-allocation>'+plan.unresolved.length+' allocation'+(plan.unresolved.length===1?' requires':'s require')+' a final decision <span>Complete now ›</span></button>':'')+(labourPending&&!(personal&&personal.pending)?'<button type="button" class="alert gold taskAlert" data-go-allocation>Labour Ward order required <span>Complete now ›</span></button>':'');
   if(r.mode==='7')roles.push(['b7','7th nurse',r.seventh,'Additional nurse • Break as required']);
   byId('roles').innerHTML=roles.map(function(c){var iconType=roleIconType(c[0]),icon=iconType==='first'?'<span class="roleOrdinal">1st</span>':iconType==='second'?'<span class="roleOrdinal">2nd</span>':interfaceIcon(iconType);return '<div class="role '+c[0].replace(/^b/,'r')+' '+(isMine(c[2])?'mine':'')+'"><span class="roleIcon '+iconType+'">'+icon+'</span><div class="roleCopy"><div class="name">'+esc(c[2])+'</div><div class="roleMeta"><span class="badge '+c[0]+'">'+esc(c[1])+'</span><span class="time">'+esc(c[3])+'</span></div></div></div>'}).join('');
@@ -491,13 +599,13 @@ function render(){
 
 function goToChanges(target){
   activeChangesStep='allocation';show('changes');
-  setTimeout(function(){var el=document.querySelector(target||'.allocationSection');if(el){el.scrollIntoView({behavior:'smooth',block:'start'});var focus=el.querySelector('select,button,input');if(focus)focus.focus({preventScroll:true})}},260);
+  setTimeout(function(){var el=document.querySelector(target||'#changesAllocationPane');if(el){el.scrollIntoView({behavior:'smooth',block:'start'});var focus=el.querySelector('summary,select,button,input');if(focus)focus.focus({preventScroll:true})}},260);
 }
 
 function bindTaskLinks(){
   Array.prototype.forEach.call(document.querySelectorAll('[data-go-allocation]'),function(el){
-    el.onclick=function(){goToChanges('.allocationSection')};
-    if(el.tagName!=='BUTTON'){el.setAttribute('role','button');el.setAttribute('tabindex','0');el.onkeydown=function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();goToChanges('.allocationSection')}}}
+    el.onclick=function(){goToChanges('#changesAllocationPane')};
+    if(el.tagName!=='BUTTON'){el.setAttribute('role','button');el.setAttribute('tabindex','0');el.onkeydown=function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();goToChanges('#changesAllocationPane')}}}
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-go-staffing]'),function(el){el.onclick=function(){activeChangesStep='staffing';show('changes');setTimeout(function(){var target=document.querySelector('.absenceSection');if(target)target.scrollIntoView({behavior:'smooth',block:'start'})},180)}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-go-confirm]'),function(el){el.onclick=function(){activeChangesStep='confirm';show('changes');setTimeout(function(){var target=byId('changesConfirmPane');if(target)target.scrollIntoView({behavior:'smooth',block:'start'})},180)}});
@@ -567,30 +675,29 @@ function renderNightRoleOverride(base){
 async function saveNightRoleOverride(base){
   if(!requireOnline())return;var draft=nightRoleOverrideDrafts[base.date],reason=normaliseNurseName(draft&&draft.reason||'');
   if(!draft||!validRoleAssignments(draft.assignments)){toast('Choose one nurse for every role');return}if(!reason){toast('Add a short reason for the night-only arrangement');var field=byId('nightRoleReason');if(field)field.focus();return}
-  var button=byId('saveNightRolesBtn');if(button){button.disabled=true;button.textContent='Saving…'}setSync('saving','Saving night-only roles');
+  var previous=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,button=byId('saveNightRolesBtn');if(button){button.disabled=true;button.textContent='Saving…'}setSync('saving','Saving night-only roles');
   var now=new Date().toISOString(),who=currentUserProfile.display_name,result=await supa.from('night_role_overrides').upsert({roster_date:base.date,assignments:draft.assignments,reason:reason,updated_by:who,updated_at:now},{onConflict:'roster_date'});
-  if(result.error){rpcError(result);return}await supa.from('night_role_override_history').insert({roster_date:base.date,action:'saved',assignments:draft.assignments,reason:reason,changed_by:who,changed_at:now});delete nightRoleOverrideDrafts[base.date];await loadSharedData();toast('Tonight’s role arrangement saved');
+  if(result.error){rpcError(result);return}await supa.from('night_role_override_history').insert({roster_date:base.date,action:'saved',assignments:draft.assignments,reason:reason,changed_by:who,changed_at:now});delete nightRoleOverrideDrafts[base.date];await loadSharedData();toast('Tonight’s role arrangement saved',{label:'Undo',run:function(){return undoNightRoleChange(base.date,previous)}});
 }
 
 async function resetNightRoleOverride(base){
-  if(!requireOnline()||!confirm('Reset this night to the calculated roster roles?'))return;setSync('saving','Resetting tonight’s roles');var stored=nightRoleOverrides[base.date],who=currentUserProfile.display_name,now=new Date().toISOString(),result=await supa.from('night_role_overrides').delete().eq('roster_date',base.date);if(result.error){rpcError(result);return}await supa.from('night_role_override_history').insert({roster_date:base.date,action:'reset',assignments:stored&&stored.assignments||{},reason:'Reset to calculated roster',changed_by:who,changed_at:now});delete nightRoleOverrideDrafts[base.date];await loadSharedData();toast('Calculated roster roles restored');
+  if(!requireOnline()||!confirm('Reset this night to the calculated roster roles?'))return;setSync('saving','Resetting tonight’s roles');var stored=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,who=currentUserProfile.display_name,now=new Date().toISOString(),result=await supa.from('night_role_overrides').delete().eq('roster_date',base.date);if(result.error){rpcError(result);return}await supa.from('night_role_override_history').insert({roster_date:base.date,action:'reset',assignments:stored&&stored.assignments||{},reason:'Reset to calculated roster',changed_by:who,changed_at:now});delete nightRoleOverrideDrafts[base.date];await loadSharedData();toast('Calculated roster roles restored',{label:'Undo',run:function(){return undoNightRoleChange(base.date,stored)}});
+}
+
+async function undoNightRoleChange(date,previous){
+  if(!requireOnline())return;setSync('saving','Undoing role change');var who=currentUserProfile.display_name,now=new Date().toISOString(),result;if(previous){result=await supa.from('night_role_overrides').upsert({roster_date:date,assignments:previous.assignments,reason:previous.reason||'Previous night-only arrangement',updated_by:who,updated_at:now},{onConflict:'roster_date'})}else result=await supa.from('night_role_overrides').delete().eq('roster_date',date);if(result.error){rpcError(result);return}await supa.from('night_role_override_history').insert({roster_date:date,action:previous?'saved':'reset',assignments:previous&&previous.assignments||{},reason:'Undid the latest role change',changed_by:who,changed_at:now});await loadSharedData();toast('Role change undone')
 }
 
 function renderLabourOrder(base,plan){
   var host=byId('labourOrderStep');if(!host)return false;
-  var r=allocationPreview(base);
-  if(r.mode==='5'||plan.count===5&&plan.coverageKey){host.innerHTML='';return false}
-  if(!labourRoleIsReady(base,'pager')||!labourRoleIsReady(base,'reliever')){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Choose the Pager and Reliever allocations above. The first-part and second-part choices will appear here immediately.</div></div>';return false}
-  var names=[r.pager,r.reliever];
-  if(!names[0]||!names[1]||names[0]===names[1]){host.innerHTML='<div class="labourOrderBox"><h3>Labour Ward parts</h3><div class="time">Two different Labour Ward nurses are required before their parts can be divided.</div></div>';return false}
-  host.innerHTML='<div class="labourOrderBox automatic"><div class="labourOrderHeading"><div><h3>Labour Ward order</h3><span>Set automatically from roster roles</span></div></div><div class="labourOrderGrid"><div class="labourOrderResult"><b>First part · Pager</b><span>'+esc(r.pager)+' · Second break</span></div><div class="labourOrderResult"><b>Second part · Reliever</b><span>'+esc(r.reliever)+' · First break</span></div></div><div class="labourAutomaticHint">To change the people, use <b>Change tonight’s roles</b> above.</div></div>';
+  host.innerHTML='';
   return false;
 }
 
 function updateAllocationSaveControl(base,plan){
   renderNightRoleOverride(base);var labourReady=renderLabourOrder(base,plan),hasAllocationChoices=overtimeFor(base.date).length&&plan.availableKeys.length,button=byId('saveAllocationsBtn');
   button.classList.toggle('hidden',!hasAllocationChoices&&!labourReady);
-  if(!allocationSaveInFlight)button.textContent='Confirm and publish tonight\'s plan';
+  if(!allocationSaveInFlight)button.textContent='Confirm and share changes';
   return labourReady;
 }
 
@@ -815,9 +922,9 @@ async function saveNightChange(){
     var result=await timedRequest(supa.rpc('record_night_absence_v25',{p_roster_date:base.date,p_absent_name:absent,p_reason:reason,p_changed_by:currentUserProfile.display_name}));
     if(missingRpc(result))result=await timedRequest(saveAbsenceCompatibility(base,absent,reason));
     if(rpcError(result,'absenceFormMessage'))return;
-    byId('absentName').value='';formMessage('absenceFormMessage',absent+' saved as absent.','success');toast('Absence saved for '+absent);
+    byId('absentName').value='';formMessage('absenceFormMessage',absent+' saved as absent.','success');
     try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}
-    formMessage('absenceFormMessage',absent+' saved as absent.','success');highlightSavedItem('changeList',absent,'data-absence-name');
+    formMessage('absenceFormMessage',absent+' saved as absent.','success');highlightSavedItem('changeList',absent,'data-absence-name');toast('Absence saved for '+absent,{label:'Undo',run:function(){return undoAddedAbsence(base.date,absent)}});
   }catch(error){setSync('error','Save failed');formMessage('absenceFormMessage','No response was received. Your selection is still here, so tap Save again.','error');toast('Absence was not saved. Please try again.');}
   finally{byId('saveChangeBtn').textContent='Save absence';updateOfflineControls()}
 }
@@ -827,6 +934,14 @@ function recordAlreadyRemoved(result){
   var message=(result.error.message||'').toLowerCase();
   return message.indexOf('no longer exists')>=0||message.indexOf('not found')>=0;
 }
+
+async function undoAddedAbsence(date,name){var item=(nightChanges[date]||[]).find(function(entry){return sameNurse(entry.absent_name,name)});if(!item){toast('That absence has already changed');return}setSync('saving','Undoing absence');var base=baseForDate(date),result=await supa.rpc('remove_night_absence_v25',{p_change_id:item.id,p_allocation_key:allocationKeyForName(base,item.absent_name),p_changed_by:currentUserProfile.display_name});if(missingRpc(result))result=await supa.from('night_changes').delete().eq('id',item.id);if(rpcError(result))return;await loadSharedData();toast('Absence undone')}
+
+async function undoRemovedAbsence(date,item){setSync('saving','Restoring absence');var result=await supa.rpc('record_night_absence_v25',{p_roster_date:date,p_absent_name:item.absent_name,p_reason:item.reason||'Leave',p_changed_by:currentUserProfile.display_name});if(missingRpc(result))result=await saveAbsenceCompatibility(baseForDate(date),item.absent_name,item.reason||'Leave');if(rpcError(result))return;await loadSharedData();toast('Absence restored')}
+
+async function undoAddedOvertime(date,name){var item=(nightOvertime[date]||[]).find(function(entry){return sameNurse(entry.nurse_name,name)});if(!item){toast('That overtime entry has already changed');return}setSync('saving','Undoing overtime');var result=await supa.rpc('remove_night_overtime_v25',{p_overtime_id:item.id,p_changed_by:currentUserProfile.display_name});if(missingRpc(result))result=await supa.from('night_overtime').delete().eq('id',item.id);if(rpcError(result))return;await loadSharedData();toast('Overtime addition undone')}
+
+async function undoRemovedOvertime(date,item){setSync('saving','Restoring overtime nurse');var result=await supa.rpc('add_night_overtime_v25',{p_roster_date:date,p_nurse_name:item.nurse_name,p_changed_by:currentUserProfile.display_name});if(missingRpc(result))result=await saveOvertimeCompatibility(baseForDate(date),item.nurse_name);if(rpcError(result))return;await loadSharedData();toast('Overtime nurse restored')}
 
 async function removeNightChange(id,button){
   if(!requireOnline())return;
@@ -838,7 +953,7 @@ async function removeNightChange(id,button){
     var allocationKey=allocationKeyForName(base,item.absent_name);
     var result=await timedRequest(supa.rpc('remove_night_absence_v25',{p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name}));
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
-    await loadSharedData();toast(recordAlreadyRemoved(result)?'Absence was already removed and the list has been refreshed':'Absence removed');
+    await loadSharedData();if(recordAlreadyRemoved(result))toast('Absence was already removed and the list has been refreshed');else toast('Absence removed',{label:'Undo',run:function(){return undoRemovedAbsence(base.date,item)}});
   }catch(error){setSync('error','Remove failed');toast('The absence could not be removed. Please try again.');}
   finally{delete pendingRemovals[id];if(button&&button.isConnected){button.disabled=false;button.textContent='Remove'}}
 }
@@ -857,9 +972,9 @@ async function saveOvertime(){
     var result=await timedRequest(supa.rpc('add_night_overtime_v25',{p_roster_date:base.date,p_nurse_name:name,p_changed_by:currentUserProfile.display_name}));
     if(missingRpc(result))result=await timedRequest(saveOvertimeCompatibility(base,name));
     if(rpcError(result,'overtimeFormMessage'))return;
-    byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');toast(name+' added for overtime');
+    byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');
     try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}
-    formMessage('overtimeFormMessage',name+' added for overtime.','success');highlightSavedItem('overtimeList',name,'data-overtime-name');
+    formMessage('overtimeFormMessage',name+' added for overtime.','success');highlightSavedItem('overtimeList',name,'data-overtime-name');toast(name+' added for overtime',{label:'Undo',run:function(){return undoAddedOvertime(base.date,name)}});
   }catch(error){setSync('error','Save failed');formMessage('overtimeFormMessage','No response was received. The name remains here, so tap Add overtime again.','error');toast('Overtime nurse was not saved. Please try again.');}
   finally{byId('addOvertimeBtn').textContent='Add overtime';updateOfflineControls()}
 }
@@ -873,7 +988,7 @@ async function removeOvertime(id,button){
   try{
     var result=await timedRequest(supa.rpc('remove_night_overtime_v25',{p_overtime_id:id,p_changed_by:currentUserProfile.display_name}));
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
-    await loadSharedData();toast(recordAlreadyRemoved(result)?entry.nurse_name+' was already removed and the list has been refreshed':entry.nurse_name+' removed from overtime');
+    await loadSharedData();if(recordAlreadyRemoved(result))toast(entry.nurse_name+' was already removed and the list has been refreshed');else toast(entry.nurse_name+' removed from overtime',{label:'Undo',run:function(){return undoRemovedOvertime(base.date,entry)}});
   }catch(error){setSync('error','Remove failed');toast('The overtime nurse could not be removed. Please try again.');}
   finally{delete pendingRemovals[id];if(button&&button.isConnected){button.disabled=false;button.textContent='Remove'}}
 }
@@ -922,7 +1037,7 @@ async function saveFinalAllocationsV2510(event){
   var button=byId('saveAllocationsBtn'),base,chosen={},used={},chosenCount=0,labourChoice=null,confirmationOnly=false;
   formMessage('allocationFormMessage','Preparing your allocations…','');
   try{
-    if(!requireOnline()){formMessage('allocationFormMessage','Reconnect to the internet, then press Confirm and publish again.','error');return false}
+    if(!requireOnline()){formMessage('allocationFormMessage','Reconnect to the internet, then press Confirm and share again.','error');return false}
     base=cur();
     var currentPlan=staffingPlan(base);
     if(currentPlan.requiresSeventhDecision){formMessage('allocationFormMessage','Choose whether to use the seventh rotation or keep the permanent nurse in their original role.','error');toast('Complete the seventh-nurse decision first');var decisionCard=document.querySelector('.seventhDecisionCard');if(decisionCard)decisionCard.scrollIntoView({behavior:'smooth',block:'center'});return false}
@@ -969,7 +1084,7 @@ async function saveFinalAllocationsV2510(event){
     var success=plan.unresolved.length?(saved?saved+' allocation'+(saved===1?'':'s')+' saved':'Labour Ward parts saved')+' • '+plan.unresolved.length+' still to decide':confirmationOnly?'Tonight\'s plan confirmed for everyone':labourChoice&&chosenCount?'Tonight\'s plan published for everyone':labourChoice?'Labour Ward order published for everyone':additionalNurses(plan).length?'Core plan published; additional staff remain as required':'Tonight\'s plan published for everyone';
     formMessage('allocationFormMessage',success,'success');toast(success);return false;
   }catch(error){setSync('error','Save failed');formMessage('allocationFormMessage','Save stopped: '+(error&&error.message==='timeout'?'the connection timed out. Your selections are still here, so please try again.':'the allocations could not be confirmed. Your selections are still here, so please try again.'),'error');toast('The allocations could not be saved. Your selections remain available to retry.');return false}
-  finally{allocationSaveInFlight=false;if(button&&button.isConnected){button.disabled=false;button.textContent='Confirm and publish tonight\'s plan'}updateOfflineControls()}
+  finally{allocationSaveInFlight=false;if(button&&button.isConnected){button.disabled=false;button.textContent='Confirm and share changes'}updateOfflineControls()}
 }
 
 async function loadNightHistory(date,renderAfter){
@@ -1073,7 +1188,7 @@ function setupPWA(){
     window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});if(updateRegistration.waiting)showUpdate(updateRegistration);updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await updateRegistration.update();setInterval(check,900000)}catch(e){}});
     window.addEventListener('focus',check);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()});
   }
-  var closeInstall=byId('closeInstallGuide'),closeRelease=byId('closeReleaseNotes');if(closeInstall)closeInstall.onclick=function(){byId('installGuide').close()};if(closeRelease)closeRelease.onclick=function(){byId('releaseNotes').close()};showReleaseNotesIfNeeded();
+  var closeInstall=byId('closeInstallGuide'),closeRelease=byId('closeReleaseNotes'),releaseDialog=byId('releaseNotes');if(closeInstall)closeInstall.onclick=function(){byId('installGuide').close()};if(closeRelease)closeRelease.onclick=function(){releaseDialog.close()};if(releaseDialog)releaseDialog.addEventListener('close',function(){releaseNotesQueued=false;showOnboardingIfNeeded()});showReleaseNotesIfNeeded();
   var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);if(ios&&!standalone)install.classList.remove('hidden');
 }
 
@@ -1081,18 +1196,18 @@ async function authorizeUser(user){
   if(!user)return showAuth();currentUser=user;
   var result=await supa.from('allowed_users').select('email,display_name,user_role,active').eq('email',user.email.toLowerCase()).maybeSingle();
   if(result.error&&!navigator.onLine){try{var cached=JSON.parse(localStorage.getItem('anaes_cached_profile')||'null');if(cached&&cached.email===user.email.toLowerCase()&&cached.active)result={data:cached,error:null}}catch(error){}}
-  if(result.error||!result.data||!result.data.active){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth(result.error?'The authorised account list could not be checked. Reconnect and try again.':'This email is not authorised for this shift.',true);return}
+  if(result.error||!result.data||!result.data.active){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth(result.error?'Night Roster could not check your access. Reconnect and try again.':'This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
   try{localStorage.setItem('anaes_cached_profile',JSON.stringify(result.data))}catch(error){}
   currentUserProfile=result.data;byId('authGate').classList.add('hidden');document.body.classList.remove('authPending');
   var isAdmin=result.data.user_role==='admin';byId('adminSettingsBtn').classList.toggle('hidden',!isAdmin);document.querySelector('.bottom').style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
-  byId('accountBtn').title=result.data.display_name+' • '+result.data.email+' • Sign out';byId('accountInitial').textContent=(result.data.display_name||result.data.email).charAt(0).toUpperCase();
-  await loadSharedData();subscribeToChanges();if(isAdmin)await loadAccounts();
+  byId('accountBtn').title=result.data.display_name+' · Open account';byId('accountInitial').textContent=(result.data.display_name||result.data.email).charAt(0).toUpperCase();
+  await Promise.all([loadSharedData(),loadOwnProfile()]);subscribeToChanges();if(isAdmin)await loadAccounts();showOnboardingIfNeeded();
 }
 
 function bind(){
-  initTheme();prepareChangesView();setupPWA();window.addEventListener('online',function(){updateNetworkStatus();scheduleSharedReload()});window.addEventListener('offline',updateNetworkStatus);document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'&&currentUserProfile&&navigator.onLine&&Date.now()-lastResumeRefresh>30000){lastResumeRefresh=Date.now();scheduleSharedReload()}});setInterval(refreshAutomaticNightOnReturn,60000);
-  byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
-  byId('accountBtn').onclick=signOutUser;byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
+  initTheme();prepareChangesView();setupPWA();bindOnboarding();window.addEventListener('online',function(){updateNetworkStatus();scheduleSharedReload()});window.addEventListener('offline',updateNetworkStatus);document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'&&currentUserProfile&&navigator.onLine&&Date.now()-lastResumeRefresh>30000){lastResumeRefresh=Date.now();scheduleSharedReload()}});setInterval(refreshAutomaticNightOnReturn,60000);
+  byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
+  byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('saveProfileBtn').onclick=saveProfile;byId('profilePhotoButton').onclick=function(){byId('profilePhotoInput').click()};byId('changeProfilePhoto').onclick=function(){byId('profilePhotoInput').click()};byId('profilePhotoInput').onchange=function(){if(this.files&&this.files[0])chooseProfilePhoto(this.files[0]);this.value=''};byId('removeProfilePhoto').onclick=removeProfilePhoto;byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=function(){byId('accountSheet').close();localStorage.removeItem('anaes_onboarding_complete_v34');onboardingCandidate=true;onboardingStep=0;renderOnboarding();byId('onboardingDialog').showModal()};byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
   byId('saveChangeBtn').onclick=saveNightChange;byId('absentName').onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateOfflineControls()};byId('addOvertimeBtn').onclick=saveOvertime;byId('saveAllocationsBtn').onclick=saveFinalAllocationsV2510;byId('overtimeName').oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','')};byId('overtimeName').onkeydown=function(e){if(e.key==='Enter')saveOvertime()};byId('addAccountBtn').onclick=addAuthorisedAccount;
   byId('themeBtn').onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('changesDatePick').onchange=function(){chooseDate('changesDatePick')};byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
   byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('changesPrevNightBtn').onclick=function(){changeNight(-1)};byId('changesNextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};

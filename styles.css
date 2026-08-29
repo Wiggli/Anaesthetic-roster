@@ -716,3 +716,190 @@ body.dark #changes .labourOrderResult{background:transparent!important;border-co
   .view:not(.hidden),.changesStepPane:not(.hidden),.appDialog[open],.updateBanner:not(.hidden),.toast[style*="block"]{animation:none!important}
   button:active:not(:disabled),.bottom button.active svg,.bottom button:active:not(:disabled) svg{transform:none!important}
 }
+
+/* V33.0 unified Apple-style product system and first-use experience. */
+:root{
+  --apple-bg:#f2f2f7;
+  --apple-surface:#fff;
+  --apple-surface-muted:#f7f7f9;
+  --apple-fill:rgba(118,118,128,.12);
+  --apple-separator:rgba(60,60,67,.18);
+  --apple-label:#1c1c1e;
+  --apple-secondary:#6e6e73;
+  --apple-tertiary:#8e8e93;
+  --apple-accent:#087d79;
+  --apple-accent-soft:#e5f4f2;
+  --apple-red:#d93645;
+  --apple-amber:#b76500;
+  --apple-green:#248a3d;
+  --apple-radius:16px;
+  --apple-radius-small:12px;
+  --apple-hairline:.5px;
+  --apple-shadow:0 1px 2px rgba(0,0,0,.035),0 10px 30px rgba(27,45,58,.05);
+}
+html{background:var(--apple-bg);color-scheme:light}
+body{min-height:100dvh;background:var(--apple-bg);color:var(--apple-label);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.45;text-rendering:optimizeLegibility}
+body[data-view] main{width:min(100%,760px);margin-inline:auto;padding-inline:14px}
+h1,h2,h3,h4,b,strong{letter-spacing:-.018em}
+button,input,select,textarea{font:inherit}
+button{font-weight:680}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid rgba(8,125,121,.28);outline-offset:2px}
+button:disabled{cursor:default;opacity:.42}
+input,select,textarea{min-height:48px;padding:11px 13px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);background:var(--apple-surface);color:var(--apple-label);font-size:16px}
+label{gap:6px;color:var(--apple-secondary);font-size:12px;font-weight:650;letter-spacing:0;text-transform:none}
+.panel,.card{border:0;border-radius:var(--apple-radius);background:var(--apple-surface);box-shadow:var(--apple-shadow)}
+.time,.changeMeta,.fieldHelp{color:var(--apple-secondary);font-weight:450}
+.notice,.adminSummary{border:0;background:var(--apple-surface-muted);box-shadow:none}
+.primary,button.primary{border:0;background:var(--apple-accent);color:#fff;box-shadow:none}
+.soft,button.soft{border:0;background:var(--apple-fill);color:var(--apple-accent);box-shadow:none}
+
+/* Brand header remains solid, legible and uncropped. */
+#appHeader{background:var(--apple-surface);border-bottom:var(--apple-hairline) solid var(--apple-separator)}
+#appHeader .hospitalStrip{align-items:center;min-height:48px}
+#appHeader .hospitalStrip img{width:min(205px,58vw);height:44px;object-fit:contain;object-position:left center}
+#appHeader .hospitalStrip span{color:var(--apple-label);line-height:1.25}
+#appHeader .motto{display:block;width:100%;max-width:none;white-space:normal;overflow:visible;text-overflow:clip;color:var(--apple-secondary);font-size:10.5px;line-height:1.4}
+#appHeader .headerBrandMark,#appHeader .headerTitle{display:none}
+#appHeader .head{align-items:center;margin-top:7px}
+#appHeader .headActions{max-width:none;flex-wrap:nowrap}
+#appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share{border:var(--apple-hairline) solid var(--apple-separator);background:var(--apple-fill);color:var(--apple-label)}
+#appHeader .headerChips{margin-top:8px}
+#appHeader .headerChip{border:0;background:var(--apple-fill);color:var(--apple-secondary);font-weight:650}
+#appHeader .headerLiveDot{box-shadow:none}
+
+/* Sign in is a welcome experience, while the form remains a solid data surface. */
+.authGate{display:block;overflow:auto;padding:max(20px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));background:var(--apple-bg)}
+.authExperience{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:clamp(28px,6vw,72px);align-items:center;width:min(920px,100%);min-height:calc(100dvh - 44px);margin:auto}
+.authWelcome{display:flex;min-height:520px;flex-direction:column;padding:22px 4px}
+.authHospital{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.authHospital img{width:min(235px,62vw);height:58px;object-fit:contain;object-position:left center}
+.authHospital span{max-width:150px;color:var(--apple-label);font-size:11px;font-weight:750;letter-spacing:.04em;text-align:right;text-transform:uppercase}
+.authIntro{margin:auto 0}
+.authEyebrow{display:block;margin-bottom:12px;color:var(--apple-accent);font-size:12px;font-weight:750;letter-spacing:.075em;text-transform:uppercase}
+.authIntro h1{max-width:560px;margin:0;color:var(--apple-label);font-size:clamp(42px,6vw,70px);font-weight:760;line-height:.98;letter-spacing:-.055em}
+.authIntro p{max-width:480px;margin:20px 0 0;color:var(--apple-secondary);font-size:clamp(16px,2vw,20px);line-height:1.5}
+.authMotto{margin:0;color:var(--apple-secondary);font-size:12px}
+.authCard{width:100%;padding:22px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:22px;background:var(--apple-surface);box-shadow:var(--apple-shadow)}
+.authCardHeading{margin-bottom:18px}.authCardHeading h2{margin:0;color:var(--apple-label);font-size:26px;font-weight:750;letter-spacing:-.035em}.authCardHeading p{margin:5px 0 0;color:var(--apple-secondary);font-size:13px;line-height:1.45}
+.authSwitch{margin:0 0 18px;padding:3px;border:0;border-radius:10px;background:var(--apple-fill)}
+.authSwitch button{min-height:36px;padding:7px 10px;border:0;border-radius:8px;color:var(--apple-secondary);font-size:12px;box-shadow:none}
+.authSwitch button.active{background:var(--apple-surface);color:var(--apple-label);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.authFields{display:grid;gap:13px}.authFields label{display:grid}.authPrimary{min-height:50px;margin-top:18px;border-radius:var(--apple-radius-small);font-size:15px}
+.authTextButton{margin-top:8px;color:var(--apple-accent);font-size:13px;font-weight:650}
+.authMessage{min-height:0;margin:12px 2px 0;padding:0;color:var(--apple-secondary);font-size:12px;font-weight:550;line-height:1.45}
+.authMessage:not(:empty){padding:10px 11px;border-radius:10px;background:var(--apple-accent-soft);color:#155f5b}
+.authMessage.error{background:#fff0f1;color:#9f2430}
+.authPrivacy{margin:16px 0 0;color:var(--apple-tertiary);font-size:10.5px;text-align:center}
+
+/* First-use sheet keeps each screen focused on one message. */
+.onboardingDialog[open]{display:flex;flex-direction:column;width:min(480px,calc(100% - 24px));height:min(690px,calc(100dvh - 30px));max-height:690px;padding:0;overflow:hidden;border:0;border-radius:26px;background:rgba(255,255,255,.9);color:var(--apple-label);box-shadow:0 24px 80px rgba(0,0,0,.28);-webkit-backdrop-filter:saturate(170%) blur(28px);backdrop-filter:saturate(170%) blur(28px);animation:nativeSheetIn var(--native-medium) var(--native-spring) both}
+.onboardingDialog::backdrop{background:rgba(24,24,27,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.onboardingTop{position:relative;display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;min-height:52px;padding:10px 14px}
+.onboardingSkip{min-height:34px;padding:6px 8px;border:0;background:transparent;color:var(--apple-accent);box-shadow:none;font-size:13px}
+.onboardingProgress{position:absolute;left:50%;top:50%;display:flex;gap:6px;transform:translate(-50%,-50%)}
+.onboardingProgress span{width:6px;height:6px;border-radius:50%;background:rgba(60,60,67,.2);transition:width 240ms var(--native-spring),background-color 180ms ease}
+.onboardingProgress span.active{width:18px;border-radius:999px;background:var(--apple-accent)}
+.onboardingContent{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;overflow:auto;padding:10px 28px 20px;text-align:center}
+.onboardingContentIn{animation:onboardingContentIn 280ms var(--native-spring) both}
+@keyframes onboardingContentIn{from{opacity:.35;transform:translateX(10px)}to{opacity:1;transform:none}}
+.onboardingVisual{display:grid;place-items:center;width:118px;height:118px;margin:10px auto 24px;border-radius:34px;background:var(--apple-accent-soft);color:var(--apple-accent)}
+.onboardingVisual svg{width:54px;height:54px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.welcomeVisual{box-shadow:inset 0 0 0 1px rgba(8,125,121,.08),0 18px 42px rgba(8,125,121,.12)}
+.onboardingEyebrow{color:var(--apple-accent);font-size:11px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.onboardingContent h2{margin:8px auto 0;color:var(--apple-label);font-size:32px;font-weight:760;line-height:1.08;letter-spacing:-.045em}
+.onboardingContent>p{max-width:390px;margin:13px auto 0;color:var(--apple-secondary);font-size:14px;line-height:1.55}
+.onboardingCallout{display:grid;gap:2px;margin:auto 0 0;padding:13px;border-radius:var(--apple-radius-small);background:var(--apple-fill);text-align:left}.onboardingCallout b{font-size:13px}.onboardingCallout span{color:var(--apple-secondary);font-size:11px}
+.workflowVisual{display:flex;width:220px;height:92px;gap:9px;border-radius:26px}.workflowVisual span{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--apple-surface);box-shadow:0 1px 6px rgba(0,0,0,.08)}.workflowVisual span svg{width:25px;height:25px}.workflowVisual i{width:20px;height:1px;background:rgba(8,125,121,.3)}
+.onboardingFeatureList{margin:20px 0 0;overflow:hidden;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);background:rgba(255,255,255,.72);text-align:left}.onboardingFeatureList div{display:grid;grid-template-columns:72px 1fr;gap:9px;padding:11px 13px;border-top:var(--apple-hairline) solid var(--apple-separator)}.onboardingFeatureList div:first-child{border-top:0}.onboardingFeatureList b{font-size:12px}.onboardingFeatureList span{color:var(--apple-secondary);font-size:11px}
+.identityVisual span{display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:var(--apple-accent);color:#fff;font-size:30px;font-weight:750;box-shadow:0 12px 30px rgba(8,125,121,.22)}
+.onboardingNameLabel{display:grid;max-width:390px;width:100%;margin:22px auto 0;text-align:left}.onboardingNameLabel select{width:100%}.onboardingFootnote{font-size:10.5px!important}
+.onboardingActions{display:grid;grid-template-columns:auto minmax(160px,1fr);gap:10px;flex:0 0 auto;padding:12px 18px calc(14px + env(safe-area-inset-bottom));border-top:var(--apple-hairline) solid rgba(60,60,67,.16);background:rgba(248,248,250,.72);-webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px)}
+.onboardingActions button{min-height:48px;border-radius:var(--apple-radius-small)}
+
+/* Every working screen uses the same grouped surfaces and interaction language. */
+#today .statusChip{transition:background-color var(--native-fast) ease,transform var(--native-medium) var(--native-spring)}
+#today .statusChip:active{background:var(--apple-fill)!important}
+#today .statusChip::after{content:'›';position:absolute;right:11px;color:var(--apple-tertiary);font-size:18px;font-weight:400}
+#today .role{transition:background-color var(--native-fast) ease}
+#today .roleIcon{background:var(--apple-fill)}
+#changes .changesWorkflowTabs button.complete>span{font-size:11px}
+#changes .changesWorkflowTabs button.complete>span::before{content:none}
+#changes .changesWorkflowTabs button.complete::after{display:none}
+#changes .changesWorkflowTabs button.active>span{background:var(--apple-accent);color:#fff}
+#changes .changesWorkflowTabs small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#changes .fixedAllocationBox summary,#changes .nightRoleEditor>summary{min-height:50px}
+#changes .fixedRoleRow{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);font-size:12px}
+#changes .fixedRoleRow b{text-align:right}
+#changes .historyBox summary{min-height:48px}
+.formMessage:not(:empty){padding:9px 10px;border-radius:10px}
+
+#roster{padding-top:14px}
+#roster .rosterPageHeader{align-items:center;margin-bottom:12px}
+#roster .rosterPageHeader h2{color:var(--apple-label);font-size:28px;font-weight:760;letter-spacing:-.04em}
+#roster .toolbar{grid-template-columns:minmax(0,1fr) 100px;gap:8px}
+#roster .notice{color:var(--apple-secondary)}
+#roster .cards{display:grid;gap:10px}
+#roster .card{padding:14px;border:0;background:var(--apple-surface);box-shadow:var(--apple-shadow)}
+#roster .row{border-color:var(--apple-separator)}
+#roster .tag,#roster .pill{border-radius:7px}
+
+#admin{padding-top:14px}
+#admin .adminHeader{padding:14px}
+#admin .adminHeader h2{font-size:24px;font-weight:760;letter-spacing:-.035em}
+#admin .adminTabs{position:sticky;top:8px;z-index:15;padding:3px;border:var(--apple-hairline) solid rgba(255,255,255,.55);border-radius:11px;background:rgba(229,229,234,.78);box-shadow:0 4px 16px rgba(27,45,58,.05);-webkit-backdrop-filter:saturate(170%) blur(18px);backdrop-filter:saturate(170%) blur(18px)}
+#admin .adminTabs button{min-width:78px;min-height:38px;padding:8px 10px;border-radius:8px;color:var(--apple-secondary)}
+#admin .adminTabs button.active{background:var(--apple-surface);color:var(--apple-label);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#admin .adminPane>.panel{padding:16px}
+#admin .adminSectionIcon{border-radius:11px;background:var(--apple-accent-soft);color:var(--apple-accent)}
+#admin .statusCard{border:var(--apple-hairline) solid var(--apple-separator);background:var(--apple-surface-muted)}
+#admin .adminQuickGrid button,#admin .quickRanges button,#admin .dataAction button{border:var(--apple-hairline) solid var(--apple-separator);background:var(--apple-surface);color:var(--apple-accent);box-shadow:none}
+
+/* Glass belongs only to persistent or transient chrome. */
+.bottom{background:rgba(249,249,251,.78);border-top:var(--apple-hairline) solid rgba(255,255,255,.72);box-shadow:0 -1px 0 rgba(60,60,67,.1),0 -12px 36px rgba(27,45,58,.06);-webkit-backdrop-filter:saturate(190%) blur(26px);backdrop-filter:saturate(190%) blur(26px)}
+.changesScreenHeader,.breaksScreenHeader{background:rgba(242,242,247,.82);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px)}
+.appDialog{background:rgba(255,255,255,.91);border:var(--apple-hairline) solid rgba(255,255,255,.76);-webkit-backdrop-filter:saturate(170%) blur(28px);backdrop-filter:saturate(170%) blur(28px)}
+.appDialog::backdrop{background:rgba(24,24,27,.42);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.releaseDialog .dialogHead{background:rgba(255,255,255,.8);-webkit-backdrop-filter:saturate(170%) blur(18px);backdrop-filter:saturate(170%) blur(18px)}
+.updateBanner{border:var(--apple-hairline) solid rgba(255,255,255,.18);background:rgba(38,38,41,.86);-webkit-backdrop-filter:saturate(160%) blur(20px);backdrop-filter:saturate(160%) blur(20px)}
+
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.bottom{background:#f9f9fb}.changesScreenHeader,.breaksScreenHeader{background:var(--apple-bg)}.appDialog,.onboardingDialog[open]{background:#fff}.onboardingActions{background:#f8f8fa}#admin .adminTabs{background:#e5e5ea}}
+
+body.dark{color-scheme:dark;--apple-bg:#000;--apple-surface:#1c1c1e;--apple-surface-muted:#242426;--apple-fill:rgba(118,118,128,.24);--apple-separator:rgba(84,84,88,.65);--apple-label:#f5f5f7;--apple-secondary:#aeaeb2;--apple-tertiary:#8e8e93;--apple-accent:#5ac8c2;--apple-accent-soft:#143c3a;background:var(--apple-bg);color:var(--apple-label)}
+body.dark .authGate{background:var(--apple-bg)}body.dark .authHospital span,body.dark .authIntro h1,body.dark .authCardHeading h2{color:var(--apple-label)}body.dark .authCard,body.dark input,body.dark select,body.dark textarea{background:var(--apple-surface);color:var(--apple-label);border-color:var(--apple-separator)}body.dark .authSwitch{background:var(--apple-fill)}body.dark .authSwitch button.active{background:#3a3a3c;color:var(--apple-label)}body.dark .authMessage:not(:empty){background:#143c3a;color:#9ee5df}body.dark .authMessage.error{background:#421d22;color:#ffb4bc}
+body.dark .onboardingDialog[open]{background:rgba(28,28,30,.92);color:var(--apple-label);border-color:rgba(255,255,255,.12)}body.dark .onboardingContent h2{color:var(--apple-label)}body.dark .onboardingFeatureList{background:rgba(44,44,46,.7);border-color:var(--apple-separator)}body.dark .workflowVisual span{background:#3a3a3c}body.dark .onboardingActions{background:rgba(28,28,30,.76);border-color:var(--apple-separator)}
+body.dark #appHeader,body.dark #roster .card,body.dark #admin .panel,body.dark #admin .statusCard{background:var(--apple-surface);color:var(--apple-label);border-color:var(--apple-separator)}body.dark #appHeader .hospitalStrip span{color:var(--apple-label)}body.dark #appHeader .headerChip,body.dark #appHeader .headActions button{background:var(--apple-fill);color:var(--apple-label)}body.dark #admin .adminTabs{background:rgba(44,44,46,.82)}body.dark #admin .adminTabs button.active{background:#48484a;color:var(--apple-label)}body.dark .bottom{background:rgba(28,28,30,.78);border-color:rgba(255,255,255,.12)}
+
+@media(max-width:700px){
+  .authExperience{display:block;min-height:auto}.authWelcome{min-height:auto;padding:4px 2px 22px}.authHospital img{height:48px}.authIntro{margin:54px 0 28px}.authIntro h1{font-size:44px}.authIntro p{font-size:16px}.authMotto{display:block;margin-top:0;line-height:1.45}.authCard{padding:18px}
+}
+@media(max-width:420px){
+  body[data-view] main{padding-inline:12px}
+  #appHeader .hospitalStrip img{width:min(190px,57vw);height:41px}#appHeader .hospitalStrip span{max-width:104px;font-size:8.5px}#appHeader .motto{font-size:9.5px;line-height:1.4}
+  .authGate{padding-inline:14px}.authIntro{margin:42px 0 30px}.authIntro h1{font-size:39px}.authCardHeading h2{font-size:23px}
+  .onboardingDialog[open]{width:calc(100% - 16px);height:calc(100dvh - 20px);border-radius:24px}.onboardingContent{padding-inline:20px}.onboardingContent h2{font-size:28px}.onboardingVisual{width:100px;height:100px;margin-bottom:20px}.workflowVisual{width:210px;height:86px}.onboardingActions{padding-inline:14px}
+  #changes .changesWorkflowTabs small{display:none}#changes .changesWorkflowTabs button{min-height:44px}
+  #admin .adminTabs{margin-inline:-2px}
+}
+@media(prefers-reduced-motion:reduce){.onboardingContentIn,.onboardingDialog[open]{animation:none!important}.onboardingProgress span{transition:none}}
+
+/* V34.0 personal account sheet, passkeys and reversible change feedback. */
+.accountBtn{position:relative;overflow:hidden}.accountAvatar{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover}.accountInitial.hidden,.accountAvatar.hidden{display:none!important}
+.authPasskeyButton{display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;gap:9px;margin-top:10px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);background:var(--apple-surface);color:var(--apple-label);box-shadow:none}.authPasskeyButton svg{width:20px;height:20px;fill:none;stroke:var(--apple-accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.passkeyVisual{background:linear-gradient(145deg,var(--apple-accent-soft),rgba(90,200,194,.12));box-shadow:inset 0 0 0 1px rgba(8,125,121,.08),0 18px 42px rgba(8,125,121,.1)}.passkeyVisual svg{width:58px;height:58px;fill:none;stroke:currentColor;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round}.onboardingPrivacy{display:grid;gap:3px;margin:18px 0 0;padding:12px 13px;border:var(--apple-hairline) solid rgba(36,138,61,.15);border-radius:var(--apple-radius-small);background:rgba(52,199,89,.09);color:var(--apple-green);text-align:left}.onboardingPrivacy b{font-size:12px}.onboardingPrivacy span{color:var(--apple-secondary);font-size:10.5px;line-height:1.45}.onboardingPasskeyButton{width:100%;min-height:46px;margin-top:12px}.onboardingPasskeyMessage{min-height:16px;margin-top:7px;color:var(--apple-secondary);font-size:10.5px;line-height:1.4;text-align:center}
+.accountSheet[open]{position:fixed;inset:auto 0 0;display:flex;width:min(620px,100%);height:min(92dvh,820px);max-width:none;max-height:none;flex-direction:column;margin:0 auto;padding:0;overflow:hidden;border:var(--apple-hairline) solid rgba(255,255,255,.7);border-bottom:0;border-radius:26px 26px 0 0;background:rgba(248,248,250,.9);color:var(--apple-label);box-shadow:0 -18px 70px rgba(0,0,0,.24);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);animation:nativeSheetIn var(--native-medium) var(--native-spring) both}
+.accountSheet::backdrop{background:rgba(24,24,27,.4);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.sheetGrabber{flex:0 0 auto;width:38px;height:5px;margin:8px auto 2px;border-radius:999px;background:rgba(60,60,67,.28)}
+.accountSheetHeader{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;padding:8px 18px 12px;border-bottom:var(--apple-hairline) solid var(--apple-separator)}.accountSheetHeader span{color:var(--apple-secondary);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.accountSheetHeader h2{margin:1px 0 0;font-size:24px;font-weight:760;letter-spacing:-.04em}.accountSheetHeader button{min-height:34px;padding:6px 4px;border:0;background:transparent;color:var(--apple-accent);box-shadow:none;font-size:14px}
+.accountSheetScroll{display:grid;gap:14px;min-height:0;padding:16px 16px calc(24px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain}
+.profileEditor,.accountGroup{padding:16px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius);background:var(--apple-surface);box-shadow:var(--apple-shadow)}
+.profilePhotoArea{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center}.profilePhotoButton{position:relative;width:88px;height:88px;padding:0;overflow:visible;border:0;border-radius:50%;background:var(--apple-accent-soft);color:var(--apple-accent);box-shadow:none}.profilePhotoButton>span,.profilePhotoButton>img{display:grid;width:100%;height:100%;place-items:center;border-radius:50%;object-fit:cover;font-size:32px;font-weight:750}.profilePhotoButton i{position:absolute;right:-2px;bottom:-2px;display:grid;width:30px;height:30px;place-items:center;border:3px solid var(--apple-surface);border-radius:50%;background:var(--apple-accent);color:#fff}.profilePhotoButton i svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.profilePhotoArea h3{margin:0;color:var(--apple-label);font-size:17px}.profilePhotoArea p{margin:3px 0 8px;color:var(--apple-secondary);font-size:11px;line-height:1.45}.profilePhotoArea div>button{min-height:30px;padding:3px 6px;border:0;background:transparent;color:var(--apple-accent);box-shadow:none;font-size:12px}.profilePhotoArea .profileRemovePhoto{color:var(--apple-red)}
+.profileFields{display:grid;gap:12px;margin-top:16px}.profileFields label{display:grid}.profileFields small{margin-top:3px;color:var(--apple-tertiary);font-size:10px;font-weight:450}.profileReadOnly{display:grid;gap:2px;padding:11px 13px;border-radius:var(--apple-radius-small);background:var(--apple-fill)}.profileReadOnly span{color:var(--apple-secondary);font-size:10px;font-weight:650}.profileReadOnly b{font-size:13px}.profileReadOnly small{color:var(--apple-secondary);font-size:10.5px}.profileEditor>.primary{margin-top:14px}
+.accountGroup>h3,.accountSectionHeading h3{margin:0 0 10px;color:var(--apple-label);font-size:14px;font-weight:720}.appearanceControl{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px;border-radius:10px;background:var(--apple-fill)}.appearanceControl button{min-height:36px;padding:6px;border:0;border-radius:8px;background:transparent;color:var(--apple-secondary);box-shadow:none;font-size:12px}.appearanceControl button.active{background:var(--apple-surface);color:var(--apple-label);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.accountActions{padding:0;overflow:hidden}.accountActions>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;padding:11px 14px;border:0;border-top:var(--apple-hairline) solid var(--apple-separator);border-radius:0;background:transparent;color:var(--apple-label);box-shadow:none;text-align:left}.accountActions>button:first-child{border-top:0}.accountActions span{display:grid;gap:1px}.accountActions b{font-size:13px}.accountActions small{color:var(--apple-secondary);font-size:10.5px;font-weight:450}.accountActions i{color:var(--apple-tertiary);font-size:20px;font-style:normal;font-weight:400}
+.accountSectionHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}.accountSectionHeading h3{margin-bottom:2px}.accountSectionHeading p{margin:0;color:var(--apple-secondary);font-size:11px;line-height:1.45}.accountSectionHeading svg{flex:0 0 auto;width:24px;height:24px;fill:none;stroke:var(--apple-accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.passkeyList{margin:13px 0}.passkeyRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:var(--apple-hairline) solid var(--apple-separator)}.passkeyRow:first-child{border-top:0}.passkeyRow span{display:grid}.passkeyRow b{font-size:12px}.passkeyRow small,.accountHelp{margin:0;color:var(--apple-secondary);font-size:10.5px}.passkeyRow button{min-height:30px;padding:4px 7px;border:0;background:transparent;color:var(--apple-red);box-shadow:none;font-size:11px}
+.accountSignOut{width:100%;min-height:50px;border:0;border-radius:var(--apple-radius);background:var(--apple-surface);color:var(--apple-red);box-shadow:var(--apple-shadow)}.accountVersion{margin:0;color:var(--apple-tertiary);font-size:10px;text-align:center}
+.toast{align-items:center;justify-content:center;gap:14px}.toast.hasAction{justify-content:space-between}.toast.hasAction>span{min-width:0}.toast.hasAction>button{flex:0 0 auto;min-height:32px;padding:5px 9px;border:0;border-radius:8px;background:rgba(255,255,255,.16);color:#fff;box-shadow:none;font-size:12px}
+body.dark .accountSheet[open]{background:rgba(28,28,30,.92);border-color:rgba(255,255,255,.12)}body.dark .profileEditor,body.dark .accountGroup,body.dark .accountSignOut,body.dark .authPasskeyButton{background:var(--apple-surface);border-color:var(--apple-separator);color:var(--apple-label)}body.dark .appearanceControl button.active{background:#48484a;color:var(--apple-label)}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.accountSheet[open]{background:#f8f8fa}body.dark .accountSheet[open]{background:#1c1c1e}}
+@media(max-width:420px){.accountSheet[open]{height:min(94dvh,820px);border-radius:24px 24px 0 0}.accountSheetScroll{padding-inline:12px}.profileEditor,.accountGroup{padding:14px}.profilePhotoArea{grid-template-columns:78px minmax(0,1fr)}.profilePhotoButton{width:78px;height:78px}}
+@media(prefers-reduced-motion:reduce){.accountSheet[open]{animation:none!important}}
