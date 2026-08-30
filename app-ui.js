@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V34.3 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V34.4 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -29,6 +29,7 @@ var pendingProfilePhotoUrl='';
 var profileSavedSignature='';
 
 var RELEASE_HISTORY=[
+  {version:'34.4',date:'30 Aug 2026',title:'A complete, scrollable update story',changes:['The update window now includes the complete version history in one scrollable view.','The newest release is clearly labelled Current update, while all earlier work appears under Previous updates.','Past improvements remain separated by version so older features are never presented as newly added.']},
   {version:'34.3',date:'30 Aug 2026',title:'Clearer record actions and accurate update history',changes:['The update window now describes only the changes introduced in this version.','Version history once again keeps each earlier release as its own separate entry.','Absence records now use one discreet More button instead of placing Edit and Remove beside each other.','Edit and Remove are presented in a native-style action sheet, with the destructive choice clearly separated and coloured red.','Overtime records use the same consistent action pattern on narrow and wide screens.']},
   {version:'34.2',date:'30 Aug 2026',title:'Reliable delivery of the final interface',changes:['A fresh application cache ensures every interface file updates together.','The obsolete five-person model banner is removed, leaving one concise five-nurse arrangement card.','The completed profile and workflow refinements now load consistently in both the installed app and the website.']},
   {version:'34.1',date:'29 Aug 2026',title:'Personal dashboard and quieter automatic workflow',changes:['Saved profile photographs, preferred names and role titles now appear in Your night.','Optional profile setup is included in onboarding and can be replayed later from Account.','Save profile appears only after a profile detail or photograph has changed.','Standard six-nurse nights require no Pager decision or confirmation when the automatic roster order is unchanged.','Confirm displays Not needed without a misleading completion tick.','Five-nurse wording, break guidance and similar-name matching were corrected across the interface.']},
@@ -142,10 +143,10 @@ function showReleaseNotesIfNeeded(){
 }
 
 function renderReleaseNotes(showHistory){
-  var dialog=byId('releaseNotes');if(!dialog)return;var latest=RELEASE_HISTORY[0],entries=showHistory?RELEASE_HISTORY:[latest];dialog.classList.add('releaseDialog');dialog.dataset.releaseMode=showHistory?'history':'current';
-  var title=byId('releaseNotesTitle'),intro=byId('releaseNotesIntro'),close=byId('closeReleaseNotes');if(title)title.textContent=showHistory?'Version history':'App updated';if(intro)intro.textContent=showHistory?'Night Roster '+APP_VERSION+' · Earlier updates':'Version '+latest.version+' · What changed';if(close)close.textContent=showHistory?'Done':'Got it';
-  var oldList=dialog.querySelector('ul'),history=dialog.querySelector('.releaseHistory');if(!history){history=document.createElement('div');history.className='releaseHistory';history.setAttribute('tabindex','0');if(oldList)oldList.replaceWith(history);else dialog.appendChild(history)}history.setAttribute('aria-label',showHistory?'App version history':'Changes in version '+latest.version);
-  history.innerHTML=entries.map(function(entry,index){return'<section class="releaseEntry '+(!showHistory||index===0?'latest':'')+'"><div class="releaseVersion"><div><span>Version '+esc(entry.version)+'</span><h3>'+esc(entry.title)+'</h3></div><time>'+esc(entry.date)+'</time></div><ul>'+entry.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('')+'</ul></section>'}).join('');history.scrollTop=0;
+  var dialog=byId('releaseNotes');if(!dialog)return;var latest=RELEASE_HISTORY[0],entries=RELEASE_HISTORY;dialog.classList.add('releaseDialog');dialog.dataset.releaseMode=showHistory?'history':'current';
+  var title=byId('releaseNotesTitle'),intro=byId('releaseNotesIntro'),close=byId('closeReleaseNotes');if(title)title.textContent=showHistory?'Version history':'App updated';if(intro)intro.textContent=showHistory?'Night Roster '+APP_VERSION+' · Complete release history':'Version '+latest.version+' · Current and previous updates';if(close)close.textContent=showHistory?'Done':'Got it';
+  var oldList=dialog.querySelector('ul'),history=dialog.querySelector('.releaseHistory');if(!history){history=document.createElement('div');history.className='releaseHistory';history.setAttribute('tabindex','0');if(oldList)oldList.replaceWith(history);else dialog.appendChild(history)}history.setAttribute('aria-label','Complete Night Roster version history');
+  history.innerHTML=entries.map(function(entry,index){var archive=index===1?'<div class="releaseArchiveHeading"><span>Previous updates</span><small>The work that shaped Night Roster</small></div>':'';return archive+'<section class="releaseEntry '+(index===0?'latest':'')+'"><div class="releaseVersion"><div><span>'+(index===0?'Current update · ':'')+'Version '+esc(entry.version)+'</span><h3>'+esc(entry.title)+'</h3></div><time>'+esc(entry.date)+'</time></div><ul>'+entry.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('')+'</ul></section>'}).join('');history.scrollTop=0;
 }
 
 function ensureRecordActionSheet(){
