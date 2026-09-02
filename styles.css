@@ -947,6 +947,15 @@ body.dark .releaseArchiveHeading{background:rgba(28,28,30,.9);border-color:var(-
 .releaseNav{display:grid;grid-template-columns:1fr 1.45fr;gap:3px;flex:0 0 auto;padding:8px 12px;border-bottom:var(--apple-hairline) solid var(--apple-separator);background:rgba(248,248,250,.82);-webkit-backdrop-filter:saturate(170%) blur(18px);backdrop-filter:saturate(170%) blur(18px)}
 .releaseNav button{display:flex;min-height:36px;align-items:center;justify-content:center;gap:6px;padding:6px 9px;border:0;border-radius:9px;background:var(--apple-surface);color:var(--apple-label);box-shadow:0 1px 3px rgba(0,0,0,.09);font-size:11.5px;font-weight:680}.releaseNav button:active{transform:scale(.98);background:var(--apple-fill)}.releaseNav span{display:grid;min-width:18px;height:18px;place-items:center;padding:0 5px;border-radius:999px;background:var(--apple-accent-soft);color:var(--apple-accent);font-size:9.5px;font-weight:750}
 .releaseDialog[data-release-mode] .releaseHistory{flex:1 1 auto;max-height:none;scroll-padding-top:44px}
+
+/* V34.8: clear allocation actions and legible provisional output controls. */
+#today button.role{width:100%;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#today button.role:active{transform:scale(.992);background:var(--ios-fill)}
+#today button.role:focus-visible{z-index:1;outline:3px solid rgba(0,122,255,.28);outline-offset:-3px}
+#today button.role .roleCopy,#today button.role .roleMeta,#today button.role .name{display:block}
+#breaks>.actionPanel .emailRosterBtn.buttonPending,#breaks>.actionPanel #copyBreaksBtn.buttonPending,
+body.dark #breaks>.actionPanel .emailRosterBtn.buttonPending,body.dark #breaks>.actionPanel #copyBreaksBtn.buttonPending{border-color:transparent!important;background:#a95508!important;color:#fff!important}
+#breaks>.actionPanel .buttonPending svg{color:currentColor!important;stroke:currentColor!important}
 body.dark .releaseNav{background:rgba(28,28,30,.84);border-color:var(--apple-separator)}body.dark .releaseNav button{background:#3a3a3c;color:var(--apple-label)}body.dark .releaseNav span{background:rgba(90,200,194,.14);color:#6ed7d0}
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.releaseNav{background:#f2f2f7}body.dark .releaseNav{background:#1c1c1e}}
 @media(prefers-reduced-motion:reduce){.releaseNav button:active{transform:none}}
