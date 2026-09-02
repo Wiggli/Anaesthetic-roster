@@ -23,18 +23,42 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="manifest" href="manifest.webmanifest?v=34.4" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=34.4" />
+    <link rel="manifest" href="manifest.webmanifest?v=34.7" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=34.7" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=34.4" />
+    <link rel="stylesheet" href="styles.css?v=34.7" />
   </head>
   <body class="authPending">
+    <section
+      id="launchScreen"
+      class="launchScreen"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Opening Anaesthetic Night Roster"
+    >
+      <div class="launchContent">
+        <div class="launchHospital">
+          <img src="mater-dei-logo.png?v=34.7" alt="SPTAR Mater Dei" />
+          <span>Main Operating Theatres</span>
+        </div>
+        <div class="launchMessage">
+          <span>Anaesthetic Night Roster</span>
+          <h1 id="launchTitle">Preparing your night</h1>
+          <p id="launchStatus">Loading the latest shared roster…</p>
+        </div>
+        <div class="launchProgress" aria-hidden="true"><i></i></div>
+        <p class="launchMotto">
+          Fair by design. Flexible under pressure. Safe in practice.
+        </p>
+      </div>
+    </section>
     <section id="authGate" class="authGate" aria-labelledby="authTitle">
       <div class="authExperience">
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=34.4"
+              src="mater-dei-logo.png?v=34.7"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -140,7 +164,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=34.4" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=34.7" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -823,8 +847,8 @@
         <section class="accountGroup accountActions" aria-label="App options">
           <button type="button" id="accountOnboardingBtn">
             <span
-              ><b>Show introduction again</b
-              ><small>Replay the short app guide</small></span
+              ><b>View onboarding again</b
+              ><small>Replay the complete app guide at any time</small></span
             ><i>›</i>
           </button>
           <button type="button" id="accountInstallBtn">
@@ -882,6 +906,7 @@
       aria-labelledby="onboardingTitle"
     >
       <div class="onboardingTop">
+        <span class="onboardingStepLabel" id="onboardingStepLabel">1 of 5</span>
         <button type="button" class="onboardingSkip" id="onboardingSkipBtn">
           Skip
         </button>
@@ -922,7 +947,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 34.4 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 34.7 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -964,7 +989,7 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
-    <script src="app-core.js?v=34.4"></script>
-    <script src="app-ui.js?v=34.4"></script>
+    <script src="app-core.js?v=34.7"></script>
+    <script src="app-ui.js?v=34.7"></script>
   </body>
 </html>
