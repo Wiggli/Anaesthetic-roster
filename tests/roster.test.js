@@ -84,6 +84,76 @@ assert.equal(context.staffingPlan(base).count, 6, 'one overtime nurse should res
 context.nightOvertime[base.date].push({ id: 'ot-2', nurse_name: 'Overtime Two', allocation_key: null });
 assert.equal(context.staffingPlan(base).count, 7, 'second overtime nurse should produce seven nurses');
 
+// Every staffing mode must resolve through the same effective-plan functions.
+context.nightChanges = { [base.date]: [{ id: 'absence-1', absent_name: base.pager, reason: 'Leave' }] };
+context.nightOvertime = {};
+let plan = context.staffingPlan(base);
+let effective = context.applyChanges(base);
+assert.equal(plan.count, 5, 'one absence without cover must create a five-nurse night');
+assert.equal(plan.coverageKey, 'pager', 'a Pager vacancy must select automatic full-night cover');
+assert.equal(effective.fullLW, base.reliever, 'the Reliever must cover full-night Labour Ward / Pager');
+assert.equal(context.planIsProvisional(base), false, 'an automatic valid five-nurse plan must be complete');
+
+context.nightChanges = { [base.date]: [
+  { id: 'absence-1', absent_name: base.first1, reason: 'Leave' },
+  { id: 'absence-2', absent_name: base.second1, reason: 'Leave' }
+] };
+context.nightOvertime = { [base.date]: [{ id: 'ot-1', nurse_name: 'Overtime One', allocation_key: null }] };
+plan = context.staffingPlan(base);
+assert.equal(plan.count, 5, 'two absences and one overtime nurse must create a five-nurse night');
+assert.equal(plan.requiresCoverageChoice, true, 'multiple theatre vacancies must require the Reliever choice first');
+assert.match(context.workflowTaskDetails(base, plan)[0], /Reliever/, 'the unresolved task must name the Reliever decision');
+
+context.nightChanges = { [base.date]: [{ id: 'absence-1', absent_name: base.first1, reason: 'Leave' }] };
+context.nightOvertime = { [base.date]: [{ id: 'ot-1', nurse_name: 'Overtime One', allocation_key: null }] };
+plan = context.staffingPlan(base);
+assert.equal(plan.count, 6, 'an absence plus overtime replacement must restore six nurses');
+assert.deepEqual(Array.from(context.workflowTaskDetails(base, plan)), ['Choose a nurse for First Part theatre · position 1'], 'the interface must name the exact unresolved allocation');
+context.allocationDrafts[base.date] = { first1: 'ot-1' };
+assert.equal(context.workflowTaskCount(base, plan), 0, 'a valid draft selection must resolve the task immediately');
+assert.equal(context.allocationPreview(base).first1, 'Overtime One', 'the shared allocation preview must apply the selected nurse');
+
+context.nightChanges = {};
+const sevenBase = { ...base, seventh: 'OT Nurse' };
+context.nightOvertime = { [base.date]: [
+  { id: 'ot-1', nurse_name: 'Overtime One', allocation_key: 'seventh' },
+  { id: 'ot-2', nurse_name: 'Overtime Two', allocation_key: null }
+] };
+delete context.allocationDrafts[base.date];
+plan = context.staffingPlan(sevenBase);
+assert.equal(plan.count, 8, 'two overtime nurses without absences must produce eight nurses');
+assert.equal(plan.coreComplete, true, 'the core seven-person plan must complete before extras are exposed');
+assert.deepEqual(Array.from(context.additionalNurses(plan), nurse => nurse.id), ['ot-2'], 'only the remaining overtime nurse may appear as additional staff');
+
+context.nightOvertime = { [base.date]: [
+  { id: 'ot-1', nurse_name: 'Overtime One', allocation_key: 'seventh' },
+  { id: 'ot-2', nurse_name: 'Overtime Two', allocation_key: 'seventh' }
+] };
+plan = context.staffingPlan(sevenBase);
+assert.equal(plan.validAssignments.length, 1, 'duplicate saved records must never duplicate an effective allocation');
+assert.equal(context.applyChanges(sevenBase).seventh, 'Overtime One', 'the effective plan must use one deterministic saved allocation');
+
+const permanentSeventhBase = { ...base, seventh: base.first1 };
+context.nightChanges = { [base.date]: [{ id: 'absence-1', absent_name: base.first1, reason: 'Leave' }] };
+const fallback = context.seventhRotationChoice(permanentSeventhBase, context.nightChanges[base.date]);
+assert.equal(fallback.fallback, true, 'an absent permanent seventh candidate must use the established fallback');
+assert.notEqual(fallback.nurse, base.first1, 'the absent candidate must never remain the seventh nurse');
+
+context.nightChanges = {};
+context.nightOvertime = {};
+context.labourOrderDrafts[base.date] = { first: base.pager, second: base.reliever, automatic: true };
+const standardBreaks = context.breakData(context.applyChanges(base));
+assert.ok(standardBreaks.second.includes(base.pager), 'Pager must work first part Labour Ward and take second break automatically');
+assert.ok(standardBreaks.first.includes(base.reliever), 'Reliever must work second part Labour Ward and take first break automatically');
+
+context.nightChanges = { [base.date]: [{ id: 'absence-1', absent_name: base.first1, replacement_name: 'Legacy Cover' }] };
+context.nightOvertime = {};
+plan = context.staffingPlan(base);
+effective = context.applyChanges(base);
+assert.equal(plan.count, 6, 'legacy named replacement cover must not inflate staffing');
+assert.equal(effective.first1, 'Legacy Cover', 'legacy replacement cover must occupy only the absent role');
+assert.equal(new Set(context.activeNames(effective)).size, 6, 'replacement cover must not duplicate an effective allocation');
+
 assert.equal(context.operationalRosterDate(new Date('2026-08-22T00:00:00Z')), '2026-08-21', '02:00 Malta must stay on the current working night');
 assert.equal(context.operationalRosterDate(new Date('2026-08-22T04:59:00Z')), '2026-08-21', '06:59 Malta must stay on the current working night');
 assert.equal(context.operationalRosterDate(new Date('2026-08-22T05:00:00Z')), '2026-08-22', '07:00 Malta must move to the next date');
@@ -91,24 +161,39 @@ assert.equal(context.operationalRosterDate(new Date('2026-08-22T17:00:00Z')), '2
 
 const originalVersions = context.rotationVersions.slice();
 const before = context.calculateNight('2026-07-04');
-const effective = context.calculateNight('2026-07-08');
+const prospective = context.calculateNight('2026-07-08');
 context.rotationVersions = originalVersions.concat([{
   effective_from: '2026-07-08',
-  first1: effective.first1 === 'James' ? 'New Nurse' : effective.first1,
-  first2: effective.first2 === 'James' ? 'New Nurse' : effective.first2,
-  second1: effective.second1 === 'James' ? 'New Nurse' : effective.second1,
-  second2: effective.second2 === 'James' ? 'New Nurse' : effective.second2,
-  pager: effective.pager === 'James' ? 'New Nurse' : effective.pager,
-  reliever: effective.reliever === 'James' ? 'New Nurse' : effective.reliever,
-  seventh_anchor: effective.seventh === 'James' ? 'New Nurse' : effective.seventh,
+  first1: prospective.first1 === 'James' ? 'New Nurse' : prospective.first1,
+  first2: prospective.first2 === 'James' ? 'New Nurse' : prospective.first2,
+  second1: prospective.second1 === 'James' ? 'New Nurse' : prospective.second1,
+  second2: prospective.second2 === 'James' ? 'New Nurse' : prospective.second2,
+  pager: prospective.pager === 'James' ? 'New Nurse' : prospective.pager,
+  reliever: prospective.reliever === 'James' ? 'New Nurse' : prospective.reliever,
+  seventh_anchor: prospective.seventh === 'James' ? 'New Nurse' : prospective.seventh,
   seventh_cycle: context.ORIGINAL_SEVENTH.map(name => name === 'James' ? 'New Nurse' : name)
 }]);
 assert.deepEqual(context.calculateNight('2026-07-04'), before, 'a permanent change must not alter earlier nights');
 
 const sw = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const manifest = fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8');
+const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
+assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
+for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
+  assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
+  assert.match(sw, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} app-shell query must match APP_VERSION`);
+}
+assert.match(manifest, new RegExp(`icon-192\\.png\\?v=${context.APP_VERSION.replace('.', '\\.')}`), 'manifest icon query must match APP_VERSION');
+assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
+assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v25/, 'absence Undo must use the versioned database function');
+assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v25/, 'overtime Undo must use the versioned database function');
 assert.match(sw, /requestUrl\.origin !== self\.location\.origin/, 'service worker must leave shared cross-origin data on the network');
 assert.match(sw, /cdn\.jsdelivr\.net/, 'only the fixed public Supabase library may be cached');
-assert.match(sw, /fetch\(event\.request/, 'service worker must use the network for app updates');
+assert.match(sw, /event\.request\.mode === 'navigate'[\s\S]*fetch\(event\.request, \{ cache: 'no-store' \}\)[\s\S]*catch\(\(\) => caches\.match\('\.\/index\.html'\)\)/, 'navigation must be network-first with the cached shell fallback');
 assert.doesNotMatch(sw, /caches\.put\([^\n]*supabase/i, 'service worker must never cache shared Supabase data');
+assert.match(sw, /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary/, 'authentication, REST, realtime and private profile-photo origins must bypass caching');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');

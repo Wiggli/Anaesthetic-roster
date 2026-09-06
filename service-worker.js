@@ -1,18 +1,18 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v34-8';
+const CACHE_NAME = 'anaesthetic-night-roster-v35-0';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=34.8',
-  './app-core.js?v=34.8',
-  './app-ui.js?v=34.8',
-  './manifest.webmanifest?v=34.8',
-  './icon-192.png?v=34.8',
-  './icon-512.png?v=34.8',
-  './icon-maskable-192.png?v=34.8',
-  './icon-maskable-512.png?v=34.8',
-  './apple-touch-icon.png?v=34.8',
-  './anaesthesia-header.jpg?v=34.8',
-  './mater-dei-logo.png?v=34.8'
+  './styles.css?v=35.0',
+  './app-core.js?v=35.0',
+  './app-ui.js?v=35.0',
+  './manifest.webmanifest?v=35.0',
+  './icon-192.png?v=35.0',
+  './icon-512.png?v=35.0',
+  './icon-maskable-192.png?v=35.0',
+  './icon-maskable-512.png?v=35.0',
+  './apple-touch-icon.png?v=35.0',
+  './anaesthesia-header.jpg?v=35.0',
+  './mater-dei-logo.png?v=35.0'
 ];
 
 function isSupabaseLibrary(requestUrl) {
@@ -34,6 +34,9 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'ACTIVATE_UPDATE') self.skipWaiting();
+  if (event.data && event.data.type === 'GET_CACHE_VERSION' && event.source) {
+    event.source.postMessage({ type: 'CACHE_VERSION', value: CACHE_NAME });
+  }
 });
 
 self.addEventListener('fetch', event => {
