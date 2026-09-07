@@ -179,6 +179,8 @@ const sw = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const manifest = fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8');
 const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
@@ -187,6 +189,38 @@ for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmani
   assert.match(sw, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} app-shell query must match APP_VERSION`);
 }
 assert.match(manifest, new RegExp(`icon-192\\.png\\?v=${context.APP_VERSION.replace('.', '\\.')}`), 'manifest icon query must match APP_VERSION');
+for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': css, 'manifest.webmanifest': manifest, 'service-worker.js': sw })) {
+  const versions = Array.from(source.matchAll(/[?&]v=([0-9]+(?:\.[0-9]+)+)/g), match => match[1]);
+  assert.ok(versions.length, `${file} must contain a production cache-busting reference`);
+  assert.deepEqual(Array.from(new Set(versions)), [context.APP_VERSION], `${file} cache-busting references must all match APP_VERSION`);
+}
+
+const deployBlock = workflow.match(/- name: Prepare public app files[\s\S]*?(?=\n      - uses:)/);
+assert.ok(deployBlock, 'deployment workflow must contain an explicit dist preparation step');
+const copiedAssets = new Set(Array.from(deployBlock[0].matchAll(/^\s*cp\s+(.+)\s+dist\/$/gm), match => match[1].trim().split(/\s+/)).flat());
+const requiredProductionAssets = [
+  'index.html', 'styles.css', 'app-core.js', 'app-ui.js', 'service-worker.js', 'manifest.webmanifest',
+  'anaesthesia-header.jpg', 'mater-dei-logo.png', 'apple-touch-icon.png',
+  'icon-192.png', 'icon-512.png', 'icon-maskable-192.png', 'icon-maskable-512.png'
+];
+for (const asset of requiredProductionAssets) {
+  assert.ok(copiedAssets.has(asset), `${asset} must be copied into the GitHub Pages dist directory`);
+  assert.ok(fs.existsSync(path.join(__dirname, '..', asset)), `${asset} must exist in the repository`);
+}
+
+const obsoleteFiles = ['index-18.html', 'app-v25.js', 'header-background.jpg', 'header-background.png'];
+const productionSources = { 'index.html': html, 'app-core.js': fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), 'app-ui.js': ui, 'styles.css': css, 'manifest.webmanifest': manifest, 'service-worker.js': sw };
+for (const obsolete of obsoleteFiles) {
+  for (const [file, source] of Object.entries(productionSources)) assert.doesNotMatch(source, new RegExp(obsolete.replace('.', '\\.'), 'i'), `${file} must not reference obsolete ${obsolete}`);
+  assert.ok(!copiedAssets.has(obsolete), `obsolete ${obsolete} must not be copied into dist`);
+}
+
+assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed pinned version');
+assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
+assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on tests');
+assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
+assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
+assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
 assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v25/, 'absence Undo must use the versioned database function');
 assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v25/, 'overtime Undo must use the versioned database function');
