@@ -1,8 +1,31 @@
-# Anaesthetic Night Roster V26 deployment
+# Deployment
 
-1. Upload every file and folder in this package to the root of the GitHub repository. Keep the `.github` folder because it tests the roster before publishing the page.
-2. Open Supabase SQL Editor, paste the complete contents of `supabase-v26-upgrade.sql`, and run it once. A successful run ends with `V26 database upgrade completed successfully`.
-3. Commit the GitHub changes. The Test and deploy GitHub Pages action will validate the original rotation, staffing counts, the 19:00 to 07:00 working-night rule, and PWA cache safety before deployment.
-4. When the action finishes, open the installed app. If an update is ready, use the update banner once. Colleagues will receive the same update when their app next becomes active and online.
+The Anaesthetic Night Roster is released through the repository's GitHub workflow. Do not manually upload an application package to GitHub Pages and do not paste migrations into the Supabase SQL Editor as the normal deployment process.
 
-The publishable Supabase key is intentionally present in the browser app. Row Level Security and the authorised account list protect shared data. Never place a Supabase secret or service-role key in these files.
+## Pull request
+
+1. Codex starts from the latest `main`, creates a focused non-`main` branch, makes the requested changes, and runs `npm test`.
+2. Codex commits and pushes the branch, then opens a pull request containing the change summary, test evidence, schema/deployment impact, and relevant manual verification notes.
+3. For pull requests targeting `main`, GitHub Actions runs the automated test job. Migration and deployment jobs do not run for pull request events.
+4. After all required reviews and checks pass, configured auto-merge may merge the pull request. A maintainer may also merge it through the normal protected-branch process.
+
+## Main-branch release
+
+A push to `main` starts the ordered production workflow:
+
+1. Run `npm test`.
+2. If tests pass, prepare and apply all timestamped `supabase-migration-*.sql` files with the Supabase CLI.
+3. If migrations succeed, copy only the explicit production allow-list into the `dist` artifact and deploy it to GitHub Pages.
+4. Verify that the deployed Pages URL responds over HTTPS.
+
+The migration and GitHub Pages jobs are restricted to pushes to `main`; they never deploy a pull request branch. A failed test or migration prevents later deployment stages.
+
+## Installed PWA updates
+
+The service worker installs the versioned app shell without forcing an immediate takeover. When an update is ready, the installed PWA offers it through the in-app update banner; accepting activates the waiting worker and reloads the app once. Do not bypass this safe update path.
+
+## Secrets and configuration
+
+`SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are GitHub Actions repository secrets used by the migration job. Never display them in logs or screenshots, place them in commands that echo them, or commit them to the repository. Never commit service-role keys, private keys, personal access tokens, or local `.env` files.
+
+The Supabase project reference and browser publishable key are public configuration. Supabase Row Level Security and authorised accounts remain mandatory protections for shared roster data.

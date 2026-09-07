@@ -1,0 +1,37 @@
+# Local environment configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and coverage output
+coverage/
+.nyc_output/
+
+# Supabase CLI temporary state
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# Editors and temporary files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.tmp
+*.temp
