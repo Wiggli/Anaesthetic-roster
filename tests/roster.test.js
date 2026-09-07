@@ -182,7 +182,7 @@ const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -229,5 +229,14 @@ assert.match(sw, /cdn\.jsdelivr\.net/, 'only the fixed public Supabase library m
 assert.match(sw, /event\.request\.mode === 'navigate'[\s\S]*fetch\(event\.request, \{ cache: 'no-store' \}\)[\s\S]*catch\(\(\) => caches\.match\('\.\/index\.html'\)\)/, 'navigation must be network-first with the cached shell fallback');
 assert.doesNotMatch(sw, /caches\.put\([^\n]*supabase/i, 'service worker must never cache shared Supabase data');
 assert.match(sw, /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary/, 'authentication, REST, realtime and private profile-photo origins must bypass caching');
+
+assert.match(ui, /Connecting to the shared roster…/, 'slow launch state must name the shared roster connection');
+assert.match(ui, /Showing the last saved roster/, 'offline launch state must identify saved roster data');
+assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
+assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use an explicit allocation review label');
+assert.match(ui, /button.disabled=pending/, 'Break output actions must be disabled until the plan is complete');
+assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
+const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
+assert.ok(onboardingSequence.indexOf('Your roster identity') < onboardingSequence.indexOf('Optional profile') && onboardingSequence.indexOf('Optional profile') < onboardingSequence.indexOf('Optional faster sign-in'), 'onboarding must introduce identity, then profile, then passkey');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');

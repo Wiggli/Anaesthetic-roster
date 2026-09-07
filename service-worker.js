@@ -1,18 +1,18 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v35-1';
+const CACHE_NAME = 'anaesthetic-night-roster-v35-2';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=35.1',
-  './app-core.js?v=35.1',
-  './app-ui.js?v=35.1',
-  './manifest.webmanifest?v=35.1',
-  './icon-192.png?v=35.1',
-  './icon-512.png?v=35.1',
-  './icon-maskable-192.png?v=35.1',
-  './icon-maskable-512.png?v=35.1',
-  './apple-touch-icon.png?v=35.1',
-  './anaesthesia-header.jpg?v=35.1',
-  './mater-dei-logo.png?v=35.1'
+  './styles.css?v=35.2',
+  './app-core.js?v=35.2',
+  './app-ui.js?v=35.2',
+  './manifest.webmanifest?v=35.2',
+  './icon-192.png?v=35.2',
+  './icon-512.png?v=35.2',
+  './icon-maskable-192.png?v=35.2',
+  './icon-maskable-512.png?v=35.2',
+  './apple-touch-icon.png?v=35.2',
+  './anaesthesia-header.jpg?v=35.2',
+  './mater-dei-logo.png?v=35.2'
 ];
 
 function isSupabaseLibrary(requestUrl) {
