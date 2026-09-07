@@ -16,9 +16,11 @@ A push to `main` starts the ordered production workflow:
 1. Run `npm test`.
 2. If tests pass, prepare and apply all timestamped `supabase-migration-*.sql` files with the Supabase CLI.
 3. If migrations succeed, copy only the explicit production allow-list into the `dist` artifact and deploy it to GitHub Pages.
-4. Verify that the deployed Pages URL responds over HTTPS.
+4. Verify over HTTPS that the deployed `index.html` contains the expected application version and that an essential versioned JavaScript asset is reachable.
 
-The migration and GitHub Pages jobs are restricted to pushes to `main`; they never deploy a pull request branch. A failed test or migration prevents later deployment stages.
+The migration and GitHub Pages jobs are restricted to pushes to `main` or a manual recovery run explicitly dispatched from `main`; they never deploy a pull request branch. A manual recovery run uses the same test → migration → deployment dependencies. A failed test or migration prevents later deployment stages.
+
+The workflow pins the Supabase CLI to version `2.45.5`, selected from the official Supabase CLI releases rather than following the mutable `latest` label. Dependabot checks GitHub Actions monthly, while major-version updates remain excluded so they can only be introduced through deliberate review.
 
 ## Installed PWA updates
 

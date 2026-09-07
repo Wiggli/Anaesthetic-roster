@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,7 +23,7 @@ jobs:
       - run: npm test
 
   migrate:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -41,7 +42,7 @@ jobs:
           fi
       - uses: supabase/setup-cli@v3
         with:
-          version: latest
+          version: 2.45.5
       - name: Prepare database migrations
         shell: bash
         run: |
@@ -63,7 +64,7 @@ jobs:
         run: supabase db push --linked --yes
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: migrate
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -99,7 +100,23 @@ jobs:
             echo "::error::The deployment did not return an HTTPS URL."
             exit 1
           fi
+          page_url="${PAGE_URL%/}/"
+          app_version="$(sed -n "s/^var APP_VERSION = '\([^']*\)';$/\1/p" app-core.js)"
+          if [ -z "$app_version" ]; then
+            echo "::error::Could not determine APP_VERSION for deployment verification."
+            exit 1
+          fi
+          index_file="$(mktemp)"
+          trap 'rm -f "$index_file"' EXIT
           curl --fail --silent --show-error --location --proto '=https' \
             --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 \
-            "$PAGE_URL" > /dev/null
+            "${page_url}index.html" > "$index_file"
+          if ! grep -Fq "app-core.js?v=${app_version}" "$index_file"; then
+            echo "::error::The deployed page does not contain application version ${app_version}."
+            exit 1
+          fi
+          curl --fail --silent --show-error --location --proto '=https' \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "${page_url}app-core.js?v=${app_version}" > /dev/null
