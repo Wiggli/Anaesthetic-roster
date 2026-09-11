@@ -3,6 +3,6 @@
   "private": true,
   "version": "26.0.0",
   "scripts": {
-    "test": "node tests/roster.test.js"
+    "test": "node tests/roster.test.js && node tests/safety-coverage.test.js"
   }
 }
