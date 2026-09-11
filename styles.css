@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=35.4') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=35.5') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -989,12 +989,14 @@ body.dark .adminOperationalRow .adminNeedsAction{color:#ffbd66}body.dark .diagno
 #breaks>.actionPanel button:disabled{opacity:1;background:var(--apple-fill)!important;border-color:var(--apple-separator)!important;color:var(--apple-secondary)!important}
 #breaks>.actionPanel button:disabled svg{stroke:currentColor}
 
-/* V35.4: one controlled liquid-glass system for navigation and app chrome. */
+/* V35.5: canonical Apple interface layer, including glass chrome and spacing. */
 :root{
   --glass-light:rgba(248,248,252,.72);
   --glass-edge:rgba(255,255,255,.76);
   --glass-shadow:0 16px 42px rgba(27,45,58,.14),0 2px 8px rgba(27,45,58,.07);
   --glass-selected:rgba(255,255,255,.78);
+  --apple-control-gap:10px;
+  --apple-section-gap:14px;
 }
 body[data-view] main{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
 
@@ -1075,6 +1077,56 @@ body[data-view="today"] #appHeader{position:sticky;top:0;z-index:24}
   box-shadow:inset 0 1px 0 rgba(255,255,255,.88),0 2px 7px rgba(27,45,58,.1);
 }
 
+/* Separate information and actions receive breathing room; true segmented controls stay joined. */
+#today .nightStatusRow{
+  gap:var(--apple-control-gap);overflow:visible;border:0;background:transparent;box-shadow:none;
+}
+#today .statusChip{
+  border:var(--apple-hairline) solid var(--apple-separator)!important;
+  border-radius:var(--apple-radius)!important;
+  box-shadow:var(--apple-shadow)!important;
+}
+#today .statusChip:nth-child(odd),#today .statusChip:nth-child(-n+2){border:var(--apple-hairline) solid var(--apple-separator)!important}
+#today .statusChip.absenceChip{border-color:rgba(217,54,69,.28)!important}
+#today .statusChip.taskChip{border-color:rgba(183,101,0,.3)!important}
+#today .roles{
+  display:grid;gap:var(--apple-control-gap);overflow:visible;border:0;background:transparent;box-shadow:none;
+}
+#today .role{
+  border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius);
+  background:var(--apple-surface);box-shadow:var(--apple-shadow);
+}
+#today .role:last-child{border-bottom:var(--apple-hairline) solid var(--apple-separator)}
+#today .additionalStaff{
+  margin-top:var(--apple-control-gap);border:var(--apple-hairline) solid rgba(183,101,0,.3);
+  border-radius:var(--apple-radius);box-shadow:var(--apple-shadow);
+}
+#today .personalNight{margin-bottom:var(--apple-section-gap)}
+#today .rosterShortcutRow{gap:var(--apple-control-gap);margin-top:var(--apple-section-gap)}
+#today .actionPanel{margin-top:var(--apple-control-gap)}
+
+#changes .changesWorkflowTabs,#changes .changesWorkflowState{margin-bottom:var(--apple-section-gap)}
+#changes .staffingSection,#changes .confirmationCard{margin-bottom:var(--apple-section-gap)}
+#changes .staffingSection+.staffingSection{margin-top:var(--apple-section-gap)}
+#changes .changeList,#changes .overtimeList,#changes .allocationList{gap:var(--apple-control-gap)}
+#changes .staffActions,#changes .decisionButtons,#changes .decisionRoute,#changes .overtimeAssign{gap:var(--apple-control-gap)}
+#changes .continueWorkflowBtn,#changes #saveAllocationsBtn{margin-top:var(--apple-section-gap)}
+
+#breaks .breakSummaryRow{
+  gap:var(--apple-control-gap);overflow:visible;border:0;background:transparent;
+}
+#breaks .breakSummaryItem{
+  border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);
+  background:var(--apple-surface);box-shadow:var(--apple-shadow);
+}
+#breaks .breakSummaryItem:last-child{border-right:var(--apple-hairline) solid var(--apple-separator)}
+#breaks #breakList,#breaks .breakGrid{gap:var(--apple-section-gap)}
+#breaks>.actionPanel{gap:var(--apple-control-gap);margin-top:var(--apple-section-gap)}
+
+#admin .adminPane{padding-bottom:var(--apple-section-gap)}
+#admin .adminPane>.panel{margin-block:var(--apple-section-gap)}
+#admin .adminQuickGrid,#admin .quickRanges,#admin .dataAction{gap:var(--apple-control-gap)}
+
 /* Transient feedback floats above the tab bar and reads like native system chrome. */
 .toast,.updateBanner{
   bottom:calc(88px + env(safe-area-inset-bottom));
@@ -1099,6 +1151,9 @@ body.dark .bottom::before{background:linear-gradient(145deg,rgba(255,255,255,.11
 body.dark .bottom button.active{background:var(--glass-selected)!important;border-color:rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 5px 16px rgba(0,0,0,.25)}
 body.dark #changes .changesWorkflowTabs,body.dark .authSwitch,body.dark .appearanceControl,body.dark #admin .adminTabs{background:rgba(118,118,128,.2);border-color:rgba(255,255,255,.09)}
 body.dark #changes .changesWorkflowTabs button.active,body.dark .authSwitch button.active,body.dark .appearanceControl button.active,body.dark #admin .adminTabs button.active{background:rgba(118,118,128,.3);border-color:rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 2px 8px rgba(0,0,0,.22)}
+body.dark #today .nightStatusRow,body.dark #today .roles,body.dark #breaks .breakSummaryRow{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}
 
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   #appHeader,.changesScreenHeader,.breaksScreenHeader,.bottom{background:#f8f8fa}
@@ -1107,5 +1162,9 @@ body.dark #changes .changesWorkflowTabs button.active,body.dark .authSwitch butt
   body.dark #appHeader .headActions button,body.dark .changesScreenHeader .screenInfoButton,body.dark .breaksScreenHeader .screenInfoButton{background:#2c2c2e}
 }
 @media(min-width:760px){.bottom{bottom:16px}}
-@media(max-width:360px){.bottom{width:calc(100% - 16px);border-radius:22px}.bottom button{border-radius:18px}.bottom span{font-size:9px}}
+@media(max-width:360px){
+  :root{--apple-control-gap:8px;--apple-section-gap:12px}
+  .bottom{width:calc(100% - 16px);border-radius:22px}.bottom button{border-radius:18px}.bottom span{font-size:9px}
+  #today .statusChip{padding-inline:9px}
+}
 @media(prefers-reduced-motion:reduce){.bottom button.active{animation:none}.bottom button:active:not(:disabled){transform:none}}
