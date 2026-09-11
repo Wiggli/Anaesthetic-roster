@@ -16,7 +16,7 @@ A push to `main` starts the ordered production workflow:
 1. Run `npm test`.
 2. If tests pass, prepare and apply all timestamped `supabase-migration-*.sql` files with the Supabase CLI.
 3. If migrations succeed, copy only the explicit production allow-list into the `dist` artifact and deploy it to GitHub Pages.
-4. Verify over HTTPS that the deployed `index.html` contains the expected application version and that an essential versioned JavaScript asset is reachable.
+4. Verify over HTTPS that the deployed HTML, both application scripts, service worker, manifest, cache name, and icon version all match the expected application version.
 
 The migration and GitHub Pages jobs are restricted to pushes to `main` or a manual recovery run explicitly dispatched from `main`; they never deploy a pull request branch. A manual recovery run uses the same test → migration → deployment dependencies. A failed test or migration prevents later deployment stages.
 

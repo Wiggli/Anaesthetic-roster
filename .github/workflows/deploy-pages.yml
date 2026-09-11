@@ -107,7 +107,9 @@ jobs:
             exit 1
           fi
           index_file="$(mktemp)"
-          trap 'rm -f "$index_file"' EXIT
+          service_worker_file="$(mktemp)"
+          manifest_file="$(mktemp)"
+          trap 'rm -f "$index_file" "$service_worker_file" "$manifest_file"' EXIT
           curl --fail --silent --show-error --location --proto '=https' \
             --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 \
@@ -120,3 +122,24 @@ jobs:
             --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 \
             "${page_url}app-core.js?v=${app_version}" > /dev/null
+          curl --fail --silent --show-error --location --proto '=https' \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "${page_url}app-ui.js?v=${app_version}" > /dev/null
+          curl --fail --silent --show-error --location --proto '=https' \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "${page_url}service-worker.js" > "$service_worker_file"
+          cache_version="${app_version//./-}"
+          if ! grep -Fq "CACHE_NAME = 'anaesthetic-night-roster-v${cache_version}'" "$service_worker_file"; then
+            echo "::error::The deployed service worker does not match application version ${app_version}."
+            exit 1
+          fi
+          curl --fail --silent --show-error --location --proto '=https' \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "${page_url}manifest.webmanifest?v=${app_version}" > "$manifest_file"
+          if ! grep -Fq "icon-192.png?v=${app_version}" "$manifest_file"; then
+            echo "::error::The deployed manifest does not match application version ${app_version}."
+            exit 1
+          fi
