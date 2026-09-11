@@ -181,8 +181,9 @@ const manifest = fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifes
 const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
+const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -221,9 +222,22 @@ assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on t
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
+assert.match(workflow, /service-worker\.js[\s\S]*CACHE_NAME = 'anaesthetic-night-roster-v\$\{cache_version\}'/, 'post-deployment checks must verify the live service-worker cache version');
+assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
 assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v25/, 'absence Undo must use the versioned database function');
 assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v25/, 'overtime Undo must use the versioned database function');
+assert.match(ui, /app_sync_state[\s\S]*setInterval\(checkSharedRevision,15000\)/, 'active clients must check the shared revision as a realtime fallback');
+assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
+assert.match(ui, /window\.addEventListener\('pageshow',resumeSharedSync\)/, 'returning to an open app must resume shared synchronization');
+assert.match(ui, /apply_night_role_override_v33/, 'night-only role mutations must use the atomic schema-33 RPC');
+assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
+assert.match(migration, /create table if not exists public\.app_sync_state/, 'schema 33 must provide a shared revision signal');
+assert.match(migration, /create or replace function public\.apply_night_role_override_v33[\s\S]*insert into public\.night_role_override_history/, 'schema 33 must save role overrides and audit history atomically');
+assert.match(migration, /update public\.app_schema_version[\s\S]*version = 33/, 'schema 33 migration must update the schema marker');
+assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /[A-Z0-9._%+-]+@gov\.mt/i, 'public application source must not embed named government email recipients');
+assert.match(ui, /night_role_override_history:allHistory\[2\]\.data/, 'administrator roster-data exports must include night-only role history');
+assert.match(ui, /Private profile details and profile photos are excluded/, 'administrator export scope must identify excluded private profile data');
 assert.match(sw, /requestUrl\.origin !== self\.location\.origin/, 'service worker must leave shared cross-origin data on the network');
 assert.match(sw, /cdn\.jsdelivr\.net/, 'only the fixed public Supabase library may be cached');
 assert.match(sw, /event\.request\.mode === 'navigate'[\s\S]*fetch\(event\.request, \{ cache: 'no-store' \}\)[\s\S]*catch\(\(\) => caches\.match\('\.\/index\.html'\)\)/, 'navigation must be network-first with the cached shell fallback');

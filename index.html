@@ -23,10 +23,10 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="manifest" href="manifest.webmanifest?v=35.2" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=35.2" />
+    <link rel="manifest" href="manifest.webmanifest?v=35.3" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=35.3" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=35.2" />
+    <link rel="stylesheet" href="styles.css?v=35.3" />
   </head>
   <body class="authPending">
     <section
@@ -39,7 +39,7 @@
     >
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=35.2" alt="SPTAR Mater Dei" />
+          <img src="mater-dei-logo.png?v=35.3" alt="SPTAR Mater Dei" />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
@@ -58,7 +58,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=35.2"
+              src="mater-dei-logo.png?v=35.3"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -164,7 +164,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=35.2" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=35.3" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -707,20 +707,21 @@
               <div>
                 <h2>Exports and backups</h2>
                 <p class="time">
-                  Keep a readable roster copy or a complete safety backup.
+                  Keep a readable roster copy or an administrator roster-data export.
                 </p>
               </div>
             </div>
             <div class="dataAction">
               <button class="wide" id="exportBtn">Export roster CSV</button
-              ><button class="wide" id="backupBtn">Download full backup</button>
+              ><button class="wide" id="backupBtn">Download roster-data export</button>
             </div>
             <div class="notice adminSummary">
               <b>What each file contains</b>
               <div class="time">
-                The CSV is convenient for reading in Excel. The JSON backup
-                includes published settings, permanent team history, night
-                changes and authorised accounts.
+                The CSV is convenient for reading in Excel. The JSON export
+                includes roster settings, authorised accounts, staffing history
+                and night-only role changes. Private profile details and photos
+                are excluded.
               </div>
             </div>
             <details class="advancedBox">
@@ -949,7 +950,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 35.2 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 35.3 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -991,7 +992,7 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
-    <script src="app-core.js?v=35.2"></script>
-    <script src="app-ui.js?v=35.2"></script>
+    <script src="app-core.js?v=35.3"></script>
+    <script src="app-ui.js?v=35.3"></script>
   </body>
 </html>
