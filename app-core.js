@@ -1,11 +1,11 @@
-/* Anaesthetic Night Roster V35.3 core and roster foundation. */
+/* Anaesthetic Night Roster V35.4 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = [];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '35.3';
+var APP_VERSION = '35.4';
 var EXPECTED_SCHEMA_VERSION = 33;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;

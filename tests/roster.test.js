@@ -183,7 +183,7 @@ const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -226,6 +226,10 @@ assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs mu
 assert.match(workflow, /service-worker\.js[\s\S]*CACHE_NAME = 'anaesthetic-night-roster-v\$\{cache_version\}'/, 'post-deployment checks must verify the live service-worker cache version');
 assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
+assert.match(css, /\.bottom\{[\s\S]*backdrop-filter:saturate\(210%\) blur\(30px\)/, 'primary navigation must retain the reviewed glass material');
+assert.match(css, /#changes \.staffingSection[^{]*\{[^}]*background:var\(--ios-surface\)/, 'clinical staffing surfaces must remain solid');
+assert.match(css, /@supports not \(\(-webkit-backdrop-filter:[\s\S]*\.bottom\{background:#f8f8fa\}/, 'glass chrome must retain an opaque fallback');
+assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.bottom button\.active\{animation:none\}/, 'tab selection motion must respect reduced-motion preferences');
 assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v25/, 'absence Undo must use the versioned database function');
 assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v25/, 'overtime Undo must use the versioned database function');
 assert.match(ui, /app_sync_state[\s\S]*setInterval\(checkSharedRevision,15000\)/, 'active clients must check the shared revision as a realtime fallback');
