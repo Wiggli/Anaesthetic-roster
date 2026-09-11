@@ -47,6 +47,7 @@ jobs:
         shell: bash
         run: |
           supabase init
+          mkdir -p supabase/migrations
           shopt -s nullglob
           migration_files=(supabase-migration-*.sql)
           for migration_file in "${migration_files[@]}"; do
