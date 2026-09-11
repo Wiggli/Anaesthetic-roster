@@ -218,6 +218,7 @@ for (const obsolete of obsoleteFiles) {
 
 assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed pinned version');
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
+assert.match(workflow, /supabase init[\s\S]*mkdir -p supabase\/migrations[\s\S]*migration_files=/, 'migration preparation must create the CLI migration directory before copying files');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on tests');
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
