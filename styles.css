@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=35.3') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=35.4') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -988,3 +988,124 @@ body.dark .adminOperationalRow .adminNeedsAction{color:#ffbd66}body.dark .diagno
 .disabledReason{margin:7px 2px 0;color:var(--apple-secondary);font-size:11px;line-height:1.4;text-align:left}
 #breaks>.actionPanel button:disabled{opacity:1;background:var(--apple-fill)!important;border-color:var(--apple-separator)!important;color:var(--apple-secondary)!important}
 #breaks>.actionPanel button:disabled svg{stroke:currentColor}
+
+/* V35.4: one controlled liquid-glass system for navigation and app chrome. */
+:root{
+  --glass-light:rgba(248,248,252,.72);
+  --glass-edge:rgba(255,255,255,.76);
+  --glass-shadow:0 16px 42px rgba(27,45,58,.14),0 2px 8px rgba(27,45,58,.07);
+  --glass-selected:rgba(255,255,255,.78);
+}
+body[data-view] main{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+
+/* The Night masthead and the task headers are the same translucent chrome. */
+#appHeader{
+  position:sticky;top:0;z-index:24;isolation:isolate;
+  background:var(--glass-light);
+  border-bottom:var(--apple-hairline) solid rgba(60,60,67,.14);
+  box-shadow:0 1px 0 rgba(255,255,255,.54),0 8px 24px rgba(27,45,58,.045);
+  -webkit-backdrop-filter:saturate(190%) blur(26px);
+  backdrop-filter:saturate(190%) blur(26px);
+}
+#appHeader::after,.changesScreenHeader::after,.breaksScreenHeader::after{
+  content:"";display:block;position:absolute;inset:0;pointer-events:none;
+  border-bottom:var(--apple-hairline) solid rgba(255,255,255,.62);
+}
+body[data-view="today"] #appHeader{position:sticky;top:0;z-index:24}
+#appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share,
+.changesScreenHeader .screenInfoButton,.breaksScreenHeader .screenInfoButton{
+  border:var(--apple-hairline) solid rgba(255,255,255,.66);
+  background:rgba(255,255,255,.48);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 3px 10px rgba(27,45,58,.06);
+  -webkit-backdrop-filter:saturate(170%) blur(14px);
+  backdrop-filter:saturate(170%) blur(14px);
+}
+.changesScreenHeader,.breaksScreenHeader{
+  background:var(--glass-light);
+  border-bottom-color:rgba(60,60,67,.14);
+  box-shadow:0 1px 0 rgba(255,255,255,.52),0 8px 22px rgba(27,45,58,.04);
+  -webkit-backdrop-filter:saturate(190%) blur(26px);
+  backdrop-filter:saturate(190%) blur(26px);
+}
+
+/* A floating tab bar keeps the three primary destinations immediately reachable. */
+.bottom{
+  left:50%;right:auto;bottom:calc(8px + env(safe-area-inset-bottom));
+  width:min(calc(100% - 24px),520px);min-height:64px;
+  padding:4px;margin:0;border:var(--apple-hairline) solid var(--glass-edge);
+  border-radius:24px;background:var(--glass-light);overflow:hidden;
+  box-shadow:var(--glass-shadow);transform:translateX(-50%);
+  -webkit-backdrop-filter:saturate(210%) blur(30px);
+  backdrop-filter:saturate(210%) blur(30px);
+}
+.bottom::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(255,255,255,.08) 44%,rgba(255,255,255,.25));
+}
+.bottom::after{border:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.62)}
+.bottom button{
+  z-index:1;height:54px;min-height:54px;margin:0;border:var(--apple-hairline) solid transparent;
+  border-radius:20px;background:transparent;color:var(--apple-tertiary);
+  transition:transform var(--native-medium) var(--native-spring),background-color var(--native-fast) ease,color var(--native-fast) ease,box-shadow var(--native-fast) ease,border-color var(--native-fast) ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.bottom button.active{
+  background:var(--glass-selected)!important;color:var(--apple-accent);
+  border-color:rgba(255,255,255,.82);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 4px 14px rgba(27,45,58,.1);
+  animation:liquidTabSelect 300ms var(--native-spring) both;
+}
+.bottom button.active svg{transform:none;stroke-width:2.05}
+.bottom button:active:not(:disabled){transform:scale(.955)}
+.bottom button:active:not(:disabled) svg{transform:none}
+.bottom span{margin-top:1px;font-size:9.5px;font-weight:680;letter-spacing:-.01em}
+.bottom .navTaskBadge{top:3px;left:calc(50% + 9px);z-index:2;border:2px solid var(--glass-light);line-height:15px}
+@keyframes liquidTabSelect{from{opacity:.68;transform:scale(.92)}to{opacity:1;transform:none}}
+
+/* Segmented controls use the same quiet selected lens without making forms translucent. */
+#changes .changesWorkflowTabs,.authSwitch,.appearanceControl,#admin .adminTabs{
+  border:var(--apple-hairline) solid rgba(255,255,255,.64);
+  background:rgba(118,118,128,.13);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.36);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  backdrop-filter:saturate(160%) blur(14px);
+}
+#changes .changesWorkflowTabs button.active,.authSwitch button.active,.appearanceControl button.active,#admin .adminTabs button.active{
+  background:rgba(255,255,255,.82);border-color:rgba(255,255,255,.74);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.88),0 2px 7px rgba(27,45,58,.1);
+}
+
+/* Transient feedback floats above the tab bar and reads like native system chrome. */
+.toast,.updateBanner{
+  bottom:calc(88px + env(safe-area-inset-bottom));
+  border:var(--apple-hairline) solid rgba(255,255,255,.2);
+  background:rgba(38,38,41,.84);
+  box-shadow:0 18px 44px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:saturate(170%) blur(24px);
+  backdrop-filter:saturate(170%) blur(24px);
+}
+
+body.dark{
+  --glass-light:rgba(28,28,30,.7);
+  --glass-edge:rgba(255,255,255,.16);
+  --glass-shadow:0 18px 46px rgba(0,0,0,.48),0 1px 0 rgba(255,255,255,.06);
+  --glass-selected:rgba(118,118,128,.26);
+}
+body.dark #appHeader,body.dark .changesScreenHeader,body.dark .breaksScreenHeader{background:var(--glass-light);border-color:rgba(255,255,255,.1)}
+body.dark #appHeader .headActions button,body.dark #appHeader .adminSettingsBtn,body.dark #appHeader .accountBtn,body.dark #appHeader .share,
+body.dark .changesScreenHeader .screenInfoButton,body.dark .breaksScreenHeader .screenInfoButton{background:rgba(118,118,128,.2);border-color:rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+body.dark .bottom{background:var(--glass-light);border-color:var(--glass-edge);box-shadow:var(--glass-shadow)}
+body.dark .bottom::before{background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.015) 46%,rgba(255,255,255,.055))}
+body.dark .bottom button.active{background:var(--glass-selected)!important;border-color:rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 5px 16px rgba(0,0,0,.25)}
+body.dark #changes .changesWorkflowTabs,body.dark .authSwitch,body.dark .appearanceControl,body.dark #admin .adminTabs{background:rgba(118,118,128,.2);border-color:rgba(255,255,255,.09)}
+body.dark #changes .changesWorkflowTabs button.active,body.dark .authSwitch button.active,body.dark .appearanceControl button.active,body.dark #admin .adminTabs button.active{background:rgba(118,118,128,.3);border-color:rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 2px 8px rgba(0,0,0,.22)}
+
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  #appHeader,.changesScreenHeader,.breaksScreenHeader,.bottom{background:#f8f8fa}
+  #appHeader .headActions button,.changesScreenHeader .screenInfoButton,.breaksScreenHeader .screenInfoButton{background:#ececf0}
+  body.dark #appHeader,body.dark .changesScreenHeader,body.dark .breaksScreenHeader,body.dark .bottom{background:#1c1c1e}
+  body.dark #appHeader .headActions button,body.dark .changesScreenHeader .screenInfoButton,body.dark .breaksScreenHeader .screenInfoButton{background:#2c2c2e}
+}
+@media(min-width:760px){.bottom{bottom:16px}}
+@media(max-width:360px){.bottom{width:calc(100% - 16px);border-radius:22px}.bottom button{border-radius:18px}.bottom span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.bottom button.active{animation:none}.bottom button:active:not(:disabled){transform:none}}
