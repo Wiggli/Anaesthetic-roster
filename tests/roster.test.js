@@ -183,7 +183,7 @@ const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -202,6 +202,15 @@ assert.match(css, /#today \.roles\{[\s\S]*?display:grid;gap:var\(--apple-control
 assert.match(css, /#breaks \.breakSummaryRow\{[\s\S]*?gap:var\(--apple-control-gap\)[\s\S]*?background:transparent/, 'Break summary cards must be visually separated');
 assert.match(css, /body\.dark #today \.nightStatusRow[\s\S]*?background:transparent!important/, 'dark mode must preserve separation between information cards');
 assert.match(css, /#changes \.changesWorkflowTabs,.authSwitch,.appearanceControl,#admin \.adminTabs/, 'true segmented controls must remain intentionally grouped');
+assert.match(html, /id="screenInfoSheet"[\s\S]*aria-labelledby="screenInfoTitle"/, 'screen help must use an accessible information sheet');
+assert.match(ui, /data-go-absence[\s\S]*data-go-overtime/, 'Night summary must link absences and overtime to their exact sections');
+assert.match(ui, /bindStaffingTarget\('data-go-absence','\.absenceSection'\)[\s\S]*bindStaffingTarget\('data-go-overtime','\.overtimeSection'\)/, 'summary shortcuts must focus the relevant staffing form');
+assert.doesNotMatch(html, /historyStep">4/, 'activity history must not appear as a fourth workflow step');
+assert.match(html, /Activity for this night/, 'staffing history must have a clear non-step label');
+assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
+assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
+assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
+assert.match(ui, /breakDate\.classList\.toggle\('hidden',!pending\)/, 'Breaks must hide duplicate date status once the plan is ready');
 
 const deployBlock = workflow.match(/- name: Prepare public app files[\s\S]*?(?=\n      - uses:)/);
 assert.ok(deployBlock, 'deployment workflow must contain an explicit dist preparation step');
