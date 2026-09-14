@@ -184,7 +184,7 @@ const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflow
 const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -264,12 +264,17 @@ assert.match(identityMigration, /add column if not exists roster_name text/, 'sc
 assert.match(identityMigration, /allowed_users_roster_name_unique/, 'one roster identity must not be bound to multiple accounts');
 assert.match(identityMigration, /user_role = 'admin'[\s\S]*set roster_name = v_roster_name/, 'only an active administrator may bind roster identities');
 assert.match(identityMigration, /update public\.app_schema_version[\s\S]*version = 34/, 'schema 34 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 34, 'the application must require the identity-binding schema');
-assert.match(html, /id="personalScheduleList"[\s\S]*id="recentActivityList"[\s\S]*id="copyBriefingBtn"/, 'Night must contain personal schedule, recent activity and briefing actions');
-assert.match(ui, /function exportMyCalendar\([\s\S]*SUMMARY:Anaesthetic night shift/, 'private calendar export must use a generic event title');
-assert.doesNotMatch(ui.slice(ui.indexOf('function exportMyCalendar'), ui.indexOf('\nfunction activitySignature')), /EMAIL_RECIPIENTS|nightChanges|overtimeFor|professionalNames\(r\./, 'private calendar export must not include team roster details');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 34, 'the application must retain the deployed schema baseline');
+assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
+assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
+assert.match(ui, /select\('email,display_name,user_role,active'\)/, 'authorisation must use the original account access fields');
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return localStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice');
+assert.match(html, /id="recentActivityList"[\s\S]*id="copyBriefingBtn"/, 'Night must retain recent activity and briefing actions');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
+assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary\)\}/, 'inactive navigation labels must retain readable contrast');
+assert.match(css, /#copyBriefingBtn\.buttonPending\{[^}]*color:var\(--apple-secondary\)[^}]*opacity:1/, 'the unavailable briefing action must remain legible');
+assert.match(css, /#changes>\.changesDatePanel label,#breaks>\.panel>\.grid2 label\{font-size:11px\}/, 'operational date labels must remain legible');
 assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /[A-Z0-9._%+-]+@gov\.mt/i, 'public application source must not embed named government email recipients');
 assert.match(ui, /night_role_override_history:allHistory\[2\]\.data/, 'administrator roster-data exports must include night-only role history');
 assert.match(ui, /Private profile details and profile photos are excluded/, 'administrator export scope must identify excluded private profile data');
