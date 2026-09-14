@@ -1,6 +1,6 @@
 # Supabase schema baseline
 
-Reviewed against application version 35.6 at commit `a5ada1f1ef8d1b7893f9197fe83b416be60fd7c0`. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+Reviewed against application version 36.4 at commit `ac812aee7b09d56bd0651153a12c28bc182c3df6`. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
 
 ## Shared operational data
 
@@ -16,7 +16,7 @@ Reviewed against application version 35.6 at commit `a5ada1f1ef8d1b7893f9197fe83
 | `night_five_cover` | Saved five-nurse reliever decision | Active-member read; validated RPC writes |
 | `night_labour_order` | Saved Labour Ward order where applicable | Active-member read; validated RPC writes |
 | `night_plan_status` | Final or provisional plan status | Active-member read; atomic finalisation RPC writes |
-| `night_role_overrides` and `night_role_override_history` | One-night agreed core-role arrangement and its audit history | Active-member read; atomic schema 33 RPC writes |
+| `night_role_overrides` and `night_role_override_history` | One-night agreed core-role arrangement and its audit history | Active-member read; atomic schema 35 RPC writes |
 | `app_sync_state` | Monotonic revision used to recover missed realtime events | Active-member read; trigger-only write |
 
 ## Private account data
@@ -30,9 +30,11 @@ Profile details and photographs must remain outside administrator roster-data ex
 
 ## Required atomic interfaces
 
-The supported shared-write contract is `record_night_absence_v25`, `remove_night_absence_v25`, `add_night_overtime_v25`, `remove_night_overtime_v25`, `apply_staffing_allocations_v25`, `finalise_night_plan_v26`, and `apply_night_role_override_v33`. Application code must stop with an upgrade message if one is unavailable, rather than falling back to separate current-row and history writes.
+The supported shared-write contract is `record_night_absence_v25`, `remove_night_absence_v25`, `add_night_overtime_v25`, `remove_night_overtime_v25`, `apply_staffing_allocations_v25`, `finalise_night_plan_v26`, and `apply_night_role_override_v35`. Application code must stop with an upgrade message if one is unavailable, rather than falling back to separate current-row and history writes.
 
 Schema 34 adds `allowed_users.roster_name` and `set_roster_identity_v34`. The value is an internal permanent-roster identifier, is unique when present, and can be changed only by an active administrator through the validated RPC.
+
+Schema 35 extends the atomic role-override contract with a validated, explicit five-person night-only arrangement. It also replaces the schema-33 function with a compatibility wrapper so older installed clients no longer call the unavailable `jsonb_object_length(jsonb)` routine. Normal Reliever-first five-nurse planning remains the default.
 
 ## Deployment review
 

@@ -6,6 +6,10 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const source = Object.fromEntries(['app-core.js', 'app-ui.js', 'index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css']
   .map(file => [file, fs.readFileSync(path.join(root, file), 'utf8')]));
+assert.match(source['app-ui.js'], /FIVE_NIGHT_ROLE_KEYS=\['first1','first2','second1','second2','fullLW'\]/, 'custom five-nurse plans must expose four theatre roles and one full-night role');
+assert.match(source['app-ui.js'], /function validRoleAssignmentsForNight[\s\S]*sameNightNameSet\(working,assigned\)/, 'custom role saves must match the effective nurses for that night');
+assert.match(source['app-ui.js'], /apply_night_role_override_v35/, 'night-only role changes must use the schema-35 atomic RPC');
+
 const storage = new Map();
 const element = () => ({
   classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } }, style: {}, dataset: {},
@@ -126,6 +130,31 @@ assert.equal(new Set(context.activeNames(context.applyChanges(base))).size, 6, '
 assert.deepEqual(context.calculateNight(base.date), original, 'night override must not alter the permanent calculated rotation');
 assert.deepEqual(context.calculateNight(context.addDays(base.date, 4)), later, 'night override must not alter later nights');
 assert.equal(context.staffingHistoryFor(base.date)[0].title, 'Saved a night-only role arrangement', 'role-swap audit history must remain visible');
+
+// Explicit agreed five-person overrides may place overtime on full-night Pager/Labour Ward.
+reset([absent('first1'), absent('second2')], [overtime('1', null, 'Sadaf Nazia')]);
+const workingFive = context.nightWorkingNames(base);
+const theatreFive = workingFive.filter(name => context.canonicalNurseName(name) !== context.canonicalNurseName('Sadaf Nazia'));
+assert.equal(theatreFive.length, 4, 'the scenario must contain four non-overtime nurses');
+const customFive = {
+  mode: '5',
+  first1: theatreFive[0],
+  first2: theatreFive[1],
+  second1: theatreFive[2],
+  second2: theatreFive[3],
+  fullLW: 'Sadaf Nazia'
+};
+context.nightRoleOverrides[base.date] = { assignments: customFive, reason: 'Agreed one-night arrangement' };
+plan = context.staffingPlan(base);
+assert.equal(plan.count, 5, 'the custom arrangement must remain a five-nurse night');
+assert.equal(plan.coreComplete, true, 'an exact custom five-person arrangement must be complete');
+assert.equal(plan.requiresCoverageChoice, false, 'the explicit arrangement replaces only the unresolved default choice');
+assert.equal(plan.validAssignments[0].nurse_name, 'Sadaf Nazia', 'the overtime nurse must be recognised as assigned');
+const customApplied = context.applyChanges(base);
+assert.equal(customApplied.mode, '5');
+assert.equal(customApplied.fullLW, 'Sadaf Nazia', 'overtime may cover full-night Pager/Labour Ward by explicit agreement');
+assert.equal(new Set(context.activeNames(customApplied).map(context.canonicalNurseName)).size, 5, 'each effective nurse must appear exactly once');
+assert.equal(context.calculateNight(base.date).pager, base.pager, 'the permanent Pager rotation must remain unchanged');
 
 // Similar names and display aliases must remain distinct stable identities.
 assert.notEqual(context.canonicalNurseName('Andre'), context.canonicalNurseName('Andre Seychell'));
