@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=36.6') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=36.7') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -1355,3 +1355,106 @@ body.dark #changes .nightRoleEditorBody .nightRoleFullWidth select{border-color:
 body.dark .bottom button.active{border-color:rgba(255,255,255,.16)!important}
 
 @media(max-width:380px){.bottom{column-gap:4px}}
+
+/* V36.7: calm native motion, semantic colour and unified Apple-style interaction. */
+:root{
+  --apple-blue:#007aff;
+  --apple-green:#248a3d;
+  --apple-orange:#b76500;
+  --apple-red:#d93645;
+  --apple-control-height:48px;
+  --apple-title:clamp(1.75rem,5.4vw,2.25rem);
+  --apple-section-title:clamp(1.45rem,4.7vw,1.85rem);
+  --apple-body:clamp(.9375rem,2.8vw,1rem);
+}
+body{font-size:var(--apple-body);overscroll-behavior-y:none}
+button,input,select,textarea{font:inherit}
+.sectionTitle,.screenHeader h1,#roster .rosterPageHeader h2,#admin .adminHeader h2{font-size:var(--apple-section-title);letter-spacing:-.035em}
+.dateNav input,.prettyDateButton,.staffingCount strong,.statusChip b,.breakSummaryItem b{font-variant-numeric:tabular-nums}
+
+/* One clear action hierarchy, with red reserved for consequential removal. */
+button{min-height:44px;border-color:var(--apple-separator);background:var(--apple-surface);color:var(--apple-label);box-shadow:none}
+button.primary{min-height:var(--apple-control-height);border:var(--apple-hairline) solid rgba(0,0,0,.06);background:var(--apple-accent);color:#fff;box-shadow:0 5px 14px rgba(8,125,121,.16)}
+button.primary:hover:not(:disabled){background:var(--apple-accent-pressed)}
+button.soft{min-height:44px;border-color:transparent;background:var(--apple-accent-soft);color:var(--apple-accent)}
+button.danger{background:var(--apple-red);color:#fff}
+.recordMoreButton,.dateResetBtn,.personalChangeBtn{color:var(--apple-accent)}
+button:disabled{opacity:1;filter:none;color:var(--apple-disabled-label);background:var(--apple-disabled-fill);border-color:var(--apple-disabled-border);box-shadow:none}
+
+/* Dense roster and clinical information remains opaque, grouped and easy to scan. */
+.panel,.card,.role,.notice,.staffingSection,.confirmationCard,.breakGroup,.changeItem,.overtimeItem,.allocationRow{background:var(--apple-surface);color:var(--apple-label)}
+.panel{border:var(--apple-hairline) solid var(--apple-separator);box-shadow:var(--apple-shadow)}
+.changeItem,.overtimeItem,.allocationRow,.accountRow,.historyItem{min-height:52px}
+.changeItem+.changeItem,.overtimeItem+.overtimeItem,.activityDetailRow+.activityDetailRow{border-top:var(--apple-hairline) solid var(--apple-separator)}
+details>summary{transition:background-color var(--native-fast) ease,color var(--native-fast) ease}
+details>summary:active{background:var(--apple-fill)}
+details[open]>summary i,details[open]>summary::before{transform:rotate(90deg)}
+
+/* Compact activity behaves like a native grouped list and opens a detail sheet. */
+.recentActivityList{overflow:hidden;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius);background:var(--apple-surface)}
+.recentActivityRow{position:relative;width:100%;min-height:66px;margin:0;padding:12px 38px 12px 13px;border:0;border-top:var(--apple-hairline) solid var(--apple-separator);border-radius:0;background:var(--apple-surface);color:var(--apple-label);box-shadow:none;text-align:left}
+.recentActivityRow:first-child{border-top:0}
+.recentActivityRow:active{transform:none;background:var(--apple-fill)}
+.recentActivityCopy{display:grid;min-width:0;gap:4px;font-weight:400}
+.recentActivityRow .recentActivityDetail{font-size:13px;font-weight:520}
+.recentActivityRow .recentActivityMeta{font-size:12px;font-weight:450}
+.recentActivityRow>i{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--apple-tertiary);font-size:21px;font-style:normal;font-weight:400}
+.recentActivityRow:focus-visible{z-index:1;outline:3px solid rgba(0,122,255,.28);outline-offset:-3px}
+.activityDetailSheet[open]{position:fixed;inset:auto 12px calc(12px + env(safe-area-inset-bottom));display:block;width:min(460px,calc(100% - 24px));max-width:none;margin:0 auto;padding:8px 16px 16px;border-radius:24px;background:rgba(248,248,250,.94);box-shadow:var(--apple-shadow-dialog);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px)}
+.activityDetailSheet::backdrop{background:var(--apple-overlay);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.activityDetailSheet .dialogHead{align-items:center;padding:7px 0 13px}
+.activityDetailSheet .dialogHead h2{margin-top:7px;font-size:20px}
+.activityDetailContent{overflow:hidden;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius);background:var(--apple-surface)}
+.activityDetailRow{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:12px 13px}
+.activityDetailRow span{color:var(--apple-secondary);font-size:13px}
+.activityDetailRow b{font-size:14px;line-height:1.4;text-align:right;overflow-wrap:anywhere}
+
+/* Scroll-edge headers become compact only after content moves beneath them. */
+.screenHeader{transition:padding var(--native-medium) var(--native-spring),background-color var(--native-fast) ease,box-shadow var(--native-fast) ease}
+.screenHeader h1{transform-origin:left center;transition:font-size var(--native-medium) var(--native-spring),transform var(--native-medium) var(--native-spring)}
+.screenHeader .screenEyebrow,.screenHeader p{transition:opacity var(--native-fast) ease,max-height var(--native-medium) var(--native-spring),margin var(--native-medium) var(--native-spring)}
+body.uiScrolled[data-view="changes"] .changesScreenHeader,body.uiScrolled[data-view="breaks"] .breaksScreenHeader{padding-top:calc(9px + env(safe-area-inset-top));padding-bottom:9px;box-shadow:0 1px 0 var(--apple-separator),0 8px 22px rgba(27,45,58,.08)}
+body.uiScrolled .screenHeader h1{font-size:20px;transform:translateY(1px)}
+body.uiScrolled .screenHeader .screenEyebrow,body.uiScrolled .screenHeader p{max-height:0;margin:0;opacity:0;overflow:hidden}
+
+/* Motion explains navigation, date direction, disclosure and feedback. */
+.view.viewEntering{animation:appleViewIn 280ms var(--native-spring) both}
+body[data-date-direction="next"] .view:not(.hidden) .nightDateShell,body[data-date-direction="next"] .view:not(.hidden)>.changesDatePanel,body[data-date-direction="next"] #breaks>.panel>.grid2{animation:appleDateNext 280ms var(--native-spring) both}
+body[data-date-direction="previous"] .view:not(.hidden) .nightDateShell,body[data-date-direction="previous"] .view:not(.hidden)>.changesDatePanel,body[data-date-direction="previous"] #breaks>.panel>.grid2{animation:appleDatePrevious 280ms var(--native-spring) both}
+.toast.presenting{animation:nativeToastIn 260ms var(--native-spring) both}
+.formMessage{transition:background-color var(--native-fast) ease,color var(--native-fast) ease,opacity var(--native-fast) ease}
+.formMessage.success:not(:empty){display:flex;align-items:center;gap:7px;background:var(--apple-allocation-fill);color:var(--apple-allocation-label)}
+.formMessage.success:not(:empty)::before{content:'✓';display:grid;flex:0 0 18px;width:18px;height:18px;place-items:center;border-radius:50%;background:var(--apple-green);color:#fff;font-size:12px;font-weight:800}
+.formMessage.error:not(:empty){background:var(--apple-absence-fill);color:var(--apple-absence-label)}
+.saveConfirmed,.saveConfirmed:disabled{border-color:transparent!important;background:var(--apple-green)!important;color:#fff!important;box-shadow:0 5px 14px rgba(36,138,61,.18)!important}
+#changes .time,#breaks .time,.disabledReason,.confirmHint{font-size:13px;line-height:1.45}
+.fieldInvalid{animation:appleFieldNudge 240ms ease both}
+.savedPulse{animation:appleSavedRow 1.2s var(--native-spring) both}
+.dataRefreshing .role::after,.dataRefreshing .staffingCount::after,.dataRefreshing .changesWorkflowState::after{animation:appleLoadingSweep 900ms ease-out 1}
+@keyframes appleViewIn{from{opacity:.35;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes appleDateNext{from{opacity:.45;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes appleDatePrevious{from{opacity:.45;transform:translateX(-12px)}to{opacity:1;transform:none}}
+@keyframes appleFieldNudge{0%,100%{transform:none}35%{transform:translateX(-3px)}70%{transform:translateX(3px)}}
+@keyframes appleSavedRow{0%{background:var(--apple-allocation-fill);box-shadow:inset 3px 0 var(--apple-green)}100%{background:var(--apple-surface);box-shadow:inset 0 0 transparent}}
+@keyframes appleLoadingSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+body.dark{
+  --apple-blue:#0a84ff;
+  --apple-green:#30d158;
+  --apple-orange:#ff9f0a;
+  --apple-red:#ff453a;
+}
+body.dark button.primary{background:#0f8f89;color:#fff;box-shadow:0 5px 16px rgba(0,0,0,.24)}
+body.dark button.primary:hover:not(:disabled){background:#139b94}
+body.dark button.soft{background:#173a39;color:#8edbd6}
+body.dark .recentActivityList,body.dark .recentActivityRow,body.dark .activityDetailContent{background:var(--apple-surface);color:var(--apple-label);border-color:var(--apple-separator)}
+body.dark .recentActivityRow:active{background:#2c2c2e}
+body.dark .activityDetailSheet[open]{background:rgba(28,28,30,.95);border-color:rgba(255,255,255,.15)}
+
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.activityDetailSheet[open]{background:#f2f2f7}body.dark .activityDetailSheet[open]{background:#1c1c1e}}
+@media(max-width:380px){.activityDetailRow{grid-template-columns:76px minmax(0,1fr)}.recentActivityRow{padding-inline:11px 34px}}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  .view.viewEntering,body[data-date-direction] .view:not(.hidden) .nightDateShell,body[data-date-direction] .view:not(.hidden)>.changesDatePanel,body[data-date-direction] #breaks>.panel>.grid2,.toast.presenting,.fieldInvalid,.savedPulse,.dataRefreshing .role::after,.dataRefreshing .staffingCount::after,.dataRefreshing .changesWorkflowState::after{animation:none!important;transform:none!important}
+  .screenHeader,.screenHeader h1,.screenHeader .screenEyebrow,.screenHeader p,details>summary{transition:none!important}
+}

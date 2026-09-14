@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V36.6 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V36.7 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -44,8 +44,10 @@ var launchFinished=false;
 var launchSlowTimer=null;
 var changedSinceSession={};
 var lastFailedAction=null;
+var scrollChromeFrame=null;
 
 var RELEASE_HISTORY=[
+  {version:'36.7',date:'14 Sep 2026',title:'Calm native motion and clearer Apple-style controls',changes:['Night, Changes and Breaks now use restrained directional navigation, compacting scroll headers, native press feedback and complete reduced-motion fallbacks.','Buttons, saved states, errors and operational status colours now follow one consistent semantic hierarchy with stronger light and dark mode contrast.','Recent activity is now an interactive grouped list, and each entry opens a private detail sheet showing its night, reason or allocation detail, actor and recorded time.','Typography scales more naturally across phone and desktop sizes, dense clinical cards remain solid, and translucency remains limited to navigation, headers, sheets and temporary feedback.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.6',date:'14 Sep 2026',title:'Clearer spacing and complete recent activity',changes:['The selected date and staffing summary now have deliberate breathing room instead of appearing as one joined surface.','Night, Changes and Breaks sit in three clearly separated bottom-tab targets while retaining the restrained floating Apple-style navigation material.','Recent activity now includes the saved reason or allocation detail beneath each change, matching the useful context already available in the full Changes activity history.','Clinical cards remain solid and readable, while the verified roster and all staffing, allocation, realtime and privacy behaviour remain unchanged.']},
   {version:'36.5',date:'14 Sep 2026',title:'Five-nurse night changes now save fully',changes:['The database now accepts the reviewed custom five-nurse structure as well as the established six-role structure.','An agreed five-nurse arrangement can save an overtime nurse on full-night Labour Ward / Pager while the other four working nurses cover theatre.','The database still rejects missing roles, extra roles, blank names and duplicate nurses, while the atomic save continues to verify the exact team working that night.','Normal Reliever-first allocation, the verified permanent rotation, later nights and all existing staffing safeguards remain unchanged.']},
   {version:'36.4',date:'14 Sep 2026',title:'Custom five-nurse roles that save reliably',changes:['An agreed five-nurse night can now be rearranged using exactly the five nurses working, including overtime staff, with one combined full-night Labour Ward / Pager role and four theatre roles.','The normal Reliever-first five-nurse workflow remains the default; the custom editor is an explicit night-only alternative and never changes the permanent rotation.','Night-only role saves now use a schema-35 atomic operation that validates the effective team, prevents duplicate assignments, records actor and time history, and fixes the unsupported JSON object-length database call.','Older installed clients are routed through the corrected atomic validation, while realtime refresh, incomplete-plan protection and all established Pager and Reliever rules remain in place.']},
@@ -607,8 +609,13 @@ function activitySignature(date){
 
 function renderRecentActivity(date){
   var host=byId('recentActivityList'),chip=byId('changedSinceChip');if(!host||!chip)return;var signature=activitySignature(date),seen={};try{seen=JSON.parse(localStorage.getItem('anaes_seen_night_activity')||'{}')}catch(error){}if(seen[date]&&signature&&seen[date]!==signature)changedSinceSession[date]=true;if(signature){seen[date]=signature;try{localStorage.setItem('anaes_seen_night_activity',JSON.stringify(seen))}catch(error){}}
-  chip.classList.toggle('hidden',!changedSinceSession[date]);chip.textContent=changedSinceSession[date]?'Updated since last opened':'Updated';var items=staffingHistoryFor(date).slice(0,5);host.innerHTML=items.length?items.map(function(item){return'<div class="recentActivityRow"><span class="activityType '+esc(item.type)+'">'+esc(item.label)+'</span><div><b>'+esc(item.title)+'</b>'+(item.detail?'<small class="recentActivityDetail">'+esc(item.detail)+'</small>':'')+'<small class="recentActivityMeta">'+esc(item.changed_by||'Roster member')+' · '+esc(shortTime(item.changed_at))+'</small></div></div>'}).join(''):'<div class="emptyRecentActivity">No staffing changes have been recorded for this night.</div>';
+  chip.classList.toggle('hidden',!changedSinceSession[date]);chip.textContent=changedSinceSession[date]?'Updated since last opened':'Updated';var items=staffingHistoryFor(date).slice(0,5);host.innerHTML=items.length?items.map(function(item,index){return'<button type="button" class="recentActivityRow" data-activity-index="'+index+'" aria-label="View details for '+esc(item.title)+'"><span class="activityType '+esc(item.type)+'">'+esc(item.label)+'</span><span class="recentActivityCopy"><b>'+esc(item.title)+'</b>'+(item.detail?'<small class="recentActivityDetail">'+esc(item.detail)+'</small>':'')+'<small class="recentActivityMeta">'+esc(item.changed_by||'Roster member')+' · '+esc(shortTime(item.changed_at))+'</small></span><i aria-hidden="true">›</i></button>'}).join(''):'<div class="emptyRecentActivity">No staffing changes have been recorded for this night.</div>';Array.prototype.forEach.call(host.querySelectorAll('[data-activity-index]'),function(button){button.onclick=function(){openActivityDetail(items[Number(button.getAttribute('data-activity-index'))],date)}});
 }
+
+function openActivityDetail(item,date){var dialog=byId('activityDetailSheet'),type=byId('activityDetailType'),title=byId('activityDetailTitle'),content=byId('activityDetailContent');if(!dialog||!item)return;type.className='activityType '+item.type;type.textContent=item.label;title.textContent=item.title;var rows=[['Night',fmt(date)],['Details',item.detail||'No additional reason was recorded.'],['Recorded by',item.changed_by||'Roster member'],['Recorded',new Date(item.changed_at).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})]];content.innerHTML=rows.map(function(row){return'<div class="activityDetailRow"><span>'+esc(row[0])+'</span><b>'+esc(row[1])+'</b></div>'}).join('');if(!dialog.open)dialog.showModal()}
+
+function updateScrollChrome(){scrollChromeFrame=null;document.body.classList.toggle('uiScrolled',window.scrollY>18)}
+function scheduleScrollChrome(){if(scrollChromeFrame)return;scrollChromeFrame=requestAnimationFrame(updateScrollChrome)}
 
 function briefingText(base){
   var r=applyChanges(base),plan=staffingPlan(base),pending=planIsProvisional(base)||(r.mode!=='5'&&!labourOrderFor(r)),b=planIsProvisional(base)?{first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']}:breakData(r),lines=[(pending?'PROVISIONAL · ':'')+'ANAESTHETIC NIGHT BRIEFING',fmt(base.date)+' · '+plan.count+' nurses','First Part: '+professionalName(r.first1)+' + '+professionalName(r.first2),'Second Part: '+professionalName(r.second1)+' + '+professionalName(r.second2)];if(r.mode==='5')lines.push('Full Labour Ward / Pager: '+professionalName(r.fullLW));else lines.push('Pager: '+professionalName(r.pager),'Reliever: '+professionalName(r.reliever));lines.push('First break: '+(b.first.map(professionalName).join(' + ')||'Pending'),'Second break: '+(b.second.map(professionalName).join(' + ')||'Pending'));Array.prototype.push.apply(lines,b.notes);return lines.join('\n')
@@ -916,6 +923,8 @@ function formMessage(id,message,state){
   el.textContent=message||'';el.className='formMessage'+(state?' '+state:'');
 }
 
+function showButtonConfirmation(button,restoredLabel){if(!button)return;setTimeout(function(){if(!button.isConnected)return;button.classList.add('saveConfirmed');button.textContent='✓ Saved';setTimeout(function(){if(!button.isConnected)return;button.classList.remove('saveConfirmed');button.textContent=restoredLabel},1100)},0)}
+
 function markInvalid(id,invalid){var el=byId(id);if(el)el.classList.toggle('fieldInvalid',!!invalid)}
 
 function normaliseNurseName(value){
@@ -955,7 +964,7 @@ async function saveNightChange(){
     if(rpcError(result,'absenceFormMessage'))return;
     byId('absentName').value='';editingAbsenceId=null;byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage',absent+' saved as absent.','success');
     try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}
-    formMessage('absenceFormMessage',absent+' saved as absent.','success');highlightSavedItem('changeList',absent,'data-absence-name');toast('Absence saved for '+absent,{label:'Undo',run:function(){return undoAddedAbsence(base.date,absent)}});
+    formMessage('absenceFormMessage',absent+' saved as absent.','success');highlightSavedItem('changeList',absent,'data-absence-name');showButtonConfirmation(byId('saveChangeBtn'),'Save absence');toast('Absence saved for '+absent,{label:'Undo',run:function(){return undoAddedAbsence(base.date,absent)}});
   }catch(error){setSync('error','Save failed');formMessage('absenceFormMessage','No response was received. Your selection is still here.','error');failedAction('Absence was not saved.',saveNightChange);}
   finally{byId('saveChangeBtn').textContent=editingAbsenceId?'Update absence':'Save absence';updateOfflineControls()}
 }
@@ -1005,7 +1014,7 @@ async function saveOvertime(){
     if(rpcError(result,'overtimeFormMessage'))return;
     byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');
     try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}
-    formMessage('overtimeFormMessage',name+' added for overtime.','success');highlightSavedItem('overtimeList',name,'data-overtime-name');toast(name+' added for overtime',{label:'Undo',run:function(){return undoAddedOvertime(base.date,name)}});
+    formMessage('overtimeFormMessage',name+' added for overtime.','success');highlightSavedItem('overtimeList',name,'data-overtime-name');showButtonConfirmation(byId('addOvertimeBtn'),'Add overtime');toast(name+' added for overtime',{label:'Undo',run:function(){return undoAddedOvertime(base.date,name)}});
   }catch(error){setSync('error','Save failed');formMessage('overtimeFormMessage','No response was received. The name remains here.','error');failedAction('Overtime nurse was not saved.',saveOvertime);}
   finally{byId('addOvertimeBtn').textContent='Add overtime';updateOfflineControls()}
 }
@@ -1089,7 +1098,7 @@ async function saveFinalAllocationsV2510(event){
     }
     delete allocationDrafts[base.date];delete labourOrderDrafts[base.date];delete seventhDecisionDrafts[base.date];await loadSharedData();var plan=staffingPlan(baseForDate(base.date)),saved=chosenCount-plan.unresolved.filter(function(key){return Object.prototype.hasOwnProperty.call(chosen,key)}).length;
     var success=plan.unresolved.length?(saved?saved+' allocation'+(saved===1?'':'s')+' saved':'Labour Ward parts saved')+' • '+plan.unresolved.length+' still to decide':confirmationOnly?'Tonight\'s plan confirmed for everyone':labourChoice&&chosenCount?'Tonight\'s plan published for everyone':labourChoice?'Labour Ward order published for everyone':additionalNurses(plan).length?'Core plan published; additional staff remain as required':'Tonight\'s plan published for everyone';
-    formMessage('allocationFormMessage',success,'success');toast(success);return false;
+    formMessage('allocationFormMessage',success,'success');showButtonConfirmation(button,'Confirm and share changes');toast(success);return false;
   }catch(error){setSync('error','Save failed');formMessage('allocationFormMessage','Save stopped: '+(error&&error.message==='timeout'?'the connection timed out. Your selections are still here.':'the allocations could not be confirmed. Your selections are still here.'),'error');failedAction('The allocations could not be saved.',function(){return saveFinalAllocationsV2510()});return false}
   finally{allocationSaveInFlight=false;if(button&&button.isConnected){button.disabled=false;button.textContent='Confirm and share changes'}updateOfflineControls()}
 }
@@ -1156,7 +1165,7 @@ function scheduleRealtimeReconnect(){
 function subscribeToChanges(){
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
   var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
-  changesChannel=supa.channel('roster-live-v36-6');
+  changesChannel=supa.channel('roster-live-v36-7');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
@@ -1182,10 +1191,10 @@ function updateNetworkStatus(){
 }
 
 function chooseDate(inputId){
-  var value=byId(inputId).value;if(!value){render();return}
+  var value=byId(inputId).value,previous=idx;if(!value){render();return}
   if(value<R[0].date){idx=0;toast('The published roster begins on '+fmt(R[0].date));render();return}
   if(value>R[R.length-1].date){idx=R.length-1;toast('The roster is currently published only until '+fmt(R[R.length-1].date));render();return}
-  var i=R.findIndex(function(r){return r.date>=value});idx=i<0?R.length-1:i;if(R[idx].date!==value)toast('Next rostered night: '+fmt(R[idx].date));render();
+  var i=R.findIndex(function(r){return r.date>=value});idx=i<0?R.length-1:i;if(idx!==previous)document.body.setAttribute('data-date-direction',idx>previous?'next':'previous');if(R[idx].date!==value)toast('Next rostered night: '+fmt(R[idx].date));render();setTimeout(function(){document.body.removeAttribute('data-date-direction')},360);
 }
 
 function csvCell(value){return '"'+String(value==null?'':value).replaceAll('"','""')+'"'}
@@ -1240,7 +1249,7 @@ async function authorizeUser(user){
 }
 
 function bind(){
-  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…')},3500);prepareChangesView();setupPWA();bindOnboarding();window.addEventListener('online',function(){updateNetworkStatus();resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',resumeSharedSync);window.addEventListener('pageshow',resumeSharedSync);document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'&&currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}});setInterval(refreshAutomaticNightOnReturn,60000);
+  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…')},3500);prepareChangesView();setupPWA();bindOnboarding();window.addEventListener('online',function(){updateNetworkStatus();resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',resumeSharedSync);window.addEventListener('pageshow',resumeSharedSync);window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'&&currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('saveProfileBtn').onclick=saveProfile;byId('profilePhotoButton').onclick=function(){byId('profilePhotoInput').click()};byId('changeProfilePhoto').onclick=function(){byId('profilePhotoInput').click()};byId('profilePhotoInput').onchange=function(){if(this.files&&this.files[0])chooseProfilePhoto(this.files[0]);this.value=''};byId('removeProfilePhoto').onclick=removeProfilePhoto;byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=openOnboardingReplay;byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};byId('accountVersionHistoryBtn').onclick=function(){byId('accountSheet').close();renderReleaseNotes(true);byId('releaseNotes').showModal()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
   ['profileName','profileJobTitle'].forEach(function(id){byId(id).oninput=updateProfileSaveState});byId('profileRosterName').onchange=updateProfileSaveState;
@@ -1250,7 +1259,7 @@ function bind(){
   byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;byId('copyBreaksBtn').onclick=copyBreaks;byId('copyBriefingBtn').onclick=copyBriefing;
   Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(b){b.onclick=emailRoster});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-open]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-open'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
   byId('previewExtendBtn').onclick=previewExtension;byId('extendBtn').onclick=extendRoster;byId('saveTeamVersionBtn').onclick=previewTeamChange;byId('exportBtn').onclick=exportCSV;byId('backupBtn').onclick=backup;
-  byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){b.onclick=function(){show(b.getAttribute('data-v'))}});updateOfflineControls();
+  byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};byId('closeActivityDetailSheet').onclick=function(){byId('activityDetailSheet').close()};Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){b.onclick=function(){show(b.getAttribute('data-v'))}});updateOfflineControls();
 }
 
 bind();
