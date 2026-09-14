@@ -130,6 +130,7 @@ assert.equal(new Set(context.activeNames(context.applyChanges(base))).size, 6, '
 assert.deepEqual(context.calculateNight(base.date), original, 'night override must not alter the permanent calculated rotation');
 assert.deepEqual(context.calculateNight(context.addDays(base.date, 4)), later, 'night override must not alter later nights');
 assert.equal(context.staffingHistoryFor(base.date)[0].title, 'Saved a night-only role arrangement', 'role-swap audit history must remain visible');
+assert.equal(context.staffingHistoryFor(base.date)[0].detail, 'Agreed swap', 'role-swap audit history must retain the saved reason for both activity views');
 
 // Explicit agreed five-person overrides may place overtime on full-night Pager/Labour Ward.
 reset([absent('first1'), absent('second2')], [overtime('1', null, 'Sadaf Nazia')]);

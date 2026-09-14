@@ -186,7 +186,7 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -287,6 +287,7 @@ assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'),
 assert.match(html, /id="recentActivityList"[\s\S]*id="copyBriefingBtn"/, 'Night must retain recent activity and briefing actions');
 assert.match(html, /id="briefingActionsReason"[^>]*role="status"[^>]*aria-live="polite"/, 'Night must explain why briefing actions are unavailable');
 assert.match(ui, /activityType '\+esc\(item\.type\)/, 'recent activity must expose its semantic type for accessible colour styling');
+assert.match(ui, /item\.detail\?'<small class="recentActivityDetail">'\+esc\(item\.detail\)/, 'recent activity must show the saved reason or allocation detail');
 assert.match(ui, /Available after this plan task is completed:/, 'unavailable output actions must name the task that enables them');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
@@ -294,6 +295,9 @@ assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary
 assert.match(css, /#copyBriefingBtn\.buttonPending\{[^}]*color:var\(--apple-secondary\)[^}]*opacity:1/, 'the unavailable briefing action must remain legible');
 assert.match(css, /button:disabled\{[\s\S]*opacity:1;filter:none;cursor:not-allowed/, 'disabled controls must remain fully legible without saturation loss');
 assert.match(css, /\.activityType\.absence[\s\S]*\.activityType\.overtime[\s\S]*\.activityType\.allocation/, 'recent activity types must retain distinct semantic colours');
+assert.match(css, /#today \.nightDateShell \.staffingCount\{margin-top:var\(--apple-control-gap\)\}/, 'the date and staffing surfaces must have deliberate separation');
+assert.match(css, /\.bottom\{column-gap:6px;padding:5px 5px calc\(5px \+ env\(safe-area-inset-bottom\)\)\}/, 'bottom navigation targets must not visually touch and must preserve the device safe area');
+assert.match(css, /\.recentActivityRow \.recentActivityDetail\{[^}]*color:var\(--apple-secondary\)[^}]*font-size:12px/, 'saved activity reasons must remain readable in the compact list');
 assert.match(css, /#today \.actionPanel #copyBriefingBtn\.buttonPending:disabled[\s\S]*background:var\(--apple-disabled-accent-fill\)!important[\s\S]*color:var\(--apple-disabled-accent-label\)!important/, 'pending briefing actions must use the high-contrast Apple disabled-accent treatment');
 const luminance = hex => {
   const channels = hex.match(/[0-9a-f]{2}/gi).map(value => parseInt(value, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
