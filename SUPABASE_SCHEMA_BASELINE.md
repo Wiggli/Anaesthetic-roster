@@ -1,6 +1,6 @@
 # Supabase schema baseline
 
-Reviewed against application version 36.4 at commit `ac812aee7b09d56bd0651153a12c28bc182c3df6`. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+Reviewed against application version 36.5 and database schema 36. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
 
 ## Shared operational data
 
@@ -35,6 +35,8 @@ The supported shared-write contract is `record_night_absence_v25`, `remove_night
 Schema 34 adds `allowed_users.roster_name` and `set_roster_identity_v34`. The value is an internal permanent-roster identifier, is unique when present, and can be changed only by an active administrator through the validated RPC.
 
 Schema 35 extends the atomic role-override contract with a validated, explicit five-person night-only arrangement. It also replaces the schema-33 function with a compatibility wrapper so older installed clients no longer call the unavailable `jsonb_object_length(jsonb)` routine. Normal Reliever-first five-nurse planning remains the default.
+
+Schema 36 expands the pre-existing `night_role_overrides_valid` table constraint to accept that reviewed five-person structure alongside the original six-role structure. It rejects missing or extra keys, blank values and duplicate nurse names before a row can be stored.
 
 ## Deployment review
 
