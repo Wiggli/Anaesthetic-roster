@@ -183,9 +183,10 @@ const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const syncMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
 const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914150000_custom_five_nurse_roles.sql'), 'utf8');
+const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -271,7 +272,14 @@ assert.doesNotMatch(roleMigration, /jsonb_object_length\(/, 'schema 35 must not 
 assert.match(roleMigration, /night_overtime[\s\S]*nurse_name/, 'schema 35 must validate overtime nurses as part of the effective five-person team');
 assert.match(roleMigration, /apply_night_role_override_v33[\s\S]*apply_night_role_override_v35/, 'schema 35 must repair older installed clients with a compatibility wrapper');
 assert.match(roleMigration, /update public\.app_schema_version[\s\S]*version = 35/, 'schema 35 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 35, 'the application must require the custom five-role schema');
+assert.match(constraintMigration, /drop constraint if exists night_role_overrides_valid[\s\S]*add constraint night_role_overrides_valid/, 'schema 36 must replace the incompatible table constraint forward-only');
+assert.match(constraintMigration, /when p_assignments ->> 'mode' = '5'[\s\S]*'fullLW'/, 'schema 36 must accept the reviewed five-role structure');
+assert.match(constraintMigration, /'pager', 'reliever'[\s\S]*count\(\*\) = 6/, 'schema 36 must retain the original six-role structure');
+assert.match(constraintMigration, /count\(distinct lower\(trim\(value\)\)\) = 5/, 'schema 36 must reject duplicate nurses in five-role rows');
+assert.doesNotMatch(constraintMigration, /jsonb_object_length\(/, 'schema 36 must use supported JSONB operations');
+assert.match(constraintMigration, /validate constraint night_role_overrides_valid/, 'schema 36 must validate existing rows before deployment completes');
+assert.match(constraintMigration, /update public\.app_schema_version[\s\S]*version = 36/, 'schema 36 migration must update the schema marker');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 36, 'the application must require the corrected custom-role constraint');
 assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
 assert.match(ui, /select\('email,display_name,user_role,active'\)/, 'authorisation must use the original account access fields');
