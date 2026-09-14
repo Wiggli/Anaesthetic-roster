@@ -23,10 +23,10 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="manifest" href="manifest.webmanifest?v=36.0" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=36.0" />
+    <link rel="manifest" href="manifest.webmanifest?v=36.1" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=36.1" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=36.0" />
+    <link rel="stylesheet" href="styles.css?v=36.1" />
   </head>
   <body class="authPending">
     <section
@@ -39,7 +39,7 @@
     >
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=36.0" alt="SPTAR Mater Dei" />
+          <img src="mater-dei-logo.png?v=36.1" alt="SPTAR Mater Dei" />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
@@ -58,7 +58,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=36.0"
+              src="mater-dei-logo.png?v=36.1"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -164,7 +164,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=36.0" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=36.1" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -319,13 +319,6 @@
               <span>Return to roster night</span>
             </button>
           </div>
-        </div>
-        <div class="panel personalSchedulePanel" id="personalSchedulePanel">
-          <div class="sectionHeadingRow">
-            <div><h2 class="sectionTitle">My upcoming nights</h2><p id="personalScheduleIntro" class="time"></p></div>
-            <button type="button" class="mini" id="exportMyCalendarBtn">Add to calendar</button>
-          </div>
-          <div id="personalScheduleList" class="personalScheduleList"></div>
         </div>
         <div class="panel recentActivityPanel">
           <div class="sectionHeadingRow">
@@ -905,9 +898,9 @@
                 placeholder="For example, Anaesthetic Nurse"
             /></label>
             <label
-              ><span>Roster highlight</span
+              ><span>Your roster name</span
               ><select id="profileRosterName"></select
-              ><small id="profileRosterIdentityHelp">This local highlight is not a verified account identity.</small></label
+              ><small>Used only to highlight your allocation on this device.</small></label
             >
             <div class="profileReadOnly">
               <span>Approved account</span><b id="profileApprovedName"></b
@@ -1053,7 +1046,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 36.0 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 36.1 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -1095,7 +1088,7 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
-    <script src="app-core.js?v=36.0"></script>
-    <script src="app-ui.js?v=36.0"></script>
+    <script src="app-core.js?v=36.1"></script>
+    <script src="app-ui.js?v=36.1"></script>
   </body>
 </html>

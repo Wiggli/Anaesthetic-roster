@@ -185,9 +185,9 @@ for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmani
   assert.match(source['service-worker.js'], new RegExp(`${asset.replace('.', '\\.') }\\?v=${escapedVersion}`));
 }
 assert.match(source['manifest.webmanifest'], new RegExp(`icon-192\\.png\\?v=${escapedVersion}`));
-assert.match(source['app-ui.js'], /select\('email,display_name,user_role,active,roster_name'\)/, 'authorisation must load the reviewed roster identity binding');
-assert.match(source['app-ui.js'], /function personalUpcomingNights\(\)[\s\S]*boundRosterName\(\)/, 'personal nights must require the server-approved identity');
-assert.match(source['app-ui.js'], /function exportMyCalendar\(\)[\s\S]*boundRosterName\(\)/, 'calendar export must require the server-approved identity');
+assert.match(source['app-ui.js'], /select\('email,display_name,user_role,active'\)/, 'authorisation must retain the original access fields');
+assert.doesNotMatch(source['app-ui.js'], /boundRosterName|setRosterIdentity|personalUpcomingNights|exportMyCalendar/, 'removed account binding and personal calendar code must not return');
+assert.doesNotMatch(source['index.html'], /personalSchedulePanel|My upcoming nights|exportMyCalendarBtn/, 'the removed upcoming-nights interface must not return');
 
 // Lightweight static accessibility checks for the shipped HTML shell.
 const html = source['index.html'];
