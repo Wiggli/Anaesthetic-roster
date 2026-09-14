@@ -184,7 +184,7 @@ const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflow
 const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -270,10 +270,25 @@ assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNight
 assert.match(ui, /select\('email,display_name,user_role,active'\)/, 'authorisation must use the original account access fields');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return localStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice');
 assert.match(html, /id="recentActivityList"[\s\S]*id="copyBriefingBtn"/, 'Night must retain recent activity and briefing actions');
+assert.match(html, /id="briefingActionsReason"[^>]*role="status"[^>]*aria-live="polite"/, 'Night must explain why briefing actions are unavailable');
+assert.match(ui, /activityType '\+esc\(item\.type\)/, 'recent activity must expose its semantic type for accessible colour styling');
+assert.match(ui, /Available after this plan task is completed:/, 'unavailable output actions must name the task that enables them');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
 assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary\)\}/, 'inactive navigation labels must retain readable contrast');
 assert.match(css, /#copyBriefingBtn\.buttonPending\{[^}]*color:var\(--apple-secondary\)[^}]*opacity:1/, 'the unavailable briefing action must remain legible');
+assert.match(css, /button:disabled\{[\s\S]*opacity:1;filter:none;cursor:not-allowed/, 'disabled controls must remain fully legible without saturation loss');
+assert.match(css, /\.activityType\.absence[\s\S]*\.activityType\.overtime[\s\S]*\.activityType\.allocation/, 'recent activity types must retain distinct semantic colours');
+assert.match(css, /#today \.actionPanel #copyBriefingBtn\.buttonPending:disabled[\s\S]*background:var\(--apple-disabled-accent-fill\)!important[\s\S]*color:var\(--apple-disabled-accent-label\)!important/, 'pending briefing actions must use the high-contrast Apple disabled-accent treatment');
+const luminance = hex => {
+  const channels = hex.match(/[0-9a-f]{2}/gi).map(value => parseInt(value, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+};
+const contrast = (foreground, background) => {
+  const first = luminance(foreground), second = luminance(background);
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+};
+[['#246965','#dff1ef'],['#545960','#eef0f2'],['#b42332','#fff0f1'],['#8a4b00','#fff3dc'],['#246b3d','#e8f6ed'],['#8edbd6','#173b39'],['#c7c7cc','#2c2c2e']].forEach(([foreground, background]) => assert.ok(contrast(foreground, background) >= 4.5, `${foreground} on ${background} must meet readable text contrast`));
 assert.match(css, /#changes>\.changesDatePanel label,#breaks>\.panel>\.grid2 label\{font-size:11px\}/, 'operational date labels must remain legible');
 assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /[A-Z0-9._%+-]+@gov\.mt/i, 'public application source must not embed named government email recipients');
 assert.match(ui, /night_role_override_history:allHistory\[2\]\.data/, 'administrator roster-data exports must include night-only role history');

@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.join(__dirname, '..');
-const source = Object.fromEntries(['app-core.js', 'app-ui.js', 'index.html', 'manifest.webmanifest', 'service-worker.js']
+const source = Object.fromEntries(['app-core.js', 'app-ui.js', 'index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css']
   .map(file => [file, fs.readFileSync(path.join(root, file), 'utf8')]));
 const storage = new Map();
 const element = () => ({
@@ -188,6 +188,9 @@ assert.match(source['manifest.webmanifest'], new RegExp(`icon-192\\.png\\?v=${es
 assert.match(source['app-ui.js'], /select\('email,display_name,user_role,active'\)/, 'authorisation must retain the original access fields');
 assert.doesNotMatch(source['app-ui.js'], /boundRosterName|setRosterIdentity|personalUpcomingNights|exportMyCalendar/, 'removed account binding and personal calendar code must not return');
 assert.doesNotMatch(source['index.html'], /personalSchedulePanel|My upcoming nights|exportMyCalendarBtn/, 'the removed upcoming-nights interface must not return');
+assert.match(source['index.html'], /id="briefingActionsReason"[^>]*aria-live="polite"/, 'unavailable Night output actions must have a live explanatory status');
+assert.match(source['styles.css'], /button:disabled\s*\{[\s\S]*opacity:1;filter:none/, 'disabled buttons must remain readable in the final cascade');
+assert.match(source['styles.css'], /body\.dark #today \.actionPanel #copyBriefingBtn\.buttonPending:disabled/, 'dark mode must retain a dedicated readable pending-action state');
 
 // Lightweight static accessibility checks for the shipped HTML shell.
 const html = source['index.html'];
