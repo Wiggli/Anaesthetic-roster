@@ -170,6 +170,9 @@ assert.equal(context.requireOnline(), false, 'offline mode must reject writes');
 assert.match(source['app-ui.js'], /expectedRevision=nightPlanStatuses\[base\.date\]/);
 assert.match(source['app-ui.js'], /p_expected_revision:expectedRevision/);
 assert.match(source['app-ui.js'], /changed on another device|revision/i, 'device conflicts must produce an explicit refresh/review path');
+assert.doesNotMatch(source['app-ui.js'], /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'absence and overtime writes must remain atomic');
+assert.match(source['app-ui.js'], /failedAction\('Absence was not saved\.'/);
+assert.match(source['app-ui.js'], /failedAction\('Overtime nurse was not saved\.'/);
 assert.match(source['service-worker.js'], /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary[\s\S]*return/, 'non-library Supabase requests must bypass caching');
 assert.doesNotMatch(source['service-worker.js'], /caches\.put\([^\n]*supabase/i);
 
@@ -182,6 +185,9 @@ for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmani
   assert.match(source['service-worker.js'], new RegExp(`${asset.replace('.', '\\.') }\\?v=${escapedVersion}`));
 }
 assert.match(source['manifest.webmanifest'], new RegExp(`icon-192\\.png\\?v=${escapedVersion}`));
+assert.match(source['app-ui.js'], /select\('email,display_name,user_role,active,roster_name'\)/, 'authorisation must load the reviewed roster identity binding');
+assert.match(source['app-ui.js'], /function personalUpcomingNights\(\)[\s\S]*boundRosterName\(\)/, 'personal nights must require the server-approved identity');
+assert.match(source['app-ui.js'], /function exportMyCalendar\(\)[\s\S]*boundRosterName\(\)/, 'calendar export must require the server-approved identity');
 
 // Lightweight static accessibility checks for the shipped HTML shell.
 const html = source['index.html'];

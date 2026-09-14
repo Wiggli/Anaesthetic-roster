@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V35.6 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V36.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -42,8 +42,11 @@ var profileSavedSignature='';
 var launchStartedAt=Date.now();
 var launchFinished=false;
 var launchSlowTimer=null;
+var changedSinceSession={};
+var lastFailedAction=null;
 
 var RELEASE_HISTORY=[
+  {version:'36.0',date:'13 Sep 2026',title:'Personal planning with safer shared changes',changes:['Verified account-to-roster identity binding now protects personal schedule features and is managed by roster administrators.','Your next published nights appear in a private signed-in view and can be exported as a personal calendar file without team names or roster details.','Night now includes recent activity, changed-since-last-opened feedback and a copyable briefing that stays unavailable while the plan is incomplete.','Absence and overtime changes require the established atomic database functions, preventing partial current-row and history writes.','Failed staffing and allocation actions offer a direct Retry while keeping the entered information on screen.','The final Night, Changes and Breaks structure now lives in the HTML, with larger important touch targets and more legible operational text.','The reviewed schema baseline and forward-only identity migration preserve existing migrations, rotation rules, privacy boundaries and realtime conflict protection.']},
   {version:'35.6',date:'12 Sep 2026',title:'Clearer decisions and help throughout each night',changes:['Staffing, Allocation and Confirm now show honest states without ticks for untouched automatic steps.','Night and Breaks summary items open the exact Absence, Overtime or allocation section they describe.','Absence, overtime and night-only role buttons become available only after the required information has been entered.','The role editor now reveals its reason and save actions only after a genuine night-only change, with a clear way to restore rostered roles.','Breaks removes duplicate ready-state information and keeps completed Labour Ward status informational.','Dedicated Apple-style information sheets explain what each screen does, what happens automatically and when confirmation is required.','Wording and overtime allocation status were refined without changing the verified roster or staffing rules.']},
   {version:'35.5',date:'11 Sep 2026',title:'Clearer Apple spacing throughout the app',changes:['Unrelated summary tiles, allocation cards, break groups and action sections now have clear space between them instead of visually merging.','Night, Changes, Breaks and administrator screens now share one consistent control gap and section rhythm across phone and desktop layouts.','Controls that genuinely work together—date navigation, workflow steps, appearance choices and action-sheet options—remain intentionally grouped.','The Apple-inspired glass treatment stays limited to navigation and supporting chrome, while clinical information, forms and warnings remain solid and easy to read.','Small-phone and dark-mode spacing, borders and surface separation were refined without changing roster, staffing or allocation logic.']},
   {version:'35.4',date:'11 Sep 2026',title:'Liquid-glass navigation and unified app chrome',changes:['The bottom navigation is now a floating liquid-glass tab bar with a clear selected destination and comfortable iPhone safe-area spacing.','Night, Changes and Breaks now share the same translucent header material, subtle inner highlights and restrained depth in light and dark mode.','Account controls, information buttons and segmented controls use one consistent native-style interaction language.','Short spring selection and press motion improves orientation while reduced-motion preferences continue to remove non-essential movement.','Clinical cards, forms, staffing warnings and allocation details remain solid and high-contrast for fast, reliable reading.']},
@@ -149,7 +152,7 @@ function updateProfileSaveState(){var button=byId('saveProfileBtn');if(!button)r
 
 function populateAccountSheet(){
   var profile=currentPrivateProfile||{},name=privateProfileName();byId('profileName').value=profile.profile_name||'';byId('profileJobTitle').value=profile.job_title||'';byId('profileApprovedName').textContent=currentUserProfile.display_name;byId('profileEmail').textContent=currentUserProfile.email;
-  var rosterName=myName();byId('profileRosterName').innerHTML='<option value="">Do not highlight a name</option>'+TEAM.map(function(item){return'<option value="'+esc(item)+'"'+(sameNurse(item,rosterName)?' selected':'')+'>'+esc(professionalName(item))+'</option>'}).join('');byId('profilePhotoInitial').textContent=(name||'?').charAt(0).toUpperCase();byId('accountVersion').textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');profileSavedSignature=profileDraftSignature();showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
+  var rosterName=myName(),bound=boundRosterName(),rosterSelect=byId('profileRosterName');rosterSelect.innerHTML='<option value="">Do not highlight a name</option>'+TEAM.map(function(item){return'<option value="'+esc(item)+'"'+(sameNurse(item,rosterName)?' selected':'')+'>'+esc(professionalName(item))+'</option>'}).join('');rosterSelect.disabled=!!bound;byId('profileRosterIdentityHelp').textContent=bound?'Verified as '+professionalName(bound)+' by the roster administrator.':'This local highlight is not a verified account identity.';byId('profilePhotoInitial').textContent=(name||'?').charAt(0).toUpperCase();byId('accountVersion').textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');profileSavedSignature=profileDraftSignature();showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
 }
 
 async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
@@ -162,7 +165,7 @@ async function chooseProfilePhoto(file){try{pendingProfilePhoto=await photoBlob(
 
 async function saveProfile(){
   if(!requireOnline())return;if(!profileFeatureAvailable){showProfileMessage('Run the V32 profile database upgrade first.','error');return}var button=byId('saveProfileBtn'),name=byId('profileName').value.trim(),title=byId('profileJobTitle').value.trim(),rosterName=byId('profileRosterName').value,path=currentPrivateProfile&&currentPrivateProfile.avatar_path||null;button.disabled=true;button.textContent='Saving…';showProfileMessage('Saving your profile…','');
-  try{if(pendingProfilePhoto){path=currentUser.id+'/avatar.jpg';var uploaded=await supa.storage.from('profile-photos').upload(path,pendingProfilePhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}var result=await supa.from('user_profiles').upsert({user_id:currentUser.id,profile_name:name||null,job_title:title||null,avatar_path:path,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select().single();if(result.error)throw result.error;currentPrivateProfile=result.data;pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';if(rosterName)localStorage.setItem('anaes_my_name',rosterName);else localStorage.removeItem('anaes_my_name');profileSavedSignature=profileDraftSignature();await refreshProfileAvatar();render();updateProfileSaveState();showProfileMessage('Your profile has been saved.','success');toast('Profile saved')}
+  try{if(pendingProfilePhoto){path=currentUser.id+'/avatar.jpg';var uploaded=await supa.storage.from('profile-photos').upload(path,pendingProfilePhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}var result=await supa.from('user_profiles').upsert({user_id:currentUser.id,profile_name:name||null,job_title:title||null,avatar_path:path,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select().single();if(result.error)throw result.error;currentPrivateProfile=result.data;pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';if(!boundRosterName()){if(rosterName)localStorage.setItem('anaes_my_name',rosterName);else localStorage.removeItem('anaes_my_name')}profileSavedSignature=profileDraftSignature();await refreshProfileAvatar();render();updateProfileSaveState();showProfileMessage('Your profile has been saved.','success');toast('Profile saved')}
   catch(error){showProfileMessage('Your profile could not be saved. '+(error.message||'Please try again.'),'error')}
   finally{button.disabled=false;button.textContent='Save profile';updateProfileSaveState()}
 }
@@ -269,46 +272,22 @@ function enhanceDatePicker(id){
 
 function prepareChangesView(){
   if(changesViewPrepared)return;
-  var today=byId('today'),changes=byId('changes'),roster=byId('roster'),changePanel=today&&today.querySelector('.changePanel'),allocation=changePanel&&changePanel.querySelector('.allocationSection'),action=today&&today.querySelector('.actionPanel'),nav=document.querySelector('.bottom');
-  if(!today||!changes||!roster||!changePanel||!allocation||!action||!nav)return;
-  var selectedPanel=today.querySelector('.panel'),myNameLabel=selectedPanel&&selectedPanel.querySelector('.myNameLabel'),shortcutRow=document.createElement('div'),statusRow=document.createElement('div'),dateGrid=selectedPanel&&selectedPanel.querySelector('.grid2'),alerts=byId('alerts'),roles=byId('roles'),fiveArrangement=byId('fiveArrangement');
-  document.body.setAttribute('data-view','today');selectedPanel.classList.add('nightOverviewPanel');selectedPanel.querySelector('h2').classList.add('srOnly');
-  if(dateGrid){var dateShell=document.createElement('div');dateShell.className='nightDateShell';selectedPanel.insertBefore(dateShell,dateGrid);dateShell.appendChild(dateGrid);var dateLabel=dateGrid.querySelector('label');if(dateLabel)dateLabel.classList.add('nightDateLabel')}
-  var personal=document.createElement('section');personal.id='personalNight';personal.className='personalNight';personal.setAttribute('aria-labelledby','personalNightHeading');personal.innerHTML='<h2 id="personalNightHeading" class="sectionTitle">Your night</h2><div id="personalNightCard" class="personalNightCard"></div><div id="personalAllocationNotice"></div><div id="personalNamePicker" class="personalNamePicker hidden"><button type="button" class="mini" id="closeNamePickerBtn">Done</button></div>';
-  if(dateGrid)dateGrid.parentNode.insertAdjacentElement('afterend',personal);else selectedPanel.insertBefore(personal,selectedPanel.firstChild);
-  if(myNameLabel){myNameLabel.firstChild.nodeValue='Choose your name';personal.querySelector('#personalNamePicker').insertBefore(myNameLabel,personal.querySelector('#closeNamePickerBtn'))}
-  var summaryTitle=document.createElement('div');summaryTitle.className='sectionHeadingRow nightSummaryTitle';summaryTitle.innerHTML='<h2 class="sectionTitle">Night summary</h2>';statusRow.id='nightStatusRow';statusRow.className='nightStatusRow';personal.insertAdjacentElement('afterend',summaryTitle);summaryTitle.insertAdjacentElement('afterend',statusRow);
-  var situationTitle=document.createElement('div');situationTitle.className='sectionHeadingRow';situationTitle.innerHTML='<h2 class="sectionTitle">Night situation</h2><span class="inlineLive"><i></i>Live</span>';if(roles)selectedPanel.insertBefore(situationTitle,roles);
-  shortcutRow.className='rosterShortcutRow';shortcutRow.innerHTML='<button type="button" class="rosterShortcutBtn" id="viewRosterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg><span>View full roster</span><b aria-hidden="true">›</b></button><button type="button" class="rosterShortcutBtn smartNightBtn" id="smartNightBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg><span>Return to roster night</span></button>';if(fiveArrangement)fiveArrangement.insertAdjacentElement('afterend',shortcutRow);
-  changes.innerHTML='<div class="panel changesDatePanel"><h2>Selected night</h2><div class="grid2"><label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current / next night</button></label><div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div></div></div>';
-  var changesHeader=document.createElement('div');changesHeader.className='screenHeader changesScreenHeader';changesHeader.innerHTML='<div><span class="screenEyebrow">Anaesthetic Night Roster</span><h1>Staffing changes</h1><p><i></i><span id="changesHeaderLive">Live and up to date</span></p></div><button type="button" class="screenInfoButton" aria-label="Staffing changes information">i</button>';changes.insertBefore(changesHeader,changes.firstChild);
-  changePanel.querySelector('h2').textContent='Staffing changes';changePanel.querySelector('.ctop .time').textContent='Record staffing changes first, then resolve only the decisions that remain';
-  changes.appendChild(changePanel);
-  var absence=changePanel.querySelector('.absenceSection'),overtime=changePanel.querySelector('.overtimeSection'),history=changePanel.querySelector('.historyBox'),ctop=changePanel.querySelector('.ctop');
-  var workflowNav=document.createElement('div');workflowNav.className='changesWorkflowTabs';workflowNav.setAttribute('role','tablist');workflowNav.innerHTML='<button type="button" class="active" data-changes-step="staffing" role="tab" aria-selected="true"><span>1</span><b>Staffing</b><small id="staffingStepState">Record people</small></button><button type="button" data-changes-step="allocation" role="tab" aria-selected="false"><span>2</span><b>Allocation</b><small id="allocationStepState">Review roles</small></button><button type="button" data-changes-step="confirm" role="tab" aria-selected="false"><span>3</span><b>Confirm</b><small id="confirmStepState">Review plan</small></button>';
-  var workflowState=document.createElement('div');workflowState.id='changesWorkflowState';workflowState.className='changesWorkflowState';workflowState.setAttribute('role','status');workflowState.setAttribute('aria-live','polite');
-  var staffingPane=document.createElement('div');staffingPane.id='changesStaffingPane';staffingPane.className='changesStepPane';
-  var allocationPane=document.createElement('div');allocationPane.id='changesAllocationPane';allocationPane.className='changesStepPane hidden';
-  var confirmPane=document.createElement('div');confirmPane.id='changesConfirmPane';confirmPane.className='changesStepPane hidden';
-  var continueButton=document.createElement('button');continueButton.type='button';continueButton.id='continueToAllocationBtn';continueButton.className='primary wide continueWorkflowBtn';continueButton.textContent='Continue to allocation';
-  var confirmButton=document.createElement('button');confirmButton.type='button';confirmButton.id='continueToConfirmBtn';confirmButton.className='primary wide continueWorkflowBtn';confirmButton.textContent='Review changes';var confirmReason=document.createElement('p');confirmReason.id='continueToConfirmReason';confirmReason.className='disabledReason hidden';confirmReason.setAttribute('role','status');confirmReason.setAttribute('aria-live','polite');
-  var fixedBox=document.createElement('details');fixedBox.className='fixedAllocationBox';fixedBox.innerHTML='<summary id="fixedAllocationSummary">Already allocated roles</summary><div id="fixedAllocationList"></div>';
-  ctop.insertAdjacentElement('afterend',workflowNav);workflowNav.insertAdjacentElement('afterend',workflowState);workflowState.insertAdjacentElement('afterend',staffingPane);staffingPane.insertAdjacentElement('afterend',allocationPane);allocationPane.insertAdjacentElement('afterend',confirmPane);
-  staffingPane.appendChild(absence);staffingPane.appendChild(overtime);staffingPane.appendChild(continueButton);
-  var roleOverride=document.createElement('div');roleOverride.id='nightRoleOverrideStep';roleOverride.className='nightRoleOverrideStep';allocationPane.appendChild(roleOverride);allocationPane.appendChild(fixedBox);allocationPane.appendChild(allocation);allocationPane.appendChild(confirmButton);allocationPane.appendChild(confirmReason);confirmPane.innerHTML='<div class="confirmationCard"><div class="stepHeader"><span>3</span><h3>Confirm tonight’s changes</h3></div><div class="time">Check the changed names and roles before sharing them with everyone.</div><div id="confirmationPreview" class="confirmationPreview"></div></div>';
-  var saveButton=byId('saveAllocationsBtn'),allocationMessage=byId('allocationFormMessage');confirmPane.querySelector('.confirmationCard').appendChild(saveButton);confirmPane.querySelector('.confirmationCard').appendChild(allocationMessage);confirmPane.insertAdjacentHTML('beforeend','<div class="confirmHint">Night and Breaks update together after the plan is confirmed.</div>');if(history)changePanel.appendChild(history);
-  var rosterButton=nav.querySelector('[data-v="roster"]'),changesButton=document.createElement('button');changesButton.type='button';changesButton.setAttribute('data-v','changes');changesButton.setAttribute('aria-label','Staffing changes');changesButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11"></path><path d="m13 4 3 3-3 3"></path><path d="M19 17H8"></path><path d="m11 14-3 3 3 3"></path><circle cx="5" cy="17" r="1.5"></circle><circle cx="19" cy="7" r="1.5"></circle></svg><span>Changes</span><em id="changesTaskBadge" class="navTaskBadge hidden">0</em>';
-  nav.insertBefore(changesButton,rosterButton);rosterButton.remove();nav.style.gridTemplateColumns='repeat(3,1fr)';nav.querySelector('[data-v="today"]').style.gridColumn='1';changesButton.style.gridColumn='2';nav.querySelector('[data-v="breaks"]').style.gridColumn='3';
-  nav.querySelector('[data-v="today"]').innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"></path><path d="M15.5 7.5h5M18 5v5"></path></svg><span>Night</span>';
-  nav.querySelector('[data-v="breaks"]').innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z"></path><path d="M17 11h2a2 2 0 0 1 0 4h-2"></path><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2"></path></svg><span>Breaks</span>';
-  var rosterHeader=document.createElement('div');rosterHeader.className='rosterPageHeader';rosterHeader.innerHTML='<h2>Full roster</h2><button type="button" class="mini" id="closeRosterBtn">Back to Night</button>';roster.insertBefore(rosterHeader,roster.firstChild);
-  var breaks=byId('breaks'),breakPanel=breaks&&breaks.querySelector('.panel'),breakGrid=breakPanel&&breakPanel.querySelector('.grid2');if(breaks&&breakPanel){if(action&&!byId('breakActionsReason'))action.insertAdjacentHTML('afterbegin','<p id="breakActionsReason" class="disabledReason hidden" role="status" aria-live="polite"></p>');var breaksHeader=document.createElement('div');breaksHeader.className='screenHeader breaksScreenHeader';breaksHeader.innerHTML='<div><span class="screenEyebrow">Anaesthetic Night Roster</span><h1>Breaks</h1><p><i></i>Linked to the selected night</p></div><button type="button" class="screenInfoButton" aria-label="Break plan information">i</button>';breaks.insertBefore(breaksHeader,breakPanel);breakPanel.querySelector('h2').textContent='Night summary';var breakSummary=document.createElement('div');breakSummary.id='breakSummaryRow';breakSummary.className='breakSummaryRow';if(breakGrid)breakGrid.insertAdjacentElement('afterend',breakSummary);var breakPlanTitle=document.createElement('div');breakPlanTitle.className='breakPlanTitle';breakPlanTitle.innerHTML='<h2>Break plan</h2><span id="breakPlanLive"><i></i>Live</span>';byId('breakDate').insertAdjacentElement('afterend',breakPlanTitle)}
-  var dataPanel=document.querySelector('#adminData .panel');
-  if(dataPanel&&!byId('appDiagnostics'))dataPanel.insertAdjacentHTML('beforeend','<details class="advancedBox"><summary>App health and diagnostics</summary><div id="appDiagnostics"></div></details>');
-  ['datePick','changesDatePick','breakDatePick'].forEach(enhanceDatePicker);byId('overtimeName').setAttribute('list','overtimeSuggestions');var suggestions=document.createElement('datalist');suggestions.id='overtimeSuggestions';byId('overtimeName').insertAdjacentElement('afterend',suggestions);
-  byId('viewRosterBtn').onclick=function(){show('roster')};byId('closeRosterBtn').onclick=function(){show('today')};byId('smartNightBtn').onclick=goToAutomaticNight;byId('changesSmartNightBtn').onclick=goToAutomaticNight;byId('closeNamePickerBtn').onclick=function(){byId('personalNamePicker').classList.add('hidden')};continueButton.onclick=function(){setChangesStep('allocation',true)};confirmButton.onclick=function(){setChangesStep('confirm',true)};changesHeader.querySelector('.screenInfoButton').onclick=function(){openScreenInfo('changes')};if(breaksHeader)breaksHeader.querySelector('.screenInfoButton').onclick=function(){openScreenInfo('breaks')};Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});renderReleaseNotes();changesViewPrepared=true;renderDiagnostics();
+  var required=['today','changes','breaks','roster','changesStaffingPane','changesAllocationPane','changesConfirmPane','personalNightCard','nightStatusRow'];
+  if(required.some(function(id){return !byId(id)}))return;
+  document.body.setAttribute('data-view','today');
+  ['datePick','changesDatePick','breakDatePick'].forEach(enhanceDatePicker);
+  byId('viewRosterBtn').onclick=function(){show('roster')};
+  byId('closeRosterBtn').onclick=function(){show('today')};
+  byId('smartNightBtn').onclick=goToAutomaticNight;
+  byId('changesSmartNightBtn').onclick=goToAutomaticNight;
+  byId('closeNamePickerBtn').onclick=function(){byId('personalNamePicker').classList.add('hidden')};
+  byId('continueToAllocationBtn').onclick=function(){setChangesStep('allocation',true)};
+  byId('continueToConfirmBtn').onclick=function(){setChangesStep('confirm',true)};
+  byId('changesInfoBtn').onclick=function(){openScreenInfo('changes')};
+  byId('breaksInfoBtn').onclick=function(){openScreenInfo('breaks')};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});
+  renderReleaseNotes();changesViewPrepared=true;renderDiagnostics();
 }
-
 function openScreenInfo(kind){
   var dialog=byId('screenInfoSheet'),title=byId('screenInfoTitle'),intro=byId('screenInfoIntro'),content=byId('screenInfoContent');if(!dialog||!title||!intro||!content)return;
   var items=kind==='breaks'?[['What you see','The break plan always follows the selected night and its latest shared staffing.'],['What happens automatically','Changes to absences, overtime or roles update Night and Breaks together.'],['When actions are unavailable','Copy and email stay unavailable until every required staffing decision is complete.']]:[['Start with Staffing','Record only confirmed absences and overtime nurses.'],['Allocation is usually automatic','A standard six-nurse night uses the rostered roles, with Pager first and Reliever second in Labour Ward.'],['Confirm only changes','A final review is needed only after a staffing change or an agreed night-only role change.']];
@@ -657,6 +636,42 @@ function renderPersonalNight(base,r){
   return assignment;
 }
 
+function personalUpcomingNights(){
+  var name=boundRosterName();if(!name)return[];
+  var start=operationalRosterDate(new Date());
+  return R.filter(function(base){if(base.date<start)return false;var r=applyChanges(base),assignment=personalAllocation(base,r,name);return assignment&&assignment.title!=='Not working tonight'&&assignment.title!=='Not allocated tonight'}).slice(0,6);
+}
+
+function renderPersonalSchedule(){
+  var panel=byId('personalSchedulePanel'),intro=byId('personalScheduleIntro'),list=byId('personalScheduleList'),button=byId('exportMyCalendarBtn'),name=boundRosterName();if(!panel||!intro||!list||!button)return;
+  if(!name){panel.classList.add('identityRequired');intro.textContent='An administrator must first link this account to your roster identity.';list.innerHTML='<div class="emptyPersonalSchedule">Personal dates stay unavailable until the account link is verified.</div>';button.disabled=true;return}
+  panel.classList.remove('identityRequired');var nights=personalUpcomingNights();intro.textContent='Private to this signed-in view · '+professionalName(name);button.disabled=!nights.length;list.innerHTML=nights.length?nights.map(function(base){var r=applyChanges(base),assignment=personalAllocation(base,r,name);return'<button type="button" class="personalScheduleRow" data-personal-date="'+esc(base.date)+'"><span><b>'+esc(fmt(base.date))+'</b><small>'+esc(assignment.title)+'</small></span><span>'+esc(assignment.detail||'Open night')+' <i aria-hidden="true">›</i></span></button>'}).join(''):'<div class="emptyPersonalSchedule">No further published nights are assigned to you.</div>';
+  Array.prototype.forEach.call(list.querySelectorAll('[data-personal-date]'),function(row){row.onclick=function(){var date=row.getAttribute('data-personal-date'),next=R.findIndex(function(item){return item.date===date});if(next>=0){idx=next;render();window.scrollTo({top:0,behavior:'smooth'})}}});
+}
+
+function icsEscape(value){return String(value||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;')}
+function icsDate(date,time){return date.replaceAll('-','')+'T'+time+'00'}
+function exportMyCalendar(){
+  var name=boundRosterName(),nights=personalUpcomingNights();if(!name){toast('Ask the roster administrator to link your account first');return}if(!nights.length){toast('No upcoming published nights are available');return}
+  var stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z'),lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Anaesthetic Night Roster//Private calendar//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  nights.forEach(function(base){var r=applyChanges(base),assignment=personalAllocation(base,r,name),nextDate=addDays(base.date,1);lines.push('BEGIN:VEVENT','UID:'+base.date+'-'+canonicalNurseName(name).replace(/[^a-z0-9]/g,'')+'@anaesthetic-roster','DTSTAMP:'+stamp,'DTSTART:'+icsDate(base.date,'1900'),'DTEND:'+icsDate(nextDate,'0700'),'SUMMARY:Anaesthetic night shift','DESCRIPTION:'+icsEscape(assignment.title+' · '+(assignment.detail||'Open Night Roster for details')),'END:VEVENT')});lines.push('END:VCALENDAR');download('my-anaesthetic-nights.ics',lines.join('\r\n'),'text/calendar;charset=utf-8');toast('Private calendar file prepared')
+}
+
+function activitySignature(date){
+  var records=[];[changesFor(date),overtimeFor(date),changeHistory[date]||[],overtimeHistory[date]||[],roleOverrideHistory[date]||[]].forEach(function(list){list.forEach(function(item){records.push(item.updated_at||item.changed_at||'')})});var status=nightPlanStatuses[date],override=nightRoleOverrides[date],cover=fiveCoverChoices[date],order=labourOrders[date];[status,override,cover,order].forEach(function(item){if(item)records.push(item.updated_at||item.changed_at||JSON.stringify(item))});return records.filter(Boolean).sort().join('|')
+}
+
+function renderRecentActivity(date){
+  var host=byId('recentActivityList'),chip=byId('changedSinceChip');if(!host||!chip)return;var signature=activitySignature(date),seen={};try{seen=JSON.parse(localStorage.getItem('anaes_seen_night_activity')||'{}')}catch(error){}if(seen[date]&&signature&&seen[date]!==signature)changedSinceSession[date]=true;if(signature){seen[date]=signature;try{localStorage.setItem('anaes_seen_night_activity',JSON.stringify(seen))}catch(error){}}
+  chip.classList.toggle('hidden',!changedSinceSession[date]);chip.textContent=changedSinceSession[date]?'Updated since last opened':'Updated';var items=staffingHistoryFor(date).slice(0,5);host.innerHTML=items.length?items.map(function(item){return'<div class="recentActivityRow"><span class="activityType">'+esc(item.label)+'</span><div><b>'+esc(item.title)+'</b><small>'+esc(item.changed_by||'Roster member')+' · '+esc(shortTime(item.changed_at))+'</small></div></div>'}).join(''):'<div class="emptyPersonalSchedule">No staffing changes have been recorded for this night.</div>';
+}
+
+function briefingText(base){
+  var r=applyChanges(base),plan=staffingPlan(base),pending=planIsProvisional(base)||(r.mode!=='5'&&!labourOrderFor(r)),b=planIsProvisional(base)?{first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']}:breakData(r),lines=[(pending?'PROVISIONAL · ':'')+'ANAESTHETIC NIGHT BRIEFING',fmt(base.date)+' · '+plan.count+' nurses','First Part: '+professionalName(r.first1)+' + '+professionalName(r.first2),'Second Part: '+professionalName(r.second1)+' + '+professionalName(r.second2)];if(r.mode==='5')lines.push('Full Labour Ward / Pager: '+professionalName(r.fullLW));else lines.push('Pager: '+professionalName(r.pager),'Reliever: '+professionalName(r.reliever));lines.push('First break: '+(b.first.map(professionalName).join(' + ')||'Pending'),'Second break: '+(b.second.map(professionalName).join(' + ')||'Pending'));Array.prototype.push.apply(lines,b.notes);return lines.join('\n')
+}
+async function copyBriefing(){var text=briefingText(cur());try{await navigator.clipboard.writeText(text);toast('Tonight’s briefing copied')}catch(error){alert(text)}}
+function failedAction(message,retry){lastFailedAction=retry||null;toast(message,retry?{label:'Retry',run:function(){var action=lastFailedAction;lastFailedAction=null;return action&&action()}}:null)}
+
 function render(){
   if(!R.length||!currentUserProfile)return;
   var base=cur(),plan=staffingPlan(base),r=applyChanges(base),e=effective(r),count=plan.count;
@@ -667,7 +682,7 @@ function render(){
     roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
     roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
   }
-  syncDateInputs(base.date);renderMyName();var personal=renderPersonalNight(base,r);renderHeaderSummary(r);updateSmartNightButtons();
+  syncDateInputs(base.date);renderMyName();var personal=renderPersonalNight(base,r);renderPersonalSchedule();renderRecentActivity(base.date);renderHeaderSummary(r);updateSmartNightButtons();
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
   if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
@@ -905,6 +920,7 @@ function setOutputState(base,plan){
   var r=applyChanges(base),staffingPending=planIsProvisional(base),labourPending=r.mode!=='5'&&!labourOrderFor(r),pending=staffingPending||labourPending,tasks=workflowTaskDetails(base,plan),reason=tasks[0]||(plan.count<5?'Add sufficient overtime cover and complete the allocations.':labourPending?'Choose the Labour Ward order.':'');
   Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(button){var span=button.querySelector('span');if(span)span.textContent='Email roster and breaks';button.classList.toggle('buttonPending',pending);button.disabled=pending;button.setAttribute('aria-describedby',pending?'breakActionsReason':'')});
   var copy=byId('copyBreaksBtn');if(copy){var span=copy.querySelector('span');if(span)span.textContent='Copy breaks';copy.classList.toggle('buttonPending',pending);copy.disabled=pending;copy.setAttribute('aria-describedby',pending?'breakActionsReason':'')}
+  var briefing=byId('copyBriefingBtn');if(briefing){briefing.classList.toggle('buttonPending',pending);briefing.disabled=pending;briefing.title=pending?'Complete the outstanding staffing decisions before copying the briefing.':''}
   var message=byId('breakActionsReason');if(message){message.textContent=pending?'Unavailable: '+reason:'';message.classList.toggle('hidden',!pending)}
 }
 
@@ -988,29 +1004,11 @@ function missingRpc(result){
   return result.error.code==='PGRST202'||message.indexOf('could not find the function')>=0||message.indexOf('function public.')>=0&&message.indexOf('does not exist')>=0;
 }
 
-async function saveAbsenceCompatibility(base,absent,reason){
-  var now=new Date().toISOString(),who=currentUserProfile.display_name;
-  var saved=await supa.from('night_changes').upsert({roster_date:base.date,absent_name:absent,replacement_name:null,reason:reason,updated_by:who,updated_at:now},{onConflict:'roster_date,absent_name'});
-  if(saved.error)return saved;
-  var history=await supa.from('night_change_history').insert({roster_date:base.date,action:'saved',absent_name:absent,replacement_name:null,reason:reason,changed_by:who,changed_at:now});
-  if(history.error)return{error:history.error,partial:true};
-  return{error:null,compatibility:true};
-}
-
-async function saveOvertimeCompatibility(base,name){
-  var now=new Date().toISOString(),who=currentUserProfile.display_name;
-  var saved=await supa.from('night_overtime').insert({roster_date:base.date,nurse_name:name,allocation_key:null,updated_by:who,updated_at:now});
-  if(saved.error)return saved;
-  var history=await supa.from('night_overtime_history').insert({roster_date:base.date,action:'added',nurse_name:name,previous_allocation_key:null,allocation_key:null,changed_by:who,changed_at:now});
-  if(history.error)return{error:history.error,partial:true};
-  return{error:null,compatibility:true};
-}
-
 function rpcError(result,messageId){
   if(!result||!result.error)return false;
   var message=(result.error.message||'').toLowerCase();
   setSync('error','Save failed');
-  var notice=result.partial?'The staffing entry was saved, but its history entry failed. Please tell the administrator.':result.error.code==='42501'||message.indexOf('permission denied')>=0||message.indexOf('row-level security')>=0?'Your signed-in account does not currently have permission to save staffing changes.':message.indexOf('duplicate')>=0||result.error.code==='23505'?'That nurse is already recorded for this night.':'The database rejected the change: '+(result.error.message||'unknown database error');
+  var notice=result.atomicRequired?'The database must be upgraded before this staffing change can be saved safely. No partial record was written.':result.error.code==='42501'||message.indexOf('permission denied')>=0||message.indexOf('row-level security')>=0?'Your signed-in account does not currently have permission to save staffing changes.':message.indexOf('duplicate')>=0||result.error.code==='23505'?'That nurse is already recorded for this night.':'The database rejected the change: '+(result.error.message||'unknown database error');
   formMessage(messageId,notice,'error');toast(notice);
   return true;
 }
@@ -1023,12 +1021,12 @@ async function saveNightChange(){
   setSync('saving','Saving absence');byId('saveChangeBtn').disabled=true;byId('saveChangeBtn').textContent='Saving…';
   try{
     var result=await timedRequest(supa.rpc('record_night_absence_v25',{p_roster_date:base.date,p_absent_name:absent,p_reason:reason,p_changed_by:currentUserProfile.display_name}));
-    if(missingRpc(result))result=await timedRequest(saveAbsenceCompatibility(base,absent,reason));
+    if(missingRpc(result))result={error:result.error,atomicRequired:true};
     if(rpcError(result,'absenceFormMessage'))return;
     byId('absentName').value='';editingAbsenceId=null;byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage',absent+' saved as absent.','success');
     try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}
     formMessage('absenceFormMessage',absent+' saved as absent.','success');highlightSavedItem('changeList',absent,'data-absence-name');toast('Absence saved for '+absent,{label:'Undo',run:function(){return undoAddedAbsence(base.date,absent)}});
-  }catch(error){setSync('error','Save failed');formMessage('absenceFormMessage','No response was received. Your selection is still here, so tap Save again.','error');toast('Absence was not saved. Please try again.');}
+  }catch(error){setSync('error','Save failed');formMessage('absenceFormMessage','No response was received. Your selection is still here.','error');failedAction('Absence was not saved.',saveNightChange);}
   finally{byId('saveChangeBtn').textContent=editingAbsenceId?'Update absence':'Save absence';updateOfflineControls()}
 }
 
@@ -1057,7 +1055,7 @@ async function removeNightChange(id,button){
     var result=await timedRequest(supa.rpc('remove_night_absence_v25',{p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name}));
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
     await loadSharedData();if(recordAlreadyRemoved(result))toast('Absence was already removed and the list has been refreshed');else toast('Absence removed',{label:'Undo',run:function(){return undoRemovedAbsence(base.date,item)}});
-  }catch(error){setSync('error','Remove failed');toast('The absence could not be removed. Please try again.');}
+  }catch(error){setSync('error','Remove failed');failedAction('The absence could not be removed.',function(){return removeNightChange(id,button)});}
   finally{delete pendingRemovals[id];if(button&&button.isConnected){button.disabled=false;button.textContent='Remove'}}
 }
 
@@ -1073,12 +1071,12 @@ async function saveOvertime(){
   setSync('saving','Adding overtime nurse');byId('addOvertimeBtn').disabled=true;byId('addOvertimeBtn').textContent='Adding…';
   try{
     var result=await timedRequest(supa.rpc('add_night_overtime_v25',{p_roster_date:base.date,p_nurse_name:name,p_changed_by:currentUserProfile.display_name}));
-    if(missingRpc(result))result=await timedRequest(saveOvertimeCompatibility(base,name));
+    if(missingRpc(result))result={error:result.error,atomicRequired:true};
     if(rpcError(result,'overtimeFormMessage'))return;
     byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');
     try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}
     formMessage('overtimeFormMessage',name+' added for overtime.','success');highlightSavedItem('overtimeList',name,'data-overtime-name');toast(name+' added for overtime',{label:'Undo',run:function(){return undoAddedOvertime(base.date,name)}});
-  }catch(error){setSync('error','Save failed');formMessage('overtimeFormMessage','No response was received. The name remains here, so tap Add overtime again.','error');toast('Overtime nurse was not saved. Please try again.');}
+  }catch(error){setSync('error','Save failed');formMessage('overtimeFormMessage','No response was received. The name remains here.','error');failedAction('Overtime nurse was not saved.',saveOvertime);}
   finally{byId('addOvertimeBtn').textContent='Add overtime';updateOfflineControls()}
 }
 
@@ -1092,7 +1090,7 @@ async function removeOvertime(id,button){
     var result=await timedRequest(supa.rpc('remove_night_overtime_v25',{p_overtime_id:id,p_changed_by:currentUserProfile.display_name}));
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
     await loadSharedData();if(recordAlreadyRemoved(result))toast(entry.nurse_name+' was already removed and the list has been refreshed');else toast(entry.nurse_name+' removed from overtime',{label:'Undo',run:function(){return undoRemovedOvertime(base.date,entry)}});
-  }catch(error){setSync('error','Remove failed');toast('The overtime nurse could not be removed. Please try again.');}
+  }catch(error){setSync('error','Remove failed');failedAction('The overtime nurse could not be removed.',function(){return removeOvertime(id,button)});}
   finally{delete pendingRemovals[id];if(button&&button.isConnected){button.disabled=false;button.textContent='Remove'}}
 }
 
@@ -1162,7 +1160,7 @@ async function saveFinalAllocationsV2510(event){
     delete allocationDrafts[base.date];delete labourOrderDrafts[base.date];delete seventhDecisionDrafts[base.date];await loadSharedData();var plan=staffingPlan(baseForDate(base.date)),saved=chosenCount-plan.unresolved.filter(function(key){return Object.prototype.hasOwnProperty.call(chosen,key)}).length;
     var success=plan.unresolved.length?(saved?saved+' allocation'+(saved===1?'':'s')+' saved':'Labour Ward parts saved')+' • '+plan.unresolved.length+' still to decide':confirmationOnly?'Tonight\'s plan confirmed for everyone':labourChoice&&chosenCount?'Tonight\'s plan published for everyone':labourChoice?'Labour Ward order published for everyone':additionalNurses(plan).length?'Core plan published; additional staff remain as required':'Tonight\'s plan published for everyone';
     formMessage('allocationFormMessage',success,'success');toast(success);return false;
-  }catch(error){setSync('error','Save failed');formMessage('allocationFormMessage','Save stopped: '+(error&&error.message==='timeout'?'the connection timed out. Your selections are still here, so please try again.':'the allocations could not be confirmed. Your selections are still here, so please try again.'),'error');toast('The allocations could not be saved. Your selections remain available to retry.');return false}
+  }catch(error){setSync('error','Save failed');formMessage('allocationFormMessage','Save stopped: '+(error&&error.message==='timeout'?'the connection timed out. Your selections are still here.':'the allocations could not be confirmed. Your selections are still here.'),'error');failedAction('The allocations could not be saved.',function(){return saveFinalAllocationsV2510()});return false}
   finally{allocationSaveInFlight=false;if(button&&button.isConnected){button.disabled=false;button.textContent='Confirm and share changes'}updateOfflineControls()}
 }
 
@@ -1183,7 +1181,7 @@ async function loadSharedData(options){
   if(sharedLoadPromise){sharedReloadPending=true;sharedReloadPendingBackground=sharedReloadPendingBackground&&background;return sharedLoadPromise}
   if(!background)document.body.classList.add('dataRefreshing');
   sharedLoadPromise=(async function(){
-    var results=await Promise.all([supa.from('night_changes').select('*').order('updated_at',{ascending:true}),supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),supa.from('night_five_cover').select('*'),supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),supa.from('rotation_versions').select('*').order('effective_from',{ascending:true}),supa.from('night_labour_order').select('*'),supa.from('app_settings').select('*').eq('id',1).maybeSingle(),supa.from('night_plan_status').select('*'),supa.from('app_schema_version').select('*').eq('id',1).maybeSingle(),supa.from('night_role_overrides').select('*'),supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle()]);
+    var results=await Promise.all([supa.from('night_changes').select('*').order('updated_at',{ascending:true}),supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),supa.from('night_five_cover').select('*'),supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),supa.from('rotation_versions').select('*').order('effective_from',{ascending:true}),supa.from('night_labour_order').select('*'),supa.from('app_settings').select('*').eq('id',1).maybeSingle(),supa.from('night_plan_status').select('*'),supa.from('app_schema_version').select('*').eq('id',1).maybeSingle(),supa.from('night_role_overrides').select('*'),supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle(),supa.from('allowed_users').select('roster_name').eq('email',currentUserProfile.email).maybeSingle()]);
     if(results.slice(0,5).some(function(x){return x.error})){if(!navigator.onLine&&restoreOfflineSnapshot())return;setSync('error','Shared data unavailable');toast('The shared roster could not be refreshed. Your last saved view remains available.');restoreOfflineSnapshot();return}
     nightChanges={};(results[0].data||[]).forEach(function(c){(nightChanges[c.roster_date]||(nightChanges[c.roster_date]=[])).push(c)});
     nightOvertime={};(results[1].data||[]).forEach(function(o){(nightOvertime[o.roster_date]||(nightOvertime[o.roster_date]=[])).push(o)});
@@ -1195,6 +1193,7 @@ async function loadSharedData(options){
     schemaVersion=!results[8].error&&results[8].data?Number(results[8].data.version||0):0;
     nightRoleOverrideAvailable=!results[9].error;nightRoleOverrides={};if(nightRoleOverrideAvailable)(results[9].data||[]).forEach(function(item){nightRoleOverrides[item.roster_date]=item});
     if(!results[10].error&&results[10].data)lastObservedSyncRevision=Number(results[10].data.revision||0);
+    if(!results[11].error&&results[11].data){currentUserProfile.roster_name=results[11].data.roster_name||null;try{localStorage.setItem('anaes_cached_profile',JSON.stringify(currentUserProfile))}catch(error){}}
     rebuildCalculatedRoster();
     if(!initialNightChosen){idx=startingIndex();automaticSelectedDate=R[idx].date;initialNightChosen=true}
     else{var selected=localStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:Math.min(idx,R.length-1)}
@@ -1228,7 +1227,7 @@ function scheduleRealtimeReconnect(){
 function subscribeToChanges(){
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
   var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
-  changesChannel=supa.channel('roster-live-v35-6');
+  changesChannel=supa.channel('roster-live-v36-0');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
@@ -1301,7 +1300,7 @@ function setupPWA(){
 
 async function authorizeUser(user){
   if(!user)return showAuth();currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
-  var result=await supa.from('allowed_users').select('email,display_name,user_role,active').eq('email',user.email.toLowerCase()).maybeSingle();
+  var result=await supa.from('allowed_users').select('email,display_name,user_role,active,roster_name').eq('email',user.email.toLowerCase()).maybeSingle();
   if(result.error&&!navigator.onLine){try{var cached=JSON.parse(localStorage.getItem('anaes_cached_profile')||'null');if(cached&&cached.email===user.email.toLowerCase()&&cached.active)result={data:cached,error:null}}catch(error){}}
   if(result.error||!result.data||!result.data.active){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth(result.error?'Night Roster could not check your access. Reconnect and try again.':'This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
   try{localStorage.setItem('anaes_cached_profile',JSON.stringify(result.data))}catch(error){}
@@ -1319,7 +1318,7 @@ function bind(){
   byId('saveChangeBtn').onclick=saveNightChange;byId('cancelAbsenceEditBtn').onclick=cancelAbsenceEdit;byId('absentName').onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateStaffingActionAvailability()};byId('addOvertimeBtn').onclick=saveOvertime;byId('saveAllocationsBtn').onclick=saveFinalAllocationsV2510;byId('overtimeName').oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','');updateStaffingActionAvailability()};byId('overtimeName').onkeydown=function(e){if(e.key==='Enter'&&!byId('addOvertimeBtn').disabled)saveOvertime()};byId('addAccountBtn').onclick=addAuthorisedAccount;
   byId('themeBtn').onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('changesDatePick').onchange=function(){chooseDate('changesDatePick')};byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
   byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('changesPrevNightBtn').onclick=function(){changeNight(-1)};byId('changesNextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};
-  byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;byId('copyBreaksBtn').onclick=copyBreaks;
+  byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;byId('copyBreaksBtn').onclick=copyBreaks;byId('copyBriefingBtn').onclick=copyBriefing;byId('exportMyCalendarBtn').onclick=exportMyCalendar;
   Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(b){b.onclick=emailRoster});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-open]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-open'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
   byId('previewExtendBtn').onclick=previewExtension;byId('extendBtn').onclick=extendRoster;byId('saveTeamVersionBtn').onclick=previewTeamChange;byId('exportBtn').onclick=exportCSV;byId('backupBtn').onclick=backup;
   byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){b.onclick=function(){show(b.getAttribute('data-v'))}});updateOfflineControls();
