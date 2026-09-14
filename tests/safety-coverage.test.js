@@ -192,6 +192,28 @@ assert.match(source['index.html'], /id="briefingActionsReason"[^>]*aria-live="po
 assert.match(source['styles.css'], /button:disabled\s*\{[\s\S]*opacity:1;filter:none/, 'disabled buttons must remain readable in the final cascade');
 assert.match(source['styles.css'], /body\.dark #today \.actionPanel #copyBriefingBtn\.buttonPending:disabled/, 'dark mode must retain a dedicated readable pending-action state');
 
+// The final UI layer must win over historical selectors on narrow phones and in dark mode.
+const finalAppleCss = source['styles.css'].slice(source['styles.css'].lastIndexOf('/* V36.3:'));
+assert.match(finalAppleCss, /flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px/, 'header actions must remain fixed 44px circles in a constrained flex row');
+assert.match(finalAppleCss, /max-width:44px;max-height:44px;aspect-ratio:1[\s\S]*border-radius:50%/, 'header actions must not distort into ovals');
+assert.match(finalAppleCss, /body\.dark #changes input[\s\S]*background:#2c2c2e!important[\s\S]*color:#f5f5f7!important/, 'dark Changes fields must override legacy white surfaces');
+assert.match(finalAppleCss, /body\.dark input::placeholder[\s\S]*color:#aeaeb2!important[\s\S]*opacity:1/, 'dark placeholders must remain visible');
+assert.match(finalAppleCss, /body\.dark \.bottom button:not\(\.active\)\{color:#c7c7cc\}/, 'inactive dark navigation labels must remain readable');
+assert.match(finalAppleCss, /body\.dark #changes \.changesWorkflowTabs button\{color:#d1d1d6/, 'dark workflow labels must remain readable');
+assert.match(finalAppleCss, /body\.dark #changes \.changeItem[\s\S]*background:var\(--apple-surface\)!important/, 'saved staffing records must stay on solid dark surfaces');
+const relativeLuminance = hex => {
+  const channels = hex.match(/[a-f\d]{2}/gi).map(channel => parseInt(channel, 16) / 255)
+    .map(channel => channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+};
+const contrastRatio = (foreground, background) => {
+  const values = [relativeLuminance(foreground), relativeLuminance(background)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+};
+assert.ok(contrastRatio('c7c7cc', '1c1c1e') >= 4.5, 'inactive dark navigation text must meet WCAG AA contrast');
+assert.ok(contrastRatio('d1d1d6', '2c2c2e') >= 4.5, 'dark workflow text must meet WCAG AA contrast');
+assert.ok(contrastRatio('aeaeb2', '2c2c2e') >= 4.5, 'dark form placeholder text must meet WCAG AA contrast');
+
 // Lightweight static accessibility checks for the shipped HTML shell.
 const html = source['index.html'];
 const tags = Array.from(html.matchAll(/<([a-z][\w-]*)([^>]*?)>/gi), match => ({ name: match[1].toLowerCase(), attrs: match[2], raw: match[0], index: match.index }));

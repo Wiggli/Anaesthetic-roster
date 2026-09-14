@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=36.2') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=36.3') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -1263,3 +1263,77 @@ body.dark button.primary:disabled,body.dark .primary:disabled{border-color:rgba(
 body.dark .dateNav>button:disabled{background:var(--apple-surface);color:var(--apple-secondary)}
 body.dark #today .actionPanel #copyBriefingBtn.buttonPending:disabled,body.dark #breaks>.actionPanel #copyBreaksBtn.buttonPending:disabled{border-color:rgba(142,219,214,.22)!important;background:var(--apple-disabled-accent-fill)!important;color:var(--apple-disabled-accent-label)!important}
 body.dark #today .actionPanel .emailRosterBtn.buttonPending:disabled,body.dark #breaks>.actionPanel .emailRosterBtn.buttonPending:disabled{border-color:var(--apple-disabled-border)!important;background:var(--apple-disabled-fill)!important;color:var(--apple-disabled-label)!important}
+
+/* V36.3: canonical Apple UI geometry and contrast. Keep clinical content solid. */
+#appHeader .headActions{
+  display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:8px;
+  max-width:none;flex-wrap:nowrap;
+}
+#appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share{
+  box-sizing:border-box;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;
+  max-width:44px;max-height:44px;aspect-ratio:1;padding:0;border-radius:50%;overflow:hidden;
+}
+#appHeader .accountAvatar{width:100%;height:100%;aspect-ratio:1;border-radius:50%;object-fit:cover}
+#appHeader .accountInitial{width:34px;height:34px;aspect-ratio:1;border-radius:50%}
+
+.bottom button:not(.active){color:#5f6368}
+.bottom button>span,.bottom span{font-size:12px;font-weight:700;line-height:1.15}
+.bottom button svg{width:24px;height:24px}
+body.dark .bottom{background:rgba(28,28,30,.92);border-color:rgba(255,255,255,.18)}
+body.dark .bottom button:not(.active){color:#c7c7cc}
+body.dark .bottom button.active{color:#6ed7d0}
+
+#changes .changesWorkflowTabs button{color:#3a3a3c}
+#changes .changesWorkflowTabs button b{font-size:12px;font-weight:720;line-height:1.2}
+#changes .changesWorkflowTabs button.notNeeded{color:#636366}
+body.dark #changes .changesWorkflowTabs{background:#2c2c2e;border-color:rgba(255,255,255,.14)}
+body.dark #changes .changesWorkflowTabs button{color:#d1d1d6;border-color:rgba(255,255,255,.12)}
+body.dark #changes .changesWorkflowTabs button>span{background:#3a3a3c;color:#f5f5f7}
+body.dark #changes .changesWorkflowTabs button.active{background:#48484a;color:#fff;box-shadow:inset 0 0 0 var(--apple-hairline) rgba(255,255,255,.18)}
+body.dark #changes .changesWorkflowTabs button.active>span{background:var(--apple-accent);color:#071716}
+body.dark #changes .changesWorkflowTabs button.notNeeded{color:#c7c7cc}
+body.dark #changes .changesWorkflowTabs button.notNeeded>span{color:#c7c7cc}
+
+/* Older ID-based form rules must not restore a white control in dark mode. */
+body.dark input,body.dark select,body.dark textarea,
+body.dark #today input,body.dark #today select,body.dark #today textarea,
+body.dark #changes input,body.dark #changes select,body.dark #changes textarea,
+body.dark #breaks input,body.dark #breaks select,body.dark #breaks textarea,
+body.dark #admin input,body.dark #admin select,body.dark #admin textarea{
+  background:#2c2c2e!important;border-color:#545458!important;color:#f5f5f7!important;
+  -webkit-text-fill-color:#f5f5f7;caret-color:var(--apple-accent);color-scheme:dark;
+}
+body.dark input::placeholder,body.dark textarea::placeholder,
+body.dark #changes input::placeholder,body.dark #changes textarea::placeholder{
+  color:#aeaeb2!important;-webkit-text-fill-color:#aeaeb2;opacity:1;
+}
+body.dark select option{background:#2c2c2e;color:#f5f5f7}
+body.dark label,body.dark .fieldHelp{color:#c7c7cc}
+
+body.dark #changes .changeItem,body.dark #changes .overtimeItem,body.dark #changes .allocationRow,
+body.dark #changes .staffingSection,body.dark #changes .confirmationCard{
+  background:var(--apple-surface)!important;border-color:var(--apple-separator);color:var(--apple-label);
+}
+body.dark #changes .changeItem b,body.dark #changes .overtimeItem b,
+body.dark #changes .overtimeName,body.dark #changes .allocationRow b{color:var(--apple-label)}
+body.dark #changes .changeMeta,body.dark #changes .staffingSection>.time,
+body.dark #changes .confirmationCard>.time{color:#c7c7cc}
+body.dark .recordMoreButton{background:#3a3a3c;color:#6ed7d0}
+
+#changes button.primary:disabled,#breaks button.primary:disabled{
+  border-color:rgba(8,125,121,.24)!important;background:var(--apple-disabled-accent-fill)!important;
+  color:var(--apple-disabled-accent-label)!important;-webkit-text-fill-color:var(--apple-disabled-accent-label);
+}
+body.dark #changes button.primary:disabled,body.dark #breaks button.primary:disabled{
+  border-color:rgba(142,219,214,.22)!important;background:var(--apple-disabled-accent-fill)!important;
+  color:var(--apple-disabled-accent-label)!important;-webkit-text-fill-color:var(--apple-disabled-accent-label);
+}
+
+.changesScreenHeader .screenEyebrow,.breaksScreenHeader .screenEyebrow{font-size:11px;line-height:1.3}
+.changesScreenHeader p,.breaksScreenHeader p{font-size:13px;line-height:1.4}
+
+@media(max-width:420px){
+  #appHeader .headActions{gap:7px}
+  #changes .changesWorkflowTabs button b{font-size:11.5px}
+  .bottom button>span,.bottom span{font-size:12px}
+}
