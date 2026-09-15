@@ -186,7 +186,7 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -214,6 +214,14 @@ assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.d
 assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
 assert.match(ui, /breakDate\.classList\.toggle\('hidden',!pending\)/, 'Breaks must hide duplicate date status once the plan is ready');
+assert.equal(context.labourAssignmentDetail(base.pager, { first: base.pager, second: base.reliever }), 'Labour Ward first part · Second break', 'Pager summary must include the derived first-part duty without a second row');
+assert.equal(context.labourAssignmentDetail(base.reliever, { first_part_name: base.pager, second_part_name: base.reliever }), 'Labour Ward second part · First break', 'Reliever summary must include the derived second-part duty without a second row');
+assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 'confirmation must not repeat Pager and Reliever as separate Labour Ward rows');
+assert.doesNotMatch(ui, /<div class="lab">LW (?:first|second) part/, 'full-roster cards must not repeat Pager and Reliever as separate Labour Ward rows');
+assert.match(ui, /if\(!tasks&&!confirmNeeded\)\{host\.innerHTML='';return\}/, 'an unchanged plan must stop without repeating the calculated roster');
+assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm tonight’s changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must state the complete quiet outcome once');
+assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
+assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
 
 const deployBlock = workflow.match(/- name: Prepare public app files[\s\S]*?(?=\n      - uses:)/);
 assert.ok(deployBlock, 'deployment workflow must contain an explicit dist preparation step');
