@@ -23,10 +23,10 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="manifest" href="manifest.webmanifest?v=36.7" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=36.7" />
+    <link rel="manifest" href="manifest.webmanifest?v=36.8" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=36.8" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=36.7" />
+    <link rel="stylesheet" href="styles.css?v=36.8" />
   </head>
   <body class="authPending">
     <section
@@ -39,7 +39,7 @@
     >
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=36.7" alt="SPTAR Mater Dei" />
+          <img src="mater-dei-logo.png?v=36.8" alt="SPTAR Mater Dei" />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
@@ -58,7 +58,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=36.7"
+              src="mater-dei-logo.png?v=36.8"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -164,7 +164,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=36.7" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=36.8" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -450,7 +450,6 @@
             <div id="fiveCoverStep"></div>
             <div id="allocationSummary" class="allocationSummary"></div>
             <div id="allocationList" class="allocationList"></div>
-            <div id="labourOrderStep"></div>
           </div>
             <button type="button" id="continueToConfirmBtn" class="primary wide continueWorkflowBtn">Review changes</button>
             <p id="continueToConfirmReason" class="disabledReason hidden" role="status" aria-live="polite"></p>
@@ -458,7 +457,7 @@
           <div id="changesConfirmPane" class="changesStepPane hidden">
             <div class="confirmationCard">
               <div class="stepHeader"><span>3</span><h3>Confirm tonight’s changes</h3></div>
-              <div class="time">Check the changed names and roles before sharing them with everyone.</div>
+              <div class="time" id="confirmationIntro">Check the changed names and roles before sharing them with everyone.</div>
               <div id="confirmationPreview" class="confirmationPreview"></div>
               <button class="primary wide" id="saveAllocationsBtn" type="button">Save tonight’s allocations</button>
               <div id="allocationFormMessage" class="formMessage" role="status" aria-live="polite"></div>
@@ -1064,7 +1063,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 36.7 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 36.8 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -1106,7 +1105,7 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
-    <script src="app-core.js?v=36.7"></script>
-    <script src="app-ui.js?v=36.7"></script>
+    <script src="app-core.js?v=36.8"></script>
+    <script src="app-ui.js?v=36.8"></script>
   </body>
 </html>
