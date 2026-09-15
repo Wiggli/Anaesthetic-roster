@@ -145,6 +145,17 @@ context.labourOrderDrafts[base.date] = { first: base.pager, second: base.relieve
 const standardBreaks = context.breakData(context.applyChanges(base));
 assert.ok(standardBreaks.second.includes(base.pager), 'Pager must work first part Labour Ward and take second break automatically');
 assert.ok(standardBreaks.first.includes(base.reliever), 'Reliever must work second part Labour Ward and take first break automatically');
+const personalFirst = context.personalAllocation(base, context.applyChanges(base), base.first1);
+const personalUnselected = context.personalAllocation(base, context.applyChanges(base), '');
+assert.equal(personalUnselected.context, 'Stored privately on this device', 'choosing a highlighted roster name must remain explicitly private');
+assert.equal(personalFirst.title, 'First Part theatre', 'Your night must make the personal role the primary information');
+assert.equal(personalFirst.period, '00:00–03:30', 'Your night must show the personal working period separately');
+assert.equal(personalFirst.breakLabel, 'Second break', 'Your night must show the personal break separately');
+assert.match(personalFirst.context, /^With /, 'Your night must identify the theatre colleague');
+assert.equal(context.personalAssignmentChanged(base, context.applyChanges(base), base.first1, personalFirst), false, 'an unchanged calculated role must not be labelled as changed');
+const swappedPersonalNight = { ...base, first1: base.first2, first2: base.first1 };
+const personalSwap = context.personalAllocation(base, swappedPersonalNight, base.first1);
+assert.equal(context.personalAssignmentChanged(base, swappedPersonalNight, base.first1, personalSwap), true, 'a night-only personal role change must be labelled clearly');
 
 context.nightChanges = { [base.date]: [{ id: 'absence-1', absent_name: base.first1, replacement_name: 'Legacy Cover' }] };
 context.nightOvertime = {};
@@ -187,7 +198,7 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -232,6 +243,10 @@ assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 
 assert.doesNotMatch(ui, /<div class="lab">LW (?:first|second) part/, 'full-roster cards must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.match(ui, /if\(!tasks&&!confirmNeeded\)\{host\.innerHTML='';return\}/, 'an unchanged plan must stop without repeating the calculated roster');
 assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReasonHtml\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
+assert.match(ui, /Tonight’s assignment[\s\S]*personalFact\('Time'[\s\S]*personalFact\('Break'/, 'Your night must expose the assignment, time and break separately');
+assert.match(ui, /View in night situation/, 'Your night must link directly to the matching team allocation');
+assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
+assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
 assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm tonight’s changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must state the complete quiet outcome once');
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');

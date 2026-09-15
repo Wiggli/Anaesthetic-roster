@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V36.9 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -47,6 +47,7 @@ var lastFailedAction=null;
 var scrollChromeFrame=null;
 
 var RELEASE_HISTORY=[
+  {version:'37.0',date:'15 Sep 2026',title:'Your night, made immediately useful',changes:['Your night now leads with a clear personal assignment, role-specific icon and the exact position or Labour Ward part.','Working time, break and the relevant colleague or coverage context are separated into readable facts instead of being compressed into one line.','A Changed tonight marker appears only when the selected nurse’s own calculated assignment or Labour Ward order has changed for that night.','One contextual action opens the matching team allocation, absence review or private name choice without adding another bottom tab or repeating the full roster.','The card remains a solid high-contrast clinical surface in light and dark mode, with large touch targets and restrained motion.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.9',date:'15 Sep 2026',title:'A consistent appearance and focused confirmation',changes:['Confirm now presents only roles that changed, with previous and new assignments shown clearly and the recorded reason kept alongside the review.','The complete plan remains available in a quiet View full plan disclosure without competing with the changed items.','Light, Automatic and Dark appearance choices now use one validated root state before the first paint, update the browser chrome and reapply after the app resumes.','Forms, cards, dialogs and navigation now draw from one final semantic surface layer, preventing isolated light cards or mismatched dark materials.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.8',date:'15 Sep 2026',title:'Less repetition and a leaner interface',changes:['Confirm now stays quiet when nothing needs reviewing, instead of repeating the complete calculated roster.','Pager and Reliever appear once with their Labour Ward part and break shown beneath, removing duplicate first-part and second-part rows from confirmation and full-roster cards.','Unused legacy Labour Ward editor helpers and styling were removed after confirming they were no longer connected to the interface.','Every repository file was checked; production assets, forward-only migrations, tests, security guidance and deployment documentation remain because they are still required.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.7',date:'14 Sep 2026',title:'Calm native motion and clearer Apple-style controls',changes:['Night, Changes and Breaks now use restrained directional navigation, compacting scroll headers, native press feedback and complete reduced-motion fallbacks.','Buttons, saved states, errors and operational status colours now follow one consistent semantic hierarchy with stronger light and dark mode contrast.','Recent activity is now an interactive grouped list, and each entry opens a private detail sheet showing its night, reason or allocation detail, actor and recorded time.','Typography scales more naturally across phone and desktop sizes, dense clinical cards remain solid, and translucency remains limited to navigation, headers, sheets and temporary feedback.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
@@ -606,28 +607,41 @@ function interfaceIcon(type){
 function roleIconType(badgeClass){return badgeClass==='bFirst'?'first':badgeClass==='bSecond'?'second':badgeClass==='bPager'?'pager':badgeClass==='bReliever'||badgeClass==='bFull'?'reliever':'seventh'}
 
 function personalAllocation(base,r,name){
-  if(!name)return{title:'Choose your name',detail:'See your own role and break at a glance.',pending:false};
+  if(!name)return{key:'unselected',icon:'night',title:'Choose your name',detail:'See your own role and break at a glance.',period:'Select your name',breakLabel:'Shown after selection',context:'Stored privately on this device',pending:false};
   var absence=changesFor(base.date).find(function(item){return sameNurse(item.absent_name,name)});
-  if(absence)return{title:'Not working tonight',detail:(absence.reason||'Absence')+' recorded',pending:false};
-  if(sameNurse(r.first1,name)||sameNurse(r.first2,name))return{title:'First Part',detail:'00:00–03:30 · Second break',pending:false};
-  if(sameNurse(r.second1,name)||sameNurse(r.second2,name))return{title:'Second Part',detail:'03:30–07:00 · First break',pending:false};
-  if(r.mode==='5'&&sameNurse(r.fullLW,name))return{title:'Labour Ward / Pager',detail:'Full night · Break coordinated when clinical cover allows',pending:false};
+  if(absence)return{key:'absence',icon:'absence',title:'Not working tonight',detail:(absence.reason||'Absence')+' recorded',period:'Tonight',breakLabel:'Not applicable',context:absence.reason||'Absence recorded',pending:false};
+  if(sameNurse(r.first1,name)||sameNurse(r.first2,name)){var firstKey=sameNurse(r.first1,name)?'first1':'first2';return{key:firstKey,icon:'first',title:'First Part theatre',detail:'Position '+(firstKey==='first1'?'1':'2'),period:'00:00–03:30',breakLabel:'Second break',context:'With '+professionalName(firstKey==='first1'?r.first2:r.first1),pending:false}}
+  if(sameNurse(r.second1,name)||sameNurse(r.second2,name)){var secondKey=sameNurse(r.second1,name)?'second1':'second2';return{key:secondKey,icon:'second',title:'Second Part theatre',detail:'Position '+(secondKey==='second1'?'1':'2'),period:'03:30–07:00',breakLabel:'First break',context:'With '+professionalName(secondKey==='second1'?r.second2:r.second1),pending:false}}
+  if(r.mode==='5'&&sameNurse(r.fullLW,name))return{key:'fullLW',icon:'reliever',title:'Labour Ward / Pager',detail:'Full-night cover',period:'00:00–07:00',breakLabel:'When clinical cover allows',context:'Sole Labour Ward / Pager cover',pending:false};
   if(r.mode!=='5'&&(sameNurse(r.pager,name)||sameNurse(r.reliever,name))){
-    var role=sameNurse(r.pager,name)?'Pager':'Reliever',other=sameNurse(r.pager,name)?r.reliever:r.pager,order=labourOrderFor(r);
-    if(!order)return{title:role,detail:'Labour Ward / Pager pending',pending:true,other:other};
-    if(sameNurse(order.first_part_name,name))return{title:role,detail:'Labour Ward first part · Second break',pending:false};
-    return{title:role,detail:'Labour Ward second part · First break',pending:false};
+    var pagerRole=sameNurse(r.pager,name),role=pagerRole?'Pager':'Reliever',other=pagerRole?r.reliever:r.pager,order=labourOrderFor(r);
+    if(!order)return{key:pagerRole?'pager':'reliever',icon:pagerRole?'pager':'reliever',title:role,detail:'Labour Ward part pending',period:'To be decided',breakLabel:'Pending',context:'With '+professionalName(other),pending:true,other:other};
+    if(sameNurse(order.first_part_name,name))return{key:pagerRole?'pager':'reliever',icon:pagerRole?'pager':'reliever',title:role,detail:'Labour Ward first part',period:'00:00–03:30',breakLabel:'Second break',context:'With '+professionalName(other),pending:false};
+    return{key:pagerRole?'pager':'reliever',icon:pagerRole?'pager':'reliever',title:role,detail:'Labour Ward second part',period:'03:30–07:00',breakLabel:'First break',context:'With '+professionalName(other),pending:false};
   }
-  if(r.mode==='7'&&sameNurse(r.seventh,name))return{title:'Seventh nurse',detail:'Additional allocation · Break coordinated as required',pending:false};
-  return{title:'Not allocated tonight',detail:'Open Changes if an assignment is still being decided.',pending:false};
+  if(r.mode==='7'&&sameNurse(r.seventh,name))return{key:'seventh',icon:'seventh',title:'Seventh nurse',detail:'Additional allocation',period:'As allocated',breakLabel:'As required',context:'Supports tonight’s team',pending:false};
+  return{key:'unallocated',icon:'task',title:'Not allocated tonight',detail:'An assignment may still be under review.',period:'Pending',breakLabel:'Pending',context:'Open Changes to review',pending:false};
 }
+
+function personalAssignmentChanged(base,r,name,assignment){
+  if(!name||!assignment||assignment.key==='unallocated')return false;
+  if(assignment.key==='absence'||assignment.key==='fullLW')return true;
+  var rostered=rawBaseForDate(base.date);if(!sameNurse(rostered[assignment.key],name))return true;
+  if(assignment.key==='pager'||assignment.key==='reliever'){var order=labourOrderFor(r),normallyFirst=sameNurse(r.pager,name);if(order)return normallyFirst!==sameNurse(order.first_part_name,name)}
+  return false;
+}
+
+function personalFact(label,value){return'<div><dt>'+esc(label)+'</dt><dd>'+esc(value||'Pending')+'</dd></div>'}
 
 function renderPersonalNight(base,r){
   var host=byId('personalNightCard'),notice=byId('personalAllocationNotice');if(!host||!notice)return null;
-  var name=myName(),preferred=currentPrivateProfile&&currentPrivateProfile.profile_name||'',jobTitle=currentPrivateProfile&&currentPrivateProfile.job_title||'',displayName=preferred||professionalName(name)||'Choose your name',assignment=personalAllocation(base,r,name),initial=displayName.trim().charAt(0).toUpperCase()||'?',avatar=profileAvatarUrl?'<img src="'+esc(profileAvatarUrl)+'" alt="">':esc(initial);
-  host.innerHTML='<div class="personalAvatar '+(profileAvatarUrl?'hasPhoto':'')+'" aria-hidden="true">'+avatar+'<i></i></div><div class="personalCopy"><b>'+esc(displayName)+'</b>'+(jobTitle?'<small class="personalProfileTitle">'+esc(jobTitle)+'</small>':'')+'<span>'+esc(assignment.title+(assignment.detail?' · '+assignment.detail:''))+'</span></div><button type="button" class="personalChangeBtn" id="changePersonalNameBtn">Edit <span aria-hidden="true">›</span></button>';
+  var name=myName(),preferred=currentPrivateProfile&&currentPrivateProfile.profile_name||'',jobTitle=currentPrivateProfile&&currentPrivateProfile.job_title||'',displayName=preferred||professionalName(name)||'Choose your name',assignment=personalAllocation(base,r,name),changed=personalAssignmentChanged(base,r,name,assignment),initial=displayName.trim().charAt(0).toUpperCase()||'?',avatar=profileAvatarUrl?'<img src="'+esc(profileAvatarUrl)+'" alt="">':esc(initial),roleClass='personalRole-'+esc(assignment.icon||'task'),action=assignment.key==='absence'?'<button type="button" class="personalContextAction" data-go-absence>Review absence <span aria-hidden="true">›</span></button>':name&&assignment.key!=='unallocated'?'<button type="button" class="personalContextAction" id="viewPersonalRoleBtn">View in night situation <span aria-hidden="true">›</span></button>':'<button type="button" class="personalContextAction" id="choosePersonalNameBtn">Choose your name <span aria-hidden="true">›</span></button>';
+  var contextLabel=assignment.key==='absence'||assignment.key==='unallocated'?'Status':assignment.key==='unselected'?'Personal view':assignment.key==='fullLW'?'Coverage':assignment.key==='seventh'?'Team':'Working with';
+  host.innerHTML='<div class="personalIdentity"><div class="personalAvatar '+(profileAvatarUrl?'hasPhoto':'')+'" aria-hidden="true">'+avatar+'<i></i></div><div class="personalIdentityCopy"><b>'+esc(displayName)+'</b>'+(jobTitle?'<small>'+esc(jobTitle)+'</small>':'')+'</div><button type="button" class="personalChangeBtn" id="changePersonalNameBtn" aria-label="Edit your personal Night view">Edit</button></div><div class="personalAssignmentHero '+roleClass+'"><span class="personalRoleIcon">'+interfaceIcon(assignment.icon||'task')+'</span><span class="personalRoleCopy"><small>Tonight’s assignment</small><b>'+esc(assignment.title)+'</b><span>'+esc(assignment.detail||'')+'</span></span>'+(changed?'<span class="personalChangedBadge">Changed tonight</span>':'')+'</div><dl class="personalFacts">'+personalFact('Time',assignment.period)+personalFact('Break',assignment.breakLabel)+personalFact(contextLabel,assignment.context)+'</dl>'+action;
   notice.innerHTML=assignment.pending?'<button type="button" class="personalTaskCard" data-go-allocation><span class="personalTaskIcon">'+interfaceIcon('task')+'</span><span><b>Your allocation is not final yet</b><small>Labour Ward / Pager is shared with '+esc(professionalName(assignment.other))+'.</small><strong>Complete allocation ›</strong></span></button>':'';
   byId('changePersonalNameBtn').onclick=showAccountSheet;
+  var choose=byId('choosePersonalNameBtn');if(choose)choose.onclick=showAccountSheet;
+  var viewRole=byId('viewPersonalRoleBtn');if(viewRole)viewRole.onclick=function(){var target=document.querySelector('#roles .role.mine,#fiveArrangement .role.mine');if(target){target.scrollIntoView({behavior:'smooth',block:'center'});target.focus({preventScroll:true})}};
   return assignment;
 }
 
@@ -1162,7 +1176,7 @@ function scheduleRealtimeReconnect(){
 function subscribeToChanges(){
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
   var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
-  changesChannel=supa.channel('roster-live-v36-9');
+  changesChannel=supa.channel('roster-live-v37-0');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
