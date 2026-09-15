@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=36.8') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=36.9') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -1448,3 +1448,66 @@ body.dark .activityDetailSheet[open]{background:rgba(28,28,30,.95);border-color:
 /* V36.8: remove repeated role rows while keeping each assignment complete. */
 #roster .rowDetail{display:block;margin-top:5px;color:var(--apple-secondary);font-size:12px;line-height:1.35}
 body.dark #roster .rowDetail{color:#c7c7cc}
+
+/* V36.9: one appearance state, one surface system and focused confirmation. */
+html[data-theme="light"]{
+  color-scheme:light;
+  --apple-bg:#f2f2f7;--apple-surface:#fff;--apple-surface-raised:#fff;--apple-surface-muted:#f7f7f9;
+  --apple-label:#1c1c1e;--apple-secondary:#636366;--apple-tertiary:#7c7c80;
+  --apple-fill:rgba(118,118,128,.12);--apple-separator:rgba(60,60,67,.2);
+  --apple-accent:#087d79;--apple-accent-pressed:#066d69;--apple-accent-soft:#e5f4f2;
+  --apple-chrome:rgba(249,249,251,.9);--line:var(--apple-separator);--muted:var(--apple-secondary);--text:var(--apple-label);
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --apple-bg:#000;--apple-surface:#1c1c1e;--apple-surface-raised:#242426;--apple-surface-muted:#242426;
+  --apple-label:#f5f5f7;--apple-secondary:#c7c7cc;--apple-tertiary:#98989d;
+  --apple-fill:rgba(118,118,128,.24);--apple-separator:rgba(84,84,88,.7);
+  --apple-accent:#6ed7d0;--apple-accent-pressed:#82e0da;--apple-accent-soft:#173a39;
+  --apple-chrome:rgba(28,28,30,.92);--line:var(--apple-separator);--muted:var(--apple-secondary);--text:var(--apple-label);
+  --apple-disabled-fill:#2c2c2e;--apple-disabled-label:#c7c7cc;--apple-disabled-border:#48484a;
+  --apple-disabled-accent-fill:#173b39;--apple-disabled-accent-label:#8edbd6;
+  --apple-absence-fill:#3b1f23;--apple-absence-label:#ffb3bb;
+  --apple-overtime-fill:#3a2b15;--apple-overtime-label:#ffd08a;
+  --apple-allocation-fill:#173424;--apple-allocation-label:#a9e7bd;
+}
+html[data-theme] body,html[data-theme] body[data-view],html[data-theme] body[data-view] main{background:var(--apple-bg);color:var(--apple-label)}
+html[data-theme] #appHeader{background:var(--apple-surface);color:var(--apple-label);border-color:var(--apple-separator)}
+html[data-theme] #appHeader .hospitalStrip span{color:var(--apple-label)}
+html[data-theme] #appHeader .headActions button,html[data-theme] #appHeader .adminSettingsBtn,html[data-theme] #appHeader .accountBtn,html[data-theme] #appHeader .share{background:var(--apple-fill);color:var(--apple-label);border-color:var(--apple-separator)}
+html[data-theme] .panel,html[data-theme] .card,html[data-theme] .role,html[data-theme] .notice,
+html[data-theme] .staffingSection,html[data-theme] .confirmationCard,html[data-theme] .changeItem,
+html[data-theme] .overtimeItem,html[data-theme] .allocationRow,html[data-theme] .fixedAllocationBox,
+html[data-theme] .nightRoleEditor,html[data-theme] .recentActivityList,html[data-theme] .recentActivityRow,
+html[data-theme] .activityDetailContent,html[data-theme] .profileEditor,html[data-theme] .accountGroup,
+html[data-theme] .statusCard,html[data-theme] #roster .card,html[data-theme] #admin .panel{
+  background:var(--apple-surface);color:var(--apple-label);border-color:var(--apple-separator);
+}
+html[data-theme] input,html[data-theme] select,html[data-theme] textarea{
+  background:var(--apple-surface-raised)!important;color:var(--apple-label)!important;border-color:var(--apple-separator)!important;
+  -webkit-text-fill-color:var(--apple-label);caret-color:var(--apple-accent);color-scheme:inherit;
+}
+html[data-theme] input::placeholder,html[data-theme] textarea::placeholder{color:var(--apple-tertiary)!important;-webkit-text-fill-color:var(--apple-tertiary);opacity:1}
+html[data-theme] label,html[data-theme] .fieldHelp,html[data-theme] .time,html[data-theme] .changeMeta{color:var(--apple-secondary)}
+html[data-theme] .changesScreenHeader,html[data-theme] .breaksScreenHeader{background:color-mix(in srgb,var(--apple-bg) 86%,transparent);color:var(--apple-label);border-color:var(--apple-separator)}
+html[data-theme] #changes>.changesDatePanel,html[data-theme] #changes>.changesDatePanel .dateNav,
+html[data-theme] #changes>.changesDatePanel .dateNav>button,html[data-theme] #changes>.changesDatePanel .prettyDateButton{
+  background:var(--apple-surface);color:var(--apple-label);border-color:var(--apple-separator);
+}
+html[data-theme] #changes .changesWorkflowTabs,html[data-theme] .authSwitch,html[data-theme] .appearanceControl,html[data-theme] #admin .adminTabs{background:var(--apple-fill);border-color:var(--apple-separator)}
+html[data-theme] #changes .changesWorkflowTabs button,html[data-theme] .appearanceControl button{color:var(--apple-secondary)}
+html[data-theme] #changes .changesWorkflowTabs button.active,html[data-theme] .authSwitch button.active,
+html[data-theme] .appearanceControl button.active,html[data-theme] #admin .adminTabs button.active{background:var(--apple-surface-raised);color:var(--apple-label);border-color:var(--apple-separator)}
+html[data-theme] .bottom{background:var(--apple-chrome);border-color:var(--apple-separator)}
+html[data-theme="dark"] .bottom button:not(.active){color:#c7c7cc}
+html[data-theme="dark"] .bottom button.active{color:var(--apple-accent)}
+html[data-theme="light"] .appDialog,html[data-theme="light"] .accountSheet[open],html[data-theme="light"] .activityDetailSheet[open],html[data-theme="light"] .onboardingDialog[open]{background:rgba(249,249,251,.94);color:var(--apple-label)}
+html[data-theme="dark"] .appDialog,html[data-theme="dark"] .accountSheet[open],html[data-theme="dark"] .activityDetailSheet[open],html[data-theme="dark"] .onboardingDialog[open]{background:rgba(28,28,30,.96);color:var(--apple-label);border-color:var(--apple-separator)}
+
+.confirmationChanges{overflow:hidden;margin-top:10px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);background:var(--apple-surface)}
+.confirmationChangeRow{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr);gap:12px;align-items:center;padding:12px 13px;border-top:var(--apple-hairline) solid var(--apple-separator)}
+.confirmationChangeRow:first-child{border-top:0}.confirmationChangeRow span,.confirmationChangeRow small{display:block}.confirmationChangeRow span{font-size:13px;font-weight:700}.confirmationChangeRow small{margin-top:2px;color:var(--apple-secondary);font-size:11.5px;line-height:1.35}
+.confirmationChangeValues{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:7px;align-items:center;text-align:right;font-size:13px;line-height:1.35}.confirmationChangeValues del{color:var(--apple-secondary);text-decoration-thickness:1px}.confirmationChangeValues i{color:var(--apple-tertiary);font-style:normal}.confirmationChangeValues ins{color:var(--apple-label);font-weight:750;text-decoration:none}
+.confirmationReason{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;margin-top:10px;padding:11px 13px;border-radius:var(--apple-radius-small);background:var(--apple-accent-soft);color:var(--apple-label)}.confirmationReason span{color:var(--apple-secondary);font-size:12px}.confirmationReason b{text-align:right;font-size:13px;overflow-wrap:anywhere}
+.confirmationFullPlan{margin-top:10px;border-top:var(--apple-hairline) solid var(--apple-separator)}.confirmationFullPlan>summary{display:flex;align-items:center;min-height:44px;color:var(--apple-accent);font-size:13px;font-weight:700;cursor:pointer}.confirmationFullPlan>div{overflow:hidden;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);background:var(--apple-surface)}.confirmationFullPlan .confirmationRow{padding-inline:12px}.confirmationFullPlan .confirmationRow:first-child{border-top:0}
+@media(max-width:420px){.confirmationChangeRow{grid-template-columns:1fr;gap:7px}.confirmationChangeValues{text-align:left}.confirmationReason{grid-template-columns:1fr;gap:3px}.confirmationReason b{text-align:left}}
