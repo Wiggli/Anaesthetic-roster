@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V36.8 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V36.9 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -47,6 +47,7 @@ var lastFailedAction=null;
 var scrollChromeFrame=null;
 
 var RELEASE_HISTORY=[
+  {version:'36.9',date:'15 Sep 2026',title:'A consistent appearance and focused confirmation',changes:['Confirm now presents only roles that changed, with previous and new assignments shown clearly and the recorded reason kept alongside the review.','The complete plan remains available in a quiet View full plan disclosure without competing with the changed items.','Light, Automatic and Dark appearance choices now use one validated root state before the first paint, update the browser chrome and reapply after the app resumes.','Forms, cards, dialogs and navigation now draw from one final semantic surface layer, preventing isolated light cards or mismatched dark materials.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.8',date:'15 Sep 2026',title:'Less repetition and a leaner interface',changes:['Confirm now stays quiet when nothing needs reviewing, instead of repeating the complete calculated roster.','Pager and Reliever appear once with their Labour Ward part and break shown beneath, removing duplicate first-part and second-part rows from confirmation and full-roster cards.','Unused legacy Labour Ward editor helpers and styling were removed after confirming they were no longer connected to the interface.','Every repository file was checked; production assets, forward-only migrations, tests, security guidance and deployment documentation remain because they are still required.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.7',date:'14 Sep 2026',title:'Calm native motion and clearer Apple-style controls',changes:['Night, Changes and Breaks now use restrained directional navigation, compacting scroll headers, native press feedback and complete reduced-motion fallbacks.','Buttons, saved states, errors and operational status colours now follow one consistent semantic hierarchy with stronger light and dark mode contrast.','Recent activity is now an interactive grouped list, and each entry opens a private detail sheet showing its night, reason or allocation detail, actor and recorded time.','Typography scales more naturally across phone and desktop sizes, dense clinical cards remain solid, and translucency remains limited to navigation, headers, sheets and temporary feedback.','The verified rotation and all staffing, Pager, Reliever, five-nurse, allocation, realtime, offline and privacy behaviour remain unchanged.']},
   {version:'36.6',date:'14 Sep 2026',title:'Clearer spacing and complete recent activity',changes:['The selected date and staffing summary now have deliberate breathing room instead of appearing as one joined surface.','Night, Changes and Breaks sit in three clearly separated bottom-tab targets while retaining the restrained floating Apple-style navigation material.','Recent activity now includes the saved reason or allocation detail beneath each change, matching the useful context already available in the full Changes activity history.','Clinical cards remain solid and readable, while the verified roster and all staffing, allocation, realtime and privacy behaviour remain unchanged.']},
@@ -422,20 +423,39 @@ function updateChangesWorkflow(base,plan){
 
 function confirmationRow(label,value,detail){return'<div class="confirmationRow"><div><span>'+esc(label)+'</span>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div><b>'+esc(value?professionalNames(value):'To decide')+'</b></div>'}
 
+function confirmationChangeRow(label,before,after,detail){return'<div class="confirmationChangeRow"><div><span>'+esc(label)+'</span>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div><div class="confirmationChangeValues"><del>'+esc(professionalNames(before)||'Not assigned')+'</del><i aria-hidden="true">→</i><ins>'+esc(professionalNames(after)||'Not assigned')+'</ins></div></div>'}
+
 function labourAssignmentDetail(name,order){
   if(!order)return'Labour Ward part pending';
   var first=order.first||order.first_part_name;
   return canonicalNurseName(first)===canonicalNurseName(name)?'Labour Ward first part · Second break':'Labour Ward second part · First break';
 }
 
-function renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction){
-  var host=byId('confirmationPreview');if(!host)return;var r=allocationPreview(base),rows=[];
-  if(!tasks&&!confirmNeeded){host.innerHTML='';return}
-  rows.push(confirmationRow('First part theatre',r.first1+' + '+r.first2,'Second break'));rows.push(confirmationRow('Second part theatre',r.second1+' + '+r.second2,'First break'));
+function confirmationPlanRows(r,order){
+  var rows=[confirmationRow('First part theatre',r.first1+' + '+r.first2,'Second break'),confirmationRow('Second part theatre',r.second1+' + '+r.second2,'First break')];
   if(r.mode==='5')rows.push(confirmationRow('Full-night Labour Ward / Pager',r.fullLW,'Break coordinated when clinical cover allows'));
-  else{var order=labourOrderDrafts[base.date]||labourOrderFor(r)||(!tasks?{first:r.pager,second:r.reliever}:null);rows.push(confirmationRow('Pager',r.pager,labourAssignmentDetail(r.pager,order)));rows.push(confirmationRow('Reliever',r.reliever,labourAssignmentDetail(r.reliever,order)))}
+  else{rows.push(confirmationRow('Pager',r.pager,labourAssignmentDetail(r.pager,order)));rows.push(confirmationRow('Reliever',r.reliever,labourAssignmentDetail(r.reliever,order)))}
   if(r.mode==='7')rows.push(confirmationRow('Seventh nurse',r.seventh,'Break coordinated as required'));
-  host.innerHTML=(tasks?'<div class="confirmationWarning">'+esc(taskInstruction||'Complete the remaining allocation')+' before continuing.</div>':'<div class="confirmationReady">The changes are ready. Check the names before sharing them.</div>')+rows.join('');
+  return rows;
+}
+
+function confirmationChangedRows(base,r,order){
+  var rostered=rawBaseForDate(base.date),labels={first1:'First Part theatre · position 1',first2:'First Part theatre · position 2',second1:'Second Part theatre · position 1',second2:'Second Part theatre · position 2',pager:'Pager',reliever:'Reliever',seventh:'Seventh nurse'},rows=[];
+  ['first1','first2','second1','second2'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeRow(labels[key],rostered[key],r[key],allocationBreak(key)))});
+  if(r.mode==='5'){var before=rostered.pager+' + '+rostered.reliever;if(canonicalNurseName(rostered.pager)!==canonicalNurseName(r.fullLW)||canonicalNurseName(rostered.reliever)!==canonicalNurseName(r.fullLW))rows.push(confirmationChangeRow('Full-night Labour Ward / Pager',before,r.fullLW,'00:00–07:00'))}
+  else ['pager','reliever'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeRow(labels[key],rostered[key],r[key],labourAssignmentDetail(r[key],order)))});
+  if(r.mode==='7'&&canonicalNurseName(rostered.seventh)!==canonicalNurseName(r.seventh))rows.push(confirmationChangeRow(labels.seventh,rostered.seventh,r.seventh,'Break coordinated as required'));
+  if(!rows.length){changesFor(base.date).forEach(function(change){rows.push(confirmationChangeRow('Absence',change.absent_name,change.replacement_name||'Not working',change.reason||'Unavailable'))});overtimeFor(base.date).forEach(function(entry){rows.push(confirmationChangeRow('Overtime','Not working',entry.nurse_name,entry.allocation_key?allocationLabel(entry.allocation_key):'Allocation to decide'))})}
+  return rows;
+}
+
+function confirmationReasonHtml(base){var reasons=[],override=nightRoleOverrides[base.date];if(override&&override.reason)reasons.push(override.reason);changesFor(base.date).forEach(function(change){if(change.reason)reasons.push(change.reason)});reasons=reasons.filter(function(reason,index,list){return list.indexOf(reason)===index});return reasons.length?'<div class="confirmationReason"><span>Reason</span><b>'+esc(reasons.join(' · '))+'</b></div>':''}
+
+function renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction){
+  var host=byId('confirmationPreview');if(!host)return;var r=allocationPreview(base);
+  if(!tasks&&!confirmNeeded){host.innerHTML='';return}
+  var order=labourOrderDrafts[base.date]||labourOrderFor(r)||(!tasks?{first:r.pager,second:r.reliever}:null),changed=confirmationChangedRows(base,r,order),full=confirmationPlanRows(r,order);
+  host.innerHTML=(tasks?'<div class="confirmationWarning">'+esc(taskInstruction||'Complete the remaining allocation')+' before continuing.</div>':'<div class="confirmationReady">Review only what changed before sharing.</div>')+'<div class="confirmationChanges">'+changed.join('')+'</div>'+confirmationReasonHtml(base)+'<details class="confirmationFullPlan"><summary>View full plan</summary><div>'+full.join('')+'</div></details>';
 }
 
 function cur(){
@@ -1142,7 +1162,7 @@ function scheduleRealtimeReconnect(){
 function subscribeToChanges(){
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
   var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
-  changesChannel=supa.channel('roster-live-v36-8');
+  changesChannel=supa.channel('roster-live-v36-9');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
@@ -1226,7 +1246,7 @@ async function authorizeUser(user){
 }
 
 function bind(){
-  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…')},3500);prepareChangesView();setupPWA();bindOnboarding();window.addEventListener('online',function(){updateNetworkStatus();resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',resumeSharedSync);window.addEventListener('pageshow',resumeSharedSync);window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'&&currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
+  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…')},3500);prepareChangesView();setupPWA();bindOnboarding();window.addEventListener('online',function(){updateNetworkStatus();resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('saveProfileBtn').onclick=saveProfile;byId('profilePhotoButton').onclick=function(){byId('profilePhotoInput').click()};byId('changeProfilePhoto').onclick=function(){byId('profilePhotoInput').click()};byId('profilePhotoInput').onchange=function(){if(this.files&&this.files[0])chooseProfilePhoto(this.files[0]);this.value=''};byId('removeProfilePhoto').onclick=removeProfilePhoto;byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=openOnboardingReplay;byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};byId('accountVersionHistoryBtn').onclick=function(){byId('accountSheet').close();renderReleaseNotes(true);byId('releaseNotes').showModal()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
   ['profileName','profileJobTitle'].forEach(function(id){byId(id).oninput=updateProfileSaveState});byId('profileRosterName').onchange=updateProfileSaveState;
