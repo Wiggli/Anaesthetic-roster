@@ -178,6 +178,7 @@ assert.deepEqual(context.calculateNight('2026-07-04'), before, 'a permanent chan
 const sw = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const manifest = fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8');
+const themeBootstrap = fs.readFileSync(path.join(__dirname, '..', 'theme-bootstrap.js'), 'utf8');
 const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
@@ -186,13 +187,24 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
-for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
+for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
   assert.match(sw, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} app-shell query must match APP_VERSION`);
 }
 assert.match(manifest, new RegExp(`icon-192\\.png\\?v=${context.APP_VERSION.replace('.', '\\.')}`), 'manifest icon query must match APP_VERSION');
+const bootTheme = { root: {}, colour: {} };
+vm.runInNewContext(themeBootstrap, {
+  localStorage: { getItem() { return 'dark'; } },
+  window: { matchMedia() { return { matches: false }; } },
+  document: {
+    documentElement: { style: {}, setAttribute(name, value) { bootTheme.root[name] = value; } },
+    querySelector() { return { setAttribute(name, value) { bootTheme.colour[name] = value; } }; }
+  }
+});
+assert.equal(bootTheme.root['data-theme'], 'dark', 'saved appearance must be applied to the root before the stylesheet paints');
+assert.equal(bootTheme.colour.content, '#000000', 'pre-paint appearance must update the browser chrome colour');
 for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': css, 'manifest.webmanifest': manifest, 'service-worker.js': sw })) {
   const versions = Array.from(source.matchAll(/[?&]v=([0-9]+(?:\.[0-9]+)+)/g), match => match[1]);
   assert.ok(versions.length, `${file} must contain a production cache-busting reference`);
@@ -219,6 +231,7 @@ assert.equal(context.labourAssignmentDetail(base.reliever, { first_part_name: ba
 assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 'confirmation must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.doesNotMatch(ui, /<div class="lab">LW (?:first|second) part/, 'full-roster cards must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.match(ui, /if\(!tasks&&!confirmNeeded\)\{host\.innerHTML='';return\}/, 'an unchanged plan must stop without repeating the calculated roster');
+assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReasonHtml\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
 assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm tonight’s changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must state the complete quiet outcome once');
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
@@ -227,7 +240,7 @@ const deployBlock = workflow.match(/- name: Prepare public app files[\s\S]*?(?=\
 assert.ok(deployBlock, 'deployment workflow must contain an explicit dist preparation step');
 const copiedAssets = new Set(Array.from(deployBlock[0].matchAll(/^\s*cp\s+(.+)\s+dist\/$/gm), match => match[1].trim().split(/\s+/)).flat());
 const requiredProductionAssets = [
-  'index.html', 'styles.css', 'app-core.js', 'app-ui.js', 'service-worker.js', 'manifest.webmanifest',
+  'index.html', 'styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'service-worker.js', 'manifest.webmanifest',
   'anaesthesia-header.jpg', 'mater-dei-logo.png', 'apple-touch-icon.png',
   'icon-192.png', 'icon-512.png', 'icon-maskable-192.png', 'icon-maskable-512.png'
 ];
@@ -261,7 +274,7 @@ assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v25/, 'ab
 assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v25/, 'overtime Undo must use the versioned database function');
 assert.match(ui, /app_sync_state[\s\S]*setInterval\(checkSharedRevision,15000\)/, 'active clients must check the shared revision as a realtime fallback');
 assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
-assert.match(ui, /window\.addEventListener\('pageshow',resumeSharedSync\)/, 'returning to an open app must resume shared synchronization');
+assert.match(ui, /window\.addEventListener\('pageshow',function\(\)\{applyThemePreference\(\);resumeSharedSync\(\)\}\)/, 'returning to an open app must restore appearance and resume shared synchronization');
 assert.match(ui, /apply_night_role_override_v35/, 'night-only role mutations must use the atomic schema-35 RPC');
 assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
 assert.doesNotMatch(ui, /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'staffing saves must never fall back to browser-side multi-step writes');
