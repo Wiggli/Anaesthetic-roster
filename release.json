@@ -1,0 +1,13 @@
+{
+  "version": "37.1",
+  "date": "15 September 2026",
+  "title": "A calmer, safer way to update",
+  "summary": "Review what is changing, then update when it suits the work in front of you.",
+  "changes": [
+    "A quiet update notice with Details, Later and Update choices.",
+    "A clear update sheet showing the incoming version and release notes.",
+    "Explicit reassurance that shared roster data stays intact.",
+    "Reliable network-first release information with an offline fallback.",
+    "Consistent light and dark appearance with restrained motion."
+  ]
+}

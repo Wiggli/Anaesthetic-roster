@@ -23,11 +23,11 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <script src="theme-bootstrap.js?v=37.0"></script>
-    <link rel="manifest" href="manifest.webmanifest?v=37.0" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.0" />
+    <script src="theme-bootstrap.js?v=37.1"></script>
+    <link rel="manifest" href="manifest.webmanifest?v=37.1" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.1" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=37.0" />
+    <link rel="stylesheet" href="styles.css?v=37.1" />
   </head>
   <body class="authPending">
     <section
@@ -40,7 +40,7 @@
     >
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=37.0" alt="SPTAR Mater Dei" />
+          <img src="mater-dei-logo.png?v=37.1" alt="SPTAR Mater Dei" />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
@@ -59,7 +59,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=37.0"
+              src="mater-dei-logo.png?v=37.1"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -165,7 +165,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=37.0" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=37.1" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -1064,7 +1064,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 37.0 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 37.1 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -1076,6 +1076,49 @@
         <li>Personal account, private profile photo and Undo actions</li>
         <li>Optional passkey sign-in explained during onboarding</li>
       </ul>
+    </dialog>
+    <dialog
+      id="updateDetails"
+      class="updateSheet"
+      aria-labelledby="updateDetailsTitle"
+      aria-describedby="updateDetailsSummary updateSafetyNote"
+    >
+      <div class="sheetGrabber" aria-hidden="true"></div>
+      <div class="updateSheetScroll">
+        <div class="updateSheetHero">
+          <span class="updateSheetIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v11"></path>
+              <path d="m7.5 9.5 4.5 4.5 4.5-4.5"></path>
+              <path d="M5 17.5v2h14v-2"></path>
+            </svg>
+          </span>
+          <span id="updateDetailsVersion" class="updateSheetEyebrow">New version ready</span>
+          <h2 id="updateDetailsTitle">Night Roster update</h2>
+          <p id="updateDetailsSummary">
+            Review what is changing, then update when convenient.
+          </p>
+        </div>
+        <section class="updateChanges" aria-labelledby="updateChangesTitle">
+          <h3 id="updateChangesTitle">What’s new</h3>
+          <ul id="updateChangesList">
+            <li>The latest Night Roster improvements are ready.</li>
+          </ul>
+        </section>
+        <p id="updateSafetyNote" class="updateSafetyNote">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+            <rect x="5" y="11" width="14" height="10" rx="3"></rect>
+            <path d="M12 15v2"></path>
+          </svg>
+          <span><b>Your shared roster data stays intact.</b> The app will reopen once after the update is installed.</span>
+        </p>
+        <p id="updateDetailsStatus" class="updateDetailsStatus" role="status" aria-live="polite"></p>
+      </div>
+      <div class="updateSheetActions">
+        <button id="laterUpdateSheetBtn" type="button" class="soft">Later</button>
+        <button id="applyUpdateSheetBtn" type="button" class="primary">Update now</button>
+      </div>
     </dialog>
     <nav class="bottom" aria-label="Main navigation">
       <button class="active" aria-current="page" data-v="today">
@@ -1097,16 +1140,27 @@
         ><span>Breaks</span>
       </button>
     </nav>
-    <div id="updateBanner" class="updateBanner hidden" role="status">
-      <div>
-        <b>Update ready</b
-        ><span>Install the latest improvements when convenient.</span>
+    <div id="updateBanner" class="updateBanner hidden" role="status" aria-live="polite">
+      <span class="updateBannerIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v11"></path>
+          <path d="m7.5 9.5 4.5 4.5 4.5-4.5"></path>
+          <path d="M5 17.5v2h14v-2"></path>
+        </svg>
+      </span>
+      <button id="openUpdateDetailsBtn" class="updateBannerSummary" type="button" aria-label="View update details">
+        <span id="updateBannerVersion">New version ready</span>
+        <b>Night Roster update available</b>
+        <small>See what changed and update when convenient.</small>
+      </button>
+      <div class="updateBannerActions">
+        <button id="laterUpdateBtn" type="button" class="updateLaterBtn">Later</button>
+        <button id="applyUpdateBtn" type="button">Update</button>
       </div>
-      <button id="applyUpdateBtn" type="button">Update now</button>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
-    <script src="app-core.js?v=37.0"></script>
-    <script src="app-ui.js?v=37.0"></script>
+    <script src="app-core.js?v=37.1"></script>
+    <script src="app-ui.js?v=37.1"></script>
   </body>
 </html>
