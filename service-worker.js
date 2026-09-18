@@ -1,20 +1,19 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-1';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-0';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.1',
-  './theme-bootstrap.js?v=37.1',
-  './app-core.js?v=37.1',
-  './app-ui.js?v=37.1',
-  './manifest.webmanifest?v=37.1',
-  './release.json',
-  './icon-192.png?v=37.1',
-  './icon-512.png?v=37.1',
-  './icon-maskable-192.png?v=37.1',
-  './icon-maskable-512.png?v=37.1',
-  './apple-touch-icon.png?v=37.1',
-  './anaesthesia-header.jpg?v=37.1',
-  './mater-dei-logo.png?v=37.1'
+  './styles.css?v=37.0',
+  './theme-bootstrap.js?v=37.0',
+  './app-core.js?v=37.0',
+  './app-ui.js?v=37.0',
+  './manifest.webmanifest?v=37.0',
+  './icon-192.png?v=37.0',
+  './icon-512.png?v=37.0',
+  './icon-maskable-192.png?v=37.0',
+  './icon-maskable-512.png?v=37.0',
+  './apple-touch-icon.png?v=37.0',
+  './anaesthesia-header.jpg?v=37.0',
+  './mater-dei-logo.png?v=37.0'
 ];
 
 function isSupabaseLibrary(requestUrl) {
@@ -58,23 +57,6 @@ self.addEventListener('fetch', event => {
         }
         return response;
       }))
-    );
-    return;
-  }
-
-  // Release information is network-first so an installed app can describe
-  // the incoming version before the waiting service worker is activated.
-  if (requestUrl.pathname.endsWith('/release.json')) {
-    event.respondWith(
-      fetch(event.request, { cache: 'no-store' })
-        .then(response => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put('./release.json', copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match('./release.json'))
     );
     return;
   }
