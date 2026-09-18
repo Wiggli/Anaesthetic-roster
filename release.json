@@ -1,13 +1,13 @@
 {
-  "version": "37.1",
-  "date": "15 September 2026",
-  "title": "A calmer, safer way to update",
-  "summary": "Review what is changing, then update when it suits the work in front of you.",
+  "version": "37.2",
+  "date": "18 September 2026",
+  "title": "A reliable way out of a stalled connection",
+  "summary": "Retry the shared connection or open the last saved roster read-only when a response is delayed.",
   "changes": [
-    "A quiet update notice with Details, Later and Update choices.",
-    "A clear update sheet showing the incoming version and release notes.",
-    "Explicit reassurance that shared roster data stays intact.",
-    "Reliable network-first release information with an offline fallback.",
-    "Consistent light and dark appearance with restrained motion."
+    "Bounded startup checks so the opening screen cannot wait indefinitely.",
+    "A Retry action that keeps the signed-in session and entered work intact.",
+    "An explicitly read-only saved-roster fallback while the shared connection is unavailable.",
+    "Profile and administrator extras that no longer block the core roster from opening.",
+    "The same restrained Apple-style light, dark and reduced-motion launch treatment."
   ]
 }
