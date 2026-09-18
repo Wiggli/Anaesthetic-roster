@@ -50,6 +50,48 @@ async function run() {
   assert.equal(sent.options.cache, 'no-store');
   assert.equal(sent.options.credentials, 'omit');
 
+  context.startupSnapshotTimeoutMs = 10;
+  context.fetch = () => new Promise(() => {});
+  await assert.rejects(
+    context.requestStartupSnapshot(),
+    error => error && error.code === 'TIMEOUT',
+    'an unresolved browser fetch must be released by the application-level deadline'
+  );
+
+  const tableData = {
+    allowed_users: { data: { email: 'andre@example.test', display_name: 'Andre', user_role: 'admin', active: true }, error: null },
+    night_changes: { data: [], error: null }, night_overtime: { data: [], error: null }, night_five_cover: { data: [], error: null },
+    roster_settings: { data: context.rosterSettings, error: null }, rotation_versions: { data: context.rotationVersions, error: null },
+    night_labour_order: { data: [], error: null }, night_plan_status: { data: [], error: null }, night_role_overrides: { data: [], error: null },
+    night_change_history: { data: [], error: null }, night_overtime_history: { data: [], error: null }, night_role_override_history: { data: [], error: null },
+    app_settings: { data: { id: 1, email_recipients: [] }, error: null }, app_schema_version: { data: { id: 1, version: 37 }, error: null },
+    app_sync_state: { data: { id: 1, revision: 9 }, error: null }
+  };
+  const queryFor = table => {
+    const query = {
+      select() { return query; }, eq() { return query; }, order() { return query; }, maybeSingle() { return query; },
+      then(resolve, reject) { return Promise.resolve(tableData[table]).then(resolve, reject); }
+    };
+    return query;
+  };
+  context.currentUser = { email: 'andre@example.test' };
+  context.supa = { from: queryFor };
+  context.startupFallbackTimeoutMs = 50;
+  assert.equal(context.preferCompatibilityStartup(), false);
+  context.navigator.userAgent = 'Mozilla/5.0 (Linux; Android 16; SM-S928B)';
+  assert.equal(context.preferCompatibilityStartup(), true, 'Android must avoid the startup transport that remained pending on the affected Samsung');
+  const fallback = await context.requestCompatibilityStartup();
+  assert.equal(fallback.profile.active, true, 'compatibility startup must re-check active roster access');
+  assert.equal(fallback.rotation_versions.length, 1, 'compatibility startup must return the verified rotation source');
+  assert.equal(fallback.roster_settings.published_until, '2027-12-30');
+  assert.equal(fallback.schema_version, 37);
+  assert.equal(fallback.sync_revision, 9);
+  context.document.querySelector = () => element();
+  context.initialNightChosen = false;
+  assert.equal(await context.loadSharedData(), true, 'an Android signed-in startup must open through compatibility reads');
+  assert.equal(context.currentUserProfile.email, 'andre@example.test');
+  assert.equal(context.R.length, 138, 'the Android startup route must preserve the verified rotation');
+
   storage.set('anaes_offline_snapshot', JSON.stringify({
     saved_at: '2026-09-18T12:00:00.000Z',
     nightChanges: { '2026-09-18': [{ id: 'absence-1', absent_name: 'James' }] },
