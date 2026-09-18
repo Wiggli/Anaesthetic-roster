@@ -215,7 +215,7 @@ for (const asset of ['styles.css', 'app-core.js', 'app-ui.js', 'manifest.webmani
   assert.match(source['service-worker.js'], new RegExp(`${asset.replace('.', '\\.') }\\?v=${escapedVersion}`));
 }
 assert.match(source['manifest.webmanifest'], new RegExp(`icon-192\\.png\\?v=${escapedVersion}`));
-assert.match(source['app-ui.js'], /select\('email,display_name,user_role,active'\)/, 'authorisation must retain the original access fields');
+assert.match(source['app-ui.js'], /supa\.rpc\('get_roster_startup_v37'\)/, 'authorisation must use the protected startup snapshot');
 assert.doesNotMatch(source['app-ui.js'], /boundRosterName|setRosterIdentity|personalUpcomingNights|exportMyCalendar/, 'removed account binding and personal calendar code must not return');
 assert.doesNotMatch(source['index.html'], /personalSchedulePanel|My upcoming nights|exportMyCalendarBtn/, 'the removed upcoming-nights interface must not return');
 assert.match(source['index.html'], /id="briefingActionsReason"[^>]*aria-live="polite"/, 'unavailable Night output actions must have a live explanatory status');

@@ -1,6 +1,6 @@
 # Supabase schema baseline
 
-Reviewed against application version 37.4 and database schema 36. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+Reviewed against application version 37.5 and database schema 37. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
 
 ## Shared operational data
 
@@ -37,6 +37,8 @@ Schema 34 adds `allowed_users.roster_name` and `set_roster_identity_v34`. The va
 Schema 35 extends the atomic role-override contract with a validated, explicit five-person night-only arrangement. It also replaces the schema-33 function with a compatibility wrapper so older installed clients no longer call the unavailable `jsonb_object_length(jsonb)` routine. Normal Reliever-first five-nurse planning remains the default.
 
 Schema 36 expands the pre-existing `night_role_overrides_valid` table constraint to accept that reviewed five-person structure alongside the original six-role structure. It rejects missing or extra keys, blank values and duplicate nurse names before a row can be stored.
+
+Schema 37 adds `get_roster_startup_v37`, a read-only, security-definer startup snapshot. It verifies the caller against the active `allowed_users` row before returning only the shared roster tables already readable by shift members. This reduces cold startup from several consecutive REST requests to one internally consistent database response; it does not alter any roster calculation or write contract.
 
 ## Deployment review
 
