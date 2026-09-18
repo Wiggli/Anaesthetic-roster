@@ -1,12 +1,12 @@
 {
-  "version": "37.4",
+  "version": "37.5",
   "date": "18 September 2026",
-  "title": "The shared roster opens in dependable stages",
-  "summary": "Load clinical roster data in smaller dependable stages and leave support information until after the app opens.",
+  "title": "One dependable connection opens the roster",
+  "summary": "Open the authorised roster from one protected database snapshot instead of several consecutive requests.",
   "changes": [
-    "Essential staffing and tonight’s allocations now load in two smaller stages instead of one eleven-request block.",
-    "Settings, schema diagnostics and the realtime revision marker load after the clinical roster is visible.",
-    "Try again waits for an active request to finish before starting a genuinely fresh attempt.",
+    "The account check, staffing, allocations and essential settings now arrive in one protected database response.",
+    "The connection recovery actions wait long enough for a normal slow response before appearing.",
+    "The saved-roster fallback remains read-only if the single shared request genuinely fails.",
     "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or database rules."
   ]
 }

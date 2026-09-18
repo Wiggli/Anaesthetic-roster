@@ -1,9 +1,8 @@
-/* Anaesthetic Night Roster V37.4 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.5 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
 var sharedLoadPromise=null;
-var sharedSupportLoadPromise=null;
 var sharedReloadPending=false;
 var sharedReloadPendingBackground=true;
 var reloadTimer=null;
@@ -53,6 +52,7 @@ var pendingUpdateMeta=null;
 var sharedLoadFailureStage='';
 
 var RELEASE_HISTORY=[
+  {version:'37.5',date:'18 Sep 2026',title:'One dependable connection opens the roster',changes:['The authorised account check, staffing, allocations and essential app settings now arrive as one protected database snapshot instead of several consecutive requests.','The opening screen no longer declares a connection problem while a normal slow database response is still in progress.','The saved-roster fallback remains read-only and available if the single shared request genuinely fails.','No roster calculation, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
   {version:'37.4',date:'18 Sep 2026',title:'The shared roster opens in dependable stages',changes:['Startup now loads essential staffing first, then tonight’s allocation state, instead of making eleven database reads compete as one all-or-nothing request.','Settings, schema diagnostics and the realtime revision marker load quietly after the clinical roster is already visible.','Try again waits for an active request to finish before starting a genuinely fresh attempt, preventing overlapping startup requests.','The verified rotation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy and database rules remain unchanged.']},
   {version:'37.3',date:'18 Sep 2026',title:'Reliable roster opening and recovery',changes:['The essential shared roster now has enough time to recover from a slow or cold database connection instead of being stopped just as it begins responding.','Recent activity history loads after the core roster opens, so a delayed history request can never block Night, Changes or Breaks.','Try again now shows clear progress, while the read-only saved-roster option safely repairs older or partial saved data before opening it.','The verified rotation, staffing, allocation, Pager, Reliever, realtime, privacy and database rules remain unchanged.']},
   {version:'37.2',date:'18 Sep 2026',title:'A reliable way out of a stalled connection',changes:['Startup checks now have clear time limits, so a delayed account or roster response cannot leave the opening screen indefinitely.','A calm Retry action lets the signed-in nurse try the shared connection again without losing the session.','When a saved snapshot is available, Use saved roster opens the last known roster as an explicitly read-only view until the shared connection returns.','Profile and administrator extras no longer block the core roster from opening, while the verified rotation, staffing, allocation, realtime and privacy rules remain unchanged.','The recovery state keeps the same Apple-style typography, spacing, contrast and reduced-motion behaviour as the rest of the launch experience.']},
@@ -112,6 +112,14 @@ function snapshotRowsByDate(value){
 
 function snapshotRecordsByDate(value){
   var result={};if(!plainSnapshotRecord(value))return result;Object.keys(value).forEach(function(date){if(plainSnapshotRecord(value[date]))result[date]=value[date]});return result
+}
+
+function rowsGroupedByDate(rows){
+  var result={};(Array.isArray(rows)?rows:[]).forEach(function(row){if(plainSnapshotRecord(row)&&typeof row.roster_date==='string')(result[row.roster_date]||(result[row.roster_date]=[])).push(row)});return result
+}
+
+function rowsIndexedByDate(rows){
+  var result={};(Array.isArray(rows)?rows:[]).forEach(function(row){if(plainSnapshotRecord(row)&&typeof row.roster_date==='string')result[row.roster_date]=row});return result
 }
 
 function readOfflineSnapshot(){
@@ -1182,46 +1190,35 @@ async function loadNightHistory(date,renderAfter){
 
 function ensureNightHistory(date){if(!historyLoadedDates[date])loadNightHistory(date,true)}
 
-async function loadSharedSupportData(){
-  if(sharedSupportLoadPromise)return sharedSupportLoadPromise;
-  sharedSupportLoadPromise=(async function(){
-    try{
-      var results=await withTimeout(Promise.all([supa.from('app_settings').select('*').eq('id',1).maybeSingle(),supa.from('app_schema_version').select('*').eq('id',1).maybeSingle(),supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle()]),20000,'Support information did not respond.');
-      if(!results[0].error&&results[0].data){appSettings=results[0].data;EMAIL_RECIPIENTS=validEmailRecipients(appSettings.email_recipients)}
-      schemaVersion=!results[1].error&&results[1].data?Number(results[1].data.version||0):schemaVersion;
-      if(!results[2].error&&results[2].data)lastObservedSyncRevision=Number(results[2].data.revision||0);
-      saveOfflineSnapshot();renderDiagnostics()
-    }catch(error){console.warn('Non-blocking roster support information was delayed',error)}
-  })();
-  try{await sharedSupportLoadPromise}finally{sharedSupportLoadPromise=null}
-}
-
 async function loadSharedData(options){
   var background=!!(options&&options.background);
   if(sharedLoadPromise){sharedReloadPending=true;sharedReloadPendingBackground=sharedReloadPendingBackground&&background;return sharedLoadPromise}
   if(!background)document.body.classList.add('dataRefreshing');
   sharedLoadPromise=(async function(){
     try{
-      sharedLoadFailureStage='staffing';setLaunchState('Preparing your night','Loading shared staffing…');
-      var staffing=await withTimeout(Promise.all([supa.from('night_changes').select('*').order('updated_at',{ascending:true}),supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),supa.from('night_five_cover').select('*'),supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),supa.from('rotation_versions').select('*').order('effective_from',{ascending:true})]),45000,'Shared staffing did not respond.');
-      if(staffing.some(function(x){return x.error}))throw new Error('Shared staffing could not be loaded.');
-      nightChanges={};(staffing[0].data||[]).forEach(function(c){(nightChanges[c.roster_date]||(nightChanges[c.roster_date]=[])).push(c)});
-      nightOvertime={};(staffing[1].data||[]).forEach(function(o){(nightOvertime[o.roster_date]||(nightOvertime[o.roster_date]=[])).push(o)});
-      fiveCoverChoices={};(staffing[2].data||[]).forEach(function(c){fiveCoverChoices[c.roster_date]=c});
-      if(staffing[3].data)rosterSettings=staffing[3].data;if((staffing[4].data||[]).length)rotationVersions=staffing[4].data;
-      sharedLoadFailureStage='allocations';setLaunchState('Preparing your night','Loading tonight’s allocations…');
-      var allocations=await withTimeout(Promise.all([supa.from('night_labour_order').select('*'),supa.from('night_plan_status').select('*'),supa.from('night_role_overrides').select('*')]),45000,'Shared allocations did not respond.');
-      if(allocations.some(function(x){return x.error}))throw new Error('Shared allocations could not be loaded.');
-      labourOrderAvailable=true;labourOrders={};(allocations[0].data||[]).forEach(function(order){labourOrders[order.roster_date]=order});
-      nightPlanStatuses={};(allocations[1].data||[]).forEach(function(status){nightPlanStatuses[status.roster_date]=status});
-      nightRoleOverrideAvailable=true;nightRoleOverrides={};(allocations[2].data||[]).forEach(function(item){nightRoleOverrides[item.roster_date]=item});
+      sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
+      var response=await withTimeout(supa.rpc('get_roster_startup_v37'),30000,'The shared roster did not respond.');
+      if(response.error){var requestError=new Error(response.error.message||'The shared roster could not be loaded.');requestError.code=response.error.code||'';throw requestError}
+      var snapshot=response.data,profile=snapshot&&snapshot.profile;
+      if(!plainSnapshotRecord(snapshot)||!plainSnapshotRecord(profile)||!profile.active||!Array.isArray(snapshot.rotation_versions)||!snapshot.rotation_versions.length||!plainSnapshotRecord(snapshot.roster_settings))throw new Error('The shared roster returned incomplete information.');
+      if(currentUser&&String(profile.email||'').toLowerCase()!==String(currentUser.email||'').toLowerCase()){var accessError=new Error('The shared roster returned the wrong account.');accessError.code='42501';throw accessError}
+      currentUserProfile=profile;try{localStorage.setItem('anaes_cached_profile',JSON.stringify(profile))}catch(error){}prepareAuthorisedShell(profile);
+      nightChanges=rowsGroupedByDate(snapshot.night_changes);nightOvertime=rowsGroupedByDate(snapshot.night_overtime);fiveCoverChoices=rowsIndexedByDate(snapshot.night_five_cover);
+      rosterSettings=snapshot.roster_settings;rotationVersions=snapshot.rotation_versions;
+      labourOrderAvailable=true;labourOrders=rowsIndexedByDate(snapshot.night_labour_order);
+      nightPlanStatuses=rowsIndexedByDate(snapshot.night_plan_status);
+      nightRoleOverrideAvailable=true;nightRoleOverrides=rowsIndexedByDate(snapshot.night_role_overrides);
+      if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings;EMAIL_RECIPIENTS=validEmailRecipients(appSettings.email_recipients)}
+      schemaVersion=Number(snapshot.schema_version||0);lastObservedSyncRevision=Number(snapshot.sync_revision||0);
       rebuildCalculatedRoster();
       if(!initialNightChosen){idx=startingIndex();automaticSelectedDate=R[idx].date;initialNightChosen=true}
       else{var selected=localStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:Math.min(idx,R.length-1)}
-      lastSuccessfulSyncAt=new Date().toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';saveOfflineSnapshot();setSync('','Live and up to date');render();renderDiagnostics();loadSharedSupportData();return true;
+      lastSuccessfulSyncAt=new Date().toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';saveOfflineSnapshot();setSync('','Live and up to date');render();renderDiagnostics();return true;
     }catch(error){
       console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);
-      forcedOfflineSession=true;if(restoreOfflineSnapshot()){updateOfflineControls();return true}forcedOfflineSession=false;
+      if(error&&error.code==='42501'){sharedLoadFailureStage='access';forcedOfflineSession=false;return false}
+      var cached=currentUser&&cachedAllowedProfile(currentUser.email);if(!currentUserProfile&&cached)prepareAuthorisedShell(cached);
+      forcedOfflineSession=true;if(cached&&restoreOfflineSnapshot()){updateOfflineControls();return true}forcedOfflineSession=false;
       setSync('error','Shared data unavailable');return false
     }
   })();
@@ -1346,24 +1343,17 @@ function setupPWA(){
 
 async function authorizeUser(user){
   if(!user)return showAuth();var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
-  var result;
-  try{result=await withTimeout(supa.from('allowed_users').select('email,display_name,user_role,active').eq('email',user.email.toLowerCase()).maybeSingle(),10000,'The account check did not respond.')}catch(error){
-    var cachedOnTimeout=cachedAllowedProfile(user.email);if(cachedOnTimeout&&hasOfflineSnapshot()){prepareAuthorisedShell(cachedOnTimeout);forcedOfflineSession=true;if(restoreOfflineSnapshot()){setSync('offline','Offline · saved information');finishLaunch(true);updateOfflineControls();toast('Showing the last saved roster. Changes are disabled until the connection returns.');return}}
-    showLaunchRecovery(error.code==='TIMEOUT'?'The account check did not respond. Check your connection, then try again.':'Night Roster could not check your access. Try again when the connection returns.');return
-  }
-  if(result.error&&!navigator.onLine){var cached=cachedAllowedProfile(user.email);if(cached)result={data:cached,error:null}}
-  if(result.error||!result.data||!result.data.active){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth(result.error?'Night Roster could not check your access. Reconnect and try again.':'This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
-  try{localStorage.setItem('anaes_cached_profile',JSON.stringify(result.data))}catch(error){}
-  prepareAuthorisedShell(result.data);var isAdmin=result.data.user_role==='admin';
   var sharedReady=await loadSharedData();if(attempt!==startupAttempt)return;
-  if(!sharedReady){var delayedPart=sharedLoadFailureStage==='allocations'?'Tonight’s allocations did not respond.':sharedLoadFailureStage==='staffing'?'Shared staffing did not respond.':'The shared roster did not respond.';showLaunchRecovery(forcedOfflineSession?'The saved roster is ready, but the shared connection is unavailable.':delayedPart+' Check your connection, then try again.');return}
+  if(!sharedReady&&sharedLoadFailureStage==='access'){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth('This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
+  if(!sharedReady){showLaunchRecovery('The shared roster did not respond. Check your connection, then try again.');return}
+  var isAdmin=currentUserProfile&&currentUserProfile.user_role==='admin';
   if(!forcedOfflineSession){try{await withTimeout(loadOwnProfile(),6000,'Profile details did not respond.')}catch(error){profileFeatureAvailable=false;currentPrivateProfile=null}}
   if(attempt!==startupAttempt)return;
   if(!forcedOfflineSession)subscribeToChanges();startSharedSyncMonitor();if(isAdmin&&!forcedOfflineSession)withTimeout(loadAccounts(),6000,'Account list did not respond.').catch(function(){});finishLaunch(true);showOnboardingIfNeeded();
 }
 
 function bind(){
-  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…');showLaunchRecovery('The shared roster is taking longer than usual. You can retry now or use the last saved roster on this device.')},3500);prepareChangesView();setupPWA();bindOnboarding();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
+  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…');showLaunchRecovery('The shared roster is taking longer than usual. You can retry now or use the last saved roster on this device.')},12000);prepareChangesView();setupPWA();bindOnboarding();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('saveProfileBtn').onclick=saveProfile;byId('profilePhotoButton').onclick=function(){byId('profilePhotoInput').click()};byId('changeProfilePhoto').onclick=function(){byId('profilePhotoInput').click()};byId('profilePhotoInput').onchange=function(){if(this.files&&this.files[0])chooseProfilePhoto(this.files[0]);this.value=''};byId('removeProfilePhoto').onclick=removeProfilePhoto;byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=openOnboardingReplay;byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};byId('accountVersionHistoryBtn').onclick=function(){byId('accountSheet').close();renderReleaseNotes(true);byId('releaseNotes').showModal()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
   ['profileName','profileJobTitle'].forEach(function(id){byId(id).oninput=updateProfileSaveState});byId('profileRosterName').onchange=updateProfileSaveState;
