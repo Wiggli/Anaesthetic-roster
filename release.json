@@ -1,13 +1,12 @@
 {
-  "version": "37.2",
+  "version": "37.3",
   "date": "18 September 2026",
-  "title": "A reliable way out of a stalled connection",
-  "summary": "Retry the shared connection or open the last saved roster read-only when a response is delayed.",
+  "title": "The roster opens before recent activity",
+  "summary": "Give a slow shared roster time to recover and load recent activity only after the core app is ready.",
   "changes": [
-    "Bounded startup checks so the opening screen cannot wait indefinitely.",
-    "A Retry action that keeps the signed-in session and entered work intact.",
-    "An explicitly read-only saved-roster fallback while the shared connection is unavailable.",
-    "Profile and administrator extras that no longer block the core roster from opening.",
-    "The same restrained Apple-style light, dark and reduced-motion launch treatment."
+    "A realistic startup window for a slow or cold shared database connection.",
+    "Recent activity history that can no longer block entry to Night, Changes or Breaks.",
+    "Retry and an explicitly read-only saved-roster fallback while the shared connection is unavailable.",
+    "No changes to roster, staffing, allocation, Pager, Reliever, realtime, privacy or database rules."
   ]
 }
