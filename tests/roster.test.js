@@ -189,6 +189,7 @@ assert.deepEqual(context.calculateNight('2026-07-04'), before, 'a permanent chan
 const sw = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const manifest = fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8');
+const releaseMeta = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'release.json'), 'utf8'));
 const themeBootstrap = fs.readFileSync(path.join(__dirname, '..', 'theme-bootstrap.js'), 'utf8');
 const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
@@ -198,7 +199,11 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
+assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
+assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
+assert.equal(context.validUpdateMeta({ version: '37.2', title: 'Incomplete', changes: [] }), false, 'empty incoming release notes must be rejected');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -255,7 +260,7 @@ const deployBlock = workflow.match(/- name: Prepare public app files[\s\S]*?(?=\
 assert.ok(deployBlock, 'deployment workflow must contain an explicit dist preparation step');
 const copiedAssets = new Set(Array.from(deployBlock[0].matchAll(/^\s*cp\s+(.+)\s+dist\/$/gm), match => match[1].trim().split(/\s+/)).flat());
 const requiredProductionAssets = [
-  'index.html', 'styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'service-worker.js', 'manifest.webmanifest',
+  'index.html', 'styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'service-worker.js', 'manifest.webmanifest', 'release.json',
   'anaesthesia-header.jpg', 'mater-dei-logo.png', 'apple-touch-icon.png',
   'icon-192.png', 'icon-512.png', 'icon-maskable-192.png', 'icon-maskable-512.png'
 ];
@@ -281,6 +286,16 @@ assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs mu
 assert.match(workflow, /service-worker\.js[\s\S]*CACHE_NAME = 'anaesthetic-night-roster-v\$\{cache_version\}'/, 'post-deployment checks must verify the live service-worker cache version');
 assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
+assert.match(html, /id="updateBanner"[\s\S]*id="openUpdateDetailsBtn"[\s\S]*id="laterUpdateBtn"[\s\S]*id="applyUpdateBtn"/, 'the update notice must offer details, deferral and explicit installation');
+assert.match(html, /id="updateDetails"[\s\S]*id="updateChangesList"[\s\S]*Your shared roster data stays intact[\s\S]*id="laterUpdateSheetBtn"[\s\S]*id="applyUpdateSheetBtn"/, 'the update sheet must explain changes, data safety and both choices');
+assert.match(ui, /function showUpdate\(registration\)[\s\S]*sessionStorage\.getItem\('anaes_update_later'\)[\s\S]*loadPendingUpdateMeta/, 'an update must remain passive and respect session deferral');
+assert.doesNotMatch(ui, /function showUpdate\(registration\)[^}]*showModal/, 'finding an update must never open a modal automatically');
+assert.match(ui, /fetch\('\.\/release\.json\?check='\+Date\.now\(\),\{cache:'no-store'/, 'incoming release notes must be checked without a stale HTTP cache');
+assert.match(sw, /requestUrl\.pathname\.endsWith\('\/release\.json'\)[\s\S]*fetch\(event\.request, \{ cache: 'no-store' \}\)[\s\S]*caches\.match\('\.\/release\.json'\)/, 'release metadata must use network-first delivery with an offline fallback');
+assert.match(css, /\.updateBannerSummary[^{]*\{[^}]*min-height:44px/, 'the update notice details target must meet the minimum touch size');
+assert.match(css, /body:not\(\[data-view="today"\]\) \.updateBanner\{display:none\}/, 'the passive update notice must stay out of Changes and Breaks workflows');
+assert.match(css, /\.updateSheetActions button\{[^}]*min-height:50px/, 'update-sheet decisions must have comfortable touch targets');
+assert.match(css, /@media\(prefers-reduced-motion:reduce\)[^{]*\{[^}]*\.updateBanner:not\(\.hidden\),\.updateSheet\[open\]\{animation:none!important\}/, 'the update experience must respect reduced-motion preferences');
 assert.match(css, /\.bottom\{[\s\S]*backdrop-filter:saturate\(210%\) blur\(30px\)/, 'primary navigation must retain the reviewed glass material');
 assert.match(css, /#changes \.staffingSection[^{]*\{[^}]*background:var\(--ios-surface\)/, 'clinical staffing surfaces must remain solid');
 assert.match(css, /@supports not \(\(-webkit-backdrop-filter:[\s\S]*\.bottom\{background:#f8f8fa\}/, 'glass chrome must retain an opaque fallback');
