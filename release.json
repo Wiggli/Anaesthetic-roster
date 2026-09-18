@@ -1,12 +1,12 @@
 {
-  "version": "37.6",
-  "date": "18 September 2026",
-  "title": "Startup requests that reach the roster reliably",
-  "summary": "Send the protected startup snapshot through a bounded authenticated request that works on the affected Samsung browser.",
+  "version": "37.7",
+  "date": "19 September 2026",
+  "title": "A second independent route into the roster",
+  "summary": "Open Android through sequential authorised roster reads while retaining the protected snapshot and fallback for other devices.",
   "changes": [
-    "The startup snapshot now bypasses the client wrapper that failed to dispatch on the affected Samsung browser.",
-    "The same protected schema-37 function still returns the account, staffing, allocations and essential settings together.",
-    "Saved-roster recovery remains read-only and now has an executable regression check.",
-    "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rules."
+    "Android now uses sequential authorised roster reads instead of the one-request transport that remains pending on the affected Samsung browser.",
+    "Each compatibility read and the protected snapshot have application-level deadlines that do not depend on the browser completing an abort event.",
+    "Try again can no longer wait indefinitely for the abandoned startup promise.",
+    "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rules."
   ]
 }
