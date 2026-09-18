@@ -88,6 +88,15 @@ assert.deepEqual(Object.keys(repairedSnapshot.fiveCoverChoices), [], 'malformed 
 assert.equal(repairedSnapshot.schemaVersion, 36, 'saved schema metadata must be normalised');
 storage.delete('anaes_offline_snapshot');
 
+const groupedStartupRows = context.rowsGroupedByDate([
+  { roster_date: '2026-09-18', id: 'first' },
+  { roster_date: '2026-09-18', id: 'second' },
+  { id: 'missing-date' },
+  null
+]);
+assert.deepEqual(Array.from(groupedStartupRows['2026-09-18'], row => row.id), ['first', 'second'], 'startup staffing rows must stay grouped by roster date');
+assert.deepEqual(Object.keys(context.rowsIndexedByDate([{ roster_date: '2026-09-18', id: 'only' }, null])), ['2026-09-18'], 'startup allocation rows must be indexed by roster date');
+
 for (let i = 0; i < context.R.length; i += 1) {
   const row = context.R[i];
   const six = [row.first1, row.first2, row.second1, row.second2, row.pager, row.reliever];
@@ -220,8 +229,9 @@ const syncMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914150000_custom_five_nurse_roles.sql'), 'utf8');
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
+const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -352,10 +362,16 @@ assert.match(constraintMigration, /count\(distinct lower\(trim\(value\)\)\) = 5/
 assert.doesNotMatch(constraintMigration, /jsonb_object_length\(/, 'schema 36 must use supported JSONB operations');
 assert.match(constraintMigration, /validate constraint night_role_overrides_valid/, 'schema 36 must validate existing rows before deployment completes');
 assert.match(constraintMigration, /update public\.app_schema_version[\s\S]*version = 36/, 'schema 36 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 36, 'the application must require the corrected custom-role constraint');
+assert.match(startupMigration, /create or replace function public\.get_roster_startup_v37\(\)[\s\S]*security definer[\s\S]*auth\.jwt\(\) ->> 'email'/, 'schema 37 startup snapshot must authenticate inside the protected function');
+assert.match(startupMigration, /where lower\(account\.email\) = v_email[\s\S]*and account\.active/, 'the startup snapshot must reject inactive or unapproved accounts');
+for (const table of ['night_changes','night_overtime','night_five_cover','roster_settings','rotation_versions','night_labour_order','night_plan_status','night_role_overrides']) assert.match(startupMigration, new RegExp(`public\\.${table}`), `startup snapshot must include ${table}`);
+assert.match(startupMigration, /revoke all on function public\.get_roster_startup_v37\(\)[\s\S]*from public, anon[\s\S]*grant execute[\s\S]*to authenticated/, 'the startup snapshot must be callable only by authenticated users');
+assert.match(startupMigration, /update public\.app_schema_version[\s\S]*version = 37/, 'schema 37 migration must update the schema marker');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 37, 'the application must require the protected startup snapshot');
 assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
-assert.match(ui, /select\('email,display_name,user_role,active'\)/, 'authorisation must use the original account access fields');
+assert.match(ui, /supa\.rpc\('get_roster_startup_v37'\)/, 'authorisation and shared data must use the protected single-request startup snapshot');
+assert.doesNotMatch(ui, /supa\.from\('allowed_users'\)\.select\('email,display_name,user_role,active'\)/, 'startup must not make a separate serial account request');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return localStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice');
 assert.match(html, /id="recentActivityList"[\s\S]*id="copyBriefingBtn"/, 'Night must retain recent activity and briefing actions');
 assert.match(html, /id="briefingActionsReason"[^>]*role="status"[^>]*aria-live="polite"/, 'Night must explain why briefing actions are unavailable');
@@ -405,15 +421,14 @@ assert.match(ui, /Connecting to the shared roster…/, 'slow launch state must n
 assert.match(ui, /Showing the last saved roster/, 'offline launch state must identify saved roster data');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function withTimeout\(promise,ms,message\)/, 'startup network work must have a bounded timeout helper');
 assert.match(html, /id="launchRecovery"[\s\S]*launchRetryBtn[\s\S]*launchOfflineBtn/, 'a delayed startup must offer retry and saved-roster recovery actions');
-assert.match(ui, /withTimeout\(Promise\.all\(/, 'shared startup reads must stop waiting after a bounded timeout');
-assert.match(ui, /var staffing=await withTimeout\(Promise\.all\(\[[\s\S]*?rotation_versions[\s\S]*?\]\),45000,'Shared staffing did not respond\.'/, 'essential staffing must load in its own bounded startup stage');
-assert.match(ui, /var allocations=await withTimeout\(Promise\.all\(\[[\s\S]*?night_labour_order[\s\S]*?night_plan_status[\s\S]*?night_role_overrides[\s\S]*?\]\),45000,'Shared allocations did not respond\.'/, 'effective allocations must load in a separate bounded startup stage');
-assert.match(ui, /function loadSharedSupportData\(\)[\s\S]*app_settings[\s\S]*app_schema_version[\s\S]*app_sync_state/, 'non-clinical support reads must have their own loader');
-assert.match(ui, /render\(\);renderDiagnostics\(\);loadSharedSupportData\(\);return true/, 'support information must start only after the clinical roster renders');
+assert.match(ui, /withTimeout\(supa\.rpc\('get_roster_startup_v37'\),30000,'The shared roster did not respond\.'\)/, 'the single shared startup request must remain bounded');
+assert.match(ui, /nightChanges=rowsGroupedByDate\(snapshot\.night_changes\)[\s\S]*labourOrders=rowsIndexedByDate\(snapshot\.night_labour_order\)[\s\S]*nightRoleOverrides=rowsIndexedByDate\(snapshot\.night_role_overrides\)/, 'one consistent snapshot must populate staffing and effective allocations together');
+assert.doesNotMatch(ui, /Shared staffing did not respond|Shared allocations did not respond/, 'startup must not serialise staffing and allocation waits');
+assert.match(ui, /launchSlowTimer=setTimeout\([\s\S]*\},12000\)/, 'recovery actions must not interrupt the measured normal cold-start response');
 assert.doesNotMatch(ui, /await withTimeout\(loadNightHistory/, 'recent activity history must never block the core roster from opening');
 assert.match(ui, /renderRecentActivity\(date\);renderChanges\(cur\(\)\)/, 'recent activity must refresh when its non-blocking history request completes');
 assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recovery must keep all writes read-only until reconnection');
-assert.match(ui, /forcedOfflineSession=true;if\(restoreOfflineSnapshot\(\)\)\{updateOfflineControls\(\);return true\}/, 'saved-roster fallback must disable writes before rendering cached data');
+assert.match(ui, /forcedOfflineSession=true;if\(cached&&restoreOfflineSnapshot\(\)\)\{updateOfflineControls\(\);return true\}/, 'saved-roster fallback must require the cached authorised account and disable writes before rendering');
 assert.match(ui, /function readOfflineSnapshot\(\)[\s\S]*snapshotRowsByDate\(raw\.nightChanges\)[\s\S]*snapshotRecordsByDate\(raw\.nightRoleOverrides\)/, 'saved-roster recovery must validate and repair partial local data before rendering');
 const retrySource = ui.slice(ui.indexOf('async function retryLaunchConnection'), ui.indexOf('\nfunction useSavedRosterAtLaunch'));
 assert.match(retrySource, /Trying again…[\s\S]*Waiting for the shared roster to respond/, 'retry must show visible progress while reconnecting');
