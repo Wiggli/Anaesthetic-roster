@@ -199,11 +199,11 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
-assert.equal(context.validUpdateMeta({ version: '37.2', title: 'Incomplete', changes: [] }), false, 'empty incoming release notes must be rejected');
+assert.equal(context.validUpdateMeta({ version: '37.3', title: 'Incomplete', changes: [] }), false, 'empty incoming release notes must be rejected');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
 for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
@@ -381,6 +381,12 @@ assert.match(sw, /requestUrl\.origin !== self\.location\.origin && !isSupabaseLi
 
 assert.match(ui, /Connecting to the shared roster…/, 'slow launch state must name the shared roster connection');
 assert.match(ui, /Showing the last saved roster/, 'offline launch state must identify saved roster data');
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function withTimeout\(promise,ms,message\)/, 'startup network work must have a bounded timeout helper');
+assert.match(html, /id="launchRecovery"[\s\S]*launchRetryBtn[\s\S]*launchOfflineBtn/, 'a delayed startup must offer retry and saved-roster recovery actions');
+assert.match(ui, /withTimeout\(Promise\.all\(/, 'shared startup reads must stop waiting after a bounded timeout');
+assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recovery must keep all writes read-only until reconnection');
+assert.match(ui, /forcedOfflineSession=true;if\(restoreOfflineSnapshot\(\)\)\{updateOfflineControls\(\);return true\}/, 'saved-roster fallback must disable writes before rendering cached data');
+assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
 assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /button.disabled=pending/, 'Break output actions must be disabled until the plan is complete');
