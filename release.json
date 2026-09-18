@@ -1,12 +1,12 @@
 {
   "version": "37.3",
   "date": "18 September 2026",
-  "title": "The roster opens before recent activity",
-  "summary": "Give a slow shared roster time to recover and load recent activity only after the core app is ready.",
+  "title": "Reliable roster opening and recovery",
+  "summary": "Give a slow shared roster time to recover, keep activity from blocking entry, and make both recovery actions dependable.",
   "changes": [
     "A realistic startup window for a slow or cold shared database connection.",
     "Recent activity history that can no longer block entry to Night, Changes or Breaks.",
-    "Retry and an explicitly read-only saved-roster fallback while the shared connection is unavailable.",
+    "A visible Try again state and a repaired, explicitly read-only saved-roster fallback while the shared connection is unavailable.",
     "No changes to roster, staffing, allocation, Pager, Reliever, realtime, privacy or database rules."
   ]
 }

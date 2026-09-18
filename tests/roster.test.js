@@ -66,6 +66,28 @@ context.rebuildCalculatedRoster();
 assert.equal(context.verifyReference().mismatches, 0, 'verified reference rotation changed');
 assert.equal(context.R.length, 138, 'published reference must contain 138 nights');
 
+storage.set('anaes_offline_snapshot', JSON.stringify({
+  saved_at: '2026-09-18T12:00:00.000Z',
+  nightChanges: { '2026-09-18': [{ id: 'absence-1', absent_name: 'James' }], '2026-09-22': 'invalid legacy value' },
+  nightOvertime: null,
+  fiveCoverChoices: [],
+  rosterSettings: context.rosterSettings,
+  rotationVersions: context.rotationVersions,
+  labourOrders: { '2026-09-18': null },
+  nightRoleOverrides: { '2026-09-18': { assignments: {} } },
+  nightPlanStatuses: 'invalid legacy value',
+  appSettings: { shift_start: '19:00', shift_end: '07:00' },
+  schemaVersion: '36'
+}));
+const repairedSnapshot = context.readOfflineSnapshot();
+assert.ok(repairedSnapshot, 'an older partial saved roster must remain recoverable');
+assert.equal(repairedSnapshot.nightChanges['2026-09-18'].length, 1, 'valid saved staffing rows must be retained');
+assert.equal(repairedSnapshot.nightChanges['2026-09-22'], undefined, 'malformed saved staffing rows must be discarded safely');
+assert.deepEqual(Object.keys(repairedSnapshot.nightOvertime), [], 'missing saved overtime data must become an empty date map');
+assert.deepEqual(Object.keys(repairedSnapshot.fiveCoverChoices), [], 'malformed saved record maps must be repaired');
+assert.equal(repairedSnapshot.schemaVersion, 36, 'saved schema metadata must be normalised');
+storage.delete('anaes_offline_snapshot');
+
 for (let i = 0; i < context.R.length; i += 1) {
   const row = context.R[i];
   const six = [row.first1, row.first2, row.second1, row.second2, row.pager, row.reliever];
@@ -389,6 +411,10 @@ assert.doesNotMatch(ui, /await withTimeout\(loadNightHistory/, 'recent activity 
 assert.match(ui, /renderRecentActivity\(date\);renderChanges\(cur\(\)\)/, 'recent activity must refresh when its non-blocking history request completes');
 assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recovery must keep all writes read-only until reconnection');
 assert.match(ui, /forcedOfflineSession=true;if\(restoreOfflineSnapshot\(\)\)\{updateOfflineControls\(\);return true\}/, 'saved-roster fallback must disable writes before rendering cached data');
+assert.match(ui, /function readOfflineSnapshot\(\)[\s\S]*snapshotRowsByDate\(raw\.nightChanges\)[\s\S]*snapshotRecordsByDate\(raw\.nightRoleOverrides\)/, 'saved-roster recovery must validate and repair partial local data before rendering');
+const retrySource = ui.slice(ui.indexOf('async function retryLaunchConnection'), ui.indexOf('\nfunction useSavedRosterAtLaunch'));
+assert.match(retrySource, /Trying again…[\s\S]*Waiting for the shared roster to respond/, 'retry must show visible progress while reconnecting');
+assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide all recovery feedback while reconnecting');
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
 assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use an explicit allocation review label');
