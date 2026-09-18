@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.5 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.6 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -52,6 +52,7 @@ var pendingUpdateMeta=null;
 var sharedLoadFailureStage='';
 
 var RELEASE_HISTORY=[
+  {version:'37.6',date:'18 Sep 2026',title:'Startup requests that reach the roster reliably',changes:['The opening snapshot now uses a bounded authenticated web request instead of the client wrapper that failed to dispatch on the affected Samsung browser.','The request still calls the same protected schema-37 function, preserving account access, privacy and one internally consistent roster snapshot.','Saved-roster recovery now has an executable regression check as well as its existing read-only safeguards.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
   {version:'37.5',date:'18 Sep 2026',title:'One dependable connection opens the roster',changes:['The authorised account check, staffing, allocations and essential app settings now arrive as one protected database snapshot instead of several consecutive requests.','The opening screen no longer declares a connection problem while a normal slow database response is still in progress.','The saved-roster fallback remains read-only and available if the single shared request genuinely fails.','No roster calculation, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
   {version:'37.4',date:'18 Sep 2026',title:'The shared roster opens in dependable stages',changes:['Startup now loads essential staffing first, then tonight’s allocation state, instead of making eleven database reads compete as one all-or-nothing request.','Settings, schema diagnostics and the realtime revision marker load quietly after the clinical roster is already visible.','Try again waits for an active request to finish before starting a genuinely fresh attempt, preventing overlapping startup requests.','The verified rotation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy and database rules remain unchanged.']},
   {version:'37.3',date:'18 Sep 2026',title:'Reliable roster opening and recovery',changes:['The essential shared roster now has enough time to recover from a slow or cold database connection instead of being stopped just as it begins responding.','Recent activity history loads after the core roster opens, so a delayed history request can never block Night, Changes or Breaks.','Try again now shows clear progress, while the read-only saved-roster option safely repairs older or partial saved data before opening it.','The verified rotation, staffing, allocation, Pager, Reliever, realtime, privacy and database rules remain unchanged.']},
@@ -120,6 +121,24 @@ function rowsGroupedByDate(rows){
 
 function rowsIndexedByDate(rows){
   var result={};(Array.isArray(rows)?rows:[]).forEach(function(row){if(plainSnapshotRecord(row)&&typeof row.roster_date==='string')result[row.roster_date]=row});return result
+}
+
+async function requestStartupSnapshot(){
+  var token=currentAccessToken;
+  if(!token){
+    var authState=await withTimeout(supa.auth.getSession(),10000,'The sign-in session did not respond.');
+    if(authState.error)throw authState.error;
+    rememberAuthSession(authState.data&&authState.data.session);token=currentAccessToken;
+  }
+  if(!token){var sessionError=new Error('Your sign-in session is no longer available.');sessionError.code='401';throw sessionError}
+  var controller=window.AbortController?new window.AbortController():null,timer=controller?setTimeout(function(){controller.abort()},15000):null;
+  try{
+    var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',cache:'no-store',credentials:'omit',signal:controller?controller.signal:undefined});
+    var body=await response.text(),data=null;try{data=body?JSON.parse(body):null}catch(parseError){var invalidError=new Error('The shared roster returned unreadable information.');invalidError.code='INVALID_RESPONSE';throw invalidError}
+    if(!response.ok){var requestError=new Error(data&&data.message||'The shared roster could not be loaded.');requestError.code=data&&data.code||String(response.status);throw requestError}
+    return data;
+  }catch(error){if(error&&error.name==='AbortError'){var timeoutError=new Error('The shared roster did not respond.');timeoutError.code='TIMEOUT';throw timeoutError}throw error}
+  finally{if(timer)clearTimeout(timer)}
 }
 
 function readOfflineSnapshot(){
@@ -195,7 +214,7 @@ function passkeySupported(){return !!(window.PublicKeyCredential&&supa&&supa.aut
 async function signInWithPasskey(){
   if(!passkeySupported()){authMessage('Passkeys are not supported by this browser. You can still sign in with your password.',true);return}
   var button=byId('authPasskeyBtn');button.disabled=true;authMessage('Use your fingerprint, face recognition or device PIN…');
-  try{var result=await supa.auth.signInWithPasskey();if(result.error)throw result.error;if(result.data&&result.data.user)await authorizeUser(result.data.user)}
+  try{var result=await supa.auth.signInWithPasskey();if(result.error)throw result.error;if(result.data&&result.data.session)rememberAuthSession(result.data.session);if(result.data&&result.data.user)await authorizeUser(result.data.user,result.data.session)}
   catch(error){var cancelled=error&&(error.name==='NotAllowedError'||/cancel|not allowed/i.test(error.message||''));authMessage(cancelled?'Passkey sign-in was cancelled.':/disabled|not enabled/i.test(error.message||'')?'Passkeys have not been enabled for this roster yet. Use your password for now.':'Passkey sign-in could not be completed. You can still use your password.',!cancelled)}
   finally{button.disabled=false}
 }
@@ -1197,9 +1216,7 @@ async function loadSharedData(options){
   sharedLoadPromise=(async function(){
     try{
       sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
-      var response=await withTimeout(supa.rpc('get_roster_startup_v37'),30000,'The shared roster did not respond.');
-      if(response.error){var requestError=new Error(response.error.message||'The shared roster could not be loaded.');requestError.code=response.error.code||'';throw requestError}
-      var snapshot=response.data,profile=snapshot&&snapshot.profile;
+      var snapshot=await requestStartupSnapshot(),profile=snapshot&&snapshot.profile;
       if(!plainSnapshotRecord(snapshot)||!plainSnapshotRecord(profile)||!profile.active||!Array.isArray(snapshot.rotation_versions)||!snapshot.rotation_versions.length||!plainSnapshotRecord(snapshot.roster_settings))throw new Error('The shared roster returned incomplete information.');
       if(currentUser&&String(profile.email||'').toLowerCase()!==String(currentUser.email||'').toLowerCase()){var accessError=new Error('The shared roster returned the wrong account.');accessError.code='42501';throw accessError}
       currentUserProfile=profile;try{localStorage.setItem('anaes_cached_profile',JSON.stringify(profile))}catch(error){}prepareAuthorisedShell(profile);
@@ -1341,8 +1358,8 @@ function setupPWA(){
   var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);if(ios&&!standalone)install.classList.remove('hidden');
 }
 
-async function authorizeUser(user){
-  if(!user)return showAuth();var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
+async function authorizeUser(user,session){
+  if(!user)return showAuth();if(session)rememberAuthSession(session);var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
   var sharedReady=await loadSharedData();if(attempt!==startupAttempt)return;
   if(!sharedReady&&sharedLoadFailureStage==='access'){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth('This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
   if(!sharedReady){showLaunchRecovery('The shared roster did not respond. Check your connection, then try again.');return}

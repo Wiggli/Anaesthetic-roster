@@ -1,12 +1,12 @@
 {
-  "version": "37.5",
+  "version": "37.6",
   "date": "18 September 2026",
-  "title": "One dependable connection opens the roster",
-  "summary": "Open the authorised roster from one protected database snapshot instead of several consecutive requests.",
+  "title": "Startup requests that reach the roster reliably",
+  "summary": "Send the protected startup snapshot through a bounded authenticated request that works on the affected Samsung browser.",
   "changes": [
-    "The account check, staffing, allocations and essential settings now arrive in one protected database response.",
-    "The connection recovery actions wait long enough for a normal slow response before appearing.",
-    "The saved-roster fallback remains read-only if the single shared request genuinely fails.",
-    "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or database rules."
+    "The startup snapshot now bypasses the client wrapper that failed to dispatch on the affected Samsung browser.",
+    "The same protected schema-37 function still returns the account, staffing, allocations and essential settings together.",
+    "Saved-roster recovery remains read-only and now has an executable regression check.",
+    "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rules."
   ]
 }
