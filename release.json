@@ -1,12 +1,12 @@
 {
-  "version": "37.3",
+  "version": "37.4",
   "date": "18 September 2026",
-  "title": "Reliable roster opening and recovery",
-  "summary": "Give a slow shared roster time to recover, keep activity from blocking entry, and make both recovery actions dependable.",
+  "title": "The shared roster opens in dependable stages",
+  "summary": "Load clinical roster data in smaller dependable stages and leave support information until after the app opens.",
   "changes": [
-    "A realistic startup window for a slow or cold shared database connection.",
-    "Recent activity history that can no longer block entry to Night, Changes or Breaks.",
-    "A visible Try again state and a repaired, explicitly read-only saved-roster fallback while the shared connection is unavailable.",
-    "No changes to roster, staffing, allocation, Pager, Reliever, realtime, privacy or database rules."
+    "Essential staffing and tonight’s allocations now load in two smaller stages instead of one eleven-request block.",
+    "Settings, schema diagnostics and the realtime revision marker load after the clinical roster is visible.",
+    "Try again waits for an active request to finish before starting a genuinely fresh attempt.",
+    "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or database rules."
   ]
 }

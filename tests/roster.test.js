@@ -221,7 +221,7 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -406,7 +406,10 @@ assert.match(ui, /Showing the last saved roster/, 'offline launch state must ide
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function withTimeout\(promise,ms,message\)/, 'startup network work must have a bounded timeout helper');
 assert.match(html, /id="launchRecovery"[\s\S]*launchRetryBtn[\s\S]*launchOfflineBtn/, 'a delayed startup must offer retry and saved-roster recovery actions');
 assert.match(ui, /withTimeout\(Promise\.all\(/, 'shared startup reads must stop waiting after a bounded timeout');
-assert.match(ui, /Promise\.all\([\s\S]*\),30000,'The shared roster did not respond\.'/, 'the essential shared roster must allow a realistic cold-start response window');
+assert.match(ui, /var staffing=await withTimeout\(Promise\.all\(\[[\s\S]*?rotation_versions[\s\S]*?\]\),45000,'Shared staffing did not respond\.'/, 'essential staffing must load in its own bounded startup stage');
+assert.match(ui, /var allocations=await withTimeout\(Promise\.all\(\[[\s\S]*?night_labour_order[\s\S]*?night_plan_status[\s\S]*?night_role_overrides[\s\S]*?\]\),45000,'Shared allocations did not respond\.'/, 'effective allocations must load in a separate bounded startup stage');
+assert.match(ui, /function loadSharedSupportData\(\)[\s\S]*app_settings[\s\S]*app_schema_version[\s\S]*app_sync_state/, 'non-clinical support reads must have their own loader');
+assert.match(ui, /render\(\);renderDiagnostics\(\);loadSharedSupportData\(\);return true/, 'support information must start only after the clinical roster renders');
 assert.doesNotMatch(ui, /await withTimeout\(loadNightHistory/, 'recent activity history must never block the core roster from opening');
 assert.match(ui, /renderRecentActivity\(date\);renderChanges\(cur\(\)\)/, 'recent activity must refresh when its non-blocking history request completes');
 assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recovery must keep all writes read-only until reconnection');
@@ -414,6 +417,7 @@ assert.match(ui, /forcedOfflineSession=true;if\(restoreOfflineSnapshot\(\)\)\{up
 assert.match(ui, /function readOfflineSnapshot\(\)[\s\S]*snapshotRowsByDate\(raw\.nightChanges\)[\s\S]*snapshotRecordsByDate\(raw\.nightRoleOverrides\)/, 'saved-roster recovery must validate and repair partial local data before rendering');
 const retrySource = ui.slice(ui.indexOf('async function retryLaunchConnection'), ui.indexOf('\nfunction useSavedRosterAtLaunch'));
 assert.match(retrySource, /Trying again…[\s\S]*Waiting for the shared roster to respond/, 'retry must show visible progress while reconnecting');
+assert.match(retrySource, /if\(sharedLoadPromise\)try\{await sharedLoadPromise\}[\s\S]*if\(!launchFinished\)await authorizeUser/, 'retry must wait for an active request before starting a fresh authorisation attempt');
 assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide all recovery feedback while reconnecting');
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
