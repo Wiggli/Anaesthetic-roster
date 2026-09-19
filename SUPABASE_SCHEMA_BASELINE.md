@@ -1,6 +1,6 @@
 # Supabase schema baseline
 
-Reviewed against application version 37.9 and database schema 37. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+Reviewed against application version 37.12 and the repository migration chain through database schema 39. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten. Live catalogue details such as every deployed policy, index, trigger and Edge Function still require authenticated Supabase management inspection before any object is removed.
 
 ## Shared operational data
 
@@ -39,6 +39,18 @@ Schema 35 extends the atomic role-override contract with a validated, explicit f
 Schema 36 expands the pre-existing `night_role_overrides_valid` table constraint to accept that reviewed five-person structure alongside the original six-role structure. It rejects missing or extra keys, blank values and duplicate nurse names before a row can be stored.
 
 Schema 37 adds `get_roster_startup_v37`, a read-only, security-definer startup snapshot. It verifies the caller against the active `allowed_users` row before returning only the shared roster tables already readable by shift members. This reduces cold startup from several consecutive REST requests to one internally consistent database response; it does not alter any roster calculation or write contract.
+
+Schema 38 extends the validated night-only override shape to seven working nurses. It retains the same `apply_night_role_override_v35` RPC name so current clients keep one atomic write contract while accepting an explicit `mode: "7"` payload with the four theatre roles, Pager, Reliever and Seventh nurse.
+
+Schema 39 corrects schema 38's JSON key-count check: seven roles plus the required `mode` key means eight object keys. It replaces the schema-38 definition of `apply_night_role_override_v35`; it does not create a second live overload or change the table constraint.
+
+The schema-33 `apply_night_role_override_v33` wrapper remains a deliberate compatibility interface for installed clients that have not yet activated a newer service worker. Do not remove it solely because current source calls v35.
+
+## Repository-observable triggers and realtime
+
+Schema 33 installs one statement-level `bump_app_sync_state_v33` trigger on each shared operational table that existed when the migration ran, and schema 34 adds the same trigger to `allowed_users`. Each trigger updates the single `app_sync_state` row. `app_sync_state` is added to the `supabase_realtime` publication, while the browser subscribes through one named realtime channel and uses the revision as missed-event recovery.
+
+The migration uses `drop trigger if exists` followed by `create trigger`, so rerunning the migration cannot accumulate duplicate triggers with that name. Whether older differently named triggers or additional realtime publication entries exist in production cannot be established from repository files alone.
 
 ## Deployment review
 
