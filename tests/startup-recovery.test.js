@@ -67,10 +67,16 @@ async function run() {
     app_settings: { data: { id: 1, email_recipients: [] }, error: null }, app_schema_version: { data: { id: 1, version: 37 }, error: null },
     app_sync_state: { data: { id: 1, revision: 9 }, error: null }
   };
+  let syncRevisions = [9, 9];
   const queryFor = table => {
     const query = {
       select() { return query; }, eq() { return query; }, order() { return query; }, maybeSingle() { return query; },
-      then(resolve, reject) { return Promise.resolve(tableData[table]).then(resolve, reject); }
+      then(resolve, reject) {
+        const result = table === 'app_sync_state'
+          ? { data: { id: 1, revision: syncRevisions.length > 1 ? syncRevisions.shift() : syncRevisions[0] }, error: null }
+          : tableData[table];
+        return Promise.resolve(result).then(resolve, reject);
+      }
     };
     return query;
   };
@@ -86,6 +92,16 @@ async function run() {
   assert.equal(fallback.roster_settings.published_until, '2027-12-30');
   assert.equal(fallback.schema_version, 37);
   assert.equal(fallback.sync_revision, 9);
+
+  syncRevisions = [9, 10, 10, 10];
+  const refreshedFallback = await context.requestCompatibilityStartup();
+  assert.equal(refreshedFallback.sync_revision, 10, 'compatibility startup must retry once when shared data changes during sequential reads');
+
+  syncRevisions = [10, 10];
+  tableData.app_schema_version = { data: null, error: { message: 'unavailable' } };
+  const unknownSchemaFallback = await context.requestCompatibilityStartup();
+  assert.equal(unknownSchemaFallback.schema_version, 0, 'compatibility startup must not claim the expected schema when its read fails');
+  tableData.app_schema_version = { data: { id: 1, version: 37 }, error: null };
   context.document.querySelector = () => element();
   context.initialNightChosen = false;
   assert.equal(await context.loadSharedData(), true, 'an Android signed-in startup must open through compatibility reads');

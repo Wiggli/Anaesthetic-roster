@@ -152,6 +152,12 @@ function startupQueryFailed(result){return !result||!!result.error}
 
 function preferCompatibilityStartup(){return /android/i.test(navigator.userAgent||'')}
 
+async function compatibilitySyncRevision(){
+  var result=await startupQuery(supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle(),'Roster revision did not respond.');
+  if(startupQueryFailed(result)||!result.data){var error=result&&result.error||new Error('Roster revision could not be checked.');error.code=error.code||'REVISION_UNAVAILABLE';throw error}
+  return Number(result.data.revision||0)
+}
+
 async function requestCompatibilityStartup(){
   var email=currentUser&&String(currentUser.email||'').trim().toLowerCase();
   if(!email){var missingUser=new Error('Your sign-in account is unavailable.');missingUser.code='401';throw missingUser}
@@ -160,37 +166,41 @@ async function requestCompatibilityStartup(){
   if(startupQueryFailed(profileResult))throw profileResult&&profileResult.error||new Error('Roster access could not be checked.');
   if(!profileResult.data||!profileResult.data.active){var accessError=new Error('This account is not authorised.');accessError.code='42501';throw accessError}
 
-  sharedLoadFailureStage='staffing';setLaunchState('Preparing your night','Opening shared staffing through the compatibility route…');
-  var changes=await startupQuery(supa.from('night_changes').select('*').order('updated_at',{ascending:true}),'Absence information did not respond.');
-  var overtime=await startupQuery(supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),'Overtime information did not respond.');
-  var fiveCover=await startupQuery(supa.from('night_five_cover').select('*'),'Five-nurse information did not respond.');
-  var settings=await startupQuery(supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),'Roster settings did not respond.');
-  var versions=await startupQuery(supa.from('rotation_versions').select('*').order('effective_from',{ascending:true}),'Rotation information did not respond.');
-  var staffing=[changes,overtime,fiveCover,settings,versions];
-  if(staffing.some(startupQueryFailed)||!settings.data||!(versions.data||[]).length)throw new Error('Shared staffing could not be loaded.');
+  for(var attempt=0;attempt<2;attempt++){
+    var startingRevision=await compatibilitySyncRevision();
+    sharedLoadFailureStage='staffing';setLaunchState('Preparing your night',attempt?'The roster changed while opening. Refreshing it once…':'Opening shared staffing through the compatibility route…');
+    var changes=await startupQuery(supa.from('night_changes').select('*').order('updated_at',{ascending:true}),'Absence information did not respond.');
+    var overtime=await startupQuery(supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),'Overtime information did not respond.');
+    var fiveCover=await startupQuery(supa.from('night_five_cover').select('*'),'Five-nurse information did not respond.');
+    var settings=await startupQuery(supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),'Roster settings did not respond.');
+    var versions=await startupQuery(supa.from('rotation_versions').select('*').order('effective_from',{ascending:true}),'Rotation information did not respond.');
+    var staffing=[changes,overtime,fiveCover,settings,versions];
+    if(staffing.some(startupQueryFailed)||!settings.data||!(versions.data||[]).length)throw new Error('Shared staffing could not be loaded.');
 
-  sharedLoadFailureStage='allocations';setLaunchState('Preparing your night','Opening tonight\'s allocations…');
-  var labourOrder=await startupQuery(supa.from('night_labour_order').select('*'),'Labour Ward order did not respond.');
-  var planStatus=await startupQuery(supa.from('night_plan_status').select('*'),'Night plan status did not respond.');
-  var roleOverrides=await startupQuery(supa.from('night_role_overrides').select('*'),'Night-only roles did not respond.');
-  var allocations=[labourOrder,planStatus,roleOverrides];
-  if(allocations.some(startupQueryFailed))throw new Error('Shared allocations could not be loaded.');
+    sharedLoadFailureStage='allocations';setLaunchState('Preparing your night','Opening tonight\'s allocations…');
+    var labourOrder=await startupQuery(supa.from('night_labour_order').select('*'),'Labour Ward order did not respond.');
+    var planStatus=await startupQuery(supa.from('night_plan_status').select('*'),'Night plan status did not respond.');
+    var roleOverrides=await startupQuery(supa.from('night_role_overrides').select('*'),'Night-only roles did not respond.');
+    var allocations=[labourOrder,planStatus,roleOverrides];
+    if(allocations.some(startupQueryFailed))throw new Error('Shared allocations could not be loaded.');
 
-  sharedLoadFailureStage='support';
-  var support=await startupQuery(Promise.all([
-    supa.from('app_settings').select('*').eq('id',1).maybeSingle(),
-    supa.from('app_schema_version').select('*').eq('id',1).maybeSingle(),
-    supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle()
-  ]),'Roster support information did not respond.').catch(function(){return[{data:null},{data:null},{data:null}]});
-  return{
-    profile:profileResult.data,
-    night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
-    roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
-    night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
-    app_settings:support[0]&&!support[0].error?support[0].data:null,
-    schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):EXPECTED_SCHEMA_VERSION,
-    sync_revision:support[2]&&!support[2].error&&support[2].data?Number(support[2].data.revision||0):0
+    sharedLoadFailureStage='support';
+    var support=await startupQuery(Promise.all([
+      supa.from('app_settings').select('*').eq('id',1).maybeSingle(),
+      supa.from('app_schema_version').select('*').eq('id',1).maybeSingle()
+    ]),'Roster support information did not respond.').catch(function(){return[{data:null},{data:null}]});
+    var endingRevision=await compatibilitySyncRevision();
+    if(startingRevision===endingRevision)return{
+      profile:profileResult.data,
+      night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
+      roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
+      night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
+      app_settings:support[0]&&!support[0].error?support[0].data:null,
+      schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):0,
+      sync_revision:endingRevision
+    }
   }
+  var changedError=new Error('The shared roster changed while it was opening. Try again.');changedError.code='REVISION_CHANGED';throw changedError
 }
 
 function readOfflineSnapshot(){
