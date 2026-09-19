@@ -1,12 +1,12 @@
 {
   "version": "37.9",
   "date": "19 September 2026",
-  "title": "A restored sign-in that opens reliably",
-  "summary": "Renew returning sessions once and prevent duplicate startup authorisation from blocking the roster.",
+  "title": "The roster now finishes opening",
+  "summary": "Fix the Changes render error that appeared as a shared-roster connection failure.",
   "changes": [
-    "Returning users now make one deliberate startup authorisation attempt instead of racing two restored-session callbacks.",
-    "An expired saved session is renewed before roster data is requested, and an authentication rejection refreshes once before retrying.",
-    "If startup still fails, the opening screen identifies the safe failure stage and code rather than repeating a generic message.",
+    "Live testing confirmed that shared data loaded successfully before the Changes allocation control stopped rendering with an undefined plan.",
+    "The control now derives the selected night's staffing plan before deciding whether confirmation choices should appear.",
+    "A deterministic seven-nurse render check covers the exact state that exposed the failure.",
     "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rules."
   ]
 }

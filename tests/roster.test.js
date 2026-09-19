@@ -428,7 +428,7 @@ assert.match(ui, /withTimeout\([\s\S]*startupSnapshotTimeoutMs\+500,'The shared 
   'the direct startup request must have an application-level deadline independent of browser abort completion');
 assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v37[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs/,
   'installed Android startup must use an independent bounded request for the protected snapshot');
-assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupWithSessionRecovery\(requestStartupSnapshotXhr\)/,
+assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupSnapshotXhr\(\)/,
   'Android must use the independent protected snapshot transport before compatibility reads');
 assert.match(ui, /nightChanges=rowsGroupedByDate\(snapshot\.night_changes\)[\s\S]*labourOrders=rowsIndexedByDate\(snapshot\.night_labour_order\)[\s\S]*nightRoleOverrides=rowsIndexedByDate\(snapshot\.night_role_overrides\)/, 'one consistent snapshot must populate staffing and effective allocations together');
 assert.match(ui, /async function requestCompatibilityStartup\(\)[\s\S]*allowed_users[\s\S]*night_changes[\s\S]*night_labour_order/,
