@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.7 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.8 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -54,6 +54,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.8',date:'19 Sep 2026',title:'A clean Android route into the live roster',changes:['Installed Android apps now open the existing protected schema-37 snapshot through a bounded XMLHttpRequest instead of the fetch path that could remain pending after an app update.','The Android request has its own hard deadline and Retry always begins a fresh transport request.','The opening screen no longer presents recovery controls while a normal startup request is still in progress.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
   {version:'37.7',date:'19 Sep 2026',title:'A second independent route into the roster',changes:['Android now opens through sequential authorised roster reads, avoiding the one-request startup transport that remains pending on the affected Samsung browser.','Every compatibility read has an application-level deadline, while other devices retain the protected snapshot with the same independent deadline and automatic fallback.','Try again can no longer wait forever for an abandoned startup promise, and the opening message identifies when the compatibility route is being used.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
   {version:'37.6',date:'18 Sep 2026',title:'Startup requests that reach the roster reliably',changes:['The opening snapshot now uses a bounded authenticated web request instead of the client wrapper that failed to dispatch on the affected Samsung browser.','The request still calls the same protected schema-37 function, preserving account access, privacy and one internally consistent roster snapshot.','Saved-roster recovery now has an executable regression check as well as its existing read-only safeguards.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
   {version:'37.5',date:'18 Sep 2026',title:'One dependable connection opens the roster',changes:['The authorised account check, staffing, allocations and essential app settings now arrive as one protected database snapshot instead of several consecutive requests.','The opening screen no longer declares a connection problem while a normal slow database response is still in progress.','The saved-roster fallback remains read-only and available if the single shared request genuinely fails.','No roster calculation, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
@@ -144,6 +145,37 @@ async function requestStartupSnapshot(){
     })(),startupSnapshotTimeoutMs+500,'The shared roster snapshot did not settle.');
   }catch(error){if(error&&error.name==='AbortError'){var timeoutError=new Error('The shared roster did not respond.');timeoutError.code='TIMEOUT';throw timeoutError}throw error}
   finally{if(timer)clearTimeout(timer)}
+}
+
+async function requestStartupSnapshotXhr(){
+  var token=currentAccessToken;
+  if(!token){
+    var authState=await withTimeout(supa.auth.getSession(),10000,'The sign-in session did not respond.');
+    if(authState.error)throw authState.error;
+    rememberAuthSession(authState.data&&authState.data.session);token=currentAccessToken;
+  }
+  if(!token){var sessionError=new Error('Your sign-in session is no longer available.');sessionError.code='401';throw sessionError}
+  if(!window.XMLHttpRequest){var unsupportedError=new Error('This browser cannot use the Android roster connection.');unsupportedError.code='UNSUPPORTED_TRANSPORT';throw unsupportedError}
+  return new Promise(function(resolve,reject){
+    var settled=false,xhr=new window.XMLHttpRequest(),timer=null;
+    function finish(error,value){if(settled)return;settled=true;if(timer)clearTimeout(timer);xhr.onload=xhr.onerror=xhr.onabort=xhr.ontimeout=null;if(error)reject(error);else resolve(value)}
+    function transportError(message,code){var error=new Error(message);error.code=code||'NETWORK_ERROR';return error}
+    try{
+      xhr.open('POST',SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',true);
+      xhr.setRequestHeader('apikey',SUPABASE_KEY);xhr.setRequestHeader('Authorization','Bearer '+token);xhr.setRequestHeader('Content-Type','application/json');
+      xhr.timeout=startupSnapshotTimeoutMs;
+      xhr.onload=function(){
+        var data=null;try{data=xhr.responseText?JSON.parse(xhr.responseText):null}catch(parseError){finish(transportError('The shared roster returned unreadable information.','INVALID_RESPONSE'));return}
+        if(xhr.status<200||xhr.status>=300){finish(transportError(data&&data.message||'The shared roster could not be loaded.',data&&data.code||String(xhr.status)));return}
+        finish(null,data)
+      };
+      xhr.onerror=function(){finish(transportError('The shared roster connection failed.'))};
+      xhr.onabort=function(){finish(transportError('The shared roster request was stopped.','TIMEOUT'))};
+      xhr.ontimeout=function(){finish(transportError('The shared roster did not respond.','TIMEOUT'))};
+      timer=setTimeout(function(){try{xhr.abort()}catch(error){}finish(transportError('The shared roster did not respond.','TIMEOUT'))},startupSnapshotTimeoutMs+500);
+      xhr.send('{}');
+    }catch(error){finish(error)}
+  })
 }
 
 function startupQuery(promise,message){return withTimeout(promise,startupFallbackTimeoutMs,message)}
@@ -1279,10 +1311,10 @@ async function loadSharedData(options){
     try{
       sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
       var snapshot;if(preferCompatibilityStartup()){
-        try{snapshot=await requestCompatibilityStartup()}catch(compatibilityError){
-          if(compatibilityError&&compatibilityError.code==='42501')throw compatibilityError;
-          console.warn('Android compatibility startup was unavailable; trying the protected snapshot',compatibilityError);
-          sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Trying the protected roster connection…');snapshot=await requestStartupSnapshot()
+        try{sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the protected Android roster…');snapshot=await requestStartupSnapshotXhr()}catch(androidTransportError){
+          if(androidTransportError&&androidTransportError.code==='42501')throw androidTransportError;
+          console.warn('Protected Android startup was unavailable; using compatibility reads',androidTransportError);
+          snapshot=await requestCompatibilityStartup()
         }
       }else try{snapshot=await requestStartupSnapshot()}catch(snapshotError){
         if(snapshotError&&snapshotError.code==='42501')throw snapshotError;
@@ -1443,7 +1475,7 @@ async function authorizeUser(user,session){
 }
 
 function bind(){
-  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Connecting to the shared roster…');showLaunchRecovery('The shared roster is taking longer than usual. You can retry now or use the last saved roster on this device.')},12000);prepareChangesView();setupPWA();bindOnboarding();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
+  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('saveProfileBtn').onclick=saveProfile;byId('profilePhotoButton').onclick=function(){byId('profilePhotoInput').click()};byId('changeProfilePhoto').onclick=function(){byId('profilePhotoInput').click()};byId('profilePhotoInput').onchange=function(){if(this.files&&this.files[0])chooseProfilePhoto(this.files[0]);this.value=''};byId('removeProfilePhoto').onclick=removeProfilePhoto;byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=openOnboardingReplay;byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};byId('accountVersionHistoryBtn').onclick=function(){byId('accountSheet').close();renderReleaseNotes(true);byId('releaseNotes').showModal()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};
   ['profileName','profileJobTitle'].forEach(function(id){byId(id).oninput=updateProfileSaveState});byId('profileRosterName').onchange=updateProfileSaveState;

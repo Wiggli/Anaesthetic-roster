@@ -1,12 +1,12 @@
 {
-  "version": "37.7",
+  "version": "37.8",
   "date": "19 September 2026",
-  "title": "A second independent route into the roster",
-  "summary": "Open Android through sequential authorised roster reads while retaining the protected snapshot and fallback for other devices.",
+  "title": "A clean Android route into the live roster",
+  "summary": "Open the installed Android app through a bounded transport that is independent of the stalled fetch path.",
   "changes": [
-    "Android now uses sequential authorised roster reads instead of the one-request transport that remains pending on the affected Samsung browser.",
-    "Each compatibility read and the protected snapshot have application-level deadlines that do not depend on the browser completing an abort event.",
-    "Try again can no longer wait indefinitely for the abandoned startup promise.",
+    "Installed Android apps now request the existing protected schema-37 snapshot through XMLHttpRequest rather than the fetch path that could remain pending after an update.",
+    "The Android request has a hard application-level deadline and Retry begins a genuinely fresh request.",
+    "Recovery controls are shown only after the startup routes have actually failed, not while a normal request is still in progress.",
     "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rules."
   ]
 }
