@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.8 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.9 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -50,10 +50,12 @@ var lastFailedAction=null;
 var scrollChromeFrame=null;
 var pendingUpdateMeta=null;
 var sharedLoadFailureStage='';
+var sharedLoadFailureCode='';
 var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.9',date:'19 Sep 2026',title:'A restored sign-in that opens reliably',changes:['Returning users now make one deliberate startup authorisation attempt instead of allowing the restored-session event and application startup to race each other.','A saved session that has expired is renewed before roster data is requested, and an authentication rejection refreshes the session once before retrying the same protected request.','If startup still fails, the opening screen identifies the safe failure stage and code instead of repeating a generic connection message.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
   {version:'37.8',date:'19 Sep 2026',title:'A clean Android route into the live roster',changes:['Installed Android apps now open the existing protected schema-37 snapshot through a bounded XMLHttpRequest instead of the fetch path that could remain pending after an app update.','The Android request has its own hard deadline and Retry always begins a fresh transport request.','The opening screen no longer presents recovery controls while a normal startup request is still in progress.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
   {version:'37.7',date:'19 Sep 2026',title:'A second independent route into the roster',changes:['Android now opens through sequential authorised roster reads, avoiding the one-request startup transport that remains pending on the affected Samsung browser.','Every compatibility read has an application-level deadline, while other devices retain the protected snapshot with the same independent deadline and automatic fallback.','Try again can no longer wait forever for an abandoned startup promise, and the opening message identifies when the compatibility route is being used.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
   {version:'37.6',date:'18 Sep 2026',title:'Startup requests that reach the roster reliably',changes:['The opening snapshot now uses a bounded authenticated web request instead of the client wrapper that failed to dispatch on the affected Samsung browser.','The request still calls the same protected schema-37 function, preserving account access, privacy and one internally consistent roster snapshot.','Saved-roster recovery now has an executable regression check as well as its existing read-only safeguards.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
@@ -140,7 +142,7 @@ async function requestStartupSnapshot(){
     return await withTimeout((async function(){
       var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',cache:'no-store',credentials:'omit',signal:controller?controller.signal:undefined});
       var body=await response.text(),data=null;try{data=body?JSON.parse(body):null}catch(parseError){var invalidError=new Error('The shared roster returned unreadable information.');invalidError.code='INVALID_RESPONSE';throw invalidError}
-      if(!response.ok){var requestError=new Error(data&&data.message||'The shared roster could not be loaded.');requestError.code=data&&data.code||String(response.status);throw requestError}
+      if(!response.ok){var requestError=new Error(data&&data.message||'The shared roster could not be loaded.');requestError.code=data&&data.code||String(response.status);requestError.status=response.status;throw requestError}
       return data;
     })(),startupSnapshotTimeoutMs+500,'The shared roster snapshot did not settle.');
   }catch(error){if(error&&error.name==='AbortError'){var timeoutError=new Error('The shared roster did not respond.');timeoutError.code='TIMEOUT';throw timeoutError}throw error}
@@ -159,14 +161,14 @@ async function requestStartupSnapshotXhr(){
   return new Promise(function(resolve,reject){
     var settled=false,xhr=new window.XMLHttpRequest(),timer=null;
     function finish(error,value){if(settled)return;settled=true;if(timer)clearTimeout(timer);xhr.onload=xhr.onerror=xhr.onabort=xhr.ontimeout=null;if(error)reject(error);else resolve(value)}
-    function transportError(message,code){var error=new Error(message);error.code=code||'NETWORK_ERROR';return error}
+    function transportError(message,code,status){var error=new Error(message);error.code=code||'NETWORK_ERROR';if(status)error.status=status;return error}
     try{
       xhr.open('POST',SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',true);
       xhr.setRequestHeader('apikey',SUPABASE_KEY);xhr.setRequestHeader('Authorization','Bearer '+token);xhr.setRequestHeader('Content-Type','application/json');
       xhr.timeout=startupSnapshotTimeoutMs;
       xhr.onload=function(){
         var data=null;try{data=xhr.responseText?JSON.parse(xhr.responseText):null}catch(parseError){finish(transportError('The shared roster returned unreadable information.','INVALID_RESPONSE'));return}
-        if(xhr.status<200||xhr.status>=300){finish(transportError(data&&data.message||'The shared roster could not be loaded.',data&&data.code||String(xhr.status)));return}
+        if(xhr.status<200||xhr.status>=300){finish(transportError(data&&data.message||'The shared roster could not be loaded.',data&&data.code||String(xhr.status),xhr.status));return}
         finish(null,data)
       };
       xhr.onerror=function(){finish(transportError('The shared roster connection failed.'))};
@@ -176,6 +178,18 @@ async function requestStartupSnapshotXhr(){
       xhr.send('{}');
     }catch(error){finish(error)}
   })
+}
+
+function startupAuthError(error){var code=String(error&&error.code||''),message=String(error&&error.message||'');return error&&Number(error.status)===401||code==='401'||code==='PGRST301'||code==='AUTH_SESSION_MISSING'||/jwt|token.*(?:expired|invalid)|session.*expired/i.test(message)}
+
+async function requestStartupWithSessionRecovery(request){
+  try{return await request()}
+  catch(error){
+    if(!startupAuthError(error))throw error;
+    sharedLoadFailureStage='session';setLaunchState('Preparing your night','Renewing your secure sign-in…');
+    try{await refreshAuthSession()}catch(refreshError){refreshError.code=refreshError.code||'AUTH_REFRESH_FAILED';refreshError.startupSessionFailed=true;throw refreshError}
+    return request()
+  }
 }
 
 function startupQuery(promise,message){return withTimeout(promise,startupFallbackTimeoutMs,message)}
@@ -1309,14 +1323,17 @@ async function loadSharedData(options){
   if(!background)document.body.classList.add('dataRefreshing');
   sharedLoadPromise=(async function(){
     try{
+      sharedLoadFailureCode='';
       sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
       var snapshot;if(preferCompatibilityStartup()){
-        try{sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the protected Android roster…');snapshot=await requestStartupSnapshotXhr()}catch(androidTransportError){
+        try{sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the protected Android roster…');snapshot=await requestStartupWithSessionRecovery(requestStartupSnapshotXhr)}catch(androidTransportError){
+          if(androidTransportError&&androidTransportError.startupSessionFailed)throw androidTransportError;
           if(androidTransportError&&androidTransportError.code==='42501')throw androidTransportError;
           console.warn('Protected Android startup was unavailable; using compatibility reads',androidTransportError);
           snapshot=await requestCompatibilityStartup()
         }
-      }else try{snapshot=await requestStartupSnapshot()}catch(snapshotError){
+      }else try{snapshot=await requestStartupWithSessionRecovery(requestStartupSnapshot)}catch(snapshotError){
+        if(snapshotError&&snapshotError.startupSessionFailed)throw snapshotError;
         if(snapshotError&&snapshotError.code==='42501')throw snapshotError;
         console.warn('Protected startup snapshot was unavailable; using compatibility reads',snapshotError);
         snapshot=await requestCompatibilityStartup()
@@ -1335,9 +1352,11 @@ async function loadSharedData(options){
       rebuildCalculatedRoster();
       if(!initialNightChosen){idx=startingIndex();automaticSelectedDate=R[idx].date;initialNightChosen=true}
       else{var selected=localStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:Math.min(idx,R.length-1)}
-      lastSuccessfulSyncAt=new Date().toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';saveOfflineSnapshot();setSync('','Live and up to date');render();renderDiagnostics();return true;
+      lastSuccessfulSyncAt=new Date().toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';sharedLoadFailureCode='';saveOfflineSnapshot();setSync('','Live and up to date');render();renderDiagnostics();return true;
     }catch(error){
       console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);
+      sharedLoadFailureCode=String(error&&((error.status&&String(error.status))||error.code)||'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,32);
+      if(error&&(error.startupSessionFailed||startupAuthError(error)))sharedLoadFailureStage='session';
       if(error&&error.code==='42501'){sharedLoadFailureStage='access';forcedOfflineSession=false;return false}
       var cached=currentUser&&cachedAllowedProfile(currentUser.email);if(!currentUserProfile&&cached)prepareAuthorisedShell(cached);
       forcedOfflineSession=true;if(cached&&restoreOfflineSnapshot()){updateOfflineControls();return true}forcedOfflineSession=false;
@@ -1467,7 +1486,8 @@ async function authorizeUser(user,session){
   if(!user)return showAuth();if(session)rememberAuthSession(session);var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
   var sharedReady=await loadSharedData();if(attempt!==startupAttempt)return;
   if(!sharedReady&&sharedLoadFailureStage==='access'){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth('This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
-  if(!sharedReady){showLaunchRecovery('The shared roster did not respond. Check your connection, then try again.');return}
+  if(!sharedReady&&sharedLoadFailureStage==='session'){currentUser=null;currentAccessToken='';currentUserProfile=null;showAuth('Your saved sign-in has expired. Sign in again to open the shared roster.',true);return}
+  if(!sharedReady){var stage={session:'your saved sign-in',snapshot:'the protected roster',staffing:'shared staffing',allocations:'tonight\'s allocations',support:'roster support data'}[sharedLoadFailureStage]||'the shared roster',code=sharedLoadFailureCode?' (code '+sharedLoadFailureCode+')':'';showLaunchRecovery('The connection stopped while opening '+stage+code+'. Try again.');return}
   var isAdmin=currentUserProfile&&currentUserProfile.user_role==='admin';
   if(!forcedOfflineSession){try{await withTimeout(loadOwnProfile(),6000,'Profile details did not respond.')}catch(error){profileFeatureAvailable=false;currentPrivateProfile=null}}
   if(attempt!==startupAttempt)return;

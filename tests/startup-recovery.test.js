@@ -71,6 +71,36 @@ async function run() {
   assert.equal(xhrSent.headers.apikey, context.SUPABASE_KEY);
   assert.equal(xhrSent.body, '{}');
 
+  const recoveredHeaders = [];
+  let recoveredAttempts = 0;
+  class ExpiredThenSuccessfulStartupXhr extends SuccessfulStartupXhr {
+    send(body) {
+      recoveredHeaders.push(this.headers.Authorization);
+      recoveredAttempts += 1;
+      setTimeout(() => {
+        if (recoveredAttempts === 1) {
+          this.status = 401;
+          this.responseText = JSON.stringify({ code: 'PGRST301', message: 'JWT expired' });
+        } else {
+          this.status = 200;
+          this.responseText = JSON.stringify({ profile: { active: true } });
+        }
+        if (this.onload) this.onload();
+      }, 0);
+    }
+  }
+  context.window.XMLHttpRequest = ExpiredThenSuccessfulStartupXhr;
+  context.currentAccessToken = 'expired-test-token';
+  let refreshCalls = 0;
+  context.supa = { auth: { refreshSession: async () => {
+    refreshCalls += 1;
+    return { data: { session: { access_token: 'renewed-test-token', user: { id: 'user-1' } } }, error: null };
+  } } };
+  const recoveredResponse = await context.requestStartupWithSessionRecovery(context.requestStartupSnapshotXhr);
+  assert.equal(recoveredResponse.profile.active, true, 'an expired restored token must retry with a renewed session');
+  assert.equal(refreshCalls, 1, 'startup authentication must refresh only once');
+  assert.deepEqual(recoveredHeaders, ['Bearer expired-test-token', 'Bearer renewed-test-token']);
+
   context.startupSnapshotTimeoutMs = 10;
   context.fetch = () => new Promise(() => {});
   await assert.rejects(
@@ -162,6 +192,22 @@ async function run() {
   assert.equal(context.restoreOfflineSnapshot(), true, 'a validated saved roster must open without a network request');
   assert.equal(context.R.length, 138, 'saved-roster recovery must preserve the verified 138-night rotation');
   assert.equal(context.nightChanges['2026-09-18'][0].absent_name, 'James');
+
+  const restoredSession = { access_token: 'restored-token', expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: 'user-1', email: 'andre@example.test' } };
+  let authCallback;
+  let authorisationCalls = 0;
+  context.currentUser = null;
+  context.currentUserProfile = null;
+  context.passwordRecoveryActive = false;
+  context.authorizeUser = async () => { authorisationCalls += 1; };
+  context.supa = { auth: {
+    onAuthStateChange(callback) { authCallback = callback; callback('INITIAL_SESSION', restoredSession); return { data: { subscription: { unsubscribe() {} } } }; },
+    getSession: async () => ({ data: { session: restoredSession }, error: null }),
+    refreshSession: async () => ({ data: { session: restoredSession }, error: null })
+  } };
+  await context.initApplication();
+  assert.equal(typeof authCallback, 'function');
+  assert.equal(authorisationCalls, 1, 'a restored session must start exactly one authorisation attempt');
 }
 
 run().then(() => console.log('Startup transport and saved-roster recovery checks passed.')).catch(error => {

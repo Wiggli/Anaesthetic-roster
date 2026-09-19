@@ -1,6 +1,6 @@
 # Supabase schema baseline
 
-Reviewed against application version 37.8 and database schema 37. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+Reviewed against application version 37.9 and database schema 37. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
 
 ## Shared operational data
 
