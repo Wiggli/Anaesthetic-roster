@@ -1,12 +1,11 @@
 {
-  "version": "37.7",
+  "version": "37.10",
   "date": "19 September 2026",
-  "title": "A second independent route into the roster",
-  "summary": "Open Android through sequential authorised roster reads while retaining the protected snapshot and fallback for other devices.",
+  "title": "Seven nurses can be arranged for one night",
+  "summary": "Add a safe, explicitly night-only seventh-nurse role option.",
   "changes": [
-    "Android now uses sequential authorised roster reads instead of the one-request transport that remains pending on the affected Samsung browser.",
-    "Each compatibility read and the protected snapshot have application-level deadlines that do not depend on the browser completing an abort event.",
-    "Try again can no longer wait indefinitely for the abandoned startup promise.",
-    "No changes to roster, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rules."
+    "The night-only role editor now includes a Seventh nurse role whenever seven effective nurses are working, including named overtime staff.",
+    "The arrangement remains explicitly night-only, requires every effective nurse exactly once, and keeps the permanent rotation and automatic allocation rules unchanged.",
+    "A forward-only database upgrade validates seven-role assignments atomically before saving them."
   ]
 }

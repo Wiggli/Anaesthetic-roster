@@ -50,6 +50,27 @@ async function run() {
   assert.equal(sent.options.cache, 'no-store');
   assert.equal(sent.options.credentials, 'omit');
 
+  let xhrSent;
+  let xhrPayload = { profile: { active: true } };
+  class SuccessfulStartupXhr {
+    constructor() { this.headers = {}; this.status = 0; this.responseText = ''; }
+    open(method, url, async) { this.method = method; this.url = url; this.async = async; }
+    setRequestHeader(name, value) { this.headers[name] = value; }
+    send(body) {
+      xhrSent = { method: this.method, url: this.url, async: this.async, headers: this.headers, body, timeout: this.timeout };
+      setTimeout(() => { this.status = 200; this.responseText = JSON.stringify(xhrPayload); if (this.onload) this.onload(); }, 0);
+    }
+    abort() { if (this.onabort) this.onabort(); }
+  }
+  context.window.XMLHttpRequest = SuccessfulStartupXhr;
+  const xhrResponse = await context.requestStartupSnapshotXhr();
+  assert.equal(xhrResponse.profile.active, true, 'the independent Android transport must return the protected snapshot');
+  assert.equal(xhrSent.method, 'POST');
+  assert.equal(xhrSent.url, `${context.SUPABASE_URL}/rest/v1/rpc/get_roster_startup_v37`);
+  assert.equal(xhrSent.headers.Authorization, 'Bearer signed-in-test-token');
+  assert.equal(xhrSent.headers.apikey, context.SUPABASE_KEY);
+  assert.equal(xhrSent.body, '{}');
+
   context.startupSnapshotTimeoutMs = 10;
   context.fetch = () => new Promise(() => {});
   await assert.rejects(
@@ -57,6 +78,16 @@ async function run() {
     error => error && error.code === 'TIMEOUT',
     'an unresolved browser fetch must be released by the application-level deadline'
   );
+  class HangingStartupXhr {
+    open() {} setRequestHeader() {} send() {} abort() {}
+  }
+  context.window.XMLHttpRequest = HangingStartupXhr;
+  await assert.rejects(
+    context.requestStartupSnapshotXhr(),
+    error => error && error.code === 'TIMEOUT',
+    'an unresolved Android request must be released by its independent application deadline'
+  );
+  context.window.XMLHttpRequest = SuccessfulStartupXhr;
 
   const tableData = {
     allowed_users: { data: { email: 'andre@example.test', display_name: 'Andre', user_role: 'admin', active: true }, error: null },
@@ -104,7 +135,14 @@ async function run() {
   tableData.app_schema_version = { data: { id: 1, version: 37 }, error: null };
   context.document.querySelector = () => element();
   context.initialNightChosen = false;
-  assert.equal(await context.loadSharedData(), true, 'an Android signed-in startup must open through compatibility reads');
+  xhrPayload = {
+    profile: tableData.allowed_users.data,
+    night_changes: [], night_overtime: [], night_five_cover: [],
+    roster_settings: context.rosterSettings, rotation_versions: context.rotationVersions,
+    night_labour_order: [], night_plan_status: [], night_role_overrides: [],
+    app_settings: tableData.app_settings.data, schema_version: 37, sync_revision: 10
+  };
+  assert.equal(await context.loadSharedData(), true, 'an Android signed-in startup must open through the independent protected snapshot request');
   assert.equal(context.currentUserProfile.email, 'andre@example.test');
   assert.equal(context.R.length, 138, 'the Android startup route must preserve the verified rotation');
 
@@ -124,6 +162,14 @@ async function run() {
   assert.equal(context.restoreOfflineSnapshot(), true, 'a validated saved roster must open without a network request');
   assert.equal(context.R.length, 138, 'saved-roster recovery must preserve the verified 138-night rotation');
   assert.equal(context.nightChanges['2026-09-18'][0].absent_name, 'James');
+
+  const sevenNurseNight = context.calculateNight('2026-09-18');
+  context.nightOvertime[sevenNurseNight.date] = [{ id: 'overtime-1', nurse_name: 'Nazia' }];
+  context.renderNightRoleOverride = () => {};
+  assert.doesNotThrow(
+    () => context.updateAllocationSaveControl(sevenNurseNight),
+    'the seven-nurse allocation control must derive its plan instead of crashing after shared data loads'
+  );
 }
 
 run().then(() => console.log('Startup transport and saved-roster recovery checks passed.')).catch(error => {

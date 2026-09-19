@@ -231,7 +231,7 @@ const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -417,7 +417,7 @@ assert.match(sw, /event\.request\.mode === 'navigate'[\s\S]*fetch\(event\.reques
 assert.doesNotMatch(sw, /caches\.put\([^\n]*supabase/i, 'service worker must never cache shared Supabase data');
 assert.match(sw, /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary/, 'authentication, REST, realtime and private profile-photo origins must bypass caching');
 
-assert.match(ui, /Connecting to the shared roster…/, 'slow launch state must name the shared roster connection');
+assert.match(ui, /Finishing the shared roster connection…/, 'slow launch state must name the shared roster connection without declaring failure');
 assert.match(ui, /Showing the last saved roster/, 'offline launch state must identify saved roster data');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function withTimeout\(promise,ms,message\)/, 'startup network work must have a bounded timeout helper');
 assert.match(html, /id="launchRecovery"[\s\S]*launchRetryBtn[\s\S]*launchOfflineBtn/, 'a delayed startup must offer retry and saved-roster recovery actions');
@@ -426,11 +426,16 @@ assert.match(ui, /Authorization:'Bearer '\+token/, 'the direct startup request m
 assert.match(ui, /setTimeout\(function\(\)\{controller\.abort\(\)\},startupSnapshotTimeoutMs\)/, 'the direct startup request must still ask the browser to abort');
 assert.match(ui, /withTimeout\([\s\S]*startupSnapshotTimeoutMs\+500,'The shared roster snapshot did not settle\.'/,
   'the direct startup request must have an application-level deadline independent of browser abort completion');
+assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v37[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs/,
+  'installed Android startup must use an independent bounded request for the protected snapshot');
+assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupSnapshotXhr\(\)/,
+  'Android must use the independent protected snapshot transport before compatibility reads');
 assert.match(ui, /nightChanges=rowsGroupedByDate\(snapshot\.night_changes\)[\s\S]*labourOrders=rowsIndexedByDate\(snapshot\.night_labour_order\)[\s\S]*nightRoleOverrides=rowsIndexedByDate\(snapshot\.night_role_overrides\)/, 'one consistent snapshot must populate staffing and effective allocations together');
 assert.match(ui, /async function requestCompatibilityStartup\(\)[\s\S]*allowed_users[\s\S]*night_changes[\s\S]*night_labour_order/,
   'startup must retain an independent authorised read-only route when the snapshot transport never settles');
 assert.match(ui, /snapshot=await requestCompatibilityStartup\(\)/, 'a failed snapshot must automatically enter the compatibility route');
-assert.match(ui, /launchSlowTimer=setTimeout\([\s\S]*\},12000\)/, 'recovery actions must not interrupt the measured normal cold-start response');
+assert.match(ui, /launchSlowTimer=setTimeout\([\s\S]*Finishing the shared roster connection…[\s\S]*\},12000\)/, 'a slow request may update its status without presenting failure controls prematurely');
+assert.doesNotMatch(ui, /launchSlowTimer=setTimeout\([\s\S]{0,240}showLaunchRecovery/, 'the normal cold-start timer must not display recovery controls before the request fails');
 assert.doesNotMatch(ui, /await withTimeout\(loadNightHistory/, 'recent activity history must never block the core roster from opening');
 assert.match(ui, /renderRecentActivity\(date\);renderChanges\(cur\(\)\)/, 'recent activity must refresh when its non-blocking history request completes');
 assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recovery must keep all writes read-only until reconnection');
