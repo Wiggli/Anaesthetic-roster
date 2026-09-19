@@ -1,11 +1,11 @@
 {
-  "version": "37.11",
+  "version": "37.12",
   "date": "19 September 2026",
-  "title": "Seven-nurse role changes now save",
-  "summary": "Correct the atomic structure check for custom seven-nurse arrangements.",
+  "title": "One clean route into the roster",
+  "summary": "Remove duplicate restored-session startup work and unblock the roster from optional profile loading.",
   "changes": [
-    "Custom seven-nurse arrangements now pass the atomic database structure check when all seven roles and the required mode are supplied.",
-    "An overtime nurse can be moved into any agreed role while every working nurse remains assigned exactly once.",
-    "The verified rotation, seventh-nurse workflow, Pager and Reliever rules, staffing calculations and permanent roster remain unchanged."
+    "A restored sign-in now starts exactly one shared-roster authorisation path instead of requesting it twice.",
+    "Expired saved sessions are renewed once, and optional private profile details no longer hold the loaded roster behind the launch screen.",
+    "The interface, verified rotation, staffing, allocation, Pager, Reliever, realtime, privacy and database rules remain unchanged."
   ]
 }
