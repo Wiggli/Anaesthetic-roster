@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.6 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.7 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -50,8 +50,11 @@ var lastFailedAction=null;
 var scrollChromeFrame=null;
 var pendingUpdateMeta=null;
 var sharedLoadFailureStage='';
+var startupSnapshotTimeoutMs=7000;
+var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.7',date:'19 Sep 2026',title:'A second independent route into the roster',changes:['Android now opens through sequential authorised roster reads, avoiding the one-request startup transport that remains pending on the affected Samsung browser.','Every compatibility read has an application-level deadline, while other devices retain the protected snapshot with the same independent deadline and automatic fallback.','Try again can no longer wait forever for an abandoned startup promise, and the opening message identifies when the compatibility route is being used.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
   {version:'37.6',date:'18 Sep 2026',title:'Startup requests that reach the roster reliably',changes:['The opening snapshot now uses a bounded authenticated web request instead of the client wrapper that failed to dispatch on the affected Samsung browser.','The request still calls the same protected schema-37 function, preserving account access, privacy and one internally consistent roster snapshot.','Saved-roster recovery now has an executable regression check as well as its existing read-only safeguards.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
   {version:'37.5',date:'18 Sep 2026',title:'One dependable connection opens the roster',changes:['The authorised account check, staffing, allocations and essential app settings now arrive as one protected database snapshot instead of several consecutive requests.','The opening screen no longer declares a connection problem while a normal slow database response is still in progress.','The saved-roster fallback remains read-only and available if the single shared request genuinely fails.','No roster calculation, allocation, Pager, Reliever, five-nurse, realtime, privacy or write rule has changed.']},
   {version:'37.4',date:'18 Sep 2026',title:'The shared roster opens in dependable stages',changes:['Startup now loads essential staffing first, then tonight’s allocation state, instead of making eleven database reads compete as one all-or-nothing request.','Settings, schema diagnostics and the realtime revision marker load quietly after the clinical roster is already visible.','Try again waits for an active request to finish before starting a genuinely fresh attempt, preventing overlapping startup requests.','The verified rotation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy and database rules remain unchanged.']},
@@ -131,14 +134,73 @@ async function requestStartupSnapshot(){
     rememberAuthSession(authState.data&&authState.data.session);token=currentAccessToken;
   }
   if(!token){var sessionError=new Error('Your sign-in session is no longer available.');sessionError.code='401';throw sessionError}
-  var controller=window.AbortController?new window.AbortController():null,timer=controller?setTimeout(function(){controller.abort()},15000):null;
+  var controller=window.AbortController?new window.AbortController():null,timer=controller?setTimeout(function(){controller.abort()},startupSnapshotTimeoutMs):null;
   try{
-    var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',cache:'no-store',credentials:'omit',signal:controller?controller.signal:undefined});
-    var body=await response.text(),data=null;try{data=body?JSON.parse(body):null}catch(parseError){var invalidError=new Error('The shared roster returned unreadable information.');invalidError.code='INVALID_RESPONSE';throw invalidError}
-    if(!response.ok){var requestError=new Error(data&&data.message||'The shared roster could not be loaded.');requestError.code=data&&data.code||String(response.status);throw requestError}
-    return data;
+    return await withTimeout((async function(){
+      var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',cache:'no-store',credentials:'omit',signal:controller?controller.signal:undefined});
+      var body=await response.text(),data=null;try{data=body?JSON.parse(body):null}catch(parseError){var invalidError=new Error('The shared roster returned unreadable information.');invalidError.code='INVALID_RESPONSE';throw invalidError}
+      if(!response.ok){var requestError=new Error(data&&data.message||'The shared roster could not be loaded.');requestError.code=data&&data.code||String(response.status);throw requestError}
+      return data;
+    })(),startupSnapshotTimeoutMs+500,'The shared roster snapshot did not settle.');
   }catch(error){if(error&&error.name==='AbortError'){var timeoutError=new Error('The shared roster did not respond.');timeoutError.code='TIMEOUT';throw timeoutError}throw error}
   finally{if(timer)clearTimeout(timer)}
+}
+
+function startupQuery(promise,message){return withTimeout(promise,startupFallbackTimeoutMs,message)}
+
+function startupQueryFailed(result){return !result||!!result.error}
+
+function preferCompatibilityStartup(){return /android/i.test(navigator.userAgent||'')}
+
+async function compatibilitySyncRevision(){
+  var result=await startupQuery(supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle(),'Roster revision did not respond.');
+  if(startupQueryFailed(result)||!result.data){var error=result&&result.error||new Error('Roster revision could not be checked.');error.code=error.code||'REVISION_UNAVAILABLE';throw error}
+  return Number(result.data.revision||0)
+}
+
+async function requestCompatibilityStartup(){
+  var email=currentUser&&String(currentUser.email||'').trim().toLowerCase();
+  if(!email){var missingUser=new Error('Your sign-in account is unavailable.');missingUser.code='401';throw missingUser}
+  sharedLoadFailureStage='access';setLaunchState('Preparing your night','Checking roster access…');
+  var profileResult=await startupQuery(supa.from('allowed_users').select('*').eq('email',email).eq('active',true).maybeSingle(),'Roster access did not respond.');
+  if(startupQueryFailed(profileResult))throw profileResult&&profileResult.error||new Error('Roster access could not be checked.');
+  if(!profileResult.data||!profileResult.data.active){var accessError=new Error('This account is not authorised.');accessError.code='42501';throw accessError}
+
+  for(var attempt=0;attempt<2;attempt++){
+    var startingRevision=await compatibilitySyncRevision();
+    sharedLoadFailureStage='staffing';setLaunchState('Preparing your night',attempt?'The roster changed while opening. Refreshing it once…':'Opening shared staffing through the compatibility route…');
+    var changes=await startupQuery(supa.from('night_changes').select('*').order('updated_at',{ascending:true}),'Absence information did not respond.');
+    var overtime=await startupQuery(supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),'Overtime information did not respond.');
+    var fiveCover=await startupQuery(supa.from('night_five_cover').select('*'),'Five-nurse information did not respond.');
+    var settings=await startupQuery(supa.from('roster_settings').select('*').eq('id',1).maybeSingle(),'Roster settings did not respond.');
+    var versions=await startupQuery(supa.from('rotation_versions').select('*').order('effective_from',{ascending:true}),'Rotation information did not respond.');
+    var staffing=[changes,overtime,fiveCover,settings,versions];
+    if(staffing.some(startupQueryFailed)||!settings.data||!(versions.data||[]).length)throw new Error('Shared staffing could not be loaded.');
+
+    sharedLoadFailureStage='allocations';setLaunchState('Preparing your night','Opening tonight\'s allocations…');
+    var labourOrder=await startupQuery(supa.from('night_labour_order').select('*'),'Labour Ward order did not respond.');
+    var planStatus=await startupQuery(supa.from('night_plan_status').select('*'),'Night plan status did not respond.');
+    var roleOverrides=await startupQuery(supa.from('night_role_overrides').select('*'),'Night-only roles did not respond.');
+    var allocations=[labourOrder,planStatus,roleOverrides];
+    if(allocations.some(startupQueryFailed))throw new Error('Shared allocations could not be loaded.');
+
+    sharedLoadFailureStage='support';
+    var support=await startupQuery(Promise.all([
+      supa.from('app_settings').select('*').eq('id',1).maybeSingle(),
+      supa.from('app_schema_version').select('*').eq('id',1).maybeSingle()
+    ]),'Roster support information did not respond.').catch(function(){return[{data:null},{data:null}]});
+    var endingRevision=await compatibilitySyncRevision();
+    if(startingRevision===endingRevision)return{
+      profile:profileResult.data,
+      night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
+      roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
+      night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
+      app_settings:support[0]&&!support[0].error?support[0].data:null,
+      schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):0,
+      sync_revision:endingRevision
+    }
+  }
+  var changedError=new Error('The shared roster changed while it was opening. Try again.');changedError.code='REVISION_CHANGED';throw changedError
 }
 
 function readOfflineSnapshot(){
@@ -1216,7 +1278,18 @@ async function loadSharedData(options){
   sharedLoadPromise=(async function(){
     try{
       sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
-      var snapshot=await requestStartupSnapshot(),profile=snapshot&&snapshot.profile;
+      var snapshot;if(preferCompatibilityStartup()){
+        try{snapshot=await requestCompatibilityStartup()}catch(compatibilityError){
+          if(compatibilityError&&compatibilityError.code==='42501')throw compatibilityError;
+          console.warn('Android compatibility startup was unavailable; trying the protected snapshot',compatibilityError);
+          sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Trying the protected roster connection…');snapshot=await requestStartupSnapshot()
+        }
+      }else try{snapshot=await requestStartupSnapshot()}catch(snapshotError){
+        if(snapshotError&&snapshotError.code==='42501')throw snapshotError;
+        console.warn('Protected startup snapshot was unavailable; using compatibility reads',snapshotError);
+        snapshot=await requestCompatibilityStartup()
+      }
+      var profile=snapshot&&snapshot.profile;
       if(!plainSnapshotRecord(snapshot)||!plainSnapshotRecord(profile)||!profile.active||!Array.isArray(snapshot.rotation_versions)||!snapshot.rotation_versions.length||!plainSnapshotRecord(snapshot.roster_settings))throw new Error('The shared roster returned incomplete information.');
       if(currentUser&&String(profile.email||'').toLowerCase()!==String(currentUser.email||'').toLowerCase()){var accessError=new Error('The shared roster returned the wrong account.');accessError.code='42501';throw accessError}
       currentUserProfile=profile;try{localStorage.setItem('anaes_cached_profile',JSON.stringify(profile))}catch(error){}prepareAuthorisedShell(profile);
