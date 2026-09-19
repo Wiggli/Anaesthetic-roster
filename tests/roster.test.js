@@ -230,8 +230,9 @@ const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migra
 const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
+const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -367,6 +368,9 @@ assert.match(startupMigration, /where lower\(account\.email\) = v_email[\s\S]*an
 for (const table of ['night_changes','night_overtime','night_five_cover','roster_settings','rotation_versions','night_labour_order','night_plan_status','night_role_overrides']) assert.match(startupMigration, new RegExp(`public\\.${table}`), `startup snapshot must include ${table}`);
 assert.match(startupMigration, /revoke all on function public\.get_roster_startup_v37\(\)[\s\S]*from public, anon[\s\S]*grant execute[\s\S]*to authenticated/, 'the startup snapshot must be callable only by authenticated users');
 assert.match(startupMigration, /update public\.app_schema_version[\s\S]*version = 37/, 'schema 37 migration must update the schema marker');
+assert.match(sevenRoleFixMigration, /elsif v_mode = '7'[\s\S]*v_expected_key_count := 8/, 'schema 39 must count the seven role keys plus the required mode key');
+assert.match(sevenRoleFixMigration, /v_mode in \('5','7'\)[\s\S]*p_assignments ->> 'mode' <> v_mode/, 'schema 39 must continue requiring the explicit custom-arrangement mode');
+assert.match(sevenRoleFixMigration, /update public\.app_schema_version set version=39/, 'schema 39 migration must update the schema marker');
 assert.equal(context.EXPECTED_SCHEMA_VERSION, 37, 'the application must require the protected startup snapshot');
 assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');

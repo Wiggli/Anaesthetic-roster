@@ -1,11 +1,11 @@
 {
-  "version": "37.10",
+  "version": "37.11",
   "date": "19 September 2026",
-  "title": "Seven nurses can be arranged for one night",
-  "summary": "Add a safe, explicitly night-only seventh-nurse role option.",
+  "title": "Seven-nurse role changes now save",
+  "summary": "Correct the atomic structure check for custom seven-nurse arrangements.",
   "changes": [
-    "The night-only role editor now includes a Seventh nurse role whenever seven effective nurses are working, including named overtime staff.",
-    "The arrangement remains explicitly night-only, requires every effective nurse exactly once, and keeps the permanent rotation and automatic allocation rules unchanged.",
-    "A forward-only database upgrade validates seven-role assignments atomically before saving them."
+    "Custom seven-nurse arrangements now pass the atomic database structure check when all seven roles and the required mode are supplied.",
+    "An overtime nurse can be moved into any agreed role while every working nurse remains assigned exactly once.",
+    "The verified rotation, seventh-nurse workflow, Pager and Reliever rules, staffing calculations and permanent roster remain unchanged."
   ]
 }
