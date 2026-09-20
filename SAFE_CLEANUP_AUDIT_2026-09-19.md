@@ -68,6 +68,8 @@ The branch is slightly larger because it restores bounded expired-session recove
 
 The live database work is fast and cache-resident, so the snapshot query itself is not the likely cause of multi-second startup reports. A branch-hosted authenticated trace is still required to measure 37.12 end to end, and this browser surface did not expose a trustworthy resource waterfall or memory profile. The only console errors observed came from the browser-control extension, not from the roster origin.
 
+An authenticated production 37.11 desktop smoke check at 1363×936 covered Night, Changes and Breaks in light and dark themes. All three views rendered without horizontal document overflow, retained the Live state, and the theme switch updated the page from the light `#f2f2f7` surface to the dark `#000000` surface with corresponding high-contrast text. The session was restored to light mode afterwards. This does not replace the outstanding mobile viewport or installed-PWA checks.
+
 ## Confirmed findings and changes
 
 ### B. Duplicated and safe to consolidate
@@ -186,7 +188,7 @@ WAL archiving is operating with 1,688 successful archives and zero failures. The
 - Startup transport, saved-roster recovery, single restored-session authorisation, expired-token single refresh, optional-profile ordering and seven-nurse render: pass.
 - Version, release-history, manifest and service-worker cache consistency: pass after the 37.12 version update.
 
-Authenticated administrator login, three restored-session reloads, the administrator interface, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous Live clients, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. A production write was deliberately not made, so cross-client change propagation is not claimed. Normal-member UI rendering, logout/login, installed-PWA reopening, a branch-hosted 37.12 waterfall and responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
+Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous Live clients, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. A production write was deliberately not made, so cross-client change propagation is not claimed. Normal-member UI rendering, logout/login, installed-PWA reopening, a branch-hosted 37.12 waterfall and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
 
 ## Technical debt
 
@@ -219,7 +221,7 @@ Authenticated administrator login, three restored-session reloads, the administr
 Do not deploy this branch yet. Before deployment it still needs:
 
 1. Branch-hosted authenticated 37.12 request waterfall and comparison with the measured 37.11 production baseline.
-2. Light/dark mobile smoke checks and installed-PWA reopening, despite no intended visual change.
+2. Light/dark mobile smoke checks and installed-PWA reopening; authenticated desktop light/dark Night, Changes and Breaks checks already pass.
 3. Normal-member UI check; database-level member/admin/unauthorised/anonymous permissions are already verified.
 4. Two-client change propagation in a non-production environment; both production clients reached Live state and converged, but no production write was permitted.
 5. Establish and verify an approved production backup/restore capability; the current Free plan has no scheduled backups or PITR, and healthy WAL archiver counters are not a user-restorable recovery point.
