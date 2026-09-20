@@ -101,7 +101,7 @@ The branch restores the single-authorisation contract and its deterministic test
 | Private profile | One selected-column query, plus one signed URL only when an avatar exists | Keep; no longer blocks launch |
 | Current-night history | Three independent history queries in parallel and guarded per date | Keep; non-blocking |
 | Admin account list | One background query for administrators only | Keep; consider selected columns later |
-| Realtime recovery | One channel plus one cheap revision query every 15 seconds while visible | Two simultaneous authenticated clients reached Live state and rendered identical data; keep pending a safe non-production write-propagation test |
+| Realtime recovery | One channel plus one cheap revision query every 15 seconds while visible | Two simultaneous authenticated production clients reached Live state and rendered identical data. An isolated non-production trigger/publication test delivered the same three revisions to two independent WebSocket clients; keep pending a full two-browser application test. |
 | Compatibility startup | Thirteen authorised reads in a revision-consistent retry envelope | Cautious fallback; do not remove without affected-device testing |
 | Full reload after a realtime event | Debounced protected snapshot, with selected-night history invalidation where applicable | Potential optimisation, but correctness-sensitive |
 
@@ -156,6 +156,8 @@ One important integrity issue is now confirmed for a dedicated future migration:
 
 Realtime publishes 13 public tables while the client subscribes to 12 table feeds plus `app_sync_state`. Most shared writes therefore produce both a source-table event and the statement-level revision event; the 350 ms reload debounce normally coalesces them. `roster_nights` is published but not subscribed by the current client, while `app_settings` is subscribed but relies on its `app_sync_state` trigger because it is not published directly. This is real cleanup potential, but changing publication membership is correctness-sensitive and is not proposed here.
 
+Supabase rejected a disposable branch before creation because branching is unavailable on the Free plan. A separate zero-cost eu-central-1 project was therefore used for a minimal isolated Realtime probe without copying any production data, users or roster logic. Two RLS-enabled probe tables, a fixed-search-path statement trigger and two publication entries produced zero security or performance advisor findings. Two independent WebSocket clients joined successfully and both received revisions 1, 2 and 3 after three REST writes. On the two timed warm runs, both clients received the revision event 493 ms and 521 ms after the REST response. The test project was then paused and confirmed `INACTIVE`. This verifies the database trigger/publication transport in isolation, but it is not represented as a full two-device run of the roster application.
+
 The revision poll is inexpensive at the database: 1.477 ms mean across 1,454 observed calls. History reads average 0.254–0.742 ms and profile reads average 1.400 ms. There are no Edge Functions, no installed `pg_cron` extension or scheduled jobs, and the only installed non-core extensions are `pg_stat_statements`, `pgcrypto`, `supabase_vault` and `uuid-ossp`.
 
 Storage has one private `profile-photos` bucket, a 2 MiB limit, JPEG/PNG/WebP allow-list and four owner-prefix policies covering SELECT, INSERT, UPDATE and DELETE. Auth currently has three confirmed email users, no banned users, no verified MFA factors and eight non-expired sessions. Exact Auth dashboard toggles beyond the advisor-visible leaked-password setting were not changed.
@@ -188,7 +190,7 @@ WAL archiving is operating with 1,688 successful archives and zero failures. The
 - Startup transport, saved-roster recovery, single restored-session authorisation, expired-token single refresh, optional-profile ordering and seven-nurse render: pass.
 - Version, release-history, manifest and service-worker cache consistency: pass after the 37.12 version update.
 
-Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous Live clients, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. A production write was deliberately not made, so cross-client change propagation is not claimed. Normal-member UI rendering, logout/login, installed-PWA reopening, a branch-hosted 37.12 waterfall and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
+Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. A production write was deliberately not made. Normal-member UI rendering, logout/login, installed-PWA reopening, a safe authenticated 37.12 browser trace, physical-device Realtime propagation and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
 
 ## Technical debt
 
@@ -223,6 +225,6 @@ Do not deploy this branch yet. Before deployment it still needs:
 1. Branch-hosted authenticated 37.12 request waterfall and comparison with the measured 37.11 production baseline.
 2. Light/dark mobile smoke checks and installed-PWA reopening; authenticated desktop light/dark Night, Changes and Breaks checks already pass.
 3. Normal-member UI check; database-level member/admin/unauthorised/anonymous permissions are already verified.
-4. Two-client change propagation in a non-production environment; both production clients reached Live state and converged, but no production write was permitted.
+4. Full two-browser or two-device application change propagation; the isolated non-production trigger/publication test delivered revisions 1–3 to both independent clients, while production remained read-only.
 5. Establish and verify an approved production backup/restore capability; the current Free plan has no scheduled backups or PITR, and healthy WAL archiver counters are not a user-restorable recovery point.
 6. Owner review and explicit approval.
