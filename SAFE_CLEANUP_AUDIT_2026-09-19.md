@@ -13,7 +13,7 @@ Status: pre-deployment audit on `codex/audit-cleanup-37-11`. Nothing in this bra
 | Proposed branch version | 37.12 |
 | Supabase project reference | `voaygfleqceqacvqixxp` |
 | Repository migration level | Schema 39 |
-| Production recovery point | WAL archiving is active with 1,688 successful archives, zero failures and a latest archived WAL at 2026-09-19 23:58:57 UTC; dashboard backup retention/latest restorable point still awaits completion of dashboard 2-step verification |
+| Production backup and recovery status | The Supabase dashboard confirms that this Free-plan project has no scheduled backups and PITR is not enabled. WAL archiving is active with 1,688 successful archives, zero failures and a latest archived WAL at 2026-09-19 23:58:57 UTC, but it does not provide a user-restorable recovery point. |
 
 The remote `main` reference still resolves to the protected commit. The production URL, manifest identity, scope and `start_url` are unchanged.
 
@@ -158,7 +158,7 @@ The revision poll is inexpensive at the database: 1.477 ms mean across 1,454 obs
 
 Storage has one private `profile-photos` bucket, a 2 MiB limit, JPEG/PNG/WebP allow-list and four owner-prefix policies covering SELECT, INSERT, UPDATE and DELETE. Auth currently has three confirmed email users, no banned users, no verified MFA factors and eight non-expired sessions. Exact Auth dashboard toggles beyond the advisor-visible leaked-password setting were not changed.
 
-WAL archiving is operating with 1,688 successful archives and zero failures. This confirms the archive mechanism, not the dashboard's retained recovery window. The exact daily-backup/PITR entitlement and latest restorable recovery point remain pending because the separate Supabase dashboard login stopped at Google device approval.
+WAL archiving is operating with 1,688 successful archives and zero failures. The authenticated Supabase dashboard confirms that the project is on the Free plan, scheduled backups are not included and PITR is not enabled because it is a Pro-plan add-on. Therefore there is no dashboard-retained backup or latest user-restorable recovery point to confirm. The healthy archiver counters do not change that recovery gap, which must be resolved before deployment through an approved backup/restore plan.
 
 ## Dependency, bundle and code audit
 
@@ -186,7 +186,7 @@ WAL archiving is operating with 1,688 successful archives and zero failures. Thi
 - Startup transport, saved-roster recovery, single restored-session authorisation, expired-token single refresh, optional-profile ordering and seven-nurse render: pass.
 - Version, release-history, manifest and service-worker cache consistency: pass after the 37.12 version update.
 
-Authenticated administrator login, three restored-session reloads, the administrator interface, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous Live clients, live function plans, advisors and the full database catalogue were verified. A production write was deliberately not made, so cross-client change propagation is not claimed. Normal-member UI rendering, logout/login, installed-PWA reopening, a branch-hosted 37.12 waterfall, responsive screenshots and the dashboard recovery point remain outstanding.
+Authenticated administrator login, three restored-session reloads, the administrator interface, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous Live clients, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. A production write was deliberately not made, so cross-client change propagation is not claimed. Normal-member UI rendering, logout/login, installed-PWA reopening, a branch-hosted 37.12 waterfall and responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
 
 ## Technical debt
 
@@ -202,6 +202,7 @@ Authenticated administrator login, three restored-session reloads, the administr
 - Optimise the five auth-expression policies and the overlapping `allowed_users` SELECT policies after permission regression tests.
 - Review whether source-table Realtime subscriptions/publication entries are still needed alongside `app_sync_state`; do not remove them without a two-client write test.
 - Decide whether to enable leaked-password protection after reviewing user impact and recovery communications.
+- Establish a tested production backup and restore plan; the current Free plan includes neither scheduled backups nor PITR.
 
 ### Do not touch without a dedicated migration/test plan
 
@@ -221,5 +222,5 @@ Do not deploy this branch yet. Before deployment it still needs:
 2. Light/dark mobile smoke checks and installed-PWA reopening, despite no intended visual change.
 3. Normal-member UI check; database-level member/admin/unauthorised/anonymous permissions are already verified.
 4. Two-client change propagation in a non-production environment; both production clients reached Live state and converged, but no production write was permitted.
-5. Supabase dashboard confirmation of retained backups/PITR and the latest recovery point; WAL archiving itself is healthy.
+5. Establish and verify an approved production backup/restore capability; the current Free plan has no scheduled backups or PITR, and healthy WAL archiver counters are not a user-restorable recovery point.
 6. Owner review and explicit approval.
