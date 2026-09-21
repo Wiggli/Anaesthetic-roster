@@ -1,11 +1,11 @@
 {
-  "version": "37.13",
-  "date": "20 September 2026",
-  "title": "Smaller download, same roster",
-  "summary": "Losslessly reduce static image transfers and remove confirmed obsolete styling without changing behaviour.",
+  "version": "37.14",
+  "date": "21 September 2026",
+  "title": "Sign out only on this device",
+  "summary": "Keep other saved sessions active when signing out of the current browser or installed app.",
   "changes": [
-    "Installed icons and the Mater Dei logo retain identical decoded pixels while using 23,806 fewer bytes in total.",
-    "Styling left behind by replaced personal-summary and workflow elements has been removed after source and history verification.",
-    "Authentication, Supabase requests, service-worker behaviour, the interface, verified rotation, staffing, allocation, Pager, Reliever, realtime, privacy and database rules remain unchanged."
+    "Signing out now clears only the current browser or installed app session instead of revoking saved sessions on every device.",
+    "Realtime and background refresh work are still stopped before the local session is cleared.",
+    "Roster calculations, staffing, allocations, Pager, Reliever, the interface, service-worker behaviour and database rules remain unchanged."
   ]
 }

@@ -1,6 +1,6 @@
 # Safe cleanup and performance audit
 
-Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-performance` and the final static-asset cleanup on `codex/final-safe-cleanup-37-13`, stacked in order after draft PR #36. Nothing in these branches has been deployed and no production database write has been made.
+Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-performance`, the static-asset cleanup on `codex/final-safe-cleanup-37-13` and the device-local sign-out fix on `codex/final-gate-fixes-37-14`, stacked in order after draft PR #36. Nothing in these branches has been deployed and no production database write has been made.
 
 ## Protected baseline
 
@@ -8,9 +8,9 @@ Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-p
 | --- | --- |
 | Source branch | `main` |
 | Known-good commit | `fc4641771ffa37c539528b72b49d95bf996bfb89` |
-| Working follow-up branch | `codex/final-safe-cleanup-37-13` |
+| Working follow-up branch | `codex/final-gate-fixes-37-14` |
 | Deployed application version | 37.11 |
-| Proposed final branch version | 37.13 |
+| Proposed final branch version | 37.14 |
 | Supabase project reference | `voaygfleqceqacvqixxp` |
 | Production / proposed repository schema | Schema 39 / Schema 40 |
 | Production backup and recovery status | The Supabase dashboard confirms that this Free-plan project has no scheduled backups and PITR is not enabled. WAL archiving is active with 1,688 successful archives, zero failures and a latest archived WAL at 2026-09-19 23:58:57 UTC, but it does not provide a user-restorable recovery point. |
@@ -191,6 +191,17 @@ The areas that were initially left unchanged were inspected again rather than au
 - Index statistics reconfirmed that almost every index is constraint-backed or actively used. The two zero-scan indexes enforce roster-identity uniqueness or primary-key integrity, so no index is removable on scan count alone.
 - Realtime coverage is intentionally asymmetric: `allowed_users` and `app_settings` notify through the revision trigger, while `roster_nights` is directly published without that trigger. Removing publication entries or switching to incremental client patching would create coverage and derived-plan risks, so neither change is proposed without a controlled two-device write test.
 
+### Pre-merge gate follow-up, 21 September 2026
+
+- The live production application was opened through the secure authenticated browser flow and displayed the administrator Night view in Live state. No production row was written.
+- Review of the requested fresh logout/login test found that the normal Sign out action called Supabase's default global sign-out scope. That would revoke the same user's refresh tokens on other browsers and installed devices, making a test unnecessarily disruptive.
+- Version 37.14 changes the user-initiated Sign out action to `{scope:'local'}` and adds a deterministic regression check. Realtime teardown, timers, local state clearing and the signed-out screen remain unchanged. The access-denied path retains its existing security behavior.
+- The production Supabase organization remains on the Free plan. Supabase-managed daily backups require Pro or above, and the current project still exposes no user-restorable scheduled backup or PITR capability. Read-only counts confirmed three Auth users, seven migration-history records and two real objects in the private `profile-photos` bucket, so a database-only export would be incomplete.
+- Draft PR #40 now proposes the free recovery path separately from all application changes. It exports roles, application schema/data, migration history, managed Auth data, Storage metadata and the private Storage objects; encrypts the archive before upload; and retains only encrypted GitHub artifacts for 30 days. The public recipient certificate is in the repository, while the tested private recovery key is stored separately. PR #40 workflow run 109 passed. The first real recovery point and isolated restore rehearsal deliberately cannot occur until the workflow is reviewed and merged to `main`.
+- The disposable `PR36 Realtime Audit` project was restored to `ACTIVE_HEALTHY` for isolated follow-up preparation. It contains no production tables or roster rows and cannot by itself run the complete application until a representative test schema and test accounts are provisioned.
+- GitHub Pages serves only the deployed `main` build and the repository workflow has no first-party branch-preview environment. An owner-only temporary 37.14 candidate was therefore published at `https://anaesthetic-roster-candidate.bartoloandre.chatgpt.site`; its JavaScript, manifest, release metadata and asset entrypoints passed static validation. The private hosting boundary prevents the audit browser from using it as a first-party authenticated trace target, so the authenticated waterfall, normal-member run and installed-mobile run still require owner/device participation.
+- A production-schema Supabase branch would unblock the complete isolated application write test without copying roster rows, but it costs $0.01344 per hour. No paid branch was created because explicit cost confirmation was not received. The existing free disposable project remains empty and production remains read-only.
+
 ## Security and data preservation
 
 - One forward-only schema-40 policy-performance migration was created and tested only on the disposable project; it has not been applied to production.
@@ -206,11 +217,11 @@ The areas that were initially left unchanged were inspected again rather than au
 - Rotation, staffing, Malta operational-night and PWA safety: pass.
 - Expanded allocation, consistency, offline, accessibility and privacy safety: pass.
 - Startup transport, saved-roster recovery, single restored-session authorisation, expired-token single refresh, optional-profile ordering and seven-nurse render: pass.
-- Version, release-history, manifest and service-worker cache consistency: pass through version 37.13.
+- Version, release-history, manifest and service-worker cache consistency: pass through version 37.14.
 - Lossless PNG validation: absolute decoded-pixel error count zero for all six assets, with the original logo ICC profile retained.
 - Schema-40 policy migration: pass on the disposable project for administrator/member/unauthorised reads, member-owned profile writes, denied cross-profile updates and zero performance-advisor findings.
 
-Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. The remote references were rechecked on 20 September 2026: `main` remained `fc4641771ffa37c539528b72b49d95bf996bfb89`; draft PR #36 remained open and unmerged at `8f2c7bdb42fab5d745b1fd4097a9132ede7e3846`, with workflow run 105 successful and migration/deployment skipped; draft PR #37 remained open and unmerged at `1bafa9f130e1c916c39901271bc7e6eb7b8ce88a`, with workflow run 108 successful and migration/deployment skipped; and stacked draft PR #38 remained open and unmerged at `82b616c334a9c5859611076088d47bf9f991dec5`. PR #38 targets the PR #37 branch so its isolated diff is reviewable; the repository workflow only listens for pull requests targeting `main`, so that stacked PR does not create a separate Actions run. Its exact commit passed the complete local test and validation set recorded above. A production write was deliberately not made. Normal-member UI rendering, logout/login, installed-PWA reopening, a safe authenticated candidate browser trace, physical-device Realtime propagation and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
+Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. The remote references were rechecked on 21 September 2026: `main` remained `fc4641771ffa37c539528b72b49d95bf996bfb89`; draft PR #36 remained open and unmerged at `8f2c7bdb42fab5d745b1fd4097a9132ede7e3846`, with workflow run 105 successful; draft PR #37 remained open and unmerged at `1bafa9f130e1c916c39901271bc7e6eb7b8ce88a`, with workflow run 108 successful; stacked draft PR #38 remained open and unmerged at `e3d387124420fae811678237aa24b5eeffebc666`; stacked draft PR #39 remained open and unmerged at `4bf7622effd7db828bc463be620810c7b7c7ecf9`; and backup-only draft PR #40 remained open and unmerged at `526ecf9ccc9159bb3e2b8d9406b06b7915cfe87a`, with workflow run 109 successful. A production write was deliberately not made. Normal-member UI rendering, fresh candidate logout/login, installed-PWA reopening, a safe authenticated candidate browser trace and full-application physical/two-client write propagation remain outstanding.
 
 ## Original brief completion matrix
 
@@ -218,7 +229,7 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 
 | # | Requested area | Outcome |
 | --- | --- | --- |
-| 1 | Protect working version | Verified. `main`, known-good commit, production version/project/schema and deployed objects were recorded. All three work branches and PRs remain separate, draft and unmerged. Production has no user-restorable scheduled backup or PITR, so backup remains a deployment blocker. |
+| 1 | Protect working version | Verified. `main`, known-good commit, production version/project/schema and deployed objects were recorded. All application PRs remain separate, draft and unmerged. Backup-only PR #40 is prepared and tested, but the first encrypted recovery artifact and restore rehearsal remain blockers until that PR is approved and merged. |
 | 2 | Git history | Verified. The 37.9 allocation-render change was identified as the regression that reinstated duplicate restored-session authorisation. Later auth, Android transport, snapshot, schema and PWA changes were traced before deciding what to retain. |
 | 3 | Before baseline | Verified where safely measurable. Production 37.11 restored-session reloads were 741/865/896 ms, median 865 ms; bundle and asset bytes, startup database timings, request paths, console state and service-worker behaviour were recorded. Exact authenticated candidate browser timing is a deferred gate. |
 | 4 | Startup sequence | Verified and documented from shell load through service worker, one client, session restore, protected snapshot, render, optional profile and Realtime. |
@@ -247,7 +258,7 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 | 27 | Before/after | Request-path improvement is deterministic: a normal restored session falls from up to two authorisations and two protected snapshots to one of each. Optional profile/photo no longer gates roster usability. Version 37.12 added 2,824 raw JavaScript bytes and 809 gzip bytes; the 37.13 follow-up then reduces the total versioned static payload by 23,793 bytes without pixel changes. Exact authenticated candidate elapsed timing remains a deferred gate. |
 | 28 | Preserve experience | Verified by source diff and tests. No interface, navigation, terminology, feature or roster rule changed. |
 | 29 | Technical debt | Recorded below in “Safe to address later” and “Do not touch without a dedicated migration/test plan”. |
-| 30 | Final pre-deployment report | Completed below. It distinguishes verified outcomes from gates that cannot be completed without violating the no-production-write/no-deploy constraint. |
+| 30 | Final pre-deployment report | Completed below. It distinguishes verified outcomes from gates that require the approved backup-first merge sequence, an authenticated owner/member session, a physical installed PWA or explicit paid-branch approval. |
 
 ## Final pre-deployment report
 
@@ -268,13 +279,13 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 15. **Bundle before/after:** version 37.12 changed text from 513,147 B to 515,971 B raw and from 117,636 B to 118,445 B gzip. The final 37.13 pass reduces 37.12 CSS by 1,030 raw bytes and PNG assets by 23,806 bytes; after release metadata, the complete versioned static payload is 23,793 bytes smaller than 37.12.
 16. **Startup performance before/after:** before production median is 865 ms over three restored reloads. After-path work is one authorisation/snapshot and non-blocking optional profile; a trustworthy authenticated branch elapsed time is still required before claiming a millisecond improvement.
 17. **Supabase startup requests before/after:** protected core path falls from up to two authorisation attempts/two snapshots to one/one. Optional profile remains one selected-column read and a signed URL only when an avatar exists. History/admin background reads are unchanged.
-18. **Authentication:** production 37.11 login/session restoration passed; deterministic 37.12 single-session, refresh and failure tests pass. Fresh branch logout/login remains a deployment gate because the branch is not first-party hosted.
+18. **Authentication:** production 37.11 login/session restoration passed; deterministic single-session, refresh, failure and 37.14 device-local sign-out tests pass. An owner-only 37.14 candidate is hosted, but fresh login/logout still requires the owner's secure sign-in on that private surface.
 19. **Roster data:** no production roster write occurred. Aggregate row counts and read-only comparisons show the existing data remained in place during the audit.
 20. **Users:** no production user, identity, role, password or session setting was changed.
 21. **Permissions:** read outcomes for administrator, member, unauthorised authenticated and anonymous contexts were verified. Schema 40 also preserved member-owned profile writes and denied cross-profile updates in isolation.
 22. **Installed PWA compatibility:** source-level identity, scope, URL, `start_url`, controlled update behaviour and cache alignment are preserved. Physical installed-device reopening is still required before deployment.
-23. **Remaining risks:** no restorable production backup, no authenticated first-party 37.13 waterfall, no normal-member branch UI run, no physical installed-PWA run and no full application two-device controlled-write propagation test.
-24. **Remaining debt:** the policy/grant/RPC write-boundary project, server-derived audit actor, Realtime publication consolidation, optional Auth hardening, backup plan, broader CSS maintenance and carefully narrowed fallback selects remain separate work.
+23. **Remaining risks:** PR #40 has not yet produced and restored its first encrypted recovery point; there is no authenticated first-party 37.14 waterfall, normal-member branch UI run, physical installed-PWA run or full application two-device controlled-write propagation test.
+24. **Remaining debt:** the policy/grant/RPC write-boundary project, server-derived audit actor, Realtime publication consolidation, optional Auth hardening, broader CSS maintenance and carefully narrowed fallback selects remain separate work. The backup workflow reduces the recovery gap only after merge and first successful restore rehearsal; the Free plan still has no PITR.
 
 ## Technical debt
 
@@ -288,7 +299,7 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 - Derive audit actor identity from the authenticated claim instead of accepting arbitrary client-supplied `changed_by` text.
 - Review whether source-table Realtime subscriptions/publication entries are still needed alongside `app_sync_state`; do not remove them without a two-client write test.
 - Decide whether to enable leaked-password protection after reviewing user impact and recovery communications.
-- Establish a tested production backup and restore plan; the current Free plan includes neither scheduled backups nor PITR.
+- Complete PR #40's first encrypted backup and isolated restore rehearsal; the current Free plan still includes no PITR.
 
 ### Do not touch without a dedicated migration/test plan
 
@@ -304,9 +315,11 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 
 Do not deploy this branch yet. Before deployment it still needs:
 
-1. Branch-hosted authenticated 37.13 request waterfall and comparison with the measured 37.11 production baseline.
+1. Owner-authenticated 37.14 request waterfall on the private candidate and comparison with the measured 37.11 production baseline.
 2. Light/dark mobile smoke checks and installed-PWA reopening; authenticated desktop light/dark Night, Changes and Breaks checks already pass.
 3. Normal-member UI check; database-level member/admin/unauthorised/anonymous permissions are already verified.
 4. Full two-browser or two-device application change propagation; the isolated non-production trigger/publication test delivered revisions 1–3 to both independent clients, while production remained read-only.
-5. Establish and verify an approved production backup/restore capability; the current Free plan has no scheduled backups or PITR, and healthy WAL archiver counters are not a user-restorable recovery point.
+5. Review and merge backup-only PR #40 first, run its manual workflow, decrypt and checksum the artifact, then restore it only to the isolated test project. The current Free plan has no PITR, and healthy WAL archiver counters are not a user-restorable recovery point.
 6. Owner review and explicit approval.
+
+After those gates, merge application PRs strictly in order: #36, retarget #37 to `main` and require its workflow to pass, then repeat for #38 and #39. Do not merge the stacked application PRs together or bypass a failed workflow.
