@@ -126,7 +126,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p backup/plain/storage
-          supabase storage cp --recursive \
+          supabase storage cp --experimental --recursive \
             ss:///profile-photos \
             backup/plain/storage/profile-photos
 
