@@ -126,7 +126,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p backup/plain/storage
-          supabase storage cp --recursive \
+          # Supabase CLI requires the opt-in flag for Storage commands.
+          supabase storage cp --experimental --recursive \
             ss:///profile-photos \
             backup/plain/storage/profile-photos
 
