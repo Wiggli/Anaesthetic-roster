@@ -232,7 +232,7 @@ const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-m
 const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
 const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -432,7 +432,7 @@ assert.match(ui, /withTimeout\([\s\S]*startupSnapshotTimeoutMs\+500,'The shared 
   'the direct startup request must have an application-level deadline independent of browser abort completion');
 assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v37[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs/,
   'installed Android startup must use an independent bounded request for the protected snapshot');
-assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupSnapshotXhr\(\)/,
+assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupWithSessionRecovery\(requestStartupSnapshotXhr\)/,
   'Android must use the independent protected snapshot transport before compatibility reads');
 assert.match(ui, /nightChanges=rowsGroupedByDate\(snapshot\.night_changes\)[\s\S]*labourOrders=rowsIndexedByDate\(snapshot\.night_labour_order\)[\s\S]*nightRoleOverrides=rowsIndexedByDate\(snapshot\.night_role_overrides\)/, 'one consistent snapshot must populate staffing and effective allocations together');
 assert.match(ui, /async function requestCompatibilityStartup\(\)[\s\S]*allowed_users[\s\S]*night_changes[\s\S]*night_labour_order/,

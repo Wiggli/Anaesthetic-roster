@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.11 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.12 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -55,6 +55,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.12',date:'19 Sep 2026',title:'One clean route into the roster',changes:['A restored sign-in now starts exactly one shared-roster authorisation path instead of allowing the session listener and startup check to request it twice.','Expired saved sessions are renewed once before the protected roster request is retried, without falling into repeated compatibility reads.','The loaded roster becomes interactive before optional private profile and photo details finish loading, while onboarding still waits for those details.','No interface, roster calculation, staffing, allocation, Pager, Reliever, realtime, privacy or database rule has changed.']},
   {version:'37.11',date:'19 Sep 2026',title:'Seven-nurse role changes now save',changes:['Custom seven-nurse arrangements now pass the atomic database structure check when all seven roles and the required mode are supplied.','An overtime nurse such as Daniel Santucci can be moved into any agreed role, including Reliever or Seventh nurse, while every working nurse remains assigned exactly once.','The verified rotation, seventh-nurse decision workflow, Pager and Reliever rules, staffing calculations and permanent roster remain unchanged.']},
   {version:'37.10',date:'19 Sep 2026',title:'Seven nurses can be arranged for one night',changes:['The night-only role editor now includes a Seventh nurse role whenever seven effective nurses are working, including named overtime staff such as Daniel Santucci.','The new arrangement remains explicitly night-only, requires every effective nurse exactly once, and keeps the permanent rotation and automatic allocation rules unchanged.','The database upgrade is forward-only and validates seven-role assignments atomically before saving them.']},
   {version:'37.9',date:'19 Sep 2026',title:'The roster now finishes opening',changes:['The live browser test found that the shared roster was loading successfully, but the Changes allocation control stopped rendering because its staffing plan was not defined.','The allocation control now derives the selected night’s plan before deciding whether confirmation choices should appear, so Night, Changes and Breaks finish opening after sign-in and on restored sessions.','A deterministic seven-nurse render check now covers the exact state that exposed the failure.','No roster calculation, staffing, allocation, Pager, Reliever, five-nurse, realtime, privacy, database schema or write rule has changed.']},
@@ -180,6 +181,18 @@ async function requestStartupSnapshotXhr(){
       xhr.send('{}');
     }catch(error){finish(error)}
   })
+}
+
+function startupAuthError(error){var code=String(error&&error.code||''),message=String(error&&error.message||'');return error&&Number(error.status)===401||code==='401'||code==='PGRST301'||code==='AUTH_SESSION_MISSING'||/jwt|token.*(?:expired|invalid)|session.*expired/i.test(message)}
+
+async function requestStartupWithSessionRecovery(request){
+  try{return await request()}
+  catch(error){
+    if(!startupAuthError(error))throw error;
+    sharedLoadFailureStage='session';setLaunchState('Preparing your night','Renewing your secure sign-in…');
+    try{await refreshAuthSession()}catch(refreshError){refreshError.code=refreshError.code||'AUTH_REFRESH_FAILED';refreshError.startupSessionFailed=true;throw refreshError}
+    return request()
+  }
 }
 
 function startupQuery(promise,message){return withTimeout(promise,startupFallbackTimeoutMs,message)}
@@ -1319,12 +1332,14 @@ async function loadSharedData(options){
       sharedLoadFailureCode='';
       sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
       var snapshot;if(preferCompatibilityStartup()){
-        try{sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the protected Android roster…');snapshot=await requestStartupSnapshotXhr()}catch(androidTransportError){
+        try{sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the protected Android roster…');snapshot=await requestStartupWithSessionRecovery(requestStartupSnapshotXhr)}catch(androidTransportError){
+          if(androidTransportError&&androidTransportError.startupSessionFailed)throw androidTransportError;
           if(androidTransportError&&androidTransportError.code==='42501')throw androidTransportError;
           console.warn('Protected Android startup was unavailable; using compatibility reads',androidTransportError);
           snapshot=await requestCompatibilityStartup()
         }
-      }else try{snapshot=await requestStartupSnapshot()}catch(snapshotError){
+      }else try{snapshot=await requestStartupWithSessionRecovery(requestStartupSnapshot)}catch(snapshotError){
+        if(snapshotError&&snapshotError.startupSessionFailed)throw snapshotError;
         if(snapshotError&&snapshotError.code==='42501')throw snapshotError;
         console.warn('Protected startup snapshot was unavailable; using compatibility reads',snapshotError);
         snapshot=await requestCompatibilityStartup()
@@ -1347,6 +1362,7 @@ async function loadSharedData(options){
     }catch(error){
       console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);
       sharedLoadFailureCode=String(error&&((error.status&&String(error.status))||error.code)||'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,32);
+      if(error&&(error.startupSessionFailed||startupAuthError(error)))sharedLoadFailureStage='session';
       if(error&&error.code==='42501'){sharedLoadFailureStage='access';forcedOfflineSession=false;return false}
       var cached=currentUser&&cachedAllowedProfile(currentUser.email);if(!currentUserProfile&&cached)prepareAuthorisedShell(cached);
       forcedOfflineSession=true;if(cached&&restoreOfflineSnapshot()){updateOfflineControls();return true}forcedOfflineSession=false;
@@ -1476,11 +1492,12 @@ async function authorizeUser(user,session){
   if(!user)return showAuth();if(session)rememberAuthSession(session);var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
   var sharedReady=await loadSharedData();if(attempt!==startupAttempt)return;
   if(!sharedReady&&sharedLoadFailureStage==='access'){await supa.auth.signOut();currentUser=null;currentUserProfile=null;showAuth('This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
+  if(!sharedReady&&sharedLoadFailureStage==='session'){currentUser=null;currentAccessToken='';currentUserProfile=null;showAuth('Your saved sign-in has expired. Sign in again to open the shared roster.',true);return}
   if(!sharedReady){var stage={session:'your saved sign-in',snapshot:'the protected roster',staffing:'shared staffing',allocations:'tonight\'s allocations',support:'roster support data'}[sharedLoadFailureStage]||'the shared roster',code=sharedLoadFailureCode?' (code '+sharedLoadFailureCode+')':'';showLaunchRecovery('The connection stopped while opening '+stage+code+'. Try again.');return}
   var isAdmin=currentUserProfile&&currentUserProfile.user_role==='admin';
-  if(!forcedOfflineSession){try{await withTimeout(loadOwnProfile(),6000,'Profile details did not respond.')}catch(error){profileFeatureAvailable=false;currentPrivateProfile=null}}
-  if(attempt!==startupAttempt)return;
-  if(!forcedOfflineSession)subscribeToChanges();startSharedSyncMonitor();if(isAdmin&&!forcedOfflineSession)withTimeout(loadAccounts(),6000,'Account list did not respond.').catch(function(){});finishLaunch(true);showOnboardingIfNeeded();
+  var profilePromise=Promise.resolve();if(!forcedOfflineSession)profilePromise=withTimeout(loadOwnProfile(),6000,'Profile details did not respond.').catch(function(){profileFeatureAvailable=false;currentPrivateProfile=null});
+  if(!forcedOfflineSession)subscribeToChanges();startSharedSyncMonitor();if(isAdmin&&!forcedOfflineSession)withTimeout(loadAccounts(),6000,'Account list did not respond.').catch(function(){});finishLaunch(true);
+  await profilePromise;if(attempt!==startupAttempt)return;showOnboardingIfNeeded();
 }
 
 function bind(){
