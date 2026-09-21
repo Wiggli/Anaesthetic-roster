@@ -1,0 +1,172 @@
+name: Encrypted Supabase backup
+
+on:
+  schedule:
+    - cron: '17 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: encrypted-supabase-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_PROJECT_REF: voaygfleqceqacvqixxp
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check backup credentials
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD are required."
+            exit 1
+          fi
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.117.0
+
+      - name: Link production project read-only
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          supabase init
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Export database and migration history
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          install -d -m 700 backup/plain
+          supabase db dump --linked -f backup/plain/roles.sql --role-only
+          supabase db dump --linked -f backup/plain/schema.sql
+          supabase db dump --linked -f backup/plain/data.sql --data-only --use-copy \
+            -x storage.buckets_vectors -x storage.vector_indexes
+          supabase db dump --linked -f backup/plain/history-schema.sql \
+            --schema supabase_migrations
+          supabase db dump --linked -f backup/plain/history-data.sql --data-only \
+            --use-copy --schema supabase_migrations
+
+      - name: Export managed Auth and Storage metadata
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          pooler_host=''
+          for candidate in \
+            aws-0-eu-central-1.pooler.supabase.com \
+            aws-1-eu-central-1.pooler.supabase.com; do
+            if docker run --rm \
+              -e PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+              postgres:17-alpine \
+              psql \
+                --host="$candidate" \
+                --port=5432 \
+                --username="postgres.$SUPABASE_PROJECT_REF" \
+                --dbname=postgres \
+                --no-psqlrc \
+                --tuples-only \
+                --command='select 1' >/dev/null 2>&1; then
+              pooler_host="$candidate"
+              break
+            fi
+          done
+          if [ -z "$pooler_host" ]; then
+            echo "::error::Could not authenticate to the production session pooler."
+            exit 1
+          fi
+          docker run --rm \
+            -e PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            -v "$PWD/backup/plain:/backup" \
+            postgres:17-alpine \
+            pg_dump \
+              --host="$pooler_host" \
+              --port=5432 \
+              --username="postgres.$SUPABASE_PROJECT_REF" \
+              --dbname=postgres \
+              --data-only \
+              --schema=auth \
+              --no-owner \
+              --no-privileges \
+              --file=/backup/auth-data.sql
+          docker run --rm \
+            -e PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            -v "$PWD/backup/plain:/backup" \
+            postgres:17-alpine \
+            pg_dump \
+              --host="$pooler_host" \
+              --port=5432 \
+              --username="postgres.$SUPABASE_PROJECT_REF" \
+              --dbname=postgres \
+              --data-only \
+              --schema=storage \
+              --no-owner \
+              --no-privileges \
+              --file=/backup/storage-data.sql
+
+      - name: Export private Storage objects
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          mkdir -p backup/plain/storage
+          supabase storage cp --recursive \
+            ss:///profile-photos \
+            backup/plain/storage/profile-photos
+
+      - name: Record recoverability metadata
+        shell: bash
+        run: |
+          {
+            echo "project_ref=$SUPABASE_PROJECT_REF"
+            echo "created_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "source_commit=$GITHUB_SHA"
+            echo "supabase_cli=$(supabase --version)"
+            echo "postgres_dump_image=postgres:17-alpine"
+          } > backup/plain/RECOVERY-METADATA.txt
+          (
+            cd backup/plain
+            find . -type f ! -name SHA256SUMS -print0 \
+              | sort -z \
+              | xargs -0 sha256sum > SHA256SUMS
+          )
+
+      - name: Encrypt backup before upload
+        id: encrypt
+        shell: bash
+        run: |
+          archive="anaesthetic-roster-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.tar.gz"
+          encrypted="${archive}.p7m"
+          tar -C backup/plain -czf "$archive" .
+          openssl cms -encrypt -binary -aes-256-cbc \
+            -in "$archive" \
+            -outform DER \
+            -out "$encrypted" \
+            backup/backup-recipient.crt
+          openssl cms -cmsout -inform DER -in "$encrypted" -noout
+          echo "encrypted=$encrypted" >> "$GITHUB_OUTPUT"
+          rm -f "$archive"
+          rm -rf backup/plain
+
+      - name: Upload encrypted recovery point
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-encrypted-backup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.encrypt.outputs.encrypted }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
