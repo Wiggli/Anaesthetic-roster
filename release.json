@@ -1,11 +1,11 @@
 {
-  "version": "37.12",
-  "date": "19 September 2026",
-  "title": "One clean route into the roster",
-  "summary": "Remove duplicate restored-session startup work and unblock the roster from optional profile loading.",
+  "version": "37.13",
+  "date": "20 September 2026",
+  "title": "Smaller download, same roster",
+  "summary": "Losslessly reduce static image transfers and remove confirmed obsolete styling without changing behaviour.",
   "changes": [
-    "A restored sign-in now starts exactly one shared-roster authorisation path instead of requesting it twice.",
-    "Expired saved sessions are renewed once, and optional private profile details no longer hold the loaded roster behind the launch screen.",
-    "The interface, verified rotation, staffing, allocation, Pager, Reliever, realtime, privacy and database rules remain unchanged."
+    "Installed icons and the Mater Dei logo retain identical decoded pixels while using 23,806 fewer bytes in total.",
+    "Styling left behind by replaced personal-summary and workflow elements has been removed after source and history verification.",
+    "Authentication, Supabase requests, service-worker behaviour, the interface, verified rotation, staffing, allocation, Pager, Reliever, realtime, privacy and database rules remain unchanged."
   ]
 }

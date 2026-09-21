@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.12 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.13 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -55,6 +55,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.13',date:'20 Sep 2026',title:'Smaller download, same roster',changes:['The installed app icons and Mater Dei logo use lossless recompression, preserving every decoded pixel and the existing colour profile while reducing their combined transfer size.','Confirmed obsolete styling left behind by the earlier personal-summary and workflow replacements has been removed without changing current selectors or layout.','Authentication, Supabase requests, service-worker update behaviour, the interface, verified rotation and every staffing or allocation rule remain unchanged.']},
   {version:'37.12',date:'19 Sep 2026',title:'One clean route into the roster',changes:['A restored sign-in now starts exactly one shared-roster authorisation path instead of allowing the session listener and startup check to request it twice.','Expired saved sessions are renewed once before the protected roster request is retried, without falling into repeated compatibility reads.','The loaded roster becomes interactive before optional private profile and photo details finish loading, while onboarding still waits for those details.','No interface, roster calculation, staffing, allocation, Pager, Reliever, realtime, privacy or database rule has changed.']},
   {version:'37.11',date:'19 Sep 2026',title:'Seven-nurse role changes now save',changes:['Custom seven-nurse arrangements now pass the atomic database structure check when all seven roles and the required mode are supplied.','An overtime nurse such as Daniel Santucci can be moved into any agreed role, including Reliever or Seventh nurse, while every working nurse remains assigned exactly once.','The verified rotation, seventh-nurse decision workflow, Pager and Reliever rules, staffing calculations and permanent roster remain unchanged.']},
   {version:'37.10',date:'19 Sep 2026',title:'Seven nurses can be arranged for one night',changes:['The night-only role editor now includes a Seventh nurse role whenever seven effective nurses are working, including named overtime staff such as Daniel Santucci.','The new arrangement remains explicitly night-only, requires every effective nurse exactly once, and keeps the permanent rotation and automatic allocation rules unchanged.','The database upgrade is forward-only and validates seven-role assignments atomically before saving them.']},

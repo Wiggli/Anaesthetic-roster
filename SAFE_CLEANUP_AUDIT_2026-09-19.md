@@ -1,6 +1,6 @@
 # Safe cleanup and performance audit
 
-Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-performance`, stacked on draft PR #36. Nothing in either branch has been deployed and no production database write has been made.
+Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-performance` and the final static-asset cleanup on `codex/final-safe-cleanup-37-13`, stacked in order after draft PR #36. Nothing in these branches has been deployed and no production database write has been made.
 
 ## Protected baseline
 
@@ -8,9 +8,9 @@ Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-p
 | --- | --- |
 | Source branch | `main` |
 | Known-good commit | `fc4641771ffa37c539528b72b49d95bf996bfb89` |
-| Working follow-up branch | `codex/rls-policy-performance` |
+| Working follow-up branch | `codex/final-safe-cleanup-37-13` |
 | Deployed application version | 37.11 |
-| Proposed branch version | 37.12 |
+| Proposed final branch version | 37.13 |
 | Supabase project reference | `voaygfleqceqacvqixxp` |
 | Production / proposed repository schema | Schema 39 / Schema 40 |
 | Production backup and recovery status | The Supabase dashboard confirms that this Free-plan project has no scheduled backups and PITR is not enabled. WAL archiving is active with 1,688 successful archives, zero failures and a latest archived WAL at 2026-09-19 23:58:57 UTC, but it does not provide a user-restorable recovery point. |
@@ -38,7 +38,7 @@ The normal signed-in startup is:
 
 ## Measured baseline and branch comparison
 
-The shell measurements are deterministic local sizes. The authenticated browser figures below were collected in a cloud Chrome session against deployed production 37.11, so they are useful audit evidence but are not presented as a colleague-phone benchmark or as a direct 37.12 branch comparison.
+The shell measurements are deterministic local sizes. The authenticated browser figures below were collected in a cloud Chrome session against deployed production 37.11, so they are useful audit evidence but are not presented as a colleague-phone benchmark or as a direct candidate-branch comparison.
 
 | Metric | 37.11 before | 37.12 branch | Result |
 | --- | ---: | ---: | --- |
@@ -66,7 +66,7 @@ The shell measurements are deterministic local sizes. The authenticated browser 
 
 The branch is slightly larger because it restores bounded expired-session recovery, adds regression coverage and records the release. This is not represented as a bundle-size improvement. The measurable improvement is less startup work: one authorisation and one protected snapshot instead of the duplicated restored-session path, with optional private profile/photo requests no longer delaying interactivity.
 
-The live database work is fast and cache-resident, so the snapshot query itself is not the likely cause of multi-second startup reports. A branch-hosted authenticated trace is still required to measure 37.12 end to end, and this browser surface did not expose a trustworthy resource waterfall or memory profile. A local checkout at `d44199ea79b900968a4263b998ee3d13c26d8b5e` passed the full test suite, but the cloud browser blocked loopback access before the application loaded. The immutable third-party preview was not given production roster credentials. Therefore no safe first-party authenticated 37.12 browser surface was available, and this gate remains open rather than being inferred from local or production 37.11 results. The only console errors observed during the production measurements came from the browser-control extension, not from the roster origin.
+The live database work is fast and cache-resident, so the snapshot query itself is not the likely cause of multi-second startup reports. A branch-hosted authenticated trace is still required to measure the candidate end to end, and this browser surface did not expose a trustworthy resource waterfall or memory profile. A local checkout at `d44199ea79b900968a4263b998ee3d13c26d8b5e` passed the full test suite, but the cloud browser blocked loopback access before the application loaded. The immutable third-party preview was not given production roster credentials. Therefore no safe first-party authenticated candidate browser surface was available, and this gate remains open rather than being inferred from local or production 37.11 results. The only console errors observed during the production measurements came from the browser-control extension, not from the roster origin.
 
 An authenticated production 37.11 desktop smoke check at 1363×936 covered Night, Changes and Breaks in light and dark themes. All three views rendered without horizontal document overflow, retained the Live state, and the theme switch updated the page from the light `#f2f2f7` surface to the dark `#000000` surface with corresponding high-contrast text. The session was restored to light mode afterwards. This does not replace the outstanding mobile viewport or installed-PWA checks.
 
@@ -172,7 +172,24 @@ WAL archiving is operating with 1,688 successful archives and zero failures. The
 - No abandoned legacy files named by `AGENTS.md` remain.
 - No obvious unused named function, debug statement, `TODO`, `FIXME` or commented-out implementation was found.
 - The 197,089-byte stylesheet contains approximately 1,902 rule heads and 297 repeated selector heads from 49 historical CSS commits. This is real maintainability debt, but not safe category-A deletion without complete light/dark responsive visual regression coverage.
-- The 191,027-byte 1200×415 logo is the largest initial same-origin asset. It is fetched once despite several DOM uses. Image re-encoding is deferred because pixel/profile equivalence and device rendering have not been verified.
+- The 1200×415 Mater Dei logo is fetched once despite several DOM uses. Lossless PNG-stream recompression reduces it from 191,027 to 189,034 bytes while preserving its ICC profile and every decoded pixel.
+
+### Final pre-merge cleanup pass
+
+The areas that were initially left unchanged were inspected again rather than automatically treated as out of scope:
+
+- No named JavaScript function is unreferenced. All 286 named functions have at least one source reference, so no JavaScript deletion is proposed.
+- Static selector analysis found dynamically generated classes such as `mode5`, `rFirst` and `personalRole-*`; these are active and were retained.
+- Git history proved that the old `personalCopy`/`personalProfileTitle`, `historyStep` and `provisionalFlag` selectors belonged to interface structures replaced in versions 37.0 and 35.6. Only these proven remnants were removed. The broader stylesheet remains intentionally untouched.
+- The six PNG assets were recompressed by replacing only their PNG deflate streams. Every original chunk, including the Mater Dei logo ICC profile, was preserved. Decoded pixel comparison returned an absolute error count of zero for every file.
+- PNG transfer size fell by 23,806 bytes in total: both 192 px icons by 1,126 bytes each, both 512 px icons by 9,354 bytes each, the Apple touch icon by 853 bytes and the Mater Dei logo by 1,993 bytes.
+- Version 37.13 changes only asset bytes, confirmed obsolete CSS and coordinated release/cache references. Service-worker registration, fetch strategy, update approval, activation, scope and cache cleanup behaviour are unchanged.
+- The text payload is 380 raw bytes smaller than 37.12 and 13 gzip bytes larger because the permanent release-history entry offsets the CSS deletion. Including the PNG reduction, the versioned static payload is 23,793 bytes smaller.
+- No production npm dependency exists, so there is still no dependency removal to perform.
+- RLS was not relaxed. Schema 40 remains the only proposed policy change and preserves tested access outcomes.
+- Database dependency and application-call review reconfirmed that the v33 role RPC is an installed-client compatibility interface. It was not deleted. The v38 validator is the active table-constraint dependency; the earlier validators remain historical compatibility candidates, not proven-safe deletion targets.
+- Index statistics reconfirmed that almost every index is constraint-backed or actively used. The two zero-scan indexes enforce roster-identity uniqueness or primary-key integrity, so no index is removable on scan count alone.
+- Realtime coverage is intentionally asymmetric: `allowed_users` and `app_settings` notify through the revision trigger, while `roster_nights` is directly published without that trigger. Removing publication entries or switching to incremental client patching would create coverage and derived-plan risks, so neither change is proposed without a controlled two-device write test.
 
 ## Security and data preservation
 
@@ -189,10 +206,11 @@ WAL archiving is operating with 1,688 successful archives and zero failures. The
 - Rotation, staffing, Malta operational-night and PWA safety: pass.
 - Expanded allocation, consistency, offline, accessibility and privacy safety: pass.
 - Startup transport, saved-roster recovery, single restored-session authorisation, expired-token single refresh, optional-profile ordering and seven-nurse render: pass.
-- Version, release-history, manifest and service-worker cache consistency: pass after the 37.12 version update.
+- Version, release-history, manifest and service-worker cache consistency: pass through version 37.13.
+- Lossless PNG validation: absolute decoded-pixel error count zero for all six assets, with the original logo ICC profile retained.
 - Schema-40 policy migration: pass on the disposable project for administrator/member/unauthorised reads, member-owned profile writes, denied cross-profile updates and zero performance-advisor findings.
 
-Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. The remote references were rechecked on 20 September 2026: `main` remained `fc4641771ffa37c539528b72b49d95bf996bfb89`, draft PR #36 remained open and unmerged at `8f2c7bdb42fab5d745b1fd4097a9132ede7e3846`, and workflow run 105 succeeded with migration and deployment skipped. A production write was deliberately not made. Normal-member UI rendering, logout/login, installed-PWA reopening, a safe authenticated 37.12 browser trace, physical-device Realtime propagation and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
+Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. The remote references were rechecked on 20 September 2026: `main` remained `fc4641771ffa37c539528b72b49d95bf996bfb89`; draft PR #36 remained open and unmerged at `8f2c7bdb42fab5d745b1fd4097a9132ede7e3846`, with workflow run 105 successful and migration/deployment skipped; draft PR #37 remained open and unmerged at `1bafa9f130e1c916c39901271bc7e6eb7b8ce88a`, with workflow run 108 successful and migration/deployment skipped; and stacked draft PR #38 remained open and unmerged at `82b616c334a9c5859611076088d47bf9f991dec5`. PR #38 targets the PR #37 branch so its isolated diff is reviewable; the repository workflow only listens for pull requests targeting `main`, so that stacked PR does not create a separate Actions run. Its exact commit passed the complete local test and validation set recorded above. A production write was deliberately not made. Normal-member UI rendering, logout/login, installed-PWA reopening, a safe authenticated candidate browser trace, physical-device Realtime propagation and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
 
 ## Original brief completion matrix
 
@@ -200,9 +218,9 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 
 | # | Requested area | Outcome |
 | --- | --- | --- |
-| 1 | Protect working version | Verified. `main`, known-good commit, production version/project/schema and deployed objects were recorded. Both work branches and PRs remain separate, draft and unmerged. Production has no user-restorable scheduled backup or PITR, so backup remains a deployment blocker. |
+| 1 | Protect working version | Verified. `main`, known-good commit, production version/project/schema and deployed objects were recorded. All three work branches and PRs remain separate, draft and unmerged. Production has no user-restorable scheduled backup or PITR, so backup remains a deployment blocker. |
 | 2 | Git history | Verified. The 37.9 allocation-render change was identified as the regression that reinstated duplicate restored-session authorisation. Later auth, Android transport, snapshot, schema and PWA changes were traced before deciding what to retain. |
-| 3 | Before baseline | Verified where safely measurable. Production 37.11 restored-session reloads were 741/865/896 ms, median 865 ms; bundle and asset bytes, startup database timings, request paths, console state and service-worker behaviour were recorded. Exact authenticated 37.12 browser timing is a deferred gate. |
+| 3 | Before baseline | Verified where safely measurable. Production 37.11 restored-session reloads were 741/865/896 ms, median 865 ms; bundle and asset bytes, startup database timings, request paths, console state and service-worker behaviour were recorded. Exact authenticated candidate browser timing is a deferred gate. |
 | 4 | Startup sequence | Verified and documented from shell load through service worker, one client, session restore, protected snapshot, render, optional profile and Realtime. |
 | 5 | Supabase client initialisation | Verified. One client and one auth listener exist. The duplicate restored-session authorisation was fixed; channel and timers have cleanup paths. |
 | 6 | Frontend Supabase queries | Verified. Normal snapshot, compatibility reads, profile/photo, history, admin accounts and revision polling were mapped. The duplicated normal snapshot was fixed; correctness-sensitive fallback and background reads were retained. |
@@ -217,16 +235,16 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 | 15 | Realtime | Verified structurally and with two simultaneous production read-only clients plus two isolated write-event WebSocket clients. One channel is used and removed/replaced on resubscribe. Full application change propagation between two devices remains a deferred no-production-write gate. |
 | 16 | Schema bloat | Classified. No category-A/B table, column, view, trigger, function or index deletion is justified. Versioned compatibility functions and publication overlap are category C/D and must remain. |
 | 17 | Preserve Supabase project | Verified. The same production project remains in use; no production object, data, user, secret or setting changed. |
-| 18 | Unused frontend code | Verified by static and history review. No confirmed obsolete source file, duplicate auth implementation, debug block or safe dead-code deletion was found. Historical CSS repetition is not proven unused. |
+| 18 | Unused frontend code | Verified by static and history review. No JavaScript function or source file qualified for deletion. Three replaced-interface CSS selector families were confirmed obsolete and removed in the 37.13 follow-up. |
 | 19 | Dependencies | Verified. There are no runtime npm dependencies; the one browser dependency is the pinned Supabase CDN library. No removal or upgrade is proposed. |
-| 20 | Production bundle | Verified for this unbundled static application. Raw/gzip JavaScript, CSS and largest image were recorded. Admin/UI code is not safely separable without an architectural change. |
+| 20 | Production bundle | Verified for this unbundled static application. The final lossless asset pass removes 23,806 PNG bytes and 1,030 CSS bytes; the total versioned static payload is 23,793 bytes smaller after release metadata. Admin/UI code is not safely separable without an architectural change. |
 | 21 | Rendering | Verified through render-path review and authenticated desktop smoke checks. This is not React and has no component rerender model. No broad memoisation or redraw rewrite is justified. |
 | 22 | Service worker/PWA | Verified. One registration, controlled activation, versioned cache, old-cache cleanup, network-first navigation and Supabase bypass remain. Identity, URL, scope and `start_url` are unchanged. Installed-phone reopening remains a deferred physical-device gate. |
-| 23 | Conservative cleanup | Followed. Category B duplication and category C launch blocking were fixed in PR #36; the independently verified RLS performance issue is isolated in PR #37. Cautious findings remain documented rather than changed. |
+| 23 | Conservative cleanup | Followed. Category B duplication and category C launch blocking were fixed in PR #36; the independently verified RLS performance issue is isolated in PR #37; exact-pixel asset compression and history-proven CSS removal are isolated in the 37.13 follow-up. Cautious backend/PWA findings remain documented rather than changed. |
 | 24 | No workaround layering | Verified. The duplicate path was removed, not hidden behind another delay or retry. Existing affected-device fallback remains unchanged. |
 | 25 | Critical functionality | Deterministic roster, allocation, version, offline, PWA, startup and safety suites pass; authenticated administrator desktop paths pass. Normal-member UI, fresh logout/login, installed PWA and controlled live write remain pre-deployment gates. |
 | 26 | Security tests | Verified read-only for anonymous, unauthorised, member and administrator roles. No privileged browser credential was found. Schema 40 owner/cross-owner write behaviour was verified in isolation. |
-| 27 | Before/after | Request-path improvement is deterministic: a normal restored session falls from up to two authorisations and two protected snapshots to one of each. Optional profile/photo no longer gates roster usability. The branch adds 2,824 raw JavaScript bytes and 809 gzip bytes, so no bundle-size improvement is claimed. Exact authenticated 37.12 elapsed timing remains a deferred gate. |
+| 27 | Before/after | Request-path improvement is deterministic: a normal restored session falls from up to two authorisations and two protected snapshots to one of each. Optional profile/photo no longer gates roster usability. Version 37.12 added 2,824 raw JavaScript bytes and 809 gzip bytes; the 37.13 follow-up then reduces the total versioned static payload by 23,793 bytes without pixel changes. Exact authenticated candidate elapsed timing remains a deferred gate. |
 | 28 | Preserve experience | Verified by source diff and tests. No interface, navigation, terminology, feature or roster rule changed. |
 | 29 | Technical debt | Recorded below in “Safe to address later” and “Do not touch without a dedicated migration/test plan”. |
 | 30 | Final pre-deployment report | Completed below. It distinguishes verified outcomes from gates that cannot be completed without violating the no-production-write/no-deploy constraint. |
@@ -243,11 +261,11 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 8. **Edge Functions:** none exist, so no cleanup is required.
 9. **Realtime:** the client uses one channel but listens to source-table events alongside the revision event. Debouncing normally coalesces reloads. Consolidation is possible but not safe without controlled two-device write testing.
 10. **Indexes:** the 23 indexes fit the current constraints/query patterns. With the present table sizes and measured timings, no additional or duplicate-index removal is justified.
-11. **Unused code removed:** none. No deletion met the required proof threshold.
+11. **Unused code removed:** only history-proven obsolete selectors for the replaced personal summary and workflow markers. No JavaScript function, current selector or source file was removed.
 12. **Unused dependencies removed:** none. No production npm dependency exists.
 13. **Backend objects changed/removed:** production: none. Proposed schema 40 changes five policy expressions and replaces two account-read policies with one equivalent policy; it removes no table, column, row, user, function, trigger or index.
 14. **Migrations created:** `supabase-migration-20260920141553_optimize_rls_policy_checks.sql`, forward-only schema 40, tested on the isolated project and not applied to production.
-15. **Bundle before/after:** raw JavaScript 513,147 B to 515,971 B; gzip 117,636 B to 118,445 B. The small increase is testable session/profile control logic, not a bundle optimisation claim.
+15. **Bundle before/after:** version 37.12 changed text from 513,147 B to 515,971 B raw and from 117,636 B to 118,445 B gzip. The final 37.13 pass reduces 37.12 CSS by 1,030 raw bytes and PNG assets by 23,806 bytes; after release metadata, the complete versioned static payload is 23,793 bytes smaller than 37.12.
 16. **Startup performance before/after:** before production median is 865 ms over three restored reloads. After-path work is one authorisation/snapshot and non-blocking optional profile; a trustworthy authenticated branch elapsed time is still required before claiming a millisecond improvement.
 17. **Supabase startup requests before/after:** protected core path falls from up to two authorisation attempts/two snapshots to one/one. Optional profile remains one selected-column read and a signed URL only when an avatar exists. History/admin background reads are unchanged.
 18. **Authentication:** production 37.11 login/session restoration passed; deterministic 37.12 single-session, refresh and failure tests pass. Fresh branch logout/login remains a deployment gate because the branch is not first-party hosted.
@@ -255,8 +273,8 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 20. **Users:** no production user, identity, role, password or session setting was changed.
 21. **Permissions:** read outcomes for administrator, member, unauthorised authenticated and anonymous contexts were verified. Schema 40 also preserved member-owned profile writes and denied cross-profile updates in isolation.
 22. **Installed PWA compatibility:** source-level identity, scope, URL, `start_url`, controlled update behaviour and cache alignment are preserved. Physical installed-device reopening is still required before deployment.
-23. **Remaining risks:** no restorable production backup, no authenticated first-party 37.12 waterfall, no normal-member branch UI run, no physical installed-PWA run and no full application two-device controlled-write propagation test.
-24. **Remaining debt:** the policy/grant/RPC write-boundary project, server-derived audit actor, Realtime publication consolidation, optional Auth hardening, backup plan, CSS/image maintenance and carefully narrowed fallback selects remain separate work.
+23. **Remaining risks:** no restorable production backup, no authenticated first-party 37.13 waterfall, no normal-member branch UI run, no physical installed-PWA run and no full application two-device controlled-write propagation test.
+24. **Remaining debt:** the policy/grant/RPC write-boundary project, server-derived audit actor, Realtime publication consolidation, optional Auth hardening, backup plan, broader CSS maintenance and carefully narrowed fallback selects remain separate work.
 
 ## Technical debt
 
@@ -264,7 +282,6 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 
 - Add development-only stage timing and request-count capture, without shipping permanent diagnostics to production.
 - Narrow `select('*')` only after capturing the live column contract.
-- Losslessly optimise large image assets after pixel and profile comparison.
 - Consolidate CSS in small visual-regression-backed groups.
 - Investigate a `realtimeConnecting` guard if a live trace confirms channel churn during rapid focus/pageshow/visibility events.
 - Consolidate direct table-write policies behind the atomic RPC contract only through a dedicated compatibility migration and installed-client test plan.
@@ -287,7 +304,7 @@ This matrix accounts for every section of the requested safe cleanup. “Verifie
 
 Do not deploy this branch yet. Before deployment it still needs:
 
-1. Branch-hosted authenticated 37.12 request waterfall and comparison with the measured 37.11 production baseline.
+1. Branch-hosted authenticated 37.13 request waterfall and comparison with the measured 37.11 production baseline.
 2. Light/dark mobile smoke checks and installed-PWA reopening; authenticated desktop light/dark Night, Changes and Breaks checks already pass.
 3. Normal-member UI check; database-level member/admin/unauthorised/anonymous permissions are already verified.
 4. Full two-browser or two-device application change propagation; the isolated non-production trigger/publication test delivered revisions 1–3 to both independent clients, while production remained read-only.
