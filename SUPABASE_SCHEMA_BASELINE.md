@@ -1,6 +1,30 @@
 # Supabase schema baseline
 
-Reviewed against application version 37.12 and the repository migration chain through database schema 39. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten. Live catalogue details such as every deployed policy, index, trigger and Edge Function still require authenticated Supabase management inspection before any object is removed.
+Reviewed against application version 37.12, the proposed repository migration chain through database schema 40 and an authenticated read-only production catalogue inspection on 20 September 2026. Production remains on schema 39 until an explicitly approved merge and deployment. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+
+## Live production catalogue
+
+All 17 public tables have RLS enabled. Production has 51 public policies, 23 public indexes, 46 constraints, 16 public functions, 13 non-internal public triggers, no public views or materialized views, no Edge Functions and no installed `pg_cron`. Apart from the `user_profiles.user_id` reference to `auth.users.id` with cascade delete, the application deliberately relates roster records by validated date/name contracts rather than foreign keys.
+
+| Table | Columns | Key/unique contract |
+| --- | --- | --- |
+| `allowed_users` | `email`, `display_name`, `user_role`, `active`, `roster_name` | PK `email`; partial unique `roster_name` |
+| `app_schema_version` | `id`, `version`, `updated_at` | PK `id` |
+| `app_settings` | `id`, `email_recipients`, `shift_start`, `shift_end`, `updated_by`, `updated_at` | PK `id` |
+| `app_sync_state` | `id`, `revision`, `updated_at` | PK `id` |
+| `night_change_history` | `id`, `roster_date`, `action`, `absent_name`, `replacement_name`, `reason`, `changed_by`, `changed_at` | PK `id` |
+| `night_changes` | `id`, `roster_date`, `absent_name`, `replacement_name`, `reason`, `updated_at`, `updated_by` | PK `id`; unique (`roster_date`, `absent_name`) |
+| `night_five_cover` | `roster_date`, `coverage_key`, `updated_by`, `updated_at` | PK `roster_date` |
+| `night_labour_order` | `roster_date`, `first_part_name`, `second_part_name`, `updated_by`, `updated_at` | PK `roster_date` |
+| `night_overtime` | `id`, `roster_date`, `nurse_name`, `allocation_key`, `updated_by`, `updated_at` | PK `id`; unique (`roster_date`, `nurse_name`); partial unique allocation contract |
+| `night_overtime_history` | `id`, `roster_date`, `action`, `nurse_name`, `previous_allocation_key`, `allocation_key`, `changed_by`, `changed_at` | PK `id`; `changed_at` index |
+| `night_plan_status` | `roster_date`, `revision`, `status`, `published_by`, `published_at` | PK `roster_date` |
+| `night_role_override_history` | `id`, `roster_date`, `action`, `assignments`, `reason`, `changed_by`, `changed_at` | PK `id` |
+| `night_role_overrides` | `roster_date`, `assignments`, `reason`, `updated_by`, `updated_at` | PK `roster_date`; validated JSON shape check |
+| `roster_nights` | `date`, six core roles, `fullLW`, `seventh`, `mode`, `notes`, `updated_by`, `updated_at` | PK `date` |
+| `roster_settings` | `id`, `published_until`, `updated_by`, `updated_at` | PK `id` |
+| `rotation_versions` | `id`, `effective_from`, six core roles, `seventh_anchor`, `seventh_cycle`, `notes`, `updated_by`, `updated_at` | PK `id`; unique `effective_from` |
+| `user_profiles` | `user_id`, `profile_name`, `job_title`, `avatar_path`, `updated_at` | PK/FK `user_id` to `auth.users.id` with cascade delete |
 
 ## Shared operational data
 
@@ -44,6 +68,8 @@ Schema 38 extends the validated night-only override shape to seven working nurse
 
 Schema 39 corrects schema 38's JSON key-count check: seven roles plus the required `mode` key means eight object keys. It replaces the schema-38 definition of `apply_night_role_override_v35`; it does not create a second live overload or change the table constraint.
 
+Schema 40 preserves the existing account and profile access model while making the five Auth helper expressions init-plan safe. It also replaces the two permissive `allowed_users` SELECT policies with one equivalent policy whose logic remains administrator-wide access or the signed-in user's own email row. It does not alter grants, write permissions, roster data, staffing functions, history, triggers, Realtime publication membership or application logic.
+
 The schema-33 `apply_night_role_override_v33` wrapper remains a deliberate compatibility interface for installed clients that have not yet activated a newer service worker. Do not remove it solely because current source calls v35.
 
 ## Repository-observable triggers and realtime
@@ -54,4 +80,4 @@ The migration uses `drop trigger if exists` followed by `create trigger`, so rer
 
 ## Deployment review
 
-Before merging a schema change, review the generated SQL, confirm every object is forward-only and safely repeatable where practical, run deterministic policy checks, and verify that `EXPECTED_SCHEMA_VERSION` matches the migration. After an explicitly approved deployment, verify schema diagnostics, authorised access, atomic staffing history, two-device realtime refresh, private profile isolation and administrator-only identity binding.
+Before merging a schema change, review the generated SQL, confirm every object is forward-only and safely repeatable where practical, run deterministic policy checks, and verify whether the application genuinely depends on the new schema. Schema 40 is a transparent policy-performance migration, so application version 37.12 continues to require only schema 37 and remains compatible with production schema 39 during staged deployment. After an explicitly approved deployment, verify schema diagnostics, authorised access, atomic staffing history, two-device realtime refresh, private profile isolation and administrator-only identity binding.
