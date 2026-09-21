@@ -35,3 +35,8 @@ supabase/.branches/
 *~
 *.tmp
 *.temp
+Anaesthetic_Roster_Backup_Recovery_Key.pem
+backup/plain/
+backup/*.sql
+backup/*.tar.gz
+backup/*.p7m
