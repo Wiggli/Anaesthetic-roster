@@ -1,6 +1,6 @@
 # Supabase schema baseline
 
-Reviewed against application version 37.12, the proposed repository migration chain through database schema 40 and an authenticated read-only production catalogue inspection on 20 September 2026. Production remains on schema 39 until an explicitly approved merge and deployment. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
+Reviewed against application version 37.13, the proposed repository migration chain through database schema 40 and an authenticated read-only production catalogue inspection on 20 September 2026. Production remains on schema 39 until an explicitly approved merge and deployment. This is a review baseline, not a replacement migration and not a database dump. Existing deployed migrations remain forward-only and must not be rewritten.
 
 ## Live production catalogue
 
@@ -80,4 +80,4 @@ The migration uses `drop trigger if exists` followed by `create trigger`, so rer
 
 ## Deployment review
 
-Before merging a schema change, review the generated SQL, confirm every object is forward-only and safely repeatable where practical, run deterministic policy checks, and verify whether the application genuinely depends on the new schema. Schema 40 is a transparent policy-performance migration, so application version 37.12 continues to require only schema 37 and remains compatible with production schema 39 during staged deployment. After an explicitly approved deployment, verify schema diagnostics, authorised access, atomic staffing history, two-device realtime refresh, private profile isolation and administrator-only identity binding.
+Before merging a schema change, review the generated SQL, confirm every object is forward-only and safely repeatable where practical, run deterministic policy checks, and verify whether the application genuinely depends on the new schema. Schema 40 is a transparent policy-performance migration, so application version 37.13 continues to require only schema 37 and remains compatible with production schema 39 during staged deployment. After an explicitly approved deployment, verify schema diagnostics, authorised access, atomic staffing history, two-device realtime refresh, private profile isolation and administrator-only identity binding.
