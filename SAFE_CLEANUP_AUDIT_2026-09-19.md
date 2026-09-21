@@ -1,6 +1,6 @@
 # Safe cleanup and performance audit
 
-Status: pre-deployment audit on `codex/audit-cleanup-37-11`. Nothing in this branch has been deployed and no production database write has been made.
+Status: pre-deployment audit with the schema-40 follow-up on `codex/rls-policy-performance`, stacked on draft PR #36. Nothing in either branch has been deployed and no production database write has been made.
 
 ## Protected baseline
 
@@ -8,11 +8,11 @@ Status: pre-deployment audit on `codex/audit-cleanup-37-11`. Nothing in this bra
 | --- | --- |
 | Source branch | `main` |
 | Known-good commit | `fc4641771ffa37c539528b72b49d95bf996bfb89` |
-| Working audit branch | `codex/audit-cleanup-37-11` |
+| Working follow-up branch | `codex/rls-policy-performance` |
 | Deployed application version | 37.11 |
 | Proposed branch version | 37.12 |
 | Supabase project reference | `voaygfleqceqacvqixxp` |
-| Repository migration level | Schema 39 |
+| Production / proposed repository schema | Schema 39 / Schema 40 |
 | Production backup and recovery status | The Supabase dashboard confirms that this Free-plan project has no scheduled backups and PITR is not enabled. WAL archiving is active with 1,688 successful archives, zero failures and a latest archived WAL at 2026-09-19 23:58:57 UTC, but it does not provide a user-restorable recovery point. |
 
 The remote `main` reference still resolves to the protected commit. The production URL, manifest identity, scope and `start_url` are unchanged.
@@ -122,7 +122,7 @@ No multiple registration or stale-cache workaround was found. Update checks on l
 
 ## Supabase repository audit
 
-The repository contains forward migrations from schema 33 through 39, not the original database creation migrations. Repository-observable objects are:
+The proposed branch contains forward migrations from schema 33 through 40, not the original database creation migrations. Repository-observable objects are:
 
 - `app_sync_state`, its active-member select policy and `bump_app_sync_state_v33`.
 - Statement-level sync triggers on the shared roster tables listed in schema 33, plus `allowed_users` from schema 34.
@@ -132,6 +132,7 @@ The repository contains forward migrations from schema 33 through 39, not the or
 - `get_roster_startup_v37`.
 - The partial unique roster-name index.
 - `app_sync_state` in the Supabase Realtime publication.
+- The schema-40 policy-only optimisation, which keeps the same `allowed_users` and `user_profiles` access outcomes while making Auth helper calls init-plan safe and consolidating the two permissive account-read policies.
 
 Schema 38 and 39 use `create or replace function`, so they do not leave several live v35 functions with the same signature. Schema 39 corrects the v35 body; it does not create a second constraint. Trigger migrations drop the known trigger name before creating it, so replay does not accumulate same-name copies.
 
@@ -150,13 +151,13 @@ The function and grant review found:
 - the Supabase security advisor reports the seven expected callable `SECURITY DEFINER` functions as warnings, not evidence that their reviewed membership checks failed;
 - leaked-password protection is disabled and should be considered separately from this branch.
 
-The RLS and permission matrix was exercised without mutations. An active administrator could read all six authorised-account rows, an active member could read only their own authorised-account row and own profile while reading shared roster data, an unauthorised authenticated identity saw zero protected rows, and `anon` was denied table access. No policy uses user-editable metadata for authorisation. The five current `auth.uid()`/`auth.jwt()` policy expressions flagged by the performance advisor should later use init-plan-safe `(select auth.uid())`/`(select auth.jwt())` forms. The two permissive `allowed_users` SELECT policies are also a confirmed low-scale optimisation target.
+The production RLS and permission matrix was exercised without mutations. An active administrator could read all six authorised-account rows, an active member could read only their own authorised-account row and own profile while reading shared roster data, an unauthorised authenticated identity saw zero protected rows, and `anon` was denied table access. No policy uses user-editable metadata for authorisation. Schema 40 implements the five init-plan-safe Auth helper forms and consolidates the two permissive `allowed_users` SELECT policies without changing those outcomes.
 
 One important integrity issue is now confirmed for a dedicated future migration: active members have direct INSERT/UPDATE/DELETE policies on several current staffing tables and direct INSERT policies on history tables. That means a technically capable signed-in member can bypass the application's atomic RPC pairing and can supply arbitrary `changed_by` text, even though the shipped application correctly uses the versioned RPCs. Removing that bypass requires a staged grant/RLS/RPC compatibility plan and must not be folded into this safe cleanup branch.
 
 Realtime publishes 13 public tables while the client subscribes to 12 table feeds plus `app_sync_state`. Most shared writes therefore produce both a source-table event and the statement-level revision event; the 350 ms reload debounce normally coalesces them. `roster_nights` is published but not subscribed by the current client, while `app_settings` is subscribed but relies on its `app_sync_state` trigger because it is not published directly. This is real cleanup potential, but changing publication membership is correctness-sensitive and is not proposed here.
 
-Supabase rejected a disposable branch before creation because branching is unavailable on the Free plan. A separate zero-cost eu-central-1 project was therefore used for a minimal isolated Realtime probe without copying any production data, users or roster logic. Two RLS-enabled probe tables, a fixed-search-path statement trigger and two publication entries produced zero security or performance advisor findings. Two independent WebSocket clients joined successfully and both received revisions 1, 2 and 3 after three REST writes. On the two timed warm runs, both clients received the revision event 493 ms and 521 ms after the REST response. The test project was then paused and confirmed `INACTIVE`. This verifies the database trigger/publication transport in isolation, but it is not represented as a full two-device run of the roster application.
+Supabase rejected a disposable branch before creation because branching is unavailable on the Free plan. A separate zero-cost eu-central-1 project was therefore used for a minimal isolated Realtime probe without copying any production data, users or roster logic. Two RLS-enabled probe tables, a fixed-search-path statement trigger and two publication entries produced zero security or performance advisor findings. Two independent WebSocket clients joined successfully and both received revisions 1, 2 and 3 after three REST writes. On the two timed warm runs, both clients received the revision event 493 ms and 521 ms after the REST response. The same disposable project later validated schema 40 against temporary account/profile fixtures: administrator, member and unauthorised read outcomes were preserved; own-profile insert/update/delete succeeded; cross-profile update remained blocked; the six targeted performance warnings fell to zero. The temporary fixtures were removed, leaving only the original two empty probe tables and zero advisor findings, and the project was paused again and confirmed `INACTIVE`. This verifies the database trigger/publication transport and schema-40 policy semantics in isolation, but it is not represented as a full two-device run of the roster application.
 
 The revision poll is inexpensive at the database: 1.477 ms mean across 1,454 observed calls. History reads average 0.254–0.742 ms and profile reads average 1.400 ms. There are no Edge Functions, no installed `pg_cron` extension or scheduled jobs, and the only installed non-core extensions are `pg_stat_statements`, `pgcrypto`, `supabase_vault` and `uuid-ossp`.
 
@@ -175,8 +176,8 @@ WAL archiving is operating with 1,688 successful archives and zero failures. The
 
 ## Security and data preservation
 
-- No database migration was created.
-- No Supabase object, policy, function, trigger, index, row or user was changed.
+- One forward-only schema-40 policy-performance migration was created and tested only on the disposable project; it has not been applied to production.
+- No production Supabase object, policy, function, trigger, index, row or user was changed.
 - Catalogue metadata, aggregate counts and the signed-in administrator's normal application view were read; no raw account list, private profile content or roster export was copied into the report.
 - RLS was not disabled or relaxed.
 - Existing atomic write contracts and security-definer membership checks remain.
@@ -189,8 +190,73 @@ WAL archiving is operating with 1,688 successful archives and zero failures. The
 - Expanded allocation, consistency, offline, accessibility and privacy safety: pass.
 - Startup transport, saved-roster recovery, single restored-session authorisation, expired-token single refresh, optional-profile ordering and seven-nurse render: pass.
 - Version, release-history, manifest and service-worker cache consistency: pass after the 37.12 version update.
+- Schema-40 policy migration: pass on the disposable project for administrator/member/unauthorised reads, member-owned profile writes, denied cross-profile updates and zero performance-advisor findings.
 
-Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. The remote references were rechecked on 20 September 2026: `main` remained `fc4641771ffa37c539528b72b49d95bf996bfb89`, draft PR #36 remained open and unmerged at `d44199ea79b900968a4263b998ee3d13c26d8b5e`, and workflow run 104 remained successful. A production write was deliberately not made. Normal-member UI rendering, logout/login, installed-PWA reopening, a safe authenticated 37.12 browser trace, physical-device Realtime propagation and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
+Authenticated administrator login, three restored-session reloads, the administrator interface, production desktop light/dark rendering across Night, Changes and Breaks, simulated normal-member/unauthorised/anonymous RLS reads, two simultaneous production Live clients, isolated non-production two-client Realtime propagation, live function plans, advisors, the full database catalogue and the dashboard backup/PITR entitlement were verified. The remote references were rechecked on 20 September 2026: `main` remained `fc4641771ffa37c539528b72b49d95bf996bfb89`, draft PR #36 remained open and unmerged at `8f2c7bdb42fab5d745b1fd4097a9132ede7e3846`, and workflow run 105 succeeded with migration and deployment skipped. A production write was deliberately not made. Normal-member UI rendering, logout/login, installed-PWA reopening, a safe authenticated 37.12 browser trace, physical-device Realtime propagation and mobile responsive screenshots remain outstanding. Production recovery capability is now a confirmed gap rather than an unverified item.
+
+## Original brief completion matrix
+
+This matrix accounts for every section of the requested safe cleanup. “Verified” means the available repository, authenticated production read-only access or isolated test environment supplied direct evidence. “Deferred gate” means completing the item would require a production write, deployment, physical installed device, unavailable branch hosting or an approved recovery facility, so it is not represented as complete.
+
+| # | Requested area | Outcome |
+| --- | --- | --- |
+| 1 | Protect working version | Verified. `main`, known-good commit, production version/project/schema and deployed objects were recorded. Both work branches and PRs remain separate, draft and unmerged. Production has no user-restorable scheduled backup or PITR, so backup remains a deployment blocker. |
+| 2 | Git history | Verified. The 37.9 allocation-render change was identified as the regression that reinstated duplicate restored-session authorisation. Later auth, Android transport, snapshot, schema and PWA changes were traced before deciding what to retain. |
+| 3 | Before baseline | Verified where safely measurable. Production 37.11 restored-session reloads were 741/865/896 ms, median 865 ms; bundle and asset bytes, startup database timings, request paths, console state and service-worker behaviour were recorded. Exact authenticated 37.12 browser timing is a deferred gate. |
+| 4 | Startup sequence | Verified and documented from shell load through service worker, one client, session restore, protected snapshot, render, optional profile and Realtime. |
+| 5 | Supabase client initialisation | Verified. One client and one auth listener exist. The duplicate restored-session authorisation was fixed; channel and timers have cleanup paths. |
+| 6 | Frontend Supabase queries | Verified. Normal snapshot, compatibility reads, profile/photo, history, admin accounts and revision polling were mapped. The duplicated normal snapshot was fixed; correctness-sensitive fallback and background reads were retained. |
+| 7 | Lifecycle effects | Not applicable to React because this application is plain global-script JavaScript. Timers, browser events, auth callbacks, coalescing and subscription lifecycle were audited instead. No retry loop was added. |
+| 8 | Full backend inventory | Verified read-only. Production has 17 public tables, 17 RLS-enabled tables, 51 policies, 23 indexes, 46 constraints, no views/materialized views, 16 public functions, 13 public triggers, 13 Realtime tables, one private Storage bucket, no Edge Functions and no installed `pg_cron`. |
+| 9 | Backend changes from fixes | Verified against migrations 33–39 and the live catalogue. Compatibility wrappers, replaced function bodies, active constraints, triggers and snapshot RPC were distinguished from duplicates. |
+| 10 | RLS | Verified through catalogue, advisor and an admin/member/unauthorised/anonymous permission matrix. Schema 40 fixes five repeated Auth-helper evaluations and one overlapping permissive SELECT-policy finding without broadening access. |
+| 11 | Database performance | Verified with live statement statistics and plans. Startup RPC, revision and history/profile reads are already fast; table sizes are very small; no production query justifies a new index. High sequential-scan counts are expected for one-to-dozens-row tables. |
+| 12 | Functions/RPCs | Verified. All 16 were inventoried with arguments, volatility, security mode, fixed search path and execute grants. The v33 role wrapper is intentional compatibility, while v36/v38 validators are versioned dependencies rather than safe deletion candidates. |
+| 13 | Triggers | Verified. Thirteen same-purpose statement-level triggers call one fixed-search-path revision function. No same-table duplicate or recursive trigger was found. |
+| 14 | Edge Functions | Verified. None are deployed. |
+| 15 | Realtime | Verified structurally and with two simultaneous production read-only clients plus two isolated write-event WebSocket clients. One channel is used and removed/replaced on resubscribe. Full application change propagation between two devices remains a deferred no-production-write gate. |
+| 16 | Schema bloat | Classified. No category-A/B table, column, view, trigger, function or index deletion is justified. Versioned compatibility functions and publication overlap are category C/D and must remain. |
+| 17 | Preserve Supabase project | Verified. The same production project remains in use; no production object, data, user, secret or setting changed. |
+| 18 | Unused frontend code | Verified by static and history review. No confirmed obsolete source file, duplicate auth implementation, debug block or safe dead-code deletion was found. Historical CSS repetition is not proven unused. |
+| 19 | Dependencies | Verified. There are no runtime npm dependencies; the one browser dependency is the pinned Supabase CDN library. No removal or upgrade is proposed. |
+| 20 | Production bundle | Verified for this unbundled static application. Raw/gzip JavaScript, CSS and largest image were recorded. Admin/UI code is not safely separable without an architectural change. |
+| 21 | Rendering | Verified through render-path review and authenticated desktop smoke checks. This is not React and has no component rerender model. No broad memoisation or redraw rewrite is justified. |
+| 22 | Service worker/PWA | Verified. One registration, controlled activation, versioned cache, old-cache cleanup, network-first navigation and Supabase bypass remain. Identity, URL, scope and `start_url` are unchanged. Installed-phone reopening remains a deferred physical-device gate. |
+| 23 | Conservative cleanup | Followed. Category B duplication and category C launch blocking were fixed in PR #36; the independently verified RLS performance issue is isolated in PR #37. Cautious findings remain documented rather than changed. |
+| 24 | No workaround layering | Verified. The duplicate path was removed, not hidden behind another delay or retry. Existing affected-device fallback remains unchanged. |
+| 25 | Critical functionality | Deterministic roster, allocation, version, offline, PWA, startup and safety suites pass; authenticated administrator desktop paths pass. Normal-member UI, fresh logout/login, installed PWA and controlled live write remain pre-deployment gates. |
+| 26 | Security tests | Verified read-only for anonymous, unauthorised, member and administrator roles. No privileged browser credential was found. Schema 40 owner/cross-owner write behaviour was verified in isolation. |
+| 27 | Before/after | Request-path improvement is deterministic: a normal restored session falls from up to two authorisations and two protected snapshots to one of each. Optional profile/photo no longer gates roster usability. The branch adds 2,824 raw JavaScript bytes and 809 gzip bytes, so no bundle-size improvement is claimed. Exact authenticated 37.12 elapsed timing remains a deferred gate. |
+| 28 | Preserve experience | Verified by source diff and tests. No interface, navigation, terminology, feature or roster rule changed. |
+| 29 | Technical debt | Recorded below in “Safe to address later” and “Do not touch without a dedicated migration/test plan”. |
+| 30 | Final pre-deployment report | Completed below. It distinguishes verified outcomes from gates that cannot be completed without violating the no-production-write/no-deploy constraint. |
+
+## Final pre-deployment report
+
+1. **Slow startup cause:** the proven avoidable work was duplicate restored-session authorisation/snapshot loading and optional profile/photo work blocking the launch screen. The database snapshot itself is fast and is not the bottleneck.
+2. **Frontend duplication:** the auth callback and `getSession()` path both authorised a restored session after the 37.9 regression. No second Supabase client, second service worker or second active Realtime channel implementation was found.
+3. **Authentication duplication:** a normal restored session could call authorisation twice. PR #36 restores one authoritative `getSession()` startup path while retaining the listener for later state changes.
+4. **Duplicated Supabase requests:** up to two protected startup snapshots were scheduled before the fix. Normal startup is now one; the thirteen-read compatibility path runs only after protected transport failure.
+5. **Backend debt:** direct member table writes can bypass atomic current/history RPC pairing and accept client-supplied actor text; source-table Realtime events overlap with revision events; backup/PITR is absent; leaked-password protection is disabled.
+6. **RLS duplication:** production has two overlapping permissive `allowed_users` SELECT policies and five per-row Auth-helper findings. Schema 40 consolidates/fixes exactly these findings with equivalent tested outcomes.
+7. **Functions/triggers:** no accidental duplicate trigger or same-signature live function was found. The v33/v35 and v36/v38 version pairs have compatibility or active dependency reasons and are retained.
+8. **Edge Functions:** none exist, so no cleanup is required.
+9. **Realtime:** the client uses one channel but listens to source-table events alongside the revision event. Debouncing normally coalesces reloads. Consolidation is possible but not safe without controlled two-device write testing.
+10. **Indexes:** the 23 indexes fit the current constraints/query patterns. With the present table sizes and measured timings, no additional or duplicate-index removal is justified.
+11. **Unused code removed:** none. No deletion met the required proof threshold.
+12. **Unused dependencies removed:** none. No production npm dependency exists.
+13. **Backend objects changed/removed:** production: none. Proposed schema 40 changes five policy expressions and replaces two account-read policies with one equivalent policy; it removes no table, column, row, user, function, trigger or index.
+14. **Migrations created:** `supabase-migration-20260920141553_optimize_rls_policy_checks.sql`, forward-only schema 40, tested on the isolated project and not applied to production.
+15. **Bundle before/after:** raw JavaScript 513,147 B to 515,971 B; gzip 117,636 B to 118,445 B. The small increase is testable session/profile control logic, not a bundle optimisation claim.
+16. **Startup performance before/after:** before production median is 865 ms over three restored reloads. After-path work is one authorisation/snapshot and non-blocking optional profile; a trustworthy authenticated branch elapsed time is still required before claiming a millisecond improvement.
+17. **Supabase startup requests before/after:** protected core path falls from up to two authorisation attempts/two snapshots to one/one. Optional profile remains one selected-column read and a signed URL only when an avatar exists. History/admin background reads are unchanged.
+18. **Authentication:** production 37.11 login/session restoration passed; deterministic 37.12 single-session, refresh and failure tests pass. Fresh branch logout/login remains a deployment gate because the branch is not first-party hosted.
+19. **Roster data:** no production roster write occurred. Aggregate row counts and read-only comparisons show the existing data remained in place during the audit.
+20. **Users:** no production user, identity, role, password or session setting was changed.
+21. **Permissions:** read outcomes for administrator, member, unauthorised authenticated and anonymous contexts were verified. Schema 40 also preserved member-owned profile writes and denied cross-profile updates in isolation.
+22. **Installed PWA compatibility:** source-level identity, scope, URL, `start_url`, controlled update behaviour and cache alignment are preserved. Physical installed-device reopening is still required before deployment.
+23. **Remaining risks:** no restorable production backup, no authenticated first-party 37.12 waterfall, no normal-member branch UI run, no physical installed-PWA run and no full application two-device controlled-write propagation test.
+24. **Remaining debt:** the policy/grant/RPC write-boundary project, server-derived audit actor, Realtime publication consolidation, optional Auth hardening, backup plan, CSS/image maintenance and carefully narrowed fallback selects remain separate work.
 
 ## Technical debt
 
@@ -203,7 +269,6 @@ Authenticated administrator login, three restored-session reloads, the administr
 - Investigate a `realtimeConnecting` guard if a live trace confirms channel churn during rapid focus/pageshow/visibility events.
 - Consolidate direct table-write policies behind the atomic RPC contract only through a dedicated compatibility migration and installed-client test plan.
 - Derive audit actor identity from the authenticated claim instead of accepting arbitrary client-supplied `changed_by` text.
-- Optimise the five auth-expression policies and the overlapping `allowed_users` SELECT policies after permission regression tests.
 - Review whether source-table Realtime subscriptions/publication entries are still needed alongside `app_sync_state`; do not remove them without a two-client write test.
 - Decide whether to enable leaked-password protection after reviewing user impact and recovery communications.
 - Establish a tested production backup and restore plan; the current Free plan includes neither scheduled backups nor PITR.

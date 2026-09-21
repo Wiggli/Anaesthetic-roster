@@ -231,6 +231,7 @@ const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase
 const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
 const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
 const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
+const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
@@ -371,6 +372,13 @@ assert.match(startupMigration, /update public\.app_schema_version[\s\S]*version 
 assert.match(sevenRoleFixMigration, /elsif v_mode = '7'[\s\S]*v_expected_key_count := 8/, 'schema 39 must count the seven role keys plus the required mode key');
 assert.match(sevenRoleFixMigration, /v_mode in \('5','7'\)[\s\S]*p_assignments ->> 'mode' <> v_mode/, 'schema 39 must continue requiring the explicit custom-arrangement mode');
 assert.match(sevenRoleFixMigration, /update public\.app_schema_version set version=39/, 'schema 39 migration must update the schema marker');
+assert.match(rlsPerformanceMigration, /drop policy if exists "Admin can view all accounts"[\s\S]*drop policy if exists "Users can view their account"/, 'schema 40 must remove the overlapping allowed-users read policies');
+assert.match(rlsPerformanceMigration, /create policy "Authenticated accounts can view permitted accounts"[\s\S]*public\.is_roster_admin\(\)[\s\S]*lower\(email\) = lower\(coalesce\(\(select auth\.jwt\(\)\)/, 'schema 40 must preserve administrator-wide and member-own account reads in one policy');
+for (const action of ['select', 'insert', 'update', 'delete']) {
+  assert.match(rlsPerformanceMigration, new RegExp(`for ${action}[\\s\\S]*?\\(select auth\\.uid\\(\\)\\) = user_id`), `schema 40 ${action} profile policy must evaluate auth.uid once per statement`);
+}
+assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
+assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
 assert.equal(context.EXPECTED_SCHEMA_VERSION, 37, 'the application must require the protected startup snapshot');
 assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
