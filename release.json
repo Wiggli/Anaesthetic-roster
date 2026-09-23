@@ -1,12 +1,12 @@
 {
-  "version": "37.18",
+  "version": "37.19",
   "date": "24 September 2026",
-  "title": "A cleaner sign-in screen",
-  "summary": "Keep sign-in focused on approved work email and Google, with a more deliberate Apple-style Google action.",
+  "title": "Team chat",
+  "summary": "Add an isolated realtime staff chat with one team room and secure private conversations.",
   "changes": [
-    "Night Roster keeps the two simple sign-in routes: approved work email and Google.",
-    "The Google action is centred and presented as one clear secondary sign-in choice.",
-    "Microsoft and Apple sign-in remain intentionally absent.",
-    "Authentication rules, access requests, roster permissions and shared data are unchanged."
+    "Anaesthetic Team provides one permanent group chat for active authorised roster users, with private one-to-one conversations between registered members.",
+    "Messages are normal text only and never change the roster or create a swap workflow.",
+    "Private chats and sender identity are enforced with Supabase Row Level Security, and the chat directory contains names only, never email addresses.",
+    "Chat loads recent messages only when opened, paginates older history and uses a separate Realtime channel so roster features remain independent."
   ]
 }
