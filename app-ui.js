@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.15 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.17 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -55,6 +55,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.17',date:'24 Sep 2026',title:'Request access with Google',changes:['Existing approved members continue to sign in normally.','A new Google user who is not yet approved now creates a pending access request without seeing roster data.','Roster administrators can approve or reject pending requests from Authorised accounts.','Approved requests become normal member accounts; administrator access is never granted automatically.']},
   {version:'37.16',date:'24 Sep 2026',title:'Sign in with Google',changes:['Approved roster members can now choose Google sign-in from the Night Roster login screen.','Google returns to the existing Night Roster URL after authentication, then the same approved-email check runs before roster data opens.','Only Google is shown for social sign-in at this stage, so no unconfigured provider is presented to users.','Email and password, password reset, passkeys, roster calculations, staffing, allocations, Pager, Reliever and database permissions remain unchanged.']},
 
   {version:'37.15',date:'23 Sep 2026',title:'Private device data leaves with you',changes:['Signing out, losing approved access or reaching an invalid session now removes the saved offline roster, cached account email and recently entered staff names from that device.','Authentication and database errors now use safe, useful messages without exposing internal provider or database details, and copied diagnostics no longer include the account email address.','The pinned Supabase browser library is protected by a verified integrity hash, while automated checks guard against secret credentials entering deployed files.','A reviewable database migration removes unused anonymous public-schema privileges without relaxing RLS or changing any authenticated roster permission.','The verified rotation, staffing, allocations, Pager, Reliever, installed-PWA identity and interface remain unchanged.']},
@@ -1493,10 +1494,33 @@ function setupPWA(){
   var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);if(ios&&!standalone)install.classList.remove('hidden');
 }
 
+function accessRequestDisplayName(user){
+  var metadata=user&&user.user_metadata||{},name=String(metadata.full_name||metadata.name||'').trim();
+  if(name)return name.slice(0,100);
+  var email=String(user&&user.email||'').trim(),local=email.split('@')[0]||'New roster member';
+  return local.replace(/[._-]+/g,' ').replace(/\b\w/g,function(ch){return ch.toUpperCase()}).slice(0,100);
+}
+async function ensureAccessRequest(user){
+  if(!user||!user.id||!user.email)return{status:'error'};
+  var existing=await supa.from('access_requests').select('status').eq('user_id',user.id).maybeSingle();
+  if(!existing.error&&existing.data)return{status:existing.data.status};
+  if(existing.error&&existing.error.code!=='PGRST116')return{status:'error'};
+  var created=await supa.from('access_requests').insert({user_id:user.id,email:user.email.toLowerCase(),display_name:accessRequestDisplayName(user),status:'pending'});
+  if(created.error)return{status:'error'};
+  return{status:'pending',created:true};
+}
+
 async function authorizeUser(user,session){
   if(!user)return showAuth();if(session)rememberAuthSession(session);var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
   var sharedReady=await loadSharedData();if(attempt!==startupAttempt)return;
-  if(!sharedReady&&sharedLoadFailureStage==='access'){await supa.auth.signOut();clearPrivateDeviceData();currentUser=null;currentUserProfile=null;showAuth('This email has not been approved for Night Roster. Ask the roster administrator to add it.',true);return}
+  if(!sharedReady&&sharedLoadFailureStage==='access'){
+    var request=await ensureAccessRequest(user);
+    await supa.auth.signOut({scope:'local'});clearPrivateDeviceData();currentUser=null;currentUserProfile=null;
+    if(request.status==='pending')showAuth(request.created?'Your access request has been sent. A roster administrator needs to approve it before you can enter.':'Your access request is still waiting for administrator approval.');
+    else if(request.status==='rejected')showAuth('Your access request was not approved. Contact the roster administrator if you think this should be reviewed.',true);
+    else showAuth('This account is not approved for Night Roster yet. Try again later or contact the roster administrator.',true);
+    return
+  }
   if(!sharedReady&&sharedLoadFailureStage==='session'){clearPrivateDeviceData();currentUser=null;currentAccessToken='';currentUserProfile=null;showAuth('Your saved sign-in has expired. Sign in again to open the shared roster.',true);return}
   if(!sharedReady){var stage={session:'your saved sign-in',snapshot:'the protected roster',staffing:'shared staffing',allocations:'tonight\'s allocations',support:'roster support data'}[sharedLoadFailureStage]||'the shared roster',code=sharedLoadFailureCode?' (code '+sharedLoadFailureCode+')':'';showLaunchRecovery('The connection stopped while opening '+stage+code+'. Try again.');return}
   var isAdmin=currentUserProfile&&currentUserProfile.user_role==='admin';

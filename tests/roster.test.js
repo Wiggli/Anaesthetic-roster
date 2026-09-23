@@ -232,8 +232,9 @@ const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-m
 const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
 const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
 const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
+const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -379,7 +380,13 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 37, 'the application must require the protected startup snapshot');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 43, 'the application must require the access-request schema');
+assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
+assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
+assert.match(accessRequestMigration, /Users can request own access[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/, 'a pending user may only create a request for their own authenticated identity');
+assert.match(accessRequestMigration, /Admins can review access requests[\s\S]*is_roster_admin/, 'only roster administrators may review pending requests');
+assert.match(accessRequestMigration, /grant update \(status, reviewed_at, reviewed_by\)/, 'authenticated clients must not receive blanket update rights on request identity fields');
+assert.match(accessRequestMigration, /version = greatest\(version, 43\)/, 'schema 43 migration must update the schema marker');
 assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
 assert.match(ui, /requestStartupSnapshot\(\)[\s\S]*get_roster_startup_v37/, 'authorisation and shared data must use the protected single-request startup snapshot');
