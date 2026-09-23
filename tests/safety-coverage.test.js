@@ -206,6 +206,15 @@ assert.match(source['app-ui.js'], /failedAction\('Overtime nurse was not saved\.
 assert.match(source['service-worker.js'], /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary[\s\S]*return/, 'non-library Supabase requests must bypass caching');
 assert.doesNotMatch(source['service-worker.js'], /caches\.put\([^\n]*supabase/i);
 
+// Google and Microsoft OAuth must remain optional sign-in paths behind the same authorisation gate.
+assert.match(source['index.html'], /id="authGoogleBtn"[\s\S]*Continue with Google/);
+assert.match(source['index.html'], /id="authMicrosoftBtn"[\s\S]*Continue with Microsoft/);
+assert.match(source['app-core.js'], /async function signInWithSocialProvider\(provider\)[\s\S]*signInWithOAuth\(\{provider:provider,options:options\}\)/);
+assert.match(source['app-core.js'], /provider==='azure'[\s\S]*options\.scopes='email'/, 'Microsoft OAuth must request the email scope used by roster authorisation');
+assert.match(source['app-core.js'], /var options=\{redirectTo:APP_URL\}/, 'OAuth must return to the existing roster application URL');
+assert.match(source['app-ui.js'], /authGoogleBtn[\s\S]*signInWithSocialProvider\('google'\)/);
+assert.match(source['app-ui.js'], /authMicrosoftBtn[\s\S]*signInWithSocialProvider\('azure'\)/);
+assert.doesNotMatch(source['app-core.js'] + source['app-ui.js'] + source['index.html'], /external_(google|azure)_secret|client_secret/i, 'OAuth provider secrets must never ship in browser files');
 // Runtime/cache alignment stays guarded independently of the main regression file.
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version);
 const escapedVersion = context.APP_VERSION.replace('.', '\\.');
