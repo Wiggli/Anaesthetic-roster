@@ -231,6 +231,17 @@ async function run() {
   assert.equal(typeof authCallback, 'function');
   assert.equal(authorisationCalls, 1, 'a restored session must start exactly one authorisation attempt');
 
+  let signOutOptions;
+  context.currentUser = { id: 'user-1', email: 'andre@example.test' };
+  context.currentUserProfile = { email: 'andre@example.test', user_role: 'admin', active: true };
+  context.changesChannel = null;
+  context.setAuthMode = () => {};
+  context.showAuth = () => {};
+  context.supa = { auth: { signOut: async options => { signOutOptions = options; return { error: null }; } } };
+  await context.signOutUser();
+  assert.equal(signOutOptions.scope, 'local', 'sign out must preserve sessions on other browsers and installed devices');
+  assert.equal(context.currentUser, null, 'the current browser session must still be cleared');
+
   const sevenNurseNight = context.calculateNight('2026-09-18');
   context.nightOvertime[sevenNurseNight.date] = [{ id: 'overtime-1', nurse_name: 'Nazia' }];
   context.renderNightRoleOverride = () => {};
