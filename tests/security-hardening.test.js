@@ -8,6 +8,7 @@ const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923120000_remove_anonymous_database_access.sql'), 'utf8');
+const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
@@ -27,6 +28,11 @@ assert.doesNotMatch(html, /id="authMicrosoftBtn"/,
   'an unconfigured Microsoft provider must not be shown to users');
 assert.match(core, /byId\('authSocial'\)\.classList\.toggle\('hidden',!login\)/,
   'social sign-in controls must only appear in normal sign-in mode');
+assert.match(ui, /ensureAccessRequest\(user\)/, 'unapproved authenticated users must enter the access-request flow');
+assert.match(accessRequestMigration, /revoke all privileges on table public\.access_requests from public, anon, authenticated/, 'access requests must start from a deny-by-default table privilege boundary');
+assert.match(accessRequestMigration, /grant select, insert on table public\.access_requests to authenticated/, 'authenticated users receive only the minimum table-level privileges needed to request and inspect access');
+assert.match(accessRequestMigration, /grant update \(status, reviewed_at, reviewed_by\) on table public\.access_requests to authenticated/, 'request identity fields must not be generally mutable');
+assert.doesNotMatch(accessRequestMigration, /grant all .*access_requests/i, 'access request storage must never grant blanket privileges');
 
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],
