@@ -1,11 +1,11 @@
-/* Anaesthetic Night Roster V37.17 core and roster foundation. */
+/* Anaesthetic Night Roster V37.18 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = [];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.17';
+var APP_VERSION = '37.18';
 var EXPECTED_SCHEMA_VERSION = 43;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
@@ -171,7 +171,7 @@ function setAuthMode(mode){
   authMode=mode;passwordRecoveryActive=mode==='recovery';var recovery=mode==='recovery',login=mode==='login',signup=mode==='signup';
   byId('authSwitch').classList.toggle('hidden',recovery);byId('authEmailLabel').classList.toggle('hidden',recovery);byId('authPasswordLabelText').textContent=recovery?'New password':'Password';
   byId('loginTab').classList.toggle('active',login);byId('loginTab').setAttribute('aria-selected',login?'true':'false');byId('signupTab').classList.toggle('active',signup);byId('signupTab').setAttribute('aria-selected',signup?'true':'false');
-  byId('authModeTitle').textContent=recovery?'Choose a new password':login?'Welcome back':'Create your account';byId('authModeIntro').textContent=recovery?'Use at least eight characters, then enter the same password again.':login?'Sign in with your approved roster account.':'Use the email address approved by the roster administrator.';
+  byId('authModeTitle').textContent=recovery?'Choose a new password':login?'Welcome back':'Create your account';byId('authModeIntro').textContent=recovery?'Use at least eight characters, then enter the same password again.':login?'Use your approved work email, or continue with Google.':'Use the work email approved by the roster administrator.';
   byId('authSubmitBtn').textContent=recovery?'Save password':login?'Sign in':'Create account';byId('authPassword').setAttribute('autocomplete',login?'current-password':'new-password');byId('authPassword').placeholder=recovery?'At least 8 characters':login?'Enter your password':'Create a password';
   byId('authPasswordConfirmLabel').classList.toggle('hidden',!recovery);byId('forgotPasswordBtn').classList.toggle('hidden',!login);byId('authSocial').classList.toggle('hidden',!login);byId('authPasskeyBtn').classList.toggle('hidden',!login||!window.PublicKeyCredential);byId('cancelRecoveryBtn').classList.toggle('hidden',!recovery);if(!recovery)byId('authPasswordConfirm').value='';authMessage('')
 }
