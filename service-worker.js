@@ -2,19 +2,19 @@ const CACHE_NAME = 'anaesthetic-night-roster-v37-15';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.15',
-  './theme-bootstrap.js?v=37.15',
-  './app-core.js?v=37.15',
-  './app-ui.js?v=37.15',
-  './manifest.webmanifest?v=37.15',
+  './styles.css?v=37.16',
+  './theme-bootstrap.js?v=37.16',
+  './app-core.js?v=37.16',
+  './app-ui.js?v=37.16',
+  './manifest.webmanifest?v=37.16',
   './release.json',
-  './icon-192.png?v=37.15',
-  './icon-512.png?v=37.15',
-  './icon-maskable-192.png?v=37.15',
-  './icon-maskable-512.png?v=37.15',
-  './apple-touch-icon.png?v=37.15',
-  './anaesthesia-header.jpg?v=37.15',
-  './mater-dei-logo.png?v=37.15'
+  './icon-192.png?v=37.16',
+  './icon-512.png?v=37.16',
+  './icon-maskable-192.png?v=37.16',
+  './icon-maskable-512.png?v=37.16',
+  './apple-touch-icon.png?v=37.16',
+  './anaesthesia-header.jpg?v=37.16',
+  './mater-dei-logo.png?v=37.16'
 ];
 
 function isSupabaseLibrary(requestUrl) {
