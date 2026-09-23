@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.15 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.17 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -55,6 +55,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.17',date:'24 Sep 2026',title:'Request access with Google',changes:['Existing approved members continue to sign in normally.','A new Google user who is not yet approved now creates a pending access request without seeing roster data.','Roster administrators can approve or reject pending requests from Authorised accounts.','Approved requests become normal member accounts; administrator access is never granted automatically.']},
   {version:'37.16',date:'24 Sep 2026',title:'Sign in with Google',changes:['Approved roster members can now choose Google sign-in from the Night Roster login screen.','Google returns to the existing Night Roster URL after authentication, then the same approved-email check runs before roster data opens.','Only Google is shown for social sign-in at this stage, so no unconfigured provider is presented to users.','Email and password, password reset, passkeys, roster calculations, staffing, allocations, Pager, Reliever and database permissions remain unchanged.']},
 
   {version:'37.15',date:'23 Sep 2026',title:'Private device data leaves with you',changes:['Signing out, losing approved access or reaching an invalid session now removes the saved offline roster, cached account email and recently entered staff names from that device.','Authentication and database errors now use safe, useful messages without exposing internal provider or database details, and copied diagnostics no longer include the account email address.','The pinned Supabase browser library is protected by a verified integrity hash, while automated checks guard against secret credentials entering deployed files.','A reviewable database migration removes unused anonymous public-schema privileges without relaxing RLS or changing any authenticated roster permission.','The verified rotation, staffing, allocations, Pager, Reliever, installed-PWA identity and interface remain unchanged.']},
