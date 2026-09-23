@@ -1,12 +1,12 @@
 {
-  "version": "37.16",
+  "version": "37.17",
   "date": "24 September 2026",
-  "title": "Sign in with Google",
-  "summary": "Add Google sign-in while keeping the existing approved-email access checks.",
+  "title": "Request access with Google",
+  "summary": "New Google users can request roster access instead of needing to be pre-approved before their first sign-in.",
   "changes": [
-    "Approved roster members can now choose Google sign-in from the Night Roster login screen.",
-    "Google returns to the existing Night Roster URL after authentication, then the same active allowed_users email check runs before any roster data opens.",
-    "Only Google is shown for social sign-in at this stage, so users are not offered an unconfigured Microsoft provider.",
-    "Email and password, password reset, passkeys, roster calculations, staffing, allocations and database permissions remain unchanged."
+    "Existing approved members continue to sign in normally.",
+    "A new Google user who is not yet approved now creates a pending access request without seeing roster data.",
+    "Roster administrators can approve or reject pending requests from Authorised accounts.",
+    "Approved requests become normal member accounts; administrator access is never granted automatically."
   ]
 }
