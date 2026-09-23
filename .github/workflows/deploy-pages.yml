@@ -84,7 +84,7 @@ jobs:
       - name: Prepare public app files
         run: |
           mkdir dist
-          cp index.html styles.css theme-bootstrap.js app-core.js app-ui.js service-worker.js manifest.webmanifest release.json dist/
+          cp index.html styles.css chat.css theme-bootstrap.js app-core.js app-ui.js chat.js service-worker.js manifest.webmanifest release.json dist/
           cp anaesthesia-header.jpg mater-dei-logo.png apple-touch-icon.png icon-192.png icon-512.png icon-maskable-192.png icon-maskable-512.png dist/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
@@ -127,6 +127,14 @@ jobs:
             --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 \
             "${page_url}app-ui.js?v=${app_version}" > /dev/null
+          curl --fail --silent --show-error --location --proto '=https' \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "${page_url}chat.js?v=${app_version}" > /dev/null
+          curl --fail --silent --show-error --location --proto '=https' \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "${page_url}chat.css?v=${app_version}" > /dev/null
           curl --fail --silent --show-error --location --proto '=https' \
             --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 \
