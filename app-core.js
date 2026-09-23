@@ -1,12 +1,12 @@
-/* Anaesthetic Night Roster V37.16 core and roster foundation. */
+/* Anaesthetic Night Roster V37.17 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = [];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.16';
-var EXPECTED_SCHEMA_VERSION = 37;
+var APP_VERSION = '37.17';
+var EXPECTED_SCHEMA_VERSION = 43;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
 var currentAccessToken = '';
@@ -21,6 +21,7 @@ var overtimeHistory = {};
 var roleOverrideHistory = {};
 var fiveCoverChoices = {};
 var authorisedAccounts = [];
+var accessRequests = [];
 var changesChannel = null;
 var authMode = 'login';
 var passwordRecoveryActive = false;
@@ -110,8 +111,40 @@ function renderAdmin(){
   byId('publishCurrentSummary').innerHTML='<b>Currently visible until '+esc(fmt(rosterSettings.published_until))+'</b><div class="time">The next extension will begin on '+esc(fmt(start))+'. Nothing already published will be removed or recalculated.</div>';
   extend.min=start;if(!extend.value||extend.value<start)extend.value=snapRosterDate(addMonths(rosterSettings.published_until,6));updateExtensionSummary();var selectedVersion=versionForDate(r.date),leaving=[selectedVersion.first1,selectedVersion.first2,selectedVersion.second1,selectedVersion.second2,selectedVersion.pager,selectedVersion.reliever];if(document.activeElement!==byId('replaceStaffName'))byId('replaceStaffName').innerHTML=selectOptions(leaving,byId('replaceStaffName').value||leaving[0]);if(document.activeElement!==byId('teamEffectiveDate'))byId('teamEffectiveDate').value=r.date;byId('teamEffectiveDate').min=R[0].date;byId('teamEffectiveDate').max=R[R.length-1].date;byId('teamEffectiveSummary').innerHTML='<b>Permanent change will begin on '+esc(fmt(r.date))+'.</b><div class="time">The selected night and every later roster will use the new nurse, while all earlier nights remain unchanged.</div>';byId('currentTeamSummary').innerHTML='<b>Latest permanent team</b><div class="currentTeam">'+[lastVersion.first1,lastVersion.first2,lastVersion.second1,lastVersion.second2,lastVersion.pager,lastVersion.reliever].map(function(n){return '<span>'+esc(n)+'</span>'}).join('')+'</div>';byId('teamPrevNightBtn').disabled=idx<=0;byId('teamNextNightBtn').disabled=idx>=R.length-1;byId('extendPrevNightBtn').disabled=extend.value<=start;byId('rotationVersionList').innerHTML=rotationVersions.map(function(v,i){return '<div class="historyItem"><b>'+(i===0?'Original verified rotation':'Effective from '+esc(fmt(v.effective_from)))+'</b><div class="changeMeta">'+esc(v.notes||(i===0?'Original six-nurse team':'Permanent team change'))+'</div>'+(i?'<div class="changeMeta">Earlier roster nights were preserved.</div>':'')+'</div>'}).join('');switchAdminTab(activeAdminTab,false);renderAccounts();renderDiagnostics()
 }
-async function loadAccounts(){var result=await supa.from('allowed_users').select('*').order('display_name');if(result.error){toast('Accounts could not be loaded');return}authorisedAccounts=result.data||[];renderAccounts()}
-function renderAccounts(){var el=byId('accountManager');if(!el)return;var active=authorisedAccounts.filter(function(a){return a.active}).length,inactive=authorisedAccounts.length-active;byId('accountSummary').innerHTML='<div><b>'+active+' active member'+(active===1?'':'s')+'</b><div class="time">Only active authorised emails can sign in.</div></div>'+(inactive?'<span class="pill">'+inactive+' inactive</span>':'');el.innerHTML=authorisedAccounts.map(function(a){var self=a.email.toLowerCase()===currentUser.email.toLowerCase();return '<div class="accountRow"><div><b>'+esc(a.display_name)+'</b><div class="accountRole">'+esc(a.email)+' • '+esc(a.user_role)+(a.active?'':' • Inactive')+'</div></div><button class="mini '+(a.active?'':'soft')+'" data-account-toggle="'+esc(a.email)+'" '+(self?'disabled title="Your administrator account cannot be disabled here"':'')+'>'+(a.active?'Deactivate':'Activate')+'</button></div>'}).join('');Array.prototype.forEach.call(el.querySelectorAll('[data-account-toggle]'),function(b){b.onclick=function(){toggleAuthorisedAccount(b.getAttribute('data-account-toggle'))}})}
+async function loadAccounts(){
+  var results=await Promise.all([
+    supa.from('allowed_users').select('*').order('display_name'),
+    supa.from('access_requests').select('user_id,email,display_name,status,requested_at,reviewed_at,reviewed_by').eq('status','pending').order('requested_at',{ascending:true})
+  ]);
+  if(results[0].error){toast('Accounts could not be loaded');return}
+  authorisedAccounts=results[0].data||[];
+  accessRequests=results[1].error?[]:(results[1].data||[]);
+  renderAccounts();
+}
+function renderAccounts(){
+  var el=byId('accountManager');if(!el)return;
+  var active=authorisedAccounts.filter(function(a){return a.active}).length,inactive=authorisedAccounts.length-active,pending=accessRequests.length;
+  byId('accountSummary').innerHTML='<div><b>'+active+' active member'+(active===1?'':'s')+'</b><div class="time">'+(pending?pending+' access request'+(pending===1?'':'s')+' waiting for review.':'New Google users can request access instead of being pre-added.')+'</div></div>'+(inactive?'<span class="pill">'+inactive+' inactive</span>':'');
+  var requests=pending?'<div class="accessRequestGroup"><div class="sectionHeadingRow"><h3>Pending access requests</h3><span class="pill">'+pending+'</span></div>'+accessRequests.map(function(r){return '<div class="accountRow accessRequestRow"><div><b>'+esc(r.display_name)+'</b><div class="accountRole">'+esc(r.email)+' • Requested '+esc(shortTime(r.requested_at))+'</div></div><div class="accessRequestActions"><button class="mini primary" data-request-approve="'+esc(r.user_id)+'">Approve</button><button class="mini soft" data-request-reject="'+esc(r.user_id)+'">Reject</button></div></div>'}).join('')+'</div>':'';
+  el.innerHTML=requests+authorisedAccounts.map(function(a){var self=a.email.toLowerCase()===currentUser.email.toLowerCase();return '<div class="accountRow"><div><b>'+esc(a.display_name)+'</b><div class="accountRole">'+esc(a.email)+' • '+esc(a.user_role)+(a.active?'':' • Inactive')+'</div></div><button class="mini '+(a.active?'':'soft')+'" data-account-toggle="'+esc(a.email)+'" '+(self?'disabled title="Your administrator account cannot be disabled here"':'')+'>'+(a.active?'Deactivate':'Activate')+'</button></div>'}).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('[data-account-toggle]'),function(b){b.onclick=function(){toggleAuthorisedAccount(b.getAttribute('data-account-toggle'))}});
+  Array.prototype.forEach.call(el.querySelectorAll('[data-request-approve]'),function(b){b.onclick=function(){approveAccessRequest(b.getAttribute('data-request-approve'))}});
+  Array.prototype.forEach.call(el.querySelectorAll('[data-request-reject]'),function(b){b.onclick=function(){rejectAccessRequest(b.getAttribute('data-request-reject'))}});
+}
+async function approveAccessRequest(userId){
+  var request=accessRequests.find(function(r){return r.user_id===userId});if(!request)return;
+  var added=await supa.from('allowed_users').upsert({email:request.email,display_name:request.display_name,user_role:'member',active:true},{onConflict:'email'});
+  if(added.error){toast('Access could not be approved');return}
+  var reviewed=await supa.from('access_requests').update({status:'approved',reviewed_at:new Date().toISOString(),reviewed_by:currentUser.email}).eq('user_id',userId);
+  if(reviewed.error){toast('Member was approved, but the request status could not be updated');await loadAccounts();return}
+  await loadAccounts();renderAdmin();toast(request.display_name+' can now sign in');
+}
+async function rejectAccessRequest(userId){
+  var request=accessRequests.find(function(r){return r.user_id===userId});if(!request)return;
+  var reviewed=await supa.from('access_requests').update({status:'rejected',reviewed_at:new Date().toISOString(),reviewed_by:currentUser.email}).eq('user_id',userId);
+  if(reviewed.error){toast('Access request could not be rejected');return}
+  await loadAccounts();renderAdmin();toast('Access request rejected');
+}
 async function addAuthorisedAccount(){var name=byId('accountName').value.trim(),email=byId('accountEmail').value.trim().toLowerCase();if(!name||!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid name and email');return}var result=await supa.from('allowed_users').upsert({email:email,display_name:name,user_role:'member',active:true},{onConflict:'email'});if(result.error){toast('Account could not be added');return}byId('accountName').value='';byId('accountEmail').value='';await loadAccounts();toast(name+' can now create an account')}
 async function toggleAuthorisedAccount(email){var account=authorisedAccounts.find(function(a){return a.email===email});if(!account||email.toLowerCase()===currentUser.email.toLowerCase())return;var result=await supa.from('allowed_users').update({active:!account.active}).eq('email',email);if(result.error){toast('Account access could not be changed');return}await loadAccounts();toast(account.display_name+(account.active?' deactivated':' activated'))}
 function switchAdminTab(tab,scroll){var pane=byId('admin'+tab.charAt(0).toUpperCase()+tab.slice(1));if(!pane)return;activeAdminTab=tab;Array.prototype.forEach.call(document.querySelectorAll('.adminPane'),function(p){p.classList.toggle('hidden',p!==pane)});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){var selected=b.getAttribute('data-admin-tab')===tab;b.classList.toggle('active',selected);b.setAttribute('aria-selected',selected?'true':'false')});if(scroll!==false)byId('admin').scrollIntoView({behavior:'smooth',block:'start'})}
