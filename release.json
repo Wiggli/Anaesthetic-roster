@@ -1,12 +1,12 @@
 {
-  "version": "37.15",
-  "date": "23 September 2026",
-  "title": "Private device data leaves with you",
-  "summary": "Clear private local data at session end and tighten browser and database security boundaries.",
+  "version": "37.16",
+  "date": "24 September 2026",
+  "title": "Google and Microsoft sign-in ready",
+  "summary": "Add optional Google and Microsoft OAuth sign-in without changing roster authorisation or permissions.",
   "changes": [
-    "Signing out, losing approved access or reaching an invalid session now removes the saved offline roster, cached account email and recently entered staff names from that device.",
-    "Authentication and database errors use safe messages, copied diagnostics omit the account email, and the pinned Supabase browser library now has a verified integrity hash.",
-    "A reviewable database migration removes unused anonymous public-schema privileges without relaxing RLS or changing authenticated permissions.",
-    "Roster calculations, staffing, allocations, Pager, Reliever, installed-PWA identity and the interface remain unchanged."
+    "The sign-in screen now supports Google and Microsoft alongside the existing email, password and passkey options.",
+    "OAuth sessions still pass through the existing approved-email checks and Row Level Security before roster data can open.",
+    "Microsoft requests only the email scope needed for roster identity checks, while provider secrets stay in Supabase rather than browser code.",
+    "Roster calculations, staffing, allocations, Pager, Reliever and database permissions remain unchanged."
   ]
 }
