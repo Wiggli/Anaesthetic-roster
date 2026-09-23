@@ -1,11 +1,12 @@
 {
-  "version": "37.14",
-  "date": "21 September 2026",
-  "title": "Sign out only on this device",
-  "summary": "Keep other saved sessions active when signing out of the current browser or installed app.",
+  "version": "37.15",
+  "date": "23 September 2026",
+  "title": "Private device data leaves with you",
+  "summary": "Clear private local data at session end and tighten browser and database security boundaries.",
   "changes": [
-    "Signing out now clears only the current browser or installed app session instead of revoking saved sessions on every device.",
-    "Realtime and background refresh work are still stopped before the local session is cleared.",
-    "Roster calculations, staffing, allocations, Pager, Reliever, the interface, service-worker behaviour and database rules remain unchanged."
+    "Signing out, losing approved access or reaching an invalid session now removes the saved offline roster, cached account email and recently entered staff names from that device.",
+    "Authentication and database errors use safe messages, copied diagnostics omit the account email, and the pinned Supabase browser library now has a verified integrity hash.",
+    "A reviewable database migration removes unused anonymous public-schema privileges without relaxing RLS or changing authenticated permissions.",
+    "Roster calculations, staffing, allocations, Pager, Reliever, installed-PWA identity and the interface remain unchanged."
   ]
 }
