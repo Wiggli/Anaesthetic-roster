@@ -1,12 +1,12 @@
 {
-  "version": "37.15",
-  "date": "23 September 2026",
-  "title": "Private device data leaves with you",
-  "summary": "Clear private local data at session end and tighten browser and database security boundaries.",
+  "version": "37.16",
+  "date": "24 September 2026",
+  "title": "More ways to sign in",
+  "summary": "Add Google and Microsoft sign-in while keeping the existing approved-email access checks.",
   "changes": [
-    "Signing out, losing approved access or reaching an invalid session now removes the saved offline roster, cached account email and recently entered staff names from that device.",
-    "Authentication and database errors use safe messages, copied diagnostics omit the account email, and the pinned Supabase browser library now has a verified integrity hash.",
-    "A reviewable database migration removes unused anonymous public-schema privileges without relaxing RLS or changing authenticated permissions.",
-    "Roster calculations, staffing, allocations, Pager, Reliever, installed-PWA identity and the interface remain unchanged."
+    "Approved roster members can sign in with Google or Microsoft once those providers are enabled in Supabase.",
+    "Microsoft sign-in requests the email scope required by Supabase, and both providers return to the existing Night Roster URL after authentication.",
+    "A successful social login still has to pass the existing active allowed_users email check before any roster data opens.",
+    "Email and password, password reset, passkeys, roster calculations, staffing, allocations and database permissions remain unchanged."
   ]
 }
