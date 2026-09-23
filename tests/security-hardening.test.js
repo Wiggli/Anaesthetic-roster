@@ -8,6 +8,7 @@ const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923120000_remove_anonymous_database_access.sql'), 'utf8');
+const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
   'the third-party Supabase browser bundle must be protected by subresource integrity');
@@ -65,5 +66,15 @@ for (const objectType of ['tables', 'sequences', 'functions']) {
   assert.match(anonymousAccessMigration, new RegExp(`alter default privileges[\\s\\S]*?revoke all privileges on ${objectType} from anon`, 'i'),
     `future ${objectType} must not automatically become anonymous endpoints`);
 }
+assert.match(inheritedAccessMigration, /revoke usage on schema public from public/i,
+  'anonymous users must not inherit public-schema usage through the PUBLIC role');
+for (const objectType of ['tables', 'sequences']) {
+  assert.match(inheritedAccessMigration, new RegExp(`revoke all privileges on all ${objectType} in schema public from public`, 'i'),
+    `${objectType} must not inherit blanket privileges through the PUBLIC role`);
+}
+assert.match(inheritedAccessMigration, /revoke execute on all functions in schema public from public/i,
+  'functions must not remain anonymously executable through the PUBLIC role');
+assert.match(inheritedAccessMigration, /grant usage on schema public to authenticated, service_role/i,
+  'the authenticated application and trusted service operations must retain schema access');
 
 console.log('Security hardening checks passed.');
