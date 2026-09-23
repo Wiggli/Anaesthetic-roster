@@ -142,18 +142,15 @@ function setAuthMode(mode){
   byId('authSubmitBtn').textContent=recovery?'Save password':login?'Sign in':'Create account';byId('authPassword').setAttribute('autocomplete',login?'current-password':'new-password');byId('authPassword').placeholder=recovery?'At least 8 characters':login?'Enter your password':'Create a password';
   byId('authPasswordConfirmLabel').classList.toggle('hidden',!recovery);byId('forgotPasswordBtn').classList.toggle('hidden',!login);byId('authSocial').classList.toggle('hidden',!login);byId('authPasskeyBtn').classList.toggle('hidden',!login||!window.PublicKeyCredential);byId('cancelRecoveryBtn').classList.toggle('hidden',!recovery);if(!recovery)byId('authPasswordConfirm').value='';authMessage('')
 }
-async function signInWithOAuthProvider(provider){
+async function signInWithGoogle(){
   if(!supa){authMessage('Night Roster cannot connect right now. Check your internet connection and try again.',true);return}
-  if(provider!=='google'&&provider!=='azure'){authMessage('That sign-in method is not available.',true);return}
-  var google=provider==='google',label=google?'Google':'Microsoft',button=byId(google?'authGoogleBtn':'authMicrosoftBtn'),other=byId(google?'authMicrosoftBtn':'authGoogleBtn');
-  if(button)button.disabled=true;if(other)other.disabled=true;authMessage('Opening '+label+' sign-in…');
-  var options={redirectTo:APP_URL};if(provider==='azure')options.scopes='email';
+  var button=byId('authGoogleBtn');if(button)button.disabled=true;authMessage('Opening Google sign-in…');
   var result;
-  try{result=await supa.auth.signInWithOAuth({provider:provider,options:options})}
+  try{result=await supa.auth.signInWithOAuth({provider:'google',options:{redirectTo:APP_URL}})}
   catch(error){result={error:error}}
   if(result&&result.error){
-    if(button)button.disabled=false;if(other)other.disabled=false;
-    authMessage(label+' sign-in is not available right now. Use your roster email and password, or try again later.',true);
+    if(button)button.disabled=false;
+    authMessage('Google sign-in is not available right now. Use your roster email and password, or try again later.',true);
   }
 }
 function showAuth(message,error){document.body.classList.add('authPending');byId('authGate').classList.remove('hidden');authMessage(message,error);if(typeof finishLaunch==='function')finishLaunch(false)}
