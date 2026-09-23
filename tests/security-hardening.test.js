@@ -18,6 +18,19 @@ assert.doesNotMatch(ui, /profile could not be saved[^\n]*error\.message/,
 assert.doesNotMatch(ui, /Current account:[^\n]*\.email/,
   'copied diagnostics must not contain the signed-in email address');
 
+assert.match(html, /id="authGoogleBtn"[\s\S]*?>[\s\S]*?Google/,
+  'the sign-in screen must expose the Google provider control');
+assert.match(html, /id="authMicrosoftBtn"[\s\S]*?>[\s\S]*?Microsoft/,
+  'the sign-in screen must expose the Microsoft provider control');
+assert.match(core, /signInWithOAuth\(\{provider:provider,options:options\}\)/,
+  'social sign-in must use the Supabase OAuth client');
+assert.match(core, /provider==='azure'\)options\.scopes='email'/,
+  'Microsoft sign-in must explicitly request the email scope');
+assert.match(core, /options=\{redirectTo:APP_URL\}/,
+  'social sign-in must return through the approved application URL');
+assert.match(core, /byId\('authSocial'\)\.classList\.toggle\('hidden',!login\)/,
+  'social sign-in controls must only appear in normal sign-in mode');
+
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],
   ['anaes_cached_profile', '{"email":"person@example.test"}'],
