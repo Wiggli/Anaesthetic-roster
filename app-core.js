@@ -1,11 +1,11 @@
-/* Anaesthetic Night Roster V37.15 core and roster foundation. */
+/* Anaesthetic Night Roster V37.16 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = [];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.15';
+var APP_VERSION = '37.16';
 var EXPECTED_SCHEMA_VERSION = 37;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
@@ -140,7 +140,18 @@ function setAuthMode(mode){
   byId('loginTab').classList.toggle('active',login);byId('loginTab').setAttribute('aria-selected',login?'true':'false');byId('signupTab').classList.toggle('active',signup);byId('signupTab').setAttribute('aria-selected',signup?'true':'false');
   byId('authModeTitle').textContent=recovery?'Choose a new password':login?'Welcome back':'Create your account';byId('authModeIntro').textContent=recovery?'Use at least eight characters, then enter the same password again.':login?'Sign in with your approved roster account.':'Use the email address approved by the roster administrator.';
   byId('authSubmitBtn').textContent=recovery?'Save password':login?'Sign in':'Create account';byId('authPassword').setAttribute('autocomplete',login?'current-password':'new-password');byId('authPassword').placeholder=recovery?'At least 8 characters':login?'Enter your password':'Create a password';
-  byId('authPasswordConfirmLabel').classList.toggle('hidden',!recovery);byId('forgotPasswordBtn').classList.toggle('hidden',!login);byId('authPasskeyBtn').classList.toggle('hidden',!login||!window.PublicKeyCredential);byId('cancelRecoveryBtn').classList.toggle('hidden',!recovery);if(!recovery)byId('authPasswordConfirm').value='';authMessage('')
+  byId('authPasswordConfirmLabel').classList.toggle('hidden',!recovery);byId('forgotPasswordBtn').classList.toggle('hidden',!login);byId('authSocial').classList.toggle('hidden',!login);byId('authPasskeyBtn').classList.toggle('hidden',!login||!window.PublicKeyCredential);byId('cancelRecoveryBtn').classList.toggle('hidden',!recovery);if(!recovery)byId('authPasswordConfirm').value='';authMessage('')
+}
+async function signInWithGoogle(){
+  if(!supa){authMessage('Night Roster cannot connect right now. Check your internet connection and try again.',true);return}
+  var button=byId('authGoogleBtn');if(button)button.disabled=true;authMessage('Opening Google sign-in…');
+  var result;
+  try{result=await supa.auth.signInWithOAuth({provider:'google',options:{redirectTo:APP_URL}})}
+  catch(error){result={error:error}}
+  if(result&&result.error){
+    if(button)button.disabled=false;
+    authMessage('Google sign-in is not available right now. Use your roster email and password, or try again later.',true);
+  }
 }
 function showAuth(message,error){document.body.classList.add('authPending');byId('authGate').classList.remove('hidden');authMessage(message,error);if(typeof finishLaunch==='function')finishLaunch(false)}
 async function submitAuth(){if(!supa){authMessage('Night Roster cannot connect right now. Check your internet connection and try again.',true);return}var email=byId('authEmail').value.trim().toLowerCase(),password=byId('authPassword').value,button=byId('authSubmitBtn');if(authMode==='recovery'){var confirmation=byId('authPasswordConfirm').value;if(password.length<8){authMessage('Use at least eight characters for the new password.',true);return}if(password!==confirmation){authMessage('The passwords do not match. Enter them again.',true);return}button.disabled=true;authMessage('Saving your password…');var updated=await supa.auth.updateUser({password:password});button.disabled=false;if(updated.error){authMessage('The password could not be saved. Open the recovery link again and retry.',true);return}passwordRecoveryActive=false;byId('authPassword').value='';byId('authPasswordConfirm').value='';authMessage('Password saved. Opening your night…');setTimeout(function(){authorizeUser(updated.data.user)},700);return}if(!email||password.length<6){authMessage('Enter your approved email address and password.',true);return}button.disabled=true;authMessage(authMode==='login'?'Signing you in…':'Creating your account…');if(authMode==='signup'){var result=await supa.auth.signUp({email:email,password:password,options:{emailRedirectTo:APP_URL}});button.disabled=false;if(result.error){authMessage('The account could not be created. Check the details and try again, or contact the roster administrator.',true);return}if(result.data.session){rememberAuthSession(result.data.session);await authorizeUser(result.data.user,result.data.session);return}setAuthMode('login');authMessage('Open the confirmation link sent to your email, then sign in here.');return}var login=await supa.auth.signInWithPassword({email:email,password:password});button.disabled=false;if(login.error){authMessage('That email or password is not recognised. If needed, reset your password below.',true);return}rememberAuthSession(login.data.session);await authorizeUser(login.data.user,login.data.session)}
