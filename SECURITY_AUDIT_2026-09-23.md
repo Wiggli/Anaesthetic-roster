@@ -53,6 +53,10 @@ fixture.
    `postgres` owner defaults so future objects do not automatically become
    anonymous endpoints. Authenticated privileges and every RLS policy remain
    unchanged.
+8. Live schema-41 verification found that PostgreSQL's special `PUBLIC` role
+   still supplied inherited schema usage and execution of one pure validator.
+   A second forward migration removes those inherited grants, explicitly keeps
+   authenticated and service-role schema access, and advances the schema to 42.
 
 No production database change is part of the audit itself. The migration must
 be reviewed, backed up, merged and applied through the normal workflow, followed
