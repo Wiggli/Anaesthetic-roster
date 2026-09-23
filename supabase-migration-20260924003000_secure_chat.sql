@@ -55,6 +55,12 @@ create unique index if not exists chat_conversations_direct_pair_uq
   on public.chat_conversations(user_a,user_b)
   where kind = 'direct';
 
+create index if not exists chat_conversations_user_b_idx
+  on public.chat_conversations(user_b);
+
+create index if not exists chat_conversations_created_by_idx
+  on public.chat_conversations(created_by);
+
 create table if not exists public.chat_messages (
   id bigint generated always as identity primary key,
   conversation_id uuid not null references public.chat_conversations(id) on delete cascade,
@@ -73,6 +79,9 @@ create table if not exists public.chat_messages (
 create index if not exists chat_messages_conversation_id_id_idx
   on public.chat_messages(conversation_id,id desc);
 
+create index if not exists chat_messages_sender_id_idx
+  on public.chat_messages(sender_id);
+
 create table if not exists public.chat_read_state (
   user_id uuid not null default auth.uid(),
   conversation_id uuid not null references public.chat_conversations(id) on delete cascade,
@@ -83,6 +92,9 @@ create table if not exists public.chat_read_state (
 
 create index if not exists chat_read_state_conversation_idx
   on public.chat_read_state(conversation_id,user_id);
+
+create index if not exists chat_read_state_last_read_message_id_idx
+  on public.chat_read_state(last_read_message_id);
 
 alter table public.chat_members enable row level security;
 alter table public.chat_conversations enable row level security;
