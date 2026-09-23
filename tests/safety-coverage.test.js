@@ -273,4 +273,14 @@ for (const dialog of tags.filter(tag => tag.name === 'dialog')) {
 assert.match(source['app-core.js'], /setAttribute\('aria-current','page'\)/, 'primary navigation must expose aria-current');
 assert.ok(tags.some(tag => attr(tag, 'aria-live')), 'the HTML shell must include aria-live feedback');
 
+// OAuth sign-in must remain a thin authentication layer in front of the existing email allowlist.
+assert.match(source['index.html'], /id="authGoogleBtn"[\s\S]*Continue with Google/, 'Google sign-in must remain available from the auth card');
+assert.match(source['index.html'], /id="authMicrosoftBtn"[\s\S]*Continue with Microsoft/, 'Microsoft sign-in must remain available from the auth card');
+assert.match(source['app-core.js'], /signInWithOAuth\(\{provider:provider,options:options\}\)/, 'social sign-in must use Supabase OAuth rather than custom token handling');
+assert.match(source['app-core.js'], /options=\{redirectTo:APP_URL\}/, 'OAuth must return only to the configured Night Roster URL');
+assert.match(source['app-core.js'], /if\(provider==='azure'\)options\.scopes='email'/, 'Microsoft OAuth must request the email scope used by the allowlist');
+assert.match(source['app-ui.js'], /signInWithOAuthProvider\('google'\)/, 'Google button must call the Google provider');
+assert.match(source['app-ui.js'], /signInWithOAuthProvider\('azure'\)/, 'Microsoft button must call the Azure provider');
+assert.doesNotMatch(source['app-core.js'] + source['app-ui.js'] + source['index.html'], /service[_-]?role|client[_-]?secret|external_google_secret|external_azure_secret/i, 'OAuth provider secrets must never be shipped in browser code');
+
 console.log('All expanded staffing, allocation, timezone, consistency, offline and accessibility safety checks passed.');
