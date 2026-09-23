@@ -20,14 +20,10 @@ assert.doesNotMatch(ui, /Current account:[^\n]*\.email/,
 
 assert.match(html, /id="authGoogleBtn"[\s\S]*?>[\s\S]*?Google/,
   'the sign-in screen must expose the Google provider control');
-assert.match(html, /id="authMicrosoftBtn"[\s\S]*?>[\s\S]*?Microsoft/,
-  'the sign-in screen must expose the Microsoft provider control');
-assert.match(core, /signInWithOAuth\(\{provider:provider,options:options\}\)/,
-  'social sign-in must use the Supabase OAuth client');
-assert.match(core, /provider==='azure'\)options\.scopes='email'/,
-  'Microsoft sign-in must explicitly request the email scope');
-assert.match(core, /options=\{redirectTo:APP_URL\}/,
-  'social sign-in must return through the approved application URL');
+assert.match(core, /signInWithOAuth\(\{provider:'google',options:\{redirectTo:APP_URL\}\}\)/,
+  'Google sign-in must use the Supabase OAuth client and approved application URL');
+assert.doesNotMatch(html, /id="authMicrosoftBtn"/,
+  'an unconfigured Microsoft provider must not be shown to users');
 assert.match(core, /byId\('authSocial'\)\.classList\.toggle\('hidden',!login\)/,
   'social sign-in controls must only appear in normal sign-in mode');
 
