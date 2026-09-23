@@ -9,6 +9,7 @@ const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923120000_remove_anonymous_database_access.sql'), 'utf8');
 const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
+const chatMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
@@ -37,6 +38,11 @@ assert.match(accessRequestMigration, /revoke all privileges on table public\.acc
 assert.match(accessRequestMigration, /grant select, insert on table public\.access_requests to authenticated/, 'authenticated users receive only the minimum table-level privileges needed to request and inspect access');
 assert.match(accessRequestMigration, /grant update \(status, reviewed_at, reviewed_by\) on table public\.access_requests to authenticated/, 'request identity fields must not be generally mutable');
 assert.doesNotMatch(accessRequestMigration, /grant all .*access_requests/i, 'access request storage must never grant blanket privileges');
+assert.match(chatMigration, /sender_id = \(select auth\.uid\(\)\)/, 'chat message RLS must bind the sender to the authenticated user');
+assert.match(chatMigration, /grant insert \(conversation_id,body\) on table public\.chat_messages to authenticated/, 'chat clients must not receive insert privileges on sender identity columns');
+assert.match(chatMigration, /Members can view accessible conversations[\s\S]*kind = 'group'[\s\S]*auth\.uid\(\).*user_a[\s\S]*auth\.uid\(\).*user_b/, 'private conversations must only be visible to their participants');
+assert.doesNotMatch(chatMigration, /grant all .*chat_/i, 'chat tables must not receive blanket authenticated privileges');
+assert.doesNotMatch(chatMigration, /alter table public\.user_profiles|create policy[\s\S]*on public\.user_profiles/i, 'chat must not broaden private profile access');
 
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],
@@ -71,7 +77,7 @@ for (const key of ['anaes_offline_snapshot', 'anaes_cached_profile', 'anaes_rece
 assert.equal(storage.get('anaes_theme'), 'dark', 'logout must preserve the non-sensitive appearance preference');
 assert.equal(storage.get('anaes_selected_date'), '2026-09-23', 'logout must preserve the non-sensitive navigation preference');
 
-const deployableFiles = ['index.html', 'app-core.js', 'app-ui.js', 'service-worker.js', 'theme-bootstrap.js', 'manifest.webmanifest'];
+const deployableFiles = ['index.html', 'app-core.js', 'app-ui.js', 'chat.js', 'service-worker.js', 'theme-bootstrap.js', 'manifest.webmanifest'];
 const deployable = deployableFiles.map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
 assert.doesNotMatch(deployable, /sb_secret_[A-Za-z0-9_-]+|service_role\s*[:=]\s*["'][A-Za-z0-9._-]+|postgres(?:ql)?:\/\//i,
   'deployed files must not contain a secret Supabase key or database connection string');
