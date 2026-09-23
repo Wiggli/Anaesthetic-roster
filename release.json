@@ -1,12 +1,12 @@
 {
   "version": "37.16",
   "date": "24 September 2026",
-  "title": "More ways to sign in",
-  "summary": "Add Google and Microsoft sign-in while keeping the existing approved-email access checks.",
+  "title": "Sign in with Google",
+  "summary": "Add Google sign-in while keeping the existing approved-email access checks.",
   "changes": [
-    "Approved roster members can sign in with Google or Microsoft once those providers are enabled in Supabase.",
-    "Microsoft sign-in requests the email scope required by Supabase, and both providers return to the existing Night Roster URL after authentication.",
-    "A successful social login still has to pass the existing active allowed_users email check before any roster data opens.",
+    "Approved roster members can now choose Google sign-in from the Night Roster login screen.",
+    "Google returns to the existing Night Roster URL after authentication, then the same active allowed_users email check runs before any roster data opens.",
+    "Only Google is shown for social sign-in at this stage, so users are not offered an unconfigured Microsoft provider.",
     "Email and password, password reset, passkeys, roster calculations, staffing, allocations and database permissions remain unchanged."
   ]
 }
