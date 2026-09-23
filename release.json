@@ -1,12 +1,12 @@
 {
-  "version": "37.17",
+  "version": "37.18",
   "date": "24 September 2026",
-  "title": "Request access with Google",
-  "summary": "New Google users can request roster access instead of needing to be pre-approved before their first sign-in.",
+  "title": "A cleaner sign-in screen",
+  "summary": "Keep sign-in focused on approved work email and Google, with a more deliberate Apple-style Google action.",
   "changes": [
-    "Existing approved members continue to sign in normally.",
-    "A new Google user who is not yet approved now creates a pending access request without seeing roster data.",
-    "Roster administrators can approve or reject pending requests from Authorised accounts.",
-    "Approved requests become normal member accounts; administrator access is never granted automatically."
+    "Night Roster keeps the two simple sign-in routes: approved work email and Google.",
+    "The Google action is centred and presented as one clear secondary sign-in choice.",
+    "Microsoft and Apple sign-in remain intentionally absent.",
+    "Authentication rules, access requests, roster permissions and shared data are unchanged."
   ]
 }

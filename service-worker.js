@@ -1,20 +1,20 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-17';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-18';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.17',
-  './theme-bootstrap.js?v=37.17',
-  './app-core.js?v=37.17',
-  './app-ui.js?v=37.17',
-  './manifest.webmanifest?v=37.17',
+  './styles.css?v=37.18',
+  './theme-bootstrap.js?v=37.18',
+  './app-core.js?v=37.18',
+  './app-ui.js?v=37.18',
+  './manifest.webmanifest?v=37.18',
   './release.json',
-  './icon-192.png?v=37.17',
-  './icon-512.png?v=37.17',
-  './icon-maskable-192.png?v=37.17',
-  './icon-maskable-512.png?v=37.17',
-  './apple-touch-icon.png?v=37.17',
-  './anaesthesia-header.jpg?v=37.17',
-  './mater-dei-logo.png?v=37.17'
+  './icon-192.png?v=37.18',
+  './icon-512.png?v=37.18',
+  './icon-maskable-192.png?v=37.18',
+  './icon-maskable-512.png?v=37.18',
+  './apple-touch-icon.png?v=37.18',
+  './anaesthesia-header.jpg?v=37.18',
+  './mater-dei-logo.png?v=37.18'
 ];
 
 function isSupabaseLibrary(requestUrl) {

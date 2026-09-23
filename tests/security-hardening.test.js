@@ -25,7 +25,11 @@ assert.match(html, /id="authGoogleBtn"[\s\S]*?>[\s\S]*?Google/,
 assert.match(core, /signInWithOAuth\(\{provider:'google',options:\{redirectTo:APP_URL\}\}\)/,
   'Google sign-in must use the Supabase OAuth client and approved application URL');
 assert.doesNotMatch(html, /id="authMicrosoftBtn"/,
-  'an unconfigured Microsoft provider must not be shown to users');
+  'Microsoft sign-in must not be shown while Google is the only social provider');
+assert.doesNotMatch(html, /id="authAppleBtn"|Continue with Apple|Sign in with Apple/,
+  'paid Apple sign-in must not be presented');
+assert.match(html, /id="authGoogleBtn"[\s\S]*Continue with Google/,
+  'Google must remain the single clearly labelled social sign-in action');
 assert.match(core, /byId\('authSocial'\)\.classList\.toggle\('hidden',!login\)/,
   'social sign-in controls must only appear in normal sign-in mode');
 assert.match(ui, /ensureAccessRequest\(user\)/, 'unapproved authenticated users must enter the access-request flow');
