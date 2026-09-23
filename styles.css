@@ -1545,3 +1545,18 @@ html[data-theme="dark"] .updateSheet[open]{background:rgba(28,28,30,.96);border-
 @media(max-width:560px){.updateBanner{grid-template-columns:42px minmax(0,1fr);left:10px;right:10px;gap:9px}.updateBannerActions{grid-column:1/-1;display:grid;grid-template-columns:.8fr 1.2fr;width:100%}.updateBannerActions button{width:100%}.updateSheetScroll{padding-inline:15px}}
 @media(max-width:360px){.updateBannerSummary>small{display:none}.updateSheetHero h2{font-size:24px}.updateSheetActions{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.updateBanner:not(.hidden),.updateSheet[open]{animation:none!important}.updateBannerSummary:active,.updateBannerActions button:active,.updateSheetActions button:active{transform:none!important}}
+
+
+/* V37.16 Google and Microsoft OAuth sign-in. */
+.authSocial{display:grid;gap:9px;margin-bottom:16px}
+.authProviderButton{display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;gap:10px;padding:10px 14px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:var(--apple-radius-small);background:var(--apple-surface);color:var(--apple-label);box-shadow:none;font-size:14px;font-weight:680}
+.authProviderButton:active{transform:scale(.99);background:var(--apple-fill)}
+.authProviderButton:disabled{opacity:.55}
+.authProviderGoogle{display:grid;width:22px;height:22px;place-items:center;border-radius:50%;background:#fff;color:#4285f4;border:1px solid #dadce0;font:700 15px/1 Arial,sans-serif}
+.authProviderMicrosoft{display:grid;width:20px;height:20px;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:2px}
+.authProviderMicrosoft i{display:block;background:currentColor}.authProviderMicrosoft i:nth-child(1){color:#f35325}.authProviderMicrosoft i:nth-child(2){color:#81bc06}.authProviderMicrosoft i:nth-child(3){color:#05a6f0}.authProviderMicrosoft i:nth-child(4){color:#ffba08}
+.authDivider{display:flex;align-items:center;gap:10px;margin:3px 0 0;color:var(--apple-tertiary);font-size:10.5px;font-weight:650}
+.authDivider::before,.authDivider::after{content:"";height:1px;flex:1;background:var(--apple-separator)}
+.authDivider span{white-space:nowrap}
+body.dark .authProviderButton{background:var(--apple-surface);border-color:var(--apple-separator);color:var(--apple-label)}
+@media(prefers-reduced-motion:reduce){.authProviderButton:active{transform:none}}
