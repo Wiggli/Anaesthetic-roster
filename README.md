@@ -1,52 +1,96 @@
+<div align="center">
+
 # Anaesthetic Night Roster
 
-The Anaesthetic Night Roster is a mobile-first operational roster for the Mater Dei anaesthetic night team. It gives authorised staff a shared view of night allocations, staffing changes, breaks, and published roster information.
+**A restricted-access operational PWA for the anaesthetic night team**
 
-Access to roster data and actions is private and restricted to authorised accounts. **Do not store patient information in this application or repository.**
+`Private roster data` · `Mobile-first PWA` · `Supabase` · `Proprietary`
 
-## Architecture
+</div>
 
-The production application is a static progressive web app with no build or bundling step. Supabase provides authentication and shared data, protected by authorised-account checks and Row Level Security. The service worker supplies the controlled app-shell cache and safe installed-PWA update flow.
+> [!IMPORTANT]
+> **This repository is publicly viewable, but the project is not open source.**  
+> No licence is granted to copy, redistribute, rebrand, publish, deploy, commercialise, or create derivative versions of this project without the copyright owner's prior written permission.
 
-The authoritative production files are:
+## Overview
 
-- `index.html`
-- `styles.css`
-- `app-core.js`
-- `app-ui.js`
-- `manifest.webmanifest`
-- `service-worker.js`
-- the icons and current branded images referenced by those files and the deployment workflow
+Anaesthetic Night Roster is a mobile-first roster application designed to give authorised anaesthetic staff a single shared view of the selected night's staffing, allocations, changes, breaks, and team coordination information.
 
-The explicit GitHub Pages file allow-list is maintained in `.github/workflows/deploy-pages.yml`.
+The application is intended for **staff rostering and operational coordination only**. It is not a patient record, clinical documentation system, or clinical decision-support tool.
 
-## Test locally
+> **Patient-identifiable or clinical information must never be entered into the application, repository, issues, pull requests, screenshots, or test data.**
 
-Install Node.js 22 (matching GitHub Actions), then run:
+## What the app provides
+
+| Area | Purpose |
+| --- | --- |
+| **Night** | Clear view of the selected night's team and current allocation |
+| **Changes** | Controlled staffing updates and reviewed night adjustments |
+| **Breaks** | Shared break planning based on the effective roster |
+| **Team Chat** | Staff coordination through group and private conversations |
+| **Account** | Personal profile, appearance, sign-in security, and device settings |
+| **Roster management** | Restricted administrative controls for authorised users |
+
+The interface is designed primarily for installed mobile use while remaining usable in a standard browser.
+
+## Security model
+
+Roster information is not stored in the public GitHub repository. Shared application data is held in Supabase and protected through authenticated access, authorised membership, database Row Level Security, and least-privilege application flows.
+
+The repository must never contain:
+
+- database passwords or privileged Supabase keys
+- GitHub or service access tokens
+- private encryption keys
+- local environment files containing secrets
+- patient information
+- live confidential operational data
+
+The browser publishable key is public configuration and is **not** treated as a security boundary.
+
+Security concerns should be reported privately. See [SECURITY.md](SECURITY.md).
+
+## Technology
+
+The production client is a lightweight progressive web application using:
+
+- HTML, CSS, and browser JavaScript
+- Supabase Authentication, Database, Realtime, Storage, and Edge Functions
+- GitHub Actions for automated testing and controlled deployment
+- GitHub Pages for the current static application shell
+
+Database changes are maintained as forward-only migrations under `supabase/migrations/`.
+
+## Development
+
+The project intentionally uses a small browser-native architecture rather than a large frontend build framework.
+
+To run the repository checks locally:
 
 ```sh
 npm test
 ```
 
-This invokes the deterministic Node test suite directly; the application has no production package installation or build step.
+The test suite covers roster invariants, staffing behaviour, startup recovery, security hardening, chat, notifications, and production health expectations.
 
-## Change and deployment process
+Before changing application logic, read [AGENTS.md](AGENTS.md). It contains safety-critical maintenance rules that must be preserved.
 
-1. Start from the latest `main` branch and create a focused non-`main` branch.
-2. Make and review the change, preserve the requirements in `AGENTS.md`, and run `npm test` before committing.
-3. Push the branch and open a pull request. GitHub Actions runs the test job for pull requests targeting `main`.
-4. After required checks pass, the pull request may be merged (including by configured auto-merge).
-5. A push to `main` runs tests, applies forward-only Supabase migrations, and then deploys the allow-listed static files to GitHub Pages.
-6. Installed PWAs detect the new service worker and offer the update through the application's safe update flow.
+## Release process
 
-Schema changes require a new timestamped, forward-only migration in `supabase/migrations/` that follows the rules in `AGENTS.md`; never edit, rename, move, or reuse an already deployed migration.
+Changes are developed on focused branches and reviewed through pull requests. A production merge to `main` must pass the automated test suite before the database migration and GitHub Pages deployment stages can complete.
 
-## Safety and security
+Already-deployed database migrations are immutable. New schema changes must use a new timestamped file in `supabase/migrations/`.
 
-Never commit access tokens, database passwords, service-role keys, private keys, `.env` files, or other privileged credentials. The browser's Supabase publishable key is public configuration; it does not replace Row Level Security or authorised-account enforcement. See `SECURITY.md` for private security reporting guidance.
+For operational deployment details, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-The clinical roster, staffing, allocation, date, identity, privacy, and PWA invariants in `AGENTS.md` are safety-critical and must be preserved by every change.
+## Ownership and reuse
 
-## Copyright
+**Copyright © 2026 Anaesthetic Night Roster repository owner. All rights reserved.**
 
-This repository is proprietary. See `COPYRIGHT.md`; no open-source licence is granted.
+Public visibility on GitHub is not an invitation to reuse the project and does not place the code in the public domain. No open-source licence is granted.
+
+See [LICENSE](LICENSE) and [COPYRIGHT.md](COPYRIGHT.md) for the repository's proprietary-use notice.
+
+---
+
+<sub>Access to the application does not imply permission to access, copy, reuse, or redistribute its source code or documentation.</sub>
