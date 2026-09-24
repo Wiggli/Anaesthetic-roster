@@ -1480,35 +1480,65 @@ async function backup(){
   var createdAt=new Date().toISOString();download('roster-data-export-v'+APP_VERSION.replace('.','-')+'.json',JSON.stringify({created_at:createdAt,app_version:APP_VERSION,scope_note:'Roster and administrator data only. Private profile details and profile photos are excluded.',roster_settings:rosterSettings,rotation_versions:rotationVersions,night_changes:nightChanges,night_overtime:nightOvertime,absence_history:allHistory[0].data||[],overtime_history:allHistory[1].data||[],night_role_overrides:Object.values(nightRoleOverrides),night_role_override_history:allHistory[2].data||[],five_nurse_cover:fiveCoverChoices,labour_ward_orders:Object.values(labourOrders),night_plan_statuses:Object.values(nightPlanStatuses),app_settings:appSettings,authorised_accounts:authorisedAccounts},null,2),'application/json');localStorage.setItem('anaes_last_backup_at',createdAt);renderDiagnostics();
 }
 
-function fallbackUpdateMeta(){return{version:'',date:'',title:'Night Roster update',summary:'The latest Night Roster improvements are ready to install.',changes:['Reliability, clarity and interface improvements are ready.']}}
+function fallbackUpdateMeta(){return{version:'',date:'',title:'Night Roster update',summary:'The latest Night Roster improvements are ready to install.',changes:['Reliability, clarity and interface improvements are ready.'],update_policy:'important'}}
 
-function validUpdateMeta(value){return !!(value&&typeof value==='object'&&/^\d+(?:\.\d+)+$/.test(String(value.version||''))&&typeof value.title==='string'&&Array.isArray(value.changes)&&value.changes.length&&value.changes.every(function(item){return typeof item==='string'&&item.trim().length>0}))}
+function validUpdateMeta(value){return !!(value&&typeof value==='object'&&/^\d+(?:\.\d+)+$/.test(String(value.version||''))&&typeof value.title==='string'&&Array.isArray(value.changes)&&value.changes.length&&value.changes.every(function(item){return typeof item==='string'&&item.trim().length>0})&&(!value.update_policy||value.update_policy==='automatic'||value.update_policy==='important'))}
+function updateIsAutomatic(){return !!(pendingUpdateMeta&&pendingUpdateMeta.update_policy==='automatic')}
 
 function renderPendingUpdate(){
-  var meta=pendingUpdateMeta||fallbackUpdateMeta(),version=meta.version&&meta.version!==APP_VERSION?'Version '+meta.version+(meta.date?' · '+meta.date:''):'New version ready';
-  var bannerVersion=byId('updateBannerVersion'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),list=byId('updateChangesList');
-  if(bannerVersion)bannerVersion.textContent=version;if(sheetVersion)sheetVersion.textContent=version;if(sheetTitle)sheetTitle.textContent=meta.title||'Night Roster update';if(sheetSummary)sheetSummary.textContent=meta.summary||'Review what is changing, then update when convenient.';
+  var meta=pendingUpdateMeta||fallbackUpdateMeta(),automatic=meta.update_policy==='automatic',version=meta.version&&meta.version!==APP_VERSION?'Version '+meta.version+(meta.date?' · '+meta.date:''):'New version ready';
+  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList');
+  if(banner)banner.classList.toggle('automatic',automatic);
+  if(bannerVersion)bannerVersion.textContent=automatic?'Ready for next reopen · '+version:version;
+  if(bannerSmall)bannerSmall.textContent=automatic?'No action required. It will install safely when Night Roster is next reopened.':'See what changed and update when convenient.';
+  if(sheetVersion)sheetVersion.textContent=automatic?'Automatic update · '+version:version;
+  if(sheetTitle)sheetTitle.textContent=meta.title||'Night Roster update';
+  if(sheetSummary)sheetSummary.textContent=meta.summary||'Review what is changing, then update when convenient.';
+  if(safety){var copy=safety.querySelector('span');if(copy)copy.innerHTML=automatic?'<b>Your shared roster data stays intact.</b> Close and reopen Night Roster to take this update automatically, or update now.':'<b>Your shared roster data stays intact.</b> The app will reopen once after the update is installed.'}
   if(list)list.innerHTML=meta.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('');
 }
 
 async function loadPendingUpdateMeta(){
   pendingUpdateMeta=fallbackUpdateMeta();renderPendingUpdate();
-  try{var response=await fetch('./release.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});if(!response.ok)throw new Error('Release information unavailable');var value=await response.json();if(validUpdateMeta(value)){pendingUpdateMeta=value;renderPendingUpdate()}}catch(error){}
+  try{var response=await fetch('./release.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});if(!response.ok)throw new Error('Release information unavailable');var value=await response.json();if(validUpdateMeta(value))pendingUpdateMeta=value}catch(error){}
+  renderPendingUpdate();return pendingUpdateMeta;
 }
 
-function showUpdate(registration){updateRegistration=registration;renderDiagnostics();if(sessionStorage.getItem('anaes_update_later')==='1')return;pendingUpdateMeta=null;renderPendingUpdate();byId('updateBanner').classList.remove('hidden');loadPendingUpdateMeta()}
+async function showUpdate(registration){
+  updateRegistration=registration;renderDiagnostics();pendingUpdateMeta=null;renderPendingUpdate();await loadPendingUpdateMeta();
+  if(sessionStorage.getItem('anaes_update_later')==='1'&&!updateIsAutomatic())return;
+  var banner=byId('updateBanner');if(banner)banner.classList.remove('hidden');
+}
 
-function openUpdateDetails(){var dialog=byId('updateDetails');if(!dialog||!dialog.showModal)return;renderPendingUpdate();byId('updateDetailsStatus').textContent='';if(!dialog.open)dialog.showModal()}
+function openUpdateDetails(){var dialog=byId('updateDetails');if(!dialog||!dialog.showModal)return;renderPendingUpdate();byId('updateDetailsStatus').textContent=updateIsAutomatic()?'This update will install on a future reopen even if you do nothing.':'';if(!dialog.open)dialog.showModal()}
 
-function dismissWaitingUpdate(){sessionStorage.setItem('anaes_update_later','1');var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close();toast('Update saved for later')}
+function dismissWaitingUpdate(){sessionStorage.setItem('anaes_update_later','1');var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close();toast(updateIsAutomatic()?'Update will install when Night Roster is reopened':'Update saved for later')}
 
 function applyWaitingUpdate(){if(!updateRegistration||!updateRegistration.waiting){toast('The update is not ready yet');return}var buttons=[byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')],status=byId('updateDetailsStatus');reloadForUpdate=true;buttons.forEach(function(button){if(button){button.disabled=true;button.textContent='Updating…'}});if(status)status.textContent='Installing the update. Night Roster will reopen automatically.';updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'})}
 
+function applyStandaloneUi(){
+  pwaStandalone=isStandaloneApp();document.body.classList.toggle('standaloneApp',pwaStandalone);
+  var install=byId('installBtn'),accountInstall=byId('accountInstallBtn');
+  if(install)install.classList.toggle('hidden',pwaStandalone||(!deferredInstallPrompt&&!/iphone|ipad|ipod/i.test(navigator.userAgent)));
+  if(accountInstall)accountInstall.classList.toggle('hidden',pwaStandalone);
+}
+function setupViewportState(){
+  function update(){
+    var viewport=window.visualViewport,active=document.activeElement,editable=!!(active&&/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)),height=viewport?viewport.height:window.innerHeight;
+    document.documentElement.style.setProperty('--app-viewport-height',Math.round(height)+'px');
+    var keyboard=!!(viewport&&editable&&window.innerHeight-viewport.height>120);
+    document.body.classList.toggle('keyboardVisible',keyboard);
+  }
+  if(window.visualViewport){window.visualViewport.addEventListener('resize',update);window.visualViewport.addEventListener('scroll',update)}
+  window.addEventListener('orientationchange',function(){setTimeout(update,120)});
+  document.addEventListener('focusin',function(){setTimeout(update,60)});document.addEventListener('focusout',function(){setTimeout(update,120)});update();
+}
 function setupPWA(){
   var install=byId('installBtn');
-  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstallPrompt=e;install.classList.remove('hidden')});
-  install.onclick=async function(){if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;install.classList.add('hidden');return}showInstallGuide()};
-  window.addEventListener('appinstalled',function(){deferredInstallPrompt=null;install.classList.add('hidden');toast('App installed')});
+  applyStandaloneUi();setupViewportState();
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstallPrompt=e;applyStandaloneUi()});
+  install.onclick=async function(){if(deferredInstallPrompt){deferredInstallPrompt.prompt();var choice=await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;applyStandaloneUi();if(choice&&choice.outcome==='accepted')toast('Night Roster added to your device');return}showInstallGuide()};
+  window.addEventListener('appinstalled',function(){deferredInstallPrompt=null;applyStandaloneUi();toast('Night Roster installed')});
   byId('applyUpdateBtn').onclick=applyWaitingUpdate;byId('applyUpdateSheetBtn').onclick=applyWaitingUpdate;byId('openUpdateDetailsBtn').onclick=openUpdateDetails;byId('laterUpdateBtn').onclick=dismissWaitingUpdate;byId('laterUpdateSheetBtn').onclick=dismissWaitingUpdate;
   if(navigator.serviceWorker&&typeof navigator.serviceWorker.addEventListener==='function'&&typeof navigator.serviceWorker.register==='function'){
     navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='CACHE_VERSION'){serviceWorkerCacheVersion=event.data.value||'Unknown';renderDiagnostics()}});navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloadForUpdate){reloadForUpdate=false;window.location.reload()}});
@@ -1517,7 +1547,8 @@ function setupPWA(){
     window.addEventListener('focus',check);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()});
   }
   var closeInstall=byId('closeInstallGuide'),closeRelease=byId('closeReleaseNotes'),releaseDialog=byId('releaseNotes');if(closeInstall)closeInstall.onclick=function(){byId('installGuide').close()};if(closeRelease)closeRelease.onclick=function(){releaseDialog.close()};if(releaseDialog&&typeof releaseDialog.addEventListener==='function')releaseDialog.addEventListener('close',function(){releaseNotesQueued=false;showOnboardingIfNeeded()});showReleaseNotesIfNeeded();
-  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);if(ios&&!standalone)install.classList.remove('hidden');
+  if(window.matchMedia){var standaloneQuery=window.matchMedia('(display-mode: standalone)');var standaloneChanged=function(){applyStandaloneUi()};if(standaloneQuery.addEventListener)standaloneQuery.addEventListener('change',standaloneChanged)}
+  applyStandaloneUi();
 }
 
 function accessRequestDisplayName(user){
