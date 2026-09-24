@@ -162,3 +162,16 @@ body.dark .chatTeamComposer textarea{background:var(--ios-bg,var(--apple-bg,#0c0
 body.dark .chatNotificationCard{background:var(--ios-surface,var(--apple-surface,#161618))}
 body.dark .chatNotificationIcon{background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#0a8f89)) 14%,var(--ios-surface,#161618))}
 body.dark .chatNotificationEnable.enabled{background:color-mix(in srgb,var(--ios-green,#34c759) 14%,var(--ios-surface,#161618))}
+
+.pushPromptDialog[open]{position:fixed;inset:50% auto auto 50%;width:min(420px,calc(100% - 28px));margin:0;padding:22px;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,var(--ios-separator,#d1d1d6) 72%,transparent);border-radius:26px;background:color-mix(in srgb,var(--ios-surface,#fff) 96%,transparent);color:var(--ios-label,var(--apple-label,#111));box-shadow:0 28px 90px rgba(0,0,0,.28);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px)}
+.pushPromptDialog::backdrop{background:rgba(24,24,27,.4);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.pushPromptIcon{display:grid;width:58px;height:58px;place-items:center;margin:0 auto 14px;border-radius:18px;background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 13%,var(--ios-surface,#fff));color:var(--ios-accent,var(--apple-accent,#087d79))}
+.pushPromptIcon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pushPromptEyebrow{display:block;margin-bottom:4px;color:var(--ios-accent,var(--apple-accent,#087d79));font-size:9px;font-weight:820;letter-spacing:.08em;text-align:center;text-transform:uppercase}
+.pushPromptDialog h2{margin:0;color:var(--ios-label,var(--apple-label,#111));font-size:22px;font-weight:780;letter-spacing:-.025em;text-align:center}
+.pushPromptDialog p{margin:9px 0 18px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px;line-height:1.5;text-align:center}
+.pushPromptActions{display:grid;grid-template-columns:1fr 1.35fr;gap:8px}
+.pushPromptActions button{min-height:44px;border-radius:14px;font-size:11px;font-weight:760}
+body.dark .pushPromptDialog[open]{background:color-mix(in srgb,var(--ios-surface,#161618) 96%,transparent)}
+body.dark .pushPromptIcon{background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#0a8f89)) 15%,var(--ios-surface,#161618))}
+@media(max-width:420px){.pushPromptDialog[open]{padding:20px 18px}.pushPromptActions{grid-template-columns:1fr}.pushPromptActions #pushPromptEnableBtn{order:-1}}

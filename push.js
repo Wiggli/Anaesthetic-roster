@@ -2,7 +2,7 @@
 'use strict';
 
 var VAPID_PUBLIC_KEY='BFF3dFdZyd_b_NTfoilYbHZKlfBctyp1Cgm4U4lKTLvyrLNWQZE6_2L2q2GCCXw13QOyq2sf9al2vuf674pQUq0';
-var pushState={started:false,startedFor:null,subscription:null,preferences:null,startTimer:null};
+var pushState={started:false,startedFor:null,subscription:null,preferences:null,startTimer:null,promptTimer:null,promptAttempts:0};
 
 function pushEl(id){return document.getElementById(id)}
 function pushClient(){return typeof supa!=='undefined'?supa:null}
@@ -22,6 +22,43 @@ function pushSetStatus(text,error){
 function pushSetBusy(busy){
   var enable=pushEl('pushEnableBtn'),disable=pushEl('pushDisableBtn');if(enable)enable.disabled=!!busy;if(disable)disable.disabled=!!busy;
 }
+function pushPromptKey(){return'anaes_push_prompt_v37_25'}
+function pushPromptDialog(){return pushEl('pushPromptDialog')}
+function pushMarkPromptSeen(){try{localStorage.setItem(pushPromptKey(),'1')}catch(error){}}
+function pushPromptSeen(){try{return!!localStorage.getItem(pushPromptKey())}catch(error){return false}}
+function pushClosePrompt(){
+  var dialog=pushPromptDialog();if(dialog&&dialog.open)dialog.close();
+}
+function pushDismissPrompt(){
+  pushMarkPromptSeen();pushClosePrompt();
+}
+function pushEnableFromPrompt(){
+  pushMarkPromptSeen();pushClosePrompt();pushEnable();
+}
+function pushCanPrompt(){
+  if(!pushSupported()||!pushUser()||!pushProfile()||pushPromptSeen())return false;
+  if(Notification.permission!=='default'||pushState.subscription)return false;
+  if(pushIsIos()&&!pushIsStandalone())return false;
+  if(document.visibilityState==='hidden')return false;
+  return true;
+}
+function pushMaybePrompt(){
+  clearTimeout(pushState.promptTimer);
+  if(!pushCanPrompt())return;
+  var openDialog=document.querySelector('dialog[open]');
+  if(openDialog){
+    pushState.promptAttempts+=1;
+    if(pushState.promptAttempts<40)pushState.promptTimer=setTimeout(pushMaybePrompt,1500);
+    return;
+  }
+  pushState.promptAttempts=0;
+  var dialog=pushPromptDialog();if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal();
+}
+function pushSchedulePrompt(){
+  clearTimeout(pushState.promptTimer);pushState.promptAttempts=0;
+  pushState.promptTimer=setTimeout(pushMaybePrompt,1200);
+}
+
 function pushRender(){
   var card=pushEl('pushNotificationCard'),button=pushEl('pushEnableBtn'),settings=pushEl('pushPreferenceRows'),team=pushEl('pushTeamToggle'),priv=pushEl('pushPrivateToggle');
   if(!card||!button)return;
@@ -113,6 +150,7 @@ async function pushStartSession(){
   if(pushState.startedFor!==user.id){pushState.startedFor=user.id;pushState.subscription=null;pushState.preferences=null}
   await pushRefreshState();
   pushOpenFromUrl();
+  pushSchedulePrompt();
 }
 function pushOpenFromUrl(){
   try{
@@ -128,6 +166,9 @@ window.dispatchChatPush=function(messageId){
 };
 function pushBind(){
   var enable=pushEl('pushEnableBtn');if(enable)enable.onclick=pushEnable;
+  var promptEnable=pushEl('pushPromptEnableBtn');if(promptEnable)promptEnable.onclick=pushEnableFromPrompt;
+  var promptLater=pushEl('pushPromptLaterBtn');if(promptLater)promptLater.onclick=pushDismissPrompt;
+  var promptDialog=pushPromptDialog();if(promptDialog&&typeof promptDialog.addEventListener==='function')promptDialog.addEventListener('cancel',function(event){event.preventDefault();pushDismissPrompt()});
   var disable=pushEl('pushDisableBtn');if(disable)disable.onclick=pushDisable;
   var team=pushEl('pushTeamToggle');if(team)team.onchange=function(){pushSavePreference('team_enabled',team.checked)};
   var priv=pushEl('pushPrivateToggle');if(priv)priv.onchange=function(){pushSavePreference('private_enabled',priv.checked)};
@@ -141,9 +182,10 @@ function pushInit(){
   if(pushState.started)return;pushState.started=true;pushBind();pushRender();
   var client=pushClient();
   if(client&&client.auth&&typeof client.auth.onAuthStateChange==='function')client.auth.onAuthStateChange(function(event){
-    if(event==='SIGNED_OUT'){pushState.startedFor=null;pushState.subscription=null;pushState.preferences=null;pushRender();return}
+    if(event==='SIGNED_OUT'){clearTimeout(pushState.promptTimer);pushState.startedFor=null;pushState.subscription=null;pushState.preferences=null;pushState.promptAttempts=0;pushClosePrompt();pushRender();return}
     if(event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED')pushScheduleStart();
   });
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')pushSchedulePrompt()});
   pushScheduleStart();
 }
 try{pushInit()}catch(error){}

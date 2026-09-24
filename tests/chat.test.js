@@ -28,8 +28,8 @@ assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifi
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.24/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.24/, 'chat client must be versioned with the app');
+assert.match(html, /chat\.css\?v=37\.25/, 'chat styling must be versioned with the app');
+assert.match(html, /chat\.js\?v=37\.25/, 'chat client must be versioned with the app');
 assert.match(ui, /function onboardingChatPage\(\)/, 'onboarding must include a dedicated Team chat page');
 assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'existing users must receive a one-page chat introduction rather than replaying the full guide');
 assert.match(ui, /anaes_chat_intro_v37_24/, 'the chat introduction must be shown once per device');

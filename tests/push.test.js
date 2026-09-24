@@ -16,11 +16,18 @@ const release = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf
 new vm.Script(push, { filename: 'push.js' });
 
 assert.match(html, /id="pushNotificationCard"/, 'Chat must expose message notification controls');
+assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*Enable notifications/, 'app entry must offer a one-time notification opt-in prompt');
+assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.24/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.25/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
+assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
+assert.match(push, /pushPromptSeen\(\)/, 'the app prompt must be shown only once per device after a user decision');
+assert.match(push, /document\.querySelector\('dialog\[open\]'\)/, 'notification prompt must wait until onboarding or another dialog is no longer open');
+assert.match(push, /pushPromptEnableBtn[\s\S]*pushEnableFromPrompt/, 'the system permission request must remain behind the user pressing Enable notifications');
+assert.match(push, /pushPromptLaterBtn[\s\S]*pushDismissPrompt/, 'Not now must dismiss the one-time prompt without granting permission');
 assert.match(push, /pushManager\.subscribe\(\{userVisibleOnly:true,applicationServerKey:/, 'browser subscription must use VAPID and user-visible notifications');
 assert.match(push, /register_push_subscription/, 'push endpoint registration must use the protected server RPC');
 assert.match(push, /unregister_push_subscription/, 'users must be able to remove the current device subscription');
@@ -63,7 +70,7 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.24');
+assert.equal(release.version, '37.25');
 assert.equal(release.title, 'Team chat & notifications');
 assert.ok(release.changes.some(item => /notifications/i.test(item)), 'release notes must announce message notifications together with Team chat');
 assert.ok(release.changes.some(item => /roster/i.test(item) && /separate|entered|update/i.test(item)), 'release notes must keep chat separate from roster changes');
