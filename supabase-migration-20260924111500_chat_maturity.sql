@@ -196,4 +196,6 @@ begin
 end
 $$;
 
+update public.app_schema_version set version=44,updated_at=now() where id=1;
+
 commit;
