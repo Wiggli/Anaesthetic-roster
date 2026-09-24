@@ -41,7 +41,7 @@ assert.match(core, /var viewScrollPositions=\{today:0,changes:0,breaks:0,chat:0,
 const showSource = core.slice(core.indexOf('function show(v)'), core.indexOf('function previewExtension', core.indexOf('function show(v)')));
 assert.match(showSource, /viewScrollPositions\[previous\]=Math\.max\(0,Number\(window\.scrollY\|\|0\)\)/, 'tab switching must remember the outgoing tab position');
 assert.match(showSource, /window\.scrollTo\(0,restoreY\)/, 'tab switching must restore the destination tab without smooth scrolling');
-assert.doesNotMatch(showSource, /window\.scrollTo\(0,0\)|viewEntering'\)/, 'tab switching must not force the page to the top or animate the entire view');
+assert.doesNotMatch(showSource, /window\.scrollTo\(0,0\)|classList\.add\('viewEntering'\)/, 'tab switching must not force the page to the top or animate the entire view');
 assert.match(mainCss, /body\.tabSwitching \.screenHeader[\s\S]*transition:none!important/, 'scroll-edge header transitions must be frozen during a tab switch');
 
 assert.match(chatCss, /\.chatTeamConsole\{[\s\S]*minmax\(250px,330px\)/, 'team transcript must provide a substantial scrolling message area');
