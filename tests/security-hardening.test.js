@@ -16,6 +16,7 @@ const maturityMigration = fs.readFileSync(path.join(root, 'supabase-migration-20
 const pushClient = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const pushFunction = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
+const advisorHardeningMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924180000_advisor_hardening.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
   'the third-party Supabase browser bundle must be protected by subresource integrity');
@@ -132,5 +133,19 @@ assert.match(inheritedAccessMigration, /revoke execute on all functions in schem
   'functions must not remain anonymously executable through the PUBLIC role');
 assert.match(inheritedAccessMigration, /grant usage on schema public to authenticated, service_role/i,
   'the authenticated application and trusted service operations must retain schema access');
+
+
+assert.match(advisorHardeningMigration, /drop policy if exists "Admins can view access requests"/i,
+  'the redundant administrator access-request SELECT policy must be removed');
+assert.match(advisorHardeningMigration, /drop policy if exists "Users can view own access request"/i,
+  'the redundant owner access-request SELECT policy must be removed');
+assert.match(advisorHardeningMigration, /create policy "Authenticated users can view permitted access requests"[\s\S]*is_roster_admin\(\)[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/i,
+  'access-request reads must preserve administrator-or-owner authorization in one policy');
+assert.match(advisorHardeningMigration, /alter function public\.apply_night_role_override_v33\(date,text,jsonb,text,text,text\)[\s\S]*security invoker/i,
+  'the legacy v33 wrapper must not retain unnecessary definer privileges');
+assert.match(advisorHardeningMigration, /alter function public\.unregister_push_subscription\(text\)[\s\S]*security invoker/i,
+  'push unregistration must rely on authenticated DELETE plus owner-scoped RLS');
+assert.doesNotMatch(advisorHardeningMigration, /grant all|disable row level security/i,
+  'advisor hardening must not broaden table privileges or disable RLS');
 
 console.log('Security hardening checks passed.');
