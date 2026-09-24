@@ -615,6 +615,30 @@
                 <span><b>Staff coordination only.</b> Do not share patient-identifiable or clinical information in chat.</span>
               </div>
 
+              <div id="pushNotificationCard" class="chatNotificationCard">
+                <div class="chatNotificationTop">
+                  <span class="chatNotificationIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0v4l2 3H4l2-3V9Z"></path><path d="M10 19h4"></path></svg>
+                  </span>
+                  <div class="chatNotificationCopy">
+                    <b>Message notifications</b>
+                    <span id="pushStatusText">Checking notification support…</span>
+                  </div>
+                  <button type="button" id="pushEnableBtn" class="chatNotificationEnable">Enable</button>
+                </div>
+                <div id="pushPreferenceRows" class="pushPreferenceRows hidden">
+                  <label>
+                    <span><b>Anaesthetic Team</b><small>Group chat alerts</small></span>
+                    <input id="pushTeamToggle" type="checkbox" checked aria-label="Anaesthetic Team notifications">
+                  </label>
+                  <label>
+                    <span><b>Private messages</b><small>One-to-one chat alerts</small></span>
+                    <input id="pushPrivateToggle" type="checkbox" checked aria-label="Private message notifications">
+                  </label>
+                  <button type="button" id="pushDisableBtn" class="pushDisableBtn">Turn off on this device</button>
+                </div>
+              </div>
+
               <div class="chatPrivateHeader">
                 <div>
                   <span>Private chats</span>
@@ -1292,6 +1316,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
     <script src="app-core.js?v=37.23"></script>
     <script src="app-ui.js?v=37.23"></script>
+    <script src="push.js?v=37.23"></script>
     <script src="chat.js?v=37.23"></script>
   </body>
 </html>
