@@ -121,30 +121,19 @@ $$;
 revoke all on function public.chat_overview_v2() from public,anon;
 grant execute on function public.chat_overview_v2() to authenticated;
 
-create or replace function public.remove_my_push_device(p_id uuid)
-returns boolean
-language plpgsql
-security definer
-set search_path=''
-as $$
-declare
-  v_user uuid := auth.uid();
-  v_count integer;
-begin
-  if v_user is null or not public.is_shift_member() then
-    raise exception 'Active roster membership required';
-  end if;
+grant delete on table public.push_subscriptions to authenticated;
 
-  delete from public.push_subscriptions
-  where id=p_id and user_id=v_user;
+drop policy if exists "Members can remove own push subscriptions" on public.push_subscriptions;
+create policy "Members can remove own push subscriptions"
+on public.push_subscriptions
+for delete
+to authenticated
+using (
+  user_id=(select auth.uid())
+  and (select public.is_shift_member())
+);
 
-  get diagnostics v_count = row_count;
-  return v_count>0;
-end
-$$;
-
-revoke all on function public.remove_my_push_device(uuid) from public,anon;
-grant execute on function public.remove_my_push_device(uuid) to authenticated;
+drop function if exists public.remove_my_push_device(uuid);
 
 create or replace function public.admin_app_health()
 returns jsonb
