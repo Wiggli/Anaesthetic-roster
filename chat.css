@@ -256,3 +256,25 @@ body.dark .chatRetryBtn{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,
   .chatNewPrivateBtn,.chatNotificationEnable,.pushMuteActions button,.pushDeviceRemove,.chatTeamLoadOlder,.chatLoadOlder{touch-action:manipulation}
   .chatMessages,.chatTeamMessages{scroll-padding-bottom:54px}
 }
+
+
+/* V37.29: focused replies, mentions and retention messaging. */
+.chatTeamComposerWrap,.chatComposerWrap{position:relative}
+.chatComposerReply{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 7px;padding:7px 9px;border-left:3px solid var(--ios-accent,var(--apple-accent,#087d79));border-radius:9px;background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
+.chatComposerReply>span{display:grid;min-width:0;gap:1px}
+.chatComposerReply b{font-size:10px;color:var(--ios-label,var(--apple-label,#111))}
+.chatComposerReply small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px}
+.chatComposerReply button{width:28px;height:28px;min-width:28px;padding:0;border:0;border-radius:50%;background:var(--ios-fill,var(--apple-fill,#e8e8ed));color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:18px}
+.chatReplyQuote{grid-column:1/-1;display:grid;gap:1px;margin:1px 0 3px;padding:4px 7px;border-left:2px solid color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 58%,transparent);border-radius:5px;background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 6%,transparent)}
+.chatReplyQuote b{font-size:9px;color:var(--ios-accent,var(--apple-accent,#087d79))}
+.chatReplyQuote span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9px}
+.chatMessageRow.own .chatReplyQuote{border-left-color:rgba(255,255,255,.62);background:rgba(255,255,255,.12)}
+.chatMessageRow.own .chatReplyQuote b,.chatMessageRow.own .chatReplyQuote span{color:rgba(255,255,255,.88)}
+.chatTeamLine.mentioned{margin-inline:-5px;padding:3px 5px;border-radius:7px;background:color-mix(in srgb,var(--ios-amber,#ff9f0a) 9%,transparent)}
+.chatMentionMenu{position:absolute;z-index:8;left:10px;right:10px;bottom:calc(100% - 3px);max-height:220px;overflow:auto;padding:5px;border:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:13px;background:var(--ios-surface,var(--apple-surface,#fff));box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.chatMentionChoice{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--ios-label,var(--apple-label,#111));text-align:left}
+.chatMentionChoice:hover,.chatMentionChoice:focus-visible{background:var(--ios-fill,var(--apple-fill,#e8e8ed));outline:0}
+.chatMentionChoice b{font-size:11px}.chatMentionChoice small{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px}
+.chatRetentionNote{display:block;margin-top:3px;color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93))}
+body.dark .chatComposerReply,body.dark .chatMentionMenu{background:var(--ios-fill,var(--apple-fill,#26262a))}
+body.dark .chatMentionChoice:hover,body.dark .chatMentionChoice:focus-visible{background:color-mix(in srgb,#fff 8%,transparent)}
