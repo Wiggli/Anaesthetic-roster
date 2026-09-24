@@ -1,11 +1,14 @@
 {
-  "version": "37.28",
+  "version": "37.29",
   "date": "24 September 2026",
-  "title": "Cleaner Night and Admin controls",
-  "summary": "Reduce repeated controls so Night, Breaks and roster management stay focused on the information and actions that matter.",
+  "title": "Operational alerts and focused chat",
+  "summary": "Add privacy-safe roster and access alerts, targeted mentions and replies, a 14-day chat retention policy, admin attention indicators and browser smoke coverage.",
   "changes": [
-    "Night and Breaks now focus on the live roster information itself, with the repeated copy-briefing, copy-breaks and email-roster controls removed.",
-    "Roster management keeps the useful Publish, Team, Access and Data sections, while Overview no longer repeats those same destinations as a second row of shortcut buttons.",
-    "Unused frontend code that existed only for the removed copy and email actions has been retired; roster calculations, staffing changes, breaks, chat, notifications and Supabase data remain unchanged."
+    "Optional roster-update notifications can now alert registered devices after staffing, allocation or night-only role changes, using privacy-safe wording and a deep link to the affected night.",
+    "Administrators get a compact attention badge for pending access requests, selected-night actions or a roster publication window nearing its end, and can receive a privacy-safe push when a new access request is created.",
+    "Anaesthetic Team supports @mentions from the current registered roster, with targeted mention notifications that can still reach the mentioned nurse when ordinary Team alerts are muted.",
+    "Team and private messages can reply to a specific message with a compact quoted preview, while the existing copy and recent-own-message deletion actions remain available.",
+    "Chat messages are automatically removed after 14 days by a server-side scheduled retention job.",
+    "A lightweight real-browser smoke suite now checks the shipped mobile shell, navigation and dark-mode presentation in addition to the existing deterministic regression tests."
   ]
 }
