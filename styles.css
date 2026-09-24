@@ -1398,6 +1398,7 @@ details[open]>summary i,details[open]>summary::before{transform:rotate(90deg)}
 .screenHeader{transition:padding var(--native-medium) var(--native-spring),background-color var(--native-fast) ease,box-shadow var(--native-fast) ease}
 .screenHeader h1{transform-origin:left center;transition:font-size var(--native-medium) var(--native-spring),transform var(--native-medium) var(--native-spring)}
 .screenHeader .screenEyebrow,.screenHeader p{transition:opacity var(--native-fast) ease,max-height var(--native-medium) var(--native-spring),margin var(--native-medium) var(--native-spring)}
+body.tabSwitching .screenHeader,body.tabSwitching .screenHeader h1,body.tabSwitching .screenHeader .screenEyebrow,body.tabSwitching .screenHeader p{transition:none!important}
 body.uiScrolled[data-view="changes"] .changesScreenHeader,body.uiScrolled[data-view="breaks"] .breaksScreenHeader{padding-top:calc(9px + env(safe-area-inset-top));padding-bottom:9px;box-shadow:0 1px 0 var(--apple-separator),0 8px 22px rgba(27,45,58,.08)}
 body.uiScrolled .screenHeader h1{font-size:20px;transform:translateY(1px)}
 body.uiScrolled .screenHeader .screenEyebrow,body.uiScrolled .screenHeader p{max-height:0;margin:0;opacity:0;overflow:hidden}
