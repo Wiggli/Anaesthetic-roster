@@ -7,16 +7,16 @@ const root = path.join(__dirname, '..');
 const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923120000_remove_anonymous_database_access.sql'), 'utf8');
-const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
-const chatMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
-const chatRefineMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924014500_refine_chat_directory.sql'), 'utf8');
-const pushMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924090000_chat_push_notifications.sql'), 'utf8');
-const maturityMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924111500_chat_maturity.sql'), 'utf8');
+const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260923120000_remove_anonymous_database_access.sql'), 'utf8');
+const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
+const chatMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924003000_secure_chat.sql'), 'utf8');
+const chatRefineMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924014500_refine_chat_directory.sql'), 'utf8');
+const pushMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924090000_chat_push_notifications.sql'), 'utf8');
+const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
 const pushClient = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const pushFunction = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
-const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
-const advisorHardeningMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924180000_advisor_hardening.sql'), 'utf8');
+const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
+const advisorHardeningMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924180000_advisor_hardening.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
   'the third-party Supabase browser bundle must be protected by subresource integrity');
