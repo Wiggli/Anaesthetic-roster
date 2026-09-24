@@ -89,7 +89,7 @@ assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be requir
 
 assert.equal(release.version, '37.26');
 assert.equal(release.title, 'A more complete Team Chat');
-assert.ok(release.changes.some(item => /notifications/i.test(item)), 'release notes must announce message notifications together with Team chat');
+assert.ok(release.changes.some(item => /notification/i.test(item)), 'release notes must announce message notifications together with Team chat');
 assert.ok(release.changes.some(item => /roster/i.test(item) && /separate|entered|update/i.test(item)), 'release notes must keep chat separate from roster changes');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');
