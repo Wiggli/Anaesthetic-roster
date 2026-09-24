@@ -65,6 +65,10 @@ for (const file of ['app-core.js', 'app-ui.js']) {
 context.rebuildCalculatedRoster();
 assert.equal(context.verifyReference().mismatches, 0, 'verified reference rotation changed');
 assert.equal(context.R.length, 138, 'published reference must contain 138 nights');
+assert.ok(context.R.some(r => r.date === '2026-09-26'), 'reference roster must include the next-night wording regression date');
+context.idx = context.R.findIndex(r => r.date === '2026-09-26');
+assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-24T12:00:00Z')).assignment, 'Next night’s assignment', 'a future automatic roster date must be described as the next night');
+assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-26T10:00:00Z')).assignment, 'Tonight’s assignment', 'the same roster date may be described as tonight once its calendar date arrives');
 
 storage.set('anaes_offline_snapshot', JSON.stringify({
   saved_at: '2026-09-18T12:00:00.000Z',
@@ -233,8 +237,9 @@ const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 
 const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
 const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
+const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -285,11 +290,12 @@ assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 
 assert.doesNotMatch(ui, /<div class="lab">LW (?:first|second) part/, 'full-roster cards must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.match(ui, /if\(!tasks&&!confirmNeeded\)\{host\.innerHTML='';return\}/, 'an unchanged plan must stop without repeating the calculated roster');
 assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReasonHtml\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
-assert.match(ui, /Tonight’s assignment[\s\S]*personalFact\('Time'[\s\S]*personalFact\('Break'/, 'Your night must expose the assignment, time and break separately');
+assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*nightCopy\.assignment[\s\S]*personalFact\('Time'[\s\S]*personalFact\('Break'/, 'Your night must expose date-aware assignment wording, time and break separately');
+assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
 assert.match(ui, /View in night situation/, 'Your night must link directly to the matching team allocation');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
 assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
-assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm tonight’s changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must state the complete quiet outcome once');
+assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selected-night changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must describe the selected night rather than assuming today');
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
 
@@ -317,7 +323,7 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 18, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 19, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: \[test, browser-smoke\]/, 'migration must depend on deterministic and browser smoke tests');
@@ -388,7 +394,9 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 45, 'the application must require the operational alerts and retention schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 46, 'the application must require the non-recursive chat reply policy schema');
+assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
+assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
 assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
 assert.match(accessRequestMigration, /Users can request own access[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/, 'a pending user may only create a request for their own authenticated identity');
