@@ -1,14 +1,13 @@
 {
-  "version": "37.29",
+  "version": "37.30",
   "date": "24 September 2026",
-  "title": "Operational alerts and focused chat",
-  "summary": "Add privacy-safe roster and access alerts, targeted mentions and replies, a 14-day chat retention policy, admin attention indicators and browser smoke coverage.",
+  "title": "Reliable chat sends and clearer night wording",
+  "summary": "Fix chat send failures introduced by reply validation and make selected-night wording accurate when viewing today, the next roster night, or another date.",
   "changes": [
-    "Optional roster-update notifications can now alert registered devices after staffing, allocation or night-only role changes, using privacy-safe wording and a deep link to the affected night.",
-    "Administrators get a compact attention badge for pending access requests, selected-night actions or a roster publication window nearing its end, and can receive a privacy-safe push when a new access request is created.",
-    "Anaesthetic Team supports @mentions from the current registered roster, with targeted mention notifications that can still reach the mentioned nurse when ordinary Team alerts are muted.",
-    "Team and private messages can reply to a specific message with a compact quoted preview, while the existing copy and recent-own-message deletion actions remain available.",
-    "Chat messages are automatically removed after 14 days by a server-side scheduled retention job.",
-    "A lightweight real-browser smoke suite now checks the shipped mobile shell, navigation and dark-mode presentation in addition to the existing deterministic regression tests."
+    "Team and private chat sends no longer fail because reply validation recursively re-enters the chat message policy.",
+    "Once a message is saved, read-state or push-notification housekeeping can no longer make it appear unsent or create a false Retry item.",
+    "Your night now labels the assignment as Tonight, Current night, Next night or Selected night according to the date actually being viewed.",
+    "Changes, allocation, break guidance and night-only role wording now refer to the selected night instead of assuming the selected date is today.",
+    "Roster calculations, staffing rules, breaks, chat privacy, 14-day retention and notification preferences remain unchanged."
   ]
 }
