@@ -453,13 +453,14 @@ async function chatCompleteSend(result,kind){
   }else{
     if(!chatIsDuplicate(chatState.messages,result.data.id))chatState.messages.push(result.data);chatState.latestByConversation[result.data.conversation_id]=result.data;chatRenderPrivateMessages();chatScrollToBottom(chatEl('chatMessages'));chatRenderConversationList();
   }
-  await chatMarkRead(result.data.conversation_id,Number(result.data.id));if(window.dispatchChatPush)window.dispatchChatPush(result.data.id);
+  try{await chatMarkRead(result.data.conversation_id,Number(result.data.id))}catch(error){}
+  try{if(window.dispatchChatPush)await Promise.resolve(window.dispatchChatPush(result.data.id))}catch(error){}
 }
 async function chatRetryFailed(message,kind){
   if(!message||!message.failed||!chatOnline())return;
   var result=await chatSendToConversation(message.conversation_id,message.body,message.reply_to_message_id);
-  if(result.error){kind==='team'?chatSetTeamStatus('Still not sent. Check the connection and retry.',true):chatSetPrivateStatus('Still not sent. Check the connection and retry.',true);return}
-  chatRemoveFailed(message,kind);await chatCompleteSend(result,kind);
+  if(result.error){kind==='team'?chatSetTeamStatus('Still not sent. Please retry.',true):chatSetPrivateStatus('Still not sent. Please retry.',true);return}
+  chatRemoveFailed(message,kind);chatCompleteSend(result,kind).catch(function(){});
 }
 async function chatSendTeamMessage(event){
   if(event)event.preventDefault();var team=chatTeamConversation(),textarea=chatEl('chatTeamInput'),button=chatEl('chatTeamSendBtn');if(!team||!textarea||!button)return;
@@ -467,9 +468,11 @@ async function chatSendTeamMessage(event){
   if(!chatOnline()){textarea.value='';chatAddFailed(body,team.id,'team',replyId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Not sent. Retry when the connection returns.',true);return}
   button.disabled=true;textarea.disabled=true;chatSetTeamStatus('');
   try{
-    var result=await chatSendToConversation(team.id,body,replyId);if(result.error)throw result.error;textarea.value='';chatAutoGrow(textarea);chatClearReply('team');chatHideMentionMenu();await chatCompleteSend(result,'team');
-  }catch(error){textarea.value='';chatAutoGrow(textarea);chatAddFailed(body,team.id,'team',replyId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Message not sent. Tap Retry on the message.',true)}
-  finally{button.disabled=false;textarea.disabled=false;textarea.focus()}
+    var result=await chatSendToConversation(team.id,body,replyId);if(result.error)throw result.error;
+    textarea.value='';chatAutoGrow(textarea);chatClearReply('team');chatHideMentionMenu();chatCompleteSend(result,'team').catch(function(){});
+  }catch(error){
+    textarea.value='';chatAutoGrow(textarea);chatAddFailed(body,team.id,'team',replyId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Message not sent. Tap Retry on the message.',true);
+  }finally{button.disabled=false;textarea.disabled=false;textarea.focus()}
 }
 async function chatSendPrivateMessage(event){
   if(event)event.preventDefault();var textarea=chatEl('chatMessageInput'),button=chatEl('chatSendBtn'),conversationId=chatState.activeConversationId;if(!textarea||!conversationId)return;
@@ -477,9 +480,11 @@ async function chatSendPrivateMessage(event){
   if(!chatOnline()){textarea.value='';chatAddFailed(body,conversationId,'private',replyId);chatClearReply('private');chatSetPrivateStatus('Not sent. Retry when the connection returns.',true);return}
   button.disabled=true;textarea.disabled=true;chatSetPrivateStatus('');
   try{
-    var result=await chatSendToConversation(conversationId,body,replyId);if(result.error)throw result.error;textarea.value='';chatAutoGrow(textarea);chatClearReply('private');await chatCompleteSend(result,'private');
-  }catch(error){textarea.value='';chatAutoGrow(textarea);chatAddFailed(body,conversationId,'private',replyId);chatClearReply('private');chatSetPrivateStatus('Message not sent. Tap Retry on the message.',true)}
-  finally{button.disabled=false;textarea.disabled=false;textarea.focus()}
+    var result=await chatSendToConversation(conversationId,body,replyId);if(result.error)throw result.error;
+    textarea.value='';chatAutoGrow(textarea);chatClearReply('private');chatCompleteSend(result,'private').catch(function(){});
+  }catch(error){
+    textarea.value='';chatAutoGrow(textarea);chatAddFailed(body,conversationId,'private',replyId);chatClearReply('private');chatSetPrivateStatus('Message not sent. Tap Retry on the message.',true);
+  }finally{button.disabled=false;textarea.disabled=false;textarea.focus()}
 }
 function chatAutoGrow(textarea){if(!textarea)return;textarea.style.height='auto';textarea.style.height=Math.min(textarea.scrollHeight,120)+'px'}
 async function chatStartPrivate(otherPersonKey){
