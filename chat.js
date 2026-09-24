@@ -464,7 +464,7 @@ async function chatRetryFailed(message,kind){
 async function chatSendTeamMessage(event){
   if(event)event.preventDefault();var team=chatTeamConversation(),textarea=chatEl('chatTeamInput'),button=chatEl('chatTeamSendBtn');if(!team||!textarea||!button)return;
   var body=textarea.value.trim(),reply=chatState.teamReplyMessage,replyId=reply&&chatIsNumericId(reply.id)?Number(reply.id):null;if(!body)return;if(body.length>2000){chatSetTeamStatus('Keep messages under 2,000 characters.',true);return}
-  if(!chatOnline()){textarea.value='';chatAddFailed(body,team.id,'team',replyId);chatSetTeamStatus('Not sent. Retry when the connection returns.',true);return}
+  if(!chatOnline()){textarea.value='';chatAddFailed(body,team.id,'team',replyId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Not sent. Retry when the connection returns.',true);return}
   button.disabled=true;textarea.disabled=true;chatSetTeamStatus('');
   try{
     var result=await chatSendToConversation(team.id,body,replyId);if(result.error)throw result.error;textarea.value='';chatAutoGrow(textarea);chatClearReply('team');chatHideMentionMenu();await chatCompleteSend(result,'team');
@@ -474,7 +474,7 @@ async function chatSendTeamMessage(event){
 async function chatSendPrivateMessage(event){
   if(event)event.preventDefault();var textarea=chatEl('chatMessageInput'),button=chatEl('chatSendBtn'),conversationId=chatState.activeConversationId;if(!textarea||!conversationId)return;
   var body=textarea.value.trim(),reply=chatState.privateReplyMessage,replyId=reply&&chatIsNumericId(reply.id)?Number(reply.id):null;if(!body)return;if(body.length>2000){chatSetPrivateStatus('Keep messages under 2,000 characters.',true);return}
-  if(!chatOnline()){textarea.value='';chatAddFailed(body,conversationId,'private',replyId);chatSetPrivateStatus('Not sent. Retry when the connection returns.',true);return}
+  if(!chatOnline()){textarea.value='';chatAddFailed(body,conversationId,'private',replyId);chatClearReply('private');chatSetPrivateStatus('Not sent. Retry when the connection returns.',true);return}
   button.disabled=true;textarea.disabled=true;chatSetPrivateStatus('');
   try{
     var result=await chatSendToConversation(conversationId,body,replyId);if(result.error)throw result.error;textarea.value='';chatAutoGrow(textarea);chatClearReply('private');await chatCompleteSend(result,'private');
@@ -565,7 +565,7 @@ function chatSubscribeRealtime(){
 }
 function chatTeardownSession(){
   var client=chatClient();clearTimeout(chatState.reconnectTimer);clearTimeout(chatState.overviewRefreshTimer);if(client&&chatState.channel)client.removeChannel(chatState.channel);
-  chatState.channel=null;chatState.startedFor=null;chatState.members=[];chatState.membersById={};chatState.directory=[];chatState.directoryByPerson={};chatState.conversations=[];chatState.latestByConversation={};chatState.unreadByConversation={};chatState.readStateByConversation={};chatState.teamMessages=[];chatState.messages=[];chatState.overviewLoadedAt=0;chatState.activeConversationId=null;chatUpdateNavBadge();
+  chatState.channel=null;chatState.startedFor=null;chatState.members=[];chatState.membersById={};chatState.directory=[];chatState.directoryByPerson={};chatState.conversations=[];chatState.latestByConversation={};chatState.unreadByConversation={};chatState.readStateByConversation={};chatState.teamMessages=[];chatState.messages=[];chatState.replyTargets={};chatState.teamReplyMessage=null;chatState.privateReplyMessage=null;chatState.overviewLoadedAt=0;chatState.activeConversationId=null;chatUpdateNavBadge();chatRenderReplyComposer('team');chatRenderReplyComposer('private');chatHideMentionMenu();
 }
 async function chatStartSession(){
   var user=chatUser(),profile=chatProfile(),client=chatClient();if(!user||!profile||!client||!chatOnline())return false;
