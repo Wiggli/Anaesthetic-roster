@@ -47,12 +47,17 @@ jobs:
         shell: bash
         run: |
           supabase init
-          mkdir -p supabase/migrations
           shopt -s nullglob
-          migration_files=(supabase-migration-*.sql)
-          for migration_file in "${migration_files[@]}"; do
-            cp "$migration_file" "supabase/migrations/${migration_file#supabase-migration-}"
-          done
+          migration_files=(supabase/migrations/*.sql)
+          if [ "${#migration_files[@]}" -eq 0 ]; then
+            echo "::error::No checked-in Supabase migrations were found."
+            exit 1
+          fi
+          root_migrations=(supabase-migration-*.sql)
+          if [ "${#root_migrations[@]}" -ne 0 ]; then
+            echo "::error::Legacy root migration files must be moved into supabase/migrations/."
+            exit 1
+          fi
       - name: Link the roster database
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

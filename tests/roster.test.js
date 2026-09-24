@@ -225,14 +225,14 @@ const themeBootstrap = fs.readFileSync(path.join(__dirname, '..', 'theme-bootstr
 const ui = fs.readFileSync(path.join(__dirname, '..', 'app-ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
 const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
-const syncMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
-const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914150000_custom_five_nurse_roles.sql'), 'utf8');
-const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
-const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260913120000_account_roster_identity.sql'), 'utf8');
-const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260918183000_atomic_startup_snapshot.sql'), 'utf8');
-const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
-const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
-const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
+const syncMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260911180000_live_sync_atomic_role_overrides.sql'), 'utf8');
+const roleMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260914150000_custom_five_nurse_roles.sql'), 'utf8');
+const constraintMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260914190000_expand_night_role_override_constraint.sql'), 'utf8');
+const identityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260913120000_account_roster_identity.sql'), 'utf8');
+const startupMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260918183000_atomic_startup_snapshot.sql'), 'utf8');
+const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260919203000_fix_seven_nurse_override_key_count.sql'), 'utf8');
+const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
+const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
@@ -315,7 +315,11 @@ for (const obsolete of obsoleteFiles) {
 
 assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed pinned version');
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
-assert.match(workflow, /supabase init[\s\S]*mkdir -p supabase\/migrations[\s\S]*migration_files=/, 'migration preparation must create the CLI migration directory before copying files');
+const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
+const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
+assert.equal(checkedInMigrations.length, 16, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
+assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on tests');
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
