@@ -1,18 +1,18 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-31';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-32';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.31',
-  './theme-bootstrap.js?v=37.31',
-  './app-core.js?v=37.31',
-  './app-ui.js?v=37.31',
-  './manifest.webmanifest?v=37.31',
+  './styles.css?v=37.32',
+  './theme-bootstrap.js?v=37.32',
+  './app-core.js?v=37.32',
+  './app-ui.js?v=37.32',
+  './manifest.webmanifest?v=37.32',
   './release.json',
-  './icon-192.png?v=37.31',
-  './icon-512.png?v=37.31',
-  './apple-touch-icon.png?v=37.31',
-  './anaesthesia-header.jpg?v=37.31',
-  './mater-dei-logo.png?v=37.31'
+  './icon-192.png?v=37.32',
+  './icon-512.png?v=37.32',
+  './apple-touch-icon.png?v=37.32',
+  './anaesthesia-header.jpg?v=37.32',
+  './mater-dei-logo.png?v=37.32'
 ];
 
 function isSupabaseLibrary(requestUrl) {
@@ -131,11 +131,15 @@ self.addEventListener('push', event => {
       return;
     }
 
+    try {
+      if (self.navigator && self.navigator.setAppBadge) await self.navigator.setAppBadge();
+    } catch (error) {}
+
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=37.31', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=37.31', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=37.32', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.32', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
