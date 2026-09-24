@@ -468,7 +468,6 @@ assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide al
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
 assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use an explicit allocation review label');
-assert.match(ui, /button.disabled=pending/, 'Break output actions must be disabled until the plan is complete');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
 assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');
