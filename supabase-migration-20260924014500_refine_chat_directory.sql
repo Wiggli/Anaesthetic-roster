@@ -56,6 +56,10 @@ create table if not exists public.chat_directory (
     check (length(trim(display_name)) between 1 and 100)
 );
 
+create index if not exists chat_directory_preferred_user_id_idx
+  on public.chat_directory(preferred_user_id)
+  where preferred_user_id is not null;
+
 alter table public.chat_directory enable row level security;
 
 revoke all privileges on table public.chat_directory from public, anon, authenticated;
