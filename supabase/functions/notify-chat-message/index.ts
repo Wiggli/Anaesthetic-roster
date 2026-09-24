@@ -19,7 +19,13 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  let serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  const secretKeySet = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeySet) {
+    try {
+      serviceRoleKey = JSON.parse(secretKeySet).default || serviceRoleKey;
+    } catch (_) {}
+  }
   if (!supabaseUrl || !serviceRoleKey) return json({ error: "Server configuration unavailable" }, 500);
 
   const authorization = req.headers.get("Authorization") || "";
@@ -152,7 +158,7 @@ Deno.serve(async (req: Request) => {
       { data: config, error: configError },
     ] = await Promise.all([
       admin.from("push_subscriptions").select("id,user_id,endpoint,p256dh,auth_key").in("user_id", recipientUserIds).eq("enabled", true),
-      admin.from("push_preferences").select("user_id,chat_enabled,team_enabled,private_enabled").in("user_id", recipientUserIds),
+      admin.from("push_preferences").select("user_id,chat_enabled,team_enabled,private_enabled,team_muted_until").in("user_id", recipientUserIds),
       admin.from("push_server_config").select("vapid_public_key,vapid_private_key,vapid_subject").eq("id", 1).single(),
     ]);
 
@@ -165,7 +171,12 @@ Deno.serve(async (req: Request) => {
       const pref = preferenceMap.get(sub.user_id);
       if (!pref) return true;
       if (!pref.chat_enabled) return false;
-      return conversation.kind === "group" ? pref.team_enabled : pref.private_enabled;
+      if (conversation.kind === "group") {
+        if (!pref.team_enabled) return false;
+        if (pref.team_muted_until && new Date(pref.team_muted_until).getTime() > Date.now()) return false;
+        return true;
+      }
+      return pref.private_enabled;
     });
 
     const payload = JSON.stringify({
