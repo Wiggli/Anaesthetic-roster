@@ -1720,3 +1720,69 @@ body.dark .chatOnboardingTranscript>span{background:rgba(58,58,60,.82)}body.dark
   .launchScreen,.launchScreen.dismissed .launchContent,.launchScreen.dismissed .launchAtmosphere{transition:none!important}
   .onboardingProgress span,input,select,textarea{transition:none!important}
 }
+
+
+/* V37.32 premium PWA shell: seamless launch handoff, standalone polish and keyboard-safe chrome. */
+html{min-height:100%;background:#f2f2f7}
+html[data-theme="dark"]{background:#000}
+body{min-height:var(--app-viewport-height,100dvh);overscroll-behavior-y:none}
+.launchScreen{background:var(--apple-bg)}
+.launchScreen::after{opacity:0;animation:premiumLaunchWash 900ms 180ms var(--cinematic-ease) forwards}
+.launchAtmosphere{opacity:0;animation:premiumAtmosphereIn 900ms 220ms var(--cinematic-ease) forwards}
+@keyframes premiumLaunchWash{to{opacity:1}}
+@keyframes premiumAtmosphereIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.launchMark{opacity:1;transform:translateY(60px) scale(1);filter:none;animation:premiumLaunchMarkWake 900ms 120ms var(--cinematic-ease) forwards}
+.launchMark>span{overflow:hidden;border:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.launchMark img{display:block;width:86px;height:86px;border-radius:22px;object-fit:cover;box-shadow:0 16px 40px rgba(8,52,72,.13)}
+.launchMark svg{display:none}
+@keyframes premiumLaunchMarkWake{
+  0%{opacity:1;transform:translateY(60px) scale(1);filter:none}
+  48%{opacity:1;transform:translateY(18px) scale(1.025);filter:none}
+  100%{opacity:1;transform:none;filter:none}
+}
+.launchMessage>span{animation-delay:430ms}.launchMessage h1{animation-delay:500ms}.launchMessage>p{animation-delay:570ms}
+.launchProgress{animation-delay:650ms}.launchMotto{animation-delay:720ms}
+.launchHospital{animation-delay:360ms}
+.launchScreen.ready .launchMark img{animation:launchReadyPulse 560ms var(--cinematic-ease) both}
+body.dark .launchScreen{background:#000}
+body.dark .launchMark img{box-shadow:0 18px 48px rgba(0,0,0,.42)}
+
+.standaloneApp #installBtn,.standaloneApp #accountInstallBtn{display:none!important}
+.standaloneApp{-webkit-user-select:none;user-select:none}
+.standaloneApp input,.standaloneApp textarea,.standaloneApp select,.standaloneApp [contenteditable="true"]{-webkit-user-select:text;user-select:text}
+.standaloneApp #appHeader{padding-top:calc(9px + env(safe-area-inset-top))}
+.standaloneApp body[data-view] main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+
+.installGuideHero{display:grid;grid-template-columns:64px 1fr;gap:13px;align-items:center;margin:14px 0 8px;padding:13px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:18px;background:var(--apple-surface-muted)}
+.installGuideHero img{width:64px;height:64px;border-radius:17px;box-shadow:0 8px 20px rgba(27,45,58,.1)}
+.installGuideHero div{display:grid;gap:3px}.installGuideHero b{font-size:15px}.installGuideHero span{color:var(--apple-secondary);font-size:11.5px;line-height:1.4}
+.installGuideFootnote{margin:11px 2px 0;color:var(--apple-tertiary);font-size:10.5px;line-height:1.45;text-align:center}
+body.dark .installGuideHero{background:var(--apple-surface-muted)}
+
+.updateBanner.automatic{grid-template-columns:auto minmax(0,1fr) auto}
+.updateBanner.automatic .updateLaterBtn{display:none}
+.updateBanner.automatic .updateBannerIcon{background:rgba(52,199,89,.14);color:#78e08f}
+.updateBanner.automatic .updateBannerSummary b::after{content:" · automatic";color:#9ee5df;font-size:10px;font-weight:700}
+.updateBanner.automatic .updateBannerSummary small{max-width:390px}
+
+.keyboardVisible .bottom{opacity:0;pointer-events:none;transform:translate(-50%,calc(100% + 28px));transition:opacity 180ms ease,transform 240ms var(--cinematic-ease)}
+.keyboardVisible body[data-view] main{padding-bottom:24px}
+.keyboardVisible .toast{bottom:18px}
+.bottom{transition:opacity 180ms ease,transform 240ms var(--cinematic-ease),background-color 180ms ease,box-shadow 180ms ease}
+.bottom button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+input,textarea,select{scroll-margin-bottom:120px}
+dialog{overscroll-behavior:contain}
+
+@media(display-mode:standalone){
+  html,body{min-height:100dvh}
+  .bottom{bottom:calc(8px + env(safe-area-inset-bottom))}
+  .authGate,.launchScreen{min-height:100dvh}
+}
+@media(max-width:420px){
+  .installGuideHero{grid-template-columns:56px 1fr}.installGuideHero img{width:56px;height:56px;border-radius:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  .launchScreen::after,.launchAtmosphere,.launchMark,.launchMark img{animation:none!important;opacity:1!important;transform:none!important}
+  .keyboardVisible .bottom{transition:none!important}
+}
