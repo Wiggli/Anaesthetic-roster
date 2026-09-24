@@ -7,6 +7,7 @@ const root = path.join(__dirname, '..');
 const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
 const chatCss = fs.readFileSync(path.join(root, 'chat.css'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const baseMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
@@ -25,8 +26,13 @@ assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifi
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.21/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.21/, 'chat client must be versioned with the app');
+assert.match(html, /chat\.css\?v=37\.22/, 'chat styling must be versioned with the app');
+assert.match(html, /chat\.js\?v=37\.22/, 'chat client must be versioned with the app');
+assert.match(ui, /function onboardingChatPage\(\)/, 'onboarding must include a dedicated Team chat page');
+assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'existing users must receive a one-page chat introduction rather than replaying the full guide');
+assert.match(ui, /anaes_chat_intro_v37_22/, 'the chat introduction must be shown once per device');
+assert.match(ui, /onboardingChatPage\(\),[\s\S]*Your roster identity/, 'new users must see chat as part of the normal onboarding sequence');
+assert.match(ui, /Coordinate without changing the roster\./, 'chat onboarding must explain that chat and roster actions stay separate');
 
 assert.match(chatCss, /\.chatTeamConsole\{[\s\S]*minmax\(250px,330px\)/, 'team transcript must provide a substantial scrolling message area');
 assert.match(chatCss, /\.chatTeamLine\{[\s\S]*grid-template-columns:auto auto minmax\(0,1fr\)/, 'team messages must render as compact continuous chat lines rather than bubbles');
