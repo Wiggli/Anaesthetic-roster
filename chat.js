@@ -363,7 +363,7 @@ async function chatSendTeamMessage(event){
   try{
     var result=await chatSendToConversation(team.id,body);if(result.error)throw result.error;
     textarea.value='';chatAutoGrow(textarea);chatAcceptTeamMessage(result.data,true);chatState.latestByConversation[team.id]=result.data;chatState.unreadByConversation[team.id]=0;
-    await chatMarkRead(team.id,Number(result.data.id));chatUpdateNavBadge();chatRenderTeamHeader();
+    await chatMarkRead(team.id,Number(result.data.id));chatUpdateNavBadge();chatRenderTeamHeader();if(window.dispatchChatPush)window.dispatchChatPush(result.data.id);
   }catch(error){chatSetTeamStatus('Message could not be sent.',true)}
   finally{button.disabled=false;textarea.disabled=false;textarea.focus()}
 }
@@ -376,7 +376,7 @@ async function chatSendPrivateMessage(event){
   try{
     var result=await chatSendToConversation(conversationId,body);if(result.error)throw result.error;
     textarea.value='';chatAutoGrow(textarea);chatAcceptPrivateMessage(result.data,true);chatState.latestByConversation[conversationId]=result.data;chatState.unreadByConversation[conversationId]=0;
-    await chatMarkRead(conversationId,Number(result.data.id));chatUpdateNavBadge();chatRenderHome();
+    await chatMarkRead(conversationId,Number(result.data.id));chatUpdateNavBadge();chatRenderHome();if(window.dispatchChatPush)window.dispatchChatPush(result.data.id);
   }catch(error){chatSetPrivateStatus('Message could not be sent. The other account may no longer be active.',true)}
   finally{button.disabled=false;textarea.disabled=false;textarea.focus()}
 }
@@ -491,6 +491,24 @@ function chatBindUi(){
     }
   });
 }
+async function chatOpenFromPush(conversationId){
+  if(!conversationId||!chatUser()||!chatProfile())return;
+  if(typeof show==='function')show('chat');
+  await chatOpenView();
+  var conversation=chatState.conversations.find(function(item){return item.id===conversationId});
+  if(!conversation)return;
+  if(conversation.kind==='direct'){await chatOpenPrivateConversation(conversationId);return}
+  var root=chatEl('chat');if(root)root.classList.remove('chat-thread-open');
+  chatState.activeConversationId=null;chatScrollTeamToBottom();
+  if(chatState.teamMessages.length){
+    var last=chatState.teamMessages[chatState.teamMessages.length-1];
+    await chatMarkRead(conversationId,Number(last.id));
+    chatState.unreadByConversation[conversationId]=0;chatUpdateNavBadge();chatRenderTeamHeader();
+  }
+}
+window.openChatFromPush=chatOpenFromPush;
+window.refreshChatUnreadFromPush=function(){return chatRefreshUnreadCounts()};
+
 function chatInit(){
   if(chatState.started)return;chatState.started=true;chatBindUi();chatHideFallback();
   var client=chatClient();
