@@ -134,7 +134,7 @@ function pushBind(){
   if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',function(event){
     if(!event.data)return;
     if(event.data.type==='OPEN_CHAT_NOTIFICATION'&&window.openChatFromPush)window.openChatFromPush(event.data.conversationId||'');
-    if(event.data.type==='CHAT_PUSH_RECEIVED'&&typeof chatRefreshUnreadCounts==='function')chatRefreshUnreadCounts();
+    if(event.data.type==='CHAT_PUSH_RECEIVED'&&window.refreshChatUnreadFromPush)window.refreshChatUnreadFromPush();
   });
 }
 function pushInit(){
