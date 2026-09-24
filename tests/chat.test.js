@@ -82,6 +82,6 @@ assert.doesNotMatch(refineMigration, /insert into public\.night_|update public\.
 
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /chat\.js|chat\.css/, 'chat assets must not be mandatory for service-worker installation');
-assert.match(workflow, /cp index\.html styles\.css chat\.css[\s\S]*app-ui\.js chat\.js/, 'deployment must publish chat assets');
+assert.match(workflow, /cp index\.html styles\.css chat\.css[\s\S]*app-ui\.js push\.js chat\.js/, 'deployment must publish chat and optional push assets');
 
 console.log('Group transcript, roster-based private list, privacy and pagination checks passed.');
