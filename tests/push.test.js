@@ -69,7 +69,8 @@ assert.match(migration, /user_id=\(select auth\.uid\(\)/, 'browser-visible push 
 assert.doesNotMatch(migration, /BqB7H_jy|vapid_private_key\s*[,=]\s*['"][A-Za-z0-9_-]{20,}/i, 'the private VAPID key must not be committed');
 assert.match(maturityMigration, /add column if not exists team_muted_until timestamptz/, 'group mute expiry must be stored server-side');
 assert.match(maturityMigration, /Members can remove own push subscriptions[\s\S]*user_id=\(select auth\.uid\(\)\)/, 'notification device removal must use owner-scoped RLS');
-assert.doesNotMatch(maturityMigration, /remove_my_push_device[\s\S]*security definer/i, 'device removal must not add a privileged public RPC');
+assert.match(maturityMigration, /drop function if exists public\.remove_my_push_device\(uuid\)/, 'legacy privileged device-removal RPC must be removed');
+assert.doesNotMatch(maturityMigration, /create or replace function public\.remove_my_push_device\(/i, 'device removal must not add a privileged public RPC');
 
 assert.doesNotMatch(edge, /\.select\([^)]*\bbody\b/, 'the notification function must not read chat message text');
 assert.match(edge, /message\.sender_id !== user\.id/, 'only the actual message sender may dispatch its notification');
