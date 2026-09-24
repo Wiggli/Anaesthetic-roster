@@ -470,6 +470,8 @@ assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use a
 assert.match(ui, /button.disabled=pending/, 'Break output actions must be disabled until the plan is complete');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
-assert.ok(onboardingSequence.indexOf('Your roster identity') < onboardingSequence.indexOf('Optional profile') && onboardingSequence.indexOf('Optional profile') < onboardingSequence.indexOf('Optional faster sign-in'), 'onboarding must introduce identity, then profile, then passkey');
+assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');
+assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup must stay in Account rather than first-use onboarding');
+assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
