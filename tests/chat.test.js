@@ -16,6 +16,7 @@ const baseMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', 
 const refineMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924014500_refine_chat_directory.sql'), 'utf8');
 const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
 const operationalMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924201500_operational_alerts_chat_retention.sql'), 'utf8');
+const chatPolicyFixMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 
 new vm.Script(chat, { filename: 'chat.js' });
 
@@ -30,8 +31,8 @@ assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifi
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.29/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.29/, 'chat client must be versioned with the app');
+assert.match(html, /chat\.css\?v=37\.30/, 'chat styling must be versioned with the app');
+assert.match(html, /chat\.js\?v=37\.30/, 'chat client must be versioned with the app');
 assert.match(ui, /function onboardingChatPage\(\)/, 'onboarding must include a dedicated Team chat page');
 assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'existing users must receive a one-page chat introduction rather than replaying the full guide');
 assert.match(ui, /anaes_chat_intro_v37_24/, 'the chat introduction must be shown once per device');
@@ -79,6 +80,8 @@ assert.match(chat, /function chatUnreadDivider\(/, 'chat must render a new-messa
 assert.match(chat, /function chatNearBottom\(/, 'chat must detect whether the reader is already at the bottom');
 assert.match(chat, /chatState\.teamNewBelow\+=1|chatState\.privateNewBelow\+=1/, 'incoming messages must not drag a reader away from older history');
 assert.match(chat, /chatRetryFailed/, 'failed sends must remain retryable');
+assert.match(chat, /chatCompleteSend\(result,'team'\)\.catch\(function\(\)\{\}\)/, 'a successfully inserted Team message must not become a failed Retry item because post-send housekeeping fails');
+assert.match(chat, /try\{await chatMarkRead[\s\S]*catch\(error\)\{\}[\s\S]*dispatchChatPush[\s\S]*catch\(error\)\{\}/, 'read-state and notification work must be isolated from the saved-message result');
 assert.match(chat, /DELETE_WINDOW_MS=10\*60\*1000/, 'sender deletion must be limited to a short window');
 assert.match(chat, /navigator\.clipboard\.writeText/, 'message copy must use the clipboard API');
 assert.match(chat, /client\.rpc\('chat_overview_v2'\)/, 'opening chat must use one compact overview RPC');
@@ -116,7 +119,8 @@ assert.match(chat, /Messages are automatically removed after 14 days\./, 'chat m
 assert.match(chatCss, /\.chatComposerReply/, 'reply composer preview must be styled');
 assert.match(chatCss, /\.chatMentionMenu/, 'mention autocomplete must be styled');
 assert.match(operationalMigration, /add column if not exists reply_to_message_id bigint[\s\S]*references public\.chat_messages\(id\)/, 'reply targets must be stored as message references');
-assert.match(operationalMigration, /replied\.conversation_id = chat_messages\.conversation_id/, 'reply targets must be constrained to the same conversation');
+assert.match(chatPolicyFixMigration, /chat_private\.reply_belongs_to_conversation\([\s\S]*reply_to_message_id[\s\S]*conversation_id/, 'reply targets must be constrained to the same conversation without recursively querying the message policy');
+assert.doesNotMatch(chatPolicyFixMigration, /from public\.chat_messages replied/, 'the active reply policy must not recurse through chat_messages RLS');
 assert.match(operationalMigration, /now\(\) - interval '14 days'/, 'chat retention must delete only messages older than 14 days');
 assert.match(operationalMigration, /cron\.schedule\([\s\S]*chat-retention-14-days[\s\S]*prune_expired_chat_messages/, '14-day retention must run automatically server-side');
 
