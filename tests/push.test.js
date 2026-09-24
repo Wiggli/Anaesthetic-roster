@@ -10,6 +10,7 @@ const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'supabase-migration-20260924090000_chat_push_notifications.sql'), 'utf8');
+const maturityMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924111500_chat_maturity.sql'), 'utf8');
 const edge = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
 const release = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf8'));
 
@@ -20,7 +21,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.25/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.26/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -33,6 +34,14 @@ assert.match(push, /register_push_subscription/, 'push endpoint registration mus
 assert.match(push, /unregister_push_subscription/, 'users must be able to remove the current device subscription');
 assert.match(push, /team_enabled/, 'team notification preference must be persisted');
 assert.match(push, /private_enabled/, 'private notification preference must be persisted');
+assert.match(html, /data-push-mute="hour"[\s\S]*data-push-mute="tonight"[\s\S]*data-push-mute="until_on"/, 'group alerts must support one-hour, tonight and until-enabled mute choices');
+assert.match(html, /id="pushDeviceList"/, 'users must be able to review notification devices');
+assert.match(html, /id="pushBlockedHelp"/, 'blocked notification permissions must have recovery guidance');
+assert.match(push, /team_muted_until/, 'group mute expiry must be persisted');
+assert.match(push, /pushBlockedInstructions/, 'blocked permission guidance must be platform-aware');
+assert.match(push, /pushLoadDevices/, 'registered notification devices must be loaded for the signed-in user');
+assert.match(push, /from\('push_subscriptions'\)\.delete\(\)\.eq\('id',id\)\.eq\('user_id',user\.id\)/, 'device removal must stay owner-scoped through RLS');
+assert.doesNotMatch(html+push, /send test notification|test notification/i, 'the app must not add a test-notification button');
 assert.match(push, /dispatchChatPush/, 'chat notification dispatch must be isolated behind a non-blocking helper');
 assert.match(push, /client\.functions\.invoke\('notify-chat-message'/, 'message pushes must be dispatched through the authenticated Edge Function');
 assert.doesNotMatch(push, /vapid_private|privateKey|service_role|SUPABASE_SERVICE_ROLE/i, 'browser push code must not contain server secrets');
@@ -56,10 +65,15 @@ assert.match(migration, /revoke all privileges on table public\.push_server_conf
 assert.match(migration, /grant select on table public\.push_server_config to service_role/, 'only the trusted server role may read VAPID configuration');
 assert.match(migration, /user_id=\(select auth\.uid\(\)/, 'browser-visible push rows must be owner scoped');
 assert.doesNotMatch(migration, /BqB7H_jy|vapid_private_key\s*[,=]\s*['"][A-Za-z0-9_-]{20,}/i, 'the private VAPID key must not be committed');
+assert.match(maturityMigration, /add column if not exists team_muted_until timestamptz/, 'group mute expiry must be stored server-side');
+assert.match(maturityMigration, /Members can remove own push subscriptions[\s\S]*user_id=\(select auth\.uid\(\)\)/, 'notification device removal must use owner-scoped RLS');
+assert.doesNotMatch(maturityMigration, /remove_my_push_device[\s\S]*security definer/i, 'device removal must not add a privileged public RPC');
 
 assert.doesNotMatch(edge, /\.select\([^)]*\bbody\b/, 'the notification function must not read chat message text');
 assert.match(edge, /message\.sender_id !== user\.id/, 'only the actual message sender may dispatch its notification');
 assert.match(edge, /push_dispatches/, 'duplicate notification dispatches must be claimed server-side');
+assert.match(edge, /team_muted_until/, 'server dispatch must respect temporary group mute settings');
+assert.match(edge, /new Date\(pref\.team_muted_until\)\.getTime\(\) > Date\.now\(\)/, 'group pushes must be skipped while the mute window is active');
 assert.match(edge, /New message from/, 'group notification may identify the sender');
 assert.match(edge, /New private message/, 'private notification body must remain generic');
 assert.match(edge, /push_server_config/, 'VAPID keys must be loaded server-side');
@@ -71,7 +85,7 @@ const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
 assert.equal(release.version, '37.25');
-assert.equal(release.title, 'Team chat & notifications');
+assert.equal(release.title, 'A more complete Team Chat');
 assert.ok(release.changes.some(item => /notifications/i.test(item)), 'release notes must announce message notifications together with Team chat');
 assert.ok(release.changes.some(item => /roster/i.test(item) && /separate|entered|update/i.test(item)), 'release notes must keep chat separate from roster changes');
 
