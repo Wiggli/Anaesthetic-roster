@@ -12,7 +12,7 @@ const migration = fs.readFileSync(path.join(root, 'supabase-migration-2026092411
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
-assert.match(core, /async function authorizeUser\(user,session\)[\s\S]*loadSharedData\(\)/,
+assert.match(ui, /async function authorizeUser\(user,session\)[\s\S]*loadSharedData\(\)/,
   'signed-in startup must still load the protected roster before normal app use');
 assert.match(chat, /button\[data-v="chat"\][\s\S]*chatOpenView\(\)/,
   'opening the Chat tab must explicitly start the chat view');
