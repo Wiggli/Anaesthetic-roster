@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.19 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.20 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -55,6 +55,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.20',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.19',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.18',date:'24 Sep 2026',title:'A cleaner sign-in screen',changes:['Night Roster keeps the two simple sign-in routes: approved work email and Google.','The Google action is now centred and presented as one clear Apple-style secondary sign-in choice rather than part of a multi-provider grid.','Microsoft and Apple sign-in remain intentionally absent, so there are no unused or paid-provider options on the login screen.','Authentication rules, access requests, roster permissions and shared data are unchanged.']},
   {version:'37.17',date:'24 Sep 2026',title:'Request access with Google',changes:['Existing approved members continue to sign in normally.','A new Google user who is not yet approved now creates a pending access request without seeing roster data.','Roster administrators can approve or reject pending requests from Authorised accounts.','Approved requests become normal member accounts; administrator access is never granted automatically.']},
