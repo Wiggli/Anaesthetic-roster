@@ -287,15 +287,15 @@ async function pushStartSession(){
   pushSchedulePrompt();
 }
 function pushOpenNotification(data){
-  data=data||{};
-  if(data.type==='chat'&&data.conversationId&&window.openChatFromPush){window.openChatFromPush(data.conversationId);return}
-  if(data.type==='roster'){
+  data=data||{};var notificationType=data.notificationType||data.type;
+  if(notificationType==='chat'&&data.conversationId&&window.openChatFromPush){window.openChatFromPush(data.conversationId);return}
+  if(notificationType==='roster'){
     if(data.rosterDate&&typeof chooseDate==='function'){var input=pushEl('datePick');if(input){input.value=data.rosterDate;chooseDate('datePick')}}
     if(typeof show==='function')show('today');
     if(typeof loadSharedData==='function')loadSharedData({background:true}).catch(function(){});
     return;
   }
-  if(data.type==='access_request'&&pushProfile()&&pushProfile().user_role==='admin'){
+  if(notificationType==='access_request'&&pushProfile()&&pushProfile().user_role==='admin'){
     if(typeof show==='function')show('admin');
     if(typeof switchAdminTab==='function')switchAdminTab('access',false);
     if(typeof loadAccounts==='function')loadAccounts().catch(function(){});
