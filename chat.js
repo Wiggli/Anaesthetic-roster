@@ -588,6 +588,7 @@ async function chatOpenFromPush(conversationId){
   var root=chatEl('chat');if(root)root.classList.remove('chat-thread-open');chatState.activeConversationId=null;await chatLoadTeamMessages(false,true);
 }
 window.openChatFromPush=chatOpenFromPush;
+window.openChatView=chatOpenView;
 window.refreshChatUnreadFromPush=function(){return chatRefreshUnreadCounts()};
 function chatBindUi(){
   chatEnsureEnhancedUi();
