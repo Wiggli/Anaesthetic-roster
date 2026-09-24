@@ -1,13 +1,14 @@
 {
-  "version": "37.31",
+  "version": "37.32",
   "date": "24 September 2026",
-  "title": "Cinematic launch and refined onboarding",
-  "summary": "Polish Night Roster into a more cinematic, native-feeling PWA while keeping everyday navigation stable and making the refreshed Chat onboarding explicit.",
+  "title": "Premium PWA experience",
+  "summary": "Make Night Roster feel more like a native app on iPhone and Android while keeping the same install-once PWA, Supabase backend and automatic web distribution.",
   "changes": [
-    "Cold launch now uses a staged cinematic reveal tied to the real roster-loading state, then transitions smoothly into the app or sign-in experience without a fake loading delay.",
-    "First-use onboarding now uses directional page transitions, richer visual hierarchy and a current Chat page covering Team chat, private messages, @mentions, replies, privacy-safe notifications and 14-day retention.",
-    "Existing users receive the refreshed Chat introduction once, while Account still provides the complete onboarding replay.",
-    "Normal tab switching no longer animates the whole view, reducing movement and preserving the stable Night, Changes, Breaks and Chat layout.",
-    "Buttons, inputs, grouped surfaces, dark mode, sheets and persistent navigation receive restrained native-style polish with reduced-motion fallbacks."
-  ]
+    "The system splash now hands off to the same Night Roster app icon and first-paint background before the cinematic launch continues, reducing the visible double-start effect.",
+    "Install guidance now adapts to iPhone, iPad, Android and already-installed mode, while standalone mode hides browser-only installation controls.",
+    "Supported devices now show an app badge for unread Chat and administrator attention; background notifications can set a generic badge until the exact count is refreshed.",
+    "Night and Chat are available as app shortcuts where supported, while notification taps still deep-link to the exact conversation, roster night or administrator access screen.",
+    "The update system now supports quiet automatic-on-reopen releases as well as important review-first releases, and mobile safe areas, keyboard handling, theme startup and touch chrome are refined."
+  ],
+  "update_policy": "important"
 }
