@@ -8,7 +8,7 @@ const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
 const push = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const edge = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
-const migration = fs.readFileSync(path.join(root, 'supabase-migration-20260924111500_chat_maturity.sql'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
