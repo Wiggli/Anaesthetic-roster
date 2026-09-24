@@ -570,42 +570,56 @@
               <h1 id="chatTitle">Chat</h1>
               <p><span id="chatLiveStatus">Connecting</span><i class="chatLiveDot" aria-hidden="true"></i></p>
             </div>
-            <button type="button" class="chatNewPrivateBtn" id="chatNewPrivateBtn" aria-label="Start a private chat">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 18.5 4 20v-4.5A8 8 0 1 1 8.5 19H7Z"></path>
-                <path d="M12 8v6M9 11h6"></path>
-              </svg>
-            </button>
-          </div>
-          <div class="chatSafetyNotice">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 3 3.5 19h17L12 3Z"></path>
-              <path d="M12 9v4M12 16.5h.01"></path>
-            </svg>
-            <span><b>Staff coordination only.</b> Do not share patient-identifiable or clinical information in chat.</span>
           </div>
           <p id="chatStatus" class="chatStatus hidden" role="status" aria-live="polite"></p>
           <div id="chatModuleFallback" class="chatModuleFallback">
             Chat is loading. Night, Changes and Breaks remain available normally.
           </div>
-          <div class="chatLayout">
-            <div class="chatConversationColumn">
-              <div id="chatConversationList" class="chatConversationList" aria-label="Conversations"></div>
-            </div>
-            <div class="chatConversationPane">
-              <div id="chatEmptyState" class="chatEmptyState">
-                <div>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 5.5h16v11H9l-5 3v-14Z"></path>
-                    <path d="M8 10h8M8 13h5"></path>
-                  </svg>
-                  <h2>Select a conversation</h2>
-                  <p>Use Anaesthetic Team for group coordination, or start a private chat with another registered member.</p>
-                </div>
+          <div class="chatWorkspace">
+            <div id="chatHome" class="chatHome">
+              <button type="button" id="chatTeamCard" class="chatTeamCard" aria-label="Open Anaesthetic Team group chat">
+                <span class="chatTeamAvatar" aria-hidden="true">AT</span>
+                <span class="chatTeamContent">
+                  <span class="chatTeamEyebrow">Group chat</span>
+                  <strong>Anaesthetic Team</strong>
+                  <span id="chatTeamMemberCount" class="chatTeamMemberCount">Authorised staff</span>
+                  <span id="chatTeamPreview" class="chatTeamPreview">One shared space for roster coordination.</span>
+                </span>
+                <span class="chatTeamMeta">
+                  <small id="chatTeamTime"></small>
+                  <em id="chatTeamUnread" class="chatConversationBadge hidden">0</em>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+                </span>
+              </button>
+
+              <div class="chatSafetyNotice">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3 3.5 19h17L12 3Z"></path>
+                  <path d="M12 9v4M12 16.5h.01"></path>
+                </svg>
+                <span><b>Staff coordination only.</b> Do not share patient-identifiable or clinical information in chat.</span>
               </div>
+
+              <div class="chatPrivateHeader">
+                <div>
+                  <span>Private chats</span>
+                  <small>One-to-one messages with roster members</small>
+                </div>
+                <button type="button" id="chatNewPrivateBtn" class="chatNewPrivateBtn">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 18.5 4 20v-4.5A8 8 0 1 1 8.5 19H7Z"></path>
+                    <path d="M12 8v6M9 11h6"></path>
+                  </svg>
+                  <span>New message</span>
+                </button>
+              </div>
+              <div id="chatConversationList" class="chatConversationList" aria-label="Private conversations"></div>
+            </div>
+
+            <div class="chatConversationPane">
               <div id="chatThread" class="chatThread hidden">
                 <div class="chatThreadHeader">
-                  <button type="button" class="chatBackBtn" id="chatBackBtn" aria-label="Back to conversations">
+                  <button type="button" class="chatBackBtn" id="chatBackBtn" aria-label="Back to chat list">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
                   </button>
                   <div class="chatThreadHeading">
