@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.27 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.28 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -56,6 +56,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.28',date:'24 Sep 2026',title:'Cleaner Night and Admin controls',changes:['Night and Breaks now focus on the live roster information itself, with the repeated copy-briefing, copy-breaks and email-roster controls removed.','Roster management keeps the useful Publish, Team, Access and Data sections, while Overview no longer repeats those same destinations as a second row of shortcut buttons.','Unused frontend code that existed only for the removed copy and email actions has been retired; roster calculations, staffing changes, breaks, chat, notifications and Supabase data remain unchanged.']},
   {version:'37.27',date:'24 Sep 2026',title:'Lean maintenance cleanup',changes:['The installed app now reuses the same reviewed icons for standard and maskable purposes instead of shipping duplicate image files, reducing unnecessary app-shell data without changing appearance.','Outdated repository audit snapshots and superseded setup records were removed from the current source tree while remaining available in Git history.','Roster calculations, staffing changes, breaks, Team Chat, notifications, authentication, Supabase data and the complete in-app version history are unchanged.']},
   {version:'37.26',date:'24 Sep 2026',title:'A more complete Team Chat',changes:['Chat now separates days and unread messages clearly, keeps your reading position when new messages arrive and offers a New message shortcut instead of pulling you to the bottom.','Messages that fail to send stay visible with Retry, while message actions let you copy text and delete your own recently sent message without adding editing, reactions or other social features.','Notification controls now show device status, explain blocked permissions, let you mute Anaesthetic Team for one hour, for tonight or until you turn it back on, and let you remove old notification devices.','Private-chat availability updates live as roster members register, notification taps open the relevant conversation, and Chat uses a compact overview request so roster startup remains independent.','Onboarding is shorter, and administrators get privacy-safe health information for roster sync, chat registration and notification delivery without seeing private messages or notification endpoints.']},
   {version:'37.25',date:'24 Sep 2026',title:'Team chat & notifications',changes:['Anaesthetic Team provides one shared group chat for roster discussion, with private one-to-one conversations between registered roster members.','Optional message notifications can alert you to new group or private messages when Night Roster is closed or in the background.','Notification previews protect chat privacy by showing that a new message arrived without displaying the message text on the lock screen.','Chat remains separate from roster changes: any agreed swap or change must still be entered through the existing roster functions.']},
@@ -321,12 +322,11 @@ function saveOfflineSnapshot(){
   try{localStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date().toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion}))}catch(error){}
 }
 
-function validEmailRecipients(value){return Array.isArray(value)?value.filter(function(item){return typeof item==='string'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(item)}):[]}
 
 function restoreOfflineSnapshot(){
   try{
     var snapshot=readOfflineSnapshot();if(!snapshot)return false;
-    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;EMAIL_RECIPIENTS=validEmailRecipients(appSettings.email_recipients);schemaVersion=snapshot.schemaVersion;lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;idx=startingIndex();automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSync('offline','Offline · saved '+(lastSuccessfulSyncAt?shortTime(lastSuccessfulSyncAt):'previously'));render();return true;
+    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;idx=startingIndex();automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSync('offline','Offline · saved '+(lastSuccessfulSyncAt?shortTime(lastSuccessfulSyncAt):'previously'));render();return true;
   }catch(error){console.error('Saved roster could not be restored',error);return false}
 }
 
@@ -888,10 +888,6 @@ function openActivityDetail(item,date){var dialog=byId('activityDetailSheet'),ty
 function updateScrollChrome(){scrollChromeFrame=null;document.body.classList.toggle('uiScrolled',window.scrollY>18)}
 function scheduleScrollChrome(){if(scrollChromeFrame)return;scrollChromeFrame=requestAnimationFrame(updateScrollChrome)}
 
-function briefingText(base){
-  var r=applyChanges(base),plan=staffingPlan(base),pending=planIsProvisional(base)||(r.mode!=='5'&&!labourOrderFor(r)),b=planIsProvisional(base)?{first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']}:breakData(r),lines=[(pending?'PROVISIONAL · ':'')+'ANAESTHETIC NIGHT BRIEFING',fmt(base.date)+' · '+plan.count+' nurses','First Part: '+professionalName(r.first1)+' + '+professionalName(r.first2),'Second Part: '+professionalName(r.second1)+' + '+professionalName(r.second2)];if(r.mode==='5')lines.push('Full Labour Ward / Pager: '+professionalName(r.fullLW));else lines.push('Pager: '+professionalName(r.pager),'Reliever: '+professionalName(r.reliever));lines.push('First break: '+(b.first.map(professionalName).join(' + ')||'Pending'),'Second break: '+(b.second.map(professionalName).join(' + ')||'Pending'));Array.prototype.push.apply(lines,b.notes);return lines.join('\n')
-}
-async function copyBriefing(){var text=briefingText(cur());try{await navigator.clipboard.writeText(text);toast('Tonight’s briefing copied')}catch(error){alert(text)}}
 function failedAction(message,retry){lastFailedAction=retry||null;toast(message,retry?{label:'Retry',run:function(){var action=lastFailedAction;lastFailedAction=null;return action&&action()}}:null)}
 
 function render(){
@@ -917,7 +913,7 @@ function render(){
   if(extras.length)byId('roles').insertAdjacentHTML('beforeend','<div class="additionalStaff"><b>Additional staff • allocation as required</b>'+extras.map(function(o){return '<span class="additionalName">'+esc(o.nurse_name)+'</span>'}).join('')+'</div>');
   byId('fiveArrangement').innerHTML=fiveArrangementHtml(r);
   localStorage.setItem('anaes_selected_date',base.date);
-  renderChanges(base);renderRoster();renderBreaks();setOutputState(base,plan);bindTaskLinks();
+  renderChanges(base);renderRoster();renderBreaks();bindTaskLinks();
   if(currentUserProfile.user_role==='admin')renderAdmin();
   ensureNightHistory(base.date);updateNetworkStatus();save();
 }
@@ -1101,41 +1097,6 @@ function renderBreaks(){
   var breakDate=byId('breakDate');breakDate.classList.toggle('hidden',!pending);breakDate.innerHTML=pending?'<b>Break plan pending</b><span>'+(staffingPending?'Complete the remaining staffing allocation.':'Review the Labour Ward allocation.')+'</span><button type="button" class="pendingShortcut" data-go-allocation>Resolve now ›</button>':'';
   byId('breakList').innerHTML='<div class="breakGrid"><div class="breakGroup firstBreak"><h3>First break</h3>'+b.first.map(function(n){return '<div class="breakPerson">'+esc(professionalName(n))+'</div>'}).join('')+(b.first.length?'':'<div class="breakNote">Pending final allocation</div>')+'</div><div class="breakGroup secondBreak"><h3>Second break</h3>'+b.second.map(function(n){return '<div class="breakPerson">'+esc(professionalName(n))+'</div>'}).join('')+(b.second.length?'':'<div class="breakNote">Pending final allocation</div>')+'</div></div><div class="breakGroup lwBreak"><h3>Labour Ward / Pager'+(r.mode==='7'?' and additional staffing':'')+'</h3>'+b.notes.map(function(n){return '<div class="breakNote">'+esc(n)+'</div>'}).join('')+'</div>';
   highlightNamed('breakList','.breakPerson');
-}
-
-function setOutputState(base,plan){
-  var r=applyChanges(base),staffingPending=planIsProvisional(base),labourPending=r.mode!=='5'&&!labourOrderFor(r),pending=staffingPending||labourPending,tasks=workflowTaskDetails(base,plan),reason=tasks[0]||(plan.count<5?'Add sufficient overtime cover and complete the allocations.':labourPending?'Choose the Labour Ward order.':'');
-  Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(button){var span=button.querySelector('span'),reasonId=button.closest('#today')?'briefingActionsReason':'breakActionsReason';if(span)span.textContent='Email roster and breaks';button.classList.toggle('buttonPending',pending);button.disabled=pending;if(pending)button.setAttribute('aria-describedby',reasonId);else button.removeAttribute('aria-describedby')});
-  var copy=byId('copyBreaksBtn');if(copy){var span=copy.querySelector('span');if(span)span.textContent='Copy breaks';copy.classList.toggle('buttonPending',pending);copy.disabled=pending;if(pending)copy.setAttribute('aria-describedby','breakActionsReason');else copy.removeAttribute('aria-describedby')}
-  var briefing=byId('copyBriefingBtn');if(briefing){briefing.classList.toggle('buttonPending',pending);briefing.disabled=pending;briefing.title=pending?'Complete the outstanding staffing decisions before copying the briefing.':'';if(pending)briefing.setAttribute('aria-describedby','briefingActionsReason');else briefing.removeAttribute('aria-describedby')}
-  ['briefingActionsReason','breakActionsReason'].forEach(function(id){var message=byId(id);if(message){message.textContent=pending?'Available after this plan task is completed: '+reason:'';message.classList.toggle('hidden',!pending)}})
-}
-
-async function copyBreaks(){
-  var base=cur(),r=applyChanges(base),plan=staffingPlan(base),staffingPending=planIsProvisional(base),pending=staffingPending||(r.mode!=='5'&&!labourOrderFor(r)),b=staffingPending?{first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']}:breakData(r);
-  var txt=(pending?'PROVISIONAL • ':'')+fmt(r.date)+' Breaks • '+plan.count+' nurses\nFirst break: '+(b.first.map(professionalName).join(' + ')||'Pending')+'\nSecond break: '+(b.second.map(professionalName).join(' + ')||'Pending')+'\n'+b.notes.join('\n');
-  try{await navigator.clipboard.writeText(txt);toast(pending?'Pending break plan copied':'Breaks copied')}catch(e){alert(txt)}
-}
-
-function emailRoster(){
-  var base=cur(),r=applyChanges(base),b=breakData(r),changes=changesFor(r.date),overtime=overtimeFor(r.date),plan=staffingPlan(base),staffingPending=planIsProvisional(base),pending=staffingPending||(r.mode!=='5'&&!labourOrderFor(r)),extras=additionalNurses(plan);
-  if(!EMAIL_RECIPIENTS.length){toast('Email recipients are not configured. Ask an administrator to update app settings.');return}
-  if(pending&&!confirm('Some staffing or allocations are still undecided. Open a clearly marked provisional email anyway?'))return;
-  if(staffingPending)b={first:[],second:[],notes:['Breaks pending until staffing and allocations are finalised.']};
-  var subject=(pending?'PROVISIONAL - ':'')+'Anaesthetic Night Roster - '+fmt(r.date),lines=[pending?'PROVISIONAL ANAESTHETIC NIGHT ROSTER':'ANAESTHETIC NIGHT ROSTER',fmt(r.date)+' • '+plan.count+' nurses','','ROSTER','First part theatres: '+professionalName(r.first1)+' + '+professionalName(r.first2),'Second part theatres: '+professionalName(r.second1)+' + '+professionalName(r.second2)];
-  if(plan.count<5)lines.push('Allocation incomplete: additional overtime cover required');else if(r.mode==='5')lines.push('Full Labour Ward / Pager 00:00–07:00: '+professionalName(r.fullLW));else{lines.push('Pager: '+professionalName(r.pager),'Reliever: '+professionalName(r.reliever));var lwOrder=labourOrderFor(r);if(lwOrder)lines.push('Labour Ward first part: '+professionalName(lwOrder.first_part_name),'Labour Ward second part: '+professionalName(lwOrder.second_part_name))}
-  if(r.mode==='7'){
-    lines.push('Seventh nurse: '+r.seventh);
-    if(plan.requiresSeventhDecision)lines.push('7th rotation decision: not yet confirmed');
-    else if(plan.seventhChoice&&plan.seventhChoice.source==='permanent'&&plan.seventhDecision==='rotation')lines.push('7th rotation: '+plan.seventhNurse+' moved from '+allocationLabel(plan.seventhVacatedKey)+'; overtime fills the vacated role');
-    else if(plan.seventhChoice&&plan.seventhChoice.source==='permanent')lines.push('7th rotation not used: '+plan.seventhNurse+' remains in '+allocationLabel(plan.seventhVacatedKey)+'; overtime fills the seventh position');
-  }
-  if(extras.length)lines.push('Additional staff as required: '+extras.map(function(o){return o.nurse_name}).join(' + '));
-  if(changes.length){lines.push('','ABSENCES');changes.forEach(function(c){lines.push(c.absent_name+' • Unavailable')})}
-  if(overtime.length){lines.push('','OVERTIME NURSES');overtime.forEach(function(o){var allocated=plan.availableKeys.indexOf(o.allocation_key)>=0,extra=extras.some(function(x){return x.id===o.id});lines.push(o.nurse_name+' • '+(extra?'additional staff as required':allocated?allocationLabel(o.allocation_key):'allocation to decide'))})}
-  lines.push('','BREAKS','First break: '+(b.first.map(professionalName).join(' + ')||'Pending'),'Second break: '+(b.second.map(professionalName).join(' + ')||'Pending'));Array.prototype.push.apply(lines,b.notes);
-  if(r.notes)lines.push('','Notes: '+r.notes);
-  window.location.href='mailto:?bcc='+encodeURIComponent(EMAIL_RECIPIENTS.join(','))+'&subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
 
 function renderRoster(){
@@ -1385,7 +1346,7 @@ async function loadSharedData(options){
       labourOrderAvailable=true;labourOrders=rowsIndexedByDate(snapshot.night_labour_order);
       nightPlanStatuses=rowsIndexedByDate(snapshot.night_plan_status);
       nightRoleOverrideAvailable=true;nightRoleOverrides=rowsIndexedByDate(snapshot.night_role_overrides);
-      if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings;EMAIL_RECIPIENTS=validEmailRecipients(appSettings.email_recipients)}
+      if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings}
       schemaVersion=Number(snapshot.schema_version||0);lastObservedSyncRevision=Number(snapshot.sync_revision||0);
       rebuildCalculatedRoster();
       if(!initialNightChosen){idx=startingIndex();automaticSelectedDate=R[idx].date;initialNightChosen=true}
@@ -1563,8 +1524,8 @@ function bind(){
   byId('saveChangeBtn').onclick=saveNightChange;byId('cancelAbsenceEditBtn').onclick=cancelAbsenceEdit;byId('absentName').onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateStaffingActionAvailability()};byId('addOvertimeBtn').onclick=saveOvertime;byId('saveAllocationsBtn').onclick=saveFinalAllocationsV2510;byId('overtimeName').oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','');updateStaffingActionAvailability()};byId('overtimeName').onkeydown=function(e){if(e.key==='Enter'&&!byId('addOvertimeBtn').disabled)saveOvertime()};byId('addAccountBtn').onclick=addAuthorisedAccount;
   byId('themeBtn').onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('changesDatePick').onchange=function(){chooseDate('changesDatePick')};byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
   byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('changesPrevNightBtn').onclick=function(){changeNight(-1)};byId('changesNextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};
-  byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;byId('copyBreaksBtn').onclick=copyBreaks;byId('copyBriefingBtn').onclick=copyBriefing;
-  Array.prototype.forEach.call(document.querySelectorAll('.emailRosterBtn'),function(b){b.onclick=emailRoster});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-admin-open]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-open'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
+  byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
   byId('previewExtendBtn').onclick=previewExtension;byId('extendBtn').onclick=extendRoster;byId('saveTeamVersionBtn').onclick=previewTeamChange;byId('exportBtn').onclick=exportCSV;byId('backupBtn').onclick=backup;
   byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};byId('closeActivityDetailSheet').onclick=function(){byId('activityDetailSheet').close()};Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){b.onclick=function(){show(b.getAttribute('data-v'))}});updateOfflineControls();
 }
