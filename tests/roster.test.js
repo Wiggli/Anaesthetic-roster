@@ -320,7 +320,7 @@ const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^
 assert.equal(checkedInMigrations.length, 17, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
-assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on tests');
+assert.match(workflow, /migrate:[\s\S]*needs: \[test, browser-smoke\]/, 'migration must depend on deterministic and browser smoke tests');
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
