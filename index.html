@@ -571,26 +571,41 @@
               <p><span id="chatLiveStatus">Connecting</span><i class="chatLiveDot" aria-hidden="true"></i></p>
             </div>
           </div>
+
           <p id="chatStatus" class="chatStatus hidden" role="status" aria-live="polite"></p>
           <div id="chatModuleFallback" class="chatModuleFallback">
             Chat is loading. Night, Changes and Breaks remain available normally.
           </div>
+
           <div class="chatWorkspace">
             <div id="chatHome" class="chatHome">
-              <button type="button" id="chatTeamCard" class="chatTeamCard" aria-label="Open Anaesthetic Team group chat">
-                <span class="chatTeamAvatar" aria-hidden="true">AT</span>
-                <span class="chatTeamContent">
-                  <span class="chatTeamEyebrow">Group chat</span>
-                  <strong>Anaesthetic Team</strong>
-                  <span id="chatTeamMemberCount" class="chatTeamMemberCount">Authorised staff</span>
-                  <span id="chatTeamPreview" class="chatTeamPreview">One shared space for roster coordination.</span>
-                </span>
-                <span class="chatTeamMeta">
-                  <small id="chatTeamTime"></small>
+              <section class="chatTeamConsole" aria-labelledby="chatTeamHeading">
+                <div class="chatTeamConsoleHeader">
+                  <span class="chatTeamAvatar" aria-hidden="true">AT</span>
+                  <div class="chatTeamConsoleTitle">
+                    <span class="chatTeamEyebrow">Group chat</span>
+                    <h2 id="chatTeamHeading">Anaesthetic Team</h2>
+                    <span id="chatTeamMemberCount" class="chatTeamMemberCount">Roster members</span>
+                  </div>
                   <em id="chatTeamUnread" class="chatConversationBadge hidden">0</em>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
-                </span>
-              </button>
+                </div>
+
+                <div class="chatTeamToolbar">
+                  <span>Recent messages</span>
+                  <button type="button" id="chatTeamLoadOlder" class="chatTeamLoadOlder hidden">Load older</button>
+                </div>
+                <div id="chatTeamMessages" class="chatTeamMessages" aria-live="polite"></div>
+
+                <div class="chatTeamComposerWrap">
+                  <form id="chatTeamComposer" class="chatComposer chatTeamComposer">
+                    <textarea id="chatTeamInput" maxlength="2000" rows="1" placeholder="Message Anaesthetic Team…" aria-label="Write a message to Anaesthetic Team"></textarea>
+                    <button type="submit" id="chatTeamSendBtn" class="chatSendBtn" aria-label="Send group message">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-8.5 18-2-7-7-2L21 3Z"></path><path d="m10.5 14 4-4"></path></svg>
+                    </button>
+                  </form>
+                  <div id="chatTeamComposerStatus" class="chatComposerStatus" role="status" aria-live="polite"></div>
+                </div>
+              </section>
 
               <div class="chatSafetyNotice">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -603,7 +618,7 @@
               <div class="chatPrivateHeader">
                 <div>
                   <span>Private chats</span>
-                  <small>One-to-one messages with roster members</small>
+                  <small>One-to-one messages with nurses in the current roster</small>
                 </div>
                 <button type="button" id="chatNewPrivateBtn" class="chatNewPrivateBtn">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -623,16 +638,16 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
                   </button>
                   <div class="chatThreadHeading">
-                    <h2 id="chatThreadTitle">Conversation</h2>
-                    <span id="chatThreadSubtitle">Staff coordination</span>
+                    <h2 id="chatThreadTitle">Private conversation</h2>
+                    <span id="chatThreadSubtitle">Private conversation</span>
                   </div>
                 </div>
                 <button type="button" id="chatLoadOlder" class="chatLoadOlder hidden">Load older messages</button>
                 <div id="chatMessages" class="chatMessages" aria-live="polite"></div>
                 <div class="chatComposerWrap">
                   <form id="chatComposer" class="chatComposer">
-                    <textarea id="chatMessageInput" maxlength="2000" rows="1" placeholder="Message…" aria-label="Write a chat message"></textarea>
-                    <button type="submit" id="chatSendBtn" class="chatSendBtn" aria-label="Send message">
+                    <textarea id="chatMessageInput" maxlength="2000" rows="1" placeholder="Message…" aria-label="Write a private chat message"></textarea>
+                    <button type="submit" id="chatSendBtn" class="chatSendBtn" aria-label="Send private message">
                       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-8.5 18-2-7-7-2L21 3Z"></path><path d="m10.5 14 4-4"></path></svg>
                     </button>
                   </form>
