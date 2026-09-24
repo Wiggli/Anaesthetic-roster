@@ -304,7 +304,11 @@ function pushOpenNotification(data){
 function pushOpenFromUrl(){
   try{
     var params=new URLSearchParams(location.search),view=params.get('view'),conversation=params.get('conversation'),date=params.get('date'),tab=params.get('tab');
-    if(view==='chat'&&conversation&&window.openChatFromPush)window.openChatFromPush(conversation);
+    if(view==='chat'){
+      if(typeof show==='function')show('chat');
+      if(conversation&&window.openChatFromPush)window.openChatFromPush(conversation);
+      else if(window.openChatView)window.openChatView({force:true});
+    }
     else if(view==='night'){
       if(date&&typeof chooseDate==='function'){var input=pushEl('datePick');if(input){input.value=date;chooseDate('datePick')}}
       if(typeof show==='function')show('today');
@@ -347,7 +351,7 @@ function pushBind(){
     if(!event.data)return;
     if(event.data.type==='OPEN_APP_NOTIFICATION')pushOpenNotification(event.data);
     if(event.data.type==='OPEN_CHAT_NOTIFICATION'&&window.openChatFromPush)window.openChatFromPush(event.data.conversationId||'');
-    if(event.data.type==='CHAT_PUSH_RECEIVED'&&window.refreshChatUnreadFromPush)window.refreshChatUnreadFromPush();
+    if(event.data.type==='CHAT_PUSH_RECEIVED'&&window.refreshChatUnreadFromPush){window.refreshChatUnreadFromPush();setTimeout(function(){if(window.syncAppBadge)window.syncAppBadge()},350)}
     if(event.data.type==='ROSTER_PUSH_RECEIVED'&&typeof loadSharedData==='function')loadSharedData({background:true}).catch(function(){});
     if(event.data.type==='ACCESS_REQUEST_PUSH_RECEIVED'&&pushProfile()&&pushProfile().user_role==='admin'&&typeof loadAccounts==='function')loadAccounts().catch(function(){});
   });
@@ -357,7 +361,7 @@ function pushInit(){
   var client=pushClient();
   if(client&&client.auth&&typeof client.auth.onAuthStateChange==='function')client.auth.onAuthStateChange(function(event){
     if(event==='SIGNED_OUT'){
-      clearTimeout(pushState.promptTimer);pushState.startedFor=null;pushState.subscription=null;pushState.preferences=null;pushState.devices=[];pushState.promptAttempts=0;pushClosePrompt();pushRender();return;
+      clearTimeout(pushState.promptTimer);pushState.startedFor=null;pushState.subscription=null;pushState.preferences=null;pushState.devices=[];pushState.promptAttempts=0;pushClosePrompt();pushRender();if(window.clearAppBadge)window.clearAppBadge();return;
     }
     if(event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED')pushScheduleStart();
   });

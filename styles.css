@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=37.31') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=37.32') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -1561,7 +1561,7 @@ html[data-theme="dark"] .updateSheet[open]{background:rgba(28,28,30,.96);border-
 body.dark .adminAttentionBadge{border-color:var(--ios-surface,var(--apple-surface,#161618))}
 
 
-/* V37.31 cinematic polish: launch, onboarding and restrained native motion. */
+/* V37.32 cinematic polish: launch, onboarding and restrained native motion. */
 :root{
   --cinematic-ease:cubic-bezier(.16,1,.3,1);
   --cinematic-soft:cubic-bezier(.22,.61,.36,1);
@@ -1719,4 +1719,70 @@ body.dark .chatOnboardingTranscript>span{background:rgba(58,58,60,.82)}body.dark
   .onboardingDialog[open],.onboardingContentIn,.onboardingContentBack,.onboardingContentIn>*,.onboardingContentBack>*,.welcomeVisual .onboardingMoon,.readyVisual>span,.workflowVisual span,.chatOnboardingTranscript>span{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
   .launchScreen,.launchScreen.dismissed .launchContent,.launchScreen.dismissed .launchAtmosphere{transition:none!important}
   .onboardingProgress span,input,select,textarea{transition:none!important}
+}
+
+
+/* V37.32 premium PWA shell: seamless launch handoff, standalone polish and keyboard-safe chrome. */
+html{min-height:100%;background:#f2f2f7}
+html[data-theme="dark"]{background:#000}
+body{min-height:var(--app-viewport-height,100dvh);overscroll-behavior-y:none}
+.launchScreen{background:var(--apple-bg)}
+.launchScreen::after{opacity:0;animation:premiumLaunchWash 900ms 180ms var(--cinematic-ease) forwards}
+.launchAtmosphere{opacity:0;animation:premiumAtmosphereIn 900ms 220ms var(--cinematic-ease) forwards}
+@keyframes premiumLaunchWash{to{opacity:1}}
+@keyframes premiumAtmosphereIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.launchMark{opacity:1;transform:translateY(60px) scale(1);filter:none;animation:premiumLaunchMarkWake 900ms 120ms var(--cinematic-ease) forwards}
+.launchMark>span{overflow:hidden;border:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.launchMark img{display:block;width:86px;height:86px;border-radius:22px;object-fit:cover;box-shadow:0 16px 40px rgba(8,52,72,.13)}
+.launchMark svg{display:none}
+@keyframes premiumLaunchMarkWake{
+  0%{opacity:1;transform:translateY(60px) scale(1);filter:none}
+  48%{opacity:1;transform:translateY(18px) scale(1.025);filter:none}
+  100%{opacity:1;transform:none;filter:none}
+}
+.launchMessage>span{animation-delay:430ms}.launchMessage h1{animation-delay:500ms}.launchMessage>p{animation-delay:570ms}
+.launchProgress{animation-delay:650ms}.launchMotto{animation-delay:720ms}
+.launchHospital{animation-delay:360ms}
+.launchScreen.ready .launchMark img{animation:launchReadyPulse 560ms var(--cinematic-ease) both}
+body.dark .launchScreen{background:#000}
+body.dark .launchMark img{box-shadow:0 18px 48px rgba(0,0,0,.42)}
+
+.standaloneApp #installBtn,.standaloneApp #accountInstallBtn{display:none!important}
+.standaloneApp{-webkit-user-select:none;user-select:none}
+.standaloneApp input,.standaloneApp textarea,.standaloneApp select,.standaloneApp [contenteditable="true"]{-webkit-user-select:text;user-select:text}
+.standaloneApp #appHeader{padding-top:calc(9px + env(safe-area-inset-top))}
+body.standaloneApp[data-view] main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+
+.installGuideHero{display:grid;grid-template-columns:64px 1fr;gap:13px;align-items:center;margin:14px 0 8px;padding:13px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:18px;background:var(--apple-surface-muted)}
+.installGuideHero img{width:64px;height:64px;border-radius:17px;box-shadow:0 8px 20px rgba(27,45,58,.1)}
+.installGuideHero div{display:grid;gap:3px}.installGuideHero b{font-size:15px}.installGuideHero span{color:var(--apple-secondary);font-size:11.5px;line-height:1.4}
+.installGuideFootnote{margin:11px 2px 0;color:var(--apple-tertiary);font-size:10.5px;line-height:1.45;text-align:center}
+body.dark .installGuideHero{background:var(--apple-surface-muted)}
+
+.updateBanner.automatic{grid-template-columns:auto minmax(0,1fr) auto}
+.updateBanner.automatic .updateLaterBtn{display:none}
+.updateBanner.automatic .updateBannerIcon{background:rgba(52,199,89,.14);color:#78e08f}
+.updateBanner.automatic .updateBannerSummary b::after{content:" · automatic";color:#9ee5df;font-size:10px;font-weight:700}
+.updateBanner.automatic .updateBannerSummary small{max-width:390px}
+
+.keyboardVisible .bottom{opacity:0;pointer-events:none;transform:translate(-50%,calc(100% + 28px));transition:opacity 180ms ease,transform 240ms var(--cinematic-ease)}
+body.keyboardVisible[data-view] main{padding-bottom:24px}
+.keyboardVisible .toast{bottom:18px}
+.bottom{transition:opacity 180ms ease,transform 240ms var(--cinematic-ease),background-color 180ms ease,box-shadow 180ms ease}
+.bottom button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+input,textarea,select{scroll-margin-bottom:120px}
+dialog{overscroll-behavior:contain}
+
+@media(display-mode:standalone){
+  html,body{min-height:100dvh}
+  .bottom{bottom:calc(8px + env(safe-area-inset-bottom))}
+  .authGate,.launchScreen{min-height:100dvh}
+}
+@media(max-width:420px){
+  .installGuideHero{grid-template-columns:56px 1fr}.installGuideHero img{width:56px;height:56px;border-radius:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  .launchScreen::after,.launchAtmosphere,.launchMark,.launchMark img{animation:none!important;opacity:1!important;transform:none!important}
+  .keyboardVisible .bottom{transition:none!important}
 }

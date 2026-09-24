@@ -241,7 +241,7 @@ const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supa
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.32','37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -253,6 +253,12 @@ for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.
 }
 assert.match(manifest, new RegExp(`icon-192\\.png\\?v=${context.APP_VERSION.replace('.', '\\.')}`), 'manifest icon query must match APP_VERSION');
 assert.match(manifest, /"purpose": "any maskable"/, 'the shared PWA icons must explicitly serve both standard and maskable purposes');
+assert.match(manifest, /"shortcuts"[\s\S]*"\.\/\?view=night"[\s\S]*"\.\/\?view=chat"/, 'installed apps must expose Night and Chat shortcuts where supported');
+assert.match(html, /class="launchMark"[\s\S]*icon-192\.png\?v=37\.32/, 'the cinematic launch must begin with the same app icon used by the installed PWA splash');
+assert.match(themeBootstrap, /document\.documentElement\.style\.backgroundColor=background/, 'startup theme bootstrap must set the first-paint background before CSS loads');
+assert.match(ui, /update_policy==='automatic'[\s\S]*No action required/, 'minor releases must support quiet automatic-on-reopen update messaging');
+assert.match(ui, /function applyStandaloneUi\(\)[\s\S]*standaloneApp/, 'installed mode must remove browser-only installation chrome');
+assert.match(ui, /function setupViewportState\(\)[\s\S]*keyboardVisible/, 'mobile viewport handling must protect the app chrome from the software keyboard');
 assert.doesNotMatch(manifest, /icon-maskable-/, 'the manifest must not reference duplicate maskable icon files');
 const bootTheme = { root: {}, colour: {} };
 vm.runInNewContext(themeBootstrap, {
@@ -343,7 +349,7 @@ assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-19
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
 assert.match(html, /id="updateBanner"[\s\S]*id="openUpdateDetailsBtn"[\s\S]*id="laterUpdateBtn"[\s\S]*id="applyUpdateBtn"/, 'the update notice must offer details, deferral and explicit installation');
 assert.match(html, /id="updateDetails"[\s\S]*id="updateChangesList"[\s\S]*Your shared roster data stays intact[\s\S]*id="laterUpdateSheetBtn"[\s\S]*id="applyUpdateSheetBtn"/, 'the update sheet must explain changes, data safety and both choices');
-assert.match(ui, /function showUpdate\(registration\)[\s\S]*sessionStorage\.getItem\('anaes_update_later'\)[\s\S]*loadPendingUpdateMeta/, 'an update must remain passive and respect session deferral');
+assert.match(ui, /async function showUpdate\(registration\)[\s\S]*await loadPendingUpdateMeta\(\)[\s\S]*sessionStorage\.getItem\('anaes_update_later'\)[\s\S]*!updateIsAutomatic\(\)/, 'update discovery must load its policy first while important updates still respect session deferral');
 assert.doesNotMatch(ui, /function showUpdate\(registration\)[^}]*showModal/, 'finding an update must never open a modal automatically');
 assert.match(ui, /fetch\('\.\/release\.json\?check='\+Date\.now\(\),\{cache:'no-store'/, 'incoming release notes must be checked without a stale HTTP cache');
 assert.match(sw, /requestUrl\.pathname\.endsWith\('\/release\.json'\)[\s\S]*fetch\(event\.request, \{ cache: 'no-store' \}\)[\s\S]*caches\.match\('\.\/release\.json'\)/, 'release metadata must use network-first delivery with an offline fallback');

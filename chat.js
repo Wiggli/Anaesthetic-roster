@@ -157,6 +157,7 @@ function chatConversationSort(a,b){
 function chatUpdateNavBadge(){
   var total=Object.keys(chatState.unreadByConversation).reduce(function(sum,key){return sum+Number(chatState.unreadByConversation[key]||0)},0),badge=chatEl('chatUnreadBadge');
   if(!badge)return;badge.textContent=chatCap(total,99);badge.classList.toggle('hidden',!total);badge.setAttribute('aria-label',total?total+' unread chat message'+(total===1?'':'s'):'No unread chat messages');
+  if(window.syncAppBadge)window.syncAppBadge();
 }
 function chatUnreadDivider(){
   var node=chatCreate('div','chatUnreadDivider');node.dataset.chatUnread='true';node.appendChild(chatCreate('span','','New messages'));return node;
@@ -587,6 +588,7 @@ async function chatOpenFromPush(conversationId){
   var root=chatEl('chat');if(root)root.classList.remove('chat-thread-open');chatState.activeConversationId=null;await chatLoadTeamMessages(false,true);
 }
 window.openChatFromPush=chatOpenFromPush;
+window.openChatView=chatOpenView;
 window.refreshChatUnreadFromPush=function(){return chatRefreshUnreadCounts()};
 function chatBindUi(){
   chatEnsureEnhancedUi();

@@ -95,3 +95,30 @@ test('cinematic surfaces respect reduced motion', async ({ page }) => {
   const launchAnimation = await page.locator('.launchMark').evaluate(el => getComputedStyle(el).animationName);
   expect(launchAnimation).toBe('none');
 });
+
+
+test('premium PWA launch uses the installed app icon and install guidance stays self-contained', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'window.supabase={createClient:function(){return null}};'
+  }));
+  await page.goto('/index.html');
+  const launchIcon = page.locator('.launchMark img');
+  await expect(launchIcon).toHaveCount(1);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.32/);
+  const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
+  expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
+  const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
+  expect(installCopy).toContain('No App Store or Play Store account is required');
+});
+
+test('installed-app badge helper is best-effort and safe on unsupported browsers', async ({ page }) => {
+  await openShell(page);
+  const result = await page.evaluate(() => {
+    if (!window.syncAppBadge) return 'missing';
+    window.syncAppBadge();
+    return 'ok';
+  });
+  expect(result).toBe('ok');
+});

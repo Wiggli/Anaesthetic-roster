@@ -31,8 +31,8 @@ assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifi
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.31/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.31/, 'chat client must be versioned with the app');
+assert.match(html, /chat\.css\?v=37\.32/, 'chat styling must be versioned with the app');
+assert.match(html, /chat\.js\?v=37\.32/, 'chat client must be versioned with the app');
 assert.match(ui, /function onboardingChatPage\(\)/, 'onboarding must include a dedicated Team chat page');
 assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'existing users must receive a one-page chat introduction rather than replaying the full guide');
 assert.match(ui, /anaes_chat_intro_v37_31/, 'the chat introduction must be shown once per device');
@@ -56,6 +56,7 @@ assert.match(chatCss, /body\.dark/, 'chat must include dark-mode styling');
 
 assert.match(chat, /var PRIVATE_PAGE_SIZE=40;/, 'private chat must page messages instead of loading full history');
 assert.match(chat, /var TEAM_PAGE_SIZE=30;/, 'team chat must load a bounded recent transcript');
+assert.match(chat, /window\.openChatView=chatOpenView/, 'installed Chat shortcuts must be able to open the Team chat home safely');
 assert.match(chat, /\.limit\(TEAM_PAGE_SIZE\)/, 'team message history must be paginated');
 assert.match(chat, /\.lt\('id',chatState\.teamOldestMessageId\)/, 'older team messages must use keyset pagination');
 assert.match(chat, /\.limit\(PRIVATE_PAGE_SIZE\)/, 'private message history must be paginated');
