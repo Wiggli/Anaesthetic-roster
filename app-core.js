@@ -110,8 +110,9 @@ function adminHealthTime(value){
   return value?new Date(value).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Not yet';
 }
 function updateAdminAttentionBadge(){
-  var button=byId('adminSettingsBtn'),badge=byId('adminAttentionBadge');
-  if(!button||!badge||!currentUserProfile||currentUserProfile.user_role!=='admin')return;
+  var button=byId('adminSettingsBtn');if(!button||!currentUserProfile||currentUserProfile.user_role!=='admin')return;
+  var badge=byId('adminAttentionBadge');
+  if(!badge){badge=document.createElement('span');badge.id='adminAttentionBadge';badge.className='adminAttentionBadge hidden';badge.setAttribute('aria-hidden','true');button.appendChild(badge)}
   var base=R.length?cur():null,taskCount=base?workflowTaskDetails(base,staffingPlan(base)).length:0;
   var pending=accessRequests.length,daysRemaining=rosterSettings&&rosterSettings.published_until?daysBetween(iso(new Date()),rosterSettings.published_until):9999;
   var publicationDue=daysRemaining<=45?1:0,count=pending+(taskCount?1:0)+publicationDue;
