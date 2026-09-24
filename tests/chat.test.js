@@ -36,7 +36,7 @@ assert.match(ui, /anaes_chat_intro_v37_24/, 'the chat introduction must be shown
 assert.match(ui, /onboardingChatPage\(\),[\s\S]*Your roster identity/, 'new users must see chat as part of the normal onboarding sequence');
 assert.match(ui, /Chat with the anaesthetic team\./, 'chat onboarding must explain the feature in plain language');
 assert.match(ui, /If you agree a swap or another change, update the roster separately/, 'chat onboarding must explain that agreed changes still need to be entered in the roster');
-assert.match(ui, /Notifications[\\s\\S]*Optional alerts can tell you when a new message arrives while the app is in the background/, 'chat onboarding must introduce optional message notifications');
+assert.match(ui, /Notifications[\s\S]*Optional alerts can tell you when a new message arrives while the app is in the background/, 'chat onboarding must introduce optional message notifications');
 assert.match(core, /var viewScrollPositions=\{today:0,changes:0,breaks:0,chat:0,roster:0,admin:0\}/, 'each primary view must keep its own scroll position');
 const showSource = core.slice(core.indexOf('function show(v)'), core.indexOf('function previewExtension', core.indexOf('function show(v)')));
 assert.match(showSource, /viewScrollPositions\[previous\]=Math\.max\(0,Number\(window\.scrollY\|\|0\)\)/, 'tab switching must remember the outgoing tab position');
