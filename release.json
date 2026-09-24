@@ -1,13 +1,11 @@
 {
-  "version": "37.26",
+  "version": "37.27",
   "date": "24 September 2026",
-  "title": "A more complete Team Chat",
+  "title": "Lean maintenance cleanup",
   "summary": "Refine chat reading, recovery, notifications and administration without changing the roster workflow.",
   "changes": [
-    "Chat now separates days and unread messages clearly, keeps your reading position when new messages arrive and offers a New message shortcut instead of pulling you to the bottom.",
-    "Messages that fail to send stay visible with Retry, while message actions let you copy text and delete your own recently sent message without adding editing, reactions or other social features.",
-    "Notification controls now show device status, explain blocked permissions, let you mute Anaesthetic Team for one hour, for tonight or until you turn it back on, and let you remove old notification devices.",
-    "Private-chat availability updates live as roster members register, notification taps open the relevant conversation, and Chat uses a compact overview request so roster startup remains independent.",
-    "Onboarding is shorter, and administrators get privacy-safe health information for roster sync, chat registration and notification delivery without seeing private messages or notification endpoints."
+    "The installed app now reuses the same reviewed icons for standard and maskable purposes instead of shipping duplicate image files, reducing unnecessary app-shell data without changing appearance.",
+    "Outdated repository audit snapshots and superseded setup records were removed from the current source tree while remaining available in Git history.",
+    "Roster calculations, staffing changes, breaks, Team Chat, notifications, authentication and Supabase data are unchanged."
   ]
 }

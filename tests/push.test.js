@@ -21,7 +21,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.26/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.27/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -87,9 +87,9 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.26');
-assert.equal(release.title, 'A more complete Team Chat');
-assert.ok(release.changes.some(item => /notification/i.test(item)), 'release notes must announce message notifications together with Team chat');
-assert.ok(release.changes.some(item => /roster/i.test(item) && /separate|entered|update/i.test(item)), 'release notes must keep chat separate from roster changes');
+assert.equal(release.version, '37.27');
+assert.equal(release.title, 'Lean maintenance cleanup');
+assert.ok(release.changes.some(item => /notifications/i.test(item) && /unchanged/i.test(item)), 'maintenance release notes must confirm notifications remain unchanged');
+assert.ok(release.changes.some(item => /roster/i.test(item) && /unchanged/i.test(item)), 'maintenance release notes must confirm roster behaviour remains unchanged');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');
