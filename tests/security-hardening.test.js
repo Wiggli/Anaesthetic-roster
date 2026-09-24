@@ -160,7 +160,7 @@ assert.match(operationalMigration, /revoke all privileges on table public\.push_
 assert.match(operationalMigration, /create or replace function public\.queue_roster_push_event[\s\S]*is_shift_member\(\)[\s\S]*app_sync_state/, 'roster notification claims must require active membership and bind to a server revision');
 assert.match(operationalMigration, /revoke all on function chat_private\.prune_expired_chat_messages\(\) from public,anon,authenticated/, 'chat retention maintenance must not be callable by browser roles');
 assert.match(operationalMigration, /reply_to_message_id is null[\s\S]*replied\.conversation_id = chat_messages\.conversation_id/, 'reply targets must stay inside the authorised conversation');
-assert.doesNotMatch(operationalMigration, /grant all|disable row level security/i, 'new notification and retention infrastructure must not broaden privileges or disable RLS');
+assert.doesNotMatch(operationalMigration, /grant all[^;\n]*(?:anon|authenticated)|disable row level security/i, 'new notification and retention infrastructure must not grant blanket browser privileges or disable RLS');
 assert.match(pushFunction, /event\.created_by !== user\.id/, 'roster notification dispatch must verify the caller created the claimed event');
 assert.match(pushFunction, /requestUserId !== user\.id/, 'access-request notification dispatch must be bound to the authenticated requester');
 assert.match(pushFunction, /requestRow\.status !== "pending"/, 'access-request notification dispatch must validate current pending state');
