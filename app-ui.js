@@ -424,7 +424,7 @@ function showRecordActions(kind,id,name){
 }
 
 function onboardingChatPage(){
-  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'</span><div class="chatOnboardingLines"><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team chat</span><h2 id="onboardingTitle">Coordinate without changing the roster.</h2><p>Use Anaesthetic Team for normal roster discussion and private chat for one-to-one messages. Chat never changes Night, Changes or Breaks automatically.</p><div class="onboardingFeatureList"><div><b>Team</b><span>One shared group chat for roster coordination</span></div><div><b>Private</b><span>One-to-one messages with registered roster members</span></div><div><b>Separate</b><span>Any agreed swap is still entered through the roster afterwards</span></div></div><p class="onboardingFootnote">Staff coordination only. Do not share patient-identifiable or clinical information in chat.</p>';
+  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'</span><div class="chatOnboardingLines"><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team chat</span><h2 id="onboardingTitle">Chat with the anaesthetic team.</h2><p>Use Chat to discuss roster matters with the team. You can ask something in Anaesthetic Team, or send a registered roster member a private message.</p><div class="onboardingFeatureList"><div><b>Group chat</b><span>Anaesthetic Team is the shared conversation for roster matters</span></div><div><b>Private</b><span>Message a registered roster member one-to-one</span></div><div><b>Roster</b><span>Chat is for discussion only. If you agree a change, update the roster separately</span></div></div><p class="onboardingFootnote">For staff coordination only. Never share patient-identifiable or clinical information in chat.</p>';
 }
 
 function onboardingPages(){
@@ -455,17 +455,17 @@ async function addOnboardingPasskey(){var button=byId('onboardingPasskeyBtn'),me
 
 async function finishOnboarding(){
   if(onboardingChatIntro){
-    localStorage.setItem('anaes_chat_intro_v37_22','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
+    localStorage.setItem('anaes_chat_intro_v37_23','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
   }
   rememberOnboardingProfile();var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)localStorage.setItem('anaes_my_name',select.value);var draft=onboardingProfileDraft;if((draft||pendingProfilePhoto)&&profileFeatureAvailable&&navigator.onLine){populateAccountSheet();if(draft){byId('profileName').value=draft.name.trim();byId('profileJobTitle').value=draft.title.trim()}updateProfileSaveState();if(!byId('saveProfileBtn').classList.contains('hidden'))await saveProfile()}
-  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_22','1');onboardingCandidate=false;onboardingReplay=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
+  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_23','1');onboardingCandidate=false;onboardingReplay=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
 }
 
 function showOnboardingIfNeeded(){
   if(!currentUserProfile||releaseNotesQueued)return;
   var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;
   var firstUse=onboardingCandidate&&!localStorage.getItem('anaes_onboarding_complete_v34');
-  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_22');
+  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_23');
   if(!firstUse&&!needsChatIntro)return;
   onboardingChatIntro=needsChatIntro;onboardingReplay=false;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},350);
 }
