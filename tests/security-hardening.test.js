@@ -18,6 +18,7 @@ const pushFunction = fs.readFileSync(path.join(root, 'supabase', 'functions', 'n
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 const advisorHardeningMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924180000_advisor_hardening.sql'), 'utf8');
 const operationalMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924201500_operational_alerts_chat_retention.sql'), 'utf8');
+const chatPolicyFixMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
   'the third-party Supabase browser bundle must be protected by subresource integrity');
@@ -159,7 +160,9 @@ assert.match(operationalMigration, /create table if not exists public\.push_even
 assert.match(operationalMigration, /revoke all privileges on table public\.push_event_dispatches from public,anon,authenticated/, 'browser roles must not receive generic dispatch access');
 assert.match(operationalMigration, /create or replace function public\.queue_roster_push_event[\s\S]*is_shift_member\(\)[\s\S]*app_sync_state/, 'roster notification claims must require active membership and bind to a server revision');
 assert.match(operationalMigration, /revoke all on function chat_private\.prune_expired_chat_messages\(\) from public,anon,authenticated/, 'chat retention maintenance must not be callable by browser roles');
-assert.match(operationalMigration, /reply_to_message_id is null[\s\S]*replied\.conversation_id = chat_messages\.conversation_id/, 'reply targets must stay inside the authorised conversation');
+assert.match(chatPolicyFixMigration, /create or replace function chat_private\.reply_belongs_to_conversation[\s\S]*security definer[\s\S]*from public\.chat_messages m[\s\S]*m\.conversation_id=p_conversation_id/, 'reply validation must use a private definer helper instead of recursive RLS');
+assert.match(chatPolicyFixMigration, /revoke all on function chat_private\.reply_belongs_to_conversation[\s\S]*from public,anon,authenticated[\s\S]*grant execute[\s\S]*to authenticated/, 'only signed-in users may invoke the private reply validator through the policy');
+assert.doesNotMatch(chatPolicyFixMigration, /select 1[\s\S]*from public\.chat_messages replied[\s\S]*chat_messages\.reply_to_message_id/, 'schema 46 must not restore recursive chat-message policy reads');
 assert.doesNotMatch(operationalMigration, /grant all[^;\n]*(?:anon|authenticated)|disable row level security/i, 'new notification and retention infrastructure must not grant blanket browser privileges or disable RLS');
 assert.match(pushFunction, /event\.created_by !== user\.id/, 'roster notification dispatch must verify the caller created the claimed event');
 assert.match(pushFunction, /requestUserId !== user\.id/, 'access-request notification dispatch must be bound to the authenticated requester');
