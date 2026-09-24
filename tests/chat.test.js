@@ -12,9 +12,9 @@ const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const mainCss = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
-const baseMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
-const refineMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924014500_refine_chat_directory.sql'), 'utf8');
-const maturityMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924111500_chat_maturity.sql'), 'utf8');
+const baseMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924003000_secure_chat.sql'), 'utf8');
+const refineMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924014500_refine_chat_directory.sql'), 'utf8');
+const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
 
 new vm.Script(chat, { filename: 'chat.js' });
 
