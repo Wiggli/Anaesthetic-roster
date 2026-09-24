@@ -104,3 +104,65 @@ self.addEventListener('fetch', event => {
     }))
   );
 });
+
+
+self.addEventListener('push', event => {
+  event.waitUntil((async () => {
+    let payload = {};
+    try {
+      payload = event.data ? event.data.json() : {};
+    } catch (error) {
+      payload = {};
+    }
+
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const visibleClient = windows.find(client => client.visibilityState === 'visible');
+    if (visibleClient) {
+      visibleClient.postMessage({
+        type: 'CHAT_PUSH_RECEIVED',
+        conversationId: payload.conversation_id || ''
+      });
+      return;
+    }
+
+    const title = payload.title || 'Night Roster';
+    const options = {
+      body: payload.body || 'New chat message',
+      icon: new URL('./icon-192.png?v=37.23', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.23', self.registration.scope).href,
+      tag: payload.tag || 'night-roster-chat',
+      renotify: true,
+      data: {
+        url: payload.url || new URL('./?view=chat', self.registration.scope).href,
+        conversationId: payload.conversation_id || ''
+      }
+    };
+
+    await self.registration.showNotification(title, options);
+  })());
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const data = event.notification.data || {};
+    const targetUrl = data.url || new URL('./?view=chat', self.registration.scope).href;
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+    for (const client of windows) {
+      if ('focus' in client) {
+        try {
+          if ('navigate' in client) await client.navigate(targetUrl);
+        } catch (error) {}
+        await client.focus();
+        client.postMessage({
+          type: 'OPEN_CHAT_NOTIFICATION',
+          conversationId: data.conversationId || ''
+        });
+        return;
+      }
+    }
+
+    if (self.clients.openWindow) await self.clients.openWindow(targetUrl);
+  })());
+});
