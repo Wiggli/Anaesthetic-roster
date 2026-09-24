@@ -817,7 +817,7 @@ label{gap:6px;color:var(--apple-secondary);font-size:12px;font-weight:650;letter
 @keyframes onboardingContentIn{from{opacity:.35;transform:translateX(10px)}to{opacity:1;transform:none}}
 .onboardingVisual{display:grid;place-items:center;width:118px;height:118px;margin:10px auto 24px;border-radius:34px;background:var(--apple-accent-soft);color:var(--apple-accent)}
 .onboardingVisual svg{width:54px;height:54px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.welcomeVisual{box-shadow:inset 0 0 0 1px rgba(8,125,121,.08),0 18px 42px rgba(8,125,121,.12)}
+.welcomeVisual{box-shadow:inset 0 0 0 1px rgba(8,125,121,.08),0 18px 42px rgba(8,125,121,.12)}.readyVisual{background:linear-gradient(145deg,var(--apple-accent-soft),var(--apple-surface));box-shadow:inset 0 0 0 1px rgba(8,125,121,.08),0 18px 42px rgba(8,125,121,.1)}.readyVisual svg{width:58px;height:58px}
 .onboardingEyebrow{color:var(--apple-accent);font-size:11px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
 .onboardingContent h2{margin:8px auto 0;color:var(--apple-label);font-size:32px;font-weight:760;line-height:1.08;letter-spacing:-.045em}
 .onboardingContent>p{max-width:390px;margin:13px auto 0;color:var(--apple-secondary);font-size:14px;line-height:1.55}
