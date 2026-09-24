@@ -1,7 +1,7 @@
 {
   "name": "anaesthetic-night-roster",
   "private": true,
-  "version": "37.27",
+  "version": "37.28",
   "scripts": {
     "test": "node tests/roster.test.js && node tests/safety-coverage.test.js && node tests/startup-recovery.test.js && node tests/security-hardening.test.js && node tests/chat.test.js && node tests/push.test.js && node tests/health-smoke.test.js"
   }

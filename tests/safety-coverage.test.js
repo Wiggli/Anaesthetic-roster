@@ -182,11 +182,10 @@ for (const [instant, expected] of cases) assert.equal(context.operationalRosterD
 context.idx = context.startingIndex(new Date('2026-08-22T10:00:00Z'));
 assert.equal(context.automaticNightState(new Date('2026-08-22T10:00:00Z')).isCurrent, false, 'daytime must identify the next roster night, not a current shift');
 
-// Incomplete plans cannot power final outputs, and every output path uses effective().
+// Incomplete plans must remain provisional, and the visible Breaks view must derive from the effective roster.
 reset([absent('first1'), absent('first2'), absent('second1')]);
 assert.equal(context.planIsProvisional(base), true);
-assert.match(source['app-ui.js'], /function setOutputState\(base,plan\)[\s\S]*planIsProvisional\(base\)[\s\S]*button\.disabled=pending/);
-for (const fn of ['renderBreaks', 'copyBreaks', 'emailRoster']) {
+for (const fn of ['renderBreaks']) {
   const start = source['app-ui.js'].indexOf(`function ${fn}`);
   const next = source['app-ui.js'].indexOf('\nfunction ', start + 10);
   assert.match(source['app-ui.js'].slice(start, next < 0 ? undefined : next), /effective\(|applyChanges\(|allocationPreview\(/, `${fn} must derive from the effective plan`);
@@ -219,9 +218,9 @@ assert.match(source['app-ui.js'], /requestStartupSnapshot\(\)[\s\S]*get_roster_s
 assert.match(source['app-core.js'], /rememberAuthSession\(session\)[\s\S]*currentAccessToken/, 'startup must retain the current signed-in token without persisting it separately');
 assert.doesNotMatch(source['app-ui.js'], /boundRosterName|setRosterIdentity|personalUpcomingNights|exportMyCalendar/, 'removed account binding and personal calendar code must not return');
 assert.doesNotMatch(source['index.html'], /personalSchedulePanel|My upcoming nights|exportMyCalendarBtn/, 'the removed upcoming-nights interface must not return');
-assert.match(source['index.html'], /id="briefingActionsReason"[^>]*aria-live="polite"/, 'unavailable Night output actions must have a live explanatory status');
 assert.match(source['styles.css'], /button:disabled\s*\{[\s\S]*opacity:1;filter:none/, 'disabled buttons must remain readable in the final cascade');
-assert.match(source['styles.css'], /body\.dark #today \.actionPanel #copyBriefingBtn\.buttonPending:disabled/, 'dark mode must retain a dedicated readable pending-action state');
+assert.doesNotMatch(source['index.html'], /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|adminQuickGrid|data-admin-open=/, 'removed duplicate output and admin shortcut controls must stay absent');
+assert.doesNotMatch(source['app-ui.js'], /function (?:copyBriefing|copyBreaks|emailRoster|setOutputState)\(/, 'dead handlers for removed output actions must stay retired');
 
 // The final UI layer must win over historical selectors on narrow phones and in dark mode.
 const finalAppleCss = source['styles.css'].slice(source['styles.css'].lastIndexOf('/* V36.3:'));

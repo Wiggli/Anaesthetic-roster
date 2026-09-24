@@ -234,7 +234,7 @@ const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supaba
 const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -394,18 +394,18 @@ assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNight
 assert.match(ui, /requestStartupSnapshot\(\)[\s\S]*get_roster_startup_v37/, 'authorisation and shared data must use the protected single-request startup snapshot');
 assert.doesNotMatch(ui, /supa\.from\('allowed_users'\)\.select\('email,display_name,user_role,active'\)/, 'startup must not make a separate serial account request');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return localStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice');
-assert.match(html, /id="recentActivityList"[\s\S]*id="copyBriefingBtn"/, 'Night must retain recent activity and briefing actions');
-assert.match(html, /id="briefingActionsReason"[^>]*role="status"[^>]*aria-live="polite"/, 'Night must explain why briefing actions are unavailable');
+assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity');
+assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
+assert.doesNotMatch(html, /adminQuickGrid|data-admin-open=/, 'Admin Overview must not repeat the primary management tabs as shortcut buttons');
+assert.match(html, /data-admin-tab="overview"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="team"[\s\S]*data-admin-tab="access"[\s\S]*data-admin-tab="data"/, 'Admin must retain one clear set of management tabs');
 assert.match(ui, /activityType '\+esc\(item\.type\)/, 'recent activity must expose its semantic type for accessible colour styling');
 assert.match(ui, /item\.detail\?'<small class="recentActivityDetail">'\+esc\(item\.detail\)/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
 assert.match(ui, /function openActivityDetail\(item,date\)[\s\S]*No additional reason was recorded/, 'activity detail sheet must show saved context without inventing a reason');
 assert.match(ui, /data-activity-index[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
-assert.match(ui, /Available after this plan task is completed:/, 'unavailable output actions must name the task that enables them');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
 assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary\)\}/, 'inactive navigation labels must retain readable contrast');
-assert.match(css, /#copyBriefingBtn\.buttonPending\{[^}]*color:var\(--apple-secondary\)[^}]*opacity:1/, 'the unavailable briefing action must remain legible');
 assert.match(css, /button:disabled\{[\s\S]*opacity:1;filter:none;cursor:not-allowed/, 'disabled controls must remain fully legible without saturation loss');
 assert.match(css, /\.activityType\.absence[\s\S]*\.activityType\.overtime[\s\S]*\.activityType\.allocation/, 'recent activity types must retain distinct semantic colours');
 assert.match(css, /#today \.nightDateShell \.staffingCount\{margin-top:var\(--apple-control-gap\)\}/, 'the date and staffing surfaces must have deliberate separation');
@@ -418,7 +418,6 @@ assert.match(css, /body\.uiScrolled\[data-view="changes"\][\s\S]*changesScreenHe
 assert.match(css, /\.formMessage\.success:not\(:empty\)::before\{content:'✓'/, 'successful saves must provide a non-colour confirmation symbol');
 assert.match(ui, /function showButtonConfirmation\(button,restoredLabel\)[\s\S]*button\.textContent='✓ Saved'/, 'successful primary actions must acknowledge completion in place');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.view\.viewEntering[\s\S]*animation:none!important/, 'new motion must retain a reduced-motion fallback');
-assert.match(css, /#today \.actionPanel #copyBriefingBtn\.buttonPending:disabled[\s\S]*background:var\(--apple-disabled-accent-fill\)!important[\s\S]*color:var\(--apple-disabled-accent-label\)!important/, 'pending briefing actions must use the high-contrast Apple disabled-accent treatment');
 const luminance = hex => {
   const channels = hex.match(/[0-9a-f]{2}/gi).map(value => parseInt(value, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
   return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
@@ -469,7 +468,6 @@ assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide al
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
 assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use an explicit allocation review label');
-assert.match(ui, /button.disabled=pending/, 'Break output actions must be disabled until the plan is complete');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
 assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');

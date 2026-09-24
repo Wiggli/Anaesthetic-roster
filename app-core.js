@@ -1,11 +1,10 @@
-/* Anaesthetic Night Roster V37.27 core and roster foundation. */
+/* Anaesthetic Night Roster V37.28 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
-var EMAIL_RECIPIENTS = [];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.27';
+var APP_VERSION = '37.28';
 var EXPECTED_SCHEMA_VERSION = 44;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
@@ -32,7 +31,7 @@ var activeAdminTab='overview';
 var adminHealthState=null;
 var adminHealthLoadedAt=0;
 var adminHealthLoading=false;
-var appSettings={id:1,email_recipients:EMAIL_RECIPIENTS.slice(),shift_start:'19:00',shift_end:'07:00'};
+var appSettings={id:1,email_recipients:[],shift_start:'19:00',shift_end:'07:00'};
 var schemaVersion=0;
 var nightPlanStatuses={};
 var nightRoleOverrides={};
