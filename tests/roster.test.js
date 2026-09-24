@@ -349,7 +349,7 @@ assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-19
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
 assert.match(html, /id="updateBanner"[\s\S]*id="openUpdateDetailsBtn"[\s\S]*id="laterUpdateBtn"[\s\S]*id="applyUpdateBtn"/, 'the update notice must offer details, deferral and explicit installation');
 assert.match(html, /id="updateDetails"[\s\S]*id="updateChangesList"[\s\S]*Your shared roster data stays intact[\s\S]*id="laterUpdateSheetBtn"[\s\S]*id="applyUpdateSheetBtn"/, 'the update sheet must explain changes, data safety and both choices');
-assert.match(ui, /function showUpdate\(registration\)[\s\S]*sessionStorage\.getItem\('anaes_update_later'\)[\s\S]*loadPendingUpdateMeta/, 'an update must remain passive and respect session deferral');
+assert.match(ui, /async function showUpdate\(registration\)[\s\S]*await loadPendingUpdateMeta\(\)[\s\S]*sessionStorage\.getItem\('anaes_update_later'\)[\s\S]*!updateIsAutomatic\(\)/, 'update discovery must load its policy first while important updates still respect session deferral');
 assert.doesNotMatch(ui, /function showUpdate\(registration\)[^}]*showModal/, 'finding an update must never open a modal automatically');
 assert.match(ui, /fetch\('\.\/release\.json\?check='\+Date\.now\(\),\{cache:'no-store'/, 'incoming release notes must be checked without a stale HTTP cache');
 assert.match(sw, /requestUrl\.pathname\.endsWith\('\/release\.json'\)[\s\S]*fetch\(event\.request, \{ cache: 'no-store' \}\)[\s\S]*caches\.match\('\.\/release\.json'\)/, 'release metadata must use network-first delivery with an offline fallback');
