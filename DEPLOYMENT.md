@@ -4,7 +4,7 @@ The Anaesthetic Night Roster is released through the repository's GitHub workflo
 
 ## Pull request
 
-1. Codex starts from the latest `main`, creates a focused non-`main` branch, makes the requested changes, and runs `npm test`.
+1. Codex starts from the latest `main`, creates a focused non-`main` branch, makes the requested changes, and runs `npm ci`, `npm test` and `npm run build`.
 2. Codex commits and pushes the branch, then opens a pull request containing the change summary, test evidence, schema/deployment impact, and relevant manual verification notes.
 3. For pull requests targeting `main`, GitHub Actions runs the automated test job. Migration and deployment jobs do not run for pull request events.
 4. After all required reviews and checks pass, configured auto-merge may merge the pull request. A maintainer may also merge it through the normal protected-branch process.
@@ -13,9 +13,9 @@ The Anaesthetic Night Roster is released through the repository's GitHub workflo
 
 A push to `main` starts the ordered production workflow:
 
-1. Run `npm test`.
+1. Run `npm ci`, `npm test` and `npm run build`.
 2. If tests pass, validate and apply the checked-in timestamped migrations from `supabase/migrations/*.sql` with the Supabase CLI.
-3. If migrations succeed, copy only the explicit production allow-list into the `dist` artifact and deploy it to GitHub Pages.
+3. If migrations succeed, build the `dist` artifact with Vite and deploy it to GitHub Pages. `vite.config.mts` explicitly includes only the reviewed legacy shell files and generated assets.
 4. Verify over HTTPS that the deployed HTML, both application scripts, service worker, manifest, cache name, and icon version all match the expected application version.
 
 The migration and GitHub Pages jobs are restricted to pushes to `main` or a manual recovery run explicitly dispatched from `main`; they never deploy a pull request branch. A manual recovery run uses the same test → migration → deployment dependencies. A failed test or migration prevents later deployment stages.
