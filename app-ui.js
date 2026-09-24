@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.31 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.32 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -51,12 +51,14 @@ var changedSinceSession={};
 var lastFailedAction=null;
 var scrollChromeFrame=null;
 var pendingUpdateMeta=null;
+var pwaStandalone=false;
 var sharedLoadFailureStage='';
 var sharedLoadFailureCode='';
 var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.32',date:'24 Sep 2026',title:'Premium PWA experience',changes:['The operating-system splash now hands off to the exact Night Roster app icon on the same first-paint background, so the static startup frame appears to come alive instead of jumping into a second unrelated loader.','Installation guidance now adapts to iPhone, iPad, Android and already-installed mode, with Home Screen installation presented as a one-time step and future releases handled by the PWA update system.','Installed-app badges now reflect unread Chat and administrator attention where the platform supports the Badging API, while background notifications can show a generic badge until the exact count is refreshed.','Night and Chat are available as app shortcuts on supporting platforms, notification deep links remain routed to the exact conversation, roster night or administrator access screen, and standalone mode hides browser-only install actions.','Minor releases can use quiet automatic-on-reopen updates while important releases retain the full review-and-update sheet; safe areas, keyboard handling, first-paint theme and touch chrome have been refined without changing roster or Supabase behaviour.']},
   {version:'37.31',date:'24 Sep 2026',title:'Cinematic launch and refined onboarding',changes:['Cold launch now uses a staged cinematic reveal that follows the real roster-loading state instead of adding a fake loading delay, then hands off smoothly into the signed-in app or sign-in screen.','First-use onboarding now uses calmer directional transitions, richer visual hierarchy and a dedicated current Chat page covering Team chat, private messages, @mentions, replies, privacy-safe notifications and 14-day retention.','Existing users receive the refreshed Chat introduction once, while replaying the guide from Account still shows the complete onboarding journey.','Normal tab switching no longer animates the whole view, keeping Night, Changes, Breaks and Chat stable while motion is reserved for launch, onboarding, sheets and touch feedback.','Buttons, inputs, grouped surfaces, dark mode and persistent navigation receive a restrained native-style polish with full reduced-motion fallbacks.']},
   {version:'37.30',date:'24 Sep 2026',title:'Reliable chat sends and clearer night wording',changes:['Team and private chat sends no longer fail because reply validation recursively re-enters the chat message policy. Successfully saved messages stay sent even if read-state or push-notification housekeeping has a separate problem.','Your night now says Tonight, Current night, Next night or Selected night according to the date actually being viewed, so a future roster night is no longer described as tonight.','Changes, allocation, break guidance and night-only role wording now refer to the selected night instead of assuming the selected date is today.','The verified roster rotation, staffing rules, breaks, chat privacy, 14-day retention and notification preferences remain unchanged.']},
   {version:'37.29',date:'24 Sep 2026',title:'Operational alerts and focused chat',changes:['Roster changes can now send optional privacy-safe notifications that open the affected night directly.','Administrators get a compact attention badge for access requests, selected-night actions and roster publication, plus a privacy-safe alert when someone requests access.','Anaesthetic Team now supports @mentions with targeted alerts, while Team and private chats can reply to a specific message with a compact quote.','Chat messages are retained for 14 days and then removed automatically by the server.','A lightweight real-browser smoke suite now checks mobile navigation and dark mode alongside the existing regression tests.']},
@@ -351,9 +353,14 @@ function restoreOfflineSnapshot(){
   }catch(error){console.error('Saved roster could not be restored',error);return false}
 }
 
+function isStandaloneApp(){return !!(window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))}
 function installGuideSteps(){
-  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),steps=ios?['Open this page in Safari.','Tap the Share button.','Choose Add to Home Screen, then tap Add.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home screen.'];
-  return'<div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>';
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),android=/android/i.test(navigator.userAgent),standalone=isStandaloneApp(),steps=[],label='';
+  if(standalone){label='Night Roster is already installed on this device.';steps=['Open it from your Home Screen or app launcher.','Updates are checked automatically and are applied safely through the installed PWA.'];}
+  else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
+  else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
+  else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.32" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
