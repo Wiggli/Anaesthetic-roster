@@ -1040,7 +1040,7 @@ function renderChanges(base){
   if(plan.requiresCoverageChoice)summary='<b>'+plan.count+' nurses working this night</b><div class="time">Choose and save the Reliever’s theatre role first. The remaining positions will then appear for overtime nurses.</div>';
   else if(plan.requiresSeventhDecision)summary='<b>Seventh-nurse decision required</b><div class="time">Review the proposed move below. Your choice determines which allocation the overtime nurse will fill.</div>';
   else if(!overtime.length)summary=workflowHasManualPlan(base)?'<b>No allocation decision needed</b><div class="time">This night’s roles are calculated. Review them before sharing the staffing change.</div>':'<b>No allocation changes</b><div class="time">This night’s roles are calculated automatically.</div>';
-  else if(plan.unresolved.length)summary='<b>'+plan.count+' nurses working tonight</b><div class="time">'+plan.unresolved.length+' required allocation'+(plan.unresolved.length===1?' remains':'s remain')+' to be decided.</div>';
+  else if(plan.unresolved.length)summary='<b>'+plan.count+' nurses working this night</b><div class="time">'+plan.unresolved.length+' required allocation'+(plan.unresolved.length===1?' remains':'s remain')+' to be decided.</div>';
   else if(extras.length)summary='<b>Core allocations finalised</b><div class="time">'+extras.length+' additional nurse'+(extras.length===1?' remains':'s remain')+' available as required.</div>';
   else summary='<b>Required allocations finalised</b><div class="time">The reliever and overtime allocations are complete.</div>';
   byId('allocationSummary').innerHTML=summary+seventhInfo;
