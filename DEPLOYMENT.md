@@ -14,7 +14,7 @@ The Anaesthetic Night Roster is released through the repository's GitHub workflo
 A push to `main` starts the ordered production workflow:
 
 1. Run `npm test`.
-2. If tests pass, prepare and apply all timestamped `supabase-migration-*.sql` files with the Supabase CLI.
+2. If tests pass, validate and apply the checked-in timestamped migrations from `supabase/migrations/*.sql` with the Supabase CLI.
 3. If migrations succeed, copy only the explicit production allow-list into the `dist` artifact and deploy it to GitHub Pages.
 4. Verify over HTTPS that the deployed HTML, both application scripts, service worker, manifest, cache name, and icon version all match the expected application version.
 
