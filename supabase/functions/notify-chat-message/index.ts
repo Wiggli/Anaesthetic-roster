@@ -390,26 +390,19 @@ Deno.serve(async (req: Request) => {
       const claim = await claimGenericDispatch(admin, eventKey, user.id);
       if (claim.duplicate) return json({ ok: true, duplicate: true });
 
-      const { data: senderMember } = await admin
-        .from("chat_members")
-        .select("person_key")
-        .eq("user_id", user.id)
-        .eq("active", true)
-        .maybeSingle();
+      const { data: allowedRows, error: allowedError } = await admin
+        .from("allowed_users")
+        .select("email")
+        .eq("active", true);
+      if (allowedError) throw allowedError;
 
-      if (!senderMember?.person_key) {
-        await finishGenericDispatch(admin, eventKey, "failed", 0, 0);
-        return json({ error: "Active roster membership required" }, 403);
-      }
+      const { data: usersPage, error: usersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      if (usersError) throw usersError;
 
-      const { data: members, error: memberError } = await admin
-        .from("chat_members")
-        .select("user_id,person_key")
-        .eq("active", true)
-        .neq("person_key", senderMember.person_key);
-      if (memberError) throw memberError;
-
-      const recipientUserIds = Array.from(new Set((members || []).map((row) => row.user_id)));
+      const allowedEmails = new Set((allowedRows || []).map((row) => String(row.email || "").toLocaleLowerCase()));
+      const recipientUserIds = (usersPage?.users || [])
+        .filter((candidate) => candidate.id !== user.id && candidate.email && allowedEmails.has(candidate.email.toLocaleLowerCase()))
+        .map((candidate) => candidate.id);
       const { subscriptions, preferences, config } = await loadPushData(admin, recipientUserIds, "roster_enabled");
       if (!config) throw new Error("Push server configuration missing");
 
