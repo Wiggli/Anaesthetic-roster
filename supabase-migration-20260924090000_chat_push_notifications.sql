@@ -51,6 +51,9 @@ create table if not exists public.push_server_config (
   updated_at timestamptz not null default now()
 );
 
+create index if not exists push_dispatches_sender_id_idx
+  on public.push_dispatches(sender_id);
+
 alter table public.push_subscriptions enable row level security;
 alter table public.push_preferences enable row level security;
 alter table public.push_dispatches enable row level security;
@@ -69,6 +72,22 @@ grant select,insert,update,delete on table public.push_subscriptions to service_
 grant select,insert,update,delete on table public.push_preferences to service_role;
 grant select,insert,update,delete on table public.push_dispatches to service_role;
 grant select on table public.push_server_config to service_role;
+
+drop policy if exists "No browser access to push dispatches" on public.push_dispatches;
+create policy "No browser access to push dispatches"
+on public.push_dispatches
+for all
+to anon,authenticated
+using (false)
+with check (false);
+
+drop policy if exists "No browser access to push server config" on public.push_server_config;
+create policy "No browser access to push server config"
+on public.push_server_config
+for all
+to anon,authenticated
+using (false)
+with check (false);
 
 drop policy if exists "Members can view own push subscriptions" on public.push_subscriptions;
 create policy "Members can view own push subscriptions"
