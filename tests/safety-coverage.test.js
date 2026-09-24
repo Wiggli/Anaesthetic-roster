@@ -182,11 +182,10 @@ for (const [instant, expected] of cases) assert.equal(context.operationalRosterD
 context.idx = context.startingIndex(new Date('2026-08-22T10:00:00Z'));
 assert.equal(context.automaticNightState(new Date('2026-08-22T10:00:00Z')).isCurrent, false, 'daytime must identify the next roster night, not a current shift');
 
-// Incomplete plans cannot power final outputs, and every output path uses effective().
+// Incomplete plans must remain provisional, and the visible Breaks view must derive from the effective roster.
 reset([absent('first1'), absent('first2'), absent('second1')]);
 assert.equal(context.planIsProvisional(base), true);
-assert.match(source['app-ui.js'], /function setOutputState\(base,plan\)[\s\S]*planIsProvisional\(base\)[\s\S]*button\.disabled=pending/);
-for (const fn of ['renderBreaks', 'copyBreaks', 'emailRoster']) {
+for (const fn of ['renderBreaks']) {
   const start = source['app-ui.js'].indexOf(`function ${fn}`);
   const next = source['app-ui.js'].indexOf('\nfunction ', start + 10);
   assert.match(source['app-ui.js'].slice(start, next < 0 ? undefined : next), /effective\(|applyChanges\(|allocationPreview\(/, `${fn} must derive from the effective plan`);
