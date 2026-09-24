@@ -58,7 +58,7 @@ assert.doesNotMatch(chatRefineMigration, /alter table public\.user_profiles|crea
 assert.match(pushMigration, /revoke all privileges on table public\.push_server_config from public,anon,authenticated/, 'VAPID server configuration must be inaccessible to browser roles');
 assert.match(pushMigration, /revoke all privileges on table public\.push_dispatches from public,anon,authenticated/, 'push dispatch records must remain server-only');
 assert.match(pushMigration, /user_id=\(select auth\.uid\(\)\)[\s\S]*is_shift_member/, 'push subscription reads must remain owner and roster-member scoped');
-assert.match(pushMigration, /security definer[\s\S]*register_push_subscription[\s\S]*auth\.uid\(\)/i, 'push subscription registration must bind to the authenticated user');
+assert.match(pushMigration, /register_push_subscription[\s\S]*security definer[\s\S]*auth\.uid\(\)/i, 'push subscription registration must bind to the authenticated user');
 assert.doesNotMatch(pushMigration, /BFF3dFdZ|BqB7H_jy/, 'the VAPID keypair must never be committed to a database migration');
 assert.doesNotMatch(pushClient, /vapid_private|privateKey|BqB7H_jy/i, 'the browser push client must never contain the VAPID private key');
 assert.match(pushFunction, /message\.sender_id !== user\.id/, 'notification dispatch must verify that the caller sent the message');
