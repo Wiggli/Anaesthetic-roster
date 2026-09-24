@@ -1,20 +1,20 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-23';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-24';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.23',
-  './theme-bootstrap.js?v=37.23',
-  './app-core.js?v=37.23',
-  './app-ui.js?v=37.23',
-  './manifest.webmanifest?v=37.23',
+  './styles.css?v=37.24',
+  './theme-bootstrap.js?v=37.24',
+  './app-core.js?v=37.24',
+  './app-ui.js?v=37.24',
+  './manifest.webmanifest?v=37.24',
   './release.json',
-  './icon-192.png?v=37.23',
-  './icon-512.png?v=37.23',
-  './icon-maskable-192.png?v=37.23',
-  './icon-maskable-512.png?v=37.23',
-  './apple-touch-icon.png?v=37.23',
-  './anaesthesia-header.jpg?v=37.23',
-  './mater-dei-logo.png?v=37.23'
+  './icon-192.png?v=37.24',
+  './icon-512.png?v=37.24',
+  './icon-maskable-192.png?v=37.24',
+  './icon-maskable-512.png?v=37.24',
+  './apple-touch-icon.png?v=37.24',
+  './anaesthesia-header.jpg?v=37.24',
+  './mater-dei-logo.png?v=37.24'
 ];
 
 function isSupabaseLibrary(requestUrl) {
@@ -128,8 +128,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || 'New chat message',
-      icon: new URL('./icon-192.png?v=37.23', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=37.23', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=37.24', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.24', self.registration.scope).href,
       tag: payload.tag || 'night-roster-chat',
       renotify: true,
       data: {
