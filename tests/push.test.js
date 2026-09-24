@@ -47,7 +47,9 @@ assert.match(push, /client\.functions\.invoke\('notify-chat-message'/, 'message 
 assert.doesNotMatch(push, /vapid_private|privateKey|service_role|SUPABASE_SERVICE_ROLE/i, 'browser push code must not contain server secrets');
 
 const dispatchCalls = chat.match(/window\.dispatchChatPush\(result\.data\.id\)/g) || [];
-assert.equal(dispatchCalls.length, 2, 'both group and private sends must trigger push dispatch after the message is saved');
+assert.equal(dispatchCalls.length, 1, 'successful sends must dispatch push from the shared completion path exactly once');
+assert.match(chat, /chatSendTeamMessage[\s\S]*chatCompleteSend\(result,'team'\)/, 'group sends must use the shared push-aware completion path');
+assert.match(chat, /chatSendPrivateMessage[\s\S]*chatCompleteSend\(result,'private'\)/, 'private sends must use the shared push-aware completion path');
 assert.match(chat, /window\.openChatFromPush=chatOpenFromPush/, 'notification taps must be able to open the matching chat conversation');
 
 assert.match(sw, /self\.addEventListener\('push'/, 'service worker must receive background push events');
