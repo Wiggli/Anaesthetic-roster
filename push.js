@@ -278,7 +278,7 @@ function pushBind(){
   var promptLater=pushEl('pushPromptLaterBtn');if(promptLater)promptLater.onclick=pushDismissPrompt;
   var promptDialog=pushPromptDialog();if(promptDialog&&typeof promptDialog.addEventListener==='function')promptDialog.addEventListener('cancel',function(event){event.preventDefault();pushDismissPrompt()});
   var disable=pushEl('pushDisableBtn');if(disable)disable.onclick=pushDisable;
-  var team=pushEl('pushTeamToggle');if(team)team.onchange=function(){pushSavePreference('team_enabled',team.checked)};
+  var team=pushEl('pushTeamToggle');if(team)team.onchange=function(){pushMuteTeam(team.checked?'off':'until_on')};
   var priv=pushEl('pushPrivateToggle');if(priv)priv.onchange=function(){pushSavePreference('private_enabled',priv.checked)};
   Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(button){button.onclick=function(){pushMuteTeam(button.getAttribute('data-push-mute'))}});
   if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',function(event){
