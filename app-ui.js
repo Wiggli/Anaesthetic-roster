@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.21 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.22 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -34,6 +34,7 @@ var realtimeSubscribed=false;
 var onboardingStep=0;
 var onboardingCandidate=!localStorage.getItem('anaes_onboarding_complete_v34');
 var onboardingReplay=false;
+var onboardingChatIntro=false;
 var onboardingProfileDraft=null;
 var releaseNotesQueued=false;
 var pendingProfilePhoto=null;
@@ -55,6 +56,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.22',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.21',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.20',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.19',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
@@ -308,7 +310,7 @@ function finishLaunch(ready){
 
 function rememberOnboardingProfile(){var name=byId('onboardingProfileName'),title=byId('onboardingProfileTitle');if(name||title)onboardingProfileDraft={name:name?name.value:'',title:title?title.value:''}}
 
-function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;byId('accountSheet').close();onboardingReplay=true;onboardingStep=0;renderOnboarding();dialog.showModal()}
+function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;byId('accountSheet').close();onboardingChatIntro=false;onboardingReplay=true;onboardingStep=0;renderOnboarding();dialog.showModal()}
 
 function saveOfflineSnapshot(){
   try{localStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date().toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion}))}catch(error){}
@@ -421,11 +423,17 @@ function showRecordActions(kind,id,name){
   byId('recordActionTitle').textContent=name;byId('recordActionDetail').textContent=absence?'Recorded absence':'Confirmed overtime nurse';edit.classList.toggle('hidden',!absence);edit.onclick=function(){dialog.close();editNightChange(id)};remove.textContent=absence?'Remove absence':'Remove overtime nurse';remove.onclick=function(){dialog.close();if(absence)removeNightChange(id);else removeOvertime(id)};if(!dialog.open)dialog.showModal();
 }
 
+function onboardingChatPage(){
+  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'</span><div class="chatOnboardingLines"><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team chat</span><h2 id="onboardingTitle">Coordinate without changing the roster.</h2><p>Use Anaesthetic Team for normal roster discussion and private chat for one-to-one messages. Chat never changes Night, Changes or Breaks automatically.</p><div class="onboardingFeatureList"><div><b>Team</b><span>One shared group chat for roster coordination</span></div><div><b>Private</b><span>One-to-one messages with registered roster members</span></div><div><b>Separate</b><span>Any agreed swap is still entered through the roster afterwards</span></div></div><p class="onboardingFootnote">Staff coordination only. Do not share patient-identifiable or clinical information in chat.</p>';
+}
+
 function onboardingPages(){
+  if(onboardingChatIntro)return[onboardingChatPage()];
   var accountName=currentUserProfile&&currentUserProfile.display_name||'',selected=myName()||TEAM.find(function(name){return sameNurse(name,accountName)})||'',profile=currentPrivateProfile||{},preferred=onboardingProfileDraft?onboardingProfileDraft.name:profile.profile_name||'',roleTitle=onboardingProfileDraft?onboardingProfileDraft.title:profile.job_title||'',avatar=pendingProfilePhotoUrl||profileAvatarUrl,profileInitial=(preferred||selected||accountName||'?').charAt(0).toUpperCase(),passkeyAction=passkeySupported()?'<button type="button" class="soft onboardingPasskeyButton" id="onboardingPasskeyBtn">Set up a passkey now</button><div id="onboardingPasskeyMessage" class="onboardingPasskeyMessage" role="status" aria-live="polite"></div>':'<div class="onboardingCallout"><b>Password sign-in remains available</b><span>This browser does not currently offer passkey setup.</span></div>',introEyebrow=onboardingReplay?'App guide':'Welcome',introTitle=onboardingReplay?'A quick tour of Night Roster.':'Your night comes first.';
   return[
     '<div class="onboardingVisual welcomeVisual" aria-hidden="true"><span class="onboardingMoon">'+interfaceIcon('night')+'</span></div><span class="onboardingEyebrow">'+introEyebrow+'</span><h2 id="onboardingTitle">'+introTitle+'</h2><p>Night Roster opens with your own allocation, followed by the live staffing picture for the whole team.</p><div class="onboardingCallout"><b>One shared roster</b><span>Staffing updates appear across authorised devices.</span></div>',
     '<div class="onboardingVisual workflowVisual" aria-hidden="true"><span>'+interfaceIcon('staffing')+'</span><i></i><span>'+interfaceIcon('overtime')+'</span><i></i><span>'+interfaceIcon('task')+'</span></div><span class="onboardingEyebrow">When plans change</span><h2 id="onboardingTitle">Everything exceptional stays together.</h2><p>The standard six-nurse plan is automatic. Use Changes to record an absence, add confirmed overtime, resolve an outstanding allocation or save an agreed change for that night.</p><div class="onboardingFeatureList"><div><b>Night</b><span>Your allocation and the whole team</span></div><div><b>Changes</b><span>Absences, overtime and agreed exceptions</span></div><div><b>Breaks</b><span>The current break arrangement</span></div></div>',
+    onboardingChatPage(),
     '<div class="onboardingVisual identityVisual" aria-hidden="true"><span>'+(selected?esc(selected.charAt(0).toUpperCase()):'?')+'</span></div><span class="onboardingEyebrow">Your roster identity</span><h2 id="onboardingTitle">Find your night instantly.</h2><p>Choose the exact name used on the roster so the app can highlight your allocation without altering any shared information.</p><label class="onboardingNameLabel"><span>Roster name</span><select id="onboardingNamePick"><option value="">Choose your name</option>'+TEAM.map(function(name){return'<option value="'+esc(name)+'" '+(sameNurse(name,selected)?'selected':'')+'>'+esc(professionalName(name))+'</option>'}).join('')+'</select></label><p class="onboardingFootnote">This remains separate from the preferred name shown on your personal dashboard.</p>',
     '<div class="onboardingProfileSetup"><button type="button" class="onboardingProfilePhoto" id="onboardingPhotoBtn" aria-label="Choose profile photo">'+(avatar?'<img id="onboardingPhotoPreview" src="'+esc(avatar)+'" alt="">':'<span id="onboardingPhotoInitial">'+esc(profileInitial)+'</span>')+'<i aria-hidden="true">+</i></button><div><span class="onboardingEyebrow">Optional profile</span><h2 id="onboardingTitle">Personalise your dashboard.</h2><p>Add the name, role title or photograph you want to see in Your night. Official roster names remain unchanged.</p></div></div><div class="onboardingProfileFields"><label><span>Preferred name</span><input id="onboardingProfileName" maxlength="60" autocomplete="name" value="'+esc(preferred)+'" placeholder="How the app greets you"></label><label><span>Role title <small>(optional)</small></span><input id="onboardingProfileTitle" maxlength="80" autocomplete="organization-title" value="'+esc(roleTitle)+'" placeholder="For example, Anaesthetic Nurse"></label></div><p class="onboardingFootnote">You can leave these blank and return to them later from Account.</p>',
     '<div class="onboardingVisual passkeyVisual" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"></circle><path d="M12 12h9M17 12v3M20 12v2"></path></svg></div><span class="onboardingEyebrow">Optional faster sign-in</span><h2 id="onboardingTitle">Your face, fingerprint or PIN stays private.</h2><p>A passkey lets you unlock Night Roster in the way you already unlock your phone. Night Roster never receives your biometric information, and password sign-in remains available.</p><div class="onboardingPrivacy"><b>Your biometric information stays on your device</b><span>Your phone confirms the sign-in without sharing how you unlocked it.</span></div>'+passkeyAction
@@ -436,8 +444,8 @@ function renderOnboarding(){
   var dialog=byId('onboardingDialog'),content=byId('onboardingContent'),pages=onboardingPages();if(!dialog||!content)return;
   onboardingStep=Math.max(0,Math.min(pages.length-1,onboardingStep));content.innerHTML=pages[onboardingStep];content.classList.remove('onboardingContentIn');void content.offsetWidth;content.classList.add('onboardingContentIn');
   byId('onboardingProgress').innerHTML=pages.map(function(_,index){return'<span class="'+(index===onboardingStep?'active':'')+'" aria-hidden="true"></span>'}).join('');
-  byId('onboardingStepLabel').textContent=(onboardingStep+1)+' of '+pages.length;
-  byId('onboardingBackBtn').classList.toggle('hidden',onboardingStep===0);byId('onboardingNextBtn').textContent=onboardingStep===pages.length-1?'Open my night':'Continue';byId('onboardingSkipBtn').textContent=onboardingReplay?'Close':'Skip';byId('onboardingSkipBtn').classList.toggle('hidden',onboardingStep===pages.length-1);
+  byId('onboardingStepLabel').textContent=onboardingChatIntro?'New feature':(onboardingStep+1)+' of '+pages.length;
+  byId('onboardingBackBtn').classList.toggle('hidden',onboardingChatIntro||onboardingStep===0);byId('onboardingNextBtn').textContent=onboardingChatIntro?'Got it':onboardingStep===pages.length-1?'Open my night':'Continue';byId('onboardingSkipBtn').textContent=onboardingReplay?'Close':'Skip';byId('onboardingSkipBtn').classList.toggle('hidden',onboardingChatIntro||onboardingStep===pages.length-1);
   var select=byId('onboardingNamePick');if(select)select.onchange=function(){if(select.value)localStorage.setItem('anaes_my_name',select.value);else localStorage.removeItem('anaes_my_name');var visual=document.querySelector('.identityVisual span');if(visual)visual.textContent=select.value?select.value.charAt(0).toUpperCase():'?'};
   var passkeyButton=byId('onboardingPasskeyBtn');if(passkeyButton)passkeyButton.onclick=addOnboardingPasskey;
   var photoButton=byId('onboardingPhotoBtn');if(photoButton)photoButton.onclick=function(){byId('profilePhotoInput').click()};
@@ -446,18 +454,26 @@ function renderOnboarding(){
 async function addOnboardingPasskey(){var button=byId('onboardingPasskeyBtn'),message=byId('onboardingPasskeyMessage');if(!button||!message)return;button.disabled=true;button.textContent='Follow your phone’s instructions…';message.textContent='Your device will handle the secure identity check.';try{var result=await supa.auth.registerPasskey();if(result.error)throw result.error;if(result.data&&result.data.id)await supa.auth.passkey.update({passkeyId:result.data.id,friendlyName:'Night Roster on '+(navigator.platform||'this device')});button.textContent='Passkey added';message.textContent='You can use it next time, while your password remains available.';toast('Passkey added')}catch(error){button.disabled=false;button.textContent='Set up a passkey now';message.textContent=/cancel|not allowed/i.test(error.message||'')?'Setup was cancelled. You can continue and add it later from your account.':/disabled|not enabled/i.test(error.message||'')?'Passkeys are not enabled for this roster yet. Continue using your password for now.':'The passkey could not be added. You can continue using your password.'}}
 
 async function finishOnboarding(){
+  if(onboardingChatIntro){
+    localStorage.setItem('anaes_chat_intro_v37_22','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
+  }
   rememberOnboardingProfile();var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)localStorage.setItem('anaes_my_name',select.value);var draft=onboardingProfileDraft;if((draft||pendingProfilePhoto)&&profileFeatureAvailable&&navigator.onLine){populateAccountSheet();if(draft){byId('profileName').value=draft.name.trim();byId('profileJobTitle').value=draft.title.trim()}updateProfileSaveState();if(!byId('saveProfileBtn').classList.contains('hidden'))await saveProfile()}
-  localStorage.setItem('anaes_onboarding_complete_v34','1');onboardingCandidate=false;onboardingReplay=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
+  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_22','1');onboardingCandidate=false;onboardingReplay=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
 }
 
 function showOnboardingIfNeeded(){
-  if(!currentUserProfile||releaseNotesQueued||!onboardingCandidate||localStorage.getItem('anaes_onboarding_complete_v34'))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingReplay=false;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},350);
+  if(!currentUserProfile||releaseNotesQueued)return;
+  var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;
+  var firstUse=onboardingCandidate&&!localStorage.getItem('anaes_onboarding_complete_v34');
+  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_22');
+  if(!firstUse&&!needsChatIntro)return;
+  onboardingChatIntro=needsChatIntro;onboardingReplay=false;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},350);
 }
 
 function bindOnboarding(){
   var dialog=byId('onboardingDialog'),next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
-  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent='Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
-  if(dialog&&typeof dialog.addEventListener==='function')dialog.addEventListener('cancel',function(){onboardingReplay=false});
+  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingChatIntro?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
+  if(dialog&&typeof dialog.addEventListener==='function')dialog.addEventListener('cancel',function(event){if(onboardingChatIntro){event.preventDefault();finishOnboarding();return}onboardingReplay=false});
 }
 
 function installedReleaseState(){var latest=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version||'Unknown',cache=String(serviceWorkerCacheVersion||'').replace(/^anaesthetic-night-roster-v/,'').replace(/-/g,'.'),stale=cache!=='Checking…'&&cache!=='Not active'&&cache!==APP_VERSION;return{latest:latest,cache:serviceWorkerCacheVersion,stale:stale,waiting:!!(updateRegistration&&updateRegistration.waiting)}}
@@ -806,7 +822,8 @@ function interfaceIcon(type){
     pager:'<rect x="6" y="4" width="12" height="16" rx="2.5"/><path d="M9 8h6v4H9zM9 16h3M15.5 4V2"/>',
     reliever:'<circle cx="10" cy="8" r="3"/><path d="M4 19a6 6 0 0 1 12 0"/><path d="M17 10a4 4 0 0 1 3 6.5M20 13v3.5h-3.5"/>',
     overtime:'<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M18 8v6M15 11h6"/>',
-    seventh:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>'
+    seventh:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+    chat:'<path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 10h8M8 13h5"/>'
   };
   return'<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[type]||paths.task)+'</svg>';
 }
