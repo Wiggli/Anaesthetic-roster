@@ -1,12 +1,13 @@
 {
-  "version": "37.25",
+  "version": "37.26",
   "date": "24 September 2026",
-  "title": "Team chat & notifications",
-  "summary": "Add secure team messaging with optional background notifications for new chat messages.",
+  "title": "A more complete Team Chat",
+  "summary": "Refine chat reading, recovery, notifications and administration without changing the roster workflow.",
   "changes": [
-    "Anaesthetic Team provides one shared group chat for roster discussion, with private one-to-one conversations between registered roster members.",
-    "Optional message notifications can alert you to new group or private messages when Night Roster is closed or in the background.",
-    "Notification previews protect chat privacy by showing that a new message arrived without displaying the message text on the lock screen.",
-    "Chat remains separate from roster changes: any agreed swap or change must still be entered through the existing roster functions."
+    "Chat now separates days and unread messages clearly, keeps your reading position when new messages arrive and offers a New message shortcut instead of pulling you to the bottom.",
+    "Messages that fail to send stay visible with Retry, while message actions let you copy text and delete your own recently sent message without adding editing, reactions or other social features.",
+    "Notification controls now show device status, explain blocked permissions, let you mute Anaesthetic Team for one hour, for tonight or until you turn it back on, and let you remove old notification devices.",
+    "Private-chat availability updates live as roster members register, notification taps open the relevant conversation, and Chat uses a compact overview request so roster startup remains independent.",
+    "Onboarding is shorter, and administrators get privacy-safe health information for roster sync, chat registration and notification delivery without seeing private messages or notification endpoints."
   ]
 }
