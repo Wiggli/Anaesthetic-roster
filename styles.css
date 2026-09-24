@@ -1751,7 +1751,7 @@ body.dark .launchMark img{box-shadow:0 18px 48px rgba(0,0,0,.42)}
 .standaloneApp{-webkit-user-select:none;user-select:none}
 .standaloneApp input,.standaloneApp textarea,.standaloneApp select,.standaloneApp [contenteditable="true"]{-webkit-user-select:text;user-select:text}
 .standaloneApp #appHeader{padding-top:calc(9px + env(safe-area-inset-top))}
-.standaloneApp body[data-view] main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+body.standaloneApp[data-view] main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 
 .installGuideHero{display:grid;grid-template-columns:64px 1fr;gap:13px;align-items:center;margin:14px 0 8px;padding:13px;border:var(--apple-hairline) solid var(--apple-separator);border-radius:18px;background:var(--apple-surface-muted)}
 .installGuideHero img{width:64px;height:64px;border-radius:17px;box-shadow:0 8px 20px rgba(27,45,58,.1)}
@@ -1766,7 +1766,7 @@ body.dark .installGuideHero{background:var(--apple-surface-muted)}
 .updateBanner.automatic .updateBannerSummary small{max-width:390px}
 
 .keyboardVisible .bottom{opacity:0;pointer-events:none;transform:translate(-50%,calc(100% + 28px));transition:opacity 180ms ease,transform 240ms var(--cinematic-ease)}
-.keyboardVisible body[data-view] main{padding-bottom:24px}
+body.keyboardVisible[data-view] main{padding-bottom:24px}
 .keyboardVisible .toast{bottom:18px}
 .bottom{transition:opacity 180ms ease,transform 240ms var(--cinematic-ease),background-color 180ms ease,box-shadow 180ms ease}
 .bottom button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
