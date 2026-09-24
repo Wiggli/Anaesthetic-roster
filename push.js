@@ -235,7 +235,8 @@ async function pushRemoveDevice(id,endpoint){
   var client=pushClient();if(!client||!id||pushState.busy)return;
   pushSetBusy(true);
   try{
-    var result=await client.rpc('remove_my_push_device',{p_id:id});if(result.error)throw result.error;
+    var user=pushUser();if(!user)throw new Error('Authentication required');
+    var result=await client.from('push_subscriptions').delete().eq('id',id).eq('user_id',user.id);if(result.error)throw result.error;
     if(endpoint&&endpoint===pushCurrentEndpoint()&&pushState.subscription){
       try{await pushState.subscription.unsubscribe()}catch(error){}
       pushState.subscription=null;
