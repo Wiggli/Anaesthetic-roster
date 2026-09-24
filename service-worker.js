@@ -1,18 +1,18 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-28';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-29';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.28',
-  './theme-bootstrap.js?v=37.28',
-  './app-core.js?v=37.28',
-  './app-ui.js?v=37.28',
-  './manifest.webmanifest?v=37.28',
+  './styles.css?v=37.29',
+  './theme-bootstrap.js?v=37.29',
+  './app-core.js?v=37.29',
+  './app-ui.js?v=37.29',
+  './manifest.webmanifest?v=37.29',
   './release.json',
-  './icon-192.png?v=37.28',
-  './icon-512.png?v=37.28',
-  './apple-touch-icon.png?v=37.28',
-  './anaesthesia-header.jpg?v=37.28',
-  './mater-dei-logo.png?v=37.28'
+  './icon-192.png?v=37.29',
+  './icon-512.png?v=37.29',
+  './apple-touch-icon.png?v=37.29',
+  './anaesthesia-header.jpg?v=37.29',
+  './mater-dei-logo.png?v=37.29'
 ];
 
 function isSupabaseLibrary(requestUrl) {
@@ -115,24 +115,34 @@ self.addEventListener('push', event => {
 
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const visibleClient = windows.find(client => client.visibilityState === 'visible');
+    const type = payload.type || 'chat';
+    const messageType = type === 'roster'
+      ? 'ROSTER_PUSH_RECEIVED'
+      : type === 'access_request'
+      ? 'ACCESS_REQUEST_PUSH_RECEIVED'
+      : 'CHAT_PUSH_RECEIVED';
+
     if (visibleClient) {
       visibleClient.postMessage({
-        type: 'CHAT_PUSH_RECEIVED',
-        conversationId: payload.conversation_id || ''
+        type: messageType,
+        conversationId: payload.conversation_id || '',
+        rosterDate: payload.roster_date || ''
       });
       return;
     }
 
     const title = payload.title || 'Night Roster';
     const options = {
-      body: payload.body || 'New chat message',
-      icon: new URL('./icon-192.png?v=37.28', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=37.28', self.registration.scope).href,
-      tag: payload.tag || 'night-roster-chat',
+      body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
+      icon: new URL('./icon-192.png?v=37.29', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.29', self.registration.scope).href,
+      tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
-        url: payload.url || new URL('./?view=chat', self.registration.scope).href,
-        conversationId: payload.conversation_id || ''
+        type,
+        url: payload.url || new URL('./', self.registration.scope).href,
+        conversationId: payload.conversation_id || '',
+        rosterDate: payload.roster_date || ''
       }
     };
 
@@ -144,7 +154,7 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
     const data = event.notification.data || {};
-    const targetUrl = data.url || new URL('./?view=chat', self.registration.scope).href;
+    const targetUrl = data.url || new URL('./', self.registration.scope).href;
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
 
     for (const client of windows) {
@@ -154,8 +164,10 @@ self.addEventListener('notificationclick', event => {
         } catch (error) {}
         await client.focus();
         client.postMessage({
-          type: 'OPEN_CHAT_NOTIFICATION',
-          conversationId: data.conversationId || ''
+          type: 'OPEN_APP_NOTIFICATION',
+          conversationId: data.conversationId || '',
+          rosterDate: data.rosterDate || '',
+          notificationType: data.type || 'chat'
         });
         return;
       }
