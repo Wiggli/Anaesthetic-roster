@@ -1,11 +1,11 @@
 {
-  "version": "37.27",
+  "version": "37.28",
   "date": "24 September 2026",
-  "title": "Lean maintenance cleanup",
-  "summary": "Refine chat reading, recovery, notifications and administration without changing the roster workflow.",
+  "title": "Cleaner Night and Admin controls",
+  "summary": "Reduce repeated controls so Night, Breaks and roster management stay focused on the information and actions that matter.",
   "changes": [
-    "The installed app now reuses the same reviewed icons for standard and maskable purposes instead of shipping duplicate image files, reducing unnecessary app-shell data without changing appearance.",
-    "Outdated repository audit snapshots and superseded setup records were removed from the current source tree while remaining available in Git history.",
-    "Roster calculations, staffing changes, breaks, Team Chat, notifications, authentication and Supabase data are unchanged."
+    "Night and Breaks now focus on the live roster information itself, with the repeated copy-briefing, copy-breaks and email-roster controls removed.",
+    "Roster management keeps the useful Publish, Team, Access and Data sections, while Overview no longer repeats those same destinations as a second row of shortcut buttons.",
+    "Unused frontend code that existed only for the removed copy and email actions has been retired; roster calculations, staffing changes, breaks, chat, notifications and Supabase data remain unchanged."
   ]
 }
