@@ -16,28 +16,36 @@ new vm.Script(chat, { filename: 'chat.js' });
 
 assert.match(html, /id="chat" class="view hidden"/, 'chat must remain an isolated app view');
 assert.match(html, /data-v="chat"[^>]*>[\s\S]*?<span>Chat<\/span>[\s\S]*?id="chatUnreadBadge"/, 'bottom navigation must expose Chat with an unread badge');
-assert.match(html, /id="chatTeamCard"[\s\S]*Anaesthetic Team/, 'Anaesthetic Team must be the primary group-chat card');
-assert.match(html, /id="chatTeamPreview"/, 'team card must surface the latest group message');
-assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversations"/, 'private conversations must be visually separate from the team room');
+assert.match(html, /class="chatTeamConsole"[\s\S]*Anaesthetic Team/, 'Anaesthetic Team must be displayed as the main chat transcript');
+assert.match(html, /id="chatTeamMessages"/, 'team chat must expose a scrolling multi-message transcript');
+assert.match(html, /id="chatTeamComposer"[\s\S]*id="chatTeamInput"/, 'group messages must be sent directly from the Chat home screen');
+assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversations"/, 'private conversations must remain visually separate from the team transcript');
+assert.match(html, /One-to-one messages with nurses in the current roster/, 'private messaging must explicitly follow roster membership');
 assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifiable or clinical information in chat\./, 'chat must retain the patient-information safety notice');
-assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'chat must be plain text with a bounded message length');
+assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
+assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.20/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.20/, 'chat client must be versioned with the app');
+assert.match(html, /chat\.css\?v=37\.21/, 'chat styling must be versioned with the app');
+assert.match(html, /chat\.js\?v=37\.21/, 'chat client must be versioned with the app');
 
-assert.match(chatCss, /grid-auto-rows:max-content/, 'chat home rows must not stretch the safety notice vertically');
-assert.match(chatCss, /\.chatTeamCard\{[\s\S]*min-height:150px/, 'the team group must be a prominent hero card');
-assert.match(chatCss, /\.chatSafetyNotice\{[\s\S]*padding:9px 11px/, 'the safety notice must remain compact');
+assert.match(chatCss, /\.chatTeamConsole\{[\s\S]*minmax\(250px,330px\)/, 'team transcript must provide a substantial scrolling message area');
+assert.match(chatCss, /\.chatTeamLine\{[\s\S]*grid-template-columns:auto auto minmax\(0,1fr\)/, 'team messages must render as compact continuous chat lines rather than bubbles');
+assert.match(chatCss, /\.chatSafetyNotice\{[\s\S]*padding:8px 10px/, 'the safety notice must remain compact');
+assert.match(chatCss, /\.chatMemberChoice:disabled\{[\s\S]*opacity:1/, 'unregistered roster members must stay legible rather than looking broken');
 assert.match(chatCss, /body\.dark/, 'chat must include dark-mode styling');
 
-assert.match(chat, /var PAGE_SIZE=40;/, 'chat must page messages instead of loading full history');
-assert.match(chat, /\.limit\(PAGE_SIZE\)/, 'recent and older message queries must use the page size');
-assert.match(chat, /\.lt\('id',chatState\.oldestMessageId\)/, 'older messages must use keyset pagination');
-assert.match(chat, /channel\('anaesthetic-chat-v2-'/, 'chat must use a realtime channel separate from roster sync');
+assert.match(chat, /var PRIVATE_PAGE_SIZE=40;/, 'private chat must page messages instead of loading full history');
+assert.match(chat, /var TEAM_PAGE_SIZE=30;/, 'team chat must load a bounded recent transcript');
+assert.match(chat, /\.limit\(TEAM_PAGE_SIZE\)/, 'team message history must be paginated');
+assert.match(chat, /\.lt\('id',chatState\.teamOldestMessageId\)/, 'older team messages must use keyset pagination');
+assert.match(chat, /\.limit\(PRIVATE_PAGE_SIZE\)/, 'private message history must be paginated');
+assert.match(chat, /\.lt\('id',chatState\.oldestMessageId\)/, 'older private messages must use keyset pagination');
+assert.match(chat, /channel\('anaesthetic-chat-v3-'/, 'chat must use a realtime channel separate from roster sync');
 assert.doesNotMatch(chat, /changesChannel|loadSharedData|scheduleSharedReload|night_changes|night_overtime|rotation_versions|roster_nights/, 'chat client must not call roster synchronization or roster tables');
-assert.match(chat, /\.from\('chat_directory'\)\.select\('person_key,display_name,preferred_user_id,registered,active'\)/, 'private-chat picker must use the safe roster directory');
-assert.match(chat, /Has not joined Night Roster yet/, 'authorised staff who have not registered must still be visible with a clear unavailable state');
-assert.match(chat, /entry\.person_key!==mine/, 'the picker must remove the current staff identity rather than only the current auth account');
+assert.match(chat, /typeof TEAM!=='undefined'&&Array\.isArray\(TEAM\)/, 'private-message availability must be derived from the current roster team');
+assert.match(chat, /chatRosterKeys\(\)\.filter/, 'private-message picker must be generated from roster membership');
+assert.match(chat, /Not registered yet/, 'roster members without an app account must be shown with a clear availability state');
+assert.match(chat, /chatDisplayName\(/, 'chat should use roster display names without exposing emails');
 assert.match(chat, /chatSamePerson/, 'alternate sign-in identities for one person must be treated as the same chat sender');
 assert.doesNotMatch(chat, /select\([^\n]*email|\.email\b/, 'chat client must not request or render email addresses');
 assert.match(chat, /\.insert\(\{conversation_id:conversationId,body:body\}\)/, 'message send must not supply sender identity from the browser');
@@ -60,4 +68,4 @@ const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw
 assert.doesNotMatch(appShell, /chat\.js|chat\.css/, 'chat assets must not be mandatory for service-worker installation');
 assert.match(workflow, /cp index\.html styles\.css chat\.css[\s\S]*app-ui\.js chat\.js/, 'deployment must publish chat assets');
 
-console.log('Refined chat identity, UI isolation and pagination checks passed.');
+console.log('Group transcript, roster-based private list, privacy and pagination checks passed.');
