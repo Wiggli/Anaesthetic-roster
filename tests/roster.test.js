@@ -380,7 +380,7 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 43, 'the application must require the access-request schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 44, 'the application must require the current chat maturity schema');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
 assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
 assert.match(accessRequestMigration, /Users can request own access[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/, 'a pending user may only create a request for their own authenticated identity');
