@@ -10,6 +10,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923120000_remove_anonymous_database_access.sql'), 'utf8');
 const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
 const chatMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
+const chatRefineMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924014500_refine_chat_directory.sql'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
@@ -43,6 +44,14 @@ assert.match(chatMigration, /grant insert \(conversation_id,body\) on table publ
 assert.match(chatMigration, /Members can view accessible conversations[\s\S]*kind = 'group'[\s\S]*auth\.uid\(\).*user_a[\s\S]*auth\.uid\(\).*user_b/, 'private conversations must only be visible to their participants');
 assert.doesNotMatch(chatMigration, /grant all .*chat_/i, 'chat tables must not receive blanket authenticated privileges');
 assert.doesNotMatch(chatMigration, /alter table public\.user_profiles|create policy[\s\S]*on public\.user_profiles/i, 'chat must not broaden private profile access');
+assert.match(chatRefineMigration, /revoke all privileges on table public\.chat_directory from public, anon, authenticated/, 'the safe chat directory must start deny-by-default');
+assert.match(chatRefineMigration, /grant select on table public\.chat_directory to authenticated/, 'chat directory must be read-only to authenticated clients');
+assert.match(chatRefineMigration, /create policy "Active members can view roster chat directory"[\s\S]*is_shift_member/, 'only active roster members may read the chat directory');
+assert.match(chatRefineMigration, /revoke all on table chat_private\.identity_links from public, anon, authenticated/, 'alternate identity links must remain private');
+assert.match(chatRefineMigration, /person_key=participant\.person_key/, 'private chat RLS must authorize by server-managed canonical identity');
+assert.match(chatRefineMigration, /new\.sender_id:=auth\.uid\(\)/, 'alternate identity support must not weaken sender authentication');
+assert.doesNotMatch(chatRefineMigration, /grant .*identity_links.*authenticated/i, 'private identity links must never be exposed to the browser');
+assert.doesNotMatch(chatRefineMigration, /alter table public\.user_profiles|create policy[\s\S]*on public\.user_profiles/i, 'chat refinement must not expose private profiles');
 
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],
