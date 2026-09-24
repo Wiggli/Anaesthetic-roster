@@ -88,8 +88,8 @@ const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
 assert.equal(release.version, '37.27');
-assert.equal(release.title, 'A more complete Team Chat');
-assert.ok(release.changes.some(item => /notification/i.test(item)), 'release notes must announce message notifications together with Team chat');
-assert.ok(release.changes.some(item => /roster/i.test(item) && /separate|entered|update/i.test(item)), 'release notes must keep chat separate from roster changes');
+assert.equal(release.title, 'Lean maintenance cleanup');
+assert.ok(release.changes.some(item => /notifications/i.test(item) && /unchanged/i.test(item)), 'maintenance release notes must confirm notifications remain unchanged');
+assert.ok(release.changes.some(item => /roster/i.test(item) && /unchanged/i.test(item)), 'maintenance release notes must confirm roster behaviour remains unchanged');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');
