@@ -22,9 +22,25 @@ jobs:
           package-manager-cache: false
       - run: npm test
 
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Install browser smoke runner
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+      - name: Install Chromium for browser smoke tests
+        run: npx playwright install --with-deps chromium
+      - name: Run mobile browser smoke tests
+        run: npx playwright test --config=playwright.config.js
+
   migrate:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-    needs: test
+    needs: [test, browser-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

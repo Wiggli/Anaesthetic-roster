@@ -35,7 +35,7 @@ function pushSetStatus(text,error){
 }
 function pushSetBusy(busy){
   pushState.busy=!!busy;
-  ['pushEnableBtn','pushDisableBtn','pushTeamToggle','pushPrivateToggle'].forEach(function(id){var el=pushEl(id);if(el)el.disabled=!!busy});
+  ['pushEnableBtn','pushDisableBtn','pushTeamToggle','pushPrivateToggle','pushMentionToggle','pushRosterToggle','pushAccessRequestToggle'].forEach(function(id){var el=pushEl(id);if(el)el.disabled=!!busy});
   Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(button){button.disabled=!!busy});
 }
 function pushPromptKey(){return'anaes_push_prompt_v37_25'}
@@ -116,9 +116,32 @@ function pushRenderDevices(){
     row.appendChild(copy);row.appendChild(remove);host.appendChild(row);
   });
 }
+function pushPreferenceDefaults(){
+  return{chat_enabled:true,team_enabled:true,private_enabled:true,team_muted_until:null,mentions_enabled:true,roster_enabled:true,access_request_enabled:true};
+}
+function pushCreatePreferenceRow(id,title,detail){
+  var label=document.createElement('label');label.id=id+'Row';
+  var copy=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),input=document.createElement('input');
+  strong.textContent=title;small.textContent=detail;copy.appendChild(strong);copy.appendChild(small);
+  input.id=id;input.type='checkbox';input.checked=true;input.setAttribute('aria-label',title+' notifications');
+  label.appendChild(copy);label.appendChild(input);return label;
+}
+function pushEnsurePreferenceUi(){
+  var settings=pushEl('pushPreferenceRows');if(!settings)return;
+  var heading=document.querySelector('#pushNotificationCard .chatNotificationCopy b');if(heading)heading.textContent='Notifications';
+  var details=settings.querySelector('.pushDeviceDetails');
+  if(!pushEl('pushMentionToggle'))settings.insertBefore(pushCreatePreferenceRow('pushMentionToggle','Mentions','Alert me when someone @mentions me, even if Team chat is muted'),details);
+  if(!pushEl('pushRosterToggle'))settings.insertBefore(pushCreatePreferenceRow('pushRosterToggle','Roster updates','Staffing, allocation and night-only role changes'),details);
+  if(!pushEl('pushAccessRequestToggle')){var row=pushCreatePreferenceRow('pushAccessRequestToggle','Access requests','Administrator alert when someone requests roster access');row.classList.add('hidden');settings.insertBefore(row,details)}
+}
+function pushCleanDeepLink(params){
+  var clean=new URL(location.href);['view','conversation','date','tab'].forEach(function(key){clean.searchParams.delete(key)});history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+}
 function pushRender(){
-  var card=pushEl('pushNotificationCard'),button=pushEl('pushEnableBtn'),settings=pushEl('pushPreferenceRows'),team=pushEl('pushTeamToggle'),priv=pushEl('pushPrivateToggle'),stateBadge=pushEl('pushStateBadge'),muteStatus=pushEl('pushMuteStatus'),blockedHelp=pushEl('pushBlockedHelp');
+  pushEnsurePreferenceUi();
+  var card=pushEl('pushNotificationCard'),button=pushEl('pushEnableBtn'),settings=pushEl('pushPreferenceRows'),team=pushEl('pushTeamToggle'),priv=pushEl('pushPrivateToggle'),mention=pushEl('pushMentionToggle'),roster=pushEl('pushRosterToggle'),access=pushEl('pushAccessRequestToggle'),accessRow=pushEl('pushAccessRequestToggleRow'),stateBadge=pushEl('pushStateBadge'),muteStatus=pushEl('pushMuteStatus'),blockedHelp=pushEl('pushBlockedHelp');
   if(!card||!button)return;
+  if(accessRow)accessRow.classList.toggle('hidden',!(pushProfile()&&pushProfile().user_role==='admin'));
   if(blockedHelp)blockedHelp.classList.add('hidden');
   if(!pushSupported()){
     button.classList.add('hidden');if(settings)settings.classList.add('hidden');if(stateBadge)stateBadge.textContent='Unavailable';
@@ -129,17 +152,20 @@ function pushRender(){
   if(stateBadge){stateBadge.textContent=enabled?'Active on this device':permission==='denied'?'Blocked':'Off';stateBadge.className='pushStateBadge '+(enabled?'active':permission==='denied'?'blocked':'off')}
   if(settings)settings.classList.toggle('hidden',!enabled);
   if(enabled){
-    pushSetStatus('New chat messages can alert this device when Night Roster is closed or in the background.',false);
-    var prefs=pushState.preferences||{team_enabled:true,private_enabled:true,team_muted_until:null};
+    pushSetStatus('Chat and roster alerts can reach this device when Night Roster is closed or in the background.',false);
+    var prefs=Object.assign(pushPreferenceDefaults(),pushState.preferences||{});
     if(team)team.checked=prefs.team_enabled!==false;
     if(priv)priv.checked=prefs.private_enabled!==false;
+    if(mention)mention.checked=prefs.mentions_enabled!==false;
+    if(roster)roster.checked=prefs.roster_enabled!==false;
+    if(access)access.checked=prefs.access_request_enabled!==false;
     if(muteStatus){var summary=pushMuteSummary();muteStatus.textContent=summary||'Group chat alerts are on';muteStatus.classList.toggle('muted',!!summary)}
     pushRenderDevices();
   }else if(permission==='denied'){
     pushSetStatus('Notifications are blocked in your phone or browser settings.',true);button.textContent='Blocked';
     if(blockedHelp){blockedHelp.textContent=pushBlockedInstructions();blockedHelp.classList.remove('hidden')}
   }else{
-    pushSetStatus('Enable alerts for new Anaesthetic Team and private messages.',false);
+    pushSetStatus('Enable optional alerts for chat, mentions and roster updates.',false);
   }
 }
 async function pushRegister(subscription){
@@ -156,8 +182,8 @@ async function pushRegister(subscription){
 }
 async function pushLoadPreferences(){
   var client=pushClient(),user=pushUser();if(!client||!user)return;
-  var result=await client.from('push_preferences').select('chat_enabled,team_enabled,private_enabled,team_muted_until').eq('user_id',user.id).maybeSingle();
-  if(!result.error&&result.data)pushState.preferences=result.data;
+  var result=await client.from('push_preferences').select('chat_enabled,team_enabled,private_enabled,team_muted_until,mentions_enabled,roster_enabled,access_request_enabled').eq('user_id',user.id).maybeSingle();
+  if(!result.error&&result.data)pushState.preferences=Object.assign(pushPreferenceDefaults(),result.data);
 }
 async function pushLoadDevices(){
   var client=pushClient(),user=pushUser();if(!client||!user)return;
@@ -188,7 +214,7 @@ async function pushEnable(){
     if(!await pushRegister(subscription))throw new Error('registration failed');
     pushState.subscription=subscription;
     await Promise.all([pushLoadPreferences(),pushLoadDevices()]);
-    pushSetStatus('Message notifications are active on this device.',false);
+    pushSetStatus('Notifications are active on this device.',false);
   }catch(error){pushSetStatus('Notifications could not be enabled on this device.',true)}
   finally{pushSetBusy(false);pushRender()}
 }
@@ -208,7 +234,7 @@ async function pushSavePreference(field,value){
   var patch={};patch[field]=value;
   var result=await client.from('push_preferences').update(patch).eq('user_id',user.id);
   if(result.error){pushSetStatus('Notification preference could not be saved.',true);return false}
-  if(!pushState.preferences)pushState.preferences={chat_enabled:true,team_enabled:true,private_enabled:true,team_muted_until:null};
+  if(!pushState.preferences)pushState.preferences=pushPreferenceDefaults();
   pushState.preferences[field]=value;pushSetStatus('Notification preference saved.',false);pushRender();return true;
 }
 function pushTonightUntil(){
@@ -225,7 +251,7 @@ async function pushMuteTeam(mode){
     else{patch.team_enabled=true;patch.team_muted_until=null}
     var result=await client.from('push_preferences').update(patch).eq('user_id',user.id);
     if(result.error)throw result.error;
-    if(!pushState.preferences)pushState.preferences={chat_enabled:true,team_enabled:true,private_enabled:true,team_muted_until:null};
+    if(!pushState.preferences)pushState.preferences=pushPreferenceDefaults();
     Object.keys(patch).forEach(function(key){pushState.preferences[key]=patch[key]});
     pushSetStatus(mode==='off'?'Anaesthetic Team notifications are back on.':'Anaesthetic Team notification setting saved.',false);
   }catch(error){pushSetStatus('Group notification setting could not be saved.',true)}
@@ -260,20 +286,52 @@ async function pushStartSession(){
   pushOpenFromUrl();
   pushSchedulePrompt();
 }
+function pushOpenNotification(data){
+  data=data||{};var notificationType=data.notificationType||data.type;
+  if(notificationType==='chat'&&data.conversationId&&window.openChatFromPush){window.openChatFromPush(data.conversationId);return}
+  if(notificationType==='roster'){
+    if(data.rosterDate&&typeof chooseDate==='function'){var input=pushEl('datePick');if(input){input.value=data.rosterDate;chooseDate('datePick')}}
+    if(typeof show==='function')show('today');
+    if(typeof loadSharedData==='function')loadSharedData({background:true}).catch(function(){});
+    return;
+  }
+  if(notificationType==='access_request'&&pushProfile()&&pushProfile().user_role==='admin'){
+    if(typeof show==='function')show('admin');
+    if(typeof switchAdminTab==='function')switchAdminTab('access',false);
+    if(typeof loadAccounts==='function')loadAccounts().catch(function(){});
+  }
+}
 function pushOpenFromUrl(){
   try{
-    var params=new URLSearchParams(location.search),view=params.get('view'),conversation=params.get('conversation');
-    if(view!=='chat'||!conversation||!window.openChatFromPush)return;
-    window.openChatFromPush(conversation);
-    var clean=new URL(location.href);clean.searchParams.delete('view');clean.searchParams.delete('conversation');history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+    var params=new URLSearchParams(location.search),view=params.get('view'),conversation=params.get('conversation'),date=params.get('date'),tab=params.get('tab');
+    if(view==='chat'&&conversation&&window.openChatFromPush)window.openChatFromPush(conversation);
+    else if(view==='night'){
+      if(date&&typeof chooseDate==='function'){var input=pushEl('datePick');if(input){input.value=date;chooseDate('datePick')}}
+      if(typeof show==='function')show('today');
+    }else if(view==='admin'&&pushProfile()&&pushProfile().user_role==='admin'){
+      if(typeof show==='function')show('admin');if(tab&&typeof switchAdminTab==='function')switchAdminTab(tab,false);
+    }else return;
+    pushCleanDeepLink(params);
   }catch(error){}
 }
 window.dispatchChatPush=function(messageId){
   var client=pushClient();if(!client||!messageId)return;
   client.functions.invoke('notify-chat-message',{body:{message_id:Number(messageId)}}).catch(function(){});
 };
+window.dispatchRosterPush=function(eventType,rosterDate){
+  var client=pushClient();if(!client||!eventType||!rosterDate||!navigator.onLine)return;
+  client.rpc('queue_roster_push_event',{p_roster_date:rosterDate,p_event_type:eventType}).then(function(result){
+    if(result.error||!result.data)return;
+    return client.functions.invoke('notify-chat-message',{body:{kind:'roster_update',event_id:result.data}});
+  }).catch(function(){});
+};
+window.dispatchAccessRequestPush=function(userId){
+  var client=pushClient();if(!client||!userId||!navigator.onLine)return Promise.resolve();
+  return client.functions.invoke('notify-chat-message',{body:{kind:'access_request',request_user_id:userId}}).then(function(){}).catch(function(){});
+};
 window.refreshPushSettings=function(){return pushRefreshState()};
 function pushBind(){
+  pushEnsurePreferenceUi();
   var enable=pushEl('pushEnableBtn');if(enable)enable.onclick=pushEnable;
   var promptEnable=pushEl('pushPromptEnableBtn');if(promptEnable)promptEnable.onclick=pushEnableFromPrompt;
   var promptLater=pushEl('pushPromptLaterBtn');if(promptLater)promptLater.onclick=pushDismissPrompt;
@@ -281,11 +339,17 @@ function pushBind(){
   var disable=pushEl('pushDisableBtn');if(disable)disable.onclick=pushDisable;
   var team=pushEl('pushTeamToggle');if(team)team.onchange=function(){pushMuteTeam(team.checked?'off':'until_on')};
   var priv=pushEl('pushPrivateToggle');if(priv)priv.onchange=function(){pushSavePreference('private_enabled',priv.checked)};
+  var mention=pushEl('pushMentionToggle');if(mention)mention.onchange=function(){pushSavePreference('mentions_enabled',mention.checked)};
+  var roster=pushEl('pushRosterToggle');if(roster)roster.onchange=function(){pushSavePreference('roster_enabled',roster.checked)};
+  var access=pushEl('pushAccessRequestToggle');if(access)access.onchange=function(){pushSavePreference('access_request_enabled',access.checked)};
   Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(button){button.onclick=function(){pushMuteTeam(button.getAttribute('data-push-mute'))}});
   if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',function(event){
     if(!event.data)return;
+    if(event.data.type==='OPEN_APP_NOTIFICATION')pushOpenNotification(event.data);
     if(event.data.type==='OPEN_CHAT_NOTIFICATION'&&window.openChatFromPush)window.openChatFromPush(event.data.conversationId||'');
     if(event.data.type==='CHAT_PUSH_RECEIVED'&&window.refreshChatUnreadFromPush)window.refreshChatUnreadFromPush();
+    if(event.data.type==='ROSTER_PUSH_RECEIVED'&&typeof loadSharedData==='function')loadSharedData({background:true}).catch(function(){});
+    if(event.data.type==='ACCESS_REQUEST_PUSH_RECEIVED'&&pushProfile()&&pushProfile().user_role==='admin'&&typeof loadAccounts==='function')loadAccounts().catch(function(){});
   });
 }
 function pushInit(){

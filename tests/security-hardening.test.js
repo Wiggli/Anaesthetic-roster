@@ -17,6 +17,7 @@ const pushClient = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const pushFunction = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 const advisorHardeningMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924180000_advisor_hardening.sql'), 'utf8');
+const operationalMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924201500_operational_alerts_chat_retention.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
   'the third-party Supabase browser bundle must be protected by subresource integrity');
@@ -151,5 +152,19 @@ assert.match(advisorHardeningMigration, /alter function public\.unregister_push_
   'push unregistration must rely on authenticated DELETE plus owner-scoped RLS');
 assert.doesNotMatch(advisorHardeningMigration, /grant all|disable row level security/i,
   'advisor hardening must not broaden table privileges or disable RLS');
+
+assert.match(operationalMigration, /create table if not exists public\.roster_push_events[\s\S]*enable row level security/, 'roster push events must be RLS protected');
+assert.match(operationalMigration, /revoke all privileges on table public\.roster_push_events from public,anon,authenticated/, 'browser roles must not receive direct roster-push event access');
+assert.match(operationalMigration, /create table if not exists public\.push_event_dispatches[\s\S]*enable row level security/, 'generic push dispatch claims must be RLS protected');
+assert.match(operationalMigration, /revoke all privileges on table public\.push_event_dispatches from public,anon,authenticated/, 'browser roles must not receive generic dispatch access');
+assert.match(operationalMigration, /create or replace function public\.queue_roster_push_event[\s\S]*is_shift_member\(\)[\s\S]*app_sync_state/, 'roster notification claims must require active membership and bind to a server revision');
+assert.match(operationalMigration, /revoke all on function chat_private\.prune_expired_chat_messages\(\) from public,anon,authenticated/, 'chat retention maintenance must not be callable by browser roles');
+assert.match(operationalMigration, /reply_to_message_id is null[\s\S]*replied\.conversation_id = chat_messages\.conversation_id/, 'reply targets must stay inside the authorised conversation');
+assert.doesNotMatch(operationalMigration, /grant all[^;\n]*(?:anon|authenticated)|disable row level security/i, 'new notification and retention infrastructure must not grant blanket browser privileges or disable RLS');
+assert.match(pushFunction, /event\.created_by !== user\.id/, 'roster notification dispatch must verify the caller created the claimed event');
+assert.match(pushFunction, /requestUserId !== user\.id/, 'access-request notification dispatch must be bound to the authenticated requester');
+assert.match(pushFunction, /requestRow\.status !== "pending"/, 'access-request notification dispatch must validate current pending state');
+assert.doesNotMatch(pushFunction, /body:\s*message\.body|body:\s*String\(message\.body/, 'push payloads must not expose chat message content');
+
 
 console.log('Security hardening checks passed.');

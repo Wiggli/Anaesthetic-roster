@@ -11,6 +11,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924090000_chat_push_notifications.sql'), 'utf8');
 const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
+const operationalMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924201500_operational_alerts_chat_retention.sql'), 'utf8');
 const edge = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
 const release = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf8'));
 
@@ -21,7 +22,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.28/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.29/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -56,7 +57,9 @@ assert.match(sw, /self\.addEventListener\('push'/, 'service worker must receive 
 assert.match(sw, /self\.addEventListener\('notificationclick'/, 'service worker must handle notification taps');
 assert.match(sw, /visibilityState === 'visible'/, 'system notifications must be suppressed when the app is already visible');
 assert.match(sw, /showNotification\(title, options\)/, 'background pushes must create a system notification');
-assert.match(sw, /OPEN_CHAT_NOTIFICATION/, 'notification taps must route back into Chat');
+assert.match(sw, /OPEN_APP_NOTIFICATION/, 'notification taps must route through the shared app deep-link handler');
+assert.match(sw, /ROSTER_PUSH_RECEIVED/, 'visible roster pushes must refresh the open roster without showing duplicate system notifications');
+assert.match(sw, /ACCESS_REQUEST_PUSH_RECEIVED/, 'visible access-request pushes must refresh administrator attention state');
 assert.doesNotMatch(sw, /message\.body|chat_messages|patient/i, 'service worker must not obtain chat message content or patient data');
 
 assert.match(migration, /create table if not exists public\.push_subscriptions/, 'push subscriptions must be stored separately');
@@ -72,24 +75,45 @@ assert.match(maturityMigration, /Members can remove own push subscriptions[\s\S]
 assert.match(maturityMigration, /drop function if exists public\.remove_my_push_device\(uuid\)/, 'legacy privileged device-removal RPC must be removed');
 assert.doesNotMatch(maturityMigration, /create or replace function public\.remove_my_push_device\(/i, 'device removal must not add a privileged public RPC');
 
-assert.doesNotMatch(edge, /\.select\([^)]*\bbody\b/, 'the notification function must not read chat message text');
+assert.doesNotMatch(edge, /body:\s*message\.body|body:\s*String\(message\.body/, 'chat message text must never be copied into a push payload');
 assert.match(edge, /message\.sender_id !== user\.id/, 'only the actual message sender may dispatch its notification');
 assert.match(edge, /push_dispatches/, 'duplicate notification dispatches must be claimed server-side');
 assert.match(edge, /team_muted_until/, 'server dispatch must respect temporary group mute settings');
-assert.match(edge, /new Date\(pref\.team_muted_until\)\.getTime\(\) > Date\.now\(\)/, 'group pushes must be skipped while the mute window is active');
+assert.match(edge, /pref\?\.team_muted_until[\s\S]*new Date\(String\(pref\.team_muted_until\)\)\.getTime\(\) > Date\.now\(\)/, 'group pushes must be skipped while the mute window is active');
 assert.match(edge, /New message from/, 'group notification may identify the sender');
 assert.match(edge, /New private message/, 'private notification body must remain generic');
 assert.match(edge, /push_server_config/, 'VAPID keys must be loaded server-side');
 assert.doesNotMatch(edge, /BqB7H_jy/, 'the Edge Function source must not contain the private VAPID key');
+
+assert.match(push, /mentions_enabled/, 'mention notification preference must be persisted');
+assert.match(push, /roster_enabled/, 'roster-update notification preference must be persisted');
+assert.match(push, /access_request_enabled/, 'administrator access-request notification preference must be persisted');
+assert.match(push, /dispatchRosterPush/, 'roster mutations must dispatch through a non-blocking notification helper');
+assert.match(push, /queue_roster_push_event/, 'roster push dispatch must first claim the current server revision');
+assert.match(push, /dispatchAccessRequestPush/, 'new access requests must have a privacy-safe administrator push helper');
+assert.match(push, /view==='night'[\s\S]*chooseDate/, 'roster notification taps must open the affected night');
+assert.match(push, /view==='admin'[\s\S]*switchAdminTab\(tab,false\)/, 'administrator notification taps must open the requested admin tab');
+assert.match(operationalMigration, /add column if not exists roster_enabled boolean not null default true/, 'roster notifications must be optional per user');
+assert.match(operationalMigration, /add column if not exists mentions_enabled boolean not null default true/, 'mention notifications must be optional per user');
+assert.match(operationalMigration, /add column if not exists access_request_enabled boolean not null default true/, 'access-request notifications must be optional per administrator');
+assert.match(operationalMigration, /create table if not exists public\.roster_push_events/, 'roster notification events must be server-validated and deduplicated');
+assert.match(operationalMigration, /create table if not exists public\.push_event_dispatches/, 'non-chat notification dispatches must be deduplicated server-side');
+assert.match(edge, /kind === "roster_update"/, 'Edge Function must support privacy-safe roster-update dispatch');
+assert.match(edge, /kind === "access_request"/, 'Edge Function must support privacy-safe administrator access-request dispatch');
+assert.match(edge, /You were mentioned by/, 'mentioned Team members must receive a targeted mention notification');
+assert.match(edge, /A new access request is waiting for review\./, 'access-request push text must not expose the requesting account');
+assert.match(edge, /Night Roster updated/, 'roster push must use a generic operational title');
+assert.doesNotMatch(edge, /requestRow\.email|requestRow\.display_name/, 'access-request push dispatch must not load or expose requester identity');
 
 assert.match(workflow, /supabase functions deploy notify-chat-message/, 'production deploy must include the push Edge Function');
 assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and verify the push client');
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.28');
-assert.equal(release.title, 'Cleaner Night and Admin controls');
-assert.ok(release.changes.some(item => /notifications/i.test(item) && /unchanged/i.test(item)), 'release notes must confirm notifications remain unchanged');
-assert.ok(release.changes.some(item => /roster/i.test(item) && /unchanged/i.test(item)), 'release notes must confirm roster behaviour remains unchanged');
+assert.equal(release.version, '37.29');
+assert.equal(release.title, 'Operational alerts and focused chat');
+assert.ok(release.changes.some(item => /roster-update notifications/i.test(item)), 'release notes must announce optional roster notifications');
+assert.ok(release.changes.some(item => /access request/i.test(item)), 'release notes must announce administrator access-request alerts');
+assert.ok(release.changes.some(item => /14 days/i.test(item)), 'release notes must state the chat retention period');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');
