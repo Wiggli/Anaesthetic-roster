@@ -1,12 +1,12 @@
 {
-  "version": "37.22",
+  "version": "37.24",
   "date": "24 September 2026",
-  "title": "Team chat",
-  "summary": "Add an isolated realtime staff chat with one team room and secure private conversations.",
+  "title": "Team chat & notifications",
+  "summary": "Add secure team messaging with optional background notifications for new chat messages.",
   "changes": [
-    "Anaesthetic Team provides one permanent group chat for active authorised roster users, with private one-to-one conversations between registered members.",
-    "Messages are normal text only and never change the roster or create a swap workflow.",
-    "Private chats and sender identity are enforced with Supabase Row Level Security, and the chat directory contains names only, never email addresses.",
-    "Chat loads recent messages only when opened, paginates older history and uses a separate Realtime channel so roster features remain independent."
+    "Anaesthetic Team provides one shared group chat for roster discussion, with private one-to-one conversations between registered roster members.",
+    "Optional message notifications can alert you to new group or private messages when Night Roster is closed or in the background.",
+    "Notification previews protect chat privacy by showing that a new message arrived without displaying the message text on the lock screen.",
+    "Chat remains separate from roster changes: any agreed swap or change must still be entered through the existing roster functions."
   ]
 }

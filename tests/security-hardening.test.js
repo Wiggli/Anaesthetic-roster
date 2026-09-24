@@ -11,6 +11,9 @@ const anonymousAccessMigration = fs.readFileSync(path.join(root, 'supabase-migra
 const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924001000_access_request_approval.sql'), 'utf8');
 const chatMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
 const chatRefineMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924014500_refine_chat_directory.sql'), 'utf8');
+const pushMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924090000_chat_push_notifications.sql'), 'utf8');
+const pushClient = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
+const pushFunction = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
@@ -52,6 +55,15 @@ assert.match(chatRefineMigration, /person_key=participant\.person_key/, 'private
 assert.match(chatRefineMigration, /new\.sender_id:=auth\.uid\(\)/, 'alternate identity support must not weaken sender authentication');
 assert.doesNotMatch(chatRefineMigration, /grant .*identity_links.*authenticated/i, 'private identity links must never be exposed to the browser');
 assert.doesNotMatch(chatRefineMigration, /alter table public\.user_profiles|create policy[\s\S]*on public\.user_profiles/i, 'chat refinement must not expose private profiles');
+assert.match(pushMigration, /revoke all privileges on table public\.push_server_config from public,anon,authenticated/, 'VAPID server configuration must be inaccessible to browser roles');
+assert.match(pushMigration, /revoke all privileges on table public\.push_dispatches from public,anon,authenticated/, 'push dispatch records must remain server-only');
+assert.match(pushMigration, /user_id=\(select auth\.uid\(\)\)[\s\S]*is_shift_member/, 'push subscription reads must remain owner and roster-member scoped');
+assert.match(pushMigration, /register_push_subscription[\s\S]*security definer[\s\S]*auth\.uid\(\)/i, 'push subscription registration must bind to the authenticated user');
+assert.doesNotMatch(pushMigration, /BFF3dFdZ|BqB7H_jy/, 'the VAPID keypair must never be committed to a database migration');
+assert.doesNotMatch(pushClient, /vapid_private|privateKey|BqB7H_jy/i, 'the browser push client must never contain the VAPID private key');
+assert.match(pushFunction, /message\.sender_id !== user\.id/, 'notification dispatch must verify that the caller sent the message');
+assert.match(pushFunction, /push_server_config/, 'the Edge Function must load the VAPID private key server-side');
+assert.doesNotMatch(pushFunction, /BqB7H_jy/, 'the Edge Function source must not hard-code the VAPID private key');
 
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],
@@ -86,7 +98,7 @@ for (const key of ['anaes_offline_snapshot', 'anaes_cached_profile', 'anaes_rece
 assert.equal(storage.get('anaes_theme'), 'dark', 'logout must preserve the non-sensitive appearance preference');
 assert.equal(storage.get('anaes_selected_date'), '2026-09-23', 'logout must preserve the non-sensitive navigation preference');
 
-const deployableFiles = ['index.html', 'app-core.js', 'app-ui.js', 'chat.js', 'service-worker.js', 'theme-bootstrap.js', 'manifest.webmanifest'];
+const deployableFiles = ['index.html', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'service-worker.js', 'theme-bootstrap.js', 'manifest.webmanifest'];
 const deployable = deployableFiles.map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
 assert.doesNotMatch(deployable, /sb_secret_[A-Za-z0-9_-]+|service_role\s*[:=]\s*["'][A-Za-z0-9._-]+|postgres(?:ql)?:\/\//i,
   'deployed files must not contain a secret Supabase key or database connection string');

@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.22 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.24 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -56,6 +56,8 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.24',date:'24 Sep 2026',title:'Team chat & notifications',changes:['Anaesthetic Team provides one shared group chat for roster discussion, with private one-to-one conversations between registered roster members.','Optional message notifications can alert you to new group or private messages when Night Roster is closed or in the background.','Notification previews protect chat privacy by showing that a new message arrived without displaying the message text on the lock screen.','Chat remains separate from roster changes: any agreed swap or change must still be entered through the existing roster functions.']},
+  {version:'37.23',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.22',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.21',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
   {version:'37.20',date:'24 Sep 2026',title:'Team chat',changes:['Anaesthetic Team adds one permanent group conversation for active authorised roster users, plus private one-to-one chats between registered members.','Chat messages are plain text only and never alter the roster; agreed swaps still have to be entered separately through the existing roster functions.','Private conversations and sender identity are protected by Supabase Row Level Security, while the chat directory exposes names only and never email addresses.','Chat loads recent messages only when opened, paginates older messages and uses its own Realtime channel so Night, Changes and Breaks remain independent.']},
@@ -424,7 +426,7 @@ function showRecordActions(kind,id,name){
 }
 
 function onboardingChatPage(){
-  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'</span><div class="chatOnboardingLines"><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team chat</span><h2 id="onboardingTitle">Coordinate without changing the roster.</h2><p>Use Anaesthetic Team for normal roster discussion and private chat for one-to-one messages. Chat never changes Night, Changes or Breaks automatically.</p><div class="onboardingFeatureList"><div><b>Team</b><span>One shared group chat for roster coordination</span></div><div><b>Private</b><span>One-to-one messages with registered roster members</span></div><div><b>Separate</b><span>Any agreed swap is still entered through the roster afterwards</span></div></div><p class="onboardingFootnote">Staff coordination only. Do not share patient-identifiable or clinical information in chat.</p>';
+  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'</span><div class="chatOnboardingLines"><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team chat</span><h2 id="onboardingTitle">Chat with the anaesthetic team.</h2><p>Use Anaesthetic Team for roster discussion, or message a registered colleague privately. If you agree a swap or another change, update the roster separately.</p><div class="onboardingFeatureList"><div><b>Group chat</b><span>Anaesthetic Team is the shared conversation for roster matters</span></div><div><b>Private</b><span>Message a registered roster member one-to-one</span></div><div><b>Notifications</b><span>Optional alerts can tell you when a new message arrives while the app is in the background</span></div></div><p class="onboardingFootnote">For staff coordination only. Never share patient-identifiable or clinical information in chat.</p>';
 }
 
 function onboardingPages(){
@@ -455,17 +457,17 @@ async function addOnboardingPasskey(){var button=byId('onboardingPasskeyBtn'),me
 
 async function finishOnboarding(){
   if(onboardingChatIntro){
-    localStorage.setItem('anaes_chat_intro_v37_22','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
+    localStorage.setItem('anaes_chat_intro_v37_24','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
   }
   rememberOnboardingProfile();var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)localStorage.setItem('anaes_my_name',select.value);var draft=onboardingProfileDraft;if((draft||pendingProfilePhoto)&&profileFeatureAvailable&&navigator.onLine){populateAccountSheet();if(draft){byId('profileName').value=draft.name.trim();byId('profileJobTitle').value=draft.title.trim()}updateProfileSaveState();if(!byId('saveProfileBtn').classList.contains('hidden'))await saveProfile()}
-  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_22','1');onboardingCandidate=false;onboardingReplay=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
+  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_24','1');onboardingCandidate=false;onboardingReplay=false;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
 }
 
 function showOnboardingIfNeeded(){
   if(!currentUserProfile||releaseNotesQueued)return;
   var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;
   var firstUse=onboardingCandidate&&!localStorage.getItem('anaes_onboarding_complete_v34');
-  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_22');
+  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_24');
   if(!firstUse&&!needsChatIntro)return;
   onboardingChatIntro=needsChatIntro;onboardingReplay=false;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},350);
 }
