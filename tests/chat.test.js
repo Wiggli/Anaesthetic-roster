@@ -61,7 +61,7 @@ assert.match(chat, /channel\('anaesthetic-chat-v4-'/, 'chat must use a realtime 
 assert.doesNotMatch(chat, /changesChannel|loadSharedData|scheduleSharedReload|night_changes|night_overtime|rotation_versions|roster_nights/, 'chat client must not call roster synchronization or roster tables');
 assert.match(chat, /typeof TEAM!=='undefined'&&Array\.isArray\(TEAM\)/, 'private-message availability must be derived from the current roster team');
 assert.match(chat, /chatRosterKeys\(\)\.filter/, 'private-message picker must be generated from roster membership');
-assert.match(chat, /Not registered yet/, 'roster members without an app account must be shown with a clear availability state');
+assert.match(chat, /Has not registered in Night Roster yet/, 'roster members without an app account must be shown with a clear availability state');
 assert.match(chat, /chatDisplayName\(/, 'chat should use roster display names without exposing emails');
 assert.match(chat, /chatSamePerson/, 'alternate sign-in identities for one person must be treated as the same chat sender');
 assert.doesNotMatch(chat, /select\([^\n]*email|\.email\b/, 'chat client must not request or render email addresses');
