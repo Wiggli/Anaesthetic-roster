@@ -31,12 +31,12 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <script src="theme-bootstrap.js?v=37.30"></script>
-    <link rel="manifest" href="manifest.webmanifest?v=37.30" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.30" />
+    <script src="theme-bootstrap.js?v=37.31"></script>
+    <link rel="manifest" href="manifest.webmanifest?v=37.31" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.31" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=37.30" />
-    <link rel="stylesheet" href="chat.css?v=37.30" />
+    <link rel="stylesheet" href="styles.css?v=37.31" />
+    <link rel="stylesheet" href="chat.css?v=37.31" />
   </head>
   <body class="authPending">
     <section
@@ -47,12 +47,24 @@
       aria-busy="true"
       aria-label="Opening Anaesthetic Night Roster"
     >
+      <div class="launchAtmosphere" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </div>
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=37.30" alt="SPTAR Mater Dei" />
+          <img src="mater-dei-logo.png?v=37.31" alt="SPTAR Mater Dei" />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
+          <div class="launchMark" aria-hidden="true">
+            <span>
+              <svg viewBox="0 0 64 64">
+                <path d="M42 15.5A21 21 0 1 0 48.5 45 17.5 17.5 0 1 1 42 15.5Z"></path>
+                <path d="M27 32h10M32 27v10"></path>
+              </svg>
+            </span>
+            <i></i>
+          </div>
           <span>Anaesthetic Night Roster</span>
           <h1 id="launchTitle">Preparing your night</h1>
           <p id="launchStatus">Loading the latest shared roster…</p>
@@ -71,15 +83,22 @@
       </div>
     </section>
     <section id="authGate" class="authGate" aria-labelledby="authTitle">
+      <div class="authAtmosphere" aria-hidden="true"><i></i><i></i></div>
       <div class="authExperience">
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=37.30"
+              src="mater-dei-logo.png?v=37.31"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
           <div class="authIntro">
+            <div class="authAppMark" aria-hidden="true">
+              <svg viewBox="0 0 64 64">
+                <path d="M42 15.5A21 21 0 1 0 48.5 45 17.5 17.5 0 1 1 42 15.5Z"></path>
+                <path d="M27 32h10M32 27v10"></path>
+              </svg>
+            </div>
             <span class="authEyebrow">Anaesthetic Night Roster</span>
             <h1 id="authTitle">Your night,<br />clearly organised.</h1>
             <p>
@@ -190,7 +209,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=37.30" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=37.31" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -1245,7 +1264,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 37.30 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 37.31 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -1347,9 +1366,9 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="app-core.js?v=37.30"></script>
-    <script src="app-ui.js?v=37.30"></script>
-    <script src="push.js?v=37.30"></script>
-    <script src="chat.js?v=37.30"></script>
+    <script src="app-core.js?v=37.31"></script>
+    <script src="app-ui.js?v=37.31"></script>
+    <script src="push.js?v=37.31"></script>
+    <script src="chat.js?v=37.31"></script>
   </body>
 </html>

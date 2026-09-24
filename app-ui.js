@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.30 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.31 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -35,6 +35,7 @@ var onboardingStep=0;
 var onboardingCandidate=!localStorage.getItem('anaes_onboarding_complete_v34');
 var onboardingReplay=false;
 var onboardingChatIntro=false;
+var onboardingDirection=1;
 var onboardingProfileDraft=null;
 var releaseNotesQueued=false;
 var pendingProfilePhoto=null;
@@ -56,6 +57,7 @@ var startupSnapshotTimeoutMs=7000;
 var startupFallbackTimeoutMs=15000;
 
 var RELEASE_HISTORY=[
+  {version:'37.31',date:'24 Sep 2026',title:'Cinematic launch and refined onboarding',changes:['Cold launch now uses a staged cinematic reveal that follows the real roster-loading state instead of adding a fake loading delay, then hands off smoothly into the signed-in app or sign-in screen.','First-use onboarding now uses calmer directional transitions, richer visual hierarchy and a dedicated current Chat page covering Team chat, private messages, @mentions, replies, privacy-safe notifications and 14-day retention.','Existing users receive the refreshed Chat introduction once, while replaying the guide from Account still shows the complete onboarding journey.','Normal tab switching no longer animates the whole view, keeping Night, Changes, Breaks and Chat stable while motion is reserved for launch, onboarding, sheets and touch feedback.','Buttons, inputs, grouped surfaces, dark mode and persistent navigation receive a restrained native-style polish with full reduced-motion fallbacks.']},
   {version:'37.30',date:'24 Sep 2026',title:'Reliable chat sends and clearer night wording',changes:['Team and private chat sends no longer fail because reply validation recursively re-enters the chat message policy. Successfully saved messages stay sent even if read-state or push-notification housekeeping has a separate problem.','Your night now says Tonight, Current night, Next night or Selected night according to the date actually being viewed, so a future roster night is no longer described as tonight.','Changes, allocation, break guidance and night-only role wording now refer to the selected night instead of assuming the selected date is today.','The verified roster rotation, staffing rules, breaks, chat privacy, 14-day retention and notification preferences remain unchanged.']},
   {version:'37.29',date:'24 Sep 2026',title:'Operational alerts and focused chat',changes:['Roster changes can now send optional privacy-safe notifications that open the affected night directly.','Administrators get a compact attention badge for access requests, selected-night actions and roster publication, plus a privacy-safe alert when someone requests access.','Anaesthetic Team now supports @mentions with targeted alerts, while Team and private chats can reply to a specific message with a compact quote.','Chat messages are retained for 14 days and then removed automatically by the server.','A lightweight real-browser smoke suite now checks mobile navigation and dark mode alongside the existing regression tests.']},
   {version:'37.28',date:'24 Sep 2026',title:'Cleaner Night and Admin controls',changes:['Night and Breaks now focus on the live roster information itself, with the repeated copy-briefing, copy-breaks and email-roster controls removed.','Roster management keeps the useful Publish, Team, Access and Data sections, while Overview no longer repeats those same destinations as a second row of shortcut buttons.','Unused frontend code that existed only for the removed copy and email actions has been retired; roster calculations, staffing changes, breaks, chat, notifications and Supabase data remain unchanged.']},
@@ -132,7 +134,14 @@ var RELEASE_HISTORY=[
   {version:'26.0',date:'26 Aug 2026',title:'Reliability and publishing foundation',changes:['Automated safety checks were added for the verified roster rotation, staffing calculations and 07:00 working-night boundary.','The app gained clearer version, database-schema and connection diagnostics.','Night-plan confirmation and Labour Ward ordering were strengthened while earlier published roster nights remained protected.','The progressive web app update process was improved so new versions can be installed safely.']}
 ];
 
-function setLaunchState(title,status){var screen=byId('launchScreen');if(!screen||launchFinished)return;var heading=byId('launchTitle'),message=byId('launchStatus');if(heading&&title)heading.textContent=title;if(message&&status)message.textContent=status}
+function cinematicMotionAllowed(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
+function setLaunchState(title,status){
+  var screen=byId('launchScreen');if(!screen||launchFinished)return;
+  var heading=byId('launchTitle'),message=byId('launchStatus'),changed=false;
+  if(heading&&title&&heading.textContent!==title){heading.textContent=title;changed=true}
+  if(message&&status&&message.textContent!==status){message.textContent=status;changed=true}
+  if(changed){screen.classList.remove('launchStateChanged');void screen.offsetWidth;screen.classList.add('launchStateChanged')}
+}
 
 function plainSnapshotRecord(value){return !!value&&typeof value==='object'&&!Array.isArray(value)}
 
@@ -309,16 +318,26 @@ function useSavedRosterAtLaunch(){
 
 function finishLaunch(ready){
   var screen=byId('launchScreen');if(!screen||launchFinished)return;
-  clearTimeout(launchSlowTimer);
-  hideLaunchRecovery();
-  if(!ready){launchFinished=true;screen.classList.add('dismissed');screen.setAttribute('aria-busy','false');setTimeout(function(){screen.classList.add('hidden')},260);return}
-  var name=privateProfileName()||currentUserProfile&&currentUserProfile.display_name||'';setLaunchState(name?'Welcome back, '+name:'Your night is ready',navigator.onLine&&!forcedOfflineSession?'Your night is ready.':'Showing the last saved roster');screen.classList.add('ready');screen.setAttribute('aria-busy','false');
-  launchFinished=true;screen.classList.add('dismissed');setTimeout(function(){screen.classList.add('hidden')},300);
+  clearTimeout(launchSlowTimer);hideLaunchRecovery();
+  var motion=cinematicMotionAllowed();
+  if(!ready){
+    launchFinished=true;screen.setAttribute('aria-busy','false');document.body.classList.add('authRevealing');
+    setTimeout(function(){screen.classList.add('dismissed')},motion?90:0);
+    setTimeout(function(){screen.classList.add('hidden');document.body.classList.remove('authRevealing')},motion?650:20);
+    return
+  }
+  var name=privateProfileName()||currentUserProfile&&currentUserProfile.display_name||'';
+  setLaunchState(name?'Welcome back, '+name:'Your night is ready',navigator.onLine&&!forcedOfflineSession?'Everything is ready.':'Showing the last saved roster');
+  screen.classList.add('ready');screen.setAttribute('aria-busy','false');document.body.classList.add('appRevealing');launchFinished=true;
+  var hold=motion?320:0,fade=motion?520:20;
+  setTimeout(function(){screen.classList.add('dismissed')},hold);
+  setTimeout(function(){screen.classList.add('hidden')},hold+fade);
+  setTimeout(function(){document.body.classList.remove('appRevealing')},hold+fade+(motion?520:20));
 }
 
 function rememberOnboardingProfile(){var name=byId('onboardingProfileName'),title=byId('onboardingProfileTitle');if(name||title)onboardingProfileDraft={name:name?name.value:'',title:title?title.value:''}}
 
-function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;byId('accountSheet').close();onboardingChatIntro=false;onboardingReplay=true;onboardingStep=0;renderOnboarding();dialog.showModal()}
+function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;byId('accountSheet').close();onboardingChatIntro=false;onboardingReplay=true;onboardingDirection=1;onboardingStep=0;renderOnboarding();dialog.showModal()}
 
 function saveOfflineSnapshot(){
   try{localStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date().toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion}))}catch(error){}
@@ -431,7 +450,7 @@ function showRecordActions(kind,id,name){
 }
 
 function onboardingChatPage(){
-  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'</span><div class="chatOnboardingLines"><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Chat</span><h2 id="onboardingTitle">Keep roster conversations together.</h2><p>Anaesthetic Team is the shared chat for roster matters. You can also message a registered roster colleague privately. If you agree a swap or another change in chat, update the roster separately.</p><div class="onboardingFeatureList"><div><b>Team</b><span>Ask the group about a roster night, availability or a possible swap</span></div><div><b>Private</b><span>Message a registered roster colleague one-to-one</span></div><div><b>Alerts</b><span>Optional notifications tell you when a new message arrives</span></div></div><p class="onboardingFootnote">Chat is for staff coordination only. Do not share patient-identifiable or clinical information.</p>';
+  return '<div class="onboardingVisual chatOnboardingVisual" aria-hidden="true"><span class="chatOnboardingIcon">'+interfaceIcon('chat')+'<i>@</i></span><div class="chatOnboardingTranscript"><span><b>Team</b><i></i></span><span class="reply"><b>Reply</b><i></i></span><span><b>@you</b><i></i></span></div></div><span class="onboardingEyebrow">Team Chat</span><h2 id="onboardingTitle">Coordinate without leaving the roster.</h2><p>Anaesthetic Team keeps informal roster conversations in one place, with private messages when you need to speak one-to-one. Chat never changes the roster by itself.</p><div class="onboardingFeatureList chatFeatureList"><div><b>Team</b><span>Ask the group about a roster night, availability or a possible swap</span></div><div><b>Private</b><span>Message a registered roster colleague directly</span></div><div><b>Mentions</b><span>Use @mentions and replies when a message needs someone’s attention</span></div><div><b>Privacy</b><span>Notifications hide message text and chat is removed automatically after 14 days</span></div></div><p class="onboardingFootnote"><b>Staff coordination only.</b> Do not share patient-identifiable or clinical information. If a roster arrangement changes, update it separately in Changes.</p>';
 }
 
 function onboardingPages(){
@@ -449,9 +468,10 @@ function onboardingPages(){
 
 function renderOnboarding(){
   var dialog=byId('onboardingDialog'),content=byId('onboardingContent'),pages=onboardingPages();if(!dialog||!content)return;
-  onboardingStep=Math.max(0,Math.min(pages.length-1,onboardingStep));content.innerHTML=pages[onboardingStep];content.classList.remove('onboardingContentIn');void content.offsetWidth;content.classList.add('onboardingContentIn');
+  onboardingStep=Math.max(0,Math.min(pages.length-1,onboardingStep));dialog.dataset.onboardingPage=onboardingChatIntro?'chat-intro':String(onboardingStep);dialog.classList.toggle('onboardingChatIntro',onboardingChatIntro||onboardingStep===2);
+  content.innerHTML=pages[onboardingStep];content.classList.remove('onboardingContentIn','onboardingContentBack');void content.offsetWidth;content.classList.add(onboardingDirection<0?'onboardingContentBack':'onboardingContentIn');
   byId('onboardingProgress').innerHTML=pages.map(function(_,index){return'<span class="'+(index===onboardingStep?'active':'')+'" aria-hidden="true"></span>'}).join('');
-  byId('onboardingStepLabel').textContent=onboardingChatIntro?'New feature':(onboardingStep+1)+' of '+pages.length;
+  byId('onboardingStepLabel').textContent=onboardingChatIntro?'What’s new · Chat':(onboardingStep+1)+' of '+pages.length;
   byId('onboardingBackBtn').classList.toggle('hidden',onboardingChatIntro||onboardingStep===0);byId('onboardingNextBtn').textContent=onboardingChatIntro?'Got it':onboardingStep===pages.length-1?'Open my night':'Continue';byId('onboardingSkipBtn').textContent=onboardingReplay?'Close':'Skip';byId('onboardingSkipBtn').classList.toggle('hidden',onboardingChatIntro||onboardingStep===pages.length-1);
   var select=byId('onboardingNamePick');if(select)select.onchange=function(){if(select.value)localStorage.setItem('anaes_my_name',select.value);else localStorage.removeItem('anaes_my_name');var visual=document.querySelector('.identityVisual span');if(visual)visual.textContent=select.value?select.value.charAt(0).toUpperCase():'?'};
   var passkeyButton=byId('onboardingPasskeyBtn');if(passkeyButton)passkeyButton.onclick=addOnboardingPasskey;
@@ -462,24 +482,24 @@ async function addOnboardingPasskey(){var button=byId('onboardingPasskeyBtn'),me
 
 async function finishOnboarding(){
   if(onboardingChatIntro){
-    localStorage.setItem('anaes_chat_intro_v37_24','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
+    localStorage.setItem('anaes_chat_intro_v37_31','1');onboardingChatIntro=false;onboardingReplay=false;var chatDialog=byId('onboardingDialog');if(chatDialog&&chatDialog.open)chatDialog.close();render();toast('Team chat is ready');return
   }
   var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)localStorage.setItem('anaes_my_name',select.value);
-  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_24','1');onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
+  localStorage.setItem('anaes_onboarding_complete_v34','1');localStorage.setItem('anaes_chat_intro_v37_31','1');onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready');
 }
 
 function showOnboardingIfNeeded(){
   if(!currentUserProfile||releaseNotesQueued)return;
   var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;
   var firstUse=onboardingCandidate&&!localStorage.getItem('anaes_onboarding_complete_v34');
-  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_24');
+  var needsChatIntro=!firstUse&&!localStorage.getItem('anaes_chat_intro_v37_31');
   if(!firstUse&&!needsChatIntro)return;
-  onboardingChatIntro=needsChatIntro;onboardingReplay=false;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},350);
+  onboardingChatIntro=needsChatIntro;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?520:40);
 }
 
 function bindOnboarding(){
   var dialog=byId('onboardingDialog'),next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
-  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingChatIntro?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
+  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingDirection=1;onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingChatIntro?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingDirection=-1;onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
   if(dialog&&typeof dialog.addEventListener==='function')dialog.addEventListener('cancel',function(event){if(onboardingChatIntro){event.preventDefault();finishOnboarding();return}onboardingReplay=false});
 }
 

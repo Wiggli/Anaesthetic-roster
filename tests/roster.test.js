@@ -241,7 +241,7 @@ const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supa
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -271,6 +271,10 @@ for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': 
   assert.deepEqual(Array.from(new Set(versions)), [context.APP_VERSION], `${file} cache-busting references must all match APP_VERSION`);
 }
 assert.match(css, /--apple-control-gap:10px/, 'Apple controls must share one canonical spacing token');
+assert.match(html, /class="launchAtmosphere"[\s\S]*class="launchMark"/, 'cold launch must retain its cinematic atmosphere and focal app mark');
+assert.match(css, /body\.appRevealing #appHeader[\s\S]*body\.appRevealing main[\s\S]*body\.appRevealing \.bottom/, 'cold launch must hand off into the app with one-time chrome and content reveal');
+assert.match(css, /\.view:not\(\.hidden\)\{animation:none\}/, 'ordinary tab switching must not animate the whole view');
+assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*launchAtmosphere[\s\S]*onboardingContentIn/, 'cinematic launch and onboarding must provide reduced-motion fallbacks');
 assert.match(css, /--apple-section-gap:14px/, 'Apple sections must share one canonical spacing token');
 assert.match(css, /#today \.nightStatusRow\{[\s\S]*?gap:var\(--apple-control-gap\)[\s\S]*?background:transparent/, 'Night summary tiles must be visually separated');
 assert.match(css, /#today \.roles\{[\s\S]*?display:grid;gap:var\(--apple-control-gap\)[\s\S]*?background:transparent/, 'Night allocation cards must be visually separated');

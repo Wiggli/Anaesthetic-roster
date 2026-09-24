@@ -50,3 +50,48 @@ test('mobile header controls stay circular and dark mode stays readable', async 
   expect(background).not.toBe('rgba(0, 0, 0, 0)');
   await expect(page.locator('.bottom')).toBeVisible();
 });
+
+
+test('cold launch and onboarding keep the cinematic hierarchy without hiding Chat guidance', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'window.supabase={createClient:function(){return null}};'
+  }));
+  await page.goto('/index.html');
+  await expect(page.locator('#launchScreen')).toBeVisible();
+  await expect(page.locator('.launchMark')).toHaveCount(1);
+  await expect(page.locator('.launchAtmosphere i')).toHaveCount(3);
+
+  await page.evaluate(() => {
+    document.body.classList.remove('authPending');
+    const launch = document.getElementById('launchScreen');
+    const auth = document.getElementById('authGate');
+    if (launch) launch.style.display = 'none';
+    if (auth) auth.style.display = 'none';
+    window.onboardingChatIntro = true;
+    window.onboardingStep = 0;
+    window.onboardingDirection = 1;
+    window.renderOnboarding();
+    const dialog = document.getElementById('onboardingDialog');
+    if (dialog && !dialog.open) dialog.showModal();
+  });
+
+  await expect(page.locator('#onboardingDialog')).toBeVisible();
+  await expect(page.locator('#onboardingTitle')).toContainText('Coordinate without leaving the roster');
+  await expect(page.locator('#onboardingContent')).toContainText('@mentions');
+  await expect(page.locator('#onboardingContent')).toContainText('14 days');
+  await expect(page.locator('#onboardingStepLabel')).toContainText('Chat');
+});
+
+test('cinematic surfaces respect reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'window.supabase={createClient:function(){return null}};'
+  }));
+  await page.goto('/index.html');
+  const launchAnimation = await page.locator('.launchMark').evaluate(el => getComputedStyle(el).animationName);
+  expect(launchAnimation).toBe('none');
+});

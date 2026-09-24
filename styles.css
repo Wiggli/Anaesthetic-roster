@@ -18,7 +18,7 @@ body.dark{--line:#29445b;--muted:#9fb3c5;--text:#e8f2fa;--shadow:0 14px 36px rgb
 .adminHeader{margin-bottom:8px}.adminTabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:0 0 10px;background:rgba(234,244,251,.94);border:1px solid var(--line);border-radius:15px;scrollbar-width:none}.adminTabs::-webkit-scrollbar{display:none}.adminTabs button{flex:1 0 auto;min-width:88px;padding:10px 12px;box-shadow:none;border:0;background:transparent;color:var(--muted);white-space:nowrap}.adminTabs button.active{background:white;color:var(--blue);box-shadow:0 3px 10px rgba(15,45,74,.10)}.adminPane>.panel:first-child{margin-top:8px}.adminQuickGrid,.quickRanges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.adminQuickGrid button,.quickRanges button{box-shadow:none}.quickRanges{grid-template-columns:repeat(3,1fr)}.adminSectionIntro{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}.adminSectionIcon{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:#eaf2ff;color:var(--blue);font-size:20px}.adminSectionIntro h2{margin:0 0 3px}.adminSectionIntro p{margin:0}.adminSummary{margin:10px 0;background:#f6fafc}.adminSummary b{display:block;margin-bottom:3px}.adminMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adminMeta span{padding:6px 9px;border-radius:999px;background:#eaf2ff;color:#0e5a99;font-size:12px;font-weight:850}.accountSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px}.dataAction{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fieldHelp{font-size:12px;color:var(--muted);line-height:1.4;margin:5px 0 9px}.currentTeam{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.currentTeam span{background:#eef6ff;color:#0e5a99;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:850}body.dark .adminTabs{background:rgba(7,23,37,.94)}body.dark .adminTabs button.active{background:#163d5b;color:#9fd1ff}body.dark .adminSectionIcon{background:#163d5b;color:#9fd1ff}body.dark .adminSummary{background:#0b263a}body.dark .adminMeta span,body.dark .currentTeam span{background:#163d5b;color:#9fd1ff}@media(max-width:520px){.adminQuickGrid,.dataAction{grid-template-columns:1fr}.quickRanges{grid-template-columns:repeat(3,minmax(0,1fr))}.quickRanges button{padding:10px 4px;font-size:12px}}
 /* V25 hospital identity and stable, non-sticky clinical header. */
 #appHeader{position:relative;isolation:isolate;overflow:hidden;padding:calc(11px + env(safe-area-inset-top)) 14px 13px;border-radius:0 0 24px 24px;background:#071b31;color:#fff;box-shadow:0 12px 28px rgba(6,26,44,.28);transition:none}
-#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=37.30') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
+#appHeader::before,#appHeader::after{display:none}.clinicalBackdrop{position:absolute;inset:0;z-index:-2;background:url('anaesthesia-header.jpg?v=37.31') center/cover no-repeat;opacity:.88}.clinicalBackdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,33,.16),rgba(4,18,33,.45))}
 .hospitalStrip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(255,255,255,.93)}.hospitalStrip img{display:block;width:min(245px,70%);height:46px;object-fit:contain;object-position:left center}.hospitalStrip span{color:#202a6f;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;text-align:right}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.headerIdentity{min-width:0}.headerBrand{display:flex;align-items:center;gap:10px}.headerBrandMark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#25c8c5,#1688a4);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.22)}.headerBrandMark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.headerTitle{margin:0;font-size:22px;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.28)}.compactTitle{display:none}.motto{margin:5px 0 0;color:#eef8ff;font-size:12.5px;line-height:1.35;font-weight:650;max-width:360px;text-shadow:0 2px 9px rgba(0,0,0,.32)}
 .headerChips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.headerChip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.11);color:#f5fbff;font-size:11.5px;font-weight:900}.headerChip.mode5{background:rgba(200,70,70,.25)}.headerChip.mode6{background:rgba(25,118,201,.24)}.headerChip.mode7{background:rgba(67,166,107,.24)}.headerLiveDot{width:7px;height:7px;border-radius:50%;background:#6ee7a0;box-shadow:0 0 0 3px rgba(110,231,160,.17)}.headerLiveChip.saving .headerLiveDot{background:var(--amber)}.headerLiveChip.offline .headerLiveDot,.headerLiveChip.error .headerLiveDot{background:#ff7474}.headActions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:84px}.headActions button,.adminSettingsBtn,.accountBtn,.share{width:39px;height:39px;border-radius:12px;padding:0;display:inline-grid;place-items:center;box-shadow:none;background:rgba(255,255,255,.14);border:0;color:#fff}.headActions svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.accountInitial{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:13px;font-weight:950}.installBtn{min-width:39px}.installBtn span{display:none}
@@ -1559,3 +1559,164 @@ html[data-theme="dark"] .updateSheet[open]{background:rgba(28,28,30,.96);border-
 .adminSettingsBtn{position:relative}
 .adminAttentionBadge{position:absolute;top:-3px;right:-3px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border:2px solid var(--ios-surface,var(--apple-surface,#fff));border-radius:999px;background:var(--ios-red,#d12b22);color:#fff;font-size:9px;font-weight:800;line-height:1;box-sizing:border-box;pointer-events:none}
 body.dark .adminAttentionBadge{border-color:var(--ios-surface,var(--apple-surface,#161618))}
+
+
+/* V37.31 cinematic polish: launch, onboarding and restrained native motion. */
+:root{
+  --cinematic-ease:cubic-bezier(.16,1,.3,1);
+  --cinematic-soft:cubic-bezier(.22,.61,.36,1);
+  --cinematic-glow:rgba(8,125,121,.16);
+}
+html,body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.view:not(.hidden){animation:none}
+button,.card,.panel,.statusChip,.role,.rosterShortcutBtn,.accountActions>button{will-change:auto}
+@media(hover:hover){
+  button:not(:disabled):hover{filter:brightness(.99)}
+  .rosterShortcutBtn:hover,#today .role:hover,#today .statusChip:hover,.accountActions>button:hover{background-color:color-mix(in srgb,var(--apple-fill) 70%,var(--apple-surface))}
+}
+button:active:not(:disabled){transform:scale(.975)}
+.appDialog[open],.accountSheet[open],.activityDetailSheet[open]{animation-duration:420ms;animation-timing-function:var(--cinematic-ease)}
+
+/* Cold launch: cinematic, but never artificially blocks the actual roster load. */
+.launchScreen{
+  background:
+    radial-gradient(circle at 50% 35%,rgba(255,255,255,.9),rgba(242,242,247,.88) 46%,rgba(242,242,247,.98) 78%),
+    var(--apple-bg);
+  transition:opacity 520ms var(--cinematic-soft),visibility 520ms ease;
+  isolation:isolate;
+}
+.launchScreen::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 34%,rgba(8,125,121,.035));
+}
+.launchAtmosphere{position:absolute;inset:-12%;z-index:-2;overflow:hidden;pointer-events:none}
+.launchAtmosphere i{position:absolute;border-radius:50%;filter:blur(28px);opacity:.56;transform:translate3d(0,0,0);animation:launchDrift 8s ease-in-out infinite alternate}
+.launchAtmosphere i:nth-child(1){width:48vw;height:48vw;max-width:440px;max-height:440px;left:-9%;top:10%;background:rgba(90,200,194,.24)}
+.launchAtmosphere i:nth-child(2){width:42vw;height:42vw;max-width:390px;max-height:390px;right:-8%;top:35%;background:rgba(74,144,226,.13);animation-delay:-2.6s}
+.launchAtmosphere i:nth-child(3){width:34vw;height:34vw;max-width:330px;max-height:330px;left:34%;bottom:-10%;background:rgba(8,125,121,.12);animation-delay:-4.2s}
+@keyframes launchDrift{from{transform:translate3d(-8px,-6px,0) scale(.96)}to{transform:translate3d(12px,10px,0) scale(1.06)}}
+.launchContent{position:relative;z-index:1}
+.launchHospital{opacity:0;animation:cinematicFadeDown 620ms 80ms var(--cinematic-ease) forwards}
+.launchMessage{perspective:900px}
+.launchMark{position:relative;display:grid;width:104px;height:104px;place-items:center;margin:0 auto 26px;opacity:0;transform:translateY(12px) scale(.82);animation:launchMarkIn 820ms 170ms var(--cinematic-ease) forwards}
+.launchMark>span{position:relative;z-index:2;display:grid;width:86px;height:86px;place-items:center;border:1px solid rgba(255,255,255,.75);border-radius:28px;background:rgba(255,255,255,.7);box-shadow:0 20px 60px rgba(8,52,72,.12),inset 0 1px 0 rgba(255,255,255,.8);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
+.launchMark svg{width:48px;height:48px;fill:none;stroke:var(--apple-accent);stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round}
+.launchMark>i{position:absolute;inset:6px;border-radius:32px;box-shadow:0 0 0 0 rgba(8,125,121,.18);animation:launchHalo 2.8s 1s ease-out infinite}
+@keyframes launchMarkIn{0%{opacity:0;transform:translateY(14px) scale(.78);filter:blur(7px)}68%{opacity:1;transform:translateY(-2px) scale(1.035);filter:blur(0)}100%{opacity:1;transform:none;filter:blur(0)}}
+@keyframes launchHalo{0%,38%{box-shadow:0 0 0 0 rgba(8,125,121,.18);opacity:.7}78%,100%{box-shadow:0 0 0 24px rgba(8,125,121,0);opacity:0}}
+.launchMessage>span,.launchMessage h1,.launchMessage>p{opacity:0;animation:cinematicRise 680ms var(--cinematic-ease) forwards}
+.launchMessage>span{animation-delay:300ms}.launchMessage h1{animation-delay:370ms}.launchMessage>p{animation-delay:440ms}
+.launchProgress{opacity:0;animation:cinematicRise 620ms 520ms var(--cinematic-ease) forwards}
+.launchMotto{opacity:0;animation:cinematicFadeUp 620ms 610ms var(--cinematic-ease) forwards}
+.launchProgress{width:116px;height:4px;background:rgba(118,118,128,.13)}
+.launchProgress i{background:linear-gradient(90deg,var(--apple-accent),#5ac8c2,var(--apple-accent));background-size:180% 100%;animation:launchProgress 1.25s var(--cinematic-soft) infinite}
+.launchScreen.launchStateChanged .launchMessage h1,.launchScreen.launchStateChanged .launchMessage>p{animation:launchTextRefresh 320ms var(--cinematic-ease) both}
+@keyframes launchTextRefresh{from{opacity:.25;transform:translateY(4px);filter:blur(2px)}to{opacity:1;transform:none;filter:blur(0)}}
+.launchScreen.ready .launchMark>span{animation:launchReadyPulse 560ms var(--cinematic-ease) both}
+.launchScreen.ready .launchMark>i{animation:none;box-shadow:0 0 0 22px rgba(8,125,121,0)}
+@keyframes launchReadyPulse{0%{transform:scale(1)}45%{transform:scale(1.055)}100%{transform:scale(1)}}
+.launchScreen.dismissed .launchContent{opacity:0;transform:translateY(-8px) scale(1.012);filter:blur(4px);transition:opacity 420ms ease,transform 520ms var(--cinematic-ease),filter 420ms ease}
+.launchScreen.dismissed .launchAtmosphere{opacity:0;transform:scale(1.06);transition:opacity 500ms ease,transform 600ms var(--cinematic-ease)}
+
+/* Reveal only once after cold launch. Tab changes remain motion-stable. */
+body.appRevealing #appHeader{animation:appChromeReveal 760ms var(--cinematic-ease) both}
+body.appRevealing main{animation:appContentReveal 840ms 70ms var(--cinematic-ease) both}
+body.appRevealing .bottom{animation:appBottomReveal 760ms 120ms var(--cinematic-ease) both}
+@keyframes appChromeReveal{from{opacity:0;transform:translateY(-10px);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes appContentReveal{from{opacity:0;transform:translateY(16px) scale(.992);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes appBottomReveal{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* Sign-in inherits the same cinematic language without delaying access. */
+.authGate{position:fixed;isolation:isolate;background:
+  radial-gradient(circle at 18% 18%,rgba(90,200,194,.11),transparent 32%),
+  radial-gradient(circle at 82% 70%,rgba(74,144,226,.08),transparent 35%),
+  var(--apple-bg)}
+.authAtmosphere{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.authAtmosphere i{position:absolute;border-radius:50%;filter:blur(42px);opacity:.5}
+.authAtmosphere i:first-child{width:380px;height:380px;left:-160px;top:18%;background:rgba(90,200,194,.18)}
+.authAtmosphere i:last-child{width:320px;height:320px;right:-130px;bottom:7%;background:rgba(74,144,226,.1)}
+.authAppMark{display:grid;width:62px;height:62px;place-items:center;margin-bottom:22px;border:var(--apple-hairline) solid rgba(255,255,255,.76);border-radius:20px;background:rgba(255,255,255,.66);box-shadow:0 14px 40px rgba(8,52,72,.09);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%)}
+.authAppMark svg{width:34px;height:34px;fill:none;stroke:var(--apple-accent);stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round}
+body.authRevealing .authHospital,body.authRevealing .authAppMark,body.authRevealing .authEyebrow,body.authRevealing .authIntro h1,body.authRevealing .authIntro p,body.authRevealing .authCard,body.authRevealing .authMotto{opacity:0;animation:cinematicRise 720ms var(--cinematic-ease) forwards}
+body.authRevealing .authHospital{animation-delay:20ms}body.authRevealing .authAppMark{animation-delay:90ms}body.authRevealing .authEyebrow{animation-delay:140ms}body.authRevealing .authIntro h1{animation-delay:190ms}body.authRevealing .authIntro p{animation-delay:260ms}body.authRevealing .authCard{animation-delay:300ms}body.authRevealing .authMotto{animation-delay:360ms}
+
+/* Cinematic onboarding: one focal idea at a time, with restrained depth. */
+.onboardingDialog[open]{overflow:hidden;border:var(--apple-hairline) solid rgba(255,255,255,.72);background:
+  linear-gradient(180deg,rgba(255,255,255,.92),rgba(249,249,251,.9));
+  animation:onboardingSheetIn 520ms var(--cinematic-ease) both}
+.onboardingDialog[open]::before{content:"";position:absolute;left:50%;top:-120px;width:330px;height:250px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(90,200,194,.18),rgba(90,200,194,0) 68%);filter:blur(6px);pointer-events:none}
+.onboardingDialog::backdrop{animation:onboardingBackdropIn 360ms ease both}
+@keyframes onboardingBackdropIn{from{opacity:0}to{opacity:1}}
+@keyframes onboardingSheetIn{from{opacity:0;transform:translateY(34px) scale(.94);filter:blur(7px)}to{opacity:1;transform:none;filter:blur(0)}}
+.onboardingContent{position:relative;z-index:1}
+.onboardingContentIn{animation:onboardingPageForward 500ms var(--cinematic-ease) both}
+.onboardingContentBack{animation:onboardingPageBack 500ms var(--cinematic-ease) both}
+@keyframes onboardingPageForward{from{opacity:0;transform:translateX(24px) scale(.985);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes onboardingPageBack{from{opacity:0;transform:translateX(-24px) scale(.985);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
+.onboardingContentIn>.onboardingVisual,.onboardingContentBack>.onboardingVisual{animation:onboardingHeroIn 720ms 70ms var(--cinematic-ease) both}
+.onboardingContentIn>.onboardingEyebrow,.onboardingContentBack>.onboardingEyebrow{animation:cinematicRise 520ms 150ms var(--cinematic-ease) both}
+.onboardingContentIn>h2,.onboardingContentBack>h2{animation:cinematicRise 560ms 195ms var(--cinematic-ease) both}
+.onboardingContentIn>p,.onboardingContentBack>p{animation:cinematicRise 560ms 240ms var(--cinematic-ease) both}
+.onboardingContentIn>.onboardingFeatureList,.onboardingContentIn>.onboardingCallout,.onboardingContentIn>.onboardingNameLabel,.onboardingContentBack>.onboardingFeatureList,.onboardingContentBack>.onboardingCallout,.onboardingContentBack>.onboardingNameLabel{animation:cinematicRise 620ms 300ms var(--cinematic-ease) both}
+@keyframes onboardingHeroIn{from{opacity:0;transform:translateY(12px) scale(.78) rotate(-3deg);filter:blur(7px)}70%{opacity:1;transform:translateY(-3px) scale(1.035) rotate(.5deg);filter:blur(0)}to{opacity:1;transform:none;filter:blur(0)}}
+.onboardingVisual{position:relative;overflow:visible;background:linear-gradient(145deg,rgba(229,244,242,.96),rgba(255,255,255,.86));box-shadow:0 22px 55px rgba(8,125,121,.11),inset 0 1px 0 rgba(255,255,255,.8)}
+.onboardingVisual::after{content:"";position:absolute;inset:-9px;border:1px solid rgba(8,125,121,.08);border-radius:40px;opacity:.8}
+.welcomeVisual .onboardingMoon,.readyVisual>span{animation:heroFloat 3.6s ease-in-out infinite}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.workflowVisual span{animation:workflowPulse 3.2s ease-in-out infinite}.workflowVisual span:nth-of-type(2){animation-delay:.35s}.workflowVisual span:nth-of-type(3){animation-delay:.7s}
+@keyframes workflowPulse{0%,100%{transform:translateY(0);box-shadow:0 1px 6px rgba(0,0,0,.08)}50%{transform:translateY(-4px);box-shadow:0 10px 24px rgba(8,125,121,.12)}}
+.chatOnboardingVisual{width:238px;height:130px;grid-template-columns:62px 1fr;gap:14px;padding:18px}
+.chatOnboardingIcon{position:relative;width:62px;height:62px;border-radius:20px;box-shadow:0 14px 28px rgba(8,125,121,.22)}
+.chatOnboardingIcon>i{position:absolute;right:-7px;top:-7px;display:grid;width:26px;height:26px;place-items:center;border:3px solid var(--apple-surface);border-radius:50%;background:#ff3b30;color:white;font-size:12px;font-style:normal;font-weight:800}
+.chatOnboardingTranscript{display:grid;align-content:center;gap:7px}
+.chatOnboardingTranscript>span{display:grid;grid-template-columns:42px 1fr;gap:7px;align-items:center;min-height:25px;padding:5px 7px;border-radius:9px;background:rgba(255,255,255,.72);box-shadow:0 1px 3px rgba(0,0,0,.05);animation:chatLineIn 620ms var(--cinematic-ease) both}
+.chatOnboardingTranscript>span:nth-child(1){animation-delay:250ms}.chatOnboardingTranscript>span:nth-child(2){animation-delay:360ms}.chatOnboardingTranscript>span:nth-child(3){animation-delay:470ms}
+.chatOnboardingTranscript b{font-size:8.5px;color:var(--apple-secondary)}.chatOnboardingTranscript i{display:block;height:7px;border-radius:999px;background:rgba(8,125,121,.16)}.chatOnboardingTranscript .reply{margin-left:12px;background:rgba(229,244,242,.88)}
+@keyframes chatLineIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+.chatFeatureList div{grid-template-columns:78px 1fr}
+.onboardingProgress span{height:6px;transition:width 360ms var(--cinematic-ease),background-color 220ms ease,transform 360ms var(--cinematic-ease)}
+.onboardingProgress span.active{width:22px;box-shadow:0 4px 12px rgba(8,125,121,.2)}
+.onboardingActions{box-shadow:0 -1px 0 rgba(255,255,255,.45),0 -18px 36px rgba(27,45,58,.04)}
+.onboardingActions .primary{box-shadow:0 8px 20px rgba(8,125,121,.18)}
+.onboardingActions button:active{transform:scale(.98)}
+.onboardingDialog.onboardingChatIntro .onboardingSkip{display:none!important}
+
+/* App-wide polish: calmer surfaces, clearer touch response, no tab-layout movement. */
+.panel,.card,.profileEditor,.accountGroup,.statusCard{box-shadow:var(--apple-shadow),inset 0 0 0 var(--apple-hairline) rgba(60,60,67,.055)}
+#today .personalNightCard{box-shadow:0 1px 2px rgba(0,0,0,.025),0 16px 38px rgba(27,45,58,.06),inset 0 0 0 var(--apple-hairline) rgba(60,60,67,.05)}
+.bottom{box-shadow:0 -1px 0 rgba(60,60,67,.1),0 -14px 40px rgba(27,45,58,.08)}
+.bottom button{position:relative;transition:color 180ms ease,transform 240ms var(--cinematic-ease)}
+.bottom button.active{transform:none}
+.bottom button.active svg{transform:translateY(-1px) scale(1.055)}
+.screenHeader h1,.rosterPageHeader h2,.adminHeader h2{letter-spacing:-.045em}
+input,select,textarea{transition:border-color 180ms ease,box-shadow 220ms var(--cinematic-ease),background-color 180ms ease}
+input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--apple-accent) 48%,var(--apple-separator));box-shadow:0 0 0 4px color-mix(in srgb,var(--apple-accent) 10%,transparent)}
+@keyframes cinematicRise{from{opacity:0;transform:translateY(12px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes cinematicFadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes cinematicFadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+body.dark .launchScreen{background:
+  radial-gradient(circle at 50% 35%,rgba(44,44,46,.92),rgba(18,18,20,.95) 48%,rgba(0,0,0,.99) 82%),
+  #000}
+body.dark .launchMark>span,body.dark .authAppMark{background:rgba(44,44,46,.72);border-color:rgba(255,255,255,.11);box-shadow:0 20px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05)}
+body.dark .authGate{background:radial-gradient(circle at 18% 18%,rgba(90,200,194,.1),transparent 32%),radial-gradient(circle at 82% 70%,rgba(74,144,226,.07),transparent 35%),#000}
+body.dark .onboardingDialog[open]{background:linear-gradient(180deg,rgba(38,38,40,.95),rgba(28,28,30,.94));border-color:rgba(255,255,255,.1)}
+body.dark .onboardingVisual{background:linear-gradient(145deg,rgba(20,60,58,.94),rgba(44,44,46,.86));box-shadow:0 22px 55px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.05)}
+body.dark .chatOnboardingTranscript>span{background:rgba(58,58,60,.82)}body.dark .chatOnboardingTranscript .reply{background:rgba(20,60,58,.9)}
+
+@media(max-width:700px){
+  .authAppMark{width:58px;height:58px;margin-bottom:18px}
+}
+@media(max-width:420px){
+  .launchMark{width:92px;height:92px;margin-bottom:22px}.launchMark>span{width:78px;height:78px;border-radius:25px}.launchMark svg{width:43px;height:43px}
+  .onboardingDialog[open]{width:calc(100% - 12px);height:calc(100dvh - 12px);border-radius:28px}
+  .onboardingTop{min-height:56px}.onboardingContent{padding-top:6px}.chatOnboardingVisual{width:220px;height:120px}
+}
+@media(prefers-reduced-motion:reduce){
+  .launchAtmosphere i,.launchHospital,.launchMark,.launchMark>i,.launchMessage>span,.launchMessage h1,.launchMessage>p,.launchProgress,.launchMotto,
+  body.appRevealing #appHeader,body.appRevealing main,body.appRevealing .bottom,
+  body.authRevealing .authHospital,body.authRevealing .authAppMark,body.authRevealing .authEyebrow,body.authRevealing .authIntro h1,body.authRevealing .authIntro p,body.authRevealing .authCard,body.authRevealing .authMotto,
+  .onboardingDialog[open],.onboardingContentIn,.onboardingContentBack,.onboardingContentIn>*,.onboardingContentBack>*,.welcomeVisual .onboardingMoon,.readyVisual>span,.workflowVisual span,.chatOnboardingTranscript>span{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+  .launchScreen,.launchScreen.dismissed .launchContent,.launchScreen.dismissed .launchAtmosphere{transition:none!important}
+  .onboardingProgress span,input,select,textarea{transition:none!important}
+}
