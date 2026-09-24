@@ -23,7 +23,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.33/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.34/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -113,10 +113,11 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.33');
-assert.equal(release.title, 'Application shell foundation');
-assert.ok(release.changes.some(item => /built from pinned Vite/i.test(item)), 'release notes must explain the build foundation');
-assert.ok(release.changes.some(item => /service worker/i.test(item)), 'release notes must explain update and cache continuity');
+assert.equal(release.version, '37.34');
+assert.equal(release.title, 'Launch style cleanup');
+assert.ok(release.changes.some(item => /duplicated CSS/i.test(item)), 'release notes must explain the style cleanup');
+assert.ok(release.changes.some(item => /React loads/i.test(item)), 'release notes must explain the launch fallback');
+assert.match(ui, /\{version:'37\.33'[\s\S]*?title:'Application shell foundation'/, 'the previous release history must remain intact');
 assert.match(ui, /\{version:'37\.32'[\s\S]*?title:'Premium PWA experience'/, 'previous release history must remain intact');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');
