@@ -39,7 +39,7 @@ This invokes the deterministic Node test suite directly; the application has no 
 5. A push to `main` runs tests, applies forward-only Supabase migrations, and then deploys the allow-listed static files to GitHub Pages.
 6. Installed PWAs detect the new service worker and offer the update through the application's safe update flow.
 
-Schema changes require a new timestamped, forward-only migration that follows the rules in `AGENTS.md`; never edit an already deployed migration.
+Schema changes require a new timestamped, forward-only migration in `supabase/migrations/` that follows the rules in `AGENTS.md`; never edit, rename, move, or reuse an already deployed migration.
 
 ## Safety and security
 
