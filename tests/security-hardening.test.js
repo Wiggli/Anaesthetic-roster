@@ -68,8 +68,12 @@ assert.doesNotMatch(pushFunction, /BqB7H_jy/, 'the Edge Function source must not
 assert.match(maturityMigration, /create or replace function public\.chat_overview_v2\(\)[\s\S]*security invoker/, 'chat overview must not bypass RLS');
 assert.match(maturityMigration, /create policy "Members can remove own push subscriptions"[\s\S]*user_id=\(select auth\.uid\(\)/, 'device removal must remain owner-scoped');
 assert.match(maturityMigration, /create or replace function public\.admin_app_health\(\)[\s\S]*is_roster_admin\(\)/, 'admin health must verify administrator status server-side');
-assert.doesNotMatch(maturityMigration, /endpoint|p256dh|auth_key[\s\S]*admin_app_health/i, 'admin health must not expose push endpoints or encryption keys');
-assert.doesNotMatch(maturityMigration, /body[\s\S]*admin_app_health/i, 'admin health must not expose chat message content');
+const adminHealthSource = maturityMigration.slice(
+  maturityMigration.indexOf('create or replace function public.admin_app_health()'),
+  maturityMigration.indexOf('revoke all on function public.admin_app_health()')
+);
+assert.doesNotMatch(adminHealthSource, /endpoint|p256dh|auth_key/i, 'admin health must not expose push endpoints or encryption keys');
+assert.doesNotMatch(adminHealthSource, /\bbody\b/i, 'admin health must not expose chat message content');
 
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],
