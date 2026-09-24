@@ -8,6 +8,8 @@ const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
 const chatCss = fs.readFileSync(path.join(root, 'chat.css'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
+const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
+const mainCss = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const baseMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
@@ -33,6 +35,10 @@ assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'e
 assert.match(ui, /anaes_chat_intro_v37_22/, 'the chat introduction must be shown once per device');
 assert.match(ui, /onboardingChatPage\(\),[\s\S]*Your roster identity/, 'new users must see chat as part of the normal onboarding sequence');
 assert.match(ui, /Coordinate without changing the roster\./, 'chat onboarding must explain that chat and roster actions stay separate');
+assert.match(core, /function show\(v\)[\s\S]*window\.scrollTo\(0,0\);document\.body\.classList\.remove\('uiScrolled'\)/, 'tab changes must reset scroll state immediately before the new view is shown');
+const showSource = core.slice(core.indexOf('function show(v)'), core.indexOf('function previewExtension', core.indexOf('function show(v)')));
+assert.doesNotMatch(showSource, /behavior:[^,}]*smooth|scrollTo\(\{/, 'bottom-tab changes must not use smooth document scrolling');
+assert.match(mainCss, /@keyframes appleViewIn\{from\{opacity:\.55\}to\{opacity:1\}\}/, 'tab entry animation must not vertically translate the whole view');
 
 assert.match(chatCss, /\.chatTeamConsole\{[\s\S]*minmax\(250px,330px\)/, 'team transcript must provide a substantial scrolling message area');
 assert.match(chatCss, /\.chatTeamLine\{[\s\S]*grid-template-columns:auto auto minmax\(0,1fr\)/, 'team messages must render as compact continuous chat lines rather than bubbles');
