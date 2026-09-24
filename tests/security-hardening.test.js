@@ -20,6 +20,10 @@ const advisorHardeningMigration = fs.readFileSync(path.join(root, 'supabase', 'm
 
 assert.match(html, /@supabase\/supabase-js@2\.105\.0" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/,
   'the third-party Supabase browser bundle must be protected by subresource integrity');
+assert.match(html, /name="robots"[\s\S]*content="noindex,nofollow,noarchive,nosnippet,noimageindex"/,
+  'the public Pages shell must tell normal crawlers not to index or archive the roster app');
+assert.match(html, /name="googlebot"[\s\S]*content="noindex,nofollow,noarchive,nosnippet,noimageindex"/,
+  'Google-specific indexing directives must remain explicit on the public Pages shell');
 assert.doesNotMatch(core, /authMessage\([^\n;]*\.error\.message/,
   'raw authentication-provider errors must not be shown to users');
 assert.doesNotMatch(ui, /profile could not be saved[^\n]*error\.message/,
