@@ -1,19 +1,24 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-32';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-33';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.32',
-  './theme-bootstrap.js?v=37.32',
-  './app-core.js?v=37.32',
-  './app-ui.js?v=37.32',
-  './manifest.webmanifest?v=37.32',
+  './styles.css?v=37.33',
+  './theme-bootstrap.js?v=37.33',
+  './app-core.js?v=37.33',
+  './app-ui.js?v=37.33',
+  './manifest.webmanifest?v=37.33',
   './release.json',
-  './icon-192.png?v=37.32',
-  './icon-512.png?v=37.32',
-  './apple-touch-icon.png?v=37.32',
-  './anaesthesia-header.jpg?v=37.32',
-  './mater-dei-logo.png?v=37.32'
+  './icon-192.png?v=37.33',
+  './icon-512.png?v=37.33',
+  './apple-touch-icon.png?v=37.33',
+  './anaesthesia-header.jpg?v=37.33',
+  './mater-dei-logo.png?v=37.33'
 ];
+
+// Vite injects the fingerprinted React/CSS assets here at build time.
+// Legacy app-shell URLs remain explicit so updates of installed 37.x PWAs
+// keep the existing network and update semantics.
+const BUILD_SHELL = (self.__WB_MANIFEST || []).map(entry => new URL(entry.url, self.registration.scope).href);
 
 function isSupabaseLibrary(requestUrl) {
   return requestUrl.hostname === 'cdn.jsdelivr.net' &&
@@ -21,7 +26,7 @@ function isSupabaseLibrary(requestUrl) {
 }
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL.concat(BUILD_SHELL))));
 });
 
 self.addEventListener('activate', event => {
@@ -138,8 +143,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=37.32', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=37.32', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=37.33', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.33', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {

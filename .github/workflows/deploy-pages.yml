@@ -19,8 +19,11 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-          package-manager-cache: false
+          cache: npm
+      - run: npm ci
       - run: npm test
+      - run: npm run build
+      - run: npm run verify:build
 
   browser-smoke:
     runs-on: ubuntu-latest
@@ -30,11 +33,14 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-          package-manager-cache: false
+          cache: npm
+      - run: npm ci
       - name: Install browser smoke runner
         run: npm install --no-save --no-package-lock @playwright/test@1.55.0
       - name: Install Chromium for browser smoke tests
         run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run verify:build
       - name: Run mobile browser smoke tests
         run: npx playwright test --config=playwright.config.js
 
@@ -118,11 +124,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
-      - name: Prepare public app files
-        run: |
-          mkdir dist
-          cp index.html styles.css chat.css theme-bootstrap.js app-core.js app-ui.js push.js chat.js service-worker.js manifest.webmanifest release.json dist/
-          cp anaesthesia-header.jpg mater-dei-logo.png apple-touch-icon.png icon-192.png icon-512.png dist/
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build public app files
+        run: npm run build
+      - run: npm run verify:build
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
@@ -181,7 +190,7 @@ jobs:
             --connect-timeout 10 --max-time 30 \
             "${page_url}service-worker.js" > "$service_worker_file"
           cache_version="${app_version//./-}"
-          if ! grep -Fq "CACHE_NAME = 'anaesthetic-night-roster-v${cache_version}'" "$service_worker_file"; then
+          if ! grep -Fq "anaesthetic-night-roster-v${cache_version}" "$service_worker_file"; then
             echo "::error::The deployed service worker does not match application version ${app_version}."
             exit 1
           fi

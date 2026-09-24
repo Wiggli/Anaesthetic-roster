@@ -8,6 +8,7 @@ const push = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924090000_chat_push_notifications.sql'), 'utf8');
 const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
@@ -22,7 +23,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.32/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.33/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -112,10 +113,10 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.32');
-assert.equal(release.title, 'Premium PWA experience');
-assert.ok(release.changes.some(item => /system splash|app icon/i.test(item)), 'release notes must explain the seamless startup handoff');
-assert.ok(release.changes.some(item => /app badge|administrator attention/i.test(item)), 'release notes must explain installed-app badging');
-assert.ok(release.changes.some(item => /automatic-on-reopen|update system/i.test(item)), 'release notes must explain the new update policy');
+assert.equal(release.version, '37.33');
+assert.equal(release.title, 'Application shell foundation');
+assert.ok(release.changes.some(item => /built from pinned Vite/i.test(item)), 'release notes must explain the build foundation');
+assert.ok(release.changes.some(item => /service worker/i.test(item)), 'release notes must explain update and cache continuity');
+assert.match(ui, /\{version:'37\.32'[\s\S]*?title:'Premium PWA experience'/, 'previous release history must remain intact');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');

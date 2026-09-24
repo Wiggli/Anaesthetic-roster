@@ -31,8 +31,8 @@ assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifi
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.32/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.32/, 'chat client must be versioned with the app');
+assert.match(html, /chat\.css\?v=37\.33/, 'chat styling must be versioned with the app');
+assert.match(html, /chat\.js\?v=37\.33/, 'chat client must be versioned with the app');
 assert.match(ui, /function onboardingChatPage\(\)/, 'onboarding must include a dedicated Team chat page');
 assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'existing users must receive a one-page chat introduction rather than replaying the full guide');
 assert.match(ui, /anaes_chat_intro_v37_31/, 'the chat introduction must be shown once per device');
@@ -130,6 +130,8 @@ assert.doesNotMatch(maturityMigration, /insert into public\.night_|update public
 
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /chat\.js|chat\.css/, 'chat assets must not be mandatory for service-worker installation');
-assert.match(workflow, /cp index\.html styles\.css chat\.css[\s\S]*app-ui\.js push\.js chat\.js/, 'deployment must publish chat and optional push assets');
+assert.match(workflow, /- name: Build public app files\n        run: npm run build/, 'deployment must build the chat and push assets');
+const viteConfig = fs.readFileSync(path.join(root, 'vite.config.mts'), 'utf8');
+for (const asset of ['chat.css', 'chat.js', 'push.js']) assert.ok(viteConfig.includes(`'${asset}'`), `${asset} must be included in the Pages artifact`);
 
 console.log('Group transcript, roster-based private list, privacy and pagination checks passed.');

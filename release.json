@@ -1,14 +1,12 @@
 {
-  "version": "37.32",
+  "version": "37.33",
   "date": "24 September 2026",
-  "title": "Premium PWA experience",
-  "summary": "Make Night Roster feel more like a native app on iPhone and Android while keeping the same install-once PWA, Supabase backend and automatic web distribution.",
+  "title": "Application shell foundation",
+  "summary": "Introduce a reviewed production build while keeping the same installed PWA and shared roster behavior.",
   "changes": [
-    "The system splash now hands off to the same Night Roster app icon and first-paint background before the cinematic launch continues, reducing the visible double-start effect.",
-    "Install guidance now adapts to iPhone, iPad, Android and already-installed mode, while standalone mode hides browser-only installation controls.",
-    "Supported devices now show an app badge for unread Chat and administrator attention; background notifications can set a generic badge until the exact count is refreshed.",
-    "Night and Chat are available as app shortcuts where supported, while notification taps still deep-link to the exact conversation, roster night or administrator access screen.",
-    "The update system now supports quiet automatic-on-reopen releases as well as important review-first releases, and mobile safe areas, keyboard handling, theme startup and touch chrome are refined."
+    "The GitHub Pages application shell is now built from pinned Vite, React, TypeScript, Tailwind and Motion dependencies.",
+    "The launch motto is the first isolated React region and respects reduced-motion preferences.",
+    "The existing service worker still waits for the user's update choice, delivers push notifications and keeps private Supabase requests out of its cache."
   ],
   "update_policy": "important"
 }

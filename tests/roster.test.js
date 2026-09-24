@@ -241,7 +241,7 @@ const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supa
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.32','37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.33','37.32','37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -254,7 +254,7 @@ for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.
 assert.match(manifest, new RegExp(`icon-192\\.png\\?v=${context.APP_VERSION.replace('.', '\\.')}`), 'manifest icon query must match APP_VERSION');
 assert.match(manifest, /"purpose": "any maskable"/, 'the shared PWA icons must explicitly serve both standard and maskable purposes');
 assert.match(manifest, /"shortcuts"[\s\S]*"\.\/\?view=night"[\s\S]*"\.\/\?view=chat"/, 'installed apps must expose Night and Chat shortcuts where supported');
-assert.match(html, /class="launchMark"[\s\S]*icon-192\.png\?v=37\.32/, 'the cinematic launch must begin with the same app icon used by the installed PWA splash');
+assert.match(html, /class="launchMark"[\s\S]*icon-192\.png\?v=37\.33/, 'the cinematic launch must begin with the same app icon used by the installed PWA splash');
 assert.match(themeBootstrap, /document\.documentElement\.style\.backgroundColor=background/, 'startup theme bootstrap must set the first-paint background before CSS loads');
 assert.match(ui, /update_policy==='automatic'[\s\S]*No action required/, 'minor releases must support quiet automatic-on-reopen update messaging');
 assert.match(ui, /function applyStandaloneUi\(\)[\s\S]*standaloneApp/, 'installed mode must remove browser-only installation chrome');
@@ -311,24 +311,25 @@ assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selec
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
 
-const deployBlock = workflow.match(/- name: Prepare public app files[\s\S]*?(?=\n      - uses:)/);
-assert.ok(deployBlock, 'deployment workflow must contain an explicit dist preparation step');
-const copiedAssets = new Set(Array.from(deployBlock[0].matchAll(/^\s*cp\s+(.+)\s+dist\/$/gm), match => match[1].trim().split(/\s+/)).flat());
+assert.match(workflow, /- name: Build public app files\n        run: npm run build/, 'Pages must build the reviewed dist artifact');
+const viteConfig = fs.readFileSync(path.join(__dirname, '..', 'vite.config.mts'), 'utf8');
 const requiredProductionAssets = [
-  'index.html', 'styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'service-worker.js', 'manifest.webmanifest', 'release.json',
+  'styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest', 'release.json',
   'anaesthesia-header.jpg', 'mater-dei-logo.png', 'apple-touch-icon.png',
   'icon-192.png', 'icon-512.png'
 ];
 for (const asset of requiredProductionAssets) {
-  assert.ok(copiedAssets.has(asset), `${asset} must be copied into the GitHub Pages dist directory`);
+  assert.ok(viteConfig.includes(`'${asset}'`), `${asset} must be explicitly emitted to the Pages dist directory`);
   assert.ok(fs.existsSync(path.join(__dirname, '..', asset)), `${asset} must exist in the repository`);
 }
+assert.match(viteConfig, /strategies: 'injectManifest'[\s\S]*filename: 'service-worker\.js'[\s\S]*injectRegister: false/, 'the built worker must retain the existing registration and scope');
+assert.match(viteConfig, /publicDir: false/, 'build must not publish arbitrary repository files');
 
 const obsoleteFiles = ['index-18.html', 'app-v25.js', 'header-background.jpg', 'header-background.png', 'icon-maskable-192.png', 'icon-maskable-512.png'];
 const productionSources = { 'index.html': html, 'app-core.js': fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), 'app-ui.js': ui, 'styles.css': css, 'manifest.webmanifest': manifest, 'service-worker.js': sw };
 for (const obsolete of obsoleteFiles) {
   for (const [file, source] of Object.entries(productionSources)) assert.doesNotMatch(source, new RegExp(obsolete.replace('.', '\\.'), 'i'), `${file} must not reference obsolete ${obsolete}`);
-  assert.ok(!copiedAssets.has(obsolete), `obsolete ${obsolete} must not be copied into dist`);
+  assert.ok(!viteConfig.includes(`'${obsolete}'`), `obsolete ${obsolete} must not be emitted into dist`);
 }
 
 assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed pinned version');
@@ -342,7 +343,7 @@ assert.match(workflow, /migrate:[\s\S]*needs: \[test, browser-smoke\]/, 'migrati
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
-assert.match(workflow, /service-worker\.js[\s\S]*CACHE_NAME = 'anaesthetic-night-roster-v\$\{cache_version\}'/, 'post-deployment checks must verify the live service-worker cache version');
+assert.match(workflow, /service-worker\.js[\s\S]*anaesthetic-night-roster-v\$\{cache_version\}/, 'post-deployment checks must verify the live service-worker cache version');
 assert.match(workflow, /browser-smoke:[\s\S]*@playwright\/test@1\.55\.0[\s\S]*playwright test/, 'CI must run a real-browser smoke suite before production migration');
 assert.match(workflow, /migrate:[\s\S]*needs: \[test, browser-smoke\]/, 'production migration must wait for deterministic and browser smoke tests');
 assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
