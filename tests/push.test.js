@@ -87,7 +87,7 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.26');
+assert.equal(release.version, '37.27');
 assert.equal(release.title, 'A more complete Team Chat');
 assert.ok(release.changes.some(item => /notification/i.test(item)), 'release notes must announce message notifications together with Team chat');
 assert.ok(release.changes.some(item => /roster/i.test(item) && /separate|entered|update/i.test(item)), 'release notes must keep chat separate from roster changes');
