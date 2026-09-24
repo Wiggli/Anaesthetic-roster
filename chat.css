@@ -2,7 +2,7 @@
 body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 #chat{max-width:760px;margin-inline:auto;padding-bottom:8px}
 .chatScreen{display:grid;grid-auto-rows:max-content;align-content:start;gap:12px;min-height:calc(100dvh - 168px)}
-.chatScreenHeader{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 -12px;padding:calc(14px + env(safe-area-inset-top)) 18px 12px;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
+.chatScreenHeader{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 -12px;padding:calc(12px + env(safe-area-inset-top)) 18px 10px;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 .chatScreenHeader .chatEyebrow{display:block;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:8.5px;font-weight:750;letter-spacing:.075em;text-transform:uppercase}
 .chatScreenHeader h1{margin:3px 0 0;color:var(--ios-label,var(--apple-label,#111));font-size:27px;font-weight:760;line-height:1.08;letter-spacing:-.035em}
 .chatScreenHeader p{display:flex;align-items:center;gap:6px;margin:5px 0 0;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10px}
@@ -13,26 +13,39 @@ body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 .chatModuleFallback{margin:0;padding:14px;border:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:16px;background:var(--ios-surface,var(--apple-surface,#fff));color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px;line-height:1.45;text-align:center}
 .chatWorkspace{display:grid;grid-template-columns:1fr;min-height:0}
 .chatHome{display:grid;grid-auto-rows:max-content;align-content:start;gap:12px}
-.chatTeamCard{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:13px;align-items:center;width:100%;min-height:150px;padding:18px;border:1px solid color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 24%,var(--ios-separator,#d1d1d6));border-radius:24px;background:linear-gradient(145deg,color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 14%,var(--ios-surface,#fff)),var(--ios-surface,var(--apple-surface,#fff)) 58%);color:var(--ios-label,var(--apple-label,#111));box-shadow:0 10px 28px rgba(0,0,0,.07);text-align:left}
-.chatTeamCard:active{transform:scale(.99)}
-.chatTeamAvatar{display:grid;width:58px;height:58px;place-items:center;border-radius:18px;background:var(--ios-accent,var(--apple-accent,#087d79));color:#fff;font-size:17px;font-weight:820;letter-spacing:.02em;box-shadow:0 8px 18px color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 22%,transparent)}
-.chatTeamContent{display:grid;min-width:0;gap:3px}
-.chatTeamEyebrow{color:var(--ios-accent,var(--apple-accent,#087d79));font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-.chatTeamContent strong{font-size:20px;font-weight:780;letter-spacing:-.025em}
+
+/* Team group transcript: intentionally closer to a classic game chat log than message bubbles. */
+.chatTeamConsole{display:grid;grid-template-rows:auto auto minmax(250px,330px) auto;overflow:hidden;border:1px solid color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 26%,var(--ios-separator,#d1d1d6));border-radius:22px;background:var(--ios-surface,var(--apple-surface,#fff));box-shadow:0 10px 28px rgba(0,0,0,.07)}
+.chatTeamConsoleHeader{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:11px;align-items:center;padding:13px 14px 11px;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));background:linear-gradient(145deg,color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 12%,var(--ios-surface,#fff)),var(--ios-surface,var(--apple-surface,#fff)) 68%)}
+.chatTeamAvatar{display:grid;width:48px;height:48px;place-items:center;border-radius:15px;background:var(--ios-accent,var(--apple-accent,#087d79));color:#fff;font-size:15px;font-weight:820;letter-spacing:.02em}
+.chatTeamConsoleTitle{display:grid;min-width:0;gap:1px}
+.chatTeamEyebrow{color:var(--ios-accent,var(--apple-accent,#087d79));font-size:8.5px;font-weight:820;letter-spacing:.08em;text-transform:uppercase}
+.chatTeamConsoleTitle h2{margin:0;color:var(--ios-label,var(--apple-label,#111));font-size:18px;font-weight:780;letter-spacing:-.02em}
 .chatTeamMemberCount{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10px}
-.chatTeamPreview{display:-webkit-box;overflow:hidden;margin-top:8px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px;line-height:1.4;-webkit-box-orient:vertical;-webkit-line-clamp:2}
-.chatTeamMeta{display:grid;justify-items:end;align-self:stretch;gap:8px;padding-top:2px;color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93))}
-.chatTeamMeta small{font-size:9.5px;font-weight:600}
-.chatTeamMeta svg{width:18px;height:18px;margin-top:auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .chatConversationBadge{display:grid;min-width:22px;height:22px;place-items:center;padding:0 6px;border-radius:999px;background:var(--ios-accent,var(--apple-accent,#087d79));color:#fff;font-size:10px;font-style:normal;font-weight:800}
-.chatSafetyNotice{display:flex;align-items:flex-start;gap:9px;margin:0;padding:9px 11px;border:1px solid color-mix(in srgb,var(--ios-amber,#ff9f0a) 24%,transparent);border-radius:13px;background:color-mix(in srgb,var(--ios-amber,#ff9f0a) 7%,var(--ios-surface,#fff));color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10.5px;line-height:1.4}
-.chatSafetyNotice svg{width:16px;height:16px;flex:0 0 16px;margin-top:1px;fill:none;stroke:var(--ios-amber,#c66b00);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.chatTeamToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;border-bottom:1px solid color-mix(in srgb,var(--ios-separator,var(--apple-separator,#d1d1d6)) 78%,transparent);background:color-mix(in srgb,var(--ios-fill,var(--apple-fill,#f2f2f7)) 55%,var(--ios-surface,#fff));color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93));font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.045em}
+.chatTeamLoadOlder{min-height:28px;padding:5px 9px;border:0;border-radius:999px;background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-accent,var(--apple-accent,#087d79));box-shadow:none;font-size:9px;font-weight:720;text-transform:none;letter-spacing:0}
+.chatTeamMessages{display:flex;min-height:250px;flex-direction:column;gap:3px;padding:10px 12px 12px;overflow:auto;overscroll-behavior:contain;background:linear-gradient(180deg,color-mix(in srgb,var(--ios-bg,var(--apple-bg,#f2f2f7)) 58%,var(--ios-surface,#fff)),color-mix(in srgb,var(--ios-bg,var(--apple-bg,#f2f2f7)) 78%,var(--ios-surface,#fff)))}
+.chatTeamLine{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:5px;align-items:baseline;color:var(--ios-label,var(--apple-label,#111));font-size:11.5px;line-height:1.42}
+.chatTeamLineTime{color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93));font-size:9px;font-variant-numeric:tabular-nums}
+.chatTeamLineName{color:var(--ios-accent,var(--apple-accent,#087d79));font-size:11px;font-weight:780}
+.chatTeamLine.own .chatTeamLineName{color:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 70%,var(--ios-label,#111))}
+.chatTeamLineBody{min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.chatTeamEmpty{display:grid;gap:4px;margin:auto;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));text-align:center}
+.chatTeamEmpty b{color:var(--ios-label,var(--apple-label,#111));font-size:13px}
+.chatTeamEmpty span{font-size:10.5px}
+.chatTeamComposerWrap{padding:9px 10px 7px;border-top:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));background:var(--ios-surface,var(--apple-surface,#fff))}
+.chatTeamComposer textarea{background:color-mix(in srgb,var(--ios-bg,var(--apple-bg,#f2f2f7)) 88%,var(--ios-surface,#fff))}
+
+.chatSafetyNotice{display:flex;align-items:flex-start;gap:9px;margin:0;padding:8px 10px;border:1px solid color-mix(in srgb,var(--ios-amber,#ff9f0a) 22%,transparent);border-radius:13px;background:color-mix(in srgb,var(--ios-amber,#ff9f0a) 6%,var(--ios-surface,#fff));color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10px;line-height:1.4}
+.chatSafetyNotice svg{width:15px;height:15px;flex:0 0 15px;margin-top:1px;fill:none;stroke:var(--ios-amber,#c66b00);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .chatSafetyNotice b{color:var(--ios-label,var(--apple-label,#111));font-weight:760}
+
 .chatPrivateHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:2px;padding:0 2px}
 .chatPrivateHeader>div{display:grid;gap:1px}
 .chatPrivateHeader>div>span{color:var(--ios-label,var(--apple-label,#111));font-size:15px;font-weight:760}
 .chatPrivateHeader small{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px}
-.chatNewPrivateBtn{display:flex;min-height:34px;align-items:center;justify-content:center;gap:6px;padding:7px 10px;border:0;border-radius:999px;background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 12%,var(--ios-surface,#fff));color:var(--ios-accent,var(--apple-accent,#087d79));box-shadow:none;font-size:10px;font-weight:750}
+.chatNewPrivateBtn{display:flex;min-height:36px;align-items:center;justify-content:center;gap:6px;padding:7px 11px;border:0;border-radius:999px;background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 12%,var(--ios-surface,#fff));color:var(--ios-accent,var(--apple-accent,#087d79));box-shadow:none;font-size:10px;font-weight:750}
 .chatNewPrivateBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .chatConversationList{display:grid;overflow:hidden;border:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:18px;background:var(--ios-surface,var(--apple-surface,#fff));box-shadow:0 5px 18px rgba(0,0,0,.04)}
 .chatConversationItem{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;min-height:66px;padding:10px 12px;border:0;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:0;background:transparent;color:var(--ios-label,var(--apple-label,#111));box-shadow:none;text-align:left}
@@ -44,9 +57,11 @@ body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 .chatConversationTop b{overflow:hidden;color:var(--ios-label,var(--apple-label,#111));font-size:14px;font-weight:740;text-overflow:ellipsis;white-space:nowrap}
 .chatConversationTop small{flex:0 0 auto;color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93));font-size:9.5px;font-weight:550}
 .chatConversationPreview{overflow:hidden;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:11px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
-.chatListEmpty,.chatThreadEmpty{display:grid;gap:4px;padding:24px 18px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));text-align:center}
+.chatListEmpty,.chatThreadEmpty{display:grid;gap:4px;padding:22px 18px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));text-align:center}
 .chatListEmpty b,.chatThreadEmpty b{color:var(--ios-label,var(--apple-label,#111));font-size:13px}
 .chatListEmpty span,.chatThreadEmpty span{font-size:10.5px;line-height:1.45}
+
+/* Private thread */
 .chatConversationPane{display:none;min-width:0;min-height:0}
 .chatThread{display:grid;grid-template-rows:auto auto minmax(240px,1fr) auto;min-height:calc(100dvh - 250px);overflow:hidden;border:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:20px;background:var(--ios-surface,var(--apple-surface,#fff));box-shadow:var(--ios-shadow,var(--apple-shadow,0 7px 22px rgba(0,0,0,.07)))}
 .chatThreadHeader{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));background:color-mix(in srgb,var(--ios-surface,#fff) 94%,transparent)}
@@ -73,10 +88,12 @@ body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 .chatSendBtn{display:grid;width:42px;height:42px;min-height:42px;place-items:center;padding:0;border:0;border-radius:50%;background:var(--ios-accent,var(--apple-accent,#087d79));color:#fff;box-shadow:none}
 .chatSendBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .chatSendBtn:disabled{opacity:.45}
-.chatComposerStatus{min-height:14px;margin-top:4px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px}
+.chatComposerStatus{min-height:13px;margin-top:4px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px}
 .chatComposerStatus.error{color:var(--ios-red,#d12b22)}
 #chat.chat-thread-open .chatHome{display:none}
 #chat.chat-thread-open .chatConversationPane{display:block}
+
+/* Private chat picker */
 .chatNewConversationSheet[open]{position:fixed;inset:auto 0 0;display:flex;width:min(620px,100%);max-height:min(80dvh,680px);flex-direction:column;margin:0 auto;padding:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--ios-separator,#d1d1d6) 70%,transparent);border-bottom:0;border-radius:26px 26px 0 0;background:color-mix(in srgb,var(--ios-surface,#fff) 94%,transparent);color:var(--ios-label,var(--apple-label,#111));box-shadow:0 -18px 70px rgba(0,0,0,.24);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px)}
 .chatNewConversationSheet::backdrop{background:rgba(24,24,27,.4);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
 .chatSheetHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px 12px;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6))}
@@ -84,33 +101,42 @@ body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 .chatSheetHeader h2{margin:1px 0 0;font-size:23px;letter-spacing:-.03em}
 .chatSheetHeader button{padding:7px;border:0;background:transparent;color:var(--ios-accent,var(--apple-accent,#087d79));box-shadow:none}
 .chatMemberPicker{display:grid;min-height:120px;overflow:auto;padding:6px 0 calc(18px + env(safe-area-inset-bottom))}
-.chatMemberChoice{display:grid;grid-template-columns:42px minmax(0,1fr);gap:10px;align-items:center;width:100%;padding:10px 16px;border:0;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:0;background:transparent;color:var(--ios-label,var(--apple-label,#111));box-shadow:none;text-align:left}
+.chatMemberChoice{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:10px 16px;border:0;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:0;background:transparent;color:var(--ios-label,var(--apple-label,#111));box-shadow:none;text-align:left}
 .chatMemberChoice:last-child{border-bottom:0}
-.chatMemberChoice:active{background:var(--ios-fill,var(--apple-fill,#f2f2f7))}
-.chatMemberChoice>span:last-child{display:grid;gap:2px}
-.chatMemberChoice b{font-size:14px}
+.chatMemberChoice:active:not(:disabled){background:var(--ios-fill,var(--apple-fill,#f2f2f7))}
+.chatMemberChoice:disabled{cursor:default;opacity:1;filter:none}
+.chatMemberChoiceText{display:grid;gap:2px;min-width:0}
+.chatMemberChoice b{overflow:hidden;font-size:14px;text-overflow:ellipsis;white-space:nowrap}
 .chatMemberChoice small{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10px}
-.chatMemberChoice.unavailable{opacity:.58}
-.chatMemberChoice.unavailable .chatMemberAvatar{filter:saturate(.45)}
+.chatMemberStatus{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:4px 7px;border-radius:999px;font-size:8.5px;font-weight:740;white-space:nowrap}
+.chatMemberStatus.available{background:color-mix(in srgb,var(--ios-green,#34c759) 12%,var(--ios-surface,#fff));color:color-mix(in srgb,var(--ios-green,#34c759) 76%,var(--ios-label,#111))}
+.chatMemberStatus.waiting{background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-secondary,var(--apple-secondary,#6e6e73))}
+.chatMemberChoice.awaiting .chatMemberAvatar{background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-secondary,var(--apple-secondary,#6e6e73))}
 .chatMemberPickerEmpty{padding:24px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px;text-align:center}
+
 .bottom button[data-v="chat"]{position:relative}
 .bottom button[data-v="chat"] .navTaskBadge{position:absolute;top:4px;left:50%;margin-left:9px}
-body.dark .chatTeamCard{background:linear-gradient(145deg,color-mix(in srgb,var(--ios-accent,var(--apple-accent,#0a8f89)) 14%,var(--ios-surface,#161618)),var(--ios-surface,var(--apple-surface,#161618)) 58%)}
-body.dark .chatConversationList,body.dark .chatComposerWrap,body.dark .chatThreadHeader,body.dark .chatThread,body.dark .chatNewConversationSheet[open]{background:var(--ios-surface,var(--apple-surface,#161618))}
-body.dark .chatMessages{background:var(--ios-bg,var(--apple-bg,#0c0c0e))}
+
+/* Dark mode */
+body.dark .chatTeamConsoleHeader{background:linear-gradient(145deg,color-mix(in srgb,var(--ios-accent,var(--apple-accent,#0a8f89)) 14%,var(--ios-surface,#161618)),var(--ios-surface,var(--apple-surface,#161618)) 68%)}
+body.dark .chatTeamConsole,body.dark .chatConversationList,body.dark .chatComposerWrap,body.dark .chatTeamComposerWrap,body.dark .chatThreadHeader,body.dark .chatThread,body.dark .chatNewConversationSheet[open]{background:var(--ios-surface,var(--apple-surface,#161618))}
+body.dark .chatTeamMessages,body.dark .chatMessages{background:var(--ios-bg,var(--apple-bg,#0c0c0e))}
 body.dark .chatBubble{background:var(--ios-fill,var(--apple-fill,#26262a))}
 body.dark .chatMessageRow.own .chatBubble{background:var(--ios-accent,var(--apple-accent,#0a8f89))}
-body.dark .chatSafetyNotice{background:color-mix(in srgb,var(--ios-amber,#ff9f0a) 10%,var(--ios-surface,#161618))}
+body.dark .chatSafetyNotice{background:color-mix(in srgb,var(--ios-amber,#ff9f0a) 9%,var(--ios-surface,#161618))}
+body.dark .chatMemberStatus.available{background:color-mix(in srgb,var(--ios-green,#34c759) 14%,var(--ios-surface,#161618))}
+body.dark .chatTeamComposer textarea{background:var(--ios-bg,var(--apple-bg,#0c0c0e))}
+
 @media(min-width:760px){
-  .chatWorkspace{grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:12px}
+  .chatWorkspace{grid-template-columns:minmax(320px,390px) minmax(0,1fr);gap:12px}
   .chatConversationPane{display:block}
   .chatThread.hidden{display:grid!important}
-  .chatThread.hidden .chatMessages:before{content:'Select Anaesthetic Team or a private chat';margin:auto;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px}
+  .chatThread.hidden .chatMessages:before{content:'Open a private chat';margin:auto;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px}
   #chat.chat-thread-open .chatHome{display:grid}
   .chatBackBtn{display:none}
-  .chatThread{height:min(67dvh,690px);min-height:560px}
+  .chatThread{height:min(70dvh,720px);min-height:600px}
 }
 @media(max-width:420px){
-  #chat{padding-inline:0}.chatScreen{gap:10px}.chatScreenHeader{padding-inline:16px}.chatTeamCard{min-height:142px;padding:16px}.chatTeamAvatar{width:54px;height:54px}.chatTeamContent strong{font-size:19px}
+  #chat{padding-inline:0}.chatScreen{gap:10px}.chatScreenHeader{padding-inline:16px}.chatTeamConsole{grid-template-rows:auto auto minmax(235px,300px) auto}.chatTeamLine{font-size:11px}.chatTeamLineName{font-size:10.5px}.chatPrivateHeader{align-items:flex-end}
 }
-@media(prefers-reduced-motion:reduce){.chatConversationItem,.chatNewPrivateBtn,.chatSendBtn,.chatTeamCard{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.chatConversationItem,.chatNewPrivateBtn,.chatSendBtn{transition:none!important}}
