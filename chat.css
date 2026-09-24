@@ -249,3 +249,10 @@ body.dark .chatRetryBtn{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,
 @media(prefers-reduced-motion:reduce){
   .chatNewMessagesBtn,.chatMessageActionSheet[open]{scroll-behavior:auto;transition:none!important}
 }
+
+@media(max-width:759px){
+  .chatComposer textarea{font-size:16px}
+  .chatSendBtn{width:44px;height:44px;min-height:44px}
+  .chatNewPrivateBtn,.chatNotificationEnable,.pushMuteActions button,.pushDeviceRemove,.chatTeamLoadOlder,.chatLoadOlder{touch-action:manipulation}
+  .chatMessages,.chatTeamMessages{scroll-padding-bottom:54px}
+}
