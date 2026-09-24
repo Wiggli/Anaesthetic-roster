@@ -79,7 +79,7 @@ assert.doesNotMatch(edge, /body:\s*message\.body|body:\s*String\(message\.body/,
 assert.match(edge, /message\.sender_id !== user\.id/, 'only the actual message sender may dispatch its notification');
 assert.match(edge, /push_dispatches/, 'duplicate notification dispatches must be claimed server-side');
 assert.match(edge, /team_muted_until/, 'server dispatch must respect temporary group mute settings');
-assert.match(edge, /new Date\(pref\.team_muted_until\)\.getTime\(\) > Date\.now\(\)/, 'group pushes must be skipped while the mute window is active');
+assert.match(edge, /pref\?\.team_muted_until[\s\S]*new Date\(String\(pref\.team_muted_until\)\)\.getTime\(\) > Date\.now\(\)/, 'group pushes must be skipped while the mute window is active');
 assert.match(edge, /New message from/, 'group notification may identify the sender');
 assert.match(edge, /New private message/, 'private notification body must remain generic');
 assert.match(edge, /push_server_config/, 'VAPID keys must be loaded server-side');
