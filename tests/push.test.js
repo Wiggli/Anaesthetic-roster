@@ -22,7 +22,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.31/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.32/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -44,6 +44,8 @@ assert.match(push, /pushLoadDevices/, 'registered notification devices must be l
 assert.match(push, /from\('push_subscriptions'\)\.delete\(\)\.eq\('id',id\)\.eq\('user_id',user\.id\)/, 'device removal must stay owner-scoped through RLS');
 assert.doesNotMatch(html+push, /send test notification|test notification/i, 'the app must not add a test-notification button');
 assert.match(push, /dispatchChatPush/, 'chat notification dispatch must be isolated behind a non-blocking helper');
+assert.match(sw, /self\.navigator[\s\S]*setAppBadge/, 'background notifications should set a generic installed-app badge where supported');
+assert.match(push, /view==='chat'[\s\S]*show\('chat'\)/, 'Chat shortcuts and notification URLs must open Chat even without a conversation id');
 assert.match(push, /client\.functions\.invoke\('notify-chat-message'/, 'message pushes must be dispatched through the authenticated Edge Function');
 assert.doesNotMatch(push, /vapid_private|privateKey|service_role|SUPABASE_SERVICE_ROLE/i, 'browser push code must not contain server secrets');
 
@@ -110,10 +112,10 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.31');
-assert.equal(release.title, 'Cinematic launch and refined onboarding');
-assert.ok(release.changes.some(item => /cinematic reveal|roster-loading/i.test(item)), 'release notes must explain the cinematic launch update');
-assert.ok(release.changes.some(item => /Chat page|@mentions|14-day retention/i.test(item)), 'release notes must explain the refreshed Chat onboarding');
-assert.ok(release.changes.some(item => /tab switching/i.test(item)), 'release notes must explain that everyday navigation remains motion-stable');
+assert.equal(release.version, '37.32');
+assert.equal(release.title, 'Premium PWA experience');
+assert.ok(release.changes.some(item => /system splash|app icon/i.test(item)), 'release notes must explain the seamless startup handoff');
+assert.ok(release.changes.some(item => /app badge|administrator attention/i.test(item)), 'release notes must explain installed-app badging');
+assert.ok(release.changes.some(item => /automatic-on-reopen|update system/i.test(item)), 'release notes must explain the new update policy');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');
