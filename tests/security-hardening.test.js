@@ -12,6 +12,7 @@ const accessRequestMigration = fs.readFileSync(path.join(root, 'supabase-migrati
 const chatMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924003000_secure_chat.sql'), 'utf8');
 const chatRefineMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924014500_refine_chat_directory.sql'), 'utf8');
 const pushMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924090000_chat_push_notifications.sql'), 'utf8');
+const maturityMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260924111500_chat_maturity.sql'), 'utf8');
 const pushClient = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const pushFunction = fs.readFileSync(path.join(root, 'supabase', 'functions', 'notify-chat-message', 'index.ts'), 'utf8');
 const inheritedAccessMigration = fs.readFileSync(path.join(root, 'supabase-migration-20260923224500_remove_inherited_anonymous_access.sql'), 'utf8');
@@ -64,6 +65,15 @@ assert.doesNotMatch(pushClient, /vapid_private|privateKey|BqB7H_jy/i, 'the brows
 assert.match(pushFunction, /message\.sender_id !== user\.id/, 'notification dispatch must verify that the caller sent the message');
 assert.match(pushFunction, /push_server_config/, 'the Edge Function must load the VAPID private key server-side');
 assert.doesNotMatch(pushFunction, /BqB7H_jy/, 'the Edge Function source must not hard-code the VAPID private key');
+assert.match(maturityMigration, /create or replace function public\.chat_overview_v2\(\)[\s\S]*security invoker/, 'chat overview must not bypass RLS');
+assert.match(maturityMigration, /create policy "Members can remove own push subscriptions"[\s\S]*user_id=\(select auth\.uid\(\)/, 'device removal must remain owner-scoped');
+assert.match(maturityMigration, /create or replace function public\.admin_app_health\(\)[\s\S]*is_roster_admin\(\)/, 'admin health must verify administrator status server-side');
+const adminHealthSource = maturityMigration.slice(
+  maturityMigration.indexOf('create or replace function public.admin_app_health()'),
+  maturityMigration.indexOf('revoke all on function public.admin_app_health()')
+);
+assert.doesNotMatch(adminHealthSource, /endpoint|p256dh|auth_key/i, 'admin health must not expose push endpoints or encryption keys');
+assert.doesNotMatch(adminHealthSource, /\bbody\b/i, 'admin health must not expose chat message content');
 
 const storage = new Map([
   ['anaes_offline_snapshot', '{"private":true}'],

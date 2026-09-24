@@ -23,12 +23,12 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <script src="theme-bootstrap.js?v=37.25"></script>
-    <link rel="manifest" href="manifest.webmanifest?v=37.25" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.25" />
+    <script src="theme-bootstrap.js?v=37.26"></script>
+    <link rel="manifest" href="manifest.webmanifest?v=37.26" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.26" />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=37.25" />
-    <link rel="stylesheet" href="chat.css?v=37.25" />
+    <link rel="stylesheet" href="styles.css?v=37.26" />
+    <link rel="stylesheet" href="chat.css?v=37.26" />
   </head>
   <body class="authPending">
     <section
@@ -41,7 +41,7 @@
     >
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=37.25" alt="SPTAR Mater Dei" />
+          <img src="mater-dei-logo.png?v=37.26" alt="SPTAR Mater Dei" />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
@@ -67,7 +67,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=37.25"
+              src="mater-dei-logo.png?v=37.26"
               alt="Mater Dei Hospital"
             /><span>Main Operating Theatres</span>
           </div>
@@ -182,7 +182,7 @@
     <header id="appHeader">
       <div class="clinicalBackdrop" aria-hidden="true"></div>
       <div class="hospitalStrip">
-        <img src="mater-dei-logo.png?v=37.25" alt="Mater Dei Hospital" /><span
+        <img src="mater-dei-logo.png?v=37.26" alt="Mater Dei Hospital" /><span
           >Main Operating Theatres</span
         >
       </div>
@@ -594,7 +594,10 @@
                   <span>Recent messages</span>
                   <button type="button" id="chatTeamLoadOlder" class="chatTeamLoadOlder hidden">Load older</button>
                 </div>
-                <div id="chatTeamMessages" class="chatTeamMessages" aria-live="polite"></div>
+                <div class="chatMessageViewport">
+                  <div id="chatTeamMessages" class="chatTeamMessages" aria-live="polite"></div>
+                  <button type="button" id="chatTeamNewMessages" class="chatNewMessagesBtn hidden" aria-label="Jump to new team messages">New message ↓</button>
+                </div>
 
                 <div class="chatTeamComposerWrap">
                   <form id="chatTeamComposer" class="chatComposer chatTeamComposer">
@@ -624,17 +627,29 @@
                     <b>Message notifications</b>
                     <span id="pushStatusText">Checking notification support…</span>
                   </div>
+                  <span id="pushStateBadge" class="pushStateBadge off">Off</span>
                   <button type="button" id="pushEnableBtn" class="chatNotificationEnable">Enable</button>
                 </div>
+                <p id="pushBlockedHelp" class="pushBlockedHelp hidden"></p>
                 <div id="pushPreferenceRows" class="pushPreferenceRows hidden">
                   <label>
-                    <span><b>Anaesthetic Team</b><small>Group chat alerts</small></span>
+                    <span><b>Anaesthetic Team</b><small id="pushMuteStatus">Group chat alerts are on</small></span>
                     <input id="pushTeamToggle" type="checkbox" checked aria-label="Anaesthetic Team notifications">
                   </label>
+                  <div class="pushMuteActions" role="group" aria-label="Mute Anaesthetic Team notifications">
+                    <button type="button" data-push-mute="hour">Mute 1 hour</button>
+                    <button type="button" data-push-mute="tonight">Mute tonight</button>
+                    <button type="button" data-push-mute="until_on">Mute until turned on</button>
+                    <button type="button" data-push-mute="off">Unmute</button>
+                  </div>
                   <label>
                     <span><b>Private messages</b><small>One-to-one chat alerts</small></span>
                     <input id="pushPrivateToggle" type="checkbox" checked aria-label="Private message notifications">
                   </label>
+                  <details class="pushDeviceDetails">
+                    <summary>Notification devices</summary>
+                    <div id="pushDeviceList" class="pushDeviceList"></div>
+                  </details>
                   <button type="button" id="pushDisableBtn" class="pushDisableBtn">Turn off on this device</button>
                 </div>
               </div>
@@ -667,7 +682,10 @@
                   </div>
                 </div>
                 <button type="button" id="chatLoadOlder" class="chatLoadOlder hidden">Load older messages</button>
-                <div id="chatMessages" class="chatMessages" aria-live="polite"></div>
+                <div class="chatMessageViewport">
+                  <div id="chatMessages" class="chatMessages" aria-live="polite"></div>
+                  <button type="button" id="chatPrivateNewMessages" class="chatNewMessagesBtn hidden" aria-label="Jump to new private messages">New message ↓</button>
+                </div>
                 <div class="chatComposerWrap">
                   <form id="chatComposer" class="chatComposer">
                     <textarea id="chatMessageInput" maxlength="2000" rows="1" placeholder="Message…" aria-label="Write a private chat message"></textarea>
@@ -751,6 +769,18 @@
             </div>
             <div id="rosterStatus" class="statusGrid"></div>
             <div id="adminOverviewSummary" class="notice adminSummary"></div>
+            <section class="adminHealthPanel" aria-labelledby="adminHealthTitle">
+              <div class="adminHealthHeader">
+                <div>
+                  <span>System health</span>
+                  <h3 id="adminHealthTitle">Roster, chat and notifications</h3>
+                </div>
+                <button type="button" class="mini" id="refreshAdminHealthBtn">Refresh</button>
+              </div>
+              <div id="adminHealthGrid" class="adminHealthGrid">
+                <div class="adminHealthLoading">Checking app health…</div>
+              </div>
+            </section>
             <div class="adminQuickGrid">
               <button type="button" data-admin-open="publish">
                 Publish</button
@@ -961,6 +991,19 @@
         </div>
       </section>
     </main>
+    <dialog id="chatMessageActionSheet" class="chatMessageActionSheet" aria-labelledby="chatMessageActionTitle">
+      <div class="sheetGrabber" aria-hidden="true"></div>
+      <div class="chatMessageActionHeader">
+        <span>Message</span>
+        <h2 id="chatMessageActionTitle">Message actions</h2>
+        <p id="chatMessageActionPreview"></p>
+      </div>
+      <div class="chatMessageActionButtons">
+        <button type="button" id="chatMessageCopyBtn">Copy message</button>
+        <button type="button" id="chatMessageDeleteBtn" class="destructive hidden">Delete message</button>
+        <button type="button" id="chatMessageCancelBtn" class="soft">Cancel</button>
+      </div>
+    </dialog>
     <dialog id="chatNewConversationSheet" class="chatNewConversationSheet" aria-labelledby="chatNewConversationTitle">
       <div class="sheetGrabber" aria-hidden="true"></div>
       <div class="chatSheetHeader">
@@ -1234,7 +1277,7 @@
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 37.25 is ready.</p>
+          <p class="time" id="releaseNotesIntro">Version 37.26 is ready.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -1336,9 +1379,9 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="app-core.js?v=37.25"></script>
-    <script src="app-ui.js?v=37.25"></script>
-    <script src="push.js?v=37.25"></script>
-    <script src="chat.js?v=37.25"></script>
+    <script src="app-core.js?v=37.26"></script>
+    <script src="app-ui.js?v=37.26"></script>
+    <script src="push.js?v=37.26"></script>
+    <script src="chat.js?v=37.26"></script>
   </body>
 </html>

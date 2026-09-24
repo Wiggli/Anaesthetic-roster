@@ -1,12 +1,12 @@
-/* Anaesthetic Night Roster V37.25 core and roster foundation. */
+/* Anaesthetic Night Roster V37.26 core and roster foundation. */
 var ORIGINAL_TEAM = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun"];
 var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Shaun", "OT Nurse"];
 var EMAIL_RECIPIENTS = [];
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.25';
-var EXPECTED_SCHEMA_VERSION = 43;
+var APP_VERSION = '37.26';
+var EXPECTED_SCHEMA_VERSION = 44;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
 var currentAccessToken = '';
@@ -29,6 +29,9 @@ var deferredInstallPrompt = null;
 var extensionRows=[];
 var pendingTeamVersion=null;
 var activeAdminTab='overview';
+var adminHealthState=null;
+var adminHealthLoadedAt=0;
+var adminHealthLoading=false;
 var appSettings={id:1,email_recipients:EMAIL_RECIPIENTS.slice(),shift_start:'19:00',shift_end:'07:00'};
 var schemaVersion=0;
 var nightPlanStatuses={};
@@ -104,13 +107,47 @@ function toggleTheme(){setThemePreference(document.body.classList.contains('dark
 function selectOptions(list,current){var a=list.slice();if(current&&a.indexOf(current)<0)a.push(current);return a.map(function(n){return '<option value="'+esc(n)+'"'+(n===current?' selected':'')+'>'+esc(professionalName(n))+'</option>'}).join('')}
 function rosterFingerprint(rows){var text=rows.map(function(r){return[r.date,r.first1,r.first2,r.second1,r.second2,r.pager,r.reliever,r.seventh].join('|')}).join('\n'),hash=2166136261;for(var i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}return(hash>>>0).toString(16).padStart(8,'0')}
 function verifyReference(){var rows=[],date=ORIGINAL_REFERENCE.first;for(var i=0;i<ORIGINAL_REFERENCE.nights;i++){rows.push(calculateNight(date,[rotationVersions[0]]));date=addDays(date,4)}var hash=rosterFingerprint(rows),valid=rows[rows.length-1].date===ORIGINAL_REFERENCE.last&&hash===ORIGINAL_REFERENCE.hash;return{checked:rows.length,transitions:Math.max(0,rows.length-1),mismatches:valid?0:1,hash:hash}}
+function adminHealthTime(value){
+  return value?new Date(value).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Not yet';
+}
+function renderAdminHealth(){
+  var host=byId('adminHealthGrid');if(!host)return;
+  if(adminHealthLoading&&!adminHealthState){host.innerHTML='<div class="adminHealthLoading">Checking roster, chat and notification health…</div>';return}
+  if(!adminHealthState){host.innerHTML='<div class="adminHealthLoading">Health information is not available yet.</div>';return}
+  var h=adminHealthState,failed=Number(h.failed_push_24h||0),partial=Number(h.partial_push_24h||0);
+  var metrics=[
+    [String(Number(h.active_authorised_users||0)),'Authorised accounts',''],
+    [String(Number(h.registered_chat_users||0)),'Registered for chat',''],
+    [String(Number(h.push_devices||0)),'Notification devices',''],
+    [String(failed),'Failed pushes · 24h',failed?'error':''],
+    [String(partial),'Partial pushes · 24h',partial?'warning':''],
+    [adminHealthTime(h.last_roster_sync_at),'Last shared roster sync',''],
+    [adminHealthTime(h.last_chat_message_at),'Last chat activity',''],
+    [adminHealthTime(h.last_push_at),'Last push delivery','']
+  ];
+  host.innerHTML=metrics.map(function(item){return '<div class="adminHealthMetric '+item[2]+'"><b>'+esc(item[0])+'</b><span>'+esc(item[1])+'</span></div>'}).join('');
+}
+async function loadAdminHealth(force){
+  if(!currentUserProfile||currentUserProfile.user_role!=='admin'||!supa||!navigator.onLine)return;
+  if(!force&&adminHealthState&&Date.now()-adminHealthLoadedAt<30000){renderAdminHealth();return}
+  if(adminHealthLoading)return;adminHealthLoading=true;renderAdminHealth();
+  try{
+    var result=await supa.rpc('admin_app_health');if(result.error)throw result.error;
+    adminHealthState=result.data||null;adminHealthLoadedAt=Date.now();
+  }catch(error){
+    if(!adminHealthState){var host=byId('adminHealthGrid');if(host)host.innerHTML='<div class="adminHealthLoading">Health check could not be completed. Roster controls are unaffected.</div>'}
+  }finally{
+    adminHealthLoading=false;renderAdminHealth();
+  }
+}
+
 function renderAdmin(){
   if(!currentUserProfile||currentUserProfile.user_role!=='admin')return;
   var r=cur(),plan=staffingPlan(r),tasks=workflowTaskDetails(r,plan),activity=staffingHistoryFor(r.date).slice(0,3),check=verifyReference(),lastVersion=rotationVersions[rotationVersions.length-1],start=addDays(rosterSettings.published_until,4),extend=byId('extendDate'),activeAccounts=authorisedAccounts.filter(function(a){return a.active}).length,pendingAccounts=authorisedAccounts.filter(function(a){return !a.active}).length,schemaHealthy=schemaVersion>=EXPECTED_SCHEMA_VERSION,release=typeof installedReleaseState==='function'?installedReleaseState():{stale:false};
   byId('rosterStatus').innerHTML='<div class="statusCard"><span class="time">Application</span><b class="'+(release.stale?'':'verified')+'">'+(release.stale?'Update required':'Healthy · '+esc(APP_VERSION))+'</b></div><div class="statusCard"><span class="time">Database</span><b class="'+(schemaHealthy?'verified':'')+'">'+(schemaHealthy?'Schema '+esc(schemaVersion)+' current':'Upgrade to schema '+esc(EXPECTED_SCHEMA_VERSION))+'</b></div><div class="statusCard"><span class="time">Published until</span><b>'+esc(fmt(rosterSettings.published_until))+'</b></div><div class="statusCard"><span class="time">Next unpublished</span><b>'+esc(fmt(start))+'</b></div><div class="statusCard"><span class="time">Active accounts</span><b>'+activeAccounts+'</b></div><div class="statusCard"><span class="time">Pending account actions</span><b>'+pendingAccounts+'</b></div>';
   byId('adminOverviewSummary').innerHTML='<div class="adminOperationalRow"><b>Selected night · '+esc(fmt(r.date))+'</b><span class="'+(tasks.length?'adminNeedsAction':'verified')+'">'+(tasks.length?esc(tasks[0])+(tasks.length>1?' · '+(tasks.length-1)+' more':''):'No unresolved operational tasks')+'</span></div><div class="adminOperationalRow"><b>Recent staffing and allocation activity</b>'+(activity.length?activity.map(function(item){return'<span>'+esc(item.title)+' · '+esc(shortTime(item.changed_at))+'</span>'}).join(''):'<span>No recorded activity for the selected night.</span>')+'</div><div class="adminOperationalRow"><b>Shared data</b><span>'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?shortTime(lastSuccessfulSyncAt):'not yet')+'</span></div><div class="time">Original rotation '+(check.mismatches?'requires review':'verified')+' · '+R.length+' published nights.</div>';
   byId('publishCurrentSummary').innerHTML='<b>Currently visible until '+esc(fmt(rosterSettings.published_until))+'</b><div class="time">The next extension will begin on '+esc(fmt(start))+'. Nothing already published will be removed or recalculated.</div>';
-  extend.min=start;if(!extend.value||extend.value<start)extend.value=snapRosterDate(addMonths(rosterSettings.published_until,6));updateExtensionSummary();var selectedVersion=versionForDate(r.date),leaving=[selectedVersion.first1,selectedVersion.first2,selectedVersion.second1,selectedVersion.second2,selectedVersion.pager,selectedVersion.reliever];if(document.activeElement!==byId('replaceStaffName'))byId('replaceStaffName').innerHTML=selectOptions(leaving,byId('replaceStaffName').value||leaving[0]);if(document.activeElement!==byId('teamEffectiveDate'))byId('teamEffectiveDate').value=r.date;byId('teamEffectiveDate').min=R[0].date;byId('teamEffectiveDate').max=R[R.length-1].date;byId('teamEffectiveSummary').innerHTML='<b>Permanent change will begin on '+esc(fmt(r.date))+'.</b><div class="time">The selected night and every later roster will use the new nurse, while all earlier nights remain unchanged.</div>';byId('currentTeamSummary').innerHTML='<b>Latest permanent team</b><div class="currentTeam">'+[lastVersion.first1,lastVersion.first2,lastVersion.second1,lastVersion.second2,lastVersion.pager,lastVersion.reliever].map(function(n){return '<span>'+esc(n)+'</span>'}).join('')+'</div>';byId('teamPrevNightBtn').disabled=idx<=0;byId('teamNextNightBtn').disabled=idx>=R.length-1;byId('extendPrevNightBtn').disabled=extend.value<=start;byId('rotationVersionList').innerHTML=rotationVersions.map(function(v,i){return '<div class="historyItem"><b>'+(i===0?'Original verified rotation':'Effective from '+esc(fmt(v.effective_from)))+'</b><div class="changeMeta">'+esc(v.notes||(i===0?'Original six-nurse team':'Permanent team change'))+'</div>'+(i?'<div class="changeMeta">Earlier roster nights were preserved.</div>':'')+'</div>'}).join('');switchAdminTab(activeAdminTab,false);renderAccounts();renderDiagnostics()
+  extend.min=start;if(!extend.value||extend.value<start)extend.value=snapRosterDate(addMonths(rosterSettings.published_until,6));updateExtensionSummary();var selectedVersion=versionForDate(r.date),leaving=[selectedVersion.first1,selectedVersion.first2,selectedVersion.second1,selectedVersion.second2,selectedVersion.pager,selectedVersion.reliever];if(document.activeElement!==byId('replaceStaffName'))byId('replaceStaffName').innerHTML=selectOptions(leaving,byId('replaceStaffName').value||leaving[0]);if(document.activeElement!==byId('teamEffectiveDate'))byId('teamEffectiveDate').value=r.date;byId('teamEffectiveDate').min=R[0].date;byId('teamEffectiveDate').max=R[R.length-1].date;byId('teamEffectiveSummary').innerHTML='<b>Permanent change will begin on '+esc(fmt(r.date))+'.</b><div class="time">The selected night and every later roster will use the new nurse, while all earlier nights remain unchanged.</div>';byId('currentTeamSummary').innerHTML='<b>Latest permanent team</b><div class="currentTeam">'+[lastVersion.first1,lastVersion.first2,lastVersion.second1,lastVersion.second2,lastVersion.pager,lastVersion.reliever].map(function(n){return '<span>'+esc(n)+'</span>'}).join('')+'</div>';byId('teamPrevNightBtn').disabled=idx<=0;byId('teamNextNightBtn').disabled=idx>=R.length-1;byId('extendPrevNightBtn').disabled=extend.value<=start;byId('rotationVersionList').innerHTML=rotationVersions.map(function(v,i){return '<div class="historyItem"><b>'+(i===0?'Original verified rotation':'Effective from '+esc(fmt(v.effective_from)))+'</b><div class="changeMeta">'+esc(v.notes||(i===0?'Original six-nurse team':'Permanent team change'))+'</div>'+(i?'<div class="changeMeta">Earlier roster nights were preserved.</div>':'')+'</div>'}).join('');switchAdminTab(activeAdminTab,false);renderAccounts();renderDiagnostics();renderAdminHealth();loadAdminHealth(false)
 }
 async function loadAccounts(){
   var results=await Promise.all([

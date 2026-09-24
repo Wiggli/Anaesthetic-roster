@@ -175,3 +175,84 @@ body.dark .chatNotificationEnable.enabled{background:color-mix(in srgb,var(--ios
 body.dark .pushPromptDialog[open]{background:color-mix(in srgb,var(--ios-surface,#161618) 96%,transparent)}
 body.dark .pushPromptIcon{background:color-mix(in srgb,var(--ios-accent,var(--apple-accent,#0a8f89)) 15%,var(--ios-surface,#161618))}
 @media(max-width:420px){.pushPromptDialog[open]{padding:20px 18px}.pushPromptActions{grid-template-columns:1fr}.pushPromptActions #pushPromptEnableBtn{order:-1}}
+
+
+/* Chat maturity: unread anchors, recovery, message actions and notification controls */
+.chatMessageViewport{position:relative;min-height:0;overflow:hidden}
+.chatMessageViewport>.chatTeamMessages,.chatMessageViewport>.chatMessages{height:100%}
+.chatNewMessagesBtn{position:absolute;right:12px;bottom:10px;z-index:3;min-height:34px;padding:7px 11px;border:1px solid color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 30%,transparent);border-radius:999px;background:color-mix(in srgb,var(--ios-surface,#fff) 92%,transparent);color:var(--ios-accent,var(--apple-accent,#087d79));box-shadow:0 7px 20px rgba(0,0,0,.14);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);font-size:9.5px;font-weight:780}
+.chatDateSeparator{display:flex;align-items:center;justify-content:center;gap:8px;margin:7px 0 5px;color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93));font-size:8.5px;font-weight:760;letter-spacing:.03em;text-transform:uppercase}
+.chatDateSeparator:before,.chatDateSeparator:after{content:"";height:1px;flex:1;background:color-mix(in srgb,var(--ios-separator,var(--apple-separator,#d1d1d6)) 68%,transparent)}
+.chatUnreadDivider{display:flex;align-items:center;gap:8px;margin:8px 0 6px;color:var(--ios-red,#d12b22);font-size:8.5px;font-weight:820;letter-spacing:.04em;text-transform:uppercase}
+.chatUnreadDivider:before,.chatUnreadDivider:after{content:"";height:1px;flex:1;background:color-mix(in srgb,var(--ios-red,#ff3b30) 45%,transparent)}
+.chatTeamLine.deleted .chatTeamLineBody,.chatMessageRow.deleted .chatMessageBody{color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93));font-style:italic}
+.chatTeamLine.failed,.chatMessageRow.failed{opacity:.92}
+.chatTeamLine.failed .chatTeamLineTime,.chatMessageRow.failed .chatMessageMeta span{color:var(--ios-red,#d12b22);opacity:1}
+.chatRetryBtn{min-height:28px;margin-left:4px;padding:4px 8px;border:0;border-radius:999px;background:color-mix(in srgb,var(--ios-red,#ff3b30) 10%,var(--ios-surface,#fff));color:var(--ios-red,#d12b22);box-shadow:none;font-size:8.5px;font-weight:780}
+.chatTeamLine:focus-visible,.chatBubble:focus-visible{outline:3px solid color-mix(in srgb,var(--ios-accent,var(--apple-accent,#087d79)) 28%,transparent);outline-offset:2px}
+
+.chatMessageActionSheet[open]{position:fixed;inset:auto 0 0;display:flex;width:min(520px,100%);flex-direction:column;margin:0 auto;padding:0 14px calc(14px + env(safe-area-inset-bottom));border:0;border-radius:26px 26px 0 0;background:color-mix(in srgb,var(--ios-bg,var(--apple-bg,#f2f2f7)) 94%,transparent);color:var(--ios-label,var(--apple-label,#111));box-shadow:0 -18px 60px rgba(0,0,0,.24);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px)}
+.chatMessageActionSheet::backdrop{background:rgba(20,20,24,.38);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
+.chatMessageActionHeader{display:grid;gap:3px;padding:4px 4px 10px;text-align:center}
+.chatMessageActionHeader>span{color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93));font-size:8.5px;font-weight:780;text-transform:uppercase;letter-spacing:.06em}
+.chatMessageActionHeader h2{margin:0;font-size:18px}
+.chatMessageActionHeader p{display:-webkit-box;overflow:hidden;margin:3px auto 0;max-width:90%;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10px;line-height:1.4;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.chatMessageActionButtons{display:grid;gap:7px}
+.chatMessageActionButtons button{min-height:46px;border:0;border-radius:14px;background:var(--ios-surface,var(--apple-surface,#fff));color:var(--ios-label,var(--apple-label,#111));box-shadow:none;font-size:12px;font-weight:720}
+.chatMessageActionButtons button.destructive{color:var(--ios-red,#d12b22)}
+
+.chatNotificationTop{grid-template-columns:36px minmax(0,1fr) auto auto}
+.pushStateBadge{display:inline-flex;min-height:22px;align-items:center;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:800;white-space:nowrap}
+.pushStateBadge.active{background:color-mix(in srgb,var(--ios-green,#34c759) 13%,var(--ios-surface,#fff));color:color-mix(in srgb,var(--ios-green,#34c759) 76%,var(--ios-label,#111))}
+.pushStateBadge.off{background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-secondary,var(--apple-secondary,#6e6e73))}
+.pushStateBadge.blocked{background:color-mix(in srgb,var(--ios-red,#ff3b30) 10%,var(--ios-surface,#fff));color:var(--ios-red,#d12b22)}
+.pushBlockedHelp{margin:0;padding:0 11px 10px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px;line-height:1.45}
+.pushMuteActions{display:flex;flex-wrap:wrap;gap:6px;padding:8px 11px;border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6))}
+.pushMuteActions button{min-height:32px;padding:6px 9px;border:0;border-radius:999px;background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-accent,var(--apple-accent,#087d79));box-shadow:none;font-size:8.5px;font-weight:720}
+#pushMuteStatus.muted{color:var(--ios-amber,#c66b00)}
+.pushDeviceDetails{border-bottom:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6))}
+.pushDeviceDetails summary{min-height:42px;padding:10px 11px;color:var(--ios-label,var(--apple-label,#111));font-size:10.5px;font-weight:720;cursor:pointer}
+.pushDeviceList{display:grid;padding:0 11px 8px}
+.pushDeviceRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--ios-separator,var(--apple-separator,#d1d1d6)) 70%,transparent)}
+.pushDeviceCopy{display:grid;min-width:0;gap:2px}
+.pushDeviceCopy b{overflow:hidden;color:var(--ios-label,var(--apple-label,#111));font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.pushDeviceCopy small{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:8.5px}
+.pushDeviceRemove{min-height:30px;padding:5px 7px;border:0;border-radius:9px;background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-red,#d12b22);box-shadow:none;font-size:8.5px;font-weight:720}
+.pushDeviceEmpty{margin:0;padding:10px 0;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:9.5px}
+
+.adminHealthPanel{margin-top:12px;padding:12px;border:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:17px;background:var(--ios-surface,var(--apple-surface,#fff))}
+.adminHealthHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.adminHealthHeader>div{display:grid;gap:2px}
+.adminHealthHeader span{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:8.5px;font-weight:760;text-transform:uppercase;letter-spacing:.05em}
+.adminHealthHeader h3{margin:0;color:var(--ios-label,var(--apple-label,#111));font-size:14px}
+.adminHealthGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.adminHealthMetric{display:grid;gap:3px;padding:10px;border-radius:13px;background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
+.adminHealthMetric b{color:var(--ios-label,var(--apple-label,#111));font-size:16px;font-variant-numeric:tabular-nums}
+.adminHealthMetric span{color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:8.5px;line-height:1.35}
+.adminHealthMetric.warning b{color:var(--ios-amber,#c66b00)}
+.adminHealthMetric.error b{color:var(--ios-red,#d12b22)}
+.adminHealthLoading{grid-column:1/-1;padding:12px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:10px;text-align:center}
+
+body.dark .chatMessageActionSheet[open],body.dark .chatMessageActionButtons button,body.dark .adminHealthPanel{background:var(--ios-surface,var(--apple-surface,#161618))}
+body.dark .chatNewMessagesBtn{background:color-mix(in srgb,var(--ios-surface,#161618) 92%,transparent)}
+body.dark .pushStateBadge.active{background:color-mix(in srgb,var(--ios-green,#34c759) 14%,var(--ios-surface,#161618))}
+body.dark .pushStateBadge.blocked{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,var(--ios-surface,#161618))}
+body.dark .chatRetryBtn{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,var(--ios-surface,#161618))}
+
+@media(max-width:420px){
+  .chatNotificationTop{grid-template-columns:36px minmax(0,1fr) auto}.pushStateBadge{grid-column:2;justify-self:start}.chatNotificationEnable{grid-column:3;grid-row:1/3}
+  .adminHealthGrid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:340px){
+  .pushMuteActions{display:grid;grid-template-columns:1fr 1fr}.adminHealthGrid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .chatNewMessagesBtn,.chatMessageActionSheet[open]{scroll-behavior:auto;transition:none!important}
+}
+
+@media(max-width:759px){
+  .chatComposer textarea{font-size:16px}
+  .chatSendBtn{width:44px;height:44px;min-height:44px}
+  .chatNewPrivateBtn,.chatNotificationEnable,.pushMuteActions button,.pushDeviceRemove,.chatTeamLoadOlder,.chatLoadOlder{touch-action:manipulation}
+  .chatMessages,.chatTeamMessages{scroll-padding-bottom:54px}
+}
