@@ -1,12 +1,12 @@
 {
-  "version": "37.33",
+  "version": "37.34",
   "date": "24 September 2026",
-  "title": "Application shell foundation",
-  "summary": "Introduce a reviewed production build while keeping the same installed PWA and shared roster behavior.",
+  "title": "Launch style cleanup",
+  "summary": "Remove proven style duplication while preserving the installed PWA and shared roster behavior.",
   "changes": [
-    "The GitHub Pages application shell is now built from pinned Vite, React, TypeScript, Tailwind and Motion dependencies.",
-    "The launch motto is the first isolated React region and respects reduced-motion preferences.",
-    "The existing service worker still waits for the user's update choice, delivers push notifications and keeps private Supabase requests out of its cache."
+    "Duplicated CSS rules and the superseded CSS launch animation were removed.",
+    "The launch motto remains visible while React loads and continues to respect reduced-motion preferences.",
+    "Roster calculations, authentication, chat, notifications, Supabase and the update choice are unchanged."
   ],
   "update_policy": "important"
 }

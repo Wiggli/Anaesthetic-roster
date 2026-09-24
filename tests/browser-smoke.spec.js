@@ -106,7 +106,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.33/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.34/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -135,7 +135,20 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.33');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.34');
+});
+
+test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'window.supabase={createClient:function(){return null}};'
+  }));
+  await page.route('**/assets/index-*.js', route => route.abort());
+  await page.goto('/index.html');
+  const motto = page.locator('#reactLaunchMotto .launchMotto');
+  await expect(motto).toBeVisible();
+  await expect(motto).toHaveCSS('opacity', '1');
 });
 
 test('worker keeps private backend traffic out of caches and navigates offline', async ({ page, context }) => {
