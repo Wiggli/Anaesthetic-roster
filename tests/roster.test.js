@@ -279,7 +279,7 @@ for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': 
 }
 assert.ok(navigation.includes("type SwipeAxis = 'pending' | 'horizontal' | 'vertical';"), 'page swipes must lock their gesture axis instead of re-evaluating direction on every move');
 assert.ok(navigation.includes('indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));'), 'bottom-tab dragging must track the finger continuously across the full bar');
-assert.ok(navigation.includes('const targetIndex = axis === \'horizontal\' ? nearestPositionIndex(indicatorX.get())'), 'a long bottom-bar drag must settle on the nearest tab rather than only one neighbour');
+assert.ok(navigation.includes("const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get())"), 'a long bottom-bar drag must settle on the nearest tab rather than only one neighbour');
 assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;"), 'Chat must no longer be excluded from safe content swipes');
 assert.ok(navigation.includes('current.style.transform = \`translate3d(\${offset}px,0,0)\`;'), 'the visible content page must continue tracking the finger during a drag');
 assert.match(css, /main>\.view\{touch-action:pan-y\}/, 'all primary views including Chat must allow reliable horizontal app gestures while preserving vertical scroll');
