@@ -148,6 +148,81 @@ test('a new swipe interrupts an unfinished settle instead of being ignored', asy
   await expect(page.locator('#chat')).toBeVisible();
 });
 
+test('page track stays covered across saved scroll positions and Night carries its own header', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile transition regression');
+  await openShell(page);
+  await expect(page.locator('#today > #appHeader')).toHaveCount(1);
+
+  await page.locator('.bottom button[data-v="breaks"]').click();
+  await expect(page.locator('#breaks')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+  await page.evaluate(() => {
+    const spacer = document.createElement('div');
+    spacer.id = 'swipeScrollRegressionSpacer';
+    spacer.style.height = '900px';
+    document.getElementById('breaks').appendChild(spacer);
+    window.scrollTo(0, 520);
+    window.viewScrollPositions.changes = 0;
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(250);
+
+  await page.locator('.bottom button[data-v="changes"]').click();
+  await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
+  await page.waitForTimeout(120);
+  const coverageDiagnostic = await page.evaluate(() => {
+    const y = Math.min(220, window.innerHeight - 140);
+    const main = document.querySelector('main');
+    const current = main?.querySelector(':scope > .view.swipeCurrent');
+    const preview = main?.querySelector(':scope > .view.swipePreview');
+    const compactRect = element => {
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
+    };
+    const currentRect = compactRect(current);
+    const previewRect = compactRect(preview);
+    const visualRects = [currentRect, previewRect].filter(Boolean);
+    const points = [2, window.innerWidth / 2, window.innerWidth - 2].map(x => ({
+      x,
+      covered: visualRects.some(rect =>
+        x >= rect.x - 1 &&
+        x <= rect.right + 1 &&
+        y >= rect.y - 1 &&
+        y <= rect.bottom + 1
+      )
+    }));
+    return {
+      scrollY: window.scrollY,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      bodyView: document.body.getAttribute('data-view'),
+      main: compactRect(main),
+      current: currentRect,
+      preview: previewRect,
+      mainOverflow: main ? getComputedStyle(main).overflow : null,
+      points
+    };
+  });
+  expect(
+    coverageDiagnostic.points.map(point => point.covered),
+    JSON.stringify(coverageDiagnostic)
+  ).toEqual([true, true, true]);
+  await expect(page.locator('#changes')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+
+  await page.locator('.bottom button[data-v="today"]').click();
+  await expect(page.locator('#today')).toHaveClass(/swipePreview/);
+  await page.waitForTimeout(120);
+  const headerTrack = await page.evaluate(() => {
+    const today = document.getElementById('today').getBoundingClientRect();
+    const header = document.getElementById('appHeader').getBoundingClientRect();
+    return { todayX: today.x, todayWidth: today.width, headerX: header.x, headerWidth: header.width };
+  });
+  expect(Math.abs(headerTrack.headerX - headerTrack.todayX)).toBeLessThanOrEqual(1);
+  expect(Math.abs(headerTrack.headerWidth - headerTrack.todayWidth)).toBeLessThanOrEqual(1);
+  await expect(page.locator('#today')).toBeVisible();
+});
+
 test('continuous tab drag and direction-locked page swipes work across Night and Chat', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
@@ -389,7 +464,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.43/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.44/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -418,7 +493,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.43');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.44');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -434,7 +509,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains solid continuous page flow', async ({ page }) => {
+test('frontend changelog explains stable native page swiping', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -443,8 +518,8 @@ test('frontend changelog explains solid continuous page flow', async ({ page }) 
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('solid full-size pages on one horizontal track');
-  await expect(dialog.locator('.releaseHistory')).toContainText('transparency and scale morph from 37.42 has been removed');
+  await expect(dialog.locator('.releaseHistory')).toContainText('complete top chrome while it moves');
+  await expect(dialog.locator('.releaseHistory')).toContainText('saved vertical scroll position');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
