@@ -32,6 +32,7 @@ function Navigation({ badges }: { badges: Badges }) {
     const bar = document.querySelector<HTMLElement>('.bottom');
     if (!bar) return;
     let animation: ReturnType<typeof animate> | undefined;
+    let pageAnimation: ReturnType<typeof animate> | undefined;
     const moveTo = (view: string) => {
       const left = positions.current[destinations.indexOf(view as Destination)];
       if (left === undefined) return;
@@ -70,6 +71,7 @@ function Navigation({ badges }: { badges: Badges }) {
       bar: boolean;
       barOrigin: number;
       axis: SwipeAxis;
+      offset: number;
       preview?: Destination;
     };
     let start: SwipeStart | null = null;
@@ -97,6 +99,8 @@ function Navigation({ badges }: { badges: Badges }) {
     const clearContentDrag = () => {
       window.clearTimeout(settleTimer);
       settleTimer = undefined;
+      pageAnimation?.stop();
+      pageAnimation = undefined;
       settleTarget = null;
       const main = document.querySelector<HTMLElement>('main');
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
@@ -145,6 +149,34 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.style.top = `${currentRect.top - previewOrigin.top}px`;
     };
 
+    const setPageTrackOffset = (current: HTMLElement, preview: HTMLElement, offset: number, direction: number, width: number) => {
+      current.style.transform = `translate3d(${offset}px,0,0)`;
+      preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
+    };
+
+    const animatePageTrack = (
+      current: HTMLElement,
+      preview: HTMLElement,
+      from: number,
+      to: number,
+      direction: number,
+      width: number,
+      complete: () => void
+    ) => {
+      pageAnimation?.stop();
+      setPageTrackOffset(current, preview, from, direction, width);
+      pageAnimation = animate(from, to, {
+        type: 'tween',
+        duration: 0.26,
+        ease: [0.22, 0.61, 0.36, 1],
+        onUpdate: value => setPageTrackOffset(current, preview, value, direction, width),
+        onComplete: () => {
+          pageAnimation = undefined;
+          complete();
+        }
+      });
+    };
+
     const stageContentDrag = (first: SwipeStart, dx: number) => {
       const index = destinations.indexOf(first.view);
       const step = -Math.sign(dx);
@@ -171,8 +203,8 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
       if (changingPreview || newlyStaged) alignPreviewToCurrent(current, preview, width);
-      current.style.transform = `translate3d(${offset}px,0,0)`;
-      preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
+      setPageTrackOffset(current, preview, offset, direction, width);
+      first.offset = offset;
       first.preview = next;
       return next;
     };
@@ -189,11 +221,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const direction = destinations.indexOf(first.preview) - destinations.indexOf(first.view);
       const width = Math.max(1, current.getBoundingClientRect().width);
       main.classList.add('viewSwipeSettling');
-      requestAnimationFrame(() => {
-        current.style.transform = 'translate3d(0,0,0)';
-        preview.style.transform = `translate3d(${direction * width}px,0,0)`;
-        settleTimer = window.setTimeout(clearContentDrag, 280);
-      });
+      animatePageTrack(current, preview, first.offset, 0, direction, width, clearContentDrag);
     };
 
     const commitContentDrag = (first: SwipeStart, next: Destination) => {
@@ -211,11 +239,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const width = Math.max(1, current.getBoundingClientRect().width);
       main.classList.add('viewSwipeSettling');
       settleTarget = next;
-      requestAnimationFrame(() => {
-        current.style.transform = `translate3d(${-direction * width}px,0,0)`;
-        preview.style.transform = 'translate3d(0,0,0)';
-        settleTimer = window.setTimeout(() => finishContentSettle(), 280);
-      });
+      animatePageTrack(current, preview, first.offset, -direction * width, direction, width, () => finishContentSettle());
     };
 
     const animateViewChange = (target: Destination) => {
@@ -253,19 +277,11 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
       alignPreviewToCurrent(current, preview, width);
-      current.style.transform = 'translate3d(0,0,0)';
-      preview.style.transform = `translate3d(${direction * width}px,0,0)`;
+      setPageTrackOffset(current, preview, 0, direction, width);
       settleTarget = target;
       moveTo(target);
-      void preview.offsetWidth;
-      requestAnimationFrame(() => {
-        main.classList.add('viewSwipeSettling');
-        requestAnimationFrame(() => {
-          current.style.transform = `translate3d(${-direction * width}px,0,0)`;
-          preview.style.transform = 'translate3d(0,0,0)';
-          settleTimer = window.setTimeout(() => finishContentSettle(), 280);
-        });
-      });
+      main.classList.add('viewSwipeSettling');
+      animatePageTrack(current, preview, 0, -direction * width, direction, width, () => finishContentSettle());
     };
     transitionToRef.current = animateViewChange;
 
@@ -299,6 +315,8 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!inBar && window.getSelection()?.type === 'Range') return;
       if (!inBar && (touch.clientX < 26 || touch.clientX > window.innerWidth - 26)) return;
       animation?.stop();
+      pageAnimation?.stop();
+      pageAnimation = undefined;
       clearContentDrag();
       const viewIndex = destinations.indexOf(view);
       const barOrigin = positions.current[viewIndex] ?? indicatorX.get();
@@ -310,7 +328,8 @@ function Navigation({ badges }: { badges: Badges }) {
         view,
         bar: inBar,
         barOrigin,
-        axis: 'pending'
+        axis: 'pending',
+        offset: 0
       };
     };
 
