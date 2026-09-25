@@ -107,13 +107,22 @@ function Navigation({ badges }: { badges: Badges }) {
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
       const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
       current?.classList.remove('swipeCurrent');
-      if (current) current.style.removeProperty('transform');
+      if (current) {
+        current.style.removeProperty('transform');
+        current.style.removeProperty('position');
+        current.style.removeProperty('top');
+        current.style.removeProperty('left');
+        current.style.removeProperty('width');
+        current.style.removeProperty('margin');
+      }
       if (preview) {
         preview.classList.remove('swipePreview');
         preview.style.removeProperty('transform');
+        preview.style.removeProperty('position');
         preview.style.removeProperty('top');
         preview.style.removeProperty('left');
         preview.style.removeProperty('width');
+        preview.style.removeProperty('margin');
         preview.removeAttribute('aria-hidden');
         preview.removeAttribute('inert');
       }
@@ -144,32 +153,38 @@ function Navigation({ badges }: { badges: Badges }) {
     const savedScrollFor = (view: Destination) =>
       Math.max(0, Number(window.viewScrollPositions?.[view] || 0));
 
-    const alignPreviewToCurrent = (
+    const pinPageTrack = (
       main: HTMLElement,
       current: HTMLElement,
       preview: HTMLElement,
       target: Destination
     ) => {
-      preview.style.left = '0px';
-      preview.style.top = '0px';
-      preview.style.removeProperty('transform');
-      const mainRect = main.getBoundingClientRect();
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
       const currentScroll = Math.max(0, Number(window.scrollY || 0));
       const targetScroll = savedScrollFor(target);
-      const left = currentRect.left - mainRect.left;
-      const top = currentRect.top - mainRect.top + currentScroll - targetScroll;
+      const preservedMainHeight = Math.max(1, main.getBoundingClientRect().height);
+
+      main.style.minHeight = `${Math.ceil(preservedMainHeight)}px`;
+      main.classList.add('viewSwipeStage');
+      current.classList.add('swipeCurrent');
+      preview.classList.add('swipePreview');
+      preview.setAttribute('aria-hidden', 'true');
+      preview.setAttribute('inert', '');
+
+      current.style.position = 'fixed';
+      current.style.left = `${currentRect.left}px`;
+      current.style.top = `${currentRect.top}px`;
+      current.style.width = `${width}px`;
+      current.style.margin = '0';
+
+      preview.style.position = 'fixed';
+      preview.style.left = `${currentRect.left}px`;
+      preview.style.top = `${currentRect.top + currentScroll - targetScroll}px`;
       preview.style.width = `${width}px`;
-      preview.style.left = `${left}px`;
-      preview.style.top = `${top}px`;
-      const previewHeight = Math.max(1, preview.scrollHeight, preview.getBoundingClientRect().height);
-      const requiredHeight = Math.max(
-        main.clientHeight,
-        current.offsetTop + current.offsetHeight,
-        top + previewHeight
-      );
-      main.style.minHeight = `${Math.ceil(Math.max(1, requiredHeight))}px`;
+      preview.style.margin = '0';
+      preview.style.removeProperty('transform');
+
       return width;
     };
 
@@ -218,13 +233,8 @@ function Navigation({ badges }: { badges: Badges }) {
       if (first.preview && changingPreview) clearContentDrag();
       const direction = destinations.indexOf(next) - index;
       const newlyStaged = !preview.classList.contains('swipePreview');
-      main.classList.add('viewSwipeStage');
-      current.classList.add('swipeCurrent');
-      preview.classList.add('swipePreview');
-      preview.setAttribute('aria-hidden', 'true');
-      preview.setAttribute('inert', '');
       const width = changingPreview || newlyStaged
-        ? alignPreviewToCurrent(main, current, preview, next)
+        ? pinPageTrack(main, current, preview, next)
         : Math.max(1, current.getBoundingClientRect().width);
       const offset = clamp(dx, -width, width);
       setPageTrackOffset(current, preview, offset, direction, width);
@@ -293,12 +303,7 @@ function Navigation({ badges }: { badges: Badges }) {
       }
       clearContentDrag();
       const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
-      main.classList.add('viewSwipeStage');
-      current.classList.add('swipeCurrent');
-      preview.classList.add('swipePreview');
-      preview.setAttribute('aria-hidden', 'true');
-      preview.setAttribute('inert', '');
-      const width = alignPreviewToCurrent(main, current, preview, target);
+      const width = pinPageTrack(main, current, preview, target);
       setPageTrackOffset(current, preview, 0, direction, width);
       settleTarget = target;
       moveTo(target);
