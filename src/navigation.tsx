@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { motion, useReducedMotion } from 'motion/react';
+import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 
 type Destination = 'today' | 'changes' | 'breaks' | 'chat';
 type Badge = { text: string; hidden: boolean };
@@ -23,10 +23,41 @@ function badgeFrom(id: string): Badge {
 function Navigation({ badges }: { badges: Badges }) {
   const reducedMotion = useReducedMotion();
   const [active, setActive] = useState(document.body.getAttribute('data-view') || 'today');
+  const indicatorX = useMotionValue(0);
+  const positions = useRef<number[]>([]);
+  const [indicatorSize, setIndicatorSize] = useState({ top: 0, width: 0, height: 0 });
 
   useEffect(() => {
-    const sync = (event: Event) => setActive((event as CustomEvent<{ view: string }>).detail.view);
-    let start: { id: number; x: number; y: number; view: Destination; at: number; bar: boolean } | null = null;
+    const bar = document.querySelector<HTMLElement>('.bottom');
+    if (!bar) return;
+    let animation: ReturnType<typeof animate> | undefined;
+    const moveTo = (view: string) => {
+      const left = positions.current[destinations.indexOf(view as Destination)];
+      if (left === undefined) return;
+      animation?.stop();
+      if (reducedMotion) indicatorX.set(left);
+      else animation = animate(indicatorX, left, { type: 'spring', stiffness: 450, damping: 38 });
+    };
+    const measure = () => {
+      const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
+      if (buttons.some(button => !button)) return;
+      const barRect = bar.getBoundingClientRect();
+      const rects = buttons.map(button => button!.getBoundingClientRect());
+      positions.current = rects.map(rect => rect.left - barRect.left);
+      setIndicatorSize({ top: rects[0].top - barRect.top, width: rects[0].width, height: rects[0].height });
+      animation?.stop();
+      indicatorX.set(positions.current[destinations.indexOf(document.body.getAttribute('data-view') as Destination)] ?? positions.current[0]);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    bar.classList.add('reactTabs');
+    measure();
+    const sync = (event: Event) => {
+      const view = (event as CustomEvent<{ view: string }>).detail.view;
+      setActive(view);
+      moveTo(view);
+    };
+    let start: { id: number; x: number; y: number; view: Destination; bar: boolean } | null = null;
     let suppressClick = false;
     let clickTimer: number | undefined;
     const onStart = (event: TouchEvent) => {
@@ -34,26 +65,41 @@ function Navigation({ badges }: { badges: Badges }) {
       if (event.touches.length !== 1 || document.body.classList.contains('authPending') || document.querySelector('dialog[open]')) return;
       const target = event.target;
       if (!(target instanceof Element)) return;
-      const bar = !!target.closest('.bottom');
+      const inBar = !!target.closest('.bottom');
       const view = document.body.getAttribute('data-view') as Destination;
-      if (!destinations.includes(view) || (!bar && (!target.closest('main .view') || view === 'chat'))) return;
-      if (!bar && target.closest('button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessages')) return;
-      if (!bar && window.getSelection()?.type === 'Range') return;
+      if (!destinations.includes(view) || (!inBar && (!target.closest('main .view') || view === 'chat'))) return;
+      if (!inBar && target.closest('button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessages')) return;
+      if (!inBar && window.getSelection()?.type === 'Range') return;
       const touch = event.touches[0];
       if (touch.clientX < 26 || touch.clientX > window.innerWidth - 26) return;
-      start = { id: touch.identifier, x: touch.clientX, y: touch.clientY, view, at: Date.now(), bar };
+      animation?.stop();
+      start = { id: touch.identifier, x: touch.clientX, y: touch.clientY, view, bar: inBar };
+    };
+    const onMove = (event: TouchEvent) => {
+      if (!start || reducedMotion) return;
+      const touch = Array.from(event.touches).find(item => item.identifier === start!.id);
+      if (!touch) return;
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (Math.abs(dy) > 18 && Math.abs(dy) > Math.abs(dx)) { moveTo(start.view); start = null; return; }
+      if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+      const index = destinations.indexOf(start.view);
+      const neighbor = positions.current[index + Math.sign(dx)];
+      const origin = positions.current[index];
+      if (origin !== undefined && neighbor !== undefined)
+        indicatorX.set(origin + (neighbor - origin) * Math.min(1, Math.abs(dx) / 115));
     };
     const onEnd = (event: TouchEvent) => {
       const first = start;
       start = null;
-      if (!first || document.body.getAttribute('data-view') !== first.view || document.querySelector('dialog[open]')) return;
+      if (!first) return;
+      if (document.body.getAttribute('data-view') !== first.view || document.querySelector('dialog[open]')) { moveTo(document.body.getAttribute('data-view') || first.view); return; }
       const touch = Array.from(event.changedTouches).find(item => item.identifier === first.id);
-      if (!touch) return;
+      if (!touch) { moveTo(first.view); return; }
       const dx = touch.clientX - first.x;
       const dy = touch.clientY - first.y;
-      if (Math.abs(dx) < (first.bar ? 58 : 85) || Math.abs(dx) < Math.abs(dy) * 1.7 || Date.now() - first.at > 700) return;
-      const next = destinations[destinations.indexOf(first.view) + (dx < 0 ? 1 : -1)];
-      if (!next) return;
+      const next = destinations[destinations.indexOf(first.view) + Math.sign(dx)];
+      if (Math.abs(dx) < (first.bar ? 45 : 65) || Math.abs(dx) < Math.abs(dy) * 1.5 || !next) { moveTo(first.view); return; }
       suppressClick = true;
       window.clearTimeout(clickTimer);
       clickTimer = window.setTimeout(() => { suppressClick = false; }, 180);
@@ -66,21 +112,26 @@ function Navigation({ badges }: { badges: Badges }) {
       event.stopImmediatePropagation();
       suppressClick = false;
     };
-    const onCancel = () => { start = null; };
+    const onCancel = () => { if (start) moveTo(start.view); start = null; };
     window.addEventListener('roster:viewchange', sync);
     document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: true });
     document.addEventListener('touchend', onEnd, { passive: true });
     document.addEventListener('touchcancel', onCancel, { passive: true });
     document.addEventListener('click', onClick, true);
     return () => {
       window.removeEventListener('roster:viewchange', sync);
       document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onEnd);
       document.removeEventListener('touchcancel', onCancel);
       document.removeEventListener('click', onClick, true);
       window.clearTimeout(clickTimer);
+      observer.disconnect();
+      animation?.stop();
+      bar.classList.remove('reactTabs');
     };
-  }, []);
+  }, [indicatorX, reducedMotion]);
 
   function navigate(view: Destination) {
     window.show?.(view);
@@ -92,6 +143,8 @@ function Navigation({ badges }: { badges: Badges }) {
   }
 
   return <div className="tw:contents" data-react-navigation="ready">
+    <motion.span className="tabSlidingIndicator" aria-hidden="true"
+      style={{ x: indicatorX, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
     <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}
       aria-current={active === 'today' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
       onClick={() => navigate('today')}>
