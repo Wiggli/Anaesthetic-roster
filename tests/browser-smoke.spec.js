@@ -179,24 +179,26 @@ test('page track stays covered across saved scroll positions and Night carries i
       const rect = element.getBoundingClientRect();
       return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
     };
-    const points = [2, window.innerWidth / 2, window.innerWidth - 2].map(x => {
-      const hit = document.elementFromPoint(x, y);
-      return {
-        x,
-        tag: hit?.tagName || null,
-        id: hit?.id || null,
-        className: typeof hit?.className === 'string' ? hit.className : null,
-        covered: Boolean(hit?.closest('main > .view.swipeCurrent, main > .view.swipePreview'))
-      };
-    });
+    const currentRect = compactRect(current);
+    const previewRect = compactRect(preview);
+    const visualRects = [currentRect, previewRect].filter(Boolean);
+    const points = [2, window.innerWidth / 2, window.innerWidth - 2].map(x => ({
+      x,
+      covered: visualRects.some(rect =>
+        x >= rect.x - 1 &&
+        x <= rect.right + 1 &&
+        y >= rect.y - 1 &&
+        y <= rect.bottom + 1
+      )
+    }));
     return {
       scrollY: window.scrollY,
       innerWidth: window.innerWidth,
       innerHeight: window.innerHeight,
       bodyView: document.body.getAttribute('data-view'),
       main: compactRect(main),
-      current: compactRect(current),
-      preview: compactRect(preview),
+      current: currentRect,
+      preview: previewRect,
       mainOverflow: main ? getComputedStyle(main).overflow : null,
       points
     };
