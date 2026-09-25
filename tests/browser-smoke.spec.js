@@ -678,6 +678,23 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   expect(await page.evaluate(() => window.__openedNights)).toContain(4);
 });
 
+test('typed account controls preserve appearance and app actions', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__accountActions = [];
+    window.addEventListener('roster:account-action', event => window.__accountActions.push(event.detail));
+    window.dispatchEvent(new CustomEvent('roster:account', { detail: { theme: 'system', installed: false } }));
+    document.getElementById('accountSheet').showModal();
+  });
+
+  await expect(page.locator('#appearanceExperience')).toContainText('Automatic');
+  await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
+  await page.locator('#appearanceExperience button', { hasText: 'Dark' }).click();
+  await expect(page.locator('#appearanceExperience button', { hasText: 'Dark' })).toHaveAttribute('aria-pressed', 'true');
+  const actions = await page.evaluate(() => window.__accountActions);
+  expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
+});
+
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,
