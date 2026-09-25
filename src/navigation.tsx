@@ -65,7 +65,6 @@ function Navigation({ badges }: { badges: Badges }) {
       at: number;
       view: Destination;
       bar: boolean;
-      barOrigin: number;
       axis: SwipeAxis;
       preview?: Destination;
     };
@@ -224,8 +223,6 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!inBar && (touch.clientX < 26 || touch.clientX > window.innerWidth - 26)) return;
       animation?.stop();
       clearContentDrag();
-      const viewIndex = destinations.indexOf(view);
-      const barOrigin = positions.current[viewIndex] ?? indicatorX.get();
       start = {
         id: touch.identifier,
         x: touch.clientX,
