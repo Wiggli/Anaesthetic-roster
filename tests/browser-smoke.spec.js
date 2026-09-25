@@ -148,6 +148,31 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect(page.locator('#changes')).toBeVisible();
 });
 
+test('a new swipe is not dropped when an earlier page settle is still active', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'real phone gesture regression');
+  await openShell(page);
+  await page.evaluate(() => window.show('changes'));
+  const safe = await page.evaluate(() => {
+    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessageViewport,.chatComposer,.chatConversationList,.chatMessages';
+    for (let y = 220; y < Math.min(window.innerHeight - 120, 700); y += 14) {
+      const target = document.elementFromPoint(105, y);
+      if (target?.closest('#changes') && !target.closest(blocked)) return { x: 105, y };
+    }
+    return null;
+  });
+  expect(safe).not.toBeNull();
+  await realTouchSwipe(page, safe, { x: safe.x + 28, y: safe.y + 2 });
+  await expect(page.locator('main')).toHaveClass(/viewSwipeSettling/);
+
+  await page.evaluate(() => window.show('chat'));
+  await expect(page.locator('#chat')).toBeVisible();
+  const chatHeader = await page.locator('.chatScreenHeader').boundingBox();
+  const y = chatHeader.y + Math.min(chatHeader.height - 12, 55);
+  await realTouchSwipe(page, { x: 105, y }, { x: 290, y: y + 16 });
+  await expect(page.locator('#breaks')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeSettling/);
+});
+
 test('reduced motion keeps the selected lens aligned without a spring', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openShell(page);
@@ -282,7 +307,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.41/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.42/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -327,7 +352,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains continuous swiping', async ({ page }) => {
+test('frontend changelog explains interruptible swipe settling', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -336,8 +361,8 @@ test('frontend changelog explains continuous swiping', async ({ page }) => {
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab selector now follows one continuous drag');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation is now available from Chat');
+  await expect(dialog.locator('.releaseHistory')).toContainText('new swipe can now begin immediately');
+  await expect(dialog.locator('.releaseHistory')).toContainText('silently dropping the new touch');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
