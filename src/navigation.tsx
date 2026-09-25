@@ -12,6 +12,7 @@ declare global {
   interface Window {
     show?: (view: string) => void;
     openChatView?: () => void;
+    viewScrollPositions?: Record<string, number>;
   }
 }
 
@@ -117,6 +118,7 @@ function Navigation({ badges }: { badges: Badges }) {
         preview.removeAttribute('inert');
       }
       main?.classList.remove('viewSwipeStage', 'viewSwipeSettling');
+      if (main) main.style.removeProperty('min-height');
     };
 
     const finishContentSettle = (immediate = false) => {
@@ -139,16 +141,35 @@ function Navigation({ badges }: { badges: Badges }) {
       else requestAnimationFrame(() => requestAnimationFrame(complete));
     };
 
-    const alignPreviewToCurrent = (current: HTMLElement, preview: HTMLElement) => {
+    const savedScrollFor = (view: Destination) =>
+      Math.max(0, Number(window.viewScrollPositions?.[view] || 0));
+
+    const alignPreviewToCurrent = (
+      main: HTMLElement,
+      current: HTMLElement,
+      preview: HTMLElement,
+      target: Destination
+    ) => {
       preview.style.left = '0px';
       preview.style.top = '0px';
       preview.style.removeProperty('transform');
+      const mainRect = main.getBoundingClientRect();
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
+      const currentScroll = Math.max(0, Number(window.scrollY || 0));
+      const targetScroll = savedScrollFor(target);
+      const left = currentRect.left - mainRect.left;
+      const top = currentRect.top - mainRect.top + currentScroll - targetScroll;
       preview.style.width = `${width}px`;
-      const previewRect = preview.getBoundingClientRect();
-      preview.style.left = `${currentRect.left - previewRect.left}px`;
-      preview.style.top = `${currentRect.top - previewRect.top}px`;
+      preview.style.left = `${left}px`;
+      preview.style.top = `${top}px`;
+      const previewHeight = Math.max(1, preview.scrollHeight, preview.getBoundingClientRect().height);
+      const requiredHeight = Math.max(
+        main.clientHeight,
+        current.offsetTop + current.offsetHeight,
+        top + previewHeight
+      );
+      main.style.minHeight = `${Math.ceil(Math.max(1, requiredHeight))}px`;
       return width;
     };
 
@@ -203,7 +224,7 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
       const width = changingPreview || newlyStaged
-        ? alignPreviewToCurrent(current, preview)
+        ? alignPreviewToCurrent(main, current, preview, next)
         : Math.max(1, current.getBoundingClientRect().width);
       const offset = clamp(dx, -width, width);
       setPageTrackOffset(current, preview, offset, direction, width);
@@ -277,7 +298,7 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      const width = alignPreviewToCurrent(current, preview);
+      const width = alignPreviewToCurrent(main, current, preview, target);
       setPageTrackOffset(current, preview, 0, direction, width);
       settleTarget = target;
       moveTo(target);
