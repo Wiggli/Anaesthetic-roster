@@ -1,13 +1,13 @@
 {
-  "version": "37.41",
+  "version": "37.42",
   "date": "25 September 2026",
-  "title": "Smoother continuous swiping",
-  "summary": "The bottom selector now follows one continuous drag across all tabs, while screen swipes lock reliably and work from Chat too.",
+  "title": "Reliable swiping everywhere",
+  "summary": "Swipes now start reliably from ordinary Night cards and the Chat transcript, while the bottom selector follows the finger directly across the full bar.",
   "changes": [
-    "Drag once across the bottom bar and the selector follows your finger continuously through Night, Changes, Breaks and Chat, then settles on the nearest tab.",
-    "Screen swipes lock onto a horizontal gesture once established, so small diagonal movement no longer cancels the page halfway through.",
-    "Safe noninteractive areas of Chat can now swipe back toward Breaks, while message areas, composers, forms, workflow controls, dialogs and edge gestures remain protected.",
-    "The bottom bar uses a more stable opaque glass layer so underlying cards do not look like a second broken bar. Roster calculations, Supabase data and authentication are unchanged."
+    "Horizontal navigation no longer has large dead zones on ordinary cards, summary areas or the Chat transcript. Real controls such as buttons, links, inputs, composers and dialogs remain protected.",
+    "The bottom selector now maps directly to the finger position across Night, Changes, Breaks and Chat, so one long drag remains continuous across the full bar.",
+    "The direction lock from 37.41 remains in place, preventing small diagonal movement from cancelling an established horizontal swipe.",
+    "This release repairs the failed 37.41 production verification before deployment. Roster calculations, Supabase data, authentication and clinical workflow rules are unchanged."
   ],
   "update_policy": "important"
 }
