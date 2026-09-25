@@ -294,7 +294,9 @@ assert.match(css, /main\.viewSwipeStage[\s\S]*\.view\.swipePreview/, 'page swipe
 assert.ok(navigation.includes('transitionToRef.current = animateViewChange;'), 'tab taps must use the same page-track transition engine as swipe navigation');
 assert.ok(navigation.includes('animateViewChange(target);'), 'long bottom-bar drags must settle through the shared page-track transition');
 assert.ok(navigation.includes('committingTarget = target;'), 'the final view handoff must preserve the staged destination until the normal view becomes active');
-assert.match(css, /transition:transform 260ms cubic-bezier\(\.22,\.61,\.36,1\)/, 'screen settling must use one horizontal transform timing without opacity animation');
+assert.ok(navigation.includes("pageAnimation = animate(from, to"), 'automatic page settling must use one shared animation value for both screens');
+assert.ok(navigation.includes("onUpdate: value => setPageTrackOffset(current, preview, value, direction, width)"), 'every animation frame must position both pages from the same track offset');
+assert.match(css, /viewSwipeSettling>\.view\.swipePreview\{transition:none!important\}/, 'CSS must not run an independent page transition that could desynchronise the shared track');
 assert.match(css, /background:var\(--ios-bg,var\(--apple-bg,#f2f2f7\)\)/, 'staged pages must have an opaque app background so adjacent screens cannot bleed through');
 assert.match(css, /opacity:1!important/, 'staged pages must remain fully opaque throughout the track transition');
 assert.doesNotMatch(navigation, /viewMorphing|style\.opacity|scale\(/, 'navigation must not reintroduce overlapping opacity or scale morphs');
