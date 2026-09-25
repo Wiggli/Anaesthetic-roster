@@ -139,7 +139,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const chatSwipeStart = await page.evaluate(() => {
     const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.chatComposer,.chatConversationList';
     for (let y = 80; y < Math.min(window.innerHeight - 120, 520); y += 14) {
-      for (const x of [105, 290, 200]) {
+      for (const x of [80, 105, 135, 165]) {
         const target = document.elementFromPoint(x, y);
         if (target?.closest('#chat') && !target.closest(blocked)) return { x, y };
       }
@@ -147,7 +147,9 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     return null;
   });
   expect(chatSwipeStart).not.toBeNull();
-  await realTouchSwipe(page, chatSwipeStart, { x: 290, y: chatSwipeStart.y + 18 });
+  const chatSwipeEndX = Math.min(window.innerWidth - 32, chatSwipeStart.x + 190);
+  expect(chatSwipeEndX - chatSwipeStart.x).toBeGreaterThan(52);
+  await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 });
   await expect(page.locator('#breaks')).toBeVisible();
 
   await page.evaluate(() => window.show('today'));
