@@ -690,12 +690,18 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await page.evaluate(() => {
     window.__accountActions = [];
     window.addEventListener('roster:account-action', event => window.__accountActions.push(event.detail));
-    window.dispatchEvent(new CustomEvent('roster:account', { detail: { theme: 'system', installed: false } }));
+    window.dispatchEvent(new CustomEvent('roster:account', { detail: { theme: 'system', installed: false, profile: {
+      name: 'Andre', jobTitle: 'Anaesthetic Nurse', rosterName: 'Nurse One', approvedName: 'Andre Bartolo', email: 'andre@example.test',
+      options: [{ value: 'Nurse One', label: 'Nurse One' }], initial: 'A', photoUrl: '', featureAvailable: true, pendingPhoto: false, changed: false
+    } } }));
     window.dispatchEvent(new CustomEvent('roster:passkeys', { detail: { message: '', items: [{ id: 'passkey-1', label: 'Night Roster on iPhone' }] } }));
     document.getElementById('accountSheet').showModal();
   });
 
   await expect(page.locator('#appearanceExperience')).toContainText('Automatic');
+  await expect(page.locator('#profileExperience')).toContainText('Personal details');
+  await expect(page.locator('#profileName')).toHaveValue('Andre');
+  await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
   await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
   await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
   await page.locator('#appearanceExperience button', { hasText: 'Dark' }).click();
