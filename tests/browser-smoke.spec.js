@@ -66,6 +66,40 @@ test('signed-in React tabs retain badges and keyboard navigation', async ({ page
   await expect(page.locator('#changesTaskBadge')).toHaveText('3');
 });
 
+test('a new swipe interrupts an unfinished settle instead of being ignored', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'real phone gesture regression');
+  await openShell(page);
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+  await page.evaluate(() => window.show('changes'));
+  const safe = await page.evaluate(() => {
+    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav';
+    for (let y = 220; y < Math.min(window.innerHeight - 120, 680); y += 14) {
+      for (const x of [105, 200, 290]) {
+        const target = document.elementFromPoint(x, y);
+        if (target?.closest('#changes') && !target.closest(blocked)) return { x, y };
+      }
+    }
+    return null;
+  });
+  expect(safe).not.toBeNull();
+
+  await realTouchSwipe(page, safe, { x: safe.x + 20, y: safe.y + 3 });
+  await expect(page.locator('main')).toHaveClass(/viewSwipeSettling/);
+
+  await realTouchSwipe(page, safe, { x: Math.min(340, safe.x + 185), y: safe.y + 10 });
+  await expect(page.locator('#today')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeSettling/);
+
+  await page.evaluate(() => window.show('changes'));
+  await realTouchSwipe(page, safe, { x: Math.min(340, safe.x + 185), y: safe.y + 10 });
+  await expect(page.locator('main')).toHaveClass(/viewSwipeSettling/);
+  await page.evaluate(() => window.show('chat'));
+  await expect(page.locator('#chat')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+  await page.waitForTimeout(220);
+  await expect(page.locator('#chat')).toBeVisible();
+});
+
 test('continuous tab drag and direction-locked page swipes work across Night and Chat', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
@@ -101,9 +135,11 @@ test('continuous tab drag and direction-locked page swipes work across Night and
 
   const workflowButton = page.locator('#changes [data-changes-step]').first();
   await workflowButton.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, -180));
   const workflow = await workflowButton.boundingBox();
-  await realTouchSwipe(page, { x: workflow.x + workflow.width / 2, y: workflow.y + workflow.height / 2 },
-    { x: workflow.x + workflow.width / 2 + 150, y: workflow.y + workflow.height / 2 });
+  const workflowPoint = { x: workflow.x + workflow.width / 2, y: workflow.y + workflow.height / 2 };
+  expect(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[data-changes-step]'), workflowPoint)).toBe(true);
+  await realTouchSwipe(page, workflowPoint, { x: workflowPoint.x + 150, y: workflowPoint.y });
   await expect(page.locator('#changes')).toBeVisible();
 
   await page.evaluate(() => {
@@ -114,7 +150,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const chatSwipeStart = await page.evaluate(() => {
     const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.chatComposer,.chatConversationList';
     for (let y = 80; y < Math.min(window.innerHeight - 120, 520); y += 14) {
-      for (const x of [105, 290, 200]) {
+      for (const x of [80, 105, 135, 165]) {
         const target = document.elementFromPoint(x, y);
         if (target?.closest('#chat') && !target.closest(blocked)) return { x, y };
       }
@@ -122,7 +158,13 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     return null;
   });
   expect(chatSwipeStart).not.toBeNull();
-  await realTouchSwipe(page, chatSwipeStart, { x: 290, y: chatSwipeStart.y + 18 });
+  const viewportWidth = page.viewportSize()?.width || 390;
+  const chatSwipeEndX = Math.min(viewportWidth - 32, chatSwipeStart.x + 190);
+  expect(chatSwipeEndX - chatSwipeStart.x).toBeGreaterThan(52);
+  await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 }, async () => {
+    await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
+    await expect(page.locator('#breaks')).toHaveClass(/swipePreview/);
+  });
   await expect(page.locator('#breaks')).toBeVisible();
 
   await page.evaluate(() => window.show('today'));
@@ -130,14 +172,15 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const bar = await page.locator('.bottom').boundingBox();
   const nightTab = await page.locator('.bottom button[data-v="today"]').boundingBox();
   const chatTab = await page.locator('.bottom button[data-v="chat"]').boundingBox();
+  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - nightTab.x))
+    .toBeLessThan(4);
   const barStart = { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 };
   const barEnd = { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 };
-  const barInitialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   let longDragIndicator;
   await realTouchSwipe(page, barStart, barEnd, async () => {
     longDragIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   });
-  expect(longDragIndicator.x).toBeGreaterThan(barInitialIndicator.x + nightTab.width);
+  expect(longDragIndicator.x).toBeGreaterThan(nightTab.x + nightTab.width);
   await expect(page.locator('#chat')).toBeVisible();
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
     .toBeLessThan(4);

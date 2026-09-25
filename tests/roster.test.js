@@ -278,6 +278,10 @@ for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': 
   assert.deepEqual(Array.from(new Set(versions)), [context.APP_VERSION], `${file} cache-busting references must all match APP_VERSION`);
 }
 assert.ok(navigation.includes("type SwipeAxis = 'pending' | 'horizontal' | 'vertical';"), 'page swipes must lock their gesture axis instead of re-evaluating direction on every move');
+assert.ok(navigation.includes("if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle();"), 'a settling animation must be interruptible by the next touch instead of dropping that gesture');
+assert.ok(navigation.includes("if (document.querySelector('main.viewSwipeStage')) clearContentDrag();"), 'explicit navigation must cancel any stale staged swipe before it can override the new view');
+assert.ok(navigation.includes('const hitTarget = document.elementFromPoint(touch.clientX, touch.clientY);'), 'an interrupted settle must re-hit-test the page currently under the finger');
+assert.doesNotMatch(navigation, /dialog\[open\][^\n]*main\.viewSwipeSettling/, 'touch start must not reject a gesture solely because the previous page is settling');
 assert.ok(navigation.includes('indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));'), 'bottom-tab dragging must track the finger continuously across the full bar');
 assert.ok(navigation.includes("const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get())"), 'a long bottom-bar drag must settle on the nearest tab rather than only one neighbour');
 assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;"), 'Chat must no longer be excluded from safe content swipes');
