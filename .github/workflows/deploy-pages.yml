@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -46,7 +46,7 @@ jobs:
 
   migrate:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-    needs: verify
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
