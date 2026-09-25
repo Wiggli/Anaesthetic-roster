@@ -1,13 +1,13 @@
 {
-  "version": "37.45",
+  "version": "37.46",
   "date": "25 September 2026",
-  "title": "More reliable swipe starts",
-  "summary": "Horizontal navigation now starts reliably from more of each page and tolerates natural diagonal thumb movement without interfering with clearly vertical scrolling.",
+  "title": "Reliable swiping over Chat messages",
+  "summary": "Horizontal navigation now starts directly on focusable Chat messages instead of silently rejecting those gestures.",
   "changes": [
-    "Horizontal page swipes can now begin from normal empty space inside status rows, workflow strips, date controls and Chat list containers instead of those whole regions being treated as blocked.",
-    "Actual buttons, links, inputs, text areas and other interactive controls remain protected from accidental navigation.",
-    "The direction lock now tolerates the small diagonal wobble that commonly happens at the beginning of a thumb swipe while clearly vertical movement continues to scroll normally.",
-    "The viewport-pinned page track, roster logic, Supabase data, authentication, staffing rules and clinical workflows are unchanged."
+    "Horizontal page swipes can now begin directly on Chat message rows as well as on blank transcript space.",
+    "Chat messages remain keyboard-focusable and keep their long-press actions, but focusability no longer makes a message a forbidden swipe-start area.",
+    "This fixes the missed gestures visible in the touch recording where the finger moved horizontally across message text while the Chat page did not move.",
+    "Buttons, links, inputs, text areas, editable fields, vertical scrolling, the viewport-pinned page track, roster logic, Supabase data and authentication remain unchanged."
   ],
   "update_policy": "important"
 }
