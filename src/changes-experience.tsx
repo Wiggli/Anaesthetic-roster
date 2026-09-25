@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
+import { useLayoutEffect } from 'react';
 
 type StaffingRecord = {
   id: string;
@@ -17,6 +18,7 @@ type HistoryRecord = {
   detail: string;
   meta: string;
 };
+type AllocationRow = { key: string; label: string; breakLabel: string; selectedId: string; options: { id: string; name: string }[] };
 
 export type ChangesExperience = {
   absences: StaffingRecord[];
@@ -24,6 +26,8 @@ export type ChangesExperience = {
   history: HistoryRecord[];
   historyTotal: number;
   historyExpanded: boolean;
+  allocations: AllocationRow[];
+  allocationMessage: string;
 };
 
 const roots = new Map<string, Root>();
@@ -108,8 +112,27 @@ function History({ model }: { model: ChangesExperience }) {
   </div>;
 }
 
+function AllocationList({ model }: { model: ChangesExperience }) {
+  useLayoutEffect(() => { dispatchAction({ action: 'allocation-mounted' }); }, [model]);
+  if (!model.allocations.length) return <div className="tw:rounded-2xl tw:bg-[var(--surface)] tw:p-4 tw:text-sm tw:leading-relaxed tw:text-[var(--muted)]">{model.allocationMessage}</div>;
+  return <div className="tw:grid tw:gap-2">{model.allocations.map(row => <motion.label layout key={row.key} className="tw:grid tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3.5 sm:tw:grid-cols-[1fr_minmax(12rem,0.8fr)] sm:tw:items-center dark:tw:border-white/10">
+    <span className="tw:min-w-0"><strong className="tw:block tw:text-sm">{row.label}</strong><small className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">{row.breakLabel}</small></span>
+    <select
+      defaultValue={row.selectedId}
+      data-final-allocation={row.key}
+      aria-label={`Choose nurse for ${row.label}`}
+      onChange={event => dispatchAction({ action: 'allocation-select', key: row.key, value: event.target.value })}
+      className="tw:min-h-11 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold dark:tw:border-white/12"
+    >
+      <option value="">Choose a nurse</option>
+      {row.options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+    </select>
+  </motion.label>)}</div>;
+}
+
 export function renderChangesExperience(model: ChangesExperience) {
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);
   rootFor('overtimeList')?.render(<RecordList records={model.overtime} empty="No overtime nurses recorded for this night." />);
   rootFor('changeHistory')?.render(<History model={model} />);
+  rootFor('allocationList')?.render(<AllocationList model={model} />);
 }

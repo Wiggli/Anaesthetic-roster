@@ -635,7 +635,9 @@ test('typed Changes records render live staffing and expose stable actions', asy
       overtime: [{ id: 'overtime-1', kind: 'overtime', name: 'Maria Borg', status: 'Awaiting allocation', needsAllocation: true, meta: 'Added by Roster admin at 18:31' }],
       history: [{ label: 'Absence', type: 'absence', title: 'André Bartolo marked absent', detail: 'Leave', meta: 'Roster admin · 18:30' }],
       historyTotal: 16,
-      historyExpanded: false
+      historyExpanded: false,
+      allocations: [{ key: 'first1', label: 'First Part 1', breakLabel: 'Second break', selectedId: '', options: [{ id: 'overtime-1', name: 'Maria Borg' }] }],
+      allocationMessage: ''
     }}));
     window.show('changes');
   });
@@ -646,10 +648,12 @@ test('typed Changes records render live staffing and expose stable actions', asy
   await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
   await page.locator('#recordCancelAction').click();
   await page.locator('#overtimeList button', { hasText: 'Awaiting allocation' }).click();
+  await page.locator('#allocationList select').selectOption('overtime-1');
   const actions = await page.evaluate(() => window.__changesActions);
   expect(actions).toEqual(expect.arrayContaining([
     expect.objectContaining({ action: 'allocation' }),
-    expect.objectContaining({ action: 'record', kind: 'absence', id: 'absence-1' })
+    expect.objectContaining({ action: 'record', kind: 'absence', id: 'absence-1' }),
+    expect.objectContaining({ action: 'allocation-select', key: 'first1', value: 'overtime-1' })
   ]));
 });
 
