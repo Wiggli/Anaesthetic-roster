@@ -7,7 +7,7 @@ const read = file => fs.readFileSync(path.join(dist, file), 'utf8');
 const html = read('index.html');
 const worker = read('service-worker.js');
 const manifest = JSON.parse(read('manifest.webmanifest'));
-const version = '37.45';
+const version = '37.46';
 
 for (const file of ['app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'styles.css', 'chat.css',
   'theme-bootstrap.js', 'release.json', 'icon-192.png', 'icon-512.png', 'mater-dei-logo.png']) {
