@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-43';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-44';
 const APP_SHELL = [
   './',
   './index.html',
