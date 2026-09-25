@@ -37,7 +37,7 @@ function Navigation({ badges }: { badges: Badges }) {
       if (left === undefined) return;
       animation?.stop();
       if (reducedMotion) indicatorX.set(left);
-      else animation = animate(indicatorX, left, { type: 'spring', stiffness: 450, damping: 38 });
+      else animation = animate(indicatorX, left, { type: 'tween', duration: 0.26, ease: [0.22, 0.61, 0.36, 1] });
     };
     const measure = () => {
       const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
@@ -102,23 +102,17 @@ function Navigation({ badges }: { badges: Badges }) {
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
       const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
       current?.classList.remove('swipeCurrent');
-      if (current) {
-        current.style.removeProperty('transform');
-        current.style.removeProperty('opacity');
-        current.style.removeProperty('transform-origin');
-      }
+      if (current) current.style.removeProperty('transform');
       if (preview) {
         preview.classList.remove('swipePreview');
         preview.style.removeProperty('transform');
-        preview.style.removeProperty('opacity');
-        preview.style.removeProperty('transform-origin');
         preview.style.removeProperty('top');
         preview.style.removeProperty('left');
         preview.style.removeProperty('width');
         preview.removeAttribute('aria-hidden');
         preview.removeAttribute('inert');
       }
-      main?.classList.remove('viewSwipeStage', 'viewSwipeSettling', 'viewMorphing');
+      main?.classList.remove('viewSwipeStage', 'viewSwipeSettling');
     };
 
     const finishContentSettle = (immediate = false) => {
@@ -160,8 +154,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const width = Math.max(1, currentRect.width);
       const offset = clamp(dx, -width, width);
       const direction = destinations.indexOf(next) - index;
-      const progress = Math.min(1, Math.abs(offset) / width);
-      main.classList.add('viewSwipeStage', 'viewMorphing');
+      main.classList.add('viewSwipeStage');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
@@ -169,12 +162,8 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.style.top = `${currentRect.top - mainRect.top}px`;
       preview.style.left = `${currentRect.left - mainRect.left}px`;
       preview.style.width = `${width}px`;
-      current.style.transformOrigin = '50% 45%';
-      preview.style.transformOrigin = '50% 45%';
-      current.style.transform = `translate3d(${offset}px,0,0) scale(${1 - progress * 0.018})`;
-      preview.style.transform = `translate3d(${offset + direction * width}px,0,0) scale(${0.982 + progress * 0.018})`;
-      current.style.opacity = String(1 - progress * 0.16);
-      preview.style.opacity = String(0.82 + progress * 0.18);
+      current.style.transform = `translate3d(${offset}px,0,0)`;
+      preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
       first.preview = next;
       return next;
     };
@@ -190,12 +179,10 @@ function Navigation({ badges }: { badges: Badges }) {
       }
       const direction = destinations.indexOf(first.preview) - destinations.indexOf(first.view);
       const width = Math.max(1, current.getBoundingClientRect().width);
-      main.classList.add('viewSwipeSettling', 'viewMorphing');
+      main.classList.add('viewSwipeSettling');
       requestAnimationFrame(() => {
-        current.style.transform = 'translate3d(0,0,0) scale(1)';
-        preview.style.transform = `translate3d(${direction * width}px,0,0) scale(.982)`;
-        current.style.opacity = '1';
-        preview.style.opacity = '.82';
+        current.style.transform = 'translate3d(0,0,0)';
+        preview.style.transform = `translate3d(${direction * width}px,0,0)`;
       });
       settleTimer = window.setTimeout(clearContentDrag, 260);
     };
@@ -213,15 +200,13 @@ function Navigation({ badges }: { badges: Badges }) {
       }
       const direction = destinations.indexOf(next) - destinations.indexOf(first.view);
       const width = Math.max(1, current.getBoundingClientRect().width);
-      main.classList.add('viewSwipeSettling', 'viewMorphing');
+      main.classList.add('viewSwipeSettling');
       requestAnimationFrame(() => {
-        current.style.transform = `translate3d(${-direction * width}px,0,0) scale(.982)`;
-        preview.style.transform = 'translate3d(0,0,0) scale(1)';
-        current.style.opacity = '.82';
-        preview.style.opacity = '1';
+        current.style.transform = `translate3d(${-direction * width}px,0,0)`;
+        preview.style.transform = 'translate3d(0,0,0)';
       });
       settleTarget = next;
-      settleTimer = window.setTimeout(() => finishContentSettle(), 280);
+      settleTimer = window.setTimeout(() => finishContentSettle(), 260);
     };
 
     const animateViewChange = (target: Destination) => {
@@ -254,7 +239,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
       const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
-      main.classList.add('viewSwipeStage', 'viewSwipeSettling', 'viewMorphing');
+      main.classList.add('viewSwipeStage', 'viewSwipeSettling');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
@@ -262,21 +247,15 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.style.top = `${currentRect.top - mainRect.top}px`;
       preview.style.left = `${currentRect.left - mainRect.left}px`;
       preview.style.width = `${width}px`;
-      current.style.transformOrigin = '50% 45%';
-      preview.style.transformOrigin = '50% 45%';
-      current.style.transform = 'translate3d(0,0,0) scale(1)';
-      current.style.opacity = '1';
-      preview.style.transform = `translate3d(${direction * width}px,0,0) scale(.982)`;
-      preview.style.opacity = '.82';
+      current.style.transform = 'translate3d(0,0,0)';
+      preview.style.transform = `translate3d(${direction * width}px,0,0)`;
       settleTarget = target;
       moveTo(target);
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        current.style.transform = `translate3d(${-direction * width}px,0,0) scale(.982)`;
-        current.style.opacity = '.82';
-        preview.style.transform = 'translate3d(0,0,0) scale(1)';
-        preview.style.opacity = '1';
+        current.style.transform = `translate3d(${-direction * width}px,0,0)`;
+        preview.style.transform = 'translate3d(0,0,0)';
       }));
-      settleTimer = window.setTimeout(() => finishContentSettle(), 280);
+      settleTimer = window.setTimeout(() => finishContentSettle(), 260);
     };
     transitionToRef.current = animateViewChange;
 
