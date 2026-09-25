@@ -140,13 +140,9 @@ function Navigation({ badges }: { badges: Badges }) {
     };
 
     const alignPreviewToCurrent = (current: HTMLElement, preview: HTMLElement, width: number) => {
-      preview.style.top = '0px';
-      preview.style.left = '0px';
+      preview.style.left = `${current.offsetLeft}px`;
+      preview.style.top = `${current.offsetTop}px`;
       preview.style.width = `${width}px`;
-      const currentRect = current.getBoundingClientRect();
-      const previewOrigin = preview.getBoundingClientRect();
-      preview.style.left = `${currentRect.left - previewOrigin.left}px`;
-      preview.style.top = `${currentRect.top - previewOrigin.top}px`;
     };
 
     const setPageTrackOffset = (current: HTMLElement, preview: HTMLElement, offset: number, direction: number, width: number) => {
