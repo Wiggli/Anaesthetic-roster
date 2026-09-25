@@ -57,3 +57,13 @@ window.addEventListener('roster:breaks', (event: Event) => {
     if (request === breakPlanRequest) renderBreaksExperience(model);
   }).catch(() => { /* The core workflow remains available if the optional view cannot load. */ });
 });
+
+let nightRequest = 0;
+window.addEventListener('roster:night', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++nightRequest;
+  import('./clinical-experience').then(({ renderNightExperience }) => {
+    if (request === nightRequest) renderNightExperience(model);
+  }).catch(() => { /* A failed optional view never changes the roster calculation. */ });
+});

@@ -15,6 +15,30 @@ type BreakSummary = {
   highlightedName: string;
 };
 
+type NightRole = {
+  key: string;
+  label: string;
+  names: string;
+  detail: string;
+  tone: 'first' | 'second' | 'pager' | 'reliever' | 'seventh' | 'full';
+  mine: boolean;
+};
+
+type NightSummary = {
+  nurseCount: number;
+  absenceCount: number;
+  overtimeCount: number;
+  taskCount: number;
+  decisionTasks: number;
+  confirmNeeded: boolean;
+  alert: string;
+  firstTask: string;
+  labourPending: boolean;
+  roles: NightRole[];
+  extras: string[];
+  fivePerson?: { name: string; reason: string; mine: boolean };
+};
+
 declare global {
   interface Window {
     show?: (view: string) => void;
@@ -39,6 +63,14 @@ function goToChanges(target: 'staffing' | 'allocation') {
   window.setTimeout(() => {
     const selector = target === 'staffing' ? '#changesStaffingPane' : '#changesAllocationPane';
     document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 180);
+}
+
+function goToConfirmation() {
+  window.show?.('changes');
+  window.setTimeout(() => {
+    const tab = document.querySelector<HTMLElement>('[data-changes-step="confirm"]');
+    tab?.click();
   }, 180);
 }
 
@@ -173,4 +205,120 @@ export function renderBreaksExperience(model: BreakSummary) {
   rootFor('breakSummaryRow')?.render(<BreakSummaryCards model={model} />);
   rootFor('breakDate')?.render(<PendingBreakPlan model={model} />);
   rootFor('breakList')?.render(<BreakPlan model={model} />);
+}
+
+function NightStatus({ model }: { model: NightSummary }) {
+  const items = [
+    { label: 'Nurses', value: String(model.nurseCount), tone: 'teal' as const },
+    { label: model.absenceCount === 1 ? 'Absence' : 'Absences', value: model.absenceCount ? String(model.absenceCount) : 'None', tone: model.absenceCount ? 'amber' as const : 'teal' as const, action: () => goToChanges('staffing') },
+    { label: 'Overtime', value: String(model.overtimeCount), tone: 'blue' as const, action: () => goToChanges('staffing') },
+    model.taskCount
+      ? { label: model.decisionTasks ? 'Allocation' : 'Confirmation', value: `Review ${model.taskCount}`, tone: 'amber' as const, action: model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation }
+      : { label: 'Plan', value: 'Ready', tone: 'teal' as const }
+  ];
+  return <div className="tw:grid tw:grid-cols-2 tw:gap-2 sm:tw:grid-cols-4" aria-label="Selected night summary">
+    {items.map(item => <SummaryCard key={item.label} label={item.label} value={item.value} tone={item.tone} onClick={item.action} />)}
+  </div>;
+}
+
+function NightAlerts({ model }: { model: NightSummary }) {
+  const messages = [
+    model.alert && { title: model.alert, action: undefined },
+    model.firstTask && { title: model.firstTask, action: () => goToChanges('allocation') },
+    model.labourPending && { title: 'Choose the Labour Ward order', action: () => goToChanges('allocation') }
+  ].filter(Boolean) as { title: string; action?: () => void }[];
+  return <AnimatePresence initial={false}>
+    {messages.length > 0 && <motion.div layout className="tw:mt-3 tw:grid tw:gap-2">
+      {messages.map(message => {
+        const Component = message.action ? motion.button : motion.div;
+        return <Component
+          layout
+          key={message.title}
+          type={message.action ? 'button' : undefined}
+          onClick={message.action}
+          whileTap={message.action ? { scale: 0.99 } : undefined}
+          className="tw:flex tw:w-full tw:items-center tw:justify-between tw:gap-3 tw:rounded-2xl tw:border tw:border-amber-400/35 tw:bg-amber-400/10 tw:px-4 tw:py-3 tw:text-left"
+        >
+          <strong className="tw:text-sm tw:leading-snug">{message.title}</strong>
+          {message.action && <span className="tw:shrink-0 tw:text-sm tw:font-bold tw:text-[var(--accent)]">Review ›</span>}
+        </Component>;
+      })}
+    </motion.div>}
+  </AnimatePresence>;
+}
+
+const roleTone: Record<NightRole['tone'], string> = {
+  first: 'tw:bg-indigo-500/12 tw:text-indigo-700 dark:tw:text-indigo-300',
+  second: 'tw:bg-violet-500/12 tw:text-violet-700 dark:tw:text-violet-300',
+  pager: 'tw:bg-amber-500/12 tw:text-amber-700 dark:tw:text-amber-300',
+  reliever: 'tw:bg-teal-500/12 tw:text-teal-700 dark:tw:text-teal-300',
+  seventh: 'tw:bg-sky-500/12 tw:text-sky-700 dark:tw:text-sky-300',
+  full: 'tw:bg-rose-500/12 tw:text-rose-700 dark:tw:text-rose-300'
+};
+
+function openRoleEditor() {
+  goToChanges('allocation');
+  window.setTimeout(() => {
+    const editor = document.querySelector<HTMLDetailsElement>('.nightRoleEditor');
+    if (editor) editor.open = true;
+  }, 260);
+}
+
+function NightRoles({ model }: { model: NightSummary }) {
+  const reduced = useReducedMotion();
+  return <div className="tw:grid tw:gap-2">
+    {model.roles.map((role, index) => <motion.button
+      layout
+      initial={reduced ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduced ? 0 : 0.2, delay: reduced ? 0 : index * 0.025 }}
+      whileTap={{ scale: 0.992 }}
+      key={role.key}
+      type="button"
+      onClick={openRoleEditor}
+      className={`role tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-[20px] tw:border tw:p-3.5 tw:text-left tw:shadow-sm ${role.mine ? 'mine tw:border-teal-500/45 tw:bg-teal-500/8' : 'tw:border-black/8 tw:bg-[var(--card)] dark:tw:border-white/10'}`}
+      aria-label={`Change this night's ${role.label} allocation`}
+    >
+      <span className={`tw:flex tw:h-10 tw:min-w-10 tw:items-center tw:justify-center tw:rounded-xl tw:px-2 tw:text-xs tw:font-extrabold ${roleTone[role.tone]}`} aria-hidden="true">
+        {role.tone === 'first' ? '1ST' : role.tone === 'second' ? '2ND' : role.tone === 'pager' ? 'P' : role.tone === 'reliever' ? 'R' : role.tone === 'seventh' ? '7' : 'FULL'}
+      </span>
+      <span className="tw:min-w-0 tw:flex-1">
+        <span className="tw:block tw:text-base tw:font-bold tw:leading-tight">{role.names}</span>
+        <span className="tw:mt-1 tw:block tw:text-xs tw:font-semibold tw:leading-snug tw:text-[var(--muted)]">{role.label} · {role.detail}</span>
+      </span>
+      {role.mine ? <span className="tw:rounded-full tw:bg-teal-500/14 tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-teal-700 dark:tw:text-teal-300">You</span> : <span aria-hidden="true" className="tw:text-xl tw:text-[var(--muted)]">›</span>}
+    </motion.button>)}
+    {model.extras.length > 0 && <section className="tw:rounded-[20px] tw:border tw:border-dashed tw:border-sky-400/45 tw:bg-sky-400/8 tw:p-4">
+      <strong className="tw:text-sm">Additional staff · allocation as required</strong>
+      <div className="tw:mt-2 tw:flex tw:flex-wrap tw:gap-2">
+        {model.extras.map(name => <span key={name} className="tw:rounded-full tw:bg-sky-500/12 tw:px-3 tw:py-1.5 tw:text-sm tw:font-semibold">{name}</span>)}
+      </div>
+    </section>}
+  </div>;
+}
+
+function FivePersonArrangement({ model }: { model: NightSummary }) {
+  const arrangement = model.fivePerson;
+  if (!arrangement) return null;
+  return <motion.section
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="tw:mt-3 tw:rounded-[22px] tw:border tw:border-rose-400/30 tw:bg-rose-400/8 tw:p-4"
+  >
+    <span className="tw:text-xs tw:font-bold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">Five-nurse arrangement</span>
+    <h3 className="tw:mt-1 tw:text-base tw:font-bold">Full-night Labour Ward and Pager</h3>
+    <button type="button" onClick={openRoleEditor} className={`role tw:mt-3 tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:bg-[var(--card)] tw:p-3 tw:text-left ${arrangement.mine ? 'mine tw:ring-2 tw:ring-teal-500/35' : ''}`}>
+      <span className="tw:flex-1 tw:font-bold">{arrangement.name}</span>
+      {arrangement.mine && <span className="tw:text-xs tw:font-bold tw:text-teal-600">You</span>}
+      <span aria-hidden="true">›</span>
+    </button>
+    <p className="tw:mt-2 tw:text-sm tw:leading-relaxed tw:text-[var(--muted)]">{arrangement.reason}</p>
+  </motion.section>;
+}
+
+export function renderNightExperience(model: NightSummary) {
+  rootFor('nightStatusRow')?.render(<NightStatus model={model} />);
+  rootFor('alerts')?.render(<NightAlerts model={model} />);
+  rootFor('roles')?.render(<NightRoles model={model} />);
+  rootFor('fiveArrangement')?.render(<FivePersonArrangement model={model} />);
 }
