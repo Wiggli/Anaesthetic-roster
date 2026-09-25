@@ -81,7 +81,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let settleTimer: number | undefined;
     let settleTarget: Destination | null = null;
     let committingTarget: Destination | null = null;
-    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex]';
+    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
     const nearestPositionIndex = (value: number) => {
