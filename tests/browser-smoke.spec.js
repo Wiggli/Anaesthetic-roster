@@ -165,6 +165,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   });
   expect(draggedCurrent.x).toBeLessThan(initialPage.x - 45);
   expect(draggedPreview.x).toBeGreaterThan(initialPage.x + 70);
+  expect(Math.abs((draggedCurrent.x + draggedCurrent.width) - draggedPreview.x)).toBeLessThanOrEqual(2);
   expect(draggedIndicator.x).toBeGreaterThan(initialIndicator.x + 10);
   await expect(page.locator('#changes')).toBeVisible();
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
@@ -209,6 +210,9 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 }, async () => {
     await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
     await expect(page.locator('#breaks')).toHaveClass(/swipePreview/);
+    const chatDuring = await page.locator('#chat').boundingBox();
+    const breaksDuring = await page.locator('#breaks').boundingBox();
+    expect(Math.abs((breaksDuring.x + breaksDuring.width) - chatDuring.x)).toBeLessThanOrEqual(2);
   });
   await expect(page.locator('#breaks')).toBeVisible();
 
