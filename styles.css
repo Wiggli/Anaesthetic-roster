@@ -1802,13 +1802,7 @@ main.viewSwipeStage>.view.swipePreview{
 main.viewSwipeStage>.view.swipeCurrent{position:relative;z-index:2;will-change:transform}
 main.viewSwipeStage>.view.swipePreview{display:block!important;position:absolute;z-index:1;margin-inline:0!important;will-change:transform;pointer-events:none}
 main.viewSwipeStage.viewSwipeSettling>.view.swipeCurrent,
-main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{
-  transition:transform 260ms cubic-bezier(.22,.61,.36,1)
-}
-@media(prefers-reduced-motion:reduce){
-  main.viewSwipeStage.viewSwipeSettling>.view.swipeCurrent,
-  main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{transition:none!important}
-}
+main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{transition:none!important}
 
 /* V37.41 continuous gesture track and stable bottom chrome. */
 .bottom.reactTabs{touch-action:none;overscroll-behavior:none;isolation:isolate}
