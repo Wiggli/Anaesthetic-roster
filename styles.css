@@ -1792,15 +1792,18 @@ body.dark .bottom.reactTabs .tabSlidingIndicator{border-color:rgba(255,255,255,.
 /* V37.40 direct-manipulation page swipes. */
 main>.view{touch-action:pan-y}
 main.viewSwipeStage{position:relative;overflow:hidden;isolation:isolate}
-main.viewSwipeStage>.view.swipeCurrent{position:relative;z-index:2;will-change:transform,opacity;backface-visibility:hidden}
-main.viewSwipeStage>.view.swipePreview{display:block!important;position:absolute;z-index:1;will-change:transform,opacity;backface-visibility:hidden;pointer-events:none}
-main.viewSwipeStage.viewMorphing>.view.swipeCurrent,
-main.viewSwipeStage.viewMorphing>.view.swipePreview{transform-style:preserve-3d}
+main.viewSwipeStage>.view.swipeCurrent,
+main.viewSwipeStage>.view.swipePreview{
+  background:var(--ios-bg,var(--apple-bg,#f2f2f7));
+  backface-visibility:hidden;
+  contain:paint;
+  opacity:1!important;
+}
+main.viewSwipeStage>.view.swipeCurrent{position:relative;z-index:2;will-change:transform}
+main.viewSwipeStage>.view.swipePreview{display:block!important;position:absolute;z-index:1;will-change:transform;pointer-events:none}
 main.viewSwipeStage.viewSwipeSettling>.view.swipeCurrent,
 main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{
-  transition:
-    transform 280ms cubic-bezier(.16,1,.3,1),
-    opacity 220ms cubic-bezier(.22,.61,.36,1)
+  transition:transform 260ms cubic-bezier(.22,.61,.36,1)
 }
 @media(prefers-reduced-motion:reduce){
   main.viewSwipeStage.viewSwipeSettling>.view.swipeCurrent,
@@ -1817,6 +1820,5 @@ html[data-theme="dark"] .bottom.reactTabs,body.dark .bottom.reactTabs{background
 /* V37.41 Chat keeps vertical transcript scrolling while allowing horizontal app navigation from safe whitespace. */
 #chat .chatMessageViewport,#chat .chatTeamMessages,#chat .chatMessages{touch-action:pan-y}
 
-/* V37.42: primary screens hand off as one continuous slide/morph instead of snapping at the end. */
-main.viewSwipeStage.viewMorphing{contain:paint}
+/* V37.42: primary screens hand off continuously. V37.43 removes transparency and scale so pages behave as one solid horizontal track. */
 .bottom.reactTabs .tabSlidingIndicator{transition:box-shadow 180ms ease,background-color 180ms ease}
