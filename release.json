@@ -1,12 +1,13 @@
 {
-  "version": "37.36",
+  "version": "37.37",
   "date": "25 September 2026",
-  "title": "Responsive React navigation",
-  "summary": "Swipe between adjacent tabs and use a faster, accessible navigation component after sign-in.",
+  "title": "Clearer screen guidance",
+  "summary": "Staffing and Breaks help now opens from a small on-demand component with motion that respects accessibility settings.",
   "changes": [
-    "The signed-in tab bar is a reusable React and TypeScript component that loads after authorization, with the existing HTML controls kept as a fallback.",
-    "A short touch swipe across the tab bar navigates to the adjacent view, and Motion gives taps restrained feedback with reduced-motion support.",
-    "Night, Changes, Breaks and Chat retain their badges and existing data flows; Tailwind CSS v4 stays scoped and light and dark chrome and safe PWA updates remain compatible."
+    "Staffing and Breaks information sheets render their existing guidance in a React and TypeScript component with scoped Tailwind CSS v4 styling.",
+    "Motion gives help items a brief reveal, while reduced-motion settings display them immediately. Native dialog controls and light and dark styles remain intact.",
+    "Breaks guidance describes provisional staffing accurately instead of referring to retired copy and email actions.",
+    "The escaped HTML guidance remains available if the component cannot load. The optional chunk is part of the offline PWA shell; roster rules and Supabase data are unchanged."
   ],
   "update_policy": "important"
 }

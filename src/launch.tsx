@@ -37,3 +37,13 @@ if (navigation) {
   observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   onAuthorised();
 }
+
+let screenInfoRequest = 0;
+window.addEventListener('roster:screeninfo', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const items = (event as CustomEvent<{ items: [string, string][] }>).detail.items;
+  const request = ++screenInfoRequest;
+  import('./screen-info').then(({ renderScreenInfo }) => {
+    if (request === screenInfoRequest) renderScreenInfo(items);
+  }).catch(() => { /* The escaped HTML sheet remains available. */ });
+});

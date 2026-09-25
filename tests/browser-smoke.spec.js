@@ -76,6 +76,36 @@ test('navigation stays usable if the lazy React chunk fails', async ({ page }) =
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(0);
 });
 
+test('screen help opens as lazy React content and remains readable in dark and reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openShell(page);
+  await page.evaluate(() => window.openScreenInfo('breaks'));
+  const dialog = page.locator('#screenInfoSheet');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.infoSheetItem')).toHaveCount(3);
+  await expect(dialog.locator('.tw\\:min-w-0')).toHaveCount(3);
+  await expect(dialog).toContainText('Breaks cannot be finalised until every required staffing decision is complete.');
+  await expect(dialog.locator('.infoSheetItem').first()).toHaveCSS('opacity', '1');
+  await page.locator('#closeScreenInfoSheet').click();
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'dark';
+    document.body.classList.add('dark');
+    window.openScreenInfo('changes');
+  });
+  await expect(dialog).toContainText('Allocation is usually automatic');
+  await expect(dialog.locator('.infoSheetItem')).toHaveCount(3);
+  const sizes = await dialog.evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
+  expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
+});
+
+test('screen help keeps escaped content when its optional React chunk fails', async ({ page }) => {
+  await page.route('**/assets/screen-info-*.js', route => route.abort());
+  await openShell(page);
+  await page.evaluate(() => window.openScreenInfo('changes'));
+  await expect(page.locator('#screenInfoSheet .infoSheetItem')).toHaveCount(3);
+  await expect(page.locator('#screenInfoSheet')).toContainText('Record only confirmed absences');
+});
+
 test('mobile header controls stay circular and dark mode stays readable', async ({ page }) => {
   await openShell(page);
   const account = page.locator('#accountBtn');
@@ -148,7 +178,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.36/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.37/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -177,7 +207,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.36');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.37');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -193,7 +223,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog describes shipped navigation and scoped Tailwind', async ({ page }) => {
+test('frontend changelog describes shipped help and scoped Tailwind', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -203,7 +233,7 @@ test('frontend changelog describes shipped navigation and scoped Tailwind', asyn
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('.releaseHistory')).toContainText('Tailwind CSS v4');
-  await expect(dialog.locator('.releaseHistory')).toContainText('A short horizontal touch swipe across the tab bar');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Staffing and Breaks information sheets');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
