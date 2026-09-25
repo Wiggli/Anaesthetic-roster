@@ -169,14 +169,42 @@ test('page track stays covered across saved scroll positions and Night carries i
   await page.locator('.bottom button[data-v="changes"]').click();
   await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
   await page.waitForTimeout(120);
-  const covered = await page.evaluate(() => {
+  const coverageDiagnostic = await page.evaluate(() => {
     const y = Math.min(220, window.innerHeight - 140);
-    return [2, window.innerWidth / 2, window.innerWidth - 2].map(x => {
+    const main = document.querySelector('main');
+    const current = main?.querySelector(':scope > .view.swipeCurrent');
+    const preview = main?.querySelector(':scope > .view.swipePreview');
+    const compactRect = element => {
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
+    };
+    const points = [2, window.innerWidth / 2, window.innerWidth - 2].map(x => {
       const hit = document.elementFromPoint(x, y);
-      return Boolean(hit?.closest('main > .view.swipeCurrent, main > .view.swipePreview'));
+      return {
+        x,
+        tag: hit?.tagName || null,
+        id: hit?.id || null,
+        className: typeof hit?.className === 'string' ? hit.className : null,
+        covered: Boolean(hit?.closest('main > .view.swipeCurrent, main > .view.swipePreview'))
+      };
     });
+    return {
+      scrollY: window.scrollY,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      bodyView: document.body.getAttribute('data-view'),
+      main: compactRect(main),
+      current: compactRect(current),
+      preview: compactRect(preview),
+      mainOverflow: main ? getComputedStyle(main).overflow : null,
+      points
+    };
   });
-  expect(covered).toEqual([true, true, true]);
+  expect(
+    coverageDiagnostic.points.map(point => point.covered),
+    JSON.stringify(coverageDiagnostic)
+  ).toEqual([true, true, true]);
   await expect(page.locator('#changes')).toBeVisible();
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
 
