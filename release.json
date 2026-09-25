@@ -1,13 +1,12 @@
 {
-  "version": "37.37",
+  "version": "37.38",
   "date": "25 September 2026",
-  "title": "Clearer screen guidance",
-  "summary": "Staffing and Breaks help now opens from a small on-demand component with motion that respects accessibility settings.",
+  "title": "Swipe between screens",
+  "summary": "A normal horizontal swipe now moves between roster tabs on a phone.",
   "changes": [
-    "Staffing and Breaks information sheets render their existing guidance in a React and TypeScript component with scoped Tailwind CSS v4 styling.",
-    "Motion gives help items a brief reveal, while reduced-motion settings display them immediately. Native dialog controls and light and dark styles remain intact.",
-    "Breaks guidance describes provisional staffing accurately instead of referring to retired copy and email actions.",
-    "The escaped HTML guidance remains available if the component cannot load. The optional chunk is part of the offline PWA shell; roster rules and Supabase data are unchanged."
+    "Swipe across the noninteractive content of Night, Changes and Breaks or across the bottom tab bar to move one tab at a time.",
+    "Real touch handling fixes the tab-bar gesture that did not respond reliably, while vertical scrolling, controls, dialogs, selected text and Chat conversations keep their usual interactions.",
+    "The roster rules, Supabase data and PWA update flow remain unchanged."
   ],
   "update_policy": "important"
 }
