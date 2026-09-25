@@ -230,7 +230,6 @@ function Navigation({ badges }: { badges: Badges }) {
         at: performance.now(),
         view,
         bar: inBar,
-        barOrigin,
         axis: 'pending'
       };
     };
