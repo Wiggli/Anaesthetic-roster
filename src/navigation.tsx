@@ -135,6 +135,16 @@ function Navigation({ badges }: { badges: Badges }) {
       else requestAnimationFrame(() => requestAnimationFrame(complete));
     };
 
+    const alignPreviewToCurrent = (current: HTMLElement, preview: HTMLElement, width: number) => {
+      preview.style.top = '0px';
+      preview.style.left = '0px';
+      preview.style.width = `${width}px`;
+      const currentRect = current.getBoundingClientRect();
+      const previewOrigin = preview.getBoundingClientRect();
+      preview.style.left = `${currentRect.left - previewOrigin.left}px`;
+      preview.style.top = `${currentRect.top - previewOrigin.top}px`;
+    };
+
     const stageContentDrag = (first: SwipeStart, dx: number) => {
       const index = destinations.indexOf(first.view);
       const step = -Math.sign(dx);
@@ -149,7 +159,6 @@ function Navigation({ badges }: { badges: Badges }) {
       const preview = document.getElementById(next);
       if (!main || !(current instanceof HTMLElement) || !(preview instanceof HTMLElement)) return undefined;
       if (first.preview && first.preview !== next) clearContentDrag();
-      const mainRect = main.getBoundingClientRect();
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
       const offset = clamp(dx, -width, width);
@@ -159,9 +168,7 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      preview.style.top = `${currentRect.top - mainRect.top}px`;
-      preview.style.left = `${currentRect.left - mainRect.left}px`;
-      preview.style.width = `${width}px`;
+      alignPreviewToCurrent(current, preview, width);
       current.style.transform = `translate3d(${offset}px,0,0)`;
       preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
       first.preview = next;
@@ -235,7 +242,6 @@ function Navigation({ badges }: { badges: Badges }) {
         return;
       }
       clearContentDrag();
-      const mainRect = main.getBoundingClientRect();
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
       const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
@@ -244,9 +250,7 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      preview.style.top = `${currentRect.top - mainRect.top}px`;
-      preview.style.left = `${currentRect.left - mainRect.left}px`;
-      preview.style.width = `${width}px`;
+      alignPreviewToCurrent(current, preview, width);
       current.style.transform = 'translate3d(0,0,0)';
       preview.style.transform = `translate3d(${direction * width}px,0,0)`;
       settleTarget = target;
