@@ -106,10 +106,26 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     { x: workflow.x + workflow.width / 2 + 150, y: workflow.y + workflow.height / 2 });
   await expect(page.locator('#changes')).toBeVisible();
 
-  await page.evaluate(() => window.show('chat'));
+  await page.evaluate(() => {
+    window.show('chat');
+    window.scrollTo(0, 0);
+    const host = document.getElementById('chatTeamMessages');
+    if (host) {
+      const probe = document.createElement('div');
+      probe.id = 'chatSwipeProbe';
+      probe.tabIndex = 0;
+      probe.textContent = 'Swipe gesture probe';
+      probe.style.minHeight = '72px';
+      probe.style.padding = '18px';
+      host.appendChild(probe);
+    }
+  });
   await expect(page.locator('#chat')).toBeVisible();
-  const chatHeader = await page.locator('.chatScreenHeader').boundingBox();
-  const chatSwipeY = chatHeader.y + Math.min(chatHeader.height - 12, 55);
+  const chatProbe = page.locator('#chatSwipeProbe');
+  await chatProbe.scrollIntoViewIfNeeded();
+  const chatProbeBox = await chatProbe.boundingBox();
+  expect(chatProbeBox).not.toBeNull();
+  const chatSwipeY = chatProbeBox.y + Math.min(chatProbeBox.height / 2, 32);
   await realTouchSwipe(page, { x: 105, y: chatSwipeY }, { x: 290, y: chatSwipeY + 18 });
   await expect(page.locator('#breaks')).toBeVisible();
 
@@ -118,6 +134,8 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const bar = await page.locator('.bottom').boundingBox();
   const nightTab = await page.locator('.bottom button[data-v="today"]').boundingBox();
   const chatTab = await page.locator('.bottom button[data-v="chat"]').boundingBox();
+  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - nightTab.x))
+    .toBeLessThan(4);
   const barStart = { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 };
   const barEnd = { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 };
   const barInitialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
@@ -282,7 +300,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.41/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.42/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -327,7 +345,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains continuous swiping', async ({ page }) => {
+test('frontend changelog explains reliable swiping', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -336,8 +354,8 @@ test('frontend changelog explains continuous swiping', async ({ page }) => {
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab selector now follows one continuous drag');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation is now available from Chat');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal swipes now start from ordinary cards');
+  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab lens now follows the finger position directly');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
