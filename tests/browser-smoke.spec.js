@@ -282,7 +282,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.40/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.41/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -327,7 +327,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains natural page dragging', async ({ page }) => {
+test('frontend changelog explains continuous swiping', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -336,8 +336,8 @@ test('frontend changelog explains natural page dragging', async ({ page }) => {
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('pages now move under your finger');
-  await expect(dialog.locator('.releaseHistory')).toContainText('drag the page left to advance');
+  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab selector now follows one continuous drag');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation is now available from Chat');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
