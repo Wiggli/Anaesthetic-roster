@@ -132,7 +132,7 @@ assert.doesNotMatch(maturityMigration, /insert into public\.night_|update public
 
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /chat\.js|chat\.css/, 'chat assets must not be mandatory for service-worker installation');
-assert.match(workflow, /- name: Build public app files\n        run: npm run build/, 'deployment must build the chat and push assets');
+assert.match(workflow, /verify:[\s\S]*- name: Build public app files\n        run: npm run build[\s\S]*actions\/upload-artifact@v4/, 'verified chat and push assets must be built once and preserved for deployment');
 const viteConfig = fs.readFileSync(path.join(root, 'vite.config.mts'), 'utf8');
 for (const asset of ['chat.css', 'chat.js', 'push.js']) assert.ok(viteConfig.includes(`'${asset}'`), `${asset} must be included in the Pages artifact`);
 
