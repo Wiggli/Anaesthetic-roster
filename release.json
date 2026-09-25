@@ -1,13 +1,13 @@
 {
-  "version": "37.41",
+  "version": "37.42",
   "date": "25 September 2026",
-  "title": "Smoother continuous swiping",
-  "summary": "The bottom selector now follows one continuous drag across all tabs, while screen swipes lock reliably and work from Chat too.",
+  "title": "Swipes stay responsive between screens",
+  "summary": "A new swipe can start immediately while the previous page is still settling, so rapid navigation no longer drops touches.",
   "changes": [
-    "Drag once across the bottom bar and the selector follows your finger continuously through Night, Changes, Breaks and Chat, then settles on the nearest tab.",
-    "Screen swipes lock onto a horizontal gesture once established, so small diagonal movement no longer cancels the page halfway through.",
-    "Safe noninteractive areas of Chat can now swipe back toward Breaks, while message areas, composers, forms, workflow controls, dialogs and edge gestures remain protected.",
-    "The bottom bar uses a more stable opaque glass layer so underlying cards do not look like a second broken bar. Roster calculations, Supabase data and authentication are unchanged."
+    "If another gesture begins during the short page-settle animation, the pending destination is completed immediately and the new gesture starts normally instead of being ignored.",
+    "Rapid navigation between Night, Changes, Breaks and Chat therefore remains responsive even when gestures follow each other closely.",
+    "Continuous bottom-bar dragging, direction locking, protected message and form controls, and the more stable bottom chrome remain in place.",
+    "Roster calculations, Supabase data, authentication and the safe PWA update flow are unchanged."
   ],
   "update_policy": "important"
 }
