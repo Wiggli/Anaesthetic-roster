@@ -137,6 +137,8 @@ test('content swipes drag the page naturally while the bottom bar keeps direct d
   expect(returningCurrent.x).toBeGreaterThan(changesPage.x + 45);
   expect(returningPreview.x).toBeLessThan(changesPage.x - 80);
   await expect(page.locator('#today')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+  await expect.poll(async () => page.evaluate(() => document.body.getAttribute('data-view'))).toBe('today');
 
   const bar = await page.locator('.bottom').boundingBox();
   const beforeBarSwipe = await page.locator('.tabSlidingIndicator').boundingBox();
