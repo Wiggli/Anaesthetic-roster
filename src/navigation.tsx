@@ -73,6 +73,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let suppressClick = false;
     let clickTimer: number | undefined;
     let settleTimer: number | undefined;
+    let settleTarget: Destination | null = null;
     const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatComposer,.chatConversationList';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -92,6 +93,7 @@ function Navigation({ badges }: { badges: Badges }) {
     const clearContentDrag = () => {
       window.clearTimeout(settleTimer);
       settleTimer = undefined;
+      settleTarget = null;
       const main = document.querySelector<HTMLElement>('main');
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
       const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
@@ -107,6 +109,14 @@ function Navigation({ badges }: { badges: Badges }) {
         preview.removeAttribute('inert');
       }
       main?.classList.remove('viewSwipeStage', 'viewSwipeSettling');
+    };
+
+    const finishContentSettle = () => {
+      const target = settleTarget;
+      clearContentDrag();
+      if (!target) return;
+      window.show?.(target);
+      if (target === 'chat') window.openChatView?.();
     };
 
     const stageContentDrag = (first: SwipeStart, dx: number) => {
@@ -179,11 +189,8 @@ function Navigation({ badges }: { badges: Badges }) {
         current.style.transform = `translate3d(${-direction * width}px,0,0)`;
         preview.style.transform = 'translate3d(0,0,0)';
       });
-      settleTimer = window.setTimeout(() => {
-        clearContentDrag();
-        window.show?.(next);
-        if (next === 'chat') window.openChatView?.();
-      }, 170);
+      settleTarget = next;
+      settleTimer = window.setTimeout(finishContentSettle, 170);
     };
 
     const lockAxis = (first: SwipeStart, dx: number, dy: number) => {
@@ -203,15 +210,17 @@ function Navigation({ badges }: { badges: Badges }) {
 
     const onStart = (event: TouchEvent) => {
       start = null;
-      if (event.touches.length !== 1 || document.body.classList.contains('authPending') || document.querySelector('dialog[open]') || document.querySelector('main.viewSwipeSettling')) return;
-      const target = event.target;
+      if (event.touches.length !== 1 || document.body.classList.contains('authPending') || document.querySelector('dialog[open]')) return;
+      const touch = event.touches[0];
+      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle();
+      const hitTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+      const target = hitTarget instanceof Element ? hitTarget : event.target;
       if (!(target instanceof Element)) return;
       const inBar = !!target.closest('.bottom');
       const view = document.body.getAttribute('data-view') as Destination;
       if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
       if (!inBar && target.closest(blockedContentSelector)) return;
       if (!inBar && window.getSelection()?.type === 'Range') return;
-      const touch = event.touches[0];
       if (!inBar && (touch.clientX < 26 || touch.clientX > window.innerWidth - 26)) return;
       animation?.stop();
       clearContentDrag();
