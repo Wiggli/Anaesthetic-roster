@@ -23,7 +23,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.37/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.38/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -113,10 +113,11 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.37');
-assert.equal(release.title, 'Clearer screen guidance');
-assert.ok(release.changes.some(item => /React and TypeScript.*Tailwind CSS v4/i.test(item)), 'release notes must describe the scoped help component');
-assert.ok(release.changes.some(item => /reduced-motion.*immediately/i.test(item)), 'release notes must describe accessible motion behaviour');
+assert.equal(release.version, '37.38');
+assert.equal(release.title, 'Swipe between screens');
+assert.ok(release.changes.some(item => /Swipe across.*Night, Changes and Breaks/i.test(item)), 'release notes must explain where touch swipes work');
+assert.ok(release.changes.some(item => /Real touch handling.*vertical scrolling/i.test(item)), 'release notes must describe the interaction safeguards');
+assert.match(ui, /\{version:'37\.37'[\s\S]*?title:'Clearer screen guidance'/, 'the React help release must remain in history');
 assert.match(ui, /\{version:'37\.36'[\s\S]*?title:'Responsive React navigation'/, 'the React navigation release must remain in history');
 assert.match(ui, /\{version:'37\.35'[\s\S]*?title:'What the new app foundation makes possible'/, 'the complete frontend foundation release must remain in history');
 assert.match(ui, /\{version:'37\.34'[\s\S]*?title:'Launch style cleanup'/, 'the last release history must remain intact');

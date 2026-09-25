@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, useReducedMotion } from 'motion/react';
 
@@ -23,13 +23,63 @@ function badgeFrom(id: string): Badge {
 function Navigation({ badges }: { badges: Badges }) {
   const reducedMotion = useReducedMotion();
   const [active, setActive] = useState(document.body.getAttribute('data-view') || 'today');
-  const gesture = useRef<{ pointerId: number; x: number; y: number; view: string } | null>(null);
-  const suppressClick = useRef(false);
 
   useEffect(() => {
     const sync = (event: Event) => setActive((event as CustomEvent<{ view: string }>).detail.view);
+    let start: { id: number; x: number; y: number; view: Destination; at: number; bar: boolean } | null = null;
+    let suppressClick = false;
+    let clickTimer: number | undefined;
+    const onStart = (event: TouchEvent) => {
+      start = null;
+      if (event.touches.length !== 1 || document.body.classList.contains('authPending') || document.querySelector('dialog[open]')) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const bar = !!target.closest('.bottom');
+      const view = document.body.getAttribute('data-view') as Destination;
+      if (!destinations.includes(view) || (!bar && (!target.closest('main .view') || view === 'chat'))) return;
+      if (!bar && target.closest('button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessages')) return;
+      if (!bar && window.getSelection()?.type === 'Range') return;
+      const touch = event.touches[0];
+      if (touch.clientX < 26 || touch.clientX > window.innerWidth - 26) return;
+      start = { id: touch.identifier, x: touch.clientX, y: touch.clientY, view, at: Date.now(), bar };
+    };
+    const onEnd = (event: TouchEvent) => {
+      const first = start;
+      start = null;
+      if (!first || document.body.getAttribute('data-view') !== first.view || document.querySelector('dialog[open]')) return;
+      const touch = Array.from(event.changedTouches).find(item => item.identifier === first.id);
+      if (!touch) return;
+      const dx = touch.clientX - first.x;
+      const dy = touch.clientY - first.y;
+      if (Math.abs(dx) < (first.bar ? 58 : 85) || Math.abs(dx) < Math.abs(dy) * 1.7 || Date.now() - first.at > 700) return;
+      const next = destinations[destinations.indexOf(first.view) + (dx < 0 ? 1 : -1)];
+      if (!next) return;
+      suppressClick = true;
+      window.clearTimeout(clickTimer);
+      clickTimer = window.setTimeout(() => { suppressClick = false; }, 180);
+      window.show?.(next);
+      if (next === 'chat') window.openChatView?.();
+    };
+    const onClick = (event: MouseEvent) => {
+      if (!suppressClick) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      suppressClick = false;
+    };
+    const onCancel = () => { start = null; };
     window.addEventListener('roster:viewchange', sync);
-    return () => window.removeEventListener('roster:viewchange', sync);
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    document.addEventListener('touchcancel', onCancel, { passive: true });
+    document.addEventListener('click', onClick, true);
+    return () => {
+      window.removeEventListener('roster:viewchange', sync);
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('touchcancel', onCancel);
+      document.removeEventListener('click', onClick, true);
+      window.clearTimeout(clickTimer);
+    };
   }, []);
 
   function navigate(view: Destination) {
@@ -37,33 +87,11 @@ function Navigation({ badges }: { badges: Badges }) {
     if (view === 'chat') window.openChatView?.();
   }
 
-  function start(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.pointerType !== 'touch') return;
-    gesture.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, view: document.body.getAttribute('data-view') || active };
-  }
-
-  function end(event: ReactPointerEvent<HTMLDivElement>) {
-    const first = gesture.current;
-    gesture.current = null;
-    if (!first || first.pointerId !== event.pointerId) return;
-    const dx = event.clientX - first.x;
-    const dy = event.clientY - first.y;
-    if (Math.abs(dx) < 58 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    const index = destinations.indexOf(first.view as Destination);
-    const next = destinations[index + (dx < 0 ? 1 : -1)];
-    if (!next) return;
-    suppressClick.current = true;
-    navigate(next);
-    window.setTimeout(() => { suppressClick.current = false; }, 80);
-  }
-
   function badge(id: string, initial: Badge) {
     return <em id={id} className={'navTaskBadge' + (initial.hidden ? ' hidden' : '')}>{initial.text}</em>;
   }
 
-  return <div className="tw:contents" data-react-navigation="ready" onPointerDown={start} onPointerUp={end}
-    onPointerCancel={() => { gesture.current = null; }}
-    onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); } }}>
+  return <div className="tw:contents" data-react-navigation="ready">
     <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}
       aria-current={active === 'today' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
       onClick={() => navigate('today')}>
