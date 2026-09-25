@@ -73,7 +73,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let suppressClick = false;
     let clickTimer: number | undefined;
     let settleTimer: number | undefined;
-    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessageViewport,.chatComposer,.chatConversationList,.chatMessages';
+    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],.chatComposer';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
     const nearestPositionIndex = (value: number) => {
@@ -87,6 +87,15 @@ function Navigation({ badges }: { badges: Badges }) {
         }
       });
       return best;
+    };
+    const barPositionForClientX = (clientX: number) => {
+      const firstPosition = positions.current[0];
+      const lastPosition = positions.current[positions.current.length - 1];
+      const firstButton = bar.querySelector<HTMLElement>('button[data-v="today"]');
+      if (firstPosition === undefined || lastPosition === undefined || !firstButton) return undefined;
+      const barRect = bar.getBoundingClientRect();
+      const buttonWidth = firstButton.getBoundingClientRect().width;
+      return clamp(clientX - barRect.left - buttonWidth / 2, firstPosition, lastPosition);
     };
 
     const clearContentDrag = () => {
@@ -246,10 +255,8 @@ function Navigation({ badges }: { badges: Badges }) {
       const index = destinations.indexOf(start.view);
       const origin = positions.current[index];
       if (start.bar) {
-        const firstPosition = positions.current[0];
-        const lastPosition = positions.current[positions.current.length - 1];
-        if (firstPosition !== undefined && lastPosition !== undefined)
-          indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));
+        const draggedPosition = barPositionForClientX(touch.clientX);
+        if (draggedPosition !== undefined) indicatorX.set(draggedPosition);
         return;
       }
 
@@ -284,12 +291,10 @@ function Navigation({ badges }: { badges: Badges }) {
       const axis = lockAxis(first, dx, dy);
 
       if (first.bar) {
-        const firstPosition = positions.current[0];
-        const lastPosition = positions.current[positions.current.length - 1];
-        const draggedPosition = firstPosition !== undefined && lastPosition !== undefined
-          ? clamp(first.barOrigin + dx, firstPosition, lastPosition)
-          : first.barOrigin;
-        const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get()) : destinations.indexOf(first.view);
+        const draggedPosition = barPositionForClientX(touch.clientX);
+        const targetIndex = axis === 'horizontal'
+          ? nearestPositionIndex(reducedMotion && draggedPosition !== undefined ? draggedPosition : indicatorX.get())
+          : destinations.indexOf(first.view);
         const target = destinations[targetIndex] || first.view;
         if (target === first.view) {
           moveTo(first.view);
