@@ -1,13 +1,13 @@
 {
-  "version": "37.44",
+  "version": "37.45",
   "date": "25 September 2026",
-  "title": "Stable native page swiping",
-  "summary": "Primary screens now remain attached during gestures, carry their own top chrome, and preserve each tab's vertical position without blank handoff frames.",
+  "title": "More reliable swipe starts",
+  "summary": "Horizontal navigation now starts reliably from more of each page and tolerates natural diagonal thumb movement without interfering with clearly vertical scrolling.",
   "changes": [
-    "Each primary screen now carries its own complete top chrome during horizontal movement, so Night no longer gains or loses its header after the page has already moved.",
-    "Incoming screens are previewed at their own saved vertical scroll position, eliminating the blank-screen jump that could appear when switching between tabs at different scroll depths.",
-    "The primary page width now includes the full screen gutters and the transition uses stable layout coordinates, keeping outgoing and incoming pages joined edge-to-edge throughout the gesture.",
-    "No roster calculation, Supabase, authentication, staffing-rule or clinical-workflow behavior changed."
+    "Horizontal page swipes can now begin from normal empty space inside status rows, workflow strips, date controls and Chat list containers instead of those whole regions being treated as blocked.",
+    "Actual buttons, links, inputs, text areas and other interactive controls remain protected from accidental navigation.",
+    "The direction lock now tolerates the small diagonal wobble that commonly happens at the beginning of a thumb swipe while clearly vertical movement continues to scroll normally.",
+    "The viewport-pinned page track, roster logic, Supabase data, authentication, staffing rules and clinical workflows are unchanged."
   ],
   "update_policy": "important"
 }
