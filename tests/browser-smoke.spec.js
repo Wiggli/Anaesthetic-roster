@@ -119,9 +119,18 @@ test('content swipes drag the page naturally while the bottom bar keeps direct d
 
   await page.evaluate(() => window.scrollTo(0, 0));
   const changesPage = await page.locator('#changes').boundingBox();
+  const returnStart = await page.evaluate(() => {
+    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessages';
+    for (let y = 220; y < Math.min(window.innerHeight - 110, 700); y += 16) {
+      const target = document.elementFromPoint(105, y);
+      if (target?.closest('#changes') && !target.closest(blocked)) return { x: 105, y };
+    }
+    return null;
+  });
+  expect(returnStart).not.toBeNull();
   let returningCurrent;
   let returningPreview;
-  await realTouchSwipe(page, { x: 105, y: 400 }, { x: 290, y: 400 }, async () => {
+  await realTouchSwipe(page, returnStart, { x: 290, y: returnStart.y }, async () => {
     returningCurrent = await page.locator('#changes').boundingBox();
     returningPreview = await page.locator('#today').boundingBox();
   });
