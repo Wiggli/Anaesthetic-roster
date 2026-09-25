@@ -284,7 +284,12 @@ function Navigation({ badges }: { badges: Badges }) {
       const axis = lockAxis(first, dx, dy);
 
       if (first.bar) {
-        const targetIndex = axis === 'horizontal' ? nearestPositionIndex(indicatorX.get()) : destinations.indexOf(first.view);
+        const firstPosition = positions.current[0];
+        const lastPosition = positions.current[positions.current.length - 1];
+        const draggedPosition = firstPosition !== undefined && lastPosition !== undefined
+          ? clamp(first.barOrigin + dx, firstPosition, lastPosition)
+          : first.barOrigin;
+        const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get()) : destinations.indexOf(first.view);
         const target = destinations[targetIndex] || first.view;
         if (target === first.view) {
           moveTo(first.view);
