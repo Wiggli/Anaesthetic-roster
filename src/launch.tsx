@@ -88,6 +88,10 @@ window.addEventListener('roster:account', (event: Event) => {
   import('./account-experience').then(({ renderAccountExperience }) => renderAccountExperience((event as CustomEvent).detail));
 });
 
+window.addEventListener('roster:passkeys', (event: Event) => {
+  import('./account-experience').then(({ renderPasskeyExperience }) => renderPasskeyExperience((event as CustomEvent).detail));
+});
+
 window.addEventListener('roster:chat-overview', (event: Event) => {
   import('./chat-experience').then(({ renderChatOverview }) => renderChatOverview((event as CustomEvent).detail));
 });

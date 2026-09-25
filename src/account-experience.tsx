@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 type ThemeChoice = 'light' | 'system' | 'dark';
 type AccountExperience = { theme: ThemeChoice; installed: boolean };
+type PasskeyExperience = { message: string; items: { id: string; label: string }[] };
 
 const roots = new Map<string, Root>();
 
@@ -71,7 +72,19 @@ function AccountActions({ installed }: { installed: boolean }) {
   </div>;
 }
 
+function Passkeys({ model }: { model: PasskeyExperience }) {
+  if (!model.items.length) return <p className="tw:rounded-2xl tw:bg-[var(--surface)] tw:p-4 tw:text-sm tw:leading-relaxed tw:text-[var(--muted)]">{model.message}</p>;
+  return <div className="tw:grid tw:gap-2">{model.items.map(item => <motion.div layout key={item.id} className="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3.5 dark:tw:border-white/10">
+    <span className="tw:min-w-0"><strong className="tw:block tw:truncate tw:text-sm">{item.label}</strong><small className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">Ready for password-free sign in</small></span>
+    <button type="button" onClick={() => act('passkey-remove', item.id)} className="tw:shrink-0 tw:rounded-full tw:bg-rose-500/10 tw:px-3 tw:py-2 tw:text-xs tw:font-bold tw:text-rose-700 dark:tw:text-rose-200">Remove</button>
+  </motion.div>)}</div>;
+}
+
 export function renderAccountExperience(model: AccountExperience) {
   rootFor('appearanceExperience')?.render(<Appearance key={model.theme} initial={model.theme} />);
   rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} />);
+}
+
+export function renderPasskeyExperience(model: PasskeyExperience) {
+  rootFor('passkeyList')?.render(<Passkeys model={model} />);
 }
