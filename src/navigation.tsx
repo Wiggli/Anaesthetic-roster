@@ -73,7 +73,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let suppressClick = false;
     let clickTimer: number | undefined;
     let settleTimer: number | undefined;
-    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessageViewport,.chatComposer,.chatConversationList,.chatMessages';
+    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatComposer,.chatConversationList';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
     const nearestPositionIndex = (value: number) => {
