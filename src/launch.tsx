@@ -95,3 +95,7 @@ window.addEventListener('roster:passkeys', (event: Event) => {
 window.addEventListener('roster:chat-overview', (event: Event) => {
   import('./chat-experience').then(({ renderChatOverview }) => renderChatOverview((event as CustomEvent).detail));
 });
+
+window.addEventListener('roster:chat-messages', (event: Event) => {
+  import('./chat-experience').then(({ renderChatMessages }) => renderChatMessages((event as CustomEvent).detail));
+});

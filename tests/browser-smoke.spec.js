@@ -709,14 +709,29 @@ test('typed Chat overview renders private conversations and registered members',
         { personKey: 'James Galea', displayName: 'James Galea', initial: 'J', available: false }
       ]
     } }));
+    window.dispatchEvent(new CustomEvent('roster:chat-messages', { detail: {
+      kind: 'team', bottomOffset: 0, items: [{
+        id: 'message-1', sender: 'Maria Borg', time: '18:42', body: '@André I can cover the first part.',
+        own: false, failed: false, deleted: false, mentioned: true, dateLabel: 'Today', unreadBefore: true,
+        replySender: 'James Galea', replyBody: 'Can anyone cover this night?'
+      }]
+    } }));
+    window.show('chat');
     document.getElementById('chatNewConversationSheet').showModal();
   });
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatMemberPicker')).toContainText('Not registered');
+  await expect(page.locator('#chatTeamMessages')).toContainText('New messages');
+  await expect(page.locator('#chatTeamMessages')).toContainText('Can anyone cover this night?');
   await page.locator('#chatMemberPicker button', { hasText: 'Maria Borg' }).click();
-  expect(await page.evaluate(() => window.__chatActions)).toContainEqual(expect.objectContaining({ action: 'member', value: 'Maria Borg' }));
+  await page.locator('#chatNewConversationSheet').evaluate(dialog => dialog.close());
+  await page.locator('#chatTeamMessages [tabindex="0"]').click({ button: 'right' });
+  expect(await page.evaluate(() => window.__chatActions)).toEqual(expect.arrayContaining([
+    expect.objectContaining({ action: 'message', value: 'message-1', kind: 'team' }),
+    expect.objectContaining({ action: 'member', value: 'Maria Borg' })
+  ]));
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
