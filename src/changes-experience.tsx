@@ -20,6 +20,19 @@ type HistoryRecord = {
 };
 type AllocationRow = { key: string; label: string; breakLabel: string; selectedId: string; options: { id: string; name: string }[] };
 type ChangesForms = { names: { value: string; label: string }[]; editing: boolean; overtimeSuggestions: string[] };
+type RoleOverride = {
+  notice?: string;
+  guidance: string;
+  summary: string;
+  open: boolean;
+  stored: boolean;
+  dirty: boolean;
+  reason: string;
+  canSave: boolean;
+  keys: { key: string; label: string; fullWidth: boolean }[];
+  names: { value: string; label: string }[];
+  assignments: Record<string, string>;
+};
 
 export type ChangesExperience = {
   absences: StaffingRecord[];
@@ -30,6 +43,7 @@ export type ChangesExperience = {
   allocations: AllocationRow[];
   allocationMessage: string;
   forms: ChangesForms;
+  roleOverride?: RoleOverride;
 };
 
 const roots = new Map<string, Root>();
@@ -157,6 +171,19 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
   return mode === 'absence' ? absence : overtime;
 }
 
+function RoleOverrideEditor({ model }: { model: RoleOverride }) {
+  if (model.notice) return <div className="tw:rounded-2xl tw:bg-[var(--surface)] tw:px-4 tw:py-3 tw:text-sm tw:leading-relaxed tw:text-[var(--muted)]">{model.notice}</div>;
+  return <details className="tw:overflow-hidden tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] dark:tw:border-white/10" open={model.open}>
+    <summary className="tw:flex tw:cursor-pointer tw:list-none tw:items-center tw:justify-between tw:gap-3 tw:px-4 tw:py-3.5"><span><b className="tw:block tw:text-sm">Change this night’s roles</b><small className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">{model.summary}</small></span><span className="tw:text-xl tw:text-[var(--muted)]" aria-hidden="true">›</span></summary>
+    <div className="tw:grid tw:gap-3 tw:border-t tw:border-black/8 tw:px-4 tw:py-4 dark:tw:border-white/10">
+      <p className="tw:rounded-xl tw:bg-[var(--surface)] tw:px-3 tw:py-2.5 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{model.guidance}</p>
+      <div className="tw:grid tw:gap-2 sm:tw:grid-cols-2">{model.keys.map(row => <label key={row.key} className={`tw:grid tw:gap-1.5 ${row.fullWidth ? 'sm:tw:col-span-2' : ''}`}><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">{row.label}</span><select data-night-role={row.key} value={model.assignments[row.key] || ''} onChange={event => dispatchAction({ action: 'role-select', key: row.key, value: event.target.value })} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold dark:tw:border-white/12">{model.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}</select></label>)}</div>
+      {model.dirty && <><div className="tw:rounded-full tw:bg-amber-400/15 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-amber-800 dark:tw:text-amber-200">Unsaved night-only change</div><label className="tw:grid tw:gap-1.5"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Reason for the change</span><input id="nightRoleReason" defaultValue={model.reason} maxLength={120} placeholder="For example, agreed role arrangement" onInput={event => dispatchAction({ action: 'role-reason', value: event.currentTarget.value })} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm dark:tw:border-white/12" /></label><button type="button" id="saveNightRolesBtn" className="primary wide" disabled={!model.canSave} onClick={() => dispatchAction({ action: 'role-save' })}>Save night-only change</button></>}
+      {model.stored && <button type="button" id="resetNightRolesBtn" className="soft wide" onClick={() => dispatchAction({ action: 'role-reset' })}>Restore rostered roles</button>}
+    </div>
+  </details>;
+}
+
 export function renderChangesExperience(model: ChangesExperience) {
   rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
   rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
@@ -164,4 +191,5 @@ export function renderChangesExperience(model: ChangesExperience) {
   rootFor('overtimeList')?.render(<RecordList records={model.overtime} empty="No overtime nurses recorded for this night." />);
   rootFor('changeHistory')?.render(<History model={model} />);
   rootFor('allocationList')?.render(<AllocationList model={model} />);
+  if (model.roleOverride) rootFor('nightRoleOverrideStep')?.render(<RoleOverrideEditor model={model.roleOverride} />);
 }

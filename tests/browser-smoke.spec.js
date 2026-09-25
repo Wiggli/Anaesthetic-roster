@@ -638,7 +638,13 @@ test('typed Changes records render live staffing and expose stable actions', asy
       historyExpanded: false,
       allocations: [{ key: 'first1', label: 'First Part 1', breakLabel: 'Second break', selectedId: '', options: [{ id: 'overtime-1', name: 'Maria Borg' }] }],
       allocationMessage: '',
-      forms: { names: [{ value: 'Nurse One', label: 'Nurse One' }], editing: false, overtimeSuggestions: ['Maria Borg'] }
+      forms: { names: [{ value: 'Nurse One', label: 'Nurse One' }], editing: false, overtimeSuggestions: ['Maria Borg'] },
+      roleOverride: {
+        guidance: 'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.',
+        summary: 'Optional custom five-nurse arrangement', open: false, stored: false, dirty: false, reason: '', canSave: false,
+        keys: [{ key: 'first1', label: 'First part · position 1', fullWidth: false }],
+        names: [{ value: 'Nurse One', label: 'Nurse One' }], assignments: { first1: 'Nurse One' }
+      }
     }}));
     window.show('changes');
   });
@@ -646,6 +652,7 @@ test('typed Changes records render live staffing and expose stable actions', asy
   await expect(page.locator('#changeList')).toContainText('André Bartolo');
   await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
   await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
+  await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
   await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
   await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
   await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
