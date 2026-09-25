@@ -1,13 +1,13 @@
 {
-  "version": "37.40",
+  "version": "37.41",
   "date": "25 September 2026",
-  "title": "Pages that move with your swipe",
-  "summary": "The main screen now behaves like a page under your finger while the bottom tab slider keeps its direct movement.",
+  "title": "Smoother continuous swiping",
+  "summary": "The bottom selector now follows one continuous drag across all tabs, while screen swipes lock reliably and work from Chat too.",
   "changes": [
-    "Drag the main Night, Changes or Breaks page left and the page itself moves left while the next tab enters from the right; drag right to return to the tab on the left.",
-    "The bottom tab bar keeps its existing direct behavior, so dragging its selector right still moves toward the tab on the right and dragging it left moves toward the tab on the left.",
-    "Short page drags settle back into place, vertical scrolling remains vertical, and forms, workflow controls, dialogs, Chat conversations and screen-edge gestures keep their existing interactions.",
-    "Roster calculations, Supabase data, authentication and the safe PWA update flow are unchanged."
+    "Drag once across the bottom bar and the selector follows your finger continuously through Night, Changes, Breaks and Chat, then settles on the nearest tab.",
+    "Screen swipes lock onto a horizontal gesture once established, so small diagonal movement no longer cancels the page halfway through.",
+    "Safe noninteractive areas of Chat can now swipe back toward Breaks, while message areas, composers, forms, workflow controls, dialogs and edge gestures remain protected.",
+    "The bottom bar uses a more stable opaque glass layer so underlying cards do not look like a second broken bar. Roster calculations, Supabase data and authentication are unchanged."
   ],
   "update_policy": "important"
 }

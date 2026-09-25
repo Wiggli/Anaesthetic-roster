@@ -57,11 +57,37 @@ function Navigation({ badges }: { badges: Badges }) {
       setActive(view);
       moveTo(view);
     };
-    type SwipeStart = { id: number; x: number; y: number; view: Destination; bar: boolean; preview?: Destination };
+    type SwipeAxis = 'pending' | 'horizontal' | 'vertical';
+    type SwipeStart = {
+      id: number;
+      x: number;
+      y: number;
+      at: number;
+      view: Destination;
+      bar: boolean;
+      barOrigin: number;
+      axis: SwipeAxis;
+      preview?: Destination;
+    };
     let start: SwipeStart | null = null;
     let suppressClick = false;
     let clickTimer: number | undefined;
     let settleTimer: number | undefined;
+    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessageViewport,.chatComposer,.chatConversationList,.chatMessages';
+
+    const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+    const nearestPositionIndex = (value: number) => {
+      let best = 0;
+      let distance = Number.POSITIVE_INFINITY;
+      positions.current.forEach((position, index) => {
+        const nextDistance = Math.abs(position - value);
+        if (nextDistance < distance) {
+          best = index;
+          distance = nextDistance;
+        }
+      });
+      return best;
+    };
 
     const clearContentDrag = () => {
       window.clearTimeout(settleTimer);
@@ -100,6 +126,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const mainRect = main.getBoundingClientRect();
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
+      const offset = clamp(dx, -width, width);
       const direction = destinations.indexOf(next) - index;
       main.classList.add('viewSwipeStage');
       current.classList.add('swipeCurrent');
@@ -109,8 +136,8 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.style.top = `${currentRect.top - mainRect.top}px`;
       preview.style.left = `${currentRect.left - mainRect.left}px`;
       preview.style.width = `${width}px`;
-      current.style.transform = `translate3d(${dx}px,0,0)`;
-      preview.style.transform = `translate3d(${dx + direction * width}px,0,0)`;
+      current.style.transform = `translate3d(${offset}px,0,0)`;
+      preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
       first.preview = next;
       return next;
     };
@@ -131,9 +158,7 @@ function Navigation({ badges }: { badges: Badges }) {
         current.style.transform = 'translate3d(0,0,0)';
         preview.style.transform = `translate3d(${direction * width}px,0,0)`;
       });
-      settleTimer = window.setTimeout(() => {
-        clearContentDrag();
-      }, 190);
+      settleTimer = window.setTimeout(clearContentDrag, 170);
     };
 
     const commitContentDrag = (first: SwipeStart, next: Destination) => {
@@ -158,7 +183,22 @@ function Navigation({ badges }: { badges: Badges }) {
         clearContentDrag();
         window.show?.(next);
         if (next === 'chat') window.openChatView?.();
-      }, 190);
+      }, 170);
+    };
+
+    const lockAxis = (first: SwipeStart, dx: number, dy: number) => {
+      if (first.axis !== 'pending') return first.axis;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+      if (Math.max(ax, ay) < 10) return first.axis;
+      if (first.bar) {
+        if (ax >= ay * 0.72) first.axis = 'horizontal';
+        else if (ay > ax * 1.35) first.axis = 'vertical';
+      } else {
+        if (ax > ay * 1.08) first.axis = 'horizontal';
+        else if (ay > ax * 1.08) first.axis = 'vertical';
+      }
+      return first.axis;
     };
 
     const onStart = (event: TouchEvent) => {
@@ -168,36 +208,63 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!(target instanceof Element)) return;
       const inBar = !!target.closest('.bottom');
       const view = document.body.getAttribute('data-view') as Destination;
-      if (!destinations.includes(view) || (!inBar && (!target.closest('main .view') || view === 'chat'))) return;
-      if (!inBar && target.closest('button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatMessages')) return;
+      if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
+      if (!inBar && target.closest(blockedContentSelector)) return;
       if (!inBar && window.getSelection()?.type === 'Range') return;
       const touch = event.touches[0];
-      if (touch.clientX < 26 || touch.clientX > window.innerWidth - 26) return;
+      if (!inBar && (touch.clientX < 26 || touch.clientX > window.innerWidth - 26)) return;
       animation?.stop();
       clearContentDrag();
-      start = { id: touch.identifier, x: touch.clientX, y: touch.clientY, view, bar: inBar };
+      const viewIndex = destinations.indexOf(view);
+      const barOrigin = positions.current[viewIndex] ?? indicatorX.get();
+      start = {
+        id: touch.identifier,
+        x: touch.clientX,
+        y: touch.clientY,
+        at: performance.now(),
+        view,
+        bar: inBar,
+        barOrigin,
+        axis: 'pending'
+      };
     };
+
     const onMove = (event: TouchEvent) => {
       if (!start || reducedMotion) return;
       const touch = Array.from(event.touches).find(item => item.identifier === start!.id);
       if (!touch) return;
       const dx = touch.clientX - start.x;
       const dy = touch.clientY - start.y;
-      if (Math.abs(dy) > 18 && Math.abs(dy) > Math.abs(dx)) {
-        const first = start;
-        start = null;
-        if (first.bar) moveTo(first.view); else returnContentDrag(first);
+      const axis = lockAxis(start, dx, dy);
+      if (axis === 'vertical') {
+        if (!start.bar) start = null;
+        else moveTo(start.view);
         return;
       }
-      if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+      if (axis !== 'horizontal') return;
+
       const index = destinations.indexOf(start.view);
-      const step = start.bar ? Math.sign(dx) : -Math.sign(dx);
-      const neighbor = positions.current[index + step];
       const origin = positions.current[index];
-      if (!start.bar) stageContentDrag(start, dx);
-      if (origin !== undefined && neighbor !== undefined)
-        indicatorX.set(origin + (neighbor - origin) * Math.min(1, Math.abs(dx) / 115));
+      if (start.bar) {
+        const firstPosition = positions.current[0];
+        const lastPosition = positions.current[positions.current.length - 1];
+        if (firstPosition !== undefined && lastPosition !== undefined)
+          indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));
+        return;
+      }
+
+      const next = stageContentDrag(start, dx);
+      if (!next || origin === undefined) {
+        moveTo(start.view);
+        return;
+      }
+      const neighbor = positions.current[destinations.indexOf(next)];
+      const current = document.getElementById(start.view);
+      const width = current instanceof HTMLElement ? Math.max(1, current.getBoundingClientRect().width) : Math.max(1, window.innerWidth);
+      if (neighbor !== undefined)
+        indicatorX.set(origin + (neighbor - origin) * Math.min(1, Math.abs(dx) / width));
     };
+
     const onEnd = (event: TouchEvent) => {
       const first = start;
       start = null;
@@ -214,27 +281,54 @@ function Navigation({ badges }: { badges: Badges }) {
       }
       const dx = touch.clientX - first.x;
       const dy = touch.clientY - first.y;
-      const step = first.bar ? Math.sign(dx) : -Math.sign(dx);
+      const axis = lockAxis(first, dx, dy);
+
+      if (first.bar) {
+        const firstPosition = positions.current[0];
+        const lastPosition = positions.current[positions.current.length - 1];
+        const draggedPosition = firstPosition !== undefined && lastPosition !== undefined
+          ? clamp(first.barOrigin + dx, firstPosition, lastPosition)
+          : first.barOrigin;
+        const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get()) : destinations.indexOf(first.view);
+        const target = destinations[targetIndex] || first.view;
+        if (target === first.view) {
+          moveTo(first.view);
+          return;
+        }
+        suppressClick = true;
+        window.clearTimeout(clickTimer);
+        clickTimer = window.setTimeout(() => { suppressClick = false; }, 220);
+        window.show?.(target);
+        if (target === 'chat') window.openChatView?.();
+        return;
+      }
+
+      if (axis !== 'horizontal') {
+        returnContentDrag(first);
+        return;
+      }
+      const step = -Math.sign(dx);
       const next = destinations[destinations.indexOf(first.view) + step];
-      if (Math.abs(dx) < (first.bar ? 45 : 65) || Math.abs(dx) < Math.abs(dy) * 1.5 || !next) {
-        if (first.bar) moveTo(first.view); else returnContentDrag(first);
+      const elapsed = Math.max(1, performance.now() - first.at);
+      const distance = Math.abs(dx);
+      const quickFlick = distance >= 30 && elapsed <= 280;
+      if ((!quickFlick && distance < 52) || !next) {
+        returnContentDrag(first);
         return;
       }
       suppressClick = true;
       window.clearTimeout(clickTimer);
-      clickTimer = window.setTimeout(() => { suppressClick = false; }, 240);
-      if (first.bar) {
-        clearContentDrag();
-        window.show?.(next);
-        if (next === 'chat') window.openChatView?.();
-      } else commitContentDrag(first, next);
+      clickTimer = window.setTimeout(() => { suppressClick = false; }, 220);
+      commitContentDrag(first, next);
     };
+
     const onClick = (event: MouseEvent) => {
       if (!suppressClick) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       suppressClick = false;
     };
+
     const onCancel = () => {
       const first = start;
       start = null;
