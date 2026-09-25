@@ -79,3 +79,7 @@ window.addEventListener('roster:recent-activity', (event: Event) => {
 window.addEventListener('roster:changes', (event: Event) => {
   import('./changes-experience').then(({ renderChangesExperience }) => renderChangesExperience((event as CustomEvent).detail));
 });
+
+window.addEventListener('roster:full-roster', (event: Event) => {
+  import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience((event as CustomEvent).detail.cards));
+});

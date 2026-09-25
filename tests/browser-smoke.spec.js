@@ -653,6 +653,31 @@ test('typed Changes records render live staffing and expose stable actions', asy
   ]));
 });
 
+test('typed full-roster cards render searchable clinical summaries and open a night', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__openedNights = [];
+    window.addEventListener('roster:open-night', event => window.__openedNights.push(event.detail.index));
+    window.dispatchEvent(new CustomEvent('roster:full-roster', { detail: { cards: [{
+      index: 4,
+      date: 'Saturday, 26 September 2026',
+      status: 'One live staffing update',
+      count: 6,
+      details: [
+        { label: 'First part', values: ['James Galea', 'Michael Galea'], tone: 'first' },
+        { label: 'Absences', values: ['André Bartolo · Leave'], tone: 'warning' }
+      ]
+    }] } }));
+    window.show('roster');
+  });
+
+  const card = page.locator('#cards button[aria-label^="Open roster for"]');
+  await expect(card).toContainText('Saturday, 26 September 2026');
+  await expect(card).toContainText('André Bartolo · Leave');
+  await card.click();
+  expect(await page.evaluate(() => window.__openedNights)).toContain(4);
+});
+
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,
