@@ -7,7 +7,7 @@ const read = file => fs.readFileSync(path.join(dist, file), 'utf8');
 const html = read('index.html');
 const worker = read('service-worker.js');
 const manifest = JSON.parse(read('manifest.webmanifest'));
-const version = '37.35';
+const version = '37.36';
 
 for (const file of ['app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'styles.css', 'chat.css',
   'theme-bootstrap.js', 'release.json', 'icon-192.png', 'icon-512.png', 'mater-dei-logo.png']) {
@@ -25,6 +25,10 @@ const moduleAsset = html.match(/src="\.\/(assets\/[^" ]+\.js)"/);
 assert.ok(moduleAsset, 'React entry must be a built module');
 assert.ok(fs.existsSync(path.join(dist, moduleAsset[1])));
 assert.ok(worker.includes(moduleAsset[1]), 'custom worker must precache the React entry');
+const navigationAsset = fs.readdirSync(path.join(dist, 'assets')).find(file => /^navigation-.*\.js$/.test(file));
+assert.ok(navigationAsset, 'signed-in navigation must be a separate lazy asset');
+assert.ok(worker.includes(`assets/${navigationAsset}`), 'custom worker must precache the offline navigation chunk');
+assert.match(html, /id="reactNavigation"/, 'working HTML navigation must remain as an optional-module fallback');
 assert.ok(worker.includes(`anaesthetic-night-roster-v${version.replace('.', '-')}`));
 assert.match(worker, /ACTIVATE_UPDATE/);
 assert.match(worker, /GET_CACHE_VERSION/);

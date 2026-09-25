@@ -34,6 +34,48 @@ test('mobile shell keeps core views navigable', async ({ page }) => {
   await expect(page.locator('#chatMentionMenu')).toHaveCount(1);
 });
 
+test('signed-in React tabs retain badges and navigate with touch and keyboard', async ({ page }) => {
+  await openShell(page);
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+  const changes = page.locator('.bottom button[data-v="changes"]');
+  await page.evaluate(() => {
+    const badge = document.getElementById('changesTaskBadge');
+    badge.textContent = '3';
+    badge.classList.remove('hidden');
+  });
+  await changes.focus();
+  await page.keyboard.press('Enter');
+  await expect(changes).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('#changesTaskBadge')).toHaveText('3');
+  await expect(page.locator('#changesTaskBadge')).toBeVisible();
+  await page.locator('.bottom button[data-v="breaks"]').click();
+  await expect(page.locator('#breaks')).toBeVisible();
+  await expect(page.locator('#changesTaskBadge')).toHaveText('3');
+  await page.locator('.bottom button[data-v="breaks"]').evaluate(button => {
+    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 4, clientX: 110, clientY: 30 }));
+    button.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 4, clientX: 190, clientY: 32 }));
+  });
+  await expect(changes).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('#changes')).toBeVisible();
+});
+
+test('navigation stays usable if the lazy React chunk fails', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200, contentType: 'application/javascript', body: 'window.supabase={createClient:function(){return null}};'
+  }));
+  await page.route('**/assets/navigation-*.js', route => route.abort());
+  await page.goto('/index.html');
+  await page.evaluate(() => {
+    document.body.classList.remove('authPending');
+    document.getElementById('launchScreen').style.display = 'none';
+    document.getElementById('authGate').style.display = 'none';
+    document.querySelector('.bottom').style.display = 'grid';
+  });
+  await page.locator('.bottom button[data-v="breaks"]').click();
+  await expect(page.locator('#breaks')).toBeVisible();
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(0);
+});
+
 test('mobile header controls stay circular and dark mode stays readable', async ({ page }) => {
   await openShell(page);
   const account = page.locator('#accountBtn');
@@ -106,7 +148,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.35/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.36/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -135,7 +177,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.35');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.36');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -151,7 +193,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog separates shipped tools from future interactions', async ({ page }) => {
+test('frontend changelog describes shipped navigation and scoped Tailwind', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -161,7 +203,7 @@ test('frontend changelog separates shipped tools from future interactions', asyn
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('.releaseHistory')).toContainText('Tailwind CSS v4');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Possible next: add carefully tested touch gestures');
+  await expect(dialog.locator('.releaseHistory')).toContainText('A short horizontal touch swipe across the tab bar');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

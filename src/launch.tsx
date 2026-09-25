@@ -16,7 +16,24 @@ function LaunchMotto() {
   );
 }
 
-// The legacy application owns the operational DOM. React owns this static
-// launch region alone while authenticated screens migrate in later PRs.
+// The roster engine still owns operational views; React owns isolated shell regions.
 const mount = document.getElementById('reactLaunchMotto');
 if (mount) createRoot(mount).render(<LaunchMotto />);
+
+const navigation = document.getElementById('reactNavigation');
+if (navigation) {
+  let loading = false;
+  const onAuthorised = () => {
+    if (loading || document.body.classList.contains('authPending')) return;
+    loading = true;
+    observer.disconnect();
+    // Leave the working HTML controls in place if the optional chunk fails.
+    import('./navigation').then(({ mountNavigation }) => mountNavigation(navigation)).catch(() => {
+      loading = false;
+      observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    });
+  };
+  const observer = new MutationObserver(onAuthorised);
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  onAuthorised();
+}

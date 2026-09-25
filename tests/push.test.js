@@ -23,7 +23,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.35/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.36/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -113,11 +113,11 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.35');
-assert.equal(release.title, 'What the new app foundation makes possible');
-assert.ok(release.changes.some(item => /Vite.*React.*TypeScript.*Tailwind CSS v4.*Motion for React/i.test(item)), 'release notes must name the complete installed stack');
-assert.ok(release.changes.some(item => /Possible next:.*gestures/i.test(item)), 'release notes must distinguish future gestures from shipped features');
-assert.ok(release.changes.some(item => /120 Hz.*cannot be guaranteed/i.test(item)), 'release notes must avoid promising a device frame rate');
+assert.equal(release.version, '37.36');
+assert.equal(release.title, 'Responsive React navigation');
+assert.ok(release.changes.some(item => /React and TypeScript.*after authorization/i.test(item)), 'release notes must describe the authorised navigation component');
+assert.ok(release.changes.some(item => /touch swipe.*reduced-motion/i.test(item)), 'release notes must describe gesture and motion behaviour');
+assert.match(ui, /\{version:'37\.35'[\s\S]*?title:'What the new app foundation makes possible'/, 'the complete frontend foundation release must remain in history');
 assert.match(ui, /\{version:'37\.34'[\s\S]*?title:'Launch style cleanup'/, 'the last release history must remain intact');
 assert.match(ui, /\{version:'37\.33'[\s\S]*?title:'Application shell foundation'/, 'the previous release history must remain intact');
 assert.match(ui, /\{version:'37\.32'[\s\S]*?title:'Premium PWA experience'/, 'previous release history must remain intact');
