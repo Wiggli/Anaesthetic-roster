@@ -1,13 +1,13 @@
 {
-  "version": "37.42",
+  "version": "37.43",
   "date": "25 September 2026",
-  "title": "Fluid screen transitions",
-  "summary": "Primary screens now slide and morph into one another as one continuous transition instead of snapping at the handoff.",
+  "title": "Solid continuous page flow",
+  "summary": "Primary screens now move as fully opaque full-size pages on one horizontal track, eliminating the visual overlap between adjacent screens.",
   "changes": [
-    "Night, Changes, Breaks and Chat now hand off as one continuous slide, including the final moment when the new screen becomes active.",
-    "The outgoing screen subtly scales and fades while the incoming screen settles into place, producing a restrained morph effect without obscuring clinical content.",
-    "Bottom-tab taps and long bottom-bar drags now use the same transition language as page swipes, with the selected tab indicator moving in sync.",
-    "Reduced-motion users keep immediate navigation. Roster calculations, Supabase data, authentication and staffing rules are unchanged."
+    "Night, Changes, Breaks and Chat remain full-size and fully opaque while sliding, with their edges meeting directly as one page leaves and the next enters.",
+    "The scale and transparency morph introduced in 37.42 has been removed because it could make two screens appear on top of one another during a swipe.",
+    "Swipe settling, bottom-tab taps and long bottom-bar drags now share the same 260 ms horizontal easing, and the selected tab indicator follows the same timing.",
+    "Vertical scrolling, protected controls, Chat interactions, reduced-motion behaviour, roster calculations, Supabase data and authentication are unchanged."
   ],
   "update_policy": "important"
 }

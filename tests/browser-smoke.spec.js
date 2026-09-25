@@ -66,7 +66,7 @@ test('signed-in React tabs retain badges and keyboard navigation', async ({ page
   await expect(page.locator('#changesTaskBadge')).toHaveText('3');
 });
 
-test('bottom-tab taps slide and morph between primary screens without a snap', async ({ page, isMobile }) => {
+test('bottom-tab taps move solid pages edge-to-edge without visual overlap', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'mobile transition regression');
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
@@ -75,29 +75,36 @@ test('bottom-tab taps slide and morph between primary screens without a snap', a
 
   await page.locator('.bottom button[data-v="changes"]').click();
   await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
-  await expect(page.locator('main')).toHaveClass(/viewMorphing/);
+  await expect(page.locator('main')).not.toHaveClass(/viewMorphing/);
   await expect(page.locator('#today')).toHaveClass(/swipeCurrent/);
   await expect(page.locator('#changes')).toHaveClass(/swipePreview/);
 
   await page.waitForTimeout(120);
-  const nightDuring = await page.locator('#today').boundingBox();
-  const changesDuring = await page.locator('#changes').boundingBox();
-  const morphState = await page.evaluate(() => {
+  const trackState = await page.evaluate(() => {
     const current = document.getElementById('today');
     const incoming = document.getElementById('changes');
+    const currentRect = current.getBoundingClientRect();
+    const incomingRect = incoming.getBoundingClientRect();
     return {
+      currentX: currentRect.x,
+      currentWidth: currentRect.width,
+      incomingX: incomingRect.x,
       currentOpacity: Number(getComputedStyle(current).opacity),
       incomingOpacity: Number(getComputedStyle(incoming).opacity),
+      currentBackground: getComputedStyle(current).backgroundColor,
+      incomingBackground: getComputedStyle(incoming).backgroundColor,
       currentTransform: getComputedStyle(current).transform,
       incomingTransform: getComputedStyle(incoming).transform
     };
   });
-  expect(nightDuring.x).toBeLessThan(nightBefore.x - 20);
-  expect(changesDuring.x).toBeGreaterThan(nightBefore.x - 20);
-  expect(morphState.currentOpacity).toBeLessThan(1);
-  expect(morphState.incomingOpacity).toBeGreaterThan(0.82);
-  expect(morphState.currentTransform).not.toBe('none');
-  expect(morphState.incomingTransform).not.toBe('none');
+  expect(trackState.currentX).toBeLessThan(nightBefore.x - 20);
+  expect(Math.abs((trackState.currentX + trackState.currentWidth) - trackState.incomingX)).toBeLessThanOrEqual(2);
+  expect(trackState.currentOpacity).toBe(1);
+  expect(trackState.incomingOpacity).toBe(1);
+  expect(trackState.currentBackground).not.toBe('rgba(0, 0, 0, 0)');
+  expect(trackState.incomingBackground).not.toBe('rgba(0, 0, 0, 0)');
+  expect(trackState.currentTransform).not.toBe('none');
+  expect(trackState.incomingTransform).not.toBe('none');
 
   await expect(page.locator('#changes')).toBeVisible();
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
@@ -161,6 +168,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   });
   expect(draggedCurrent.x).toBeLessThan(initialPage.x - 45);
   expect(draggedPreview.x).toBeGreaterThan(initialPage.x + 70);
+  expect(Math.abs((draggedCurrent.x + draggedCurrent.width) - draggedPreview.x)).toBeLessThanOrEqual(2);
   expect(draggedIndicator.x).toBeGreaterThan(initialIndicator.x + 10);
   await expect(page.locator('#changes')).toBeVisible();
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
@@ -205,6 +213,9 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 }, async () => {
     await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
     await expect(page.locator('#breaks')).toHaveClass(/swipePreview/);
+    const chatDuring = await page.locator('#chat').boundingBox();
+    const breaksDuring = await page.locator('#breaks').boundingBox();
+    expect(Math.abs((breaksDuring.x + breaksDuring.width) - chatDuring.x)).toBeLessThanOrEqual(2);
   });
   await expect(page.locator('#breaks')).toBeVisible();
 
@@ -378,7 +389,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.42/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.43/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -407,7 +418,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.42');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.43');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -423,7 +434,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains fluid screen transitions', async ({ page }) => {
+test('frontend changelog explains solid continuous page flow', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -432,8 +443,8 @@ test('frontend changelog explains fluid screen transitions', async ({ page }) =>
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('hand off as one continuous slide');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Tapping a bottom tab and releasing a long bottom-bar drag');
+  await expect(dialog.locator('.releaseHistory')).toContainText('solid full-size pages on one horizontal track');
+  await expect(dialog.locator('.releaseHistory')).toContainText('transparency and scale morph from 37.42 has been removed');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
