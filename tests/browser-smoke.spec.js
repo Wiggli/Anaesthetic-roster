@@ -161,13 +161,51 @@ test('page swipes start reliably from container padding and survive an initial d
   await expect(page.locator('#changes')).toBeVisible();
 });
 
+test('horizontal navigation starts directly on a focusable Chat message row', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'real phone gesture regression');
+  await openShell(page);
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+  await page.evaluate(() => window.show('chat'));
+  await expect(page.locator('#chat')).toBeVisible();
+
+  await page.evaluate(() => {
+    const host = document.getElementById('chatTeamMessages');
+    host.innerHTML = '';
+    const line = document.createElement('div');
+    line.id = 'swipeFocusableChatMessage';
+    line.className = 'chatTeamLine';
+    line.tabIndex = 0;
+    line.setAttribute('aria-label', 'Message from a roster member. Long press for actions.');
+    line.style.minHeight = '58px';
+    line.style.padding = '16px 12px';
+    line.textContent = '[20:14] Michael: Can anyone swap first part?';
+    host.appendChild(line);
+  });
+
+  const message = page.locator('#swipeFocusableChatMessage');
+  await message.scrollIntoViewIfNeeded();
+  const box = await message.boundingBox();
+  const from = { x: box.x + Math.min(box.width * 0.42, 155), y: box.y + box.height / 2 };
+  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('#swipeFocusableChatMessage')?.id, from))
+    .toBe('swipeFocusableChatMessage');
+
+  await realTouchPath(page, [
+    from,
+    { x: from.x + 12, y: from.y + 8 },
+    { x: from.x + 58, y: from.y + 10 },
+    { x: from.x + 118, y: from.y + 11 },
+    { x: Math.min((page.viewportSize()?.width || 390) - 32, from.x + 178), y: from.y + 12 }
+  ]);
+  await expect(page.locator('#breaks')).toBeVisible();
+});
+
 test('a new swipe interrupts an unfinished settle instead of being ignored', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('changes'));
   const safe = await page.evaluate(() => {
-    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav';
+    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
     for (let y = 220; y < Math.min(window.innerHeight - 120, 680); y += 14) {
       for (const x of [105, 200, 290]) {
         const target = document.elementFromPoint(x, y);
@@ -511,7 +549,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.45/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.46/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -540,7 +578,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.45');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.46');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -556,7 +594,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains reliable swipe starts', async ({ page }) => {
+test('frontend changelog explains reliable swiping over Chat messages', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -565,8 +603,8 @@ test('frontend changelog explains reliable swipe starts', async ({ page }) => {
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('normal empty space inside status rows');
-  await expect(dialog.locator('.releaseHistory')).toContainText('small diagonal wobble');
+  await expect(dialog.locator('.releaseHistory')).toContainText('directly on a Chat message');
+  await expect(dialog.locator('.releaseHistory')).toContainText('focusability no longer makes the whole message');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
