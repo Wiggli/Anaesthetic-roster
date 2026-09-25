@@ -1,13 +1,13 @@
 {
-  "version": "37.43",
+  "version": "37.44",
   "date": "25 September 2026",
-  "title": "Solid continuous page flow",
-  "summary": "Primary screens now move as fully opaque full-size pages on one horizontal track, eliminating the visual overlap between adjacent screens.",
+  "title": "Stable native page swiping",
+  "summary": "Primary screens now remain attached during gestures, carry their own top chrome, and preserve each tab's vertical position without blank handoff frames.",
   "changes": [
-    "Night, Changes, Breaks and Chat remain full-size and fully opaque while sliding, with their edges meeting directly as one page leaves and the next enters.",
-    "The scale and transparency morph introduced in 37.42 has been removed because it could make two screens appear on top of one another during a swipe.",
-    "Swipe settling, bottom-tab taps and long bottom-bar drags now share the same 260 ms horizontal easing, and the selected tab indicator follows the same timing.",
-    "Vertical scrolling, protected controls, Chat interactions, reduced-motion behaviour, roster calculations, Supabase data and authentication are unchanged."
+    "Each primary screen now carries its own complete top chrome during horizontal movement, so Night no longer gains or loses its header after the page has already moved.",
+    "Incoming screens are previewed at their own saved vertical scroll position, eliminating the blank-screen jump that could appear when switching between tabs at different scroll depths.",
+    "The primary page width now includes the full screen gutters and the transition uses stable layout coordinates, keeping outgoing and incoming pages joined edge-to-edge throughout the gesture.",
+    "No roster calculation, Supabase, authentication, staffing-rule or clinical-workflow behavior changed."
   ],
   "update_policy": "important"
 }
