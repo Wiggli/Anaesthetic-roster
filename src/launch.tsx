@@ -47,3 +47,13 @@ window.addEventListener('roster:screeninfo', (event: Event) => {
     if (request === screenInfoRequest) renderScreenInfo(items);
   }).catch(() => { /* The escaped HTML sheet remains available. */ });
 });
+
+let breakPlanRequest = 0;
+window.addEventListener('roster:breaks', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++breakPlanRequest;
+  import('./clinical-experience').then(({ renderBreaksExperience }) => {
+    if (request === breakPlanRequest) renderBreaksExperience(model);
+  }).catch(() => { /* The core workflow remains available if the optional view cannot load. */ });
+});

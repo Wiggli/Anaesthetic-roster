@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const clinicalExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'clinical-experience.tsx'), 'utf8');
 
 const storage = new Map();
 const noopElement = () => ({
@@ -353,7 +354,8 @@ assert.match(html, /Activity for this night/, 'staffing history must have a clea
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
-assert.match(ui, /breakDate\.classList\.toggle\('hidden',!pending\)/, 'Breaks must hide duplicate date status once the plan is ready');
+assert.match(ui, /pending:pending,pendingReason:/, 'Breaks must pass the derived pending state to the typed interface');
+assert.match(clinicalExperience, /model\.pending && <motion\.section/, 'Breaks must omit the pending notice once the plan is ready');
 assert.equal(context.labourAssignmentDetail(base.pager, { first: base.pager, second: base.reliever }), 'Labour Ward first part · Second break', 'Pager summary must include the derived first-part duty without a second row');
 assert.equal(context.labourAssignmentDetail(base.reliever, { first_part_name: base.pager, second_part_name: base.reliever }), 'Labour Ward second part · First break', 'Reliever summary must include the derived second-part duty without a second row');
 assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 'confirmation must not repeat Pager and Reliever as separate Labour Ward rows');
