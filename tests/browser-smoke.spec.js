@@ -125,7 +125,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await realTouchSwipe(page, barStart, barEnd, async () => {
     longDragIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   });
-  expect(longDragIndicator.x).toBeGreaterThan(barInitialIndicator.x + (chatTab.x - nightTab.x) * 0.4);
+  expect(longDragIndicator.x).toBeGreaterThan(barInitialIndicator.x + nightTab.width);
   await expect(page.locator('#chat')).toBeVisible();
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
     .toBeLessThan(4);
