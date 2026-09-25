@@ -66,33 +66,47 @@ test('signed-in React tabs retain badges and keyboard navigation', async ({ page
   await expect(page.locator('#changesTaskBadge')).toHaveText('3');
 });
 
-test('real touch swipes change tabs from content and bar without hijacking vertical scroll or dialogs', async ({ page, isMobile }) => {
+test('content swipes drag the page naturally while the bottom bar keeps direct direction', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('today'));
-  const safeStart = { x: 105, y: 400 };
+  const safeStart = { x: 290, y: 400 };
   const eligible = await page.evaluate(({ x, y }) => {
     const target = document.elementFromPoint(x, y);
     return !!target?.closest('main .view') && !target.closest('button,a,input,select,textarea,[role="button"],[tabindex]');
   }, safeStart);
   expect(eligible).toBe(true);
+
   const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+  const initialPage = await page.locator('#today').boundingBox();
   let draggedIndicator;
-  await realTouchSwipe(page, safeStart, { x: 290, y: 400 }, async () => {
+  let draggedCurrent;
+  let draggedPreview;
+  await realTouchSwipe(page, safeStart, { x: 105, y: 400 }, async () => {
     draggedIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+    draggedCurrent = await page.locator('#today').boundingBox();
+    draggedPreview = await page.locator('#changes').boundingBox();
+    await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
+    await expect(page.locator('#changes')).toHaveClass(/swipePreview/);
   });
+  expect(draggedCurrent.x).toBeLessThan(initialPage.x - 45);
+  expect(draggedPreview.x).toBeGreaterThan(initialPage.x + 80);
   expect(draggedIndicator.x).toBeGreaterThan(initialIndicator.x + 25);
   await expect(page.locator('#changes')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
   await expect.poll(async () => (await page.locator('.tabSlidingIndicator').boundingBox()).x)
     .toBeGreaterThan(initialIndicator.x + 45);
+
   const settledChanges = await page.locator('.tabSlidingIndicator').boundingBox();
   await realTouchSwipe(page, { x: 270, y: 400 }, { x: 245, y: 400 });
   await expect(page.locator('#changes')).toBeVisible();
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - settledChanges.x))
     .toBeLessThan(3);
+
   await realTouchSwipe(page, { x: 290, y: 400 }, { x: 270, y: 220 });
   await expect(page.locator('#changes')).toBeVisible();
+
   const workflowButton = page.locator('#changes [data-changes-step]').first();
   await workflowButton.scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, -180));
@@ -102,17 +116,33 @@ test('real touch swipes change tabs from content and bar without hijacking verti
   await realTouchSwipe(page, { x: workflow.x + workflow.width / 2, y: workflow.y + workflow.height / 2 },
     { x: workflow.x + workflow.width / 2 + 145, y: workflow.y + workflow.height / 2 });
   await expect(page.locator('#changes')).toBeVisible();
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const changesPage = await page.locator('#changes').boundingBox();
+  let returningCurrent;
+  let returningPreview;
+  await realTouchSwipe(page, { x: 105, y: 400 }, { x: 290, y: 400 }, async () => {
+    returningCurrent = await page.locator('#changes').boundingBox();
+    returningPreview = await page.locator('#today').boundingBox();
+  });
+  expect(returningCurrent.x).toBeGreaterThan(changesPage.x + 45);
+  expect(returningPreview.x).toBeLessThan(changesPage.x - 80);
+  await expect(page.locator('#today')).toBeVisible();
+
   const bar = await page.locator('.bottom').boundingBox();
   const beforeBarSwipe = await page.locator('.tabSlidingIndicator').boundingBox();
   await realTouchSwipe(page, { x: 100, y: bar.y + bar.height / 2 }, { x: 290, y: bar.y + bar.height / 2 }, async () => {
     expect((await page.locator('.tabSlidingIndicator').boundingBox()).x).toBeGreaterThan(beforeBarSwipe.x + 25);
   });
+  await expect(page.locator('#changes')).toBeVisible();
+  await realTouchSwipe(page, { x: 100, y: bar.y + bar.height / 2 }, { x: 290, y: bar.y + bar.height / 2 });
   await expect(page.locator('#breaks')).toBeVisible();
   await realTouchSwipe(page, { x: 290, y: bar.y + bar.height / 2 }, { x: 100, y: bar.y + bar.height / 2 });
   await expect(page.locator('#changes')).toBeVisible();
+
   await page.evaluate(() => window.openScreenInfo('changes'));
   await expect(page.locator('#screenInfoSheet')).toBeVisible();
-  await realTouchSwipe(page, { x: 100, y: 350 }, { x: 290, y: 350 });
+  await realTouchSwipe(page, { x: 290, y: 350 }, { x: 100, y: 350 });
   await expect(page.locator('#changes')).toBeVisible();
 });
 
@@ -250,7 +280,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.39/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.40/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -295,7 +325,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the draggable tab direction', async ({ page }) => {
+test('frontend changelog explains natural page dragging', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -304,8 +334,8 @@ test('frontend changelog explains the draggable tab direction', async ({ page })
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('highlight in the bottom bar now tracks');
-  await expect(dialog.locator('.releaseHistory')).toContainText('swipe right for Changes');
+  await expect(dialog.locator('.releaseHistory')).toContainText('pages now move under your finger');
+  await expect(dialog.locator('.releaseHistory')).toContainText('drag the page left to advance');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
