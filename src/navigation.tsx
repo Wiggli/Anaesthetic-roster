@@ -54,6 +54,7 @@ function Navigation({ badges }: { badges: Badges }) {
     measure();
     const sync = (event: Event) => {
       const view = (event as CustomEvent<{ view: string }>).detail.view;
+      if (document.querySelector('main.viewSwipeStage')) clearContentDrag();
       setActive(view);
       moveTo(view);
     };
