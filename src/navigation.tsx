@@ -81,7 +81,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let settleTimer: number | undefined;
     let settleTarget: Destination | null = null;
     let committingTarget: Destination | null = null;
-    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatComposer,.chatConversationList';
+    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex]';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
     const nearestPositionIndex = (value: number) => {
@@ -316,13 +316,13 @@ function Navigation({ badges }: { badges: Badges }) {
       if (first.axis !== 'pending') return first.axis;
       const ax = Math.abs(dx);
       const ay = Math.abs(dy);
-      if (Math.max(ax, ay) < 10) return first.axis;
+      if (Math.max(ax, ay) < 8) return first.axis;
       if (first.bar) {
         if (ax >= ay * 0.72) first.axis = 'horizontal';
-        else if (ay > ax * 1.35) first.axis = 'vertical';
+        else if (ay >= 14 && ay > ax * 1.35) first.axis = 'vertical';
       } else {
-        if (ax > ay * 1.08) first.axis = 'horizontal';
-        else if (ay > ax * 1.08) first.axis = 'vertical';
+        if (ax >= 10 && ax >= ay * 0.82) first.axis = 'horizontal';
+        else if (ay >= 14 && ay > ax * 1.25) first.axis = 'vertical';
       }
       return first.axis;
     };
