@@ -194,7 +194,7 @@ test('horizontal navigation starts directly on a focusable Chat message row', as
     { x: from.x + 12, y: from.y + 8 },
     { x: from.x + 58, y: from.y + 10 },
     { x: from.x + 118, y: from.y + 11 },
-    { x: Math.min(window.innerWidth - 32, from.x + 178), y: from.y + 12 }
+    { x: Math.min((page.viewportSize()?.width || 390) - 32, from.x + 178), y: from.y + 12 }
   ]);
   await expect(page.locator('#breaks')).toBeVisible();
 });
