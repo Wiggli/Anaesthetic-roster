@@ -1,7 +1,7 @@
 {
   "name": "anaesthetic-night-roster",
   "private": true,
-  "version": "37.40",
+  "version": "37.41",
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "dev": "vite --host 127.0.0.1",
