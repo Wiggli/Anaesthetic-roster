@@ -150,8 +150,38 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const viewportWidth = page.viewportSize()?.width || 390;
   const chatSwipeEndX = Math.min(viewportWidth - 32, chatSwipeStart.x + 190);
   expect(chatSwipeEndX - chatSwipeStart.x).toBeGreaterThan(52);
-  await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 });
-  await expect(page.locator('#breaks')).toBeVisible();
+  await page.evaluate(() => {
+    window.__chatSwipeTrace = [];
+    ['touchstart','touchmove','touchend','touchcancel'].forEach(type => document.addEventListener(type, event => {
+      const touch = event.touches?.[0] || event.changedTouches?.[0];
+      window.__chatSwipeTrace.push({
+        type,
+        x: touch?.clientX ?? null,
+        y: touch?.clientY ?? null,
+        target: event.target?.id || event.target?.className || event.target?.tagName || '',
+        view: document.body.getAttribute('data-view'),
+        mainClass: document.querySelector('main')?.className || ''
+      });
+    }, { capture: true, passive: true }));
+    window.addEventListener('roster:viewchange', event => window.__chatSwipeTrace.push({
+      type: 'viewchange',
+      view: event.detail?.view || document.body.getAttribute('data-view'),
+      mainClass: document.querySelector('main')?.className || ''
+    }));
+  });
+  let chatMidpointState;
+  await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 }, async () => {
+    chatMidpointState = await page.evaluate(() => ({
+      view: document.body.getAttribute('data-view'),
+      mainClass: document.querySelector('main')?.className || '',
+      chatTransform: document.getElementById('chat')?.style.transform || '',
+      breaksClass: document.getElementById('breaks')?.className || '',
+      breaksTransform: document.getElementById('breaks')?.style.transform || ''
+    }));
+  });
+  const chatTrace = await page.evaluate(() => window.__chatSwipeTrace || []);
+  console.log('CHAT_SWIPE_DIAGNOSTIC', JSON.stringify({ chatSwipeStart, chatSwipeEndX, chatMidpointState, chatTrace }));
+  await expect(page.locator('#breaks'), 'Chat swipe diagnostic: ' + JSON.stringify({ chatSwipeStart, chatSwipeEndX, chatMidpointState, chatTrace })).toBeVisible();
 
   await page.evaluate(() => window.show('today'));
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
