@@ -600,18 +600,23 @@ async function chatOpenFromPush(conversationId){
 window.openChatFromPush=chatOpenFromPush;
 window.openChatView=chatOpenView;
 window.refreshChatUnreadFromPush=function(){return chatRefreshUnreadCounts()};
+function chatBindComposerUi(){
+  chatEnsureEnhancedUi();
+  var teamForm=chatEl('chatTeamComposer');if(teamForm)teamForm.onsubmit=chatSendTeamMessage;
+  var privateForm=chatEl('chatComposer');if(privateForm)privateForm.onsubmit=chatSendPrivateMessage;
+  var teamInput=chatEl('chatTeamInput');if(teamInput){teamInput.oninput=function(){chatAutoGrow(teamInput);chatRenderMentionMenu(teamInput)};teamInput.onkeydown=function(event){if(event.key==='Escape')chatHideMentionMenu()};teamInput.onblur=function(){setTimeout(chatHideMentionMenu,160)}}
+  var privateInput=chatEl('chatMessageInput');if(privateInput)privateInput.oninput=function(){chatAutoGrow(privateInput)};
+}
 function chatBindUi(){
   chatEnsureEnhancedUi();
+  window.addEventListener('roster:chat-composers-mounted',chatBindComposerUi);
   window.addEventListener('roster:chat-action',function(event){var detail=event&&event.detail||{};if(detail.action==='conversation')chatOpenPrivateConversation(detail.value);else if(detail.action==='member')chatStartPrivate(detail.value);else if(detail.action==='message'||detail.action==='retry'){var list=detail.kind==='team'?chatState.teamMessages:chatState.messages,message=list.find(function(item){return String(item.id)===String(detail.value)});if(message){if(detail.action==='message')chatOpenMessageActions(message,detail.kind);else chatRetryFailed(message,detail.kind)}}});
   var newButton=chatEl('chatNewPrivateBtn');if(newButton)newButton.onclick=chatOpenNewConversation;
   var closePicker=chatEl('chatCloseNewConversation');if(closePicker)closePicker.onclick=function(){var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.open)dialog.close()};
   var back=chatEl('chatBackBtn');if(back)back.onclick=chatCloseThread;
   var older=chatEl('chatLoadOlder');if(older)older.onclick=chatLoadOlderPrivate;
   var teamOlder=chatEl('chatTeamLoadOlder');if(teamOlder)teamOlder.onclick=function(){chatLoadTeamMessages(true,true)};
-  var teamForm=chatEl('chatTeamComposer');if(teamForm)teamForm.onsubmit=chatSendTeamMessage;
-  var privateForm=chatEl('chatComposer');if(privateForm)privateForm.onsubmit=chatSendPrivateMessage;
-  var teamInput=chatEl('chatTeamInput');if(teamInput){teamInput.addEventListener('input',function(){chatAutoGrow(teamInput);chatRenderMentionMenu(teamInput)});teamInput.addEventListener('keydown',function(event){if(event.key==='Escape')chatHideMentionMenu()});teamInput.addEventListener('blur',function(){setTimeout(chatHideMentionMenu,160)})}
-  var privateInput=chatEl('chatMessageInput');if(privateInput)privateInput.addEventListener('input',function(){chatAutoGrow(privateInput)});
+  chatBindComposerUi();
   var teamHost=chatEl('chatTeamMessages');if(teamHost)teamHost.addEventListener('scroll',function(){if(chatNearBottom(teamHost))chatReadTeamIfAtBottom()},{passive:true});
   var privateHost=chatEl('chatMessages');if(privateHost)privateHost.addEventListener('scroll',function(){if(chatNearBottom(privateHost))chatReadPrivateIfAtBottom()},{passive:true});
   var teamNew=chatEl('chatTeamNewMessages');if(teamNew)teamNew.onclick=function(){chatScrollToBottom(teamHost);chatReadTeamIfAtBottom()};

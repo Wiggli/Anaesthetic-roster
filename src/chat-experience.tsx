@@ -73,7 +73,20 @@ function Messages({ model, hostId }: { model: MessageExperience; hostId: string 
   return <div className="tw:grid tw:gap-1.5">{model.items.map(item => <MessageCard key={item.id} message={item} kind={model.kind} />)}</div>;
 }
 
+function ChatComposer({ kind }: { kind: 'team' | 'private' }) {
+  const team = kind === 'team';
+  useLayoutEffect(() => { window.dispatchEvent(new CustomEvent('roster:chat-composers-mounted')); }, []);
+  return <>
+    <textarea id={team ? 'chatTeamInput' : 'chatMessageInput'} maxLength={2000} rows={1} placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'} aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'} className="tw:max-h-32 tw:min-h-10 tw:flex-1 tw:resize-none tw:rounded-xl tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:outline-none placeholder:tw:text-[var(--muted)]" />
+      <button type="submit" id={team ? 'chatTeamSendBtn' : 'chatSendBtn'} aria-label={team ? 'Send group message' : 'Send private message'} className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:text-white tw:transition-transform active:tw:scale-95">
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
+      </button>
+  </>;
+}
+
 export function renderChatOverview(model: ChatOverview) {
+  rootFor('chatTeamComposer')?.render(<ChatComposer kind="team" />);
+  rootFor('chatComposer')?.render(<ChatComposer kind="private" />);
   rootFor('chatConversationList')?.render(<ConversationList items={model.conversations} />);
   rootFor('chatMemberPicker')?.render(<MemberPicker members={model.members} />);
 }
