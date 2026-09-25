@@ -139,13 +139,15 @@ function Navigation({ badges }: { badges: Badges }) {
       else requestAnimationFrame(() => requestAnimationFrame(complete));
     };
 
-    const alignPreviewToCurrent = (main: HTMLElement, current: HTMLElement, preview: HTMLElement, width: number) => {
-      const mainStyle = getComputedStyle(main);
-      const paddingLeft = Number.parseFloat(mainStyle.paddingLeft) || 0;
-      const paddingTop = Number.parseFloat(mainStyle.paddingTop) || 0;
-      preview.style.left = `${current.offsetLeft - paddingLeft}px`;
-      preview.style.top = `${current.offsetTop - paddingTop}px`;
+    const alignPreviewToCurrent = (current: HTMLElement, preview: HTMLElement, width: number) => {
+      preview.style.left = '0px';
+      preview.style.top = '0px';
       preview.style.width = `${width}px`;
+      preview.style.removeProperty('transform');
+      const currentRect = current.getBoundingClientRect();
+      const previewRect = preview.getBoundingClientRect();
+      preview.style.left = `${currentRect.left - previewRect.left}px`;
+      preview.style.top = `${currentRect.top - previewRect.top}px`;
     };
 
     const setPageTrackOffset = (current: HTMLElement, preview: HTMLElement, offset: number, direction: number, width: number) => {
@@ -201,7 +203,7 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      if (changingPreview || newlyStaged) alignPreviewToCurrent(main, current, preview, width);
+      if (changingPreview || newlyStaged) alignPreviewToCurrent(current, preview, width);
       setPageTrackOffset(current, preview, offset, direction, width);
       first.offset = offset;
       first.preview = next;
@@ -275,7 +277,7 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      alignPreviewToCurrent(main, current, preview, width);
+      alignPreviewToCurrent(current, preview, width);
       setPageTrackOffset(current, preview, 0, direction, width);
       settleTarget = target;
       moveTo(target);
