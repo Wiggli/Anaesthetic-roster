@@ -10,10 +10,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -21,32 +25,28 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
-      - run: npm run build
+      - name: Verify release metadata and run regression tests
+        run: npm test
+      - name: Build public app files
+        run: npm run build
       - run: npm run verify:build
-
-  browser-smoke:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
       - name: Install browser smoke runner
         run: npm install --no-save --no-package-lock @playwright/test@1.55.0
       - name: Install Chromium for browser smoke tests
         run: npx playwright install --with-deps chromium
-      - run: npm run build
-      - run: npm run verify:build
-      - name: Run mobile browser smoke tests
+      - name: Run mobile and desktop browser smoke tests
         run: npx playwright test --config=playwright.config.js
+      - name: Preserve the exact tested Pages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
 
   migrate:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-    needs: [test, browser-smoke]
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -111,27 +111,23 @@ jobs:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: migrate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     permissions:
       contents: read
       pages: write
       id-token: write
     concurrency:
       group: ${{ github.workflow }}-pages
-      cancel-in-progress: true
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - name: Download the already-tested Pages artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - name: Build public app files
-        run: npm run build
-      - run: npm run verify:build
+          name: pages-dist
+          path: dist
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
@@ -148,9 +144,9 @@ jobs:
             exit 1
           fi
           page_url="${PAGE_URL%/}/"
-          app_version="$(sed -n "s/^var APP_VERSION = '\([^']*\)';$/\1/p" app-core.js)"
+          app_version="$(sed -n "s/^var APP_VERSION = '\([^']*\)';$/\1/p" dist/app-core.js)"
           if [ -z "$app_version" ]; then
-            echo "::error::Could not determine APP_VERSION for deployment verification."
+            echo "::error::Could not determine APP_VERSION from the tested deployment artifact."
             exit 1
           fi
           index_file="$(mktemp)"

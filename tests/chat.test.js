@@ -12,6 +12,8 @@ const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const mainCss = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
+const release = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf8'));
+const releaseVersionPattern = release.version.replace(/\./g, '\\.');
 const baseMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924003000_secure_chat.sql'), 'utf8');
 const refineMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924014500_refine_chat_directory.sql'), 'utf8');
 const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
@@ -31,8 +33,8 @@ assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifi
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
-assert.match(html, /chat\.css\?v=37\.46/, 'chat styling must be versioned with the app');
-assert.match(html, /chat\.js\?v=37\.46/, 'chat client must be versioned with the app');
+assert.match(html, new RegExp(`chat\\.css\\?v=${releaseVersionPattern}`), 'chat styling must be versioned with the app');
+assert.match(html, new RegExp(`chat\\.js\\?v=${releaseVersionPattern}`), 'chat client must be versioned with the app');
 assert.match(ui, /function onboardingChatPage\(\)/, 'onboarding must include a dedicated Team chat page');
 assert.match(ui, /if\(onboardingChatIntro\)return\[onboardingChatPage\(\)\]/, 'existing users must receive a one-page chat introduction rather than replaying the full guide');
 assert.match(ui, /anaes_chat_intro_v37_31/, 'the chat introduction must be shown once per device');
@@ -130,7 +132,7 @@ assert.doesNotMatch(maturityMigration, /insert into public\.night_|update public
 
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /chat\.js|chat\.css/, 'chat assets must not be mandatory for service-worker installation');
-assert.match(workflow, /- name: Build public app files\n        run: npm run build/, 'deployment must build the chat and push assets');
+assert.match(workflow, /test:[\s\S]*- name: Build public app files\n        run: npm run build[\s\S]*actions\/upload-artifact@v4/, 'verified chat and push assets must be built once and preserved for deployment');
 const viteConfig = fs.readFileSync(path.join(root, 'vite.config.mts'), 'utf8');
 for (const asset of ['chat.css', 'chat.js', 'push.js']) assert.ok(viteConfig.includes(`'${asset}'`), `${asset} must be included in the Pages artifact`);
 

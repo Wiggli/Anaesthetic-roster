@@ -242,7 +242,31 @@ const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supa
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.46','37.45','37.44','37.43','37.42','37.41','37.40','37.39','37.38','37.37','37.36','37.35','37.34','37.33','37.32','37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+const releaseHistorySnapshot = Array.from(context.RELEASE_HISTORY, entry => ({
+  version: String(entry.version),
+  date: String(entry.date),
+  title: String(entry.title),
+  changes: Array.from(entry.changes, String)
+}));
+const fnv1a32 = value => {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+};
+const frozenReleaseHistory = releaseHistorySnapshot.slice(-89);
+assert.equal(frozenReleaseHistory.length, 89, 'the permanent release-history baseline must remain present');
+assert.equal(fnv1a32(JSON.stringify(frozenReleaseHistory)), '6cb5b43e', 'released changelog entries through the current baseline must never be rewritten, collapsed or deleted');
+assert.equal(new Set(releaseHistorySnapshot.map(entry => entry.version)).size, releaseHistorySnapshot.length, 'release history versions must remain unique');
+for (let i = 1; i < releaseHistorySnapshot.length; i++) {
+  const previous = releaseHistorySnapshot[i - 1].version.split('.').map(Number);
+  const current = releaseHistorySnapshot[i].version.split('.').map(Number);
+  const previousNumber = (previous[0] || 0) * 10000 + (previous[1] || 0);
+  const currentNumber = (current[0] || 0) * 10000 + (current[1] || 0);
+  assert.ok(previousNumber > currentNumber, 'release history must remain newest first');
+}
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -373,13 +397,15 @@ const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^
 assert.equal(checkedInMigrations.length, 19, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
-assert.match(workflow, /migrate:[\s\S]*needs: \[test, browser-smoke\]/, 'migration must depend on deterministic and browser smoke tests');
+assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
+assert.match(workflow, /actions\/upload-artifact@v4[\s\S]*name: pages-dist[\s\S]*deploy:[\s\S]*actions\/download-artifact@v4[\s\S]*name: pages-dist/, 'deployment must use the exact dist artifact that passed the required test job');
+assert.match(workflow, /github\.event\.pull_request\.number \|\| github\.run_id[\s\S]*cancel-in-progress: true/, 'superseded pull-request verification runs must be cancelled without cancelling main deployments');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
 assert.match(workflow, /service-worker\.js[\s\S]*anaesthetic-night-roster-v\$\{cache_version\}/, 'post-deployment checks must verify the live service-worker cache version');
-assert.match(workflow, /browser-smoke:[\s\S]*@playwright\/test@1\.55\.0[\s\S]*playwright test/, 'CI must run a real-browser smoke suite before production migration');
-assert.match(workflow, /migrate:[\s\S]*needs: \[test, browser-smoke\]/, 'production migration must wait for deterministic and browser smoke tests');
+assert.match(workflow, /test:[\s\S]*@playwright\/test@1\.55\.0[\s\S]*playwright test/, 'the required test job must run a real-browser smoke suite before production migration');
+assert.match(workflow, /migrate:[\s\S]*needs: test/, 'production migration must wait for deterministic and browser verification in the required test job');
 assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
 assert.match(html, /id="updateBanner"[\s\S]*id="openUpdateDetailsBtn"[\s\S]*id="laterUpdateBtn"[\s\S]*id="applyUpdateBtn"/, 'the update notice must offer details, deferral and explicit installation');
