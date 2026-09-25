@@ -155,6 +155,7 @@ test('page track stays covered across saved scroll positions and Night carries i
 
   await page.locator('.bottom button[data-v="breaks"]').click();
   await expect(page.locator('#breaks')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
   await page.evaluate(() => {
     const spacer = document.createElement('div');
     spacer.id = 'swipeScrollRegressionSpacer';
@@ -177,6 +178,7 @@ test('page track stays covered across saved scroll positions and Night carries i
   });
   expect(covered).toEqual([true, true, true]);
   await expect(page.locator('#changes')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
 
   await page.locator('.bottom button[data-v="today"]').click();
   await expect(page.locator('#today')).toHaveClass(/swipePreview/);
