@@ -158,17 +158,19 @@ function Navigation({ badges }: { badges: Badges }) {
       const current = document.getElementById(first.view);
       const preview = document.getElementById(next);
       if (!main || !(current instanceof HTMLElement) || !(preview instanceof HTMLElement)) return undefined;
-      if (first.preview && first.preview !== next) clearContentDrag();
+      const changingPreview = first.preview !== next;
+      if (first.preview && changingPreview) clearContentDrag();
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
       const offset = clamp(dx, -width, width);
       const direction = destinations.indexOf(next) - index;
+      const newlyStaged = !preview.classList.contains('swipePreview');
       main.classList.add('viewSwipeStage');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      alignPreviewToCurrent(current, preview, width);
+      if (changingPreview || newlyStaged) alignPreviewToCurrent(current, preview, width);
       current.style.transform = `translate3d(${offset}px,0,0)`;
       preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
       first.preview = next;
@@ -190,8 +192,8 @@ function Navigation({ badges }: { badges: Badges }) {
       requestAnimationFrame(() => {
         current.style.transform = 'translate3d(0,0,0)';
         preview.style.transform = `translate3d(${direction * width}px,0,0)`;
+        settleTimer = window.setTimeout(clearContentDrag, 280);
       });
-      settleTimer = window.setTimeout(clearContentDrag, 260);
     };
 
     const commitContentDrag = (first: SwipeStart, next: Destination) => {
@@ -208,12 +210,12 @@ function Navigation({ badges }: { badges: Badges }) {
       const direction = destinations.indexOf(next) - destinations.indexOf(first.view);
       const width = Math.max(1, current.getBoundingClientRect().width);
       main.classList.add('viewSwipeSettling');
+      settleTarget = next;
       requestAnimationFrame(() => {
         current.style.transform = `translate3d(${-direction * width}px,0,0)`;
         preview.style.transform = 'translate3d(0,0,0)';
+        settleTimer = window.setTimeout(() => finishContentSettle(), 280);
       });
-      settleTarget = next;
-      settleTimer = window.setTimeout(() => finishContentSettle(), 260);
     };
 
     const animateViewChange = (target: Destination) => {
@@ -245,7 +247,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const currentRect = current.getBoundingClientRect();
       const width = Math.max(1, currentRect.width);
       const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
-      main.classList.add('viewSwipeStage', 'viewSwipeSettling');
+      main.classList.add('viewSwipeStage');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
@@ -255,11 +257,15 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.style.transform = `translate3d(${direction * width}px,0,0)`;
       settleTarget = target;
       moveTo(target);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        current.style.transform = `translate3d(${-direction * width}px,0,0)`;
-        preview.style.transform = 'translate3d(0,0,0)';
-      }));
-      settleTimer = window.setTimeout(() => finishContentSettle(), 260);
+      void preview.offsetWidth;
+      requestAnimationFrame(() => {
+        main.classList.add('viewSwipeSettling');
+        requestAnimationFrame(() => {
+          current.style.transform = `translate3d(${-direction * width}px,0,0)`;
+          preview.style.transform = 'translate3d(0,0,0)';
+          settleTimer = window.setTimeout(() => finishContentSettle(), 280);
+        });
+      });
     };
     transitionToRef.current = animateViewChange;
 
