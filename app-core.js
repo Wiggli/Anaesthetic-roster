@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.35';
+var APP_VERSION = '37.36';
 var EXPECTED_SCHEMA_VERSION = 46;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
@@ -235,6 +235,7 @@ function show(v){
   document.body.setAttribute('data-view',v);
   Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){var active=b.getAttribute('data-v')===v;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   render();
+  if(typeof window.CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:viewchange',{detail:{view:v}}));
   if(switching){
     var restoreY=Math.max(0,Number(viewScrollPositions[v]||0));
     window.scrollTo(0,restoreY);

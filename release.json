@@ -1,15 +1,12 @@
 {
-  "version": "37.35",
+  "version": "37.36",
   "date": "25 September 2026",
-  "title": "What the new app foundation makes possible",
-  "summary": "See which frontend tools are installed now and which improvements they make possible in later updates.",
+  "title": "Responsive React navigation",
+  "summary": "Swipe between adjacent tabs and use a faster, accessible navigation component after sign-in.",
   "changes": [
-    "Now in place: Vite builds the same installable Night Roster PWA from pinned React, TypeScript, Tailwind CSS v4 and Motion for React dependencies. The launch motto is the first small React region; Night, Changes, Breaks and Chat still use their existing working code.",
-    "Now in place: TypeScript checks the new frontend code during every build. Tailwind utilities are available with a prefix and without a global reset, so future interface work can share responsive styles without changing the current clinical screens.",
-    "Now in place: Motion powers a restrained launch reveal that respects reduced-motion settings. The custom service worker also caches the new build assets while retaining the same app identity, push notifications, offline shell and choice to install updates.",
-    "Possible next: migrate one stable screen at a time into reusable React components, improve consistent mobile and desktop layouts and light and dark themes, and load larger sections only when needed. These screens have not yet been migrated.",
-    "Possible next: add carefully tested touch gestures, smoother sheets and purposeful spring transitions using Motion, with reduced-motion alternatives. These interactions are not included in this release, and a 120 Hz frame rate cannot be guaranteed on every device.",
-    "The 138-night rotation, staffing safety rules, Supabase authentication and data, chat, Realtime and notification permissions remain unchanged. The app continues to be installed and updated from the same web address without an app store."
+    "The signed-in tab bar is a reusable React and TypeScript component that loads after authorization, with the existing HTML controls kept as a fallback.",
+    "A short touch swipe across the tab bar navigates to the adjacent view, and Motion gives taps restrained feedback with reduced-motion support.",
+    "Night, Changes, Breaks and Chat retain their badges and existing data flows; Tailwind CSS v4 stays scoped and light and dark chrome and safe PWA updates remain compatible."
   ],
   "update_policy": "important"
 }

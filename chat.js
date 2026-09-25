@@ -592,7 +592,6 @@ window.openChatView=chatOpenView;
 window.refreshChatUnreadFromPush=function(){return chatRefreshUnreadCounts()};
 function chatBindUi(){
   chatEnsureEnhancedUi();
-  var nav=document.querySelector('.bottom button[data-v="chat"]');if(nav)nav.onclick=function(){if(typeof show==='function')show('chat');chatOpenView()};
   var newButton=chatEl('chatNewPrivateBtn');if(newButton)newButton.onclick=chatOpenNewConversation;
   var closePicker=chatEl('chatCloseNewConversation');if(closePicker)closePicker.onclick=function(){var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.open)dialog.close()};
   var back=chatEl('chatBackBtn');if(back)back.onclick=chatCloseThread;

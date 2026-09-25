@@ -14,8 +14,10 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 assert.match(ui, /async function authorizeUser\(user,session\)[\s\S]*loadSharedData\(\)/,
   'signed-in startup must still load the protected roster before normal app use');
-assert.match(chat, /button\[data-v="chat"\][\s\S]*chatOpenView\(\)/,
-  'opening the Chat tab must explicitly start the chat view');
+assert.match(ui, /view==='chat'&&typeof window\.openChatView==='function'\)window\.openChatView\(\)/,
+  'fallback Chat navigation must explicitly start the chat view');
+assert.match(fs.readFileSync(path.join(root, 'src', 'navigation.tsx'), 'utf8'), /view === 'chat'\) window\.openChatView\?\.\(\)/,
+  'React Chat navigation must explicitly start the chat view');
 assert.match(chat, /client\.rpc\('chat_overview_v2'\)/,
   'Chat must obtain its overview from the compact RLS-aware RPC');
 assert.match(chat, /from\('chat_messages'\)[\s\S]*eq\('conversation_id',team\.id\)[\s\S]*limit\(TEAM_PAGE_SIZE\)/,
