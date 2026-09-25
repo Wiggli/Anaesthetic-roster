@@ -695,6 +695,28 @@ test('typed account controls preserve appearance and app actions', async ({ page
   expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
 });
 
+test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__chatActions = [];
+    window.addEventListener('roster:chat-action', event => window.__chatActions.push(event.detail));
+    window.dispatchEvent(new CustomEvent('roster:chat-overview', { detail: {
+      conversations: [{ id: 'conversation-1', title: 'Maria Borg', initial: 'M', time: '18:42', preview: 'Maria Borg: I can cover', unread: 2, active: false }],
+      members: [
+        { personKey: 'Maria Borg', displayName: 'Maria Borg', initial: 'M', available: true },
+        { personKey: 'James Galea', displayName: 'James Galea', initial: 'J', available: false }
+      ]
+    } }));
+    document.getElementById('chatNewConversationSheet').showModal();
+  });
+
+  await expect(page.locator('#chatConversationList')).toContainText('I can cover');
+  await expect(page.locator('#chatConversationList')).toContainText('2');
+  await expect(page.locator('#chatMemberPicker')).toContainText('Not registered');
+  await page.locator('#chatMemberPicker button', { hasText: 'Maria Borg' }).click();
+  expect(await page.evaluate(() => window.__chatActions)).toContainEqual(expect.objectContaining({ action: 'member', value: 'Maria Borg' }));
+});
+
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,

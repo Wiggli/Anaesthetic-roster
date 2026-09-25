@@ -314,7 +314,13 @@ function chatRenderConversationList(){
     button.onclick=function(){chatOpenPrivateConversation(conversation.id)};host.appendChild(button);
   });
 }
-function chatRenderHome(){chatRenderTeamHeader();chatRenderConversationList();chatRenderNewConversationMembers()}
+function chatDispatchOverview(){
+  if(!window.dispatchEvent||typeof CustomEvent!=='function')return;
+  var conversations=chatDirectConversations().slice().sort(chatConversationSort).map(function(conversation){var title=chatConversationTitle(conversation),latest=chatState.latestByConversation[conversation.id],preview=latest?((chatOwnMessage(latest)?'You':chatDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'Private conversation';return{id:conversation.id,title:title,initial:chatInitial(title),time:latest?chatTime(latest.created_at):'',preview:preview,unread:Number(chatState.unreadByConversation[conversation.id]||0),active:conversation.id===chatState.activeConversationId}});
+  var members=chatRosterDirectory().map(function(entry){return{personKey:entry.person_key,displayName:entry.display_name,initial:chatInitial(entry.display_name),available:!!(entry.registered&&entry.preferred_user_id)}});
+  window.dispatchEvent(new CustomEvent('roster:chat-overview',{detail:{conversations:conversations,members:members}}));
+}
+function chatRenderHome(){chatRenderTeamHeader();chatRenderConversationList();chatRenderNewConversationMembers();chatDispatchOverview()}
 function chatSetThreadHeader(conversation){
   var title=chatEl('chatThreadTitle'),subtitle=chatEl('chatThreadSubtitle');if(title)title.textContent=chatConversationTitle(conversation);if(subtitle)subtitle.textContent='Private conversation';
 }
@@ -592,6 +598,7 @@ window.openChatView=chatOpenView;
 window.refreshChatUnreadFromPush=function(){return chatRefreshUnreadCounts()};
 function chatBindUi(){
   chatEnsureEnhancedUi();
+  window.addEventListener('roster:chat-action',function(event){var detail=event&&event.detail||{};if(detail.action==='conversation')chatOpenPrivateConversation(detail.value);else if(detail.action==='member')chatStartPrivate(detail.value)});
   var newButton=chatEl('chatNewPrivateBtn');if(newButton)newButton.onclick=chatOpenNewConversation;
   var closePicker=chatEl('chatCloseNewConversation');if(closePicker)closePicker.onclick=function(){var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.open)dialog.close()};
   var back=chatEl('chatBackBtn');if(back)back.onclick=chatCloseThread;
