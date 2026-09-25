@@ -25,6 +25,7 @@ function Navigation({ badges }: { badges: Badges }) {
   const [active, setActive] = useState(document.body.getAttribute('data-view') || 'today');
   const indicatorX = useMotionValue(0);
   const positions = useRef<number[]>([]);
+  const transitionToRef = useRef<((view: Destination) => void) | null>(null);
   const [indicatorSize, setIndicatorSize] = useState({ top: 0, width: 0, height: 0 });
 
   useEffect(() => {
@@ -54,9 +55,10 @@ function Navigation({ badges }: { badges: Badges }) {
     measure();
     const sync = (event: Event) => {
       const view = (event as CustomEvent<{ view: string }>).detail.view;
-      if (document.querySelector('main.viewSwipeStage')) clearContentDrag();
+      const finishingCommittedTransition = committingTarget === view;
+      if (document.querySelector('main.viewSwipeStage') && !finishingCommittedTransition) clearContentDrag();
       setActive(view);
-      moveTo(view);
+      if (!finishingCommittedTransition) moveTo(view);
     };
     type SwipeAxis = 'pending' | 'horizontal' | 'vertical';
     type SwipeStart = {
@@ -75,6 +77,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let clickTimer: number | undefined;
     let settleTimer: number | undefined;
     let settleTarget: Destination | null = null;
+    let committingTarget: Destination | null = null;
     const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.nightStatusRow,.changesWorkflowTabs,.dateNav,.chatComposer,.chatConversationList';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -99,25 +102,43 @@ function Navigation({ badges }: { badges: Badges }) {
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
       const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
       current?.classList.remove('swipeCurrent');
-      if (current) current.style.removeProperty('transform');
+      if (current) {
+        current.style.removeProperty('transform');
+        current.style.removeProperty('opacity');
+        current.style.removeProperty('transform-origin');
+      }
       if (preview) {
         preview.classList.remove('swipePreview');
         preview.style.removeProperty('transform');
+        preview.style.removeProperty('opacity');
+        preview.style.removeProperty('transform-origin');
         preview.style.removeProperty('top');
         preview.style.removeProperty('left');
         preview.style.removeProperty('width');
         preview.removeAttribute('aria-hidden');
         preview.removeAttribute('inert');
       }
-      main?.classList.remove('viewSwipeStage', 'viewSwipeSettling');
+      main?.classList.remove('viewSwipeStage', 'viewSwipeSettling', 'viewMorphing');
     };
 
-    const finishContentSettle = () => {
+    const finishContentSettle = (immediate = false) => {
       const target = settleTarget;
-      clearContentDrag();
-      if (!target) return;
+      if (!target) {
+        clearContentDrag();
+        return;
+      }
+      window.clearTimeout(settleTimer);
+      settleTimer = undefined;
+      settleTarget = null;
+      committingTarget = target;
       window.show?.(target);
       if (target === 'chat') window.openChatView?.();
+      const complete = () => {
+        clearContentDrag();
+        committingTarget = null;
+      };
+      if (immediate || reducedMotion) complete();
+      else requestAnimationFrame(() => requestAnimationFrame(complete));
     };
 
     const stageContentDrag = (first: SwipeStart, dx: number) => {
@@ -139,7 +160,8 @@ function Navigation({ badges }: { badges: Badges }) {
       const width = Math.max(1, currentRect.width);
       const offset = clamp(dx, -width, width);
       const direction = destinations.indexOf(next) - index;
-      main.classList.add('viewSwipeStage');
+      const progress = Math.min(1, Math.abs(offset) / width);
+      main.classList.add('viewSwipeStage', 'viewMorphing');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
@@ -147,8 +169,12 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.style.top = `${currentRect.top - mainRect.top}px`;
       preview.style.left = `${currentRect.left - mainRect.left}px`;
       preview.style.width = `${width}px`;
-      current.style.transform = `translate3d(${offset}px,0,0)`;
-      preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
+      current.style.transformOrigin = '50% 45%';
+      preview.style.transformOrigin = '50% 45%';
+      current.style.transform = `translate3d(${offset}px,0,0) scale(${1 - progress * 0.018})`;
+      preview.style.transform = `translate3d(${offset + direction * width}px,0,0) scale(${0.982 + progress * 0.018})`;
+      current.style.opacity = String(1 - progress * 0.16);
+      preview.style.opacity = String(0.82 + progress * 0.18);
       first.preview = next;
       return next;
     };
@@ -164,12 +190,14 @@ function Navigation({ badges }: { badges: Badges }) {
       }
       const direction = destinations.indexOf(first.preview) - destinations.indexOf(first.view);
       const width = Math.max(1, current.getBoundingClientRect().width);
-      main.classList.add('viewSwipeSettling');
+      main.classList.add('viewSwipeSettling', 'viewMorphing');
       requestAnimationFrame(() => {
-        current.style.transform = 'translate3d(0,0,0)';
-        preview.style.transform = `translate3d(${direction * width}px,0,0)`;
+        current.style.transform = 'translate3d(0,0,0) scale(1)';
+        preview.style.transform = `translate3d(${direction * width}px,0,0) scale(.982)`;
+        current.style.opacity = '1';
+        preview.style.opacity = '.82';
       });
-      settleTimer = window.setTimeout(clearContentDrag, 170);
+      settleTimer = window.setTimeout(clearContentDrag, 260);
     };
 
     const commitContentDrag = (first: SwipeStart, next: Destination) => {
@@ -185,14 +213,72 @@ function Navigation({ badges }: { badges: Badges }) {
       }
       const direction = destinations.indexOf(next) - destinations.indexOf(first.view);
       const width = Math.max(1, current.getBoundingClientRect().width);
-      main.classList.add('viewSwipeSettling');
+      main.classList.add('viewSwipeSettling', 'viewMorphing');
       requestAnimationFrame(() => {
-        current.style.transform = `translate3d(${-direction * width}px,0,0)`;
-        preview.style.transform = 'translate3d(0,0,0)';
+        current.style.transform = `translate3d(${-direction * width}px,0,0) scale(.982)`;
+        preview.style.transform = 'translate3d(0,0,0) scale(1)';
+        current.style.opacity = '.82';
+        preview.style.opacity = '1';
       });
       settleTarget = next;
-      settleTimer = window.setTimeout(finishContentSettle, 170);
+      settleTimer = window.setTimeout(() => finishContentSettle(), 280);
     };
+
+    const animateViewChange = (target: Destination) => {
+      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);
+      const from = document.body.getAttribute('data-view') as Destination;
+      if (!destinations.includes(from) || from === target) {
+        moveTo(target);
+        if (from !== target) {
+          window.show?.(target);
+          if (target === 'chat') window.openChatView?.();
+        }
+        return;
+      }
+      if (reducedMotion) {
+        clearContentDrag();
+        window.show?.(target);
+        if (target === 'chat') window.openChatView?.();
+        return;
+      }
+      const main = document.querySelector<HTMLElement>('main');
+      const current = document.getElementById(from);
+      const preview = document.getElementById(target);
+      if (!main || !(current instanceof HTMLElement) || !(preview instanceof HTMLElement)) {
+        window.show?.(target);
+        if (target === 'chat') window.openChatView?.();
+        return;
+      }
+      clearContentDrag();
+      const mainRect = main.getBoundingClientRect();
+      const currentRect = current.getBoundingClientRect();
+      const width = Math.max(1, currentRect.width);
+      const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
+      main.classList.add('viewSwipeStage', 'viewSwipeSettling', 'viewMorphing');
+      current.classList.add('swipeCurrent');
+      preview.classList.add('swipePreview');
+      preview.setAttribute('aria-hidden', 'true');
+      preview.setAttribute('inert', '');
+      preview.style.top = `${currentRect.top - mainRect.top}px`;
+      preview.style.left = `${currentRect.left - mainRect.left}px`;
+      preview.style.width = `${width}px`;
+      current.style.transformOrigin = '50% 45%';
+      preview.style.transformOrigin = '50% 45%';
+      current.style.transform = 'translate3d(0,0,0) scale(1)';
+      current.style.opacity = '1';
+      preview.style.transform = `translate3d(${direction * width}px,0,0) scale(.982)`;
+      preview.style.opacity = '.82';
+      settleTarget = target;
+      moveTo(target);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        current.style.transform = `translate3d(${-direction * width}px,0,0) scale(.982)`;
+        current.style.opacity = '.82';
+        preview.style.transform = 'translate3d(0,0,0) scale(1)';
+        preview.style.opacity = '1';
+      }));
+      settleTimer = window.setTimeout(() => finishContentSettle(), 280);
+    };
+    transitionToRef.current = animateViewChange;
 
     const lockAxis = (first: SwipeStart, dx: number, dy: number) => {
       if (first.axis !== 'pending') return first.axis;
@@ -213,7 +299,7 @@ function Navigation({ badges }: { badges: Badges }) {
       start = null;
       if (event.touches.length !== 1 || document.body.classList.contains('authPending') || document.querySelector('dialog[open]')) return;
       const touch = event.touches[0];
-      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle();
+      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);
       const hitTarget = document.elementFromPoint(touch.clientX, touch.clientY);
       const target = hitTarget instanceof Element ? hitTarget : event.target;
       if (!(target instanceof Element)) return;
@@ -307,9 +393,8 @@ function Navigation({ badges }: { badges: Badges }) {
         }
         suppressClick = true;
         window.clearTimeout(clickTimer);
-        clickTimer = window.setTimeout(() => { suppressClick = false; }, 220);
-        window.show?.(target);
-        if (target === 'chat') window.openChatView?.();
+        clickTimer = window.setTimeout(() => { suppressClick = false; }, 320);
+        animateViewChange(target);
         return;
       }
 
@@ -359,6 +444,7 @@ function Navigation({ badges }: { badges: Badges }) {
       document.removeEventListener('touchcancel', onCancel);
       document.removeEventListener('click', onClick, true);
       window.clearTimeout(clickTimer);
+      transitionToRef.current = null;
       clearContentDrag();
       observer.disconnect();
       animation?.stop();
@@ -367,8 +453,12 @@ function Navigation({ badges }: { badges: Badges }) {
   }, [indicatorX, reducedMotion]);
 
   function navigate(view: Destination) {
-    window.show?.(view);
-    if (view === 'chat') window.openChatView?.();
+    const transition = transitionToRef.current;
+    if (transition) transition(view);
+    else {
+      window.show?.(view);
+      if (view === 'chat') window.openChatView?.();
+    }
   }
 
   function badge(id: string, initial: Badge) {

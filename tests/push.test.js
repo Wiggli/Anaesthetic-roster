@@ -23,7 +23,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.41/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.42/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -113,10 +113,11 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.41');
-assert.equal(release.title, 'Smoother continuous swiping');
-assert.ok(release.changes.some(item => /selector follows your finger continuously/i.test(item)), 'release notes must explain continuous tab dragging');
-assert.ok(release.changes.some(item => /Chat can now swipe back toward Breaks/i.test(item)), 'release notes must explain Chat swipe navigation');
+assert.equal(release.version, '37.42');
+assert.equal(release.title, 'Fluid screen transitions');
+assert.ok(release.changes.some(item => /one continuous slide/i.test(item)), 'release notes must explain the seamless screen handoff');
+assert.ok(release.changes.some(item => /Bottom-tab taps and long bottom-bar drags/i.test(item)), 'release notes must explain consistent navigation motion');
+assert.match(ui, /\{version:'37\.41'[\s\S]*?title:'Smoother continuous swiping'/, 'the continuous-swipe release must remain in history');
 assert.match(ui, /\{version:'37\.40'[\s\S]*?title:'Pages that move with your swipe'/, 'the direct page-swipe release must remain in history');
 assert.match(ui, /\{version:'37\.39'[\s\S]*?title:'A tab slider that follows your finger'/, 'the draggable-tab release must remain in history');
 assert.match(ui, /\{version:'37\.38'[\s\S]*?title:'Swipe between screens'/, 'the first touch-navigation release must remain in history');

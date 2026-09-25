@@ -66,6 +66,47 @@ test('signed-in React tabs retain badges and keyboard navigation', async ({ page
   await expect(page.locator('#changesTaskBadge')).toHaveText('3');
 });
 
+test('bottom-tab taps slide and morph between primary screens without a snap', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile transition regression');
+  await openShell(page);
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+  await page.evaluate(() => window.show('today'));
+  const nightBefore = await page.locator('#today').boundingBox();
+
+  await page.locator('.bottom button[data-v="changes"]').click();
+  await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
+  await expect(page.locator('main')).toHaveClass(/viewMorphing/);
+  await expect(page.locator('#today')).toHaveClass(/swipeCurrent/);
+  await expect(page.locator('#changes')).toHaveClass(/swipePreview/);
+
+  await page.waitForTimeout(120);
+  const nightDuring = await page.locator('#today').boundingBox();
+  const changesDuring = await page.locator('#changes').boundingBox();
+  const morphState = await page.evaluate(() => {
+    const current = document.getElementById('today');
+    const incoming = document.getElementById('changes');
+    return {
+      currentOpacity: Number(getComputedStyle(current).opacity),
+      incomingOpacity: Number(getComputedStyle(incoming).opacity),
+      currentTransform: getComputedStyle(current).transform,
+      incomingTransform: getComputedStyle(incoming).transform
+    };
+  });
+  expect(nightDuring.x).toBeLessThan(nightBefore.x - 20);
+  expect(changesDuring.x).toBeGreaterThan(nightBefore.x - 20);
+  expect(morphState.currentOpacity).toBeLessThan(1);
+  expect(morphState.incomingOpacity).toBeGreaterThan(0.82);
+  expect(morphState.currentTransform).not.toBe('none');
+  expect(morphState.incomingTransform).not.toBe('none');
+
+  await expect(page.locator('#changes')).toBeVisible();
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+  await expect(page.locator('#today')).toHaveClass(/hidden/);
+  const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+  const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
+  expect(Math.abs(activeIndicator.x - changesTab.x)).toBeLessThan(4);
+});
+
 test('a new swipe interrupts an unfinished settle instead of being ignored', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
@@ -337,7 +378,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.41/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.42/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -366,7 +407,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.41');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.42');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -382,7 +423,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains continuous swiping', async ({ page }) => {
+test('frontend changelog explains fluid screen transitions', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -391,8 +432,8 @@ test('frontend changelog explains continuous swiping', async ({ page }) => {
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab selector now follows one continuous drag');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation is now available from Chat');
+  await expect(dialog.locator('.releaseHistory')).toContainText('hand off as one continuous slide');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Tapping a bottom tab and releasing a long bottom-bar drag');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

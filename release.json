@@ -1,13 +1,13 @@
 {
-  "version": "37.41",
+  "version": "37.42",
   "date": "25 September 2026",
-  "title": "Smoother continuous swiping",
-  "summary": "The bottom selector now follows one continuous drag across all tabs, while screen swipes lock reliably and work from Chat too.",
+  "title": "Fluid screen transitions",
+  "summary": "Primary screens now slide and morph into one another as one continuous transition instead of snapping at the handoff.",
   "changes": [
-    "Drag once across the bottom bar and the selector follows your finger continuously through Night, Changes, Breaks and Chat, then settles on the nearest tab.",
-    "Screen swipes lock onto a horizontal gesture once established, so small diagonal movement no longer cancels the page halfway through.",
-    "Safe noninteractive areas of Chat can now swipe back toward Breaks, while message areas, composers, forms, workflow controls, dialogs and edge gestures remain protected.",
-    "The bottom bar uses a more stable opaque glass layer so underlying cards do not look like a second broken bar. Roster calculations, Supabase data and authentication are unchanged."
+    "Night, Changes, Breaks and Chat now hand off as one continuous slide, including the final moment when the new screen becomes active.",
+    "The outgoing screen subtly scales and fades while the incoming screen settles into place, producing a restrained morph effect without obscuring clinical content.",
+    "Bottom-tab taps and long bottom-bar drags now use the same transition language as page swipes, with the selected tab indicator moving in sync.",
+    "Reduced-motion users keep immediate navigation. Roster calculations, Supabase data, authentication and staffing rules are unchanged."
   ],
   "update_policy": "important"
 }

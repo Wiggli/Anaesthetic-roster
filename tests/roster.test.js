@@ -242,7 +242,7 @@ const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supa
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
-assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.41','37.40','37.39','37.38','37.37','37.36','37.35','37.34','37.33','37.32','37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
+assert.deepEqual(Array.from(context.RELEASE_HISTORY, entry => entry.version), ['37.42','37.41','37.40','37.39','37.38','37.37','37.36','37.35','37.34','37.33','37.32','37.31','37.30','37.29','37.28','37.27','37.26','37.25','37.24','37.23','37.22','37.21','37.20','37.19','37.18','37.17','37.16','37.15','37.14','37.13','37.12','37.11','37.10','37.9','37.8','37.7','37.6','37.5','37.4','37.3','37.2','37.1','37.0','36.9','36.8','36.7','36.6','36.5','36.4','36.3','36.2','36.1','36.0','35.6','35.5','35.4','35.3','35.2','35.1','35.0','34.8','34.7','34.6','34.5','34.4','34.3','34.2','34.1','34.0','33.0','32.2','32.1','32.0','31.3','31.2','31.1','31.0','30.1','30.0','29.0','28.0','27.0','26.2','26.1','26.0'], 'release history must remain complete and newest first');
 assert.equal(releaseMeta.version, context.APP_VERSION, 'network release metadata must match APP_VERSION');
 assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must describe the incoming update');
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
@@ -278,8 +278,8 @@ for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': 
   assert.deepEqual(Array.from(new Set(versions)), [context.APP_VERSION], `${file} cache-busting references must all match APP_VERSION`);
 }
 assert.ok(navigation.includes("type SwipeAxis = 'pending' | 'horizontal' | 'vertical';"), 'page swipes must lock their gesture axis instead of re-evaluating direction on every move');
-assert.ok(navigation.includes("if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle();"), 'a settling animation must be interruptible by the next touch instead of dropping that gesture');
-assert.ok(navigation.includes("if (document.querySelector('main.viewSwipeStage')) clearContentDrag();"), 'explicit navigation must cancel any stale staged swipe before it can override the new view');
+assert.ok(navigation.includes("if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);"), 'a settling animation must be interruptible by the next touch instead of dropping that gesture');
+assert.ok(navigation.includes("if (document.querySelector('main.viewSwipeStage') && !finishingCommittedTransition) clearContentDrag();"), 'explicit navigation must cancel stale staged swipes without tearing down the committed handoff');
 assert.ok(navigation.includes('const hitTarget = document.elementFromPoint(touch.clientX, touch.clientY);'), 'an interrupted settle must re-hit-test the page currently under the finger');
 assert.doesNotMatch(navigation, /dialog\[open\][^\n]*main\.viewSwipeSettling/, 'touch start must not reject a gesture solely because the previous page is settling');
 assert.ok(navigation.includes('indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));'), 'bottom-tab dragging must track the finger continuously across the full bar');
@@ -287,10 +287,15 @@ assert.ok(navigation.includes("const targetIndex = axis === 'horizontal' ? neare
 assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;"), 'Chat must no longer be excluded from safe content swipes');
 assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*chatMessageViewport/, 'Chat transcript whitespace must remain eligible for horizontal app swipes');
 assert.match(css, /#chat \.chatMessageViewport,#chat \.chatTeamMessages,#chat \.chatMessages\{touch-action:pan-y\}/, 'Chat transcript scrollers must preserve vertical scroll while exposing horizontal gestures');
-assert.ok(navigation.includes('current.style.transform = \`translate3d(\${offset}px,0,0)\`;'), 'the visible content page must continue tracking the finger during a drag');
+assert.ok(navigation.includes('current.style.transform = \`translate3d(\${offset}px,0,0) scale(\${1 - progress * 0.018})\`;'), 'the visible content page must track the finger while subtly morphing during a drag');
 assert.match(css, /main>\.view\{touch-action:pan-y\}/, 'all primary views including Chat must allow reliable horizontal app gestures while preserving vertical scroll');
 assert.match(css, /\.bottom\.reactTabs\{touch-action:none;overscroll-behavior:none;isolation:isolate\}/, 'the React bottom bar must own its continuous drag without browser gesture cancellation');
 assert.match(css, /main\.viewSwipeStage[\s\S]*\.view\.swipePreview/, 'page swipe staging must clip and position the adjacent screen');
+assert.ok(navigation.includes('transitionToRef.current = animateViewChange;'), 'tab taps must use the same morph transition engine as swipe navigation');
+assert.ok(navigation.includes('animateViewChange(target);'), 'long bottom-bar drags must settle through the shared morph transition');
+assert.ok(navigation.includes('committingTarget = target;'), 'the final view handoff must preserve the staged destination until the normal view becomes active');
+assert.match(css, /transition:[\s\S]*transform 280ms cubic-bezier\(\.16,1,\.3,1\)[\s\S]*opacity 220ms/, 'screen settling must use the polished slide and fade timing');
+
 assert.match(css, /--apple-control-gap:10px/, 'Apple controls must share one canonical spacing token');
 assert.match(html, /class="launchAtmosphere"[\s\S]*class="launchMark"/, 'cold launch must retain its cinematic atmosphere and focal app mark');
 assert.match(css, /body\.appRevealing #appHeader[\s\S]*body\.appRevealing main[\s\S]*body\.appRevealing \.bottom/, 'cold launch must hand off into the app with one-time chrome and content reveal');
