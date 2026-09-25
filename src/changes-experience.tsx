@@ -19,6 +19,7 @@ type HistoryRecord = {
   meta: string;
 };
 type AllocationRow = { key: string; label: string; breakLabel: string; selectedId: string; options: { id: string; name: string }[] };
+type ChangesForms = { names: { value: string; label: string }[]; editing: boolean; overtimeSuggestions: string[] };
 
 export type ChangesExperience = {
   absences: StaffingRecord[];
@@ -28,6 +29,7 @@ export type ChangesExperience = {
   historyExpanded: boolean;
   allocations: AllocationRow[];
   allocationMessage: string;
+  forms: ChangesForms;
 };
 
 const roots = new Map<string, Root>();
@@ -130,7 +132,34 @@ function AllocationList({ model }: { model: ChangesExperience }) {
   </motion.label>)}</div>;
 }
 
+function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {
+  useLayoutEffect(() => { dispatchAction({ action: 'staffing-mounted' }); }, [model]);
+  const reasons = ['Leave', 'Sick leave', 'Other absence', 'Reassigned elsewhere'];
+  const absence = <div>
+    <div>
+      <p className="tw:mb-3 tw:text-sm tw:text-[var(--muted)]">Select the absent nurse. You can arrange cover afterwards.</p>
+      <div className="tw:grid tw:gap-3 sm:tw:grid-cols-2">
+        <label className="tw:grid tw:gap-1.5"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Nurse</span><select id="absentName" defaultValue="" className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold dark:tw:border-white/12" onChange={() => dispatchAction({ action: 'staffing-input' })}><option value="">{model.forms.names.length ? 'Choose a nurse' : 'Every rostered nurse is already absent'}</option>{model.forms.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}</select></label>
+        <label className="tw:grid tw:gap-1.5"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Reason</span><select id="changeReason" defaultValue="Leave" className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold dark:tw:border-white/12" onChange={() => dispatchAction({ action: 'staffing-input' })}>{reasons.map(reason => <option key={reason}>{reason}</option>)}</select></label>
+      </div>
+      <button className="primary wide tw:mt-3" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>{model.forms.editing ? 'Update absence' : 'Save absence'}</button>
+      <button className={`soft wide tw:mt-2 ${model.forms.editing ? '' : 'hidden'}`} id="cancelAbsenceEditBtn" type="button" onClick={() => dispatchAction({ action: 'absence-cancel' })}>Cancel editing</button>
+      <div id="absenceFormMessage" className="formMessage" role="status" aria-live="polite" />
+    </div></div>;
+  const overtime = <div>
+      <p className="tw:mb-3 tw:text-sm tw:text-[var(--muted)]">Add confirmed overtime staff. Their role can be assigned afterwards.</p>
+      <div className="tw:flex tw:flex-col tw:gap-2 sm:tw:flex-row sm:tw:items-end">
+        <label className="tw:grid tw:flex-1 tw:gap-1.5"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Overtime nurse</span><input id="overtimeName" type="text" autoComplete="off" autoCapitalize="words" placeholder="Type the nurse's name" list="overtimeSuggestions" className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm dark:tw:border-white/12" onInput={() => dispatchAction({ action: 'staffing-input' })} onKeyDown={event => { if (event.key === 'Enter') dispatchAction({ action: 'overtime-save' }); }} /><datalist id="overtimeSuggestions">{model.forms.overtimeSuggestions.map(name => <option key={name} value={name} />)}</datalist></label>
+        <button className="soft tw:min-h-11" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>Add overtime</button>
+      </div>
+      <div id="overtimeFormMessage" className="formMessage" role="status" aria-live="polite" />
+    </div>;
+  return mode === 'absence' ? absence : overtime;
+}
+
 export function renderChangesExperience(model: ChangesExperience) {
+  rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
+  rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);
   rootFor('overtimeList')?.render(<RecordList records={model.overtime} empty="No overtime nurses recorded for this night." />);
   rootFor('changeHistory')?.render(<History model={model} />);

@@ -637,12 +637,15 @@ test('typed Changes records render live staffing and expose stable actions', asy
       historyTotal: 16,
       historyExpanded: false,
       allocations: [{ key: 'first1', label: 'First Part 1', breakLabel: 'Second break', selectedId: '', options: [{ id: 'overtime-1', name: 'Maria Borg' }] }],
-      allocationMessage: ''
+      allocationMessage: '',
+      forms: { names: [{ value: 'Nurse One', label: 'Nurse One' }], editing: false, overtimeSuggestions: ['Maria Borg'] }
     }}));
     window.show('changes');
   });
 
   await expect(page.locator('#changeList')).toContainText('André Bartolo');
+  await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
+  await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
   await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
   await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
   await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
