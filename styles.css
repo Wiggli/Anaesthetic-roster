@@ -136,7 +136,7 @@ body.dark #appHeader{background:#fff;color:#10202d;border-bottom-color:#dfe6eb}b
 .screenInfoButton{width:34px;height:34px;min-height:34px;padding:0;border:1px solid rgba(255,255,255,.28);border-radius:50%;background:transparent;color:#fff;box-shadow:none;font-family:Georgia,serif;font-size:16px}
 
 /* Night: identity first, then the nurse's own decision-critical information. */
-body[data-view="today"] #appHeader{position:relative;z-index:2}
+#today>#appHeader{position:relative;z-index:2}
 body[data-view="today"] main{padding-top:0}
 
 #today .nightDateShell .dateNav>button{color:#8fa6b4;transition:background .18s ease,color .18s ease}
@@ -1033,7 +1033,7 @@ body[data-view] main{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
   content:"";display:block;position:absolute;inset:0;pointer-events:none;
   border-bottom:var(--apple-hairline) solid rgba(255,255,255,.62);
 }
-body[data-view="today"] #appHeader{position:sticky;top:0;z-index:24}
+#today>#appHeader{position:sticky;top:0;z-index:24}
 #appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share,
 .changesScreenHeader .screenInfoButton,.breaksScreenHeader .screenInfoButton{
   border:var(--apple-hairline) solid rgba(255,255,255,.66);
@@ -1799,8 +1799,8 @@ main.viewSwipeStage>.view.swipePreview{
   contain:paint;
   opacity:1!important;
 }
-main.viewSwipeStage>.view.swipeCurrent{position:relative;z-index:2;will-change:transform}
-main.viewSwipeStage>.view.swipePreview{display:block!important;position:absolute;z-index:1;margin-inline:0!important;will-change:transform;pointer-events:none}
+main.viewSwipeStage>.view.swipeCurrent{position:fixed;z-index:2;will-change:transform}
+main.viewSwipeStage>.view.swipePreview{display:block!important;position:fixed;z-index:1;margin-inline:0!important;will-change:transform;pointer-events:none}
 main.viewSwipeStage.viewSwipeSettling>.view.swipeCurrent,
 main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{transition:none!important}
 
