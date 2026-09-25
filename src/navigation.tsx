@@ -139,15 +139,17 @@ function Navigation({ badges }: { badges: Badges }) {
       else requestAnimationFrame(() => requestAnimationFrame(complete));
     };
 
-    const alignPreviewToCurrent = (current: HTMLElement, preview: HTMLElement, width: number) => {
+    const alignPreviewToCurrent = (current: HTMLElement, preview: HTMLElement) => {
       preview.style.left = '0px';
       preview.style.top = '0px';
-      preview.style.width = `${width}px`;
       preview.style.removeProperty('transform');
       const currentRect = current.getBoundingClientRect();
+      const width = Math.max(1, currentRect.width);
+      preview.style.width = `${width}px`;
       const previewRect = preview.getBoundingClientRect();
       preview.style.left = `${currentRect.left - previewRect.left}px`;
       preview.style.top = `${currentRect.top - previewRect.top}px`;
+      return width;
     };
 
     const setPageTrackOffset = (current: HTMLElement, preview: HTMLElement, offset: number, direction: number, width: number) => {
@@ -193,9 +195,6 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!main || !(current instanceof HTMLElement) || !(preview instanceof HTMLElement)) return undefined;
       const changingPreview = first.preview !== next;
       if (first.preview && changingPreview) clearContentDrag();
-      const currentRect = current.getBoundingClientRect();
-      const width = Math.max(1, currentRect.width);
-      const offset = clamp(dx, -width, width);
       const direction = destinations.indexOf(next) - index;
       const newlyStaged = !preview.classList.contains('swipePreview');
       main.classList.add('viewSwipeStage');
@@ -203,7 +202,10 @@ function Navigation({ badges }: { badges: Badges }) {
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      if (changingPreview || newlyStaged) alignPreviewToCurrent(current, preview, width);
+      const width = changingPreview || newlyStaged
+        ? alignPreviewToCurrent(current, preview)
+        : Math.max(1, current.getBoundingClientRect().width);
+      const offset = clamp(dx, -width, width);
       setPageTrackOffset(current, preview, offset, direction, width);
       first.offset = offset;
       first.preview = next;
@@ -269,15 +271,13 @@ function Navigation({ badges }: { badges: Badges }) {
         return;
       }
       clearContentDrag();
-      const currentRect = current.getBoundingClientRect();
-      const width = Math.max(1, currentRect.width);
       const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
       main.classList.add('viewSwipeStage');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');
       preview.setAttribute('aria-hidden', 'true');
       preview.setAttribute('inert', '');
-      alignPreviewToCurrent(current, preview, width);
+      const width = alignPreviewToCurrent(current, preview);
       setPageTrackOffset(current, preview, 0, direction, width);
       settleTarget = target;
       moveTo(target);
