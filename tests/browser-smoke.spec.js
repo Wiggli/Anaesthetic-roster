@@ -70,15 +70,32 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
-  await page.evaluate(() => window.show('today'));
-
-  const safeStart = { x: 290, y: 400 };
+  await page.evaluate(() => {
+    window.show('today');
+    const host = document.getElementById('nightStatusRow');
+    if (host) {
+      const probe = document.createElement('div');
+      probe.id = 'nightSwipeProbe';
+      probe.textContent = 'Swipe gesture probe';
+      probe.style.gridColumn = '1 / -1';
+      probe.style.minHeight = '72px';
+      host.appendChild(probe);
+    }
+  });
+  const nightProbe = page.locator('#nightSwipeProbe');
+  await nightProbe.scrollIntoViewIfNeeded();
+  const nightProbeBox = await nightProbe.boundingBox();
+  expect(nightProbeBox).not.toBeNull();
+  const safeStart = {
+    x: nightProbeBox.x + nightProbeBox.width * 0.75,
+    y: nightProbeBox.y + Math.min(nightProbeBox.height / 2, 32)
+  };
   const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const initialPage = await page.locator('#today').boundingBox();
   let draggedIndicator;
   let draggedCurrent;
   let draggedPreview;
-  await realTouchSwipe(page, safeStart, { x: 105, y: 448 }, async () => {
+  await realTouchSwipe(page, safeStart, { x: 105, y: safeStart.y + 48 }, async () => {
     draggedIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
     draggedCurrent = await page.locator('#today').boundingBox();
     draggedPreview = await page.locator('#changes').boundingBox();
@@ -109,19 +126,26 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await page.evaluate(() => {
     window.scrollTo(0, 0);
     window.show('chat');
+    const host = document.getElementById('chatTeamMessages');
+    if (host) {
+      const probe = document.createElement('div');
+      probe.id = 'chatSwipeProbe';
+      probe.tabIndex = 0;
+      probe.textContent = 'Swipe gesture probe';
+      probe.style.minHeight = '72px';
+      probe.style.padding = '18px';
+      host.appendChild(probe);
+    }
   });
   await expect(page.locator('#chat')).toBeVisible();
-  const chatSwipeStart = await page.evaluate(() => {
-    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.chatComposer,.chatConversationList';
-    for (let y = 80; y < Math.min(window.innerHeight - 120, 520); y += 14) {
-      for (const x of [105, 290, 200]) {
-        const target = document.elementFromPoint(x, y);
-        if (target?.closest('#chat') && !target.closest(blocked)) return { x, y };
-      }
-    }
-    return null;
-  });
-  expect(chatSwipeStart).not.toBeNull();
+  const chatProbe = page.locator('#chatSwipeProbe');
+  await chatProbe.scrollIntoViewIfNeeded();
+  const chatProbeBox = await chatProbe.boundingBox();
+  expect(chatProbeBox).not.toBeNull();
+  const chatSwipeStart = {
+    x: chatProbeBox.x + Math.min(chatProbeBox.width * 0.28, 105),
+    y: chatProbeBox.y + Math.min(chatProbeBox.height / 2, 32)
+  };
   await realTouchSwipe(page, chatSwipeStart, { x: 290, y: chatSwipeStart.y + 18 });
   await expect(page.locator('#breaks')).toBeVisible();
 
@@ -130,6 +154,8 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const bar = await page.locator('.bottom').boundingBox();
   const nightTab = await page.locator('.bottom button[data-v="today"]').boundingBox();
   const chatTab = await page.locator('.bottom button[data-v="chat"]').boundingBox();
+  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - nightTab.x))
+    .toBeLessThan(4);
   const barStart = { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 };
   const barEnd = { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 };
   const barInitialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
@@ -294,7 +320,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.41/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.42/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -323,7 +349,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.41');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.42');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -339,7 +365,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains continuous swiping', async ({ page }) => {
+test('frontend changelog explains reliable swiping', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -348,8 +374,8 @@ test('frontend changelog explains continuous swiping', async ({ page }) => {
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab selector now follows one continuous drag');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation is now available from Chat');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal swipes now start from ordinary cards');
+  await expect(dialog.locator('.releaseHistory')).toContainText('bottom tab lens now follows the finger position directly');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
