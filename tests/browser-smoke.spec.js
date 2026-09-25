@@ -625,6 +625,34 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
+test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__changesActions = [];
+    window.addEventListener('roster:changes-action', event => window.__changesActions.push(event.detail));
+    window.dispatchEvent(new CustomEvent('roster:changes', { detail: {
+      absences: [{ id: 'absence-1', kind: 'absence', name: 'André Bartolo', status: 'Absent', meta: 'Leave · Updated by Roster admin at 18:30' }],
+      overtime: [{ id: 'overtime-1', kind: 'overtime', name: 'Maria Borg', status: 'Awaiting allocation', needsAllocation: true, meta: 'Added by Roster admin at 18:31' }],
+      history: [{ label: 'Absence', type: 'absence', title: 'André Bartolo marked absent', detail: 'Leave', meta: 'Roster admin · 18:30' }],
+      historyTotal: 16,
+      historyExpanded: false
+    }}));
+    window.show('changes');
+  });
+
+  await expect(page.locator('#changeList')).toContainText('André Bartolo');
+  await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
+  await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
+  await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
+  await page.locator('#recordCancelAction').click();
+  await page.locator('#overtimeList button', { hasText: 'Awaiting allocation' }).click();
+  const actions = await page.evaluate(() => window.__changesActions);
+  expect(actions).toEqual(expect.arrayContaining([
+    expect.objectContaining({ action: 'allocation' }),
+    expect.objectContaining({ action: 'record', kind: 'absence', id: 'absence-1' })
+  ]));
+});
+
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,

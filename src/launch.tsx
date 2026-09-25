@@ -75,3 +75,7 @@ window.addEventListener('roster:personal-night', (event: Event) => {
 window.addEventListener('roster:recent-activity', (event: Event) => {
   import('./clinical-experience').then(({ renderRecentActivityExperience }) => renderRecentActivityExperience((event as CustomEvent).detail));
 });
+
+window.addEventListener('roster:changes', (event: Event) => {
+  import('./changes-experience').then(({ renderChangesExperience }) => renderChangesExperience((event as CustomEvent).detail));
+});
