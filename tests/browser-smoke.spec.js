@@ -591,6 +591,40 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', `manifest.webmanifest?v=${release.version}`);
 });
 
+test('typed clinical cards render Night and Breaks without legacy HTML strings', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      displayName: 'André Bartolo', jobTitle: 'Anaesthetic Nurse', avatarUrl: '', initial: 'A',
+      assignmentLabel: 'Tonight’s assignment', title: 'Pager', detail: 'Labour Ward first part',
+      period: '00:00–03:30', breakLabel: 'Second break', contextLabel: 'Working with',
+      context: 'Michael Debono', changedLabel: '', action: 'role', pending: false, pendingOther: ''
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 6, absenceCount: 0, overtimeCount: 0, taskCount: 0, decisionTasks: 0,
+      confirmNeeded: false, alert: '', firstTask: '', labourPending: false,
+      roles: [
+        { key: 'first', label: 'First Part', names: 'James Galea + Michael Galea', detail: 'Works 00:00–03:30 · Second break', tone: 'first', mine: false },
+        { key: 'pager', label: 'Pager', names: 'André Bartolo', detail: 'Labour Ward first part · Second break', tone: 'pager', mine: true }
+      ], extras: []
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:breaks', { detail: {
+      date: '2026-09-26', formattedDate: '26 Sep 2026', nurseCount: 6, absenceCount: 0,
+      pending: false, pendingReason: '', labourPending: false,
+      first: ['Michael Debono', 'Yentl Cutajar'], second: ['James Galea', 'Michael Galea', 'André Bartolo'],
+      notes: ['André Bartolo works Labour Ward first part and takes second break.'], highlightedName: 'André Bartolo'
+    }}));
+  });
+
+  await expect(page.locator('#personalNightCard')).toContainText('Tonight’s assignment');
+  await expect(page.locator('#roles')).toContainText('André Bartolo');
+  await expect(page.locator('#nightStatusRow')).toContainText('Ready');
+  await page.evaluate(() => window.show('breaks'));
+  await expect(page.locator('#breakList')).toContainText('First break');
+  await expect(page.locator('#breakList')).toContainText('You');
+  await expect(page.locator('#breakDate')).toBeEmpty();
+});
+
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,
