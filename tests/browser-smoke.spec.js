@@ -80,12 +80,15 @@ test('bottom-tab taps move solid pages edge-to-edge without visual overlap', asy
   await expect(page.locator('#changes')).toHaveClass(/swipePreview/);
 
   await page.waitForTimeout(120);
-  const nightDuring = await page.locator('#today').boundingBox();
-  const changesDuring = await page.locator('#changes').boundingBox();
   const trackState = await page.evaluate(() => {
     const current = document.getElementById('today');
     const incoming = document.getElementById('changes');
+    const currentRect = current.getBoundingClientRect();
+    const incomingRect = incoming.getBoundingClientRect();
     return {
+      currentX: currentRect.x,
+      currentWidth: currentRect.width,
+      incomingX: incomingRect.x,
       currentOpacity: Number(getComputedStyle(current).opacity),
       incomingOpacity: Number(getComputedStyle(incoming).opacity),
       currentBackground: getComputedStyle(current).backgroundColor,
@@ -94,8 +97,8 @@ test('bottom-tab taps move solid pages edge-to-edge without visual overlap', asy
       incomingTransform: getComputedStyle(incoming).transform
     };
   });
-  expect(nightDuring.x).toBeLessThan(nightBefore.x - 20);
-  expect(Math.abs((nightDuring.x + nightDuring.width) - changesDuring.x)).toBeLessThanOrEqual(2);
+  expect(trackState.currentX).toBeLessThan(nightBefore.x - 20);
+  expect(Math.abs((trackState.currentX + trackState.currentWidth) - trackState.incomingX)).toBeLessThanOrEqual(2);
   expect(trackState.currentOpacity).toBe(1);
   expect(trackState.incomingOpacity).toBe(1);
   expect(trackState.currentBackground).not.toBe('rgba(0, 0, 0, 0)');
