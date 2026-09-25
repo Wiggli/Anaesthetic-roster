@@ -106,11 +106,23 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     { x: workflow.x + workflow.width / 2 + 150, y: workflow.y + workflow.height / 2 });
   await expect(page.locator('#changes')).toBeVisible();
 
-  await page.evaluate(() => window.show('chat'));
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+    window.show('chat');
+  });
   await expect(page.locator('#chat')).toBeVisible();
-  const chatHeader = await page.locator('.chatScreenHeader').boundingBox();
-  const chatSwipeY = chatHeader.y + Math.min(chatHeader.height - 12, 55);
-  await realTouchSwipe(page, { x: 105, y: chatSwipeY }, { x: 290, y: chatSwipeY + 18 });
+  const chatSwipeStart = await page.evaluate(() => {
+    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.chatComposer,.chatConversationList';
+    for (let y = 80; y < Math.min(window.innerHeight - 120, 520); y += 14) {
+      for (const x of [105, 290, 200]) {
+        const target = document.elementFromPoint(x, y);
+        if (target?.closest('#chat') && !target.closest(blocked)) return { x, y };
+      }
+    }
+    return null;
+  });
+  expect(chatSwipeStart).not.toBeNull();
+  await realTouchSwipe(page, chatSwipeStart, { x: 290, y: chatSwipeStart.y + 18 });
   await expect(page.locator('#breaks')).toBeVisible();
 
   await page.evaluate(() => window.show('today'));

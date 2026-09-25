@@ -1807,3 +1807,6 @@ main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{transition:transform 17
 .bottom.reactTabs .tabSlidingIndicator{will-change:transform}
 html[data-theme="light"] .bottom.reactTabs,body:not(.dark) .bottom.reactTabs{background:rgba(248,248,252,.96)}
 html[data-theme="dark"] .bottom.reactTabs,body.dark .bottom.reactTabs{background:rgba(28,28,30,.94)}
+
+/* V37.41 Chat keeps vertical transcript scrolling while allowing horizontal app navigation from safe whitespace. */
+#chat .chatMessageViewport,#chat .chatTeamMessages,#chat .chatMessages{touch-action:pan-y}

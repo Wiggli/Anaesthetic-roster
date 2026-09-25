@@ -281,6 +281,8 @@ assert.ok(navigation.includes("type SwipeAxis = 'pending' | 'horizontal' | 'vert
 assert.ok(navigation.includes('indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));'), 'bottom-tab dragging must track the finger continuously across the full bar');
 assert.ok(navigation.includes("const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get())"), 'a long bottom-bar drag must settle on the nearest tab rather than only one neighbour');
 assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;"), 'Chat must no longer be excluded from safe content swipes');
+assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*chatMessageViewport/, 'Chat transcript whitespace must remain eligible for horizontal app swipes');
+assert.match(css, /#chat \.chatMessageViewport,#chat \.chatTeamMessages,#chat \.chatMessages\{touch-action:pan-y\}/, 'Chat transcript scrollers must preserve vertical scroll while exposing horizontal gestures');
 assert.ok(navigation.includes('current.style.transform = \`translate3d(\${offset}px,0,0)\`;'), 'the visible content page must continue tracking the finger during a drag');
 assert.match(css, /main>\.view\{touch-action:pan-y\}/, 'all primary views including Chat must allow reliable horizontal app gestures while preserving vertical scroll');
 assert.match(css, /\.bottom\.reactTabs\{touch-action:none;overscroll-behavior:none;isolation:isolate\}/, 'the React bottom bar must own its continuous drag without browser gesture cancellation');
