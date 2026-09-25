@@ -116,12 +116,12 @@ function Navigation({ badges }: { badges: Badges }) {
     };
 
     const returnContentDrag = (first: SwipeStart) => {
+      moveTo(first.view);
       const main = document.querySelector<HTMLElement>('main');
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
       const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
       if (reducedMotion || !main || !current || !preview || !first.preview) {
         clearContentDrag();
-        moveTo(first.view);
         return;
       }
       const direction = destinations.indexOf(first.preview) - destinations.indexOf(first.view);
@@ -133,11 +133,11 @@ function Navigation({ badges }: { badges: Badges }) {
       });
       settleTimer = window.setTimeout(() => {
         clearContentDrag();
-        moveTo(first.view);
       }, 190);
     };
 
     const commitContentDrag = (first: SwipeStart, next: Destination) => {
+      moveTo(next);
       const main = document.querySelector<HTMLElement>('main');
       const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
       const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
