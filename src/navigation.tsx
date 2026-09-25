@@ -225,6 +225,7 @@ function Navigation({ badges }: { badges: Badges }) {
     };
 
     const animateViewChange = (target: Destination) => {
+      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);
       const from = document.body.getAttribute('data-view') as Destination;
       if (!destinations.includes(from) || from === target) {
         moveTo(target);
@@ -234,10 +235,10 @@ function Navigation({ badges }: { badges: Badges }) {
         }
         return;
       }
-      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);
       if (reducedMotion) {
         clearContentDrag();
-        animateViewChange(target);
+        window.show?.(target);
+        if (target === 'chat') window.openChatView?.();
         return;
       }
       const main = document.querySelector<HTMLElement>('main');
@@ -392,9 +393,8 @@ function Navigation({ badges }: { badges: Badges }) {
         }
         suppressClick = true;
         window.clearTimeout(clickTimer);
-        clickTimer = window.setTimeout(() => { suppressClick = false; }, 220);
-        window.show?.(target);
-        if (target === 'chat') window.openChatView?.();
+        clickTimer = window.setTimeout(() => { suppressClick = false; }, 320);
+        animateViewChange(target);
         return;
       }
 
