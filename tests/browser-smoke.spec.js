@@ -1,4 +1,9 @@
 const { test, expect } = require('@playwright/test');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const release = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'release.json'), 'utf8'));
+const releaseVersionPattern = release.version.replace(/\./g, '\\.');
 
 async function openShell(page) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
@@ -343,11 +348,16 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect(page.locator('#changes')).toBeVisible();
 
   const workflowButton = page.locator('#changes [data-changes-step]').first();
-  await workflowButton.scrollIntoViewIfNeeded();
-  await page.evaluate(() => window.scrollBy(0, -180));
+  await workflowButton.evaluate(el => el.scrollIntoView({ block: 'center', inline: 'center' }));
+  await expect(workflowButton).toBeVisible();
+  await expect.poll(async () => workflowButton.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    return Boolean(document.elementFromPoint(x, y)?.closest('[data-changes-step]'));
+  })).toBe(true);
   const workflow = await workflowButton.boundingBox();
   const workflowPoint = { x: workflow.x + workflow.width / 2, y: workflow.y + workflow.height / 2 };
-  expect(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[data-changes-step]'), workflowPoint)).toBe(true);
   await realTouchSwipe(page, workflowPoint, { x: workflowPoint.x + 150, y: workflowPoint.y });
   await expect(page.locator('#changes')).toBeVisible();
 
@@ -357,7 +367,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   });
   await expect(page.locator('#chat')).toBeVisible();
   const chatSwipeStart = await page.evaluate(() => {
-    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"],[tabindex],.chatComposer,.chatConversationList';
+    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
     for (let y = 80; y < Math.min(window.innerHeight - 120, 520); y += 14) {
       for (const x of [80, 105, 135, 165]) {
         const target = document.elementFromPoint(x, y);
@@ -549,7 +559,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.46/);
+  await expect(launchIcon).toHaveAttribute('src', new RegExp(`icon-192\\.png\\?v=${releaseVersionPattern}`));
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -578,7 +588,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.46');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', `manifest.webmanifest?v=${release.version}`);
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
