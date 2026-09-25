@@ -147,7 +147,8 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     return null;
   });
   expect(chatSwipeStart).not.toBeNull();
-  const chatSwipeEndX = Math.min(window.innerWidth - 32, chatSwipeStart.x + 190);
+  const viewportWidth = page.viewportSize()?.width || 390;
+  const chatSwipeEndX = Math.min(viewportWidth - 32, chatSwipeStart.x + 190);
   expect(chatSwipeEndX - chatSwipeStart.x).toBeGreaterThan(52);
   await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 });
   await expect(page.locator('#breaks')).toBeVisible();
