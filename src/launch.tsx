@@ -67,3 +67,11 @@ window.addEventListener('roster:night', (event: Event) => {
     if (request === nightRequest) renderNightExperience(model);
   }).catch(() => { /* A failed optional view never changes the roster calculation. */ });
 });
+
+window.addEventListener('roster:personal-night', (event: Event) => {
+  import('./clinical-experience').then(({ renderPersonalNightExperience }) => renderPersonalNightExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:recent-activity', (event: Event) => {
+  import('./clinical-experience').then(({ renderRecentActivityExperience }) => renderRecentActivityExperience((event as CustomEvent).detail));
+});

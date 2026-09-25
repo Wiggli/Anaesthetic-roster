@@ -362,9 +362,9 @@ assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 
 assert.doesNotMatch(ui, /<div class="lab">LW (?:first|second) part/, 'full-roster cards must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.match(ui, /if\(!tasks&&!confirmNeeded\)\{host\.innerHTML='';return\}/, 'an unchanged plan must stop without repeating the calculated roster');
 assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReasonHtml\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
-assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*nightCopy\.assignment[\s\S]*personalFact\('Time'[\s\S]*personalFact\('Break'/, 'Your night must expose date-aware assignment wording, time and break separately');
+assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*assignmentLabel:nightCopy\.assignment[\s\S]*period:assignment\.period,breakLabel:assignment\.breakLabel/, 'Your night must pass date-aware assignment wording, time and break separately');
 assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
-assert.match(ui, /View in night situation/, 'Your night must link directly to the matching team allocation');
+assert.match(clinicalExperience, /model\.action === 'role'[\s\S]*View in night situation/, 'Your night must link directly to the matching team allocation');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
 assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
 assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selected-night changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must describe the selected night rather than assuming today');
@@ -487,11 +487,11 @@ assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.doesNotMatch(html, /adminQuickGrid|data-admin-open=/, 'Admin Overview must not repeat the primary management tabs as shortcut buttons');
 assert.match(html, /data-admin-tab="overview"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="team"[\s\S]*data-admin-tab="access"[\s\S]*data-admin-tab="data"/, 'Admin must retain one clear set of management tabs');
-assert.match(ui, /activityType '\+esc\(item\.type\)/, 'recent activity must expose its semantic type for accessible colour styling');
-assert.match(ui, /item\.detail\?'<small class="recentActivityDetail">'\+esc\(item\.detail\)/, 'recent activity must show the saved reason or allocation detail');
+assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
+assert.match(clinicalExperience, /item\.detail && <small[\s\S]*\{item\.detail\}/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
 assert.match(ui, /function openActivityDetail\(item,date\)[\s\S]*No additional reason was recorded/, 'activity detail sheet must show saved context without inventing a reason');
-assert.match(ui, /data-activity-index[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
+assert.match(ui, /roster:activity-open[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
 assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary\)\}/, 'inactive navigation labels must retain readable contrast');

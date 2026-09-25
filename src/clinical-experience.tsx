@@ -39,6 +39,27 @@ type NightSummary = {
   fivePerson?: { name: string; reason: string; mine: boolean };
 };
 
+type PersonalNight = {
+  displayName: string;
+  jobTitle: string;
+  avatarUrl: string;
+  initial: string;
+  assignmentLabel: string;
+  title: string;
+  detail: string;
+  period: string;
+  breakLabel: string;
+  contextLabel: string;
+  context: string;
+  changedLabel: string;
+  action: 'absence' | 'role' | 'choose';
+  pending: boolean;
+  pendingOther: string;
+};
+
+type ActivityItem = { label: string; type: string; title: string; detail: string; meta: string };
+type RecentActivity = { updated: boolean; items: ActivityItem[] };
+
 declare global {
   interface Window {
     show?: (view: string) => void;
@@ -262,6 +283,94 @@ function openRoleEditor() {
     const editor = document.querySelector<HTMLDetailsElement>('.nightRoleEditor');
     if (editor) editor.open = true;
   }, 260);
+}
+
+function openAccount() {
+  document.getElementById('accountBtn')?.click();
+}
+
+function PersonalNightCard({ model }: { model: PersonalNight }) {
+  const action = () => {
+    if (model.action === 'choose') return openAccount();
+    if (model.action === 'absence') return goToChanges('staffing');
+    const target = document.querySelector<HTMLElement>('#roles .role.mine,#fiveArrangement .role.mine');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target?.focus({ preventScroll: true });
+  };
+  return <motion.article layout className="tw:overflow-hidden tw:rounded-[24px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:shadow-sm dark:tw:border-white/10">
+    <div className="tw:flex tw:items-center tw:gap-3 tw:p-4">
+      <div className="tw:relative tw:flex tw:h-12 tw:w-12 tw:shrink-0 tw:items-center tw:justify-center tw:overflow-hidden tw:rounded-full tw:bg-teal-500/14 tw:text-lg tw:font-extrabold tw:text-teal-700 dark:tw:text-teal-300">
+        {model.avatarUrl ? <img src={model.avatarUrl} alt="" className="tw:h-full tw:w-full tw:object-cover" /> : model.initial}
+        <span className="tw:absolute tw:bottom-0.5 tw:right-0.5 tw:h-2.5 tw:w-2.5 tw:rounded-full tw:border-2 tw:border-[var(--card)] tw:bg-teal-500" />
+      </div>
+      <div className="tw:min-w-0 tw:flex-1">
+        <strong className="tw:block tw:truncate tw:text-base">{model.displayName}</strong>
+        {model.jobTitle && <span className="tw:block tw:truncate tw:text-sm tw:text-[var(--muted)]">{model.jobTitle}</span>}
+      </div>
+      <button type="button" onClick={openAccount} className="tw:rounded-full tw:bg-[var(--surface)] tw:px-3 tw:py-2 tw:text-sm tw:font-bold">Edit</button>
+    </div>
+    <div className="tw:border-y tw:border-black/6 tw:bg-teal-500/7 tw:px-4 tw:py-4 dark:tw:border-white/8">
+      <div className="tw:flex tw:items-start tw:justify-between tw:gap-3">
+        <div>
+          <span className="tw:text-[0.7rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">{model.assignmentLabel}</span>
+          <h3 className="tw:mt-1 tw:text-xl tw:font-extrabold tw:leading-tight">{model.title}</h3>
+          <p className="tw:mt-1 tw:text-sm tw:text-[var(--muted)]">{model.detail}</p>
+        </div>
+        {model.changedLabel && <span className="tw:shrink-0 tw:rounded-full tw:bg-amber-500/14 tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:text-amber-700 dark:tw:text-amber-300">{model.changedLabel}</span>}
+      </div>
+    </div>
+    <dl className="tw:grid tw:grid-cols-2 tw:gap-px tw:bg-black/6 dark:tw:bg-white/8">
+      {[["Time", model.period], ["Break", model.breakLabel], [model.contextLabel, model.context]].map(([label, value], index) => <div key={label} className={`tw:bg-[var(--card)] tw:p-3 ${index === 2 ? 'tw:col-span-2' : ''}`}>
+        <dt className="tw:text-[0.68rem] tw:font-bold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">{label}</dt>
+        <dd className="tw:mt-1 tw:text-sm tw:font-semibold">{value || 'Pending'}</dd>
+      </div>)}
+    </dl>
+    <motion.button type="button" whileTap={{ scale: 0.99 }} onClick={action} className="tw:flex tw:min-h-12 tw:w-full tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:font-bold tw:text-[var(--accent)]">
+      {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'} <span aria-hidden="true">›</span>
+    </motion.button>
+  </motion.article>;
+}
+
+function PersonalPending({ model }: { model: PersonalNight }) {
+  return <AnimatePresence initial={false}>{model.pending && <motion.button
+    type="button"
+    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+    onClick={() => goToChanges('allocation')}
+    className="tw:mt-3 tw:flex tw:w-full tw:items-center tw:justify-between tw:gap-3 tw:rounded-2xl tw:border tw:border-amber-400/35 tw:bg-amber-400/10 tw:p-4 tw:text-left"
+  >
+    <span><strong className="tw:block tw:text-sm">Your allocation is not final yet</strong><small className="tw:mt-1 tw:block tw:text-[var(--muted)]">Labour Ward and Pager are shared with {model.pendingOther}.</small></span>
+    <span className="tw:shrink-0 tw:text-sm tw:font-bold tw:text-[var(--accent)]">Complete ›</span>
+  </motion.button>}</AnimatePresence>;
+}
+
+function RecentActivityList({ model }: { model: RecentActivity }) {
+  return <div className="tw:grid tw:gap-2">
+    {model.items.length ? model.items.map((item, index) => <motion.button
+      layout
+      key={`${item.title}-${item.meta}`}
+      type="button"
+      onClick={() => window.dispatchEvent(new CustomEvent('roster:activity-open', { detail: { index } }))}
+      className="tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3 tw:text-left dark:tw:border-white/10"
+    >
+      <span className="tw:rounded-full tw:bg-[var(--surface)] tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">{item.label}</span>
+      <span className="tw:min-w-0 tw:flex-1"><strong className="tw:block tw:text-sm">{item.title}</strong>{item.detail && <small className="tw:mt-0.5 tw:block tw:truncate tw:text-[var(--muted)]">{item.detail}</small>}<small className="tw:mt-1 tw:block tw:text-xs tw:text-[var(--muted)]">{item.meta}</small></span>
+      <span aria-hidden="true" className="tw:text-xl tw:text-[var(--muted)]">›</span>
+    </motion.button>) : <div className="tw:rounded-2xl tw:bg-[var(--surface)] tw:p-4 tw:text-sm tw:text-[var(--muted)]">No staffing changes have been recorded for this night.</div>}
+  </div>;
+}
+
+export function renderPersonalNightExperience(model: PersonalNight) {
+  rootFor('personalNightCard')?.render(<PersonalNightCard model={model} />);
+  rootFor('personalAllocationNotice')?.render(<PersonalPending model={model} />);
+}
+
+export function renderRecentActivityExperience(model: RecentActivity) {
+  rootFor('recentActivityList')?.render(<RecentActivityList model={model} />);
+  const chip = document.getElementById('changedSinceChip');
+  if (chip) {
+    chip.classList.toggle('hidden', !model.updated);
+    chip.textContent = model.updated ? 'Updated since last opened' : 'Updated';
+  }
 }
 
 function NightRoles({ model }: { model: NightSummary }) {
