@@ -35,6 +35,17 @@ async function realTouchSwipe(page, from, to, midpoint) {
   await session.detach();
 }
 
+async function realTouchPath(page, points) {
+  const session = await page.context().newCDPSession(page);
+  const [from, ...moves] = points;
+  await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from.x, y: from.y, id: 1 }] });
+  for (const point of moves) {
+    await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: point.x, y: point.y, id: 1 }] });
+  }
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await session.detach();
+}
+
 test('mobile shell keeps core views navigable', async ({ page }) => {
   await openShell(page);
   await expect(page.locator('#today')).toBeVisible();
@@ -112,6 +123,42 @@ test('bottom-tab taps move solid pages edge-to-edge without visual overlap', asy
   const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
   expect(Math.abs(activeIndicator.x - changesTab.x)).toBeLessThan(4);
+});
+
+test('page swipes start reliably from container padding and survive an initial diagonal wobble', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'real phone gesture regression');
+  await openShell(page);
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+  await page.evaluate(() => window.show('chat'));
+  await expect(page.locator('#chat')).toBeVisible();
+
+  await page.evaluate(() => {
+    const list = document.getElementById('chatConversationList');
+    list.innerHTML = '';
+    list.style.minHeight = '120px';
+  });
+  await page.locator('#chatConversationList').scrollIntoViewIfNeeded();
+  const listBox = await page.locator('#chatConversationList').boundingBox();
+  const from = { x: listBox.x + listBox.width / 2, y: listBox.y + Math.min(60, listBox.height / 2) };
+  await realTouchPath(page, [
+    from,
+    { x: from.x + 10, y: from.y + 11 },
+    { x: from.x + 55, y: from.y + 14 },
+    { x: from.x + 115, y: from.y + 16 },
+    { x: Math.min(360, from.x + 175), y: from.y + 18 }
+  ]);
+  await expect(page.locator('#breaks')).toBeVisible();
+
+  await page.evaluate(() => window.show('changes'));
+  await expect(page.locator('#changes')).toBeVisible();
+  const verticalStart = { x: 190, y: 360 };
+  await realTouchPath(page, [
+    verticalStart,
+    { x: verticalStart.x + 4, y: verticalStart.y + 9 },
+    { x: verticalStart.x + 7, y: verticalStart.y + 32 },
+    { x: verticalStart.x + 8, y: verticalStart.y + 90 }
+  ]);
+  await expect(page.locator('#changes')).toBeVisible();
 });
 
 test('a new swipe interrupts an unfinished settle instead of being ignored', async ({ page, isMobile }) => {
@@ -464,7 +511,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.44/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.45/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -493,7 +540,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.44');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.45');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -509,7 +556,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains stable native page swiping', async ({ page }) => {
+test('frontend changelog explains reliable swipe starts', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -518,8 +565,8 @@ test('frontend changelog explains stable native page swiping', async ({ page }) 
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('complete top chrome while it moves');
-  await expect(dialog.locator('.releaseHistory')).toContainText('saved vertical scroll position');
+  await expect(dialog.locator('.releaseHistory')).toContainText('normal empty space inside status rows');
+  await expect(dialog.locator('.releaseHistory')).toContainText('small diagonal wobble');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

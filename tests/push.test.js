@@ -23,7 +23,7 @@ assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*E
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
-assert.match(html, /push\.js\?v=37\.44/, 'push client must be versioned with the app');
+assert.match(html, /push\.js\?v=37\.45/, 'push client must be versioned with the app');
 
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
@@ -113,10 +113,11 @@ assert.match(workflow, /push\.js/, 'GitHub Pages deployment must publish and ver
 const appShell = sw.slice(sw.indexOf('const APP_SHELL = ['), sw.indexOf('];', sw.indexOf('const APP_SHELL = [')) + 2);
 assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be required for core PWA installation');
 
-assert.equal(release.version, '37.44');
-assert.equal(release.title, 'Stable native page swiping');
-assert.ok(release.changes.some(item => /saved vertical scroll position/i.test(item)), 'release notes must explain the blank-screen scroll-position fix');
-assert.ok(release.changes.some(item => /complete top chrome/i.test(item)), 'release notes must explain that page chrome now moves with its screen');
+assert.equal(release.version, '37.45');
+assert.equal(release.title, 'More reliable swipe starts');
+assert.ok(release.changes.some(item => /normal empty space/i.test(item)), 'release notes must explain that blank container regions now accept horizontal swipe starts');
+assert.ok(release.changes.some(item => /diagonal wobble/i.test(item)), 'release notes must explain the more tolerant direction lock');
+assert.match(ui, /\{version:'37\.44'[\s\S]*?title:'Stable native page swiping'/, 'the stable-page-swipe release must remain in history');
 assert.match(ui, /\{version:'37\.43'[\s\S]*?title:'Solid continuous page flow'/, 'the solid-page-flow release must remain in history');
 assert.match(ui, /\{version:'37\.42'[\s\S]*?title:'Fluid screen transitions'/, 'the fluid-transition release must remain in history');
 assert.match(ui, /\{version:'37\.41'[\s\S]*?title:'Smoother continuous swiping'/, 'the continuous-swipe release must remain in history');
