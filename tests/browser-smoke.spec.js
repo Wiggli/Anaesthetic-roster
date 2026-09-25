@@ -22,13 +22,14 @@ async function openShell(page) {
   });
 }
 
-async function realTouchSwipe(page, from, to) {
+async function realTouchSwipe(page, from, to, midpoint) {
   const session = await page.context().newCDPSession(page);
   await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from.x, y: from.y, id: 1 }] });
   for (let step = 1; step <= 5; step++) {
     await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{
       x: from.x + (to.x - from.x) * step / 5, y: from.y + (to.y - from.y) * step / 5, id: 1
     }] });
+    if (step === 3 && midpoint) { await page.waitForTimeout(30); await midpoint(); }
   }
   await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await session.detach();
@@ -70,14 +71,26 @@ test('real touch swipes change tabs from content and bar without hijacking verti
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('today'));
-  const safeStart = { x: 290, y: 400 };
+  const safeStart = { x: 105, y: 400 };
   const eligible = await page.evaluate(({ x, y }) => {
     const target = document.elementFromPoint(x, y);
     return !!target?.closest('main .view') && !target.closest('button,a,input,select,textarea,[role="button"],[tabindex]');
   }, safeStart);
   expect(eligible).toBe(true);
-  await realTouchSwipe(page, safeStart, { x: 100, y: 400 });
+  const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+  let draggedIndicator;
+  await realTouchSwipe(page, safeStart, { x: 290, y: 400 }, async () => {
+    draggedIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+  });
+  expect(draggedIndicator.x).toBeGreaterThan(initialIndicator.x + 25);
   await expect(page.locator('#changes')).toBeVisible();
+  await expect.poll(async () => (await page.locator('.tabSlidingIndicator').boundingBox()).x)
+    .toBeGreaterThan(initialIndicator.x + 45);
+  const settledChanges = await page.locator('.tabSlidingIndicator').boundingBox();
+  await realTouchSwipe(page, { x: 270, y: 400 }, { x: 245, y: 400 });
+  await expect(page.locator('#changes')).toBeVisible();
+  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - settledChanges.x))
+    .toBeLessThan(3);
   await realTouchSwipe(page, { x: 290, y: 400 }, { x: 270, y: 220 });
   await expect(page.locator('#changes')).toBeVisible();
   const workflowButton = page.locator('#changes [data-changes-step]').first();
@@ -90,11 +103,31 @@ test('real touch swipes change tabs from content and bar without hijacking verti
     { x: workflow.x + workflow.width / 2 + 145, y: workflow.y + workflow.height / 2 });
   await expect(page.locator('#changes')).toBeVisible();
   const bar = await page.locator('.bottom').boundingBox();
-  await realTouchSwipe(page, { x: 290, y: bar.y + bar.height / 2 }, { x: 100, y: bar.y + bar.height / 2 });
+  const beforeBarSwipe = await page.locator('.tabSlidingIndicator').boundingBox();
+  await realTouchSwipe(page, { x: 100, y: bar.y + bar.height / 2 }, { x: 290, y: bar.y + bar.height / 2 }, async () => {
+    expect((await page.locator('.tabSlidingIndicator').boundingBox()).x).toBeGreaterThan(beforeBarSwipe.x + 25);
+  });
   await expect(page.locator('#breaks')).toBeVisible();
-  await page.evaluate(() => window.openScreenInfo('breaks'));
+  await realTouchSwipe(page, { x: 290, y: bar.y + bar.height / 2 }, { x: 100, y: bar.y + bar.height / 2 });
+  await expect(page.locator('#changes')).toBeVisible();
+  await page.evaluate(() => window.openScreenInfo('changes'));
   await expect(page.locator('#screenInfoSheet')).toBeVisible();
-  await realTouchSwipe(page, { x: 290, y: 350 }, { x: 100, y: 350 });
+  await realTouchSwipe(page, { x: 100, y: 350 }, { x: 290, y: 350 });
+  await expect(page.locator('#changes')).toBeVisible();
+});
+
+test('reduced motion keeps the selected lens aligned without a spring', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openShell(page);
+  await expect(page.locator('.tabSlidingIndicator')).toBeVisible();
+  await page.locator('.bottom button[data-v="breaks"]').click();
+  const distance = () => page.evaluate(() => {
+    const indicator = document.querySelector('.tabSlidingIndicator').getBoundingClientRect();
+    const tab = document.querySelector('.bottom button[data-v="breaks"]').getBoundingClientRect();
+    return Math.abs(indicator.left - tab.left);
+  });
+  await page.waitForTimeout(80);
+  expect(await distance()).toBeLessThan(3);
   await expect(page.locator('#breaks')).toBeVisible();
 });
 
@@ -217,7 +250,7 @@ test('premium PWA launch uses the installed app icon and install guidance stays 
   await page.goto('/index.html');
   const launchIcon = page.locator('.launchMark img');
   await expect(launchIcon).toHaveCount(1);
-  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.38/);
+  await expect(launchIcon).toHaveAttribute('src', /icon-192\.png\?v=37\.39/);
   const htmlBackground = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
   expect(htmlBackground).not.toBe('rgba(0, 0, 0, 0)');
   const installCopy = await page.evaluate(() => window.installGuideSteps ? window.installGuideSteps() : '');
@@ -246,7 +279,7 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(motto).toHaveCount(1);
   await expect(motto).toContainText('Fair by design. Flexible under pressure. Safe in practice.');
   await expect(motto).toHaveCSS('opacity', '1');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.38');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest?v=37.39');
 });
 
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
@@ -262,7 +295,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog describes working touch navigation', async ({ page }) => {
+test('frontend changelog explains the draggable tab direction', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -271,8 +304,8 @@ test('frontend changelog describes working touch navigation', async ({ page }) =
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal swipes now work across');
-  await expect(dialog.locator('.releaseHistory')).toContainText('real touch events');
+  await expect(dialog.locator('.releaseHistory')).toContainText('highlight in the bottom bar now tracks');
+  await expect(dialog.locator('.releaseHistory')).toContainText('swipe right for Changes');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

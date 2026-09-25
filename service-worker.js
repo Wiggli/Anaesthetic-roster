@@ -1,18 +1,18 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-38';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-39';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.38',
-  './theme-bootstrap.js?v=37.38',
-  './app-core.js?v=37.38',
-  './app-ui.js?v=37.38',
-  './manifest.webmanifest?v=37.38',
+  './styles.css?v=37.39',
+  './theme-bootstrap.js?v=37.39',
+  './app-core.js?v=37.39',
+  './app-ui.js?v=37.39',
+  './manifest.webmanifest?v=37.39',
   './release.json',
-  './icon-192.png?v=37.38',
-  './icon-512.png?v=37.38',
-  './apple-touch-icon.png?v=37.38',
-  './anaesthesia-header.jpg?v=37.38',
-  './mater-dei-logo.png?v=37.38'
+  './icon-192.png?v=37.39',
+  './icon-512.png?v=37.39',
+  './apple-touch-icon.png?v=37.39',
+  './anaesthesia-header.jpg?v=37.39',
+  './mater-dei-logo.png?v=37.39'
 ];
 
 // Vite injects the fingerprinted React/CSS assets here at build time.
@@ -143,8 +143,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=37.38', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=37.38', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=37.39', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.39', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
