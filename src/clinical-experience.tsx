@@ -1,4 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
+import { Metric } from './liquid-ui';
 
 type BreakSummary = {
   date: string;
@@ -115,24 +116,6 @@ function openAccount() {
   document.getElementById('accountBtn')?.click();
 }
 
-function SummaryChip({
-  label,
-  value,
-  className,
-  onClick
-}: {
-  label: string;
-  value: string;
-  className: string;
-  onClick?: () => void;
-}) {
-  const body = <span><b>{value}</b><small>{label}</small></span>;
-  if (onClick) {
-    return <button type="button" className={`statusChip ${className}`} onClick={onClick}>{body}</button>;
-  }
-  return <div className={`statusChip ${className} informational`}>{body}</div>;
-}
-
 function BreakSummaryItems({ model }: { model: BreakSummary }) {
   return <>
     <button type="button" className="breakSummaryItem staffing" onClick={() => goToChanges('staffing')}>
@@ -206,24 +189,29 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
-  return <>
-    <SummaryChip label="Nurses" value={String(model.nurseCount)} className="staffingChip" />
-    <SummaryChip
+  return <div className="metricGrid nightMetricRail">
+    <Metric label="Nurses" value={String(model.nurseCount)} tone="teal" />
+    <Metric
       label={model.absenceCount === 1 ? 'Absence' : 'Absences'}
       value={model.absenceCount ? String(model.absenceCount) : 'No'}
-      className={model.absenceCount ? 'absenceChip' : 'readyChip'}
+      tone={model.absenceCount ? 'critical' : 'teal'}
       onClick={() => goToChanges('staffing')}
     />
-    <SummaryChip label="Overtime" value={String(model.overtimeCount)} className="overtimeChip" onClick={() => goToChanges('staffing')} />
+    <Metric
+      label="Overtime"
+      value={String(model.overtimeCount)}
+      tone={model.overtimeCount ? 'warning' : 'neutral'}
+      onClick={() => goToChanges('staffing')}
+    />
     {model.taskCount
-      ? <SummaryChip
+      ? <Metric
           label={model.decisionTasks ? (model.taskCount === 1 ? 'Allocation' : 'Allocations') : 'Confirmation'}
           value={`Review ${model.taskCount}`}
-          className="taskChip"
+          tone="warning"
           onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}
         />
-      : <SummaryChip label="Plan" value="Ready" className="readyChip" />}
-  </>;
+      : <Metric label="Plan" value="Ready" tone="teal" />}
+  </div>;
 }
 
 function NightAlerts({ model }: { model: NightSummary }) {
@@ -266,12 +254,12 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   const action = () => {
     if (model.action === 'choose') return openAccount();
     if (model.action === 'absence') return goToChanges('staffing');
-    const target = document.querySelector<HTMLElement>('#roles .role.mine,#fiveArrangement .role.mine');
+    const target = document.querySelector<HTMLElement>('#roles .rosterRow.mine,#fiveArrangement .fiveNurseSurface.mine');
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     target?.focus({ preventScroll: true });
   };
 
-  return <>
+  return <article className={`personalHeroSurface personalRole-${tone}`}>
     <div className="personalIdentity">
       <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
         {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}<i />
@@ -300,7 +288,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
       <span aria-hidden="true">›</span>
     </button>
-  </>;
+  </article>;
 }
 
 function PersonalPending({ model }: { model: PersonalNight }) {
@@ -318,7 +306,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
   if (!model.items.length) {
     return <div className="emptyRecentActivity">No staffing changes have been recorded for this night.</div>;
   }
-  return <>
+  return <div className="activityTimeline">
     {model.items.map((item, index) => <button
       key={`${item.type}-${item.title}-${item.meta}-${index}`}
       type="button"
@@ -334,7 +322,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
       </span>
       <i aria-hidden="true">›</i>
     </button>)}
-  </>;
+  </div>;
 }
 
 export function renderPersonalNightExperience(model: PersonalNight) {
@@ -351,24 +339,6 @@ export function renderRecentActivityExperience(model: RecentActivity) {
   }
 }
 
-const roleClass: Record<NightRole['tone'], string> = {
-  first: 'rFirst',
-  second: 'rSecond',
-  pager: 'rPager',
-  reliever: 'rReliever',
-  seventh: 'r7',
-  full: 'rFull'
-};
-
-const badgeClass: Record<NightRole['tone'], string> = {
-  first: 'bFirst',
-  second: 'bSecond',
-  pager: 'bPager',
-  reliever: 'bReliever',
-  seventh: 'b7',
-  full: 'bFull'
-};
-
 function roleMark(tone: NightRole['tone']) {
   if (tone === 'first') return '1st';
   if (tone === 'second') return '2nd';
@@ -380,21 +350,21 @@ function roleMark(tone: NightRole['tone']) {
 
 function NightRoles({ model }: { model: NightSummary }) {
   return <>
-    {model.roles.map(role => <button
-      key={role.key}
-      type="button"
-      onClick={openRoleEditor}
-      className={`role ${roleClass[role.tone]} ${role.mine ? 'mine' : ''}`}
-      aria-label={`Change this night's ${role.label} allocation`}
-    >
-      <span className={`badge ${badgeClass[role.tone]}`}>{roleMark(role.tone)}</span>
-      <span className="roleCopy">
-        <span className="name">{role.names}</span>
-        <span className="roleMeta">
-          <span className="time">{role.label} · {role.detail}</span>
+    <div className="liquidRosterList nightSituationTimeline">
+      {model.roles.map(role => <button
+        key={role.key}
+        type="button"
+        onClick={openRoleEditor}
+        className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
+        aria-label={`Change this night's ${role.label} allocation`}
+      >
+        <span className="rosterRoleMark">{roleMark(role.tone)}</span>
+        <span className="rosterRowCopy">
+          <span className="rosterRowName">{role.names}</span>
+          <span className="rosterRowMeta">{role.label} · {role.detail}</span>
         </span>
-      </span>
-    </button>)}
+      </button>)}
+    </div>
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}
@@ -405,17 +375,18 @@ function NightRoles({ model }: { model: NightSummary }) {
 function FivePersonArrangement({ model }: { model: NightSummary }) {
   const arrangement = model.fivePerson;
   if (!arrangement) return null;
-  return <div className="arrangement">
-    <h3>Five-nurse arrangement</h3>
-    <p className="time">{arrangement.reason}</p>
-    <button type="button" className={`role rFull ${arrangement.mine ? 'mine' : ''}`} onClick={openRoleEditor}>
-      <span className="badge bFull">Full night</span>
-      <span className="roleCopy">
-        <span className="name">{arrangement.name}</span>
-        <span className="time">Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</span>
-      </span>
-    </button>
-  </div>;
+  return <button
+    type="button"
+    className={`fiveNurseSurface ${arrangement.mine ? 'mine' : ''}`}
+    onClick={openRoleEditor}
+    aria-label={`Change the full-night Labour Ward or Pager allocation for ${arrangement.name}`}
+  >
+    <span className="fiveNurseLabel">Five-nurse arrangement · Full night</span>
+    <strong>{arrangement.name}</strong>
+    <p>{arrangement.reason}</p>
+    <small>Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</small>
+    <i aria-hidden="true">›</i>
+  </button>;
 }
 
 export function renderNightExperience(model: NightSummary) {
