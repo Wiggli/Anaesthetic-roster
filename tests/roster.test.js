@@ -355,7 +355,7 @@ assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.d
 assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
 assert.match(ui, /pending:pending,pendingReason:/, 'Breaks must pass the derived pending state to the typed interface');
-assert.match(clinicalExperience, /model\.pending && <motion\.section/, 'Breaks must omit the pending notice once the plan is ready');
+assert.match(clinicalExperience, /if \(!model\.pending\) return null;/, 'Breaks must omit the pending notice once the plan is ready');
 assert.equal(context.labourAssignmentDetail(base.pager, { first: base.pager, second: base.reliever }), 'Labour Ward first part · Second break', 'Pager summary must include the derived first-part duty without a second row');
 assert.equal(context.labourAssignmentDetail(base.reliever, { first_part_name: base.pager, second_part_name: base.reliever }), 'Labour Ward second part · First break', 'Reliever summary must include the derived second-part duty without a second row');
 assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 'confirmation must not repeat Pager and Reliever as separate Labour Ward rows');
@@ -556,8 +556,8 @@ assert.match(retrySource, /if\(sharedLoadPromise\)try\{await sharedLoadPromise\}
 assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide all recovery feedback while reconnecting');
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount/, 'Night must pass its derived clinical summary into the typed interface');
-assert.match(clinicalExperience, /function NightStatus[\s\S]*label: 'Nurses'[\s\S]*function NightRoles/, 'the typed Night interface must preserve staffing status and allocation cards');
-assert.match(clinicalExperience, /label: model\.decisionTasks \? 'Allocation' : 'Confirmation'[\s\S]*value: `Review \$\{model\.taskCount\}`/, 'Night tasks must use an explicit allocation review label');
+assert.match(clinicalExperience, /function NightStatus[\s\S]*label="Nurses"[\s\S]*function NightRoles/, 'the typed Night interface must preserve staffing status and allocation cards');
+assert.match(clinicalExperience, /label=\{model\.decisionTasks[\s\S]*'Allocation'[\s\S]*'Confirmation'[\s\S]*value=\{`Review \$\{model\.taskCount\}`\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
 assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');
