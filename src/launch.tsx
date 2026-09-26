@@ -103,3 +103,16 @@ window.addEventListener('roster:chat-overview', (event: Event) => {
 window.addEventListener('roster:chat-messages', (event: Event) => {
   import('./chat-experience').then(({ renderChatMessages }) => renderChatMessages((event as CustomEvent).detail));
 });
+
+let releaseNotesRequest = 0;
+window.addEventListener('roster:releasenotes', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const detail = (event as CustomEvent<{
+    entries: { version: string; date: string; title: string; changes: string[] }[];
+    showHistory: boolean;
+  }>).detail;
+  const request = ++releaseNotesRequest;
+  import('./release-notes').then(({ renderReleaseNotes }) => {
+    if (request === releaseNotesRequest) renderReleaseNotes(detail.entries, detail.showHistory);
+  }).catch(() => { /* The escaped HTML release history remains available. */ });
+});

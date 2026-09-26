@@ -806,7 +806,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains reliable swiping over Chat messages', async ({ page }) => {
+test('frontend changelog explains the React version-history migration', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -815,10 +815,40 @@ test('frontend changelog explains reliable swiping over Chat messages', async ({
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('directly on a Chat message');
-  await expect(dialog.locator('.releaseHistory')).toContainText('focusability no longer makes the whole message');
+  await expect(dialog.locator('.releaseHistory')).toContainText('isolated React and TypeScript component');
+  await expect(dialog.locator('.releaseHistory')).toContainText('complete escaped HTML release history remains available');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
+});
+
+test('version history upgrades its escaped fallback to an on-demand React region', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.renderReleaseNotes(true);
+    const dialog = document.getElementById('releaseNotes');
+    if (dialog && !dialog.open) dialog.showModal();
+  });
+  const dialog = page.locator('#releaseNotes');
+  await expect(dialog.locator('[data-react-release-notes="ready"]')).toHaveCount(1);
+  await expect(dialog.locator('.releaseEntry')).toHaveCount(await page.evaluate(() => window.RELEASE_HISTORY.length));
+  await expect(dialog.locator('.releaseNav')).toBeVisible();
+  await expect(dialog.locator('.releaseArchiveHeading')).toContainText('Previous updates');
+  await expect(dialog.locator('.releaseHistory')).toHaveAttribute('aria-label', 'Complete Night Roster version history');
+});
+
+test('complete version history remains usable if its optional React chunk fails', async ({ page }) => {
+  await page.route('**/assets/release-notes-*.js', route => route.abort());
+  await openShell(page);
+  await page.evaluate(() => {
+    window.renderReleaseNotes(true);
+    const dialog = document.getElementById('releaseNotes');
+    if (dialog && !dialog.open) dialog.showModal();
+  });
+  const dialog = page.locator('#releaseNotes');
+  await expect(dialog.locator('[data-react-release-notes="ready"]')).toHaveCount(0);
+  await expect(dialog.locator('.releaseEntry')).toHaveCount(await page.evaluate(() => window.RELEASE_HISTORY.length));
+  await expect(dialog.locator('.releaseNav')).toBeVisible();
+  await expect(dialog.locator('.releaseHistory')).toContainText('React-powered version history');
 });
 
 test('worker keeps private backend traffic out of caches and navigates offline', async ({ page, context }) => {

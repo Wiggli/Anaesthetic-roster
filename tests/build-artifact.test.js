@@ -31,7 +31,11 @@ assert.ok(worker.includes(`assets/${navigationAsset}`), 'custom worker must prec
 const helpAsset = fs.readdirSync(path.join(dist, 'assets')).find(file => /^screen-info-.*\.js$/.test(file));
 assert.ok(helpAsset, 'screen help must be a separate on-demand asset');
 assert.ok(worker.includes(`assets/${helpAsset}`), 'custom worker must precache offline screen help');
+const releaseNotesAsset = fs.readdirSync(path.join(dist, 'assets')).find(file => /^release-notes-.*\.js$/.test(file));
+assert.ok(releaseNotesAsset, 'release notes must be a separate on-demand asset');
+assert.ok(worker.includes(`assets/${releaseNotesAsset}`), 'custom worker must precache offline release notes');
 assert.match(html, /id="reactNavigation"/, 'working HTML navigation must remain as an optional-module fallback');
+assert.match(html, /id="releaseNotesContent"/, 'working release-note content must remain as an optional-module fallback');
 assert.ok(worker.includes(`anaesthetic-night-roster-v${version.replace('.', '-')}`));
 assert.match(worker, /ACTIVATE_UPDATE/);
 assert.match(worker, /GET_CACHE_VERSION/);
