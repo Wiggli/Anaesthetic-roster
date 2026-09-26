@@ -1,0 +1,13 @@
+#chatHome{display:flex!important;flex-direction:column;gap:12px!important}
+#chatHome>.chatTeamConsole{order:1}
+#chatHome>.chatPrivateHeader{order:2}
+#chatHome>#chatConversationList{order:3}
+#chatHome>.chatSafetyNotice{order:4}
+#chatHome>#pushNotificationCard{order:5}
+#chat .chatPrivateHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding:0 2px;border:0!important;background:transparent!important}
+#chat .chatPrivateHeader>div>span{color:var(--liquid-label);font-size:18px;font-weight:710;letter-spacing:-.025em}
+#chat .chatPrivateHeader small{color:var(--liquid-secondary)}
+#chat .chatNewPrivateBtn{min-height:42px;border:var(--liquid-hairline) solid var(--liquid-glass-border)!important;border-radius:14px!important;background:var(--liquid-glass)!important;color:var(--liquid-accent-strong)!important;box-shadow:inset 0 1px 0 var(--liquid-glass-edge),0 4px 13px rgba(27,45,58,.07)!important;-webkit-backdrop-filter:blur(16px) saturate(145%);backdrop-filter:blur(16px) saturate(145%)}
+#chatConversationList{overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:var(--liquid-radius-m);background:var(--liquid-surface);box-shadow:var(--liquid-shadow-content)}
+#chatConversationList>button,#chatConversationList>div{margin:0!important;border:0!important;border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#chatConversationList>*:first-child{border-top:0!important}
