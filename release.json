@@ -1,13 +1,13 @@
 {
-  "version": "37.48",
+  "version": "37.49",
   "date": "26 September 2026",
-  "title": "Roster startup restored",
-  "summary": "The shared and saved roster now open reliably after the React interface migration.",
+  "title": "Compact roster layout restored",
+  "summary": "Night, Changes and Breaks are compact again after the React migration, without changing roster logic.",
   "changes": [
-    "Roster startup no longer waits for a React-owned staffing field before the Changes component has mounted.",
-    "The same repair restores the read-only saved-roster path when the shared connection is unavailable.",
-    "A startup regression check now covers the delayed Changes component mount.",
-    "Roster calculations, staffing workflows, Supabase data, authentication, Chat and clinical decision rules remain unchanged."
+    "Night, Changes and Breaks no longer render a second nested card layer inside the existing clinical surfaces.",
+    "Personal assignment, staffing records, allocation rows, break groups and recent activity use the established compact mobile layout again.",
+    "The React migration remains in place, while the existing Apple-style spacing and clinical hierarchy once again control presentation.",
+    "Roster calculations, Supabase data, authentication, Chat, notifications and clinical decision rules remain unchanged."
   ],
   "update_policy": "important"
 }
