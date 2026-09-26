@@ -3,3 +3,4 @@
 @import "tailwindcss/utilities.css" prefix(tw);
 
 @import "./liquid-glass.css";
+@import "./liquid-compat.css";
