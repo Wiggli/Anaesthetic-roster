@@ -591,6 +591,208 @@ test('built React launch region preserves the first-paint text and respects redu
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', `manifest.webmanifest?v=${release.version}`);
 });
 
+test('typed clinical cards render Night and Breaks without legacy HTML strings', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      displayName: 'André Bartolo', jobTitle: 'Anaesthetic Nurse', avatarUrl: '', initial: 'A',
+      assignmentLabel: 'Tonight’s assignment', title: 'Pager', detail: 'Labour Ward first part',
+      period: '00:00–03:30', breakLabel: 'Second break', contextLabel: 'Working with',
+      context: 'Michael Debono', changedLabel: '', action: 'role', pending: false, pendingOther: ''
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 6, absenceCount: 0, overtimeCount: 0, taskCount: 0, decisionTasks: 0,
+      confirmNeeded: false, alert: '', firstTask: '', labourPending: false,
+      roles: [
+        { key: 'first', label: 'First Part', names: 'James Galea + Michael Galea', detail: 'Works 00:00–03:30 · Second break', tone: 'first', mine: false },
+        { key: 'pager', label: 'Pager', names: 'André Bartolo', detail: 'Labour Ward first part · Second break', tone: 'pager', mine: true }
+      ], extras: []
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:breaks', { detail: {
+      date: '2026-09-26', formattedDate: '26 Sep 2026', nurseCount: 6, absenceCount: 0,
+      pending: false, pendingReason: '', labourPending: false,
+      first: ['Michael Debono', 'Yentl Cutajar'], second: ['James Galea', 'Michael Galea', 'André Bartolo'],
+      notes: ['André Bartolo works Labour Ward first part and takes second break.'], highlightedName: 'André Bartolo'
+    }}));
+  });
+
+  await expect(page.locator('#personalNightCard')).toContainText('Tonight’s assignment');
+  await expect(page.locator('#roles')).toContainText('André Bartolo');
+  await expect(page.locator('#nightStatusRow')).toContainText('Ready');
+  await page.evaluate(() => window.show('breaks'));
+  await expect(page.locator('#breakList')).toContainText('First break');
+  await expect(page.locator('#breakList')).toContainText('You');
+  await expect(page.locator('#breakDate')).toBeEmpty();
+});
+
+test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__changesActions = [];
+    window.addEventListener('roster:changes-action', event => window.__changesActions.push(event.detail));
+    window.dispatchEvent(new CustomEvent('roster:changes', { detail: {
+      absences: [{ id: 'absence-1', kind: 'absence', name: 'André Bartolo', status: 'Absent', meta: 'Leave · Updated by Roster admin at 18:30' }],
+      overtime: [{ id: 'overtime-1', kind: 'overtime', name: 'Maria Borg', status: 'Awaiting allocation', needsAllocation: true, meta: 'Added by Roster admin at 18:31' }],
+      history: [{ label: 'Absence', type: 'absence', title: 'André Bartolo marked absent', detail: 'Leave', meta: 'Roster admin · 18:30' }],
+      historyTotal: 16,
+      historyExpanded: false,
+      allocations: [{ key: 'first1', label: 'First Part 1', breakLabel: 'Second break', selectedId: '', options: [{ id: 'overtime-1', name: 'Maria Borg' }] }],
+      allocationMessage: '',
+      forms: { names: [{ value: 'Nurse One', label: 'Nurse One' }], editing: false, overtimeSuggestions: ['Maria Borg'] },
+      roleOverride: {
+        guidance: 'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.',
+        summary: 'Optional custom five-nurse arrangement', open: false, stored: false, dirty: false, reason: '', canSave: false,
+        keys: [{ key: 'first1', label: 'First part · position 1', fullWidth: false }],
+        names: [{ value: 'Nurse One', label: 'Nurse One' }], assignments: { first1: 'Nurse One' }
+      }
+    }}));
+    window.show('changes');
+  });
+
+  await expect(page.locator('#changeList')).toContainText('André Bartolo');
+  await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
+  await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
+  await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
+  await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
+  await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
+  await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
+  await page.locator('#recordCancelAction').click();
+  await page.locator('#overtimeList button', { hasText: 'Awaiting allocation' }).click();
+  await page.locator('#allocationList select').selectOption('overtime-1');
+  const actions = await page.evaluate(() => window.__changesActions);
+  expect(actions).toEqual(expect.arrayContaining([
+    expect.objectContaining({ action: 'allocation' }),
+    expect.objectContaining({ action: 'record', kind: 'absence', id: 'absence-1' }),
+    expect.objectContaining({ action: 'allocation-select', key: 'first1', value: 'overtime-1' })
+  ]));
+});
+
+test('typed full-roster cards render searchable clinical summaries and open a night', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__openedNights = [];
+    window.addEventListener('roster:open-night', event => window.__openedNights.push(event.detail.index));
+    window.dispatchEvent(new CustomEvent('roster:full-roster', { detail: { cards: [{
+      index: 4,
+      date: 'Saturday, 26 September 2026',
+      status: 'One live staffing update',
+      count: 6,
+      details: [
+        { label: 'First part', values: ['James Galea', 'Michael Galea'], tone: 'first' },
+        { label: 'Absences', values: ['André Bartolo · Leave'], tone: 'warning' }
+      ]
+    }] } }));
+    window.show('roster');
+  });
+
+  const card = page.locator('#cards button[aria-label^="Open roster for"]');
+  await expect(card).toContainText('Saturday, 26 September 2026');
+  await expect(card).toContainText('André Bartolo · Leave');
+  await card.click();
+  expect(await page.evaluate(() => window.__openedNights)).toContain(4);
+});
+
+test('typed account controls preserve appearance and app actions', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__accountActions = [];
+    window.addEventListener('roster:account-action', event => window.__accountActions.push(event.detail));
+    window.dispatchEvent(new CustomEvent('roster:account', { detail: { theme: 'system', installed: false, profile: {
+      name: 'Andre', jobTitle: 'Anaesthetic Nurse', rosterName: 'Nurse One', approvedName: 'Andre Bartolo', email: 'andre@example.test',
+      options: [{ value: 'Nurse One', label: 'Nurse One' }], initial: 'A', photoUrl: '', featureAvailable: true, pendingPhoto: false, changed: false
+    } } }));
+    window.dispatchEvent(new CustomEvent('roster:passkeys', { detail: { message: '', items: [{ id: 'passkey-1', label: 'Night Roster on iPhone' }] } }));
+    document.getElementById('accountSheet').showModal();
+  });
+
+  await expect(page.locator('#appearanceExperience')).toContainText('Automatic');
+  await expect(page.locator('#profileExperience')).toContainText('Personal details');
+  await expect(page.locator('#profileName')).toHaveValue('Andre');
+  await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
+  await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
+  await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
+  await page.locator('#appearanceExperience button', { hasText: 'Dark' }).click();
+  await expect(page.locator('#appearanceExperience button', { hasText: 'Dark' })).toHaveAttribute('aria-pressed', 'true');
+  const actions = await page.evaluate(() => window.__accountActions);
+  expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
+});
+
+test('typed administrator accounts separate pending access and support fast filtering', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:admin-accounts', { detail: {
+      activeCount: 2, inactiveCount: 1, online: true,
+      pending: [{ userId: 'request-1', name: 'Maria Borg', email: 'maria@example.test', requested: '18:42' }],
+      accounts: [
+        { email: 'andre@example.test', name: 'Andre Bartolo', role: 'admin', active: true, current: true },
+        { email: 'maria@example.test', name: 'Maria Borg', role: 'member', active: true, current: false },
+        { email: 'inactive@example.test', name: 'Inactive Member', role: 'member', active: false, current: false }
+      ]
+    } }));
+    document.getElementById('today').classList.add('hidden');
+    document.getElementById('admin').classList.remove('hidden');
+    document.getElementById('adminAccess').classList.remove('hidden');
+  });
+
+  await expect(page.locator('#adminAccountsExperience')).toContainText('Pending access');
+  await expect(page.locator('#adminAccountsExperience')).toContainText('Current account');
+  await expect(page.locator('#accountName')).toHaveAttribute('placeholder', 'Nurse name');
+  await expect(page.locator('#adminAccountsExperience button', { hasText: 'Deactivate' }).first()).toBeDisabled();
+  await page.locator('#adminAccountsExperience input[type="search"]').fill('Inactive');
+  await expect(page.locator('#adminAccountsExperience')).toContainText('Inactive Member');
+  await expect(page.locator('#adminAccountsExperience')).not.toContainText('Andre Bartolo');
+});
+
+test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.__chatActions = [];
+    window.addEventListener('roster:chat-action', event => window.__chatActions.push(event.detail));
+    window.dispatchEvent(new CustomEvent('roster:chat-overview', { detail: {
+      conversations: [{ id: 'conversation-1', title: 'Maria Borg', initial: 'M', time: '18:42', preview: 'Maria Borg: I can cover', unread: 2, active: false }],
+      members: [
+        { personKey: 'Maria Borg', displayName: 'Maria Borg', initial: 'M', available: true },
+        { personKey: 'James Galea', displayName: 'James Galea', initial: 'J', available: false }
+      ]
+    } }));
+    window.dispatchEvent(new CustomEvent('roster:chat-messages', { detail: {
+      kind: 'team', bottomOffset: 0, items: [{
+        id: 'message-1', sender: 'Maria Borg', time: '18:42', body: '@André I can cover the first part.',
+        own: false, failed: false, deleted: false, mentioned: true, dateLabel: 'Today', unreadBefore: true,
+        replySender: 'James Galea', replyBody: 'Can anyone cover this night?'
+      }]
+    } }));
+    window.show('chat');
+  });
+
+  await expect(page.locator('#chatConversationList')).toContainText('I can cover');
+  await expect(page.locator('#chatConversationList')).toContainText('2');
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
+  await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
+  await page.locator('#chatTeamInput').fill('x'.repeat(1600));
+  await expect(page.locator('#chatTeamCharacterCount')).toBeVisible();
+  await expect(page.locator('#chatTeamCharacterCount')).toHaveText('400 characters remaining');
+  await page.locator('#chatTeamInput').fill('Cover confirmed');
+  await expect(page.locator('#chatTeamSendBtn')).toBeEnabled();
+  await page.evaluate(() => {
+    window.__chatComposerSubmitted = false;
+    document.getElementById('chatTeamComposer').addEventListener('submit', () => { window.__chatComposerSubmitted = true; }, { once: true });
+  });
+  await page.locator('#chatTeamInput').press('Control+Enter');
+  await expect.poll(() => page.evaluate(() => window.__chatComposerSubmitted)).toBe(true);
+  await page.evaluate(() => document.getElementById('chatNewConversationSheet').showModal());
+  await expect(page.locator('#chatMemberPicker')).toContainText('Not registered');
+  await expect(page.locator('#chatTeamMessages')).toContainText('New messages');
+  await expect(page.locator('#chatTeamMessages')).toContainText('Can anyone cover this night?');
+  await page.locator('#chatMemberPicker button', { hasText: 'Maria Borg' }).click();
+  await page.locator('#chatNewConversationSheet').evaluate(dialog => dialog.close());
+  await page.locator('#chatTeamMessages [tabindex="0"]').click({ button: 'right' });
+  expect(await page.evaluate(() => window.__chatActions)).toEqual(expect.arrayContaining([
+    expect.objectContaining({ action: 'message', value: 'message-1', kind: 'team' }),
+    expect.objectContaining({ action: 'member', value: 'Maria Borg' })
+  ]));
+});
+
 test('launch message remains readable when the optional React module cannot load', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,

@@ -48,6 +48,62 @@ window.addEventListener('roster:screeninfo', (event: Event) => {
   }).catch(() => { /* The escaped HTML sheet remains available. */ });
 });
 
+let breakPlanRequest = 0;
+window.addEventListener('roster:breaks', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++breakPlanRequest;
+  import('./clinical-experience').then(({ renderBreaksExperience }) => {
+    if (request === breakPlanRequest) renderBreaksExperience(model);
+  }).catch(() => { /* The core workflow remains available if the optional view cannot load. */ });
+});
+
+let nightRequest = 0;
+window.addEventListener('roster:night', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++nightRequest;
+  import('./clinical-experience').then(({ renderNightExperience }) => {
+    if (request === nightRequest) renderNightExperience(model);
+  }).catch(() => { /* A failed optional view never changes the roster calculation. */ });
+});
+
+window.addEventListener('roster:personal-night', (event: Event) => {
+  import('./clinical-experience').then(({ renderPersonalNightExperience }) => renderPersonalNightExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:recent-activity', (event: Event) => {
+  import('./clinical-experience').then(({ renderRecentActivityExperience }) => renderRecentActivityExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:changes', (event: Event) => {
+  import('./changes-experience').then(({ renderChangesExperience }) => renderChangesExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:full-roster', (event: Event) => {
+  import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience((event as CustomEvent).detail.cards));
+});
+
+window.addEventListener('roster:account', (event: Event) => {
+  import('./account-experience').then(({ renderAccountExperience }) => renderAccountExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:passkeys', (event: Event) => {
+  import('./account-experience').then(({ renderPasskeyExperience }) => renderPasskeyExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:admin-accounts', (event: Event) => {
+  import('./admin-experience').then(({ renderAdminAccountsExperience }) => renderAdminAccountsExperience((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:chat-overview', (event: Event) => {
+  import('./chat-experience').then(({ renderChatOverview }) => renderChatOverview((event as CustomEvent).detail));
+});
+
+window.addEventListener('roster:chat-messages', (event: Event) => {
+  import('./chat-experience').then(({ renderChatMessages }) => renderChatMessages((event as CustomEvent).detail));
+});
+
 let releaseNotesRequest = 0;
 window.addEventListener('roster:releasenotes', (event: Event) => {
   if (document.body.classList.contains('authPending')) return;

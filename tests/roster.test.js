@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const clinicalExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'clinical-experience.tsx'), 'utf8');
 
 const storage = new Map();
 const noopElement = () => ({
@@ -353,16 +354,17 @@ assert.match(html, /Activity for this night/, 'staffing history must have a clea
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
-assert.match(ui, /breakDate\.classList\.toggle\('hidden',!pending\)/, 'Breaks must hide duplicate date status once the plan is ready');
+assert.match(ui, /pending:pending,pendingReason:/, 'Breaks must pass the derived pending state to the typed interface');
+assert.match(clinicalExperience, /model\.pending && <motion\.section/, 'Breaks must omit the pending notice once the plan is ready');
 assert.equal(context.labourAssignmentDetail(base.pager, { first: base.pager, second: base.reliever }), 'Labour Ward first part · Second break', 'Pager summary must include the derived first-part duty without a second row');
 assert.equal(context.labourAssignmentDetail(base.reliever, { first_part_name: base.pager, second_part_name: base.reliever }), 'Labour Ward second part · First break', 'Reliever summary must include the derived second-part duty without a second row');
 assert.doesNotMatch(ui, /confirmationRow\('Labour Ward (?:first|second) part'/, 'confirmation must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.doesNotMatch(ui, /<div class="lab">LW (?:first|second) part/, 'full-roster cards must not repeat Pager and Reliever as separate Labour Ward rows');
 assert.match(ui, /if\(!tasks&&!confirmNeeded\)\{host\.innerHTML='';return\}/, 'an unchanged plan must stop without repeating the calculated roster');
 assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReasonHtml\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
-assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*nightCopy\.assignment[\s\S]*personalFact\('Time'[\s\S]*personalFact\('Break'/, 'Your night must expose date-aware assignment wording, time and break separately');
+assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*assignmentLabel:nightCopy\.assignment[\s\S]*period:assignment\.period,breakLabel:assignment\.breakLabel/, 'Your night must pass date-aware assignment wording, time and break separately');
 assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
-assert.match(ui, /View in night situation/, 'Your night must link directly to the matching team allocation');
+assert.match(clinicalExperience, /model\.action === 'role'[\s\S]*View in night situation/, 'Your night must link directly to the matching team allocation');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
 assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
 assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selected-night changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must describe the selected night rather than assuming today');
@@ -485,11 +487,11 @@ assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.doesNotMatch(html, /adminQuickGrid|data-admin-open=/, 'Admin Overview must not repeat the primary management tabs as shortcut buttons');
 assert.match(html, /data-admin-tab="overview"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="team"[\s\S]*data-admin-tab="access"[\s\S]*data-admin-tab="data"/, 'Admin must retain one clear set of management tabs');
-assert.match(ui, /activityType '\+esc\(item\.type\)/, 'recent activity must expose its semantic type for accessible colour styling');
-assert.match(ui, /item\.detail\?'<small class="recentActivityDetail">'\+esc\(item\.detail\)/, 'recent activity must show the saved reason or allocation detail');
+assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
+assert.match(clinicalExperience, /item\.detail && <small[\s\S]*\{item\.detail\}/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
 assert.match(ui, /function openActivityDetail\(item,date\)[\s\S]*No additional reason was recorded/, 'activity detail sheet must show saved context without inventing a reason');
-assert.match(ui, /data-activity-index[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
+assert.match(ui, /roster:activity-open[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
 assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary\)\}/, 'inactive navigation labels must retain readable contrast');
@@ -553,8 +555,9 @@ assert.match(retrySource, /Trying again…[\s\S]*Waiting for the shared roster t
 assert.match(retrySource, /if\(sharedLoadPromise\)try\{await sharedLoadPromise\}[\s\S]*if\(!launchFinished\)await authorizeUser/, 'retry must wait for an active request before starting a fresh authorisation attempt');
 assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide all recovery feedback while reconnecting');
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
-assert.match(ui, /statusChip staffingChip informational/, 'staffing count must remain a non-interactive Night summary item');
-assert.match(ui, /Review '\+taskCount[\s\S]*allocation/, 'Night tasks must use an explicit allocation review label');
+assert.match(ui, /nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount/, 'Night must pass its derived clinical summary into the typed interface');
+assert.match(clinicalExperience, /function NightStatus[\s\S]*label: 'Nurses'[\s\S]*function NightRoles/, 'the typed Night interface must preserve staffing status and allocation cards');
+assert.match(clinicalExperience, /label: model\.decisionTasks \? 'Allocation' : 'Confirmation'[\s\S]*value: `Review \$\{model\.taskCount\}`/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
 assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');
