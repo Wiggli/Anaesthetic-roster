@@ -1,13 +1,13 @@
 {
-  "version": "37.47",
+  "version": "37.48",
   "date": "26 September 2026",
-  "title": "React-powered version history",
-  "summary": "The App Updated and complete Version History content now render through an on-demand React and TypeScript region while preserving the existing safe fallback.",
+  "title": "Roster startup restored",
+  "summary": "The shared and saved roster now open reliably after the React interface migration.",
   "changes": [
-    "The App Updated panel and complete Version History are now an isolated React and TypeScript component loaded only when release notes are requested.",
-    "The existing version archive, Latest and Previous updates navigation, light and dark styling, accessibility labels and reduced-motion behaviour are preserved.",
-    "If the optional component cannot load, the complete escaped HTML release history remains available instead of leaving an empty dialog.",
-    "Roster calculations, staffing workflows, Supabase data, authentication, Chat, swipe navigation and the installed PWA identity remain unchanged."
+    "Roster startup no longer waits for a React-owned staffing field before the Changes component has mounted.",
+    "The same repair restores the read-only saved-roster path when the shared connection is unavailable.",
+    "A startup regression check now covers the delayed Changes component mount.",
+    "Roster calculations, staffing workflows, Supabase data, authentication, Chat and clinical decision rules remain unchanged."
   ],
   "update_policy": "important"
 }
