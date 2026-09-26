@@ -33,10 +33,10 @@ function ConversationList({ items }: { items: Conversation[] }) {
 
 function MemberPicker({ members }: { members: Member[] }) {
   if (!members.length) return <p className="tw:p-5 tw:text-center tw:text-sm tw:text-[var(--muted)]">No other nurses are currently in the roster.</p>;
-  return <div className="tw:grid tw:gap-2">{members.map(member => <motion.button key={member.personKey} type="button" disabled={!member.available} whileTap={member.available ? { scale: 0.99 } : undefined} onClick={() => member.available && act('member', member.personKey)} className="tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3 tw:text-left disabled:tw:opacity-55 dark:tw:border-white/10">
+  return <div className="tw:grid tw:gap-2">{members.map(member => <motion.button key={member.personKey} type="button" disabled={!member.available} whileTap={member.available ? { scale: 0.99 } : undefined} onClick={() => member.available && act('member', member.personKey)} className="tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3 tw:text-left tw:disabled:opacity-55 tw:dark:border-white/10">
     <span className="tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-[var(--surface)] tw:text-sm tw:font-bold">{member.initial}</span>
     <span className="tw:min-w-0 tw:flex-1"><strong className="tw:block tw:text-sm">{member.displayName}</strong><small className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">{member.available ? 'Available for private chat' : 'Has not registered in Night Roster yet'}</small></span>
-    <span className={`tw:rounded-full tw:px-2.5 tw:py-1 tw:text-[0.65rem] tw:font-bold ${member.available ? 'tw:bg-teal-500/12 tw:text-teal-700 dark:tw:text-teal-200' : 'tw:bg-[var(--surface)] tw:text-[var(--muted)]'}`}>{member.available ? 'Available' : 'Not registered'}</span>
+    <span className={`tw:rounded-full tw:px-2.5 tw:py-1 tw:text-[0.65rem] tw:font-bold ${member.available ? 'tw:bg-teal-500/12 tw:text-teal-700 tw:dark:text-teal-200' : 'tw:bg-[var(--surface)] tw:text-[var(--muted)]'}`}>{member.available ? 'Available' : 'Not registered'}</span>
   </motion.button>)}</div>;
 }
 
@@ -45,9 +45,9 @@ function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'priv
   const cancel = () => { if (pointer.current.timer) window.clearTimeout(pointer.current.timer); pointer.current.timer = undefined; };
   const open = () => !message.failed && act('message', message.id, kind);
   const body = <>
-    {message.replyBody && <span className="tw:mb-2 tw:block tw:rounded-xl tw:border-l-2 tw:border-teal-500 tw:bg-black/4 tw:px-2.5 tw:py-2 dark:tw:bg-white/6"><b className="tw:block tw:text-[0.68rem] tw:text-[var(--accent-strong)]">{message.replySender}</b><small className="tw:mt-0.5 tw:block tw:line-clamp-2 tw:text-[0.7rem] tw:text-[var(--muted)]">{message.replyBody}</small></span>}
+    {message.replyBody && <span className="tw:mb-2 tw:block tw:rounded-xl tw:border-l-2 tw:border-teal-500 tw:bg-black/4 tw:px-2.5 tw:py-2 tw:dark:bg-white/6"><b className="tw:block tw:text-[0.68rem] tw:text-[var(--accent-strong)]">{message.replySender}</b><small className="tw:mt-0.5 tw:block tw:line-clamp-2 tw:text-[0.7rem] tw:text-[var(--muted)]">{message.replyBody}</small></span>}
     <span className={`tw:block tw:whitespace-pre-wrap tw:break-words tw:text-sm tw:leading-relaxed ${message.deleted ? 'tw:italic tw:text-[var(--muted)]' : ''}`}>{message.body}</span>
-    {message.failed && <button type="button" onClick={() => act('retry', message.id, kind)} className="tw:mt-2 tw:rounded-full tw:bg-rose-500/12 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-rose-700 dark:tw:text-rose-200">Retry</button>}
+    {message.failed && <button type="button" onClick={() => act('retry', message.id, kind)} className="tw:mt-2 tw:rounded-full tw:bg-rose-500/12 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-rose-700 tw:dark:text-rose-200">Retry</button>}
   </>;
   const handlers = {
     tabIndex: message.failed ? undefined : 0,
@@ -96,9 +96,9 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
     return () => input?.removeEventListener('input', update);
   }, [team]);
   return <>
-    <textarea id={team ? 'chatTeamInput' : 'chatMessageInput'} data-chat-composer="react" defaultValue={initialValue} maxLength={2000} rows={1} placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'} aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'} className="tw:max-h-32 tw:min-h-10 tw:flex-1 tw:resize-none tw:rounded-xl tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:outline-none placeholder:tw:text-[var(--muted)]" />
+    <textarea id={team ? 'chatTeamInput' : 'chatMessageInput'} data-chat-composer="react" defaultValue={initialValue} maxLength={2000} rows={1} placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'} aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'} className="tw:max-h-32 tw:min-h-10 tw:flex-1 tw:resize-none tw:rounded-xl tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:outline-none tw:placeholder:text-[var(--muted)]" />
       <span id={team ? 'chatTeamCharacterCount' : 'chatPrivateCharacterCount'} className="hidden tw:shrink-0 tw:self-center tw:text-[0.65rem] tw:font-bold tw:text-[var(--muted)]" aria-live="polite" />
-      <button type="submit" id={team ? 'chatTeamSendBtn' : 'chatSendBtn'} aria-label={team ? 'Send group message' : 'Send private message'} title="Send · Command or Control + Enter" className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:text-white tw:transition-transform active:tw:scale-95 disabled:tw:opacity-40">
+      <button type="submit" id={team ? 'chatTeamSendBtn' : 'chatSendBtn'} aria-label={team ? 'Send group message' : 'Send private message'} title="Send · Command or Control + Enter" className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:text-white tw:transition-transform tw:active:scale-95 tw:disabled:opacity-40">
         <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
       </button>
   </>;

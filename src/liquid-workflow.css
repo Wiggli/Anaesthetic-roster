@@ -1,0 +1,55 @@
+
+/* Progressive interaction refinements that need no extra runtime state. */
+#changes .changesWorkflowTabs:has(button:nth-child(1).active),
+#changes .changesWorkflowTabs:has(button:nth-child(1)[aria-selected="true"]){
+  --changes-step-index:0;
+}
+#changes .changesWorkflowTabs:has(button:nth-child(2).active),
+#changes .changesWorkflowTabs:has(button:nth-child(2)[aria-selected="true"]){
+  --changes-step-index:1;
+}
+#changes .changesWorkflowTabs:has(button:nth-child(3).active),
+#changes .changesWorkflowTabs:has(button:nth-child(3)[aria-selected="true"]){
+  --changes-step-index:2;
+}
+
+/* The Night header progressively condenses when scroll-driven animations are supported. */
+@supports (animation-timeline: scroll()){
+  #appHeader{
+    animation:liquidHeaderShell linear both;
+    animation-timeline:scroll(root block);
+    animation-range:0 72px;
+  }
+  #appHeader .hospitalStrip{
+    animation:liquidHeaderBrand linear both;
+    animation-timeline:scroll(root block);
+    animation-range:0 58px;
+  }
+  #appHeader .motto{
+    animation:liquidHeaderMotto linear both;
+    animation-timeline:scroll(root block);
+    animation-range:0 52px;
+  }
+  @keyframes liquidHeaderShell{
+    from{
+      padding-top:max(8px,env(safe-area-inset-top));
+      padding-bottom:9px;
+      border-bottom-color:transparent;
+      background:linear-gradient(180deg,color-mix(in srgb,var(--liquid-bg-alt) 94%,transparent),color-mix(in srgb,var(--liquid-bg-alt) 76%,transparent));
+    }
+    to{
+      padding-top:max(5px,env(safe-area-inset-top));
+      padding-bottom:6px;
+      border-bottom-color:var(--liquid-separator);
+      background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent);
+    }
+  }
+  @keyframes liquidHeaderBrand{
+    from{opacity:1;max-height:42px;transform:translateY(0)}
+    to{opacity:0;max-height:0;transform:translateY(-8px)}
+  }
+  @keyframes liquidHeaderMotto{
+    from{opacity:1;max-height:20px;transform:translateY(0)}
+    to{opacity:0;max-height:0;transform:translateY(-5px)}
+  }
+}

@@ -814,7 +814,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the compact roster layout repair', async ({ page }) => {
+test('frontend changelog explains the Liquid Glass mobile redesign', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -823,8 +823,9 @@ test('frontend changelog explains the compact roster layout repair', async ({ pa
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('second nested card layer');
-  await expect(dialog.locator('.releaseHistory')).toContainText('React migration remains in place');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Liquid Glass application shell');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation follows the finger directly');
+  await expect(dialog.locator('.releaseHistory')).toContainText('without changing authentication, Supabase data or roster calculations');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

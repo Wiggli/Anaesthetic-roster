@@ -1,0 +1,204 @@
+
+/* Compatibility hooks for the current React-rendered clinical markup. */
+#nightStatusRow>div{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:0!important;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#nightStatusRow>div>button,
+#nightStatusRow>div>div{
+  min-height:66px!important;
+  margin:0!important;
+  padding:10px 11px!important;
+  border:0!important;
+  border-left:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#nightStatusRow>div>*:first-child{border-left:0!important}
+#nightStatusRow>div strong{
+  color:var(--liquid-label);
+  font-size:17px!important;
+  font-weight:740!important;
+  letter-spacing:-.025em;
+}
+#nightStatusRow>div span{
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+  font-weight:590!important;
+  letter-spacing:0!important;
+}
+
+#roles>div{
+  display:block!important;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#roles>div>.role{
+  position:relative;
+  min-height:66px!important;
+  margin:0!important;
+  padding:11px 36px 11px 12px!important;
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#roles>div>.role:first-child{border-top:0!important}
+#roles>div>.role::after{
+  content:"›";
+  position:absolute;
+  right:13px;
+  top:50%;
+  color:var(--liquid-tertiary);
+  font-size:20px;
+  font-weight:300;
+  transform:translateY(-50%);
+}
+#roles>div>.role>span:first-child{
+  height:30px!important;
+  min-width:42px!important;
+  border-radius:9px!important;
+  font-size:9.5px!important;
+}
+#roles>div>.role>span:nth-child(2)>span:first-child{
+  color:var(--liquid-label);
+  font-size:14px!important;
+  font-weight:690!important;
+}
+#roles>div>.role>span:nth-child(2)>span:last-child{
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:520!important;
+}
+#roles>div>.role.mine{
+  outline:0!important;
+  background:color-mix(in srgb,var(--liquid-accent) 5%,transparent)!important;
+}
+
+#fiveArrangement>section{
+  margin-top:var(--liquid-control-gap)!important;
+  padding:13px 14px!important;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-warning) 28%,var(--liquid-separator))!important;
+  border-radius:var(--liquid-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#fiveArrangement>section>span:first-child{
+  color:var(--liquid-warning)!important;
+  font-size:10px!important;
+  font-weight:680!important;
+  letter-spacing:.04em!important;
+}
+#fiveArrangement>section h3{
+  color:var(--liquid-label);
+  font-size:15px!important;
+  font-weight:710!important;
+}
+#fiveArrangement>section .role{
+  min-height:50px!important;
+  margin-top:8px!important;
+  border:0!important;
+  border-radius:var(--liquid-radius-s)!important;
+  background:var(--liquid-surface-muted)!important;
+  box-shadow:none!important;
+}
+
+#breakSummaryRow>div{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#breakSummaryRow>div>*{
+  min-height:62px!important;
+  margin:0!important;
+  padding:9px 10px!important;
+  border:0!important;
+  border-left:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breakSummaryRow>div>*:first-child{border-left:0!important}
+
+#breakList>div>div:first-child>section{
+  position:relative;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#breakList>div>div:first-child>section::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:12px;
+  bottom:12px;
+  width:3px;
+  border-radius:0 3px 3px 0;
+}
+#breakList>div>div:first-child>section:first-child::before{background:#805fc3}
+#breakList>div>div:first-child>section:nth-child(2)::before{background:#188d8a}
+#breakList>div>div:first-child>section>div:last-child{
+  gap:0!important;
+  overflow:hidden;
+  border-radius:var(--liquid-radius-s);
+  background:var(--liquid-surface-muted);
+}
+#breakList>div>div:first-child>section>div:last-child>div{
+  border-radius:0!important;
+  background:transparent!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+}
+#breakList>div>div:first-child>section>div:last-child>div:first-child{border-top:0}
+
+#breakList>div>section{
+  position:relative;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#breakList>div>section::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:12px;
+  bottom:12px;
+  width:3px;
+  border-radius:0 3px 3px 0;
+  background:#c77a16;
+}
+#breakList>div>section>div:last-child{
+  gap:0!important;
+  overflow:hidden;
+  border-radius:var(--liquid-radius-s);
+  background:var(--liquid-surface-muted);
+}
+#breakList>div>section>div:last-child>p{
+  margin:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:0!important;
+  background:transparent!important;
+}
+#breakList>div>section>div:last-child>p:first-child{border-top:0}
+
+@media(max-width:370px){
+  #nightStatusRow>div strong{font-size:15px!important}
+  #nightStatusRow>div span{font-size:9px!important}
+}

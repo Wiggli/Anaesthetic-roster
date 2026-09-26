@@ -25,6 +25,7 @@ function Navigation({ badges }: { badges: Badges }) {
   const reducedMotion = useReducedMotion();
   const [active, setActive] = useState(document.body.getAttribute('data-view') || 'today');
   const indicatorX = useMotionValue(0);
+  const indicatorScaleX = useMotionValue(1);
   const positions = useRef<number[]>([]);
   const transitionToRef = useRef<((view: Destination) => void) | null>(null);
   const [indicatorSize, setIndicatorSize] = useState({ top: 0, width: 0, height: 0 });
@@ -38,8 +39,9 @@ function Navigation({ badges }: { badges: Badges }) {
       const left = positions.current[destinations.indexOf(view as Destination)];
       if (left === undefined) return;
       animation?.stop();
+      indicatorScaleX.set(reducedMotion ? 1 : 1.045);
       if (reducedMotion) indicatorX.set(left);
-      else animation = animate(indicatorX, left, { type: 'tween', duration: 0.26, ease: [0.22, 0.61, 0.36, 1] });
+      else animation = animate(indicatorX, left, { type: 'spring', stiffness: 460, damping: 42, mass: 0.68, onComplete: () => animate(indicatorScaleX, 1, { type: 'spring', stiffness: 520, damping: 45 }) });
     };
     const measure = () => {
       const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
@@ -53,7 +55,7 @@ function Navigation({ badges }: { badges: Badges }) {
     };
     const observer = new ResizeObserver(measure);
     observer.observe(bar);
-    bar.classList.add('reactTabs');
+    bar.classList.add('reactTabs', 'liquidTabBar');
     measure();
     const sync = (event: Event) => {
       const view = (event as CustomEvent<{ view: string }>).detail.view;
@@ -81,7 +83,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let settleTimer: number | undefined;
     let settleTarget: Destination | null = null;
     let committingTarget: Destination | null = null;
-    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
+    const blockedContentSelector = 'input,select,textarea,[contenteditable="true"]';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
     const nearestPositionIndex = (value: number) => {
@@ -205,9 +207,12 @@ function Navigation({ badges }: { badges: Badges }) {
       pageAnimation?.stop();
       setPageTrackOffset(current, preview, from, direction, width);
       pageAnimation = animate(from, to, {
-        type: 'tween',
-        duration: 0.26,
-        ease: [0.22, 0.61, 0.36, 1],
+        type: 'spring',
+        stiffness: 390,
+        damping: 38,
+        mass: 0.74,
+        restSpeed: 0.5,
+        restDelta: 0.5,
         onUpdate: value => setPageTrackOffset(current, preview, value, direction, width),
         onComplete: () => {
           pageAnimation = undefined;
@@ -321,8 +326,8 @@ function Navigation({ badges }: { badges: Badges }) {
         if (ax >= ay * 0.72) first.axis = 'horizontal';
         else if (ay >= 14 && ay > ax * 1.35) first.axis = 'vertical';
       } else {
-        if (ax >= 10 && ax >= ay * 0.82) first.axis = 'horizontal';
-        else if (ay >= 14 && ay > ax * 1.25) first.axis = 'vertical';
+        if (ax >= 10 && ax >= ay * 1.16) first.axis = 'horizontal';
+        else if (ay >= 12 && ay >= ax * 1.12) first.axis = 'vertical';
       }
       return first.axis;
     };
@@ -340,8 +345,7 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
       if (!inBar && target.closest(blockedContentSelector)) return;
       if (!inBar && window.getSelection()?.type === 'Range') return;
-      if (!inBar && (touch.clientX < 26 || touch.clientX > window.innerWidth - 26)) return;
-      animation?.stop();
+            animation?.stop();
       pageAnimation?.stop();
       pageAnimation = undefined;
       clearContentDrag();
@@ -373,6 +377,7 @@ function Navigation({ badges }: { badges: Badges }) {
         return;
       }
       if (axis !== 'horizontal') return;
+      if (event.cancelable) event.preventDefault();
 
       const index = destinations.indexOf(start.view);
       const origin = positions.current[index];
@@ -381,6 +386,7 @@ function Navigation({ badges }: { badges: Badges }) {
         const lastPosition = positions.current[positions.current.length - 1];
         if (firstPosition !== undefined && lastPosition !== undefined)
           indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));
+        indicatorScaleX.set(1 + Math.min(0.075, Math.abs(dx) / Math.max(1, window.innerWidth) * 0.18));
         return;
       }
 
@@ -392,8 +398,11 @@ function Navigation({ badges }: { badges: Badges }) {
       const neighbor = positions.current[destinations.indexOf(next)];
       const current = document.getElementById(start.view);
       const width = current instanceof HTMLElement ? Math.max(1, current.getBoundingClientRect().width) : Math.max(1, window.innerWidth);
-      if (neighbor !== undefined)
-        indicatorX.set(origin + (neighbor - origin) * Math.min(1, Math.abs(dx) / width));
+      if (neighbor !== undefined) {
+        const progress = Math.min(1, Math.abs(dx) / width);
+        indicatorX.set(origin + (neighbor - origin) * progress);
+        indicatorScaleX.set(1 + Math.sin(progress * Math.PI) * 0.065);
+      }
     };
 
     const onEnd = (event: TouchEvent) => {
@@ -441,8 +450,12 @@ function Navigation({ badges }: { badges: Badges }) {
       const next = destinations[destinations.indexOf(first.view) + step];
       const elapsed = Math.max(1, performance.now() - first.at);
       const distance = Math.abs(dx);
-      const quickFlick = distance >= 30 && elapsed <= 280;
-      if ((!quickFlick && distance < 52) || !next) {
+      const velocity = distance / elapsed;
+      const current = document.getElementById(first.view);
+      const width = current instanceof HTMLElement ? Math.max(1, current.getBoundingClientRect().width) : Math.max(1, window.innerWidth);
+      const quickFlick = distance >= 24 && velocity >= 0.55;
+      const slowThreshold = Math.min(108, Math.max(58, width * 0.24));
+      if ((!quickFlick && distance < slowThreshold) || !next) {
         returnContentDrag(first);
         return;
       }
@@ -467,7 +480,7 @@ function Navigation({ badges }: { badges: Badges }) {
     };
     window.addEventListener('roster:viewchange', sync);
     document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend', onEnd, { passive: true });
     document.addEventListener('touchcancel', onCancel, { passive: true });
     document.addEventListener('click', onClick, true);
@@ -483,9 +496,9 @@ function Navigation({ badges }: { badges: Badges }) {
       clearContentDrag();
       observer.disconnect();
       animation?.stop();
-      bar.classList.remove('reactTabs');
+      bar.classList.remove('reactTabs', 'liquidTabBar');
     };
-  }, [indicatorX, reducedMotion]);
+  }, [indicatorX, indicatorScaleX, reducedMotion]);
 
   function navigate(view: Destination) {
     const transition = transitionToRef.current;
@@ -502,7 +515,7 @@ function Navigation({ badges }: { badges: Badges }) {
 
   return <div className="tw:contents" data-react-navigation="ready">
     <motion.span className="tabSlidingIndicator" aria-hidden="true"
-      style={{ x: indicatorX, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
+      style={{ x: indicatorX, scaleX: indicatorScaleX, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
     <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}
       aria-current={active === 'today' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
       onClick={() => navigate('today')}>
