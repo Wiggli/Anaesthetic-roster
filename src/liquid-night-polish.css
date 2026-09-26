@@ -511,3 +511,53 @@ html[data-theme="dark"] .bottom.reactTabs{
     background:var(--liquid-surface)!important;
   }
 }
+
+
+/* Five-nurse mode stays part of the same Night hierarchy. */
+#today .fiveNurseSurface{
+  position:relative;
+  width:100%;
+  display:block;
+  margin-top:10px!important;
+  padding:13px 42px 13px 15px!important;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-warning) 25%,var(--liquid-separator))!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(100deg,color-mix(in srgb,var(--liquid-warning) 7%,transparent),transparent 58%),
+    var(--liquid-surface)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+#today .fiveNurseSurface.mine{
+  box-shadow:inset 4px 0 0 var(--liquid-accent)!important;
+}
+#today .fiveNurseSurface .fiveNurseLabel{
+  display:block;
+  color:var(--liquid-warning)!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+}
+#today .fiveNurseSurface strong{
+  display:block;
+  margin-top:3px!important;
+  font-size:14.5px!important;
+  font-weight:700!important;
+}
+#today .fiveNurseSurface p,
+#today .fiveNurseSurface small{
+  display:block;
+  margin:3px 0 0!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.8px!important;
+  line-height:1.35!important;
+}
+#today .fiveNurseSurface>i{
+  position:absolute;
+  right:14px;
+  top:50%;
+  color:var(--liquid-tertiary);
+  font-size:21px;
+  font-style:normal;
+  transform:translateY(-50%);
+}
