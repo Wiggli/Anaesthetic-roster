@@ -39,7 +39,7 @@ function Navigation({ badges }: { badges: Badges }) {
       if (left === undefined) return;
       animation?.stop();
       if (reducedMotion) indicatorX.set(left);
-      else animation = animate(indicatorX, left, { type: 'tween', duration: 0.26, ease: [0.22, 0.61, 0.36, 1] });
+      else animation = animate(indicatorX, left, { type: 'spring', stiffness: 460, damping: 42, mass: 0.68 });
     };
     const measure = () => {
       const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
@@ -81,7 +81,7 @@ function Navigation({ badges }: { badges: Badges }) {
     let settleTimer: number | undefined;
     let settleTarget: Destination | null = null;
     let committingTarget: Destination | null = null;
-    const blockedContentSelector = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
+    const blockedContentSelector = 'input,select,textarea,[contenteditable="true"]';
 
     const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
     const nearestPositionIndex = (value: number) => {
@@ -205,9 +205,12 @@ function Navigation({ badges }: { badges: Badges }) {
       pageAnimation?.stop();
       setPageTrackOffset(current, preview, from, direction, width);
       pageAnimation = animate(from, to, {
-        type: 'tween',
-        duration: 0.26,
-        ease: [0.22, 0.61, 0.36, 1],
+        type: 'spring',
+        stiffness: 390,
+        damping: 38,
+        mass: 0.74,
+        restSpeed: 0.5,
+        restDelta: 0.5,
         onUpdate: value => setPageTrackOffset(current, preview, value, direction, width),
         onComplete: () => {
           pageAnimation = undefined;
@@ -321,8 +324,8 @@ function Navigation({ badges }: { badges: Badges }) {
         if (ax >= ay * 0.72) first.axis = 'horizontal';
         else if (ay >= 14 && ay > ax * 1.35) first.axis = 'vertical';
       } else {
-        if (ax >= 10 && ax >= ay * 0.82) first.axis = 'horizontal';
-        else if (ay >= 14 && ay > ax * 1.25) first.axis = 'vertical';
+        if (ax >= 10 && ax >= ay * 1.16) first.axis = 'horizontal';
+        else if (ay >= 12 && ay >= ax * 1.12) first.axis = 'vertical';
       }
       return first.axis;
     };
@@ -340,8 +343,7 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
       if (!inBar && target.closest(blockedContentSelector)) return;
       if (!inBar && window.getSelection()?.type === 'Range') return;
-      if (!inBar && (touch.clientX < 26 || touch.clientX > window.innerWidth - 26)) return;
-      animation?.stop();
+            animation?.stop();
       pageAnimation?.stop();
       pageAnimation = undefined;
       clearContentDrag();
@@ -373,6 +375,7 @@ function Navigation({ badges }: { badges: Badges }) {
         return;
       }
       if (axis !== 'horizontal') return;
+      if (event.cancelable) event.preventDefault();
 
       const index = destinations.indexOf(start.view);
       const origin = positions.current[index];
@@ -441,8 +444,12 @@ function Navigation({ badges }: { badges: Badges }) {
       const next = destinations[destinations.indexOf(first.view) + step];
       const elapsed = Math.max(1, performance.now() - first.at);
       const distance = Math.abs(dx);
-      const quickFlick = distance >= 30 && elapsed <= 280;
-      if ((!quickFlick && distance < 52) || !next) {
+      const velocity = distance / elapsed;
+      const current = document.getElementById(first.view);
+      const width = current instanceof HTMLElement ? Math.max(1, current.getBoundingClientRect().width) : Math.max(1, window.innerWidth);
+      const quickFlick = distance >= 24 && velocity >= 0.55;
+      const slowThreshold = Math.min(108, Math.max(58, width * 0.24));
+      if ((!quickFlick && distance < slowThreshold) || !next) {
         returnContentDrag(first);
         return;
       }
@@ -467,7 +474,7 @@ function Navigation({ badges }: { badges: Badges }) {
     };
     window.addEventListener('roster:viewchange', sync);
     document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend', onEnd, { passive: true });
     document.addEventListener('touchcancel', onCancel, { passive: true });
     document.addEventListener('click', onClick, true);
