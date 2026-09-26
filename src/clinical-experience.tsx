@@ -254,7 +254,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   const action = () => {
     if (model.action === 'choose') return openAccount();
     if (model.action === 'absence') return goToChanges('staffing');
-    const target = document.querySelector<HTMLElement>('#roles .role.mine,#fiveArrangement .role.mine');
+    const target = document.querySelector<HTMLElement>('#roles .rosterRow.mine,#fiveArrangement .fiveNurseSurface.mine');
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     target?.focus({ preventScroll: true });
   };
@@ -375,17 +375,18 @@ function NightRoles({ model }: { model: NightSummary }) {
 function FivePersonArrangement({ model }: { model: NightSummary }) {
   const arrangement = model.fivePerson;
   if (!arrangement) return null;
-  return <div className="arrangement">
-    <h3>Five-nurse arrangement</h3>
-    <p className="time">{arrangement.reason}</p>
-    <button type="button" className={`role rFull ${arrangement.mine ? 'mine' : ''}`} onClick={openRoleEditor}>
-      <span className="badge bFull">Full night</span>
-      <span className="roleCopy">
-        <span className="name">{arrangement.name}</span>
-        <span className="time">Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</span>
-      </span>
-    </button>
-  </div>;
+  return <button
+    type="button"
+    className={`fiveNurseSurface ${arrangement.mine ? 'mine' : ''}`}
+    onClick={openRoleEditor}
+    aria-label={`Change the full-night Labour Ward or Pager allocation for ${arrangement.name}`}
+  >
+    <span className="fiveNurseLabel">Five-nurse arrangement · Full night</span>
+    <strong>{arrangement.name}</strong>
+    <p>{arrangement.reason}</p>
+    <small>Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</small>
+    <i aria-hidden="true">›</i>
+  </button>;
 }
 
 export function renderNightExperience(model: NightSummary) {
