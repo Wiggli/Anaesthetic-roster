@@ -278,3 +278,4 @@ body.dark .chatRetryBtn{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,
 .chatRetentionNote{display:block;margin-top:3px;color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93))}
 body.dark .chatComposerReply,body.dark .chatMentionMenu{background:var(--ios-fill,var(--apple-fill,#26262a))}
 body.dark .chatMentionChoice:hover,body.dark .chatMentionChoice:focus-visible{background:color-mix(in srgb,#fff 8%,transparent)}
+.chatCharacterWarning{color:var(--warning,#d98213)!important}

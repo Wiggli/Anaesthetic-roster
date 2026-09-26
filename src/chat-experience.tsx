@@ -1,4 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { useLayoutEffect, useRef } from 'react';
 
@@ -73,22 +74,49 @@ function Messages({ model, hostId }: { model: MessageExperience; hostId: string 
   return <div className="tw:grid tw:gap-1.5">{model.items.map(item => <MessageCard key={item.id} message={item} kind={model.kind} />)}</div>;
 }
 
-function ChatComposer({ kind }: { kind: 'team' | 'private' }) {
+function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initialValue: string }) {
   const team = kind === 'team';
-  useLayoutEffect(() => { window.dispatchEvent(new CustomEvent('roster:chat-composers-mounted')); }, []);
+  useLayoutEffect(() => {
+    const input = document.getElementById(team ? 'chatTeamInput' : 'chatMessageInput') as HTMLTextAreaElement | null;
+    const button = document.getElementById(team ? 'chatTeamSendBtn' : 'chatSendBtn') as HTMLButtonElement | null;
+    const counter = document.getElementById(team ? 'chatTeamCharacterCount' : 'chatPrivateCharacterCount');
+    const update = () => {
+      if (!input || !button) return;
+      const length = input.value.length;
+      button.disabled = !input.value.trim();
+      if (counter) {
+        counter.textContent = `${2000 - length} characters remaining`;
+        counter.classList.toggle('hidden', length < 1600);
+        counter.classList.toggle('chatCharacterWarning', length >= 1900);
+      }
+    };
+    input?.addEventListener('input', update);
+    update();
+    window.dispatchEvent(new CustomEvent('roster:chat-composers-mounted'));
+    return () => input?.removeEventListener('input', update);
+  }, [team]);
   return <>
-    <textarea id={team ? 'chatTeamInput' : 'chatMessageInput'} maxLength={2000} rows={1} placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'} aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'} className="tw:max-h-32 tw:min-h-10 tw:flex-1 tw:resize-none tw:rounded-xl tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:outline-none placeholder:tw:text-[var(--muted)]" />
-      <button type="submit" id={team ? 'chatTeamSendBtn' : 'chatSendBtn'} aria-label={team ? 'Send group message' : 'Send private message'} className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:text-white tw:transition-transform active:tw:scale-95">
+    <textarea id={team ? 'chatTeamInput' : 'chatMessageInput'} data-chat-composer="react" defaultValue={initialValue} maxLength={2000} rows={1} placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'} aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'} className="tw:max-h-32 tw:min-h-10 tw:flex-1 tw:resize-none tw:rounded-xl tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:outline-none placeholder:tw:text-[var(--muted)]" />
+      <span id={team ? 'chatTeamCharacterCount' : 'chatPrivateCharacterCount'} className="hidden tw:shrink-0 tw:self-center tw:text-[0.65rem] tw:font-bold tw:text-[var(--muted)]" aria-live="polite" />
+      <button type="submit" id={team ? 'chatTeamSendBtn' : 'chatSendBtn'} aria-label={team ? 'Send group message' : 'Send private message'} title="Send · Command or Control + Enter" className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:text-white tw:transition-transform active:tw:scale-95 disabled:tw:opacity-40">
         <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
       </button>
   </>;
 }
 
 export function renderChatOverview(model: ChatOverview) {
-  rootFor('chatTeamComposer')?.render(<ChatComposer kind="team" />);
-  rootFor('chatComposer')?.render(<ChatComposer kind="private" />);
-  rootFor('chatConversationList')?.render(<ConversationList items={model.conversations} />);
-  rootFor('chatMemberPicker')?.render(<MemberPicker members={model.members} />);
+  const teamDraft = (document.getElementById('chatTeamInput') as HTMLTextAreaElement | null)?.value ?? '';
+  const privateDraft = (document.getElementById('chatMessageInput') as HTMLTextAreaElement | null)?.value ?? '';
+  const teamRoot = rootFor('chatTeamComposer');
+  const privateRoot = rootFor('chatComposer');
+  const conversationRoot = rootFor('chatConversationList');
+  const memberRoot = rootFor('chatMemberPicker');
+  flushSync(() => {
+    teamRoot?.render(<ChatComposer kind="team" initialValue={teamDraft} />);
+    privateRoot?.render(<ChatComposer kind="private" initialValue={privateDraft} />);
+    conversationRoot?.render(<ConversationList items={model.conversations} />);
+    memberRoot?.render(<MemberPicker members={model.members} />);
+  });
 }
 
 export function renderChatMessages(model: MessageExperience) {

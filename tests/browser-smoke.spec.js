@@ -763,11 +763,24 @@ test('typed Chat overview renders private conversations and registered members',
       }]
     } }));
     window.show('chat');
-    document.getElementById('chatNewConversationSheet').showModal();
   });
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await expect(page.locator('#chatConversationList')).toContainText('2');
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
+  await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
+  await page.locator('#chatTeamInput').fill('x'.repeat(1600));
+  await expect(page.locator('#chatTeamCharacterCount')).toBeVisible();
+  await expect(page.locator('#chatTeamCharacterCount')).toHaveText('400 characters remaining');
+  await page.locator('#chatTeamInput').fill('Cover confirmed');
+  await expect(page.locator('#chatTeamSendBtn')).toBeEnabled();
+  await page.evaluate(() => {
+    window.__chatComposerSubmitted = false;
+    document.getElementById('chatTeamComposer').addEventListener('submit', () => { window.__chatComposerSubmitted = true; }, { once: true });
+  });
+  await page.locator('#chatTeamInput').press('Control+Enter');
+  await expect.poll(() => page.evaluate(() => window.__chatComposerSubmitted)).toBe(true);
+  await page.evaluate(() => document.getElementById('chatNewConversationSheet').showModal());
   await expect(page.locator('#chatMemberPicker')).toContainText('Not registered');
   await expect(page.locator('#chatTeamMessages')).toContainText('New messages');
   await expect(page.locator('#chatTeamMessages')).toContainText('Can anyone cover this night?');
