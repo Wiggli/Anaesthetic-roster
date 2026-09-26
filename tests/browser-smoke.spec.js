@@ -407,10 +407,16 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
     .toBeLessThan(4);
 
-  const stableBackground = await page.locator('.bottom').evaluate(el => getComputedStyle(el).backgroundColor);
-  expect(stableBackground).toMatch(/rgba?\(/);
-  const alpha = Number((stableBackground.match(/,\s*([0-9.]+)\)$/) || [])[1] || 1);
-  expect(alpha).toBeGreaterThanOrEqual(0.9);
+  const stableGlass = await page.locator('.bottom').evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      background: style.backgroundColor,
+      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none'
+    };
+  });
+  expect(stableGlass.background).not.toBe('transparent');
+  expect(stableGlass.background).not.toBe('rgba(0, 0, 0, 0)');
+  expect(stableGlass.backdrop).not.toBe('none');
 
   const barAfterChat = await page.locator('.bottom').boundingBox();
   await realTouchSwipe(page,
@@ -617,12 +623,22 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   });
 
   await expect(page.locator('#personalNightCard')).toContainText('Tonight’s assignment');
-  await expect(page.locator('#personalNightCard > .personalIdentity')).toHaveCount(1);
-  await expect(page.locator('#personalNightCard > article')).toHaveCount(0);
+  await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
   await expect(page.locator('#roles')).toContainText('André Bartolo');
-  await expect(page.locator('#roles > .role')).toHaveCount(2);
+  await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
+  await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Ready');
-  await expect(page.locator('#nightStatusRow > .statusChip')).toHaveCount(4);
+  await expect(page.locator('#nightStatusRow > .nightMetricRail > .metric')).toHaveCount(4);
+  const summaryGeometry = await page.locator('#nightStatusRow > .nightMetricRail').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
+  });
+  expect(summaryGeometry.columns).toBe(4);
+  expect(summaryGeometry.radius).toBeGreaterThanOrEqual(18);
+  const dock = await page.locator('.bottom').boundingBox();
+  expect(dock).not.toBeNull();
+  expect(dock.height).toBeLessThanOrEqual(66);
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
@@ -828,24 +844,6 @@ test('frontend changelog explains the refined Night interface', async ({ page })
   await expect(dialog.locator('.releaseHistory')).toContainText('Roster calculations, staffing rules, authentication, Supabase data, Chat and notifications are unchanged');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
-});
-
-test('Night renders the refined hero, summary rail and grouped roster timeline', async ({ page }) => {
-  await openShell(page);
-  await expect(page.locator('#personalNightCard .personalHeroSurface')).toHaveCount(1);
-  await expect(page.locator('#nightStatusRow .nightMetricRail .metric')).toHaveCount(4);
-  await expect(page.locator('#roles .nightSituationTimeline')).toHaveCount(1);
-
-  const summary = await page.locator('#nightStatusRow .nightMetricRail').evaluate(el => {
-    const style = getComputedStyle(el);
-    return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
-  });
-  expect(summary.columns).toBe(4);
-  expect(summary.radius).toBeGreaterThanOrEqual(18);
-
-  const dock = await page.locator('.bottom').boundingBox();
-  expect(dock).not.toBeNull();
-  expect(dock.height).toBeLessThanOrEqual(66);
 });
 
 test('version history upgrades its escaped fallback to an on-demand React region', async ({ page }) => {
