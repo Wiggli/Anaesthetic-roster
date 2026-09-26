@@ -815,8 +815,8 @@ test('frontend changelog explains the React version-history migration', async ({
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('isolated React and TypeScript component');
-  await expect(dialog.locator('.releaseHistory')).toContainText('complete escaped HTML release history remains available');
+  await expect(dialog.locator('.releaseHistory')).toContainText('The same repair restores the read-only saved-roster path');
+  await expect(dialog.locator('.releaseHistory')).toContainText('React-owned staffing field');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
@@ -840,6 +840,7 @@ test('complete version history remains usable if its optional React chunk fails'
   await page.route('**/assets/release-notes-*.js', route => route.abort());
   await openShell(page);
   await page.evaluate(() => {
+    window.__forceReleaseNotesFallback = true;
     window.renderReleaseNotes(true);
     const dialog = document.getElementById('releaseNotes');
     if (dialog && !dialog.open) dialog.showModal();

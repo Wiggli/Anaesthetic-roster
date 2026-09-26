@@ -21,7 +21,7 @@ const context = {
   },
   document: {
     visibilityState: 'visible', body: element(), activeElement: null,
-    getElementById() { return element(); }, querySelector() { return null; }, querySelectorAll() { return []; },
+    getElementById(id) { return id === 'absentName' ? null : element(); }, querySelector() { return null; }, querySelectorAll() { return []; },
     createElement() { return element(); }
   },
   window: { supabase: null, AbortController, addEventListener() {}, matchMedia() { return { matches: false }; }, scrollTo() {}, navigator: {} },
@@ -192,6 +192,7 @@ async function run() {
   assert.equal(context.restoreOfflineSnapshot(), true, 'a validated saved roster must open without a network request');
   assert.equal(context.R.length, 138, 'saved-roster recovery must preserve the verified 138-night rotation');
   assert.equal(context.nightChanges['2026-09-18'][0].absent_name, 'James');
+  assert.equal(context.document.getElementById('absentName'), null, 'startup must not require a React-owned staffing field before its component mounts');
 
   let releaseProfile;
   let launchFinishes = 0;
