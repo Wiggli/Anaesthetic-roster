@@ -814,7 +814,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the Liquid Glass mobile redesign', async ({ page }) => {
+test('frontend changelog explains the refined Night interface', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -823,11 +823,29 @@ test('frontend changelog explains the Liquid Glass mobile redesign', async ({ pa
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('Liquid Glass application shell');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Horizontal navigation follows the finger directly');
-  await expect(dialog.locator('.releaseHistory')).toContainText('without changing authentication, Supabase data or roster calculations');
+  await expect(dialog.locator('.releaseHistory')).toContainText('dedicated assignment hero');
+  await expect(dialog.locator('.releaseHistory')).toContainText('integrated four-part information rail');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Roster calculations, staffing rules, authentication, Supabase data, Chat and notifications are unchanged');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
+});
+
+test('Night renders the refined hero, summary rail and grouped roster timeline', async ({ page }) => {
+  await openShell(page);
+  await expect(page.locator('#personalNightCard .personalHeroSurface')).toHaveCount(1);
+  await expect(page.locator('#nightStatusRow .nightMetricRail .metric')).toHaveCount(4);
+  await expect(page.locator('#roles .nightSituationTimeline')).toHaveCount(1);
+
+  const summary = await page.locator('#nightStatusRow .nightMetricRail').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
+  });
+  expect(summary.columns).toBe(4);
+  expect(summary.radius).toBeGreaterThanOrEqual(18);
+
+  const dock = await page.locator('.bottom').boundingBox();
+  expect(dock).not.toBeNull();
+  expect(dock.height).toBeLessThanOrEqual(66);
 });
 
 test('version history upgrades its escaped fallback to an on-demand React region', async ({ page }) => {
