@@ -172,7 +172,7 @@ function BreakGroup({ title, time, names, highlightedName, delay }: {
     initial={reduced ? false : { opacity: 0, y: 7 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: reduced ? 0 : 0.22, delay: reduced ? 0 : delay }}
-    className="tw:relative tw:overflow-hidden tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:shadow-sm dark:tw:border-white/10"
+    className="tw:relative tw:overflow-hidden tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:shadow-sm tw:dark:border-white/10"
   >
     <div className="tw:flex tw:items-start tw:justify-between tw:gap-3">
       <div>
@@ -202,18 +202,18 @@ function BreakGroup({ title, time, names, highlightedName, delay }: {
 
 function BreakPlan({ model }: { model: BreakSummary }) {
   return <div className="tw:grid tw:gap-3">
-    <div className="tw:grid tw:gap-3 md:tw:grid-cols-2">
+    <div className="tw:grid tw:gap-3 tw:md:grid-cols-2">
       <BreakGroup title="First break" time="00:00–03:30 off duty" names={model.first} highlightedName={model.highlightedName} delay={0} />
       <BreakGroup title="Second break" time="03:30–07:00 off duty" names={model.second} highlightedName={model.highlightedName} delay={0.035} />
     </div>
     <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 dark:tw:border-white/10"
+      className="tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:dark:border-white/10"
     >
       <div className="tw:flex tw:items-center tw:justify-between tw:gap-3">
         <h3 className="tw:text-base tw:font-bold">Labour Ward and additional staffing</h3>
-        <span className="tw:rounded-full tw:bg-sky-500/12 tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold tw:text-sky-700 dark:tw:text-sky-300">Live plan</span>
+        <span className="tw:rounded-full tw:bg-sky-500/12 tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold tw:text-sky-700 tw:dark:text-sky-300">Live plan</span>
       </div>
       <div className="tw:mt-3 tw:grid tw:gap-2">
         {model.notes.map(note => <p key={note} className="tw:rounded-xl tw:bg-[var(--surface)] tw:px-3 tw:py-2.5 tw:text-sm tw:leading-relaxed tw:text-[var(--muted)]">{note}</p>)}
@@ -237,7 +237,7 @@ function NightStatus({ model }: { model: NightSummary }) {
       ? { label: model.decisionTasks ? 'Allocation' : 'Confirmation', value: `Review ${model.taskCount}`, tone: 'amber' as const, action: model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation }
       : { label: 'Plan', value: 'Ready', tone: 'teal' as const }
   ];
-  return <div className="tw:grid tw:grid-cols-2 tw:gap-2 sm:tw:grid-cols-4" aria-label="Selected night summary">
+  return <div className="tw:grid tw:grid-cols-2 tw:gap-2 tw:sm:grid-cols-4" aria-label="Selected night summary">
     {items.map(item => <SummaryCard key={item.label} label={item.label} value={item.value} tone={item.tone} onClick={item.action} />)}
   </div>;
 }
@@ -269,12 +269,12 @@ function NightAlerts({ model }: { model: NightSummary }) {
 }
 
 const roleTone: Record<NightRole['tone'], string> = {
-  first: 'tw:bg-indigo-500/12 tw:text-indigo-700 dark:tw:text-indigo-300',
-  second: 'tw:bg-violet-500/12 tw:text-violet-700 dark:tw:text-violet-300',
-  pager: 'tw:bg-amber-500/12 tw:text-amber-700 dark:tw:text-amber-300',
-  reliever: 'tw:bg-teal-500/12 tw:text-teal-700 dark:tw:text-teal-300',
-  seventh: 'tw:bg-sky-500/12 tw:text-sky-700 dark:tw:text-sky-300',
-  full: 'tw:bg-rose-500/12 tw:text-rose-700 dark:tw:text-rose-300'
+  first: 'tw:bg-indigo-500/12 tw:text-indigo-700 tw:dark:text-indigo-300',
+  second: 'tw:bg-violet-500/12 tw:text-violet-700 tw:dark:text-violet-300',
+  pager: 'tw:bg-amber-500/12 tw:text-amber-700 tw:dark:text-amber-300',
+  reliever: 'tw:bg-teal-500/12 tw:text-teal-700 tw:dark:text-teal-300',
+  seventh: 'tw:bg-sky-500/12 tw:text-sky-700 tw:dark:text-sky-300',
+  full: 'tw:bg-rose-500/12 tw:text-rose-700 tw:dark:text-rose-300'
 };
 
 function openRoleEditor() {
@@ -297,9 +297,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     target?.focus({ preventScroll: true });
   };
-  return <motion.article layout className="tw:overflow-hidden tw:rounded-[24px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:shadow-sm dark:tw:border-white/10">
+  return <motion.article layout className="tw:overflow-hidden tw:rounded-[24px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/10">
     <div className="tw:flex tw:items-center tw:gap-3 tw:p-4">
-      <div className="tw:relative tw:flex tw:h-12 tw:w-12 tw:shrink-0 tw:items-center tw:justify-center tw:overflow-hidden tw:rounded-full tw:bg-teal-500/14 tw:text-lg tw:font-extrabold tw:text-teal-700 dark:tw:text-teal-300">
+      <div className="tw:relative tw:flex tw:h-12 tw:w-12 tw:shrink-0 tw:items-center tw:justify-center tw:overflow-hidden tw:rounded-full tw:bg-teal-500/14 tw:text-lg tw:font-extrabold tw:text-teal-700 tw:dark:text-teal-300">
         {model.avatarUrl ? <img src={model.avatarUrl} alt="" className="tw:h-full tw:w-full tw:object-cover" /> : model.initial}
         <span className="tw:absolute tw:bottom-0.5 tw:right-0.5 tw:h-2.5 tw:w-2.5 tw:rounded-full tw:border-2 tw:border-[var(--card)] tw:bg-teal-500" />
       </div>
@@ -309,17 +309,17 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
       <button type="button" onClick={openAccount} className="tw:rounded-full tw:bg-[var(--surface)] tw:px-3 tw:py-2 tw:text-sm tw:font-bold">Edit</button>
     </div>
-    <div className="tw:border-y tw:border-black/6 tw:bg-teal-500/7 tw:px-4 tw:py-4 dark:tw:border-white/8">
+    <div className="tw:border-y tw:border-black/6 tw:bg-teal-500/7 tw:px-4 tw:py-4 tw:dark:border-white/8">
       <div className="tw:flex tw:items-start tw:justify-between tw:gap-3">
         <div>
           <span className="tw:text-[0.7rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">{model.assignmentLabel}</span>
           <h3 className="tw:mt-1 tw:text-xl tw:font-extrabold tw:leading-tight">{model.title}</h3>
           <p className="tw:mt-1 tw:text-sm tw:text-[var(--muted)]">{model.detail}</p>
         </div>
-        {model.changedLabel && <span className="tw:shrink-0 tw:rounded-full tw:bg-amber-500/14 tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:text-amber-700 dark:tw:text-amber-300">{model.changedLabel}</span>}
+        {model.changedLabel && <span className="tw:shrink-0 tw:rounded-full tw:bg-amber-500/14 tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:text-amber-700 tw:dark:text-amber-300">{model.changedLabel}</span>}
       </div>
     </div>
-    <dl className="tw:grid tw:grid-cols-2 tw:gap-px tw:bg-black/6 dark:tw:bg-white/8">
+    <dl className="tw:grid tw:grid-cols-2 tw:gap-px tw:bg-black/6 tw:dark:bg-white/8">
       {[["Time", model.period], ["Break", model.breakLabel], [model.contextLabel, model.context]].map(([label, value], index) => <div key={label} className={`tw:bg-[var(--card)] tw:p-3 ${index === 2 ? 'tw:col-span-2' : ''}`}>
         <dt className="tw:text-[0.68rem] tw:font-bold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">{label}</dt>
         <dd className="tw:mt-1 tw:text-sm tw:font-semibold">{value || 'Pending'}</dd>
@@ -350,7 +350,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
       key={`${item.title}-${item.meta}`}
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent('roster:activity-open', { detail: { index } }))}
-      className="tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3 tw:text-left dark:tw:border-white/10"
+      className="tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3 tw:text-left tw:dark:border-white/10"
     >
       <span className="tw:rounded-full tw:bg-[var(--surface)] tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-[var(--muted)]">{item.label}</span>
       <span className="tw:min-w-0 tw:flex-1"><strong className="tw:block tw:text-sm">{item.title}</strong>{item.detail && <small className="tw:mt-0.5 tw:block tw:truncate tw:text-[var(--muted)]">{item.detail}</small>}<small className="tw:mt-1 tw:block tw:text-xs tw:text-[var(--muted)]">{item.meta}</small></span>
@@ -385,7 +385,7 @@ function NightRoles({ model }: { model: NightSummary }) {
       key={role.key}
       type="button"
       onClick={openRoleEditor}
-      className={`role tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-[20px] tw:border tw:p-3.5 tw:text-left tw:shadow-sm ${role.mine ? 'mine tw:border-teal-500/45 tw:bg-teal-500/8' : 'tw:border-black/8 tw:bg-[var(--card)] dark:tw:border-white/10'}`}
+      className={`role tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-[20px] tw:border tw:p-3.5 tw:text-left tw:shadow-sm ${role.mine ? 'mine tw:border-teal-500/45 tw:bg-teal-500/8' : 'tw:border-black/8 tw:bg-[var(--card)] tw:dark:border-white/10'}`}
       aria-label={`Change this night's ${role.label} allocation`}
     >
       <span className={`tw:flex tw:h-10 tw:min-w-10 tw:items-center tw:justify-center tw:rounded-xl tw:px-2 tw:text-xs tw:font-extrabold ${roleTone[role.tone]}`} aria-hidden="true">
@@ -395,7 +395,7 @@ function NightRoles({ model }: { model: NightSummary }) {
         <span className="tw:block tw:text-base tw:font-bold tw:leading-tight">{role.names}</span>
         <span className="tw:mt-1 tw:block tw:text-xs tw:font-semibold tw:leading-snug tw:text-[var(--muted)]">{role.label} · {role.detail}</span>
       </span>
-      {role.mine ? <span className="tw:rounded-full tw:bg-teal-500/14 tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-teal-700 dark:tw:text-teal-300">You</span> : <span aria-hidden="true" className="tw:text-xl tw:text-[var(--muted)]">›</span>}
+      {role.mine ? <span className="tw:rounded-full tw:bg-teal-500/14 tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-teal-700 tw:dark:text-teal-300">You</span> : <span aria-hidden="true" className="tw:text-xl tw:text-[var(--muted)]">›</span>}
     </motion.button>)}
     {model.extras.length > 0 && <section className="tw:rounded-[20px] tw:border tw:border-dashed tw:border-sky-400/45 tw:bg-sky-400/8 tw:p-4">
       <strong className="tw:text-sm">Additional staff · allocation as required</strong>

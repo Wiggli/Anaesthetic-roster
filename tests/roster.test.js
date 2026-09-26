@@ -311,11 +311,11 @@ assert.ok(navigation.includes('indicatorX.set(clamp(start.barOrigin + dx, firstP
 assert.ok(navigation.includes("const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get())"), 'a long bottom-bar drag must settle on the nearest tab rather than only one neighbour');
 assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;"), 'Chat must no longer be excluded from safe content swipes');
 assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*chatMessageViewport/, 'Chat transcript whitespace must remain eligible for horizontal app swipes');
-assert.ok(navigation.includes("const blockedContentSelector = 'button,a,input,select,textarea,[role=\"button\"],[contenteditable=\"true\"]';"), 'only explicit controls should block a page swipe start');
+assert.ok(navigation.includes("const blockedContentSelector = 'input,select,textarea,[contenteditable=\"true\"]';"), 'text-entry controls must remain protected while tappable rows can participate in deliberate horizontal drags');
 assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*\[tabindex\]/, 'focusable Chat messages must not be rejected solely because they support keyboard actions');
 assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*(nightStatusRow|changesWorkflowTabs|dateNav|chatComposer|chatConversationList)/, 'empty padding inside common page containers must remain swipeable');
-assert.ok(navigation.includes("if (ax >= 10 && ax >= ay * 0.82) first.axis = 'horizontal';"), 'page swipes must tolerate a small diagonal thumb wobble at gesture start');
-assert.ok(navigation.includes("else if (ay >= 14 && ay > ax * 1.25) first.axis = 'vertical';"), 'clearly vertical movement must still yield to normal page scrolling');
+assert.ok(navigation.includes("if (ax >= 10 && ax >= ay * 1.16) first.axis = 'horizontal';"), 'page swipes must require clear horizontal intent before claiming the gesture');
+assert.ok(navigation.includes("else if (ay >= 12 && ay >= ax * 1.12) first.axis = 'vertical';"), 'clearly vertical movement must yield promptly to normal page scrolling');
 assert.match(css, /#chat \.chatMessageViewport,#chat \.chatTeamMessages,#chat \.chatMessages\{touch-action:pan-y\}/, 'Chat transcript scrollers must preserve vertical scroll while exposing horizontal gestures');
 assert.ok(navigation.includes('current.style.transform = \`translate3d(\${offset}px,0,0)\`;'), 'the visible content page must track the finger directly without scale or opacity morphing');
 assert.match(css, /main>\.view\{touch-action:pan-y\}/, 'all primary views including Chat must allow reliable horizontal app gestures while preserving vertical scroll');
@@ -325,6 +325,10 @@ assert.ok(navigation.includes('transitionToRef.current = animateViewChange;'), '
 assert.ok(navigation.includes('animateViewChange(target);'), 'long bottom-bar drags must settle through the shared page-track transition');
 assert.ok(navigation.includes('committingTarget = target;'), 'the final view handoff must preserve the staged destination until the normal view becomes active');
 assert.ok(navigation.includes("pageAnimation = animate(from, to"), 'automatic page settling must use one shared animation value for both screens');
+assert.ok(navigation.includes("type: 'spring'") && navigation.includes("stiffness: 390") && navigation.includes("damping: 38"), 'page settling must use restrained spring physics rather than a fixed tween');
+assert.ok(navigation.includes("if (event.cancelable) event.preventDefault();"), 'claimed horizontal navigation must prevent the browser from stealing the gesture');
+assert.ok(navigation.includes("document.addEventListener('touchmove', onMove, { passive: false });"), 'the authoritative touchmove listener must be able to claim horizontal navigation');
+assert.ok(navigation.includes("const velocity = distance / elapsed;"), 'swipe completion must account for gesture velocity as well as distance');
 assert.ok(navigation.includes("onUpdate: value => setPageTrackOffset(current, preview, value, direction, width)"), 'every animation frame must position both pages from the same track offset');
 assert.ok(navigation.includes("window.viewScrollPositions?.[view]"), 'incoming page staging must use the destination tab\'s saved vertical scroll position');
 assert.match(html, /<section id="today" class="view">[\s\S]*?<header id="appHeader">/, 'Night must own its header so the complete screen moves with the horizontal page track');

@@ -1,0 +1,9 @@
+#changes>.changesDatePanel,#breaks>.panel>.grid2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+#changes>.changesDatePanel .grid2{display:contents}
+#changes>.changesDatePanel label,#breaks>.panel>.grid2>label{min-width:0}
+#changes>.changesDatePanel .dateNav,#breaks>.panel>.grid2 .dateNav{overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:var(--liquid-radius-s);background:var(--liquid-surface-muted)}
+#changes>.changesDatePanel .dateNav button,#changes>.changesDatePanel .prettyDateButton,#breaks>.panel>.grid2 .dateNav button,#breaks>.panel>.grid2 .prettyDateButton{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#changes>.changesDatePanel .staffingCount,#breaks>.panel>.grid2 .staffingCount{min-width:112px;min-height:48px;padding:7px 10px;border:0;border-left:var(--liquid-hairline) solid var(--liquid-separator);border-radius:0;background:transparent;box-shadow:none}
+#changes .confirmHint,#changes .changesWorkflowState,#breaks #breakDate{border:0!important;box-shadow:none!important}
+#changes .confirmHint{padding:8px 2px;background:transparent!important;color:var(--liquid-secondary)}
+@media(max-width:520px){#changes>.changesDatePanel,#breaks>.panel>.grid2{grid-template-columns:1fr}#changes>.changesDatePanel .staffingCount,#breaks>.panel>.grid2 .staffingCount{min-width:0;padding:8px 0 0;border-left:0;border-top:var(--liquid-hairline) solid var(--liquid-separator)}}
