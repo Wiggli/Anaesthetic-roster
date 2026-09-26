@@ -1,13 +1,18 @@
 {
-  "version": "37.49",
-  "date": "26 September 2026",
-  "title": "Compact roster layout restored",
-  "summary": "Night, Changes and Breaks are compact again after the React migration, without changing roster logic.",
+  "version": "37.50",
+  "date": "27 September 2026",
+  "title": "Liquid Glass mobile experience",
+  "summary": "Night Roster now uses a restrained Liquid Glass control layer, direct-manipulation navigation and a clearer mobile-first clinical layout without changing roster logic.",
   "changes": [
-    "Night, Changes and Breaks no longer render a second nested card layer inside the existing clinical surfaces.",
-    "Personal assignment, staffing records, allocation rows, break groups and recent activity use the established compact mobile layout again.",
-    "The React migration remains in place, while the existing Apple-style spacing and clinical hierarchy once again control presentation.",
-    "Roster calculations, Supabase data, authentication, Chat, notifications and clinical decision rules remain unchanged."
+    "A new Liquid Glass application shell gives navigation and key controls a floating, translucent material layer while keeping clinical roster content solid and readable.",
+    "Night, Changes, Breaks and Chat now share one persistent bottom navigation bar with a moving selection lens and physically connected page transitions.",
+    "Horizontal navigation follows the finger directly, uses distance and velocity when settling, preserves page scroll positions and more reliably distinguishes horizontal swipes from vertical scrolling.",
+    "Night presents staffing status and personal allocation with a clearer hierarchy, fewer nested cards and more compact native-style roster rows.",
+    "Changes uses a more cohesive date and staffing context, a moving workflow selector and calmer grouped forms for staffing and allocation tasks.",
+    "Breaks uses the same date language and a cleaner scan-first presentation for first break, second break and Labour Ward or Pager duties.",
+    "Chat now gives conversations greater visual priority while notification preferences and secondary settings are quieter and more structured.",
+    "Header controls, sheets, dark mode, safe-area handling, reduced-motion behaviour and touch targets have been refined for installed mobile use.",
+    "Motion and gesture work is concentrated on transform-based interactions so the interface feels more responsive without changing authentication, Supabase data or roster calculations."
   ],
   "update_policy": "important"
 }
