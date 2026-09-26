@@ -1,3 +1,5 @@
 /* Keep Tailwind's reset out of the existing clinical interface. */
 @import "tailwindcss/theme.css" prefix(tw);
 @import "tailwindcss/utilities.css" prefix(tw);
+
+@import "./liquid-glass.css";
