@@ -1,5 +1,5 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import type { HTMLAttributes, ReactNode } from 'react';
+import { motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
 
 type SurfaceProps = HTMLAttributes<HTMLElement> & {
   as?: 'section' | 'div' | 'article';
@@ -46,7 +46,7 @@ export function StatusBadge({ children, tone = 'neutral' }: { children: ReactNod
   return <span className={`statusBadge statusBadge-${tone}`}>{children}</span>;
 }
 
-export function GlassIconButton({ children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function GlassIconButton({ children, className = '', ...props }: HTMLMotionProps<'button'>) {
   const reduced = useReducedMotion();
   return <motion.button
     {...props}
