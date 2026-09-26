@@ -1,4 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
+import { Metric } from './liquid-ui';
 
 type BreakSummary = {
   date: string;
@@ -206,24 +207,29 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
-  return <>
-    <SummaryChip label="Nurses" value={String(model.nurseCount)} className="staffingChip" />
-    <SummaryChip
+  return <div className="metricGrid nightMetricRail">
+    <Metric label="Nurses" value={String(model.nurseCount)} tone="teal" />
+    <Metric
       label={model.absenceCount === 1 ? 'Absence' : 'Absences'}
       value={model.absenceCount ? String(model.absenceCount) : 'No'}
-      className={model.absenceCount ? 'absenceChip' : 'readyChip'}
+      tone={model.absenceCount ? 'critical' : 'teal'}
       onClick={() => goToChanges('staffing')}
     />
-    <SummaryChip label="Overtime" value={String(model.overtimeCount)} className="overtimeChip" onClick={() => goToChanges('staffing')} />
+    <Metric
+      label="Overtime"
+      value={String(model.overtimeCount)}
+      tone={model.overtimeCount ? 'warning' : 'neutral'}
+      onClick={() => goToChanges('staffing')}
+    />
     {model.taskCount
-      ? <SummaryChip
+      ? <Metric
           label={model.decisionTasks ? (model.taskCount === 1 ? 'Allocation' : 'Allocations') : 'Confirmation'}
           value={`Review ${model.taskCount}`}
-          className="taskChip"
+          tone="warning"
           onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}
         />
-      : <SummaryChip label="Plan" value="Ready" className="readyChip" />}
-  </>;
+      : <Metric label="Plan" value="Ready" tone="teal" />}
+  </div>;
 }
 
 function NightAlerts({ model }: { model: NightSummary }) {
@@ -271,7 +277,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     target?.focus({ preventScroll: true });
   };
 
-  return <>
+  return <article className={`personalHeroSurface personalRole-${tone}`}>
     <div className="personalIdentity">
       <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
         {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}<i />
@@ -300,7 +306,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
       <span aria-hidden="true">›</span>
     </button>
-  </>;
+  </article>;
 }
 
 function PersonalPending({ model }: { model: PersonalNight }) {
@@ -318,7 +324,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
   if (!model.items.length) {
     return <div className="emptyRecentActivity">No staffing changes have been recorded for this night.</div>;
   }
-  return <>
+  return <div className="activityTimeline">
     {model.items.map((item, index) => <button
       key={`${item.type}-${item.title}-${item.meta}-${index}`}
       type="button"
@@ -334,7 +340,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
       </span>
       <i aria-hidden="true">›</i>
     </button>)}
-  </>;
+  </div>;
 }
 
 export function renderPersonalNightExperience(model: PersonalNight) {
@@ -380,21 +386,21 @@ function roleMark(tone: NightRole['tone']) {
 
 function NightRoles({ model }: { model: NightSummary }) {
   return <>
-    {model.roles.map(role => <button
-      key={role.key}
-      type="button"
-      onClick={openRoleEditor}
-      className={`role ${roleClass[role.tone]} ${role.mine ? 'mine' : ''}`}
-      aria-label={`Change this night's ${role.label} allocation`}
-    >
-      <span className={`badge ${badgeClass[role.tone]}`}>{roleMark(role.tone)}</span>
-      <span className="roleCopy">
-        <span className="name">{role.names}</span>
-        <span className="roleMeta">
-          <span className="time">{role.label} · {role.detail}</span>
+    <div className="liquidRosterList nightSituationTimeline">
+      {model.roles.map(role => <button
+        key={role.key}
+        type="button"
+        onClick={openRoleEditor}
+        className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
+        aria-label={`Change this night's ${role.label} allocation`}
+      >
+        <span className="rosterRoleMark">{roleMark(role.tone)}</span>
+        <span className="rosterRowCopy">
+          <span className="rosterRowName">{role.names}</span>
+          <span className="rosterRowMeta">{role.label} · {role.detail}</span>
         </span>
-      </span>
-    </button>)}
+      </button>)}
+    </div>
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}
