@@ -617,10 +617,15 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   });
 
   await expect(page.locator('#personalNightCard')).toContainText('Tonight’s assignment');
+  await expect(page.locator('#personalNightCard > .personalIdentity')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard > article')).toHaveCount(0);
   await expect(page.locator('#roles')).toContainText('André Bartolo');
+  await expect(page.locator('#roles > .role')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Ready');
+  await expect(page.locator('#nightStatusRow > .statusChip')).toHaveCount(4);
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
+  await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
   await expect(page.locator('#breakList')).toContainText('You');
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
@@ -650,10 +655,13 @@ test('typed Changes records render live staffing and expose stable actions', asy
   });
 
   await expect(page.locator('#changeList')).toContainText('André Bartolo');
+  await expect(page.locator('#changeList > .changeItem')).toHaveCount(1);
   await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
   await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
   await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
   await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
+  await expect(page.locator('#overtimeList > .overtimeItem')).toHaveCount(1);
+  await expect(page.locator('#allocationList > .allocationRow')).toHaveCount(1);
   await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
   await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
   await page.locator('#recordCancelAction').click();
@@ -806,7 +814,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the React version-history migration', async ({ page }) => {
+test('frontend changelog explains the compact roster layout repair', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -815,8 +823,8 @@ test('frontend changelog explains the React version-history migration', async ({
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('The same repair restores the read-only saved-roster path');
-  await expect(dialog.locator('.releaseHistory')).toContainText('React-owned staffing field');
+  await expect(dialog.locator('.releaseHistory')).toContainText('second nested card layer');
+  await expect(dialog.locator('.releaseHistory')).toContainText('React migration remains in place');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
