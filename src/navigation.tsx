@@ -53,7 +53,7 @@ function Navigation({ badges }: { badges: Badges }) {
     };
     const observer = new ResizeObserver(measure);
     observer.observe(bar);
-    bar.classList.add('reactTabs');
+    bar.classList.add('reactTabs', 'liquidTabBar');
     measure();
     const sync = (event: Event) => {
       const view = (event as CustomEvent<{ view: string }>).detail.view;
@@ -490,7 +490,7 @@ function Navigation({ badges }: { badges: Badges }) {
       clearContentDrag();
       observer.disconnect();
       animation?.stop();
-      bar.classList.remove('reactTabs');
+      bar.classList.remove('reactTabs', 'liquidTabBar');
     };
   }, [indicatorX, reducedMotion]);
 
