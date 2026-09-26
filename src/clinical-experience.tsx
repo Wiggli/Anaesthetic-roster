@@ -116,24 +116,6 @@ function openAccount() {
   document.getElementById('accountBtn')?.click();
 }
 
-function SummaryChip({
-  label,
-  value,
-  className,
-  onClick
-}: {
-  label: string;
-  value: string;
-  className: string;
-  onClick?: () => void;
-}) {
-  const body = <span><b>{value}</b><small>{label}</small></span>;
-  if (onClick) {
-    return <button type="button" className={`statusChip ${className}`} onClick={onClick}>{body}</button>;
-  }
-  return <div className={`statusChip ${className} informational`}>{body}</div>;
-}
-
 function BreakSummaryItems({ model }: { model: BreakSummary }) {
   return <>
     <button type="button" className="breakSummaryItem staffing" onClick={() => goToChanges('staffing')}>
@@ -356,24 +338,6 @@ export function renderRecentActivityExperience(model: RecentActivity) {
     chip.textContent = model.updated ? 'Updated since last opened' : 'Updated';
   }
 }
-
-const roleClass: Record<NightRole['tone'], string> = {
-  first: 'rFirst',
-  second: 'rSecond',
-  pager: 'rPager',
-  reliever: 'rReliever',
-  seventh: 'r7',
-  full: 'rFull'
-};
-
-const badgeClass: Record<NightRole['tone'], string> = {
-  first: 'bFirst',
-  second: 'bSecond',
-  pager: 'bPager',
-  reliever: 'bReliever',
-  seventh: 'b7',
-  full: 'bFull'
-};
 
 function roleMark(tone: NightRole['tone']) {
   if (tone === 'first') return '1st';
