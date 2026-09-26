@@ -1,13 +1,13 @@
 {
-  "version": "37.46",
-  "date": "25 September 2026",
-  "title": "Reliable swiping over Chat messages",
-  "summary": "Horizontal navigation now starts directly on focusable Chat messages instead of silently rejecting those gestures.",
+  "version": "37.47",
+  "date": "26 September 2026",
+  "title": "React-powered version history",
+  "summary": "The App Updated and complete Version History content now render through an on-demand React and TypeScript region while preserving the existing safe fallback.",
   "changes": [
-    "Horizontal page swipes can now begin directly on Chat message rows as well as on blank transcript space.",
-    "Chat messages remain keyboard-focusable and keep their long-press actions, but focusability no longer makes a message a forbidden swipe-start area.",
-    "This fixes the missed gestures visible in the touch recording where the finger moved horizontally across message text while the Chat page did not move.",
-    "Buttons, links, inputs, text areas, editable fields, vertical scrolling, the viewport-pinned page track, roster logic, Supabase data and authentication remain unchanged."
+    "The App Updated panel and complete Version History are now an isolated React and TypeScript component loaded only when release notes are requested.",
+    "The existing version archive, Latest and Previous updates navigation, light and dark styling, accessibility labels and reduced-motion behaviour are preserved.",
+    "If the optional component cannot load, the complete escaped HTML release history remains available instead of leaving an empty dialog.",
+    "Roster calculations, staffing workflows, Supabase data, authentication, Chat, swipe navigation and the installed PWA identity remain unchanged."
   ],
   "update_policy": "important"
 }
