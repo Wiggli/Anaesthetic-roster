@@ -560,8 +560,8 @@ assert.match(retrySource, /if\(sharedLoadPromise\)try\{await sharedLoadPromise\}
 assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide all recovery feedback while reconnecting');
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount/, 'Night must pass its derived clinical summary into the typed interface');
-assert.match(clinicalExperience, /function NightStatus[\s\S]*label: 'Nurses'[\s\S]*function NightRoles/, 'the typed Night interface must preserve staffing status and allocation cards');
-assert.match(clinicalExperience, /label: model\.decisionTasks \? 'Allocation' : 'Confirmation'[\s\S]*value: `Review \$\{model\.taskCount\}`/, 'Night tasks must use an explicit allocation review label');
+assert.match(clinicalExperience, /function NightStatus[\s\S]*label="Nurses"[\s\S]*function PersonalNightCard/, 'the typed Night interface must preserve staffing status and the personal allocation surface');
+assert.match(clinicalExperience, /label=\{model\.decisionTasks \? \(model\.taskCount === 1 \? 'Allocation' : 'Allocations'\) : 'Confirmation'\}[\s\S]*value=\{`Review \$\{model\.taskCount\}`\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
 assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');
