@@ -92,6 +92,10 @@ window.addEventListener('roster:passkeys', (event: Event) => {
   import('./account-experience').then(({ renderPasskeyExperience }) => renderPasskeyExperience((event as CustomEvent).detail));
 });
 
+window.addEventListener('roster:admin-accounts', (event: Event) => {
+  import('./admin-experience').then(({ renderAdminAccountsExperience }) => renderAdminAccountsExperience((event as CustomEvent).detail));
+});
+
 window.addEventListener('roster:chat-overview', (event: Event) => {
   import('./chat-experience').then(({ renderChatOverview }) => renderChatOverview((event as CustomEvent).detail));
 });

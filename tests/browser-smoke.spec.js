@@ -717,6 +717,32 @@ test('typed account controls preserve appearance and app actions', async ({ page
   expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
 });
 
+test('typed administrator accounts separate pending access and support fast filtering', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:admin-accounts', { detail: {
+      activeCount: 2, inactiveCount: 1, online: true,
+      pending: [{ userId: 'request-1', name: 'Maria Borg', email: 'maria@example.test', requested: '18:42' }],
+      accounts: [
+        { email: 'andre@example.test', name: 'Andre Bartolo', role: 'admin', active: true, current: true },
+        { email: 'maria@example.test', name: 'Maria Borg', role: 'member', active: true, current: false },
+        { email: 'inactive@example.test', name: 'Inactive Member', role: 'member', active: false, current: false }
+      ]
+    } }));
+    document.getElementById('today').classList.add('hidden');
+    document.getElementById('admin').classList.remove('hidden');
+    document.getElementById('adminAccess').classList.remove('hidden');
+  });
+
+  await expect(page.locator('#adminAccountsExperience')).toContainText('Pending access');
+  await expect(page.locator('#adminAccountsExperience')).toContainText('Current account');
+  await expect(page.locator('#accountName')).toHaveAttribute('placeholder', 'Nurse name');
+  await expect(page.locator('#adminAccountsExperience button', { hasText: 'Deactivate' }).first()).toBeDisabled();
+  await page.locator('#adminAccountsExperience input[type="search"]').fill('Inactive');
+  await expect(page.locator('#adminAccountsExperience')).toContainText('Inactive Member');
+  await expect(page.locator('#adminAccountsExperience')).not.toContainText('Andre Bartolo');
+});
+
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
