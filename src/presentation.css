@@ -2108,6 +2108,17 @@ main>.view{min-width:0}
 }
 #changes .stepHeader{margin-bottom:14px!important}
 #changes .continueWorkflowBtn,#changes #saveAllocationsBtn{min-height:52px}
+#changes #allocationFormMessage[data-react-ready="true"]{min-height:0;padding:0;background:none;color:inherit}
+#changes #allocationFormMessage[data-react-ready="true"]::before{display:none}
+.changesFeedback{display:flex;align-items:flex-start;gap:12px;padding:15px 16px;border:1px solid var(--scene-line);border-radius:16px;background:var(--scene-soft);color:var(--scene-ink)}
+.changesFeedbackMark{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--scene-accent);color:#fff;font-size:15px;font-weight:800}
+.changesFeedback strong{display:block;font-size:13px;line-height:1.35}
+.changesFeedback p{margin:3px 0 0;font-size:13px;line-height:1.5;font-weight:500;color:var(--scene-secondary)}
+.changesFeedback--success{background:var(--apple-allocation-fill);color:var(--apple-allocation-label)}
+.changesFeedback--success .changesFeedbackMark{background:var(--apple-green)}
+.changesFeedback--error{background:var(--apple-absence-fill);color:var(--apple-absence-label)}
+.changesFeedback--error .changesFeedbackMark{background:var(--red)}
+.changesFeedback--success p,.changesFeedback--error p{color:inherit}
 #breaks #breakPersonalSummary{margin:0 0 22px}
 .personalBreakSummary{
   padding:22px;border:1px solid var(--scene-line);border-radius:var(--scene-radius);

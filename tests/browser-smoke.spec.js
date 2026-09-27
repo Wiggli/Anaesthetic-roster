@@ -63,6 +63,28 @@ test('mobile shell keeps core views navigable', async ({ page }) => {
   await expect(page.locator('#chatMentionMenu')).toHaveCount(1);
 });
 
+test('Changes save feedback presents a conflict and recovery without changing the message', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => window.formMessage('allocationFormMessage',
+    'This night\'s plan changed on another device. The latest version has been loaded, so please review it and confirm again.', 'error'));
+  const feedback = page.locator('#allocationFormMessage');
+  await expect(feedback).toHaveAttribute('data-react-ready', 'true');
+  await expect(feedback.locator('[role="alert"]')).toContainText('Needs attention');
+  await expect(feedback).toContainText('review it and confirm again');
+  await page.evaluate(() => window.formMessage('allocationFormMessage', 'This night\'s plan confirmed for everyone', 'success'));
+  await expect(feedback.locator('[role="status"]')).toContainText('Shared plan');
+  await expect(feedback).toContainText('confirmed for everyone');
+});
+
+test('Changes feedback retains its plain live message if the optional chunk fails', async ({ page }) => {
+  await page.route('**/assets/changes-feedback-*.js', route => route.abort());
+  await openShell(page);
+  await page.evaluate(() => window.formMessage('allocationFormMessage',
+    'Reconnect to the internet, then press Confirm and share again.', 'error'));
+  await expect(page.locator('#allocationFormMessage')).toHaveText('Reconnect to the internet, then press Confirm and share again.');
+  await expect(page.locator('#allocationFormMessage')).not.toHaveAttribute('data-react-ready', 'true');
+});
+
 test('signed-in React tabs retain badges and keyboard navigation', async ({ page }) => {
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
@@ -932,7 +954,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('What’s new describes the current confirmation review release', async ({ page }) => {
+test('What’s new describes the current release', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -942,9 +964,8 @@ test('What’s new describes the current confirmation review release', async ({ 
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText('changed assignments in grouped rows');
-  await expect(dialog.locator('.releaseHistory')).toContainText('An unresolved allocation is clearly flagged');
-  await expect(dialog.locator('.releaseHistory')).toContainText('deliberate PWA update approval remain unchanged');
+  await expect(dialog.locator('.releaseHistory')).toContainText(release.title);
+  await expect(dialog.locator('.releaseHistory')).toContainText(release.changes[0]);
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
