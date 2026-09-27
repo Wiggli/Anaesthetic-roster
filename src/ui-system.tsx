@@ -58,6 +58,24 @@ export function GlassSurface({
   >{children}</div>;
 }
 
+export function Metric({ label, value, tone = 'neutral', onClick }: {
+  label: string;
+  value: ReactNode;
+  tone?: 'neutral' | 'teal' | 'warning' | 'info' | 'critical';
+  onClick?: () => void;
+}) {
+  const inner = <>
+    <strong>{value}</strong>
+    <span>{label}</span>
+  </>;
+  if (!onClick) return <div className={`metric metric-${tone}`}>{inner}</div>;
+  return <Pressable
+    type="button"
+    className={`metric metric-${tone} metricInteractive`}
+    onClick={onClick}
+  >{inner}</Pressable>;
+}
+
 export function Badge({ children, tone = 'neutral', className = '' }: {
   children: ReactNode;
   tone?: UiTone;
