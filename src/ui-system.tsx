@@ -1,5 +1,5 @@
-import type { ButtonHTMLAttributes, CSSProperties, HTMLAttributes, ReactNode } from 'react';
-import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
+import { LayoutGroup, motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
 
 export function cx(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(' ');
@@ -20,7 +20,7 @@ export function Pressable({
   children,
   className = '',
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+}: HTMLMotionProps<'button'> & { children: ReactNode }) {
   const reduced = useReducedMotion();
   return <motion.button
     {...props}
