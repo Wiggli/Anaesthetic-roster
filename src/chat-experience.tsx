@@ -23,7 +23,7 @@ function ConversationList({ items }: { items: Conversation[] }) {
     <EmptyState title="No private chats yet" detail="Tap New message to start a one-to-one conversation." />
   </Surface>;
 
-  return <GroupedList className="tw:overflow-visible">
+  return <GroupedList className="reactConversationGroup tw:overflow-visible">
     <AnimatePresence initial={false}>
       {items.map((item, index) => <motion.div
         layout
