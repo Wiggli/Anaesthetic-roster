@@ -192,7 +192,23 @@ function BreakPlan({ model }: { model: BreakSummary }) {
   </>;
 }
 
+function PersonalBreak({ model }: { model: BreakSummary }) {
+  const mine = model.highlightedName;
+  const first = model.first.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
+  const second = model.second.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
+  const assignment = model.pending ? 'Awaiting allocation' : first ? 'First break' : second ? 'Second break' : 'Check the plan';
+  return <section className="personalBreakSummary" aria-label="Your break">
+    <span className="personalBreakEyebrow">Your break · {model.formattedDate}</span>
+    <div className="personalBreakMain">
+      <div><h2>{assignment}</h2><p>{model.pending ? model.pendingReason : mine ? `${mine} · ${model.nurseCount} nurses on this night` : 'Choose your name in Account to highlight your break.'}</p></div>
+      <span className="personalBreakMark" aria-hidden="true">{model.pending ? '…' : first ? '1' : second ? '2' : '·'}</span>
+    </div>
+    {!model.pending && !first && !second && <small>For full-night Labour Ward cover, coordinate your break when clinical cover allows.</small>}
+  </section>;
+}
+
 export function renderBreaksExperience(model: BreakSummary) {
+  rootFor('breakPersonalSummary')?.render(<PersonalBreak model={model} />);
   rootFor('breakSummaryRow')?.render(<BreakSummaryItems model={model} />);
   const notice = document.getElementById('breakDate');
   if (notice) notice.classList.toggle('hidden', !model.pending);

@@ -2001,3 +2001,174 @@ html[data-theme="dark"] .bottom.reactTabs{
   transform:translateY(-50%);
 }
 
+
+/* 37.53 presentation system. The legacy engines continue to own data and actions. */
+:root{
+  --scene-bg:#f4f6f7;
+  --scene-surface:#fff;
+  --scene-ink:#17242a;
+  --scene-secondary:#526269;
+  --scene-line:#dce3e5;
+  --scene-accent:#087c77;
+  --scene-soft:#e8f4f2;
+  --scene-radius:20px;
+  --scene-space:clamp(18px,3vw,30px);
+  --scene-shadow:0 1px 3px rgba(17,42,49,.045);
+}
+body.dark,html[data-theme="dark"]{
+  --scene-bg:#101719;
+  --scene-surface:#1b2528;
+  --scene-ink:#f4f8f8;
+  --scene-secondary:#b6c5c7;
+  --scene-line:#354349;
+  --scene-accent:#82dad0;
+  --scene-soft:#233c3c;
+  --scene-shadow:0 1px 3px rgba(0,0,0,.14);
+}
+html{background:var(--scene-bg)}
+body{background:var(--scene-bg);color:var(--scene-ink)}
+main{max-width:1040px;padding-inline:var(--scene-space)}
+main>.view{min-width:0}
+#today>.nightOverviewPanel,#today>.recentActivityPanel,
+#changes>.changesDatePanel,#changes>.changePanel,
+#breaks>.panel,#roster>.panel{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  padding:0!important;margin-block:0 var(--scene-space)!important;
+}
+#today>.nightOverviewPanel{display:flex;flex-direction:column;gap:var(--scene-space)}
+#today>.nightOverviewPanel>.sectionHeadingRow,
+#today>.nightOverviewPanel>.nightSummaryTitle{margin-bottom:-12px!important}
+#today>.nightOverviewPanel #alerts:empty,
+#today>.nightOverviewPanel #fiveArrangement:empty,
+#today>.nightOverviewPanel #personalAllocationNotice:empty{display:none}
+#today .personalNight{order:0;margin:0!important}
+#today .nightDateShell{order:1;margin:0!important;padding:0!important}
+#today .nightSummaryTitle{order:2}
+#today #nightStatusRow{order:3}
+#today #alerts{order:4}
+#today .sectionHeadingRow:not(.nightSummaryTitle){order:5}
+#today #roles{order:6}
+#today #fiveArrangement{order:7}
+#today .rosterShortcutRow{order:8}
+#appHeader{max-width:1040px;margin:0 auto 18px!important;padding-inline:var(--scene-space)!important}
+#appHeader .hospitalStrip{gap:14px}
+#appHeader .hospitalStrip span{font-size:10px!important;letter-spacing:.075em!important}
+#appHeader .motto{font-size:11px!important;white-space:normal!important}
+#appHeader .headActions{gap:4px!important}
+#appHeader .headActions button{min-width:44px;min-height:44px}
+#today .personalNight>.sectionTitle{margin:6px 0 12px!important;font-size:29px!important;line-height:1.12}
+#today #personalNightCard>.personalHeroSurface{
+  border:1px solid var(--scene-line);border-radius:var(--scene-radius);
+  background:var(--scene-surface);box-shadow:var(--scene-shadow);
+}
+#today .personalIdentity{padding:18px 20px!important}
+#today .personalAssignmentHero{padding:18px 20px!important}
+#today .personalRoleCopy b{font-size:clamp(21px,5vw,29px)!important;line-height:1.15!important}
+#today .personalFacts{background:var(--scene-surface)!important}
+#today .personalFacts>div{padding:16px 12px!important}
+#today .personalContextAction{min-height:50px!important}
+#today .nightDateShell .grid2,#changes>.changesDatePanel .grid2,#breaks>.panel>.grid2{
+  padding:12px!important;border:1px solid var(--scene-line)!important;
+  border-radius:var(--scene-radius)!important;background:var(--scene-surface)!important;
+  box-shadow:var(--scene-shadow)!important;
+}
+#today .nightDateShell .dateNav{min-height:54px}
+#today .staffingCount,#changes .staffingCount,#breaks .staffingCount{color:var(--scene-ink)}
+#today .sectionHeadingRow .sectionTitle,#breaks .breakPlanTitle h2{
+  font-size:20px!important;line-height:1.2!important;
+}
+#today #roles>.liquidRosterList,#today #recentActivityList>div,
+#breaks .breakGroup,#chatConversationList>.reactConversationGroup{
+  border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#today #roles .rosterRow{min-height:70px!important;padding:13px 18px!important}
+#today #roles .rosterRow:focus-visible{outline:3px solid var(--scene-accent);outline-offset:-3px}
+#today .rosterShortcutRow{gap:12px!important}
+#today .rosterShortcutBtn{min-height:52px!important;background:var(--scene-surface)!important;border:1px solid var(--scene-line)!important}
+#today .recentActivityPanel{margin-top:8px!important}
+#today .recentActivityPanel .sectionHeadingRow{margin-bottom:12px!important}
+#today .recentActivityRow{min-height:64px!important}
+#changes .changesScreenHeader,#breaks .breaksScreenHeader,
+#chat .chatScreenHeader{padding:14px 0 20px!important;margin:0!important}
+#changes .changesScreenHeader h1,#breaks .breaksScreenHeader h1,#chat .chatScreenHeader h1{
+  font-size:clamp(28px,5vw,36px)!important;line-height:1.1!important;
+}
+#changes .changesWorkflowTabs{
+  margin:18px 0 22px!important;padding:5px!important;border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#changes .changesWorkflowTabs button{min-height:56px!important;padding:7px 6px!important}
+#changes .changesWorkflowTabs button small{display:block!important;font-size:10px!important;line-height:1.2!important}
+#changes .changesStepPane:not(.hidden){display:grid;gap:18px}
+#changes .staffingSection,#changes .confirmationCard,#changes .nightRoleOverrideStep:not(:empty),
+#changes .fixedAllocationBox,#changes .historyBox{
+  padding:18px!important;border:1px solid var(--scene-line)!important;
+  border-radius:var(--scene-radius)!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#changes .stepHeader{margin-bottom:14px!important}
+#changes .continueWorkflowBtn,#changes #saveAllocationsBtn{min-height:52px}
+#breaks #breakPersonalSummary{margin:0 0 22px}
+.personalBreakSummary{
+  padding:22px;border:1px solid var(--scene-line);border-radius:var(--scene-radius);
+  background:var(--scene-surface);box-shadow:var(--scene-shadow);
+}
+.personalBreakEyebrow{display:block;color:var(--scene-accent);font-size:11px;font-weight:750;letter-spacing:.055em;text-transform:uppercase}
+.personalBreakMain{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:13px}
+.personalBreakMain h2{margin:0!important;color:var(--scene-ink);font-size:clamp(24px,5vw,32px)!important;line-height:1.1}
+.personalBreakMain p,.personalBreakSummary>small{display:block;margin:7px 0 0;color:var(--scene-secondary);font-size:13px;line-height:1.5}
+.personalBreakMark{display:grid;flex:none;place-items:center;width:56px;height:56px;border-radius:17px;background:var(--scene-soft);color:var(--scene-accent);font-size:26px;font-weight:750}
+#breaks>.panel>.grid2{margin:0 0 22px!important}
+#breaks .breakSummaryRow{margin-bottom:22px!important}
+#breaks .breakPlanTitle{margin:0 0 14px!important}
+#breaks .breakGroup{overflow:hidden}
+#breaks .breakPerson{min-height:58px}
+#chat .chatTeamConsole,#chat .chatNotificationCard,#chat .chatSafetyNotice{
+  border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#chat .chatTeamConsoleHeader{padding:18px!important}
+#chat .chatTeamMessages,#chat .chatMessages{font-size:14px;line-height:1.5}
+#chat .chatPrivateHeader{margin-top:12px!important}
+#chat .chatNewPrivateBtn{min-height:48px}
+.accountSheet .accountGroup,.onboardingDialog,#releaseNotes .releaseEntry.latest{
+  border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+.authGate{background:var(--scene-bg)!important}
+.authCard{border:1px solid var(--scene-line)!important;border-radius:24px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+.authCard input,.authCard select{min-height:50px}
+.authCard button{min-height:44px}
+.appDialog,.accountSheet,.onboardingDialog,.updateSheet,.chatMessageActionSheet,.chatNewConversationSheet{
+  color:var(--scene-ink);border-color:var(--scene-line);background:var(--scene-surface);
+}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,
+summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--scene-accent);outline-offset:2px}
+@media(max-width:640px){
+  main{padding-inline:16px}
+  #appHeader{padding-inline:16px!important}
+  #today .nightDateShell .grid2{grid-template-columns:minmax(0,1fr)!important}
+  #today .nightDateShell .staffingCount{min-height:0;padding:10px 4px 2px!important}
+  #changes .changesWorkflowTabs button small{font-size:9px!important}
+  #changes .staffingSection,#changes .confirmationCard{padding:16px!important}
+  #breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr)!important}
+  .personalBreakSummary{padding:18px}
+}
+@media(min-width:760px){
+  #today>.nightOverviewPanel{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);align-items:start}
+  #today .personalNight{grid-column:1;grid-row:1 / span 2}
+  #today .nightDateShell{grid-column:2;grid-row:1 / span 2}
+  #today .nightSummaryTitle,#today #nightStatusRow,#today #alerts,#today .sectionHeadingRow:not(.nightSummaryTitle),
+  #today #roles,#today #fiveArrangement,#today .rosterShortcutRow{grid-column:1 / -1}
+  #changes .changesDatePanel .grid2,#breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr) minmax(160px,auto)}
+}
+@media(prefers-reduced-motion:reduce){
+  .personalBreakSummary,.authCard,#today .personalHeroSurface{animation:none!important;transition:none!important}
+}
+/* Keep the sticky header inside the same physical swipe track as its page. */
+#today>#appHeader{max-width:none;width:calc(100% + 24px);margin:0 -12px 18px!important}
+#appHeader .head{min-height:52px}
+#appHeader .motto{max-height:none!important;overflow:visible!important;line-height:1.35!important}
+#today .rosterRow-first{border-left-color:#0d928d!important}
+#today .rosterRow-first .rosterRoleMark{color:#087b78!important;background:#e2f4f1!important;border-color:#a7ded9!important}
+body.dark #today .rosterRow-first .rosterRoleMark{color:#8de2d9!important;background:#193936!important;border-color:#35635f!important}

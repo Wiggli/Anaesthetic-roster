@@ -293,6 +293,15 @@
         </header>
         <div class="panel nightOverviewPanel">
           <h2 class="srOnly">Selected night</h2>
+          <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
+            <h2 id="personalNightHeading" class="sectionTitle">Your night</h2>
+            <div id="personalNightCard" class="personalNightCard"></div>
+            <div id="personalAllocationNotice"></div>
+            <div id="personalNamePicker" class="personalNamePicker hidden">
+              <label class="myNameLabel">Choose your name<select id="myNamePick" aria-label="Choose your name to highlight"><option value="">Select your name</option></select></label>
+              <button type="button" class="mini" id="closeNamePickerBtn">Done</button>
+            </div>
+          </section>
           <div class="nightDateShell">
           <div class="grid2">
             <label
@@ -324,22 +333,6 @@
             </div>
           </div>
           </div>
-          <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
-            <h2 id="personalNightHeading" class="sectionTitle">Your night</h2>
-            <div id="personalNightCard" class="personalNightCard"></div>
-            <div id="personalAllocationNotice"></div>
-            <div id="personalNamePicker" class="personalNamePicker hidden">
-          <label class="myNameLabel"
-                >Choose your name<select
-              id="myNamePick"
-              aria-label="Choose your name to highlight"
-            >
-              <option value="">Select your name</option>
-            </select></label
-          >
-              <button type="button" class="mini" id="closeNamePickerBtn">Done</button>
-            </div>
-          </section>
           <div class="sectionHeadingRow nightSummaryTitle">
             <h2 class="sectionTitle">Night summary</h2>
           </div>
@@ -477,6 +470,7 @@
           <button type="button" class="screenInfoButton" id="breaksInfoBtn" aria-label="Break plan information">i</button>
         </div>
         <div class="panel">
+          <div id="breakPersonalSummary" aria-live="polite"></div>
           <h2>Night summary</h2>
           <div class="grid2">
             <label

@@ -623,6 +623,12 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   });
 
   await expect(page.locator('#personalNightCard')).toContainText('Tonight’s assignment');
+  const nightOrder = await page.evaluate(() => {
+    const hero = document.getElementById('personalNight');
+    const date = document.querySelector('#today .nightDateShell');
+    return Boolean(hero && date && (hero.compareDocumentPosition(date) & Node.DOCUMENT_POSITION_FOLLOWING));
+  });
+  expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
   await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
   await expect(page.locator('#roles')).toContainText('André Bartolo');
@@ -643,6 +649,8 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
   await expect(page.locator('#breakList')).toContainText('You');
+  await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
+  await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
