@@ -118,21 +118,26 @@ function RecordList({ records, empty }: { records: StaffingRecord[]; empty: stri
 }
 
 function History({ model }: { model: ChangesExperience }) {
-  return <>
+  return <Surface className="tw:divide-y tw:divide-black/7 tw:shadow-none tw:dark:divide-white/8">
     {model.history.length
-      ? model.history.map((item, index) => <div key={`${item.type}-${item.title}-${item.meta}-${index}`} className="historyItem">
-          <div><span className={`historyType ${item.type}`}>{item.label}</span><b>{item.title}</b></div>
-          {(item.detail || item.meta) && <div className="changeMeta">{[item.detail, item.meta].filter(Boolean).join(' · ')}</div>}
-        </div>)
-      : <EmptyRecord>No staffing change history for this night.</EmptyRecord>}
-    {model.historyTotal > 15 && <button
-      type="button"
-      className="historyMore"
-      onClick={() => dispatchAction({ action: 'history' })}
-    >
-      {model.historyExpanded ? 'Show recent changes' : `Show full history (${model.historyTotal})`}
-    </button>}
-  </>;
+      ? model.history.map((item, index) => <ListRow
+          key={`${item.type}-${item.title}-${item.meta}-${index}`}
+          className="historyItem"
+          leading={<Badge tone={item.type === 'absence' ? 'danger' : item.type === 'overtime' ? 'warning' : 'accent'}>{item.label}</Badge>}
+          title={item.title}
+          subtitle={[item.detail, item.meta].filter(Boolean).join(' · ')}
+        />)
+      : <EmptyState title="No staffing change history for this night" />}
+    {model.historyTotal > 15 && <div className="tw:p-2.5">
+      <Pressable
+        type="button"
+        className="historyMore tw:min-h-10 tw:w-full tw:rounded-xl tw:bg-black/5 tw:px-3 tw:text-xs tw:font-bold tw:text-[var(--accent-strong)] tw:dark:bg-white/8"
+        onClick={() => dispatchAction({ action: 'history' })}
+      >
+        {model.historyExpanded ? 'Show recent changes' : `Show full history (${model.historyTotal})`}
+      </Pressable>
+    </div>}
+  </Surface>;
 }
 
 function AllocationList({ model }: { model: ChangesExperience }) {
@@ -169,44 +174,43 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
     dispatchAction({ action: 'staffing-mounted' });
   }, [model, mode]);
 
+  const inputClass = 'tw:min-h-11 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12';
+
   if (mode === 'absence') {
-    return <>
-      <div className="time">Select the absent nurse. You can arrange cover afterwards.</div>
-      <div className="changeGrid">
-        <label>
-          Nurse
-          <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })}>
+    return <div className="tw:grid tw:gap-3">
+      <p className="tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Select the absent nurse. You can arrange cover afterwards.</p>
+      <div className="changeGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
+        <FieldShell label="Nurse">
+          <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
             <option value="">{model.forms.names.length ? 'Choose a nurse' : 'Every rostered nurse is already absent'}</option>
             {model.forms.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}
           </select>
-        </label>
-        <label>
-          Reason
-          <select id="changeReason" defaultValue="Leave" onChange={() => dispatchAction({ action: 'staffing-input' })}>
+        </FieldShell>
+        <FieldShell label="Reason">
+          <select id="changeReason" defaultValue="Leave" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
             {['Leave', 'Sick leave', 'Other absence', 'Reassigned elsewhere'].map(reason => <option key={reason}>{reason}</option>)}
           </select>
-        </label>
+        </FieldShell>
       </div>
-      <button className="primary wide" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
+      <Pressable className="primary wide tw:min-h-11" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
         {model.forms.editing ? 'Update absence' : 'Save absence'}
-      </button>
-      <button
-        className={`soft wide ${model.forms.editing ? '' : 'hidden'}`}
+      </Pressable>
+      <Pressable
+        className={`soft wide tw:min-h-11 ${model.forms.editing ? '' : 'hidden'}`}
         id="cancelAbsenceEditBtn"
         type="button"
         onClick={() => dispatchAction({ action: 'absence-cancel' })}
       >
         Cancel editing
-      </button>
+      </Pressable>
       <div id="absenceFormMessage" className="formMessage" role="status" aria-live="polite" />
-    </>;
+    </div>;
   }
 
-  return <>
-    <div className="time">Add confirmed overtime staff. Their role can be assigned afterwards.</div>
-    <div className="overtimeAdd">
-      <label>
-        Overtime nurse
+  return <div className="tw:grid tw:gap-3">
+    <p className="tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Add confirmed overtime staff. Their role can be assigned afterwards.</p>
+    <div className="overtimeAdd tw:flex tw:items-end tw:gap-2">
+      <FieldShell label="Overtime nurse" className="tw:min-w-0 tw:flex-1">
         <input
           id="overtimeName"
           type="text"
@@ -218,17 +222,18 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
           onKeyDown={event => {
             if (event.key === 'Enter') dispatchAction({ action: 'overtime-save' });
           }}
+          className={inputClass}
         />
         <datalist id="overtimeSuggestions">
           {model.forms.overtimeSuggestions.map(name => <option key={name} value={name} />)}
         </datalist>
-      </label>
-      <button className="soft" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
+      </FieldShell>
+      <Pressable className="soft tw:min-h-11 tw:shrink-0" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
         Add overtime
-      </button>
+      </Pressable>
     </div>
     <div id="overtimeFormMessage" className="formMessage" role="status" aria-live="polite" />
-  </>;
+  </div>;
 }
 
 function RoleOverrideEditor({ model }: { model: RoleOverride }) {
