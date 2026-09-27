@@ -679,13 +679,13 @@ test('typed Changes records render live staffing and expose stable actions', asy
   });
 
   await expect(page.locator('#changeList')).toContainText('André Bartolo');
-  await expect(page.locator('#changeList > .changeItem')).toHaveCount(1);
+  await expect(page.locator('#changeList > .changesRecordGroup > .changeItem')).toHaveCount(1);
   await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
   await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
   await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
   await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
-  await expect(page.locator('#overtimeList > .overtimeItem')).toHaveCount(1);
-  await expect(page.locator('#allocationList > .allocationRow')).toHaveCount(1);
+  await expect(page.locator('#overtimeList > .changesRecordGroup > .overtimeItem')).toHaveCount(1);
+  await expect(page.locator('#allocationList > .changesAllocationGroup > .allocationRow')).toHaveCount(1);
   await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
   await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
   await page.locator('#recordCancelAction').click();
@@ -697,6 +697,51 @@ test('typed Changes records render live staffing and expose stable actions', asy
     expect.objectContaining({ action: 'record', kind: 'absence', id: 'absence-1' }),
     expect.objectContaining({ action: 'allocation-select', key: 'first1', value: 'overtime-1' })
   ]));
+});
+
+test('React Changes journey shows decisions and supports keyboard step selection', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show('changes');
+    window.__workflowRequests = [];
+    window.addEventListener('roster:changes-step-request', event => window.__workflowRequests.push(event.detail.step));
+    window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
+      active: 'staffing',
+      steps: [
+        { id: 'staffing', label: 'Staffing', detail: '1 absent · 1 overtime', complete: true, attention: false, quiet: false },
+        { id: 'allocation', label: 'Allocation', detail: '1 decision', complete: false, attention: true, quiet: false },
+        { id: 'confirm', label: 'Confirm', detail: 'After allocation', complete: false, attention: false, quiet: false }
+      ],
+      headline: 'Choose a nurse for First Part 1',
+      guidance: 'Choose a nurse, then review the changes.',
+      tone: 'attention'
+    }}));
+  });
+  const journey = page.locator('#changesWorkflowExperience');
+  await expect(journey).toHaveAttribute('data-react-ready', 'true');
+  await expect(journey.locator('[role="status"]')).toContainText('Choose a nurse for First Part 1');
+  await expect(page.locator('#changes .changesWorkflowTabs')).toBeHidden();
+  const staffing = journey.locator('[data-changes-step="staffing"]');
+  await expect(staffing).toHaveAttribute('aria-selected', 'true');
+  await staffing.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(journey.locator('[data-changes-step="allocation"]')).toBeFocused();
+  await journey.locator('[data-changes-step="confirm"]').click();
+  expect(await page.evaluate(() => window.__workflowRequests)).toEqual(['allocation', 'confirm']);
+});
+
+test.describe('Changes journey load failure', () => {
+test.use({ serviceWorkers: 'block' });
+test('retains the original controls when its optional chunk fails', async ({ page }) => {
+  await page.route('**/assets/changes-workflow-*.js', route => route.abort());
+  await openShell(page);
+  await page.evaluate(() => { window.show('changes'); window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
+    active: 'staffing', steps: [], headline: '', guidance: '', tone: 'automatic'
+  } })); });
+  await expect(page.locator('#changesWorkflowExperience')).not.toHaveAttribute('data-react-ready', 'true');
+  await expect(page.locator('#changes .changesWorkflowTabs')).toBeVisible();
+  await expect(page.locator('#changes .changesWorkflowTabs [data-changes-step]')).toHaveCount(3);
+});
 });
 
 test('typed full-roster cards render searchable clinical summaries and open a night', async ({ page }) => {
@@ -854,7 +899,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('What’s new describes the personal-first release', async ({ page }) => {
+test('What’s new describes the current guided Changes release', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -864,9 +909,9 @@ test('What’s new describes the personal-first release', async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Your allocation now leads the Night screen');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Breaks shows a personal first or second break');
-  await expect(dialog.locator('.releaseHistory')).toContainText('explicit PWA update approval flow');
+  await expect(dialog.locator('.releaseHistory')).toContainText('A guided Staffing, Allocation and Confirm control');
+  await expect(dialog.locator('.releaseHistory')).toContainText('simpler grouped rows');
+  await expect(dialog.locator('.releaseHistory')).toContainText('explicit update approval remain unchanged');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
@@ -886,6 +931,8 @@ test('version history upgrades its escaped fallback to an on-demand React region
   await expect(dialog.locator('.releaseHistory')).toHaveAttribute('aria-label', 'Complete Night Roster version history');
 });
 
+test.describe('version history load failure', () => {
+test.use({ serviceWorkers: 'block' });
 test('complete version history remains usable if its optional React chunk fails', async ({ page }) => {
   await page.route('**/assets/release-notes-*.js', route => route.abort());
   await openShell(page);
@@ -900,6 +947,7 @@ test('complete version history remains usable if its optional React chunk fails'
   await expect(dialog.locator('.releaseEntry')).toHaveCount(await page.evaluate(() => window.RELEASE_HISTORY.length));
   await expect(dialog.locator('.releaseNav')).toBeVisible();
   await expect(dialog.locator('.releaseHistory')).toContainText('React-powered version history');
+});
 });
 
 test('worker keeps private backend traffic out of caches and navigates offline', async ({ page, context }) => {

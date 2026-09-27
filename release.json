@@ -1,15 +1,13 @@
 {
-  "version": "37.53",
+  "version": "37.54",
   "date": "27 September 2026",
-  "title": "Personal-first interface foundation",
-  "summary": "Night now opens with your own allocation, Breaks leads with your own break, and the main screens share a clearer visual system for clinical information and controls.",
+  "title": "Guided Changes workflow",
+  "summary": "Staffing, Allocation and Confirm now form a clearer guided journey, with decision guidance and more scannable records and role choices.",
   "changes": [
-    "Your allocation now leads the Night screen, followed by the selected night, staffing summary, live team and recent activity.",
-    "Breaks shows a personal first or second break summary above the full team plan, while pending allocations remain clearly provisional.",
-    "Night, Changes, Breaks, Chat, Account, authentication, dialogs and update surfaces share calmer spacing, solid information surfaces and restrained glass for navigation.",
-    "The presentation styles now have one ordered source instead of seven separate cascading override files, with existing React view models and roster actions preserved.",
-    "The current release dialog is titled What’s new, with the complete version history still available from Account.",
-    "The roster rotation, staffing and allocation rules, Supabase access, push and chat delivery, and explicit PWA update approval flow remain unchanged."
+    "A guided Staffing, Allocation and Confirm control shows the current step, pending decisions and what to do next.",
+    "Staffing records and selected-night allocation choices use simpler grouped rows and larger controls on phones.",
+    "The original step controls remain available if the optional presentation component cannot load.",
+    "Existing staffing validation, allocation rules, confirmation, shared data and explicit update approval remain unchanged."
   ],
   "update_policy": "important"
 }
