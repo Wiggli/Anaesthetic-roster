@@ -735,8 +735,14 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
   await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
   await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
+  const appearanceSurface = page.locator('#appearanceExperience > div');
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+  const lightAppearanceBackground = await appearanceSurface.evaluate(el => getComputedStyle(el).backgroundColor);
   await page.locator('#appearanceExperience button', { hasText: 'Dark' }).click();
   await expect(page.locator('#appearanceExperience button', { hasText: 'Dark' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const darkAppearanceBackground = await appearanceSurface.evaluate(el => getComputedStyle(el).backgroundColor);
+  expect(darkAppearanceBackground).not.toBe(lightAppearanceBackground);
   const actions = await page.evaluate(() => window.__accountActions);
   expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
 });
@@ -792,6 +798,16 @@ test('typed Chat overview renders private conversations and registered members',
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
+  await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
+  const composerMaterial = await page.locator('#chatTeamComposer .chatComposerGlass').evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
+      radius: parseFloat(style.borderRadius)
+    };
+  });
+  expect(composerMaterial.backdrop).not.toBe('none');
+  expect(composerMaterial.radius).toBeGreaterThanOrEqual(20);
   await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
   await page.locator('#chatTeamInput').fill('x'.repeat(1600));
   await expect(page.locator('#chatTeamCharacterCount')).toBeVisible();
@@ -830,7 +846,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the refined Night interface', async ({ page }) => {
+test('frontend changelog explains the shared React interface system', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -839,9 +855,10 @@ test('frontend changelog explains the refined Night interface', async ({ page })
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('dedicated assignment hero');
-  await expect(dialog.locator('.releaseHistory')).toContainText('integrated four-part information rail');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Roster calculations, staffing rules, authentication, Supabase data, Chat and notifications are unchanged');
+  await expect(dialog.locator('.releaseHistory')).toContainText('reusable React interface system');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Tailwind container queries');
+  await expect(dialog.locator('.releaseHistory')).toContainText('floating Liquid Glass capsule');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Authentication, Supabase data, roster calculations');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

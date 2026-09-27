@@ -1,5 +1,6 @@
 import { useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { Badge, EmptyState, FieldShell, ListRow, Pressable, Surface } from './ui-system';
 
 type StaffingRecord = {
   id: string;
@@ -76,7 +77,7 @@ function dispatchAction(detail: Record<string, unknown>) {
 }
 
 function EmptyRecord({ children }: { children: string }) {
-  return <div className="time">{children}</div>;
+  return <Surface className="tw:shadow-none"><EmptyState title={children} /></Surface>;
 }
 
 function RecordList({ records, empty }: { records: StaffingRecord[]; empty: string }) {
@@ -84,60 +85,59 @@ function RecordList({ records, empty }: { records: StaffingRecord[]; empty: stri
 
   return <>
     {records.map(record => record.kind === 'absence'
-      ? <div key={`absence-${record.id}`} className="changeItem" data-absence-name={record.name}>
-          <div>
-            <div><b>{record.name}</b> <span className="changeArrow">•</span> <b>{record.status}</b></div>
-            <div className="changeMeta">{record.meta}</div>
-          </div>
-          <button
+      ? <ListRow
+          key={`absence-${record.id}`}
+          className="changeItem tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/9"
+          title={<span className="tw:flex tw:items-center tw:gap-2"><span>{record.name}</span><Badge tone="danger">{record.status}</Badge></span>}
+          subtitle={record.meta}
+          trailing={<Pressable
             type="button"
-            className="recordMoreButton"
+            className="recordMoreButton tw:grid tw:min-h-10 tw:min-w-10 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
             onClick={() => dispatchAction({ action: 'record', kind: record.kind, id: record.id, name: record.name })}
             aria-label={`More actions for ${record.name}`}
-          >
-            <span aria-hidden="true">•••</span><small>More</small>
-          </button>
-        </div>
-      : <div key={`overtime-${record.id}`} className="overtimeItem" data-overtime-name={record.name}>
-          <div className="overtimeTop">
-            <div>
-              <div className="overtimeName">{record.name}</div>
-              {record.needsAllocation
-                ? <button type="button" className="overtimeStatus taskStatus" onClick={() => dispatchAction({ action: 'allocation' })}>
-                    {record.status} ›
-                  </button>
-                : <span className="overtimeStatus assigned">{record.status}</span>}
-              <div className="changeMeta">{record.meta}</div>
-            </div>
-            <button
+          ><span aria-hidden="true">•••</span><small className="tw:sr-only">More</small></Pressable>}
+        />
+      : <ListRow
+          key={`overtime-${record.id}`}
+          className="overtimeItem tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/9"
+          title={record.name}
+          subtitle={record.meta}
+          trailing={<span className="tw:flex tw:items-center tw:gap-2">
+            {record.needsAllocation
+              ? <Pressable type="button" className="overtimeStatus taskStatus tw:rounded-full tw:bg-amber-500/12 tw:px-2.5 tw:py-1.5 tw:text-[0.68rem] tw:font-bold tw:text-amber-700 tw:dark:text-amber-300" onClick={() => dispatchAction({ action: 'allocation' })}>{record.status} ›</Pressable>
+              : <Badge tone="success">{record.status}</Badge>}
+            <Pressable
               type="button"
-              className="recordMoreButton"
+              className="recordMoreButton tw:grid tw:min-h-10 tw:min-w-10 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
               onClick={() => dispatchAction({ action: 'record', kind: record.kind, id: record.id, name: record.name })}
               aria-label={`More actions for ${record.name}`}
-            >
-              <span aria-hidden="true">•••</span><small>More</small>
-            </button>
-          </div>
-        </div>)}
+            ><span aria-hidden="true">•••</span><small className="tw:sr-only">More</small></Pressable>
+          </span>}
+        />)}
   </>;
 }
 
 function History({ model }: { model: ChangesExperience }) {
-  return <>
+  return <Surface className="tw:divide-y tw:divide-black/7 tw:shadow-none tw:dark:divide-white/8">
     {model.history.length
-      ? model.history.map((item, index) => <div key={`${item.type}-${item.title}-${item.meta}-${index}`} className="historyItem">
-          <div><span className={`historyType ${item.type}`}>{item.label}</span><b>{item.title}</b></div>
-          {(item.detail || item.meta) && <div className="changeMeta">{[item.detail, item.meta].filter(Boolean).join(' · ')}</div>}
-        </div>)
-      : <EmptyRecord>No staffing change history for this night.</EmptyRecord>}
-    {model.historyTotal > 15 && <button
-      type="button"
-      className="historyMore"
-      onClick={() => dispatchAction({ action: 'history' })}
-    >
-      {model.historyExpanded ? 'Show recent changes' : `Show full history (${model.historyTotal})`}
-    </button>}
-  </>;
+      ? model.history.map((item, index) => <ListRow
+          key={`${item.type}-${item.title}-${item.meta}-${index}`}
+          className="historyItem"
+          leading={<Badge tone={item.type === 'absence' ? 'danger' : item.type === 'overtime' ? 'warning' : 'accent'}>{item.label}</Badge>}
+          title={item.title}
+          subtitle={[item.detail, item.meta].filter(Boolean).join(' · ')}
+        />)
+      : <EmptyState title="No staffing change history for this night" />}
+    {model.historyTotal > 15 && <div className="tw:p-2.5">
+      <Pressable
+        type="button"
+        className="historyMore tw:min-h-10 tw:w-full tw:rounded-xl tw:bg-black/5 tw:px-3 tw:text-xs tw:font-bold tw:text-[var(--accent-strong)] tw:dark:bg-white/8"
+        onClick={() => dispatchAction({ action: 'history' })}
+      >
+        {model.historyExpanded ? 'Show recent changes' : `Show full history (${model.historyTotal})`}
+      </Pressable>
+    </div>}
+  </Surface>;
 }
 
 function AllocationList({ model }: { model: ChangesExperience }) {
@@ -145,24 +145,27 @@ function AllocationList({ model }: { model: ChangesExperience }) {
     dispatchAction({ action: 'allocation-mounted' });
   }, [model]);
 
-  if (!model.allocations.length) return <div className="time">{model.allocationMessage}</div>;
+  if (!model.allocations.length) return <Surface className="tw:shadow-none">
+    <EmptyState title={model.allocationMessage || 'No allocation decisions are waiting'} />
+  </Surface>;
 
   return <>
-    {model.allocations.map(row => <div key={row.key} className="allocationRow">
-      <div>
-        <div className="allocationRole">{row.label}</div>
-        <div className="allocationBreak">{row.breakLabel}</div>
-      </div>
-      <select
+    {model.allocations.map(row => <ListRow
+      key={row.key}
+      className="allocationRow tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/9"
+      title={row.label}
+      subtitle={row.breakLabel}
+      trailing={<select
         defaultValue={row.selectedId}
         data-final-allocation={row.key}
         aria-label={`Choose nurse for ${row.label}`}
         onChange={event => dispatchAction({ action: 'allocation-select', key: row.key, value: event.target.value })}
+        className="tw:min-h-10 tw:max-w-44 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-2.5 tw:text-xs tw:font-semibold tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12"
       >
         <option value="">Choose a nurse</option>
         {row.options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
-      </select>
-    </div>)}
+      </select>}
+    />)}
   </>;
 }
 
@@ -171,44 +174,43 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
     dispatchAction({ action: 'staffing-mounted' });
   }, [model, mode]);
 
+  const inputClass = 'tw:min-h-11 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12';
+
   if (mode === 'absence') {
-    return <>
-      <div className="time">Select the absent nurse. You can arrange cover afterwards.</div>
-      <div className="changeGrid">
-        <label>
-          Nurse
-          <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })}>
+    return <div className="tw:grid tw:gap-3">
+      <p className="tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Select the absent nurse. You can arrange cover afterwards.</p>
+      <div className="changeGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
+        <FieldShell label="Nurse">
+          <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
             <option value="">{model.forms.names.length ? 'Choose a nurse' : 'Every rostered nurse is already absent'}</option>
             {model.forms.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}
           </select>
-        </label>
-        <label>
-          Reason
-          <select id="changeReason" defaultValue="Leave" onChange={() => dispatchAction({ action: 'staffing-input' })}>
+        </FieldShell>
+        <FieldShell label="Reason">
+          <select id="changeReason" defaultValue="Leave" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
             {['Leave', 'Sick leave', 'Other absence', 'Reassigned elsewhere'].map(reason => <option key={reason}>{reason}</option>)}
           </select>
-        </label>
+        </FieldShell>
       </div>
-      <button className="primary wide" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
+      <Pressable className="primary wide tw:min-h-11" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
         {model.forms.editing ? 'Update absence' : 'Save absence'}
-      </button>
-      <button
-        className={`soft wide ${model.forms.editing ? '' : 'hidden'}`}
+      </Pressable>
+      <Pressable
+        className={`soft wide tw:min-h-11 ${model.forms.editing ? '' : 'hidden'}`}
         id="cancelAbsenceEditBtn"
         type="button"
         onClick={() => dispatchAction({ action: 'absence-cancel' })}
       >
         Cancel editing
-      </button>
+      </Pressable>
       <div id="absenceFormMessage" className="formMessage" role="status" aria-live="polite" />
-    </>;
+    </div>;
   }
 
-  return <>
-    <div className="time">Add confirmed overtime staff. Their role can be assigned afterwards.</div>
-    <div className="overtimeAdd">
-      <label>
-        Overtime nurse
+  return <div className="tw:grid tw:gap-3">
+    <p className="tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Add confirmed overtime staff. Their role can be assigned afterwards.</p>
+    <div className="overtimeAdd tw:flex tw:items-end tw:gap-2">
+      <FieldShell label="Overtime nurse" className="tw:min-w-0 tw:flex-1">
         <input
           id="overtimeName"
           type="text"
@@ -220,17 +222,18 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
           onKeyDown={event => {
             if (event.key === 'Enter') dispatchAction({ action: 'overtime-save' });
           }}
+          className={inputClass}
         />
         <datalist id="overtimeSuggestions">
           {model.forms.overtimeSuggestions.map(name => <option key={name} value={name} />)}
         </datalist>
-      </label>
-      <button className="soft" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
+      </FieldShell>
+      <Pressable className="soft tw:min-h-11 tw:shrink-0" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
         Add overtime
-      </button>
+      </Pressable>
     </div>
     <div id="overtimeFormMessage" className="formMessage" role="status" aria-live="polite" />
-  </>;
+  </div>;
 }
 
 function RoleOverrideEditor({ model }: { model: RoleOverride }) {
