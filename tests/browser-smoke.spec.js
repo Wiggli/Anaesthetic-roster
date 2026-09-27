@@ -846,7 +846,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the refined Night interface', async ({ page }) => {
+test('frontend changelog explains the shared React interface system', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -855,9 +855,10 @@ test('frontend changelog explains the refined Night interface', async ({ page })
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('dedicated assignment hero');
-  await expect(dialog.locator('.releaseHistory')).toContainText('integrated four-part information rail');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Roster calculations, staffing rules, authentication, Supabase data, Chat and notifications are unchanged');
+  await expect(dialog.locator('.releaseHistory')).toContainText('reusable React interface system');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Tailwind container queries');
+  await expect(dialog.locator('.releaseHistory')).toContainText('floating Liquid Glass capsule');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Authentication, Supabase data, roster calculations');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
