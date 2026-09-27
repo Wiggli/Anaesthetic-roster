@@ -2186,3 +2186,96 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
 #breakSummaryRow .breakSummaryItem small{display:block;margin-top:4px;font-size:11px!important;line-height:1.2!important;white-space:normal!important}
 #breakSummaryRow .breakSummaryItem.labour b{font-size:12px!important}
 @media(max-width:540px){#changes .changesWorkflowTabs button small{display:none!important}}
+
+/* React-owned Changes journey. The original controls stay as a load-failure fallback. */
+#changes #absenceFormExperience>div,
+#changes #overtimeFormExperience>div{
+  padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
+}
+#changes #changeList:not(:empty),#changes #overtimeList:not(:empty){margin-top:16px}
+#changesWorkflowExperience[data-react-ready="true"]+.changesWorkflowTabs,
+#changesWorkflowExperience[data-react-ready="true"]~#changesWorkflowState{display:none!important}
+#changes .workflowExperience{margin:18px 0 22px;scroll-margin-top:max(20px,env(safe-area-inset-top))}
+#changes .workflowSteps{
+  position:sticky;top:max(8px,env(safe-area-inset-top));z-index:20;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+  padding:5px;border:1px solid var(--scene-line);border-radius:21px;
+  background:var(--liquid-glass-elevated);box-shadow:var(--scene-shadow);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+}
+#changes .workflowStep{
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
+  gap:8px;min-width:0;min-height:64px;padding:8px 6px;border:0;border-radius:16px;
+  background:transparent;box-shadow:none;color:var(--scene-secondary);text-align:left;
+}
+#changes .workflowStep.active{color:var(--scene-ink)}
+#changes .workflowSelection{
+  position:absolute;inset:0;z-index:-1;border:1px solid var(--scene-line);
+  border-radius:16px;background:var(--scene-surface);box-shadow:0 2px 8px rgba(13,43,47,.07);
+}
+#changes .workflowStepNumber{
+  display:grid;flex:none;place-items:center;width:28px;height:28px;border-radius:10px;
+  background:var(--scene-soft);color:var(--scene-accent);font-size:12px;font-weight:750;
+}
+#changes .workflowStep.hasTasks:not(.active) .workflowStepNumber{
+  background:color-mix(in srgb,var(--liquid-warning) 16%,var(--scene-surface));color:var(--liquid-warning);
+}
+#changes .workflowStepCopy{display:grid;min-width:0;gap:2px}
+#changes .workflowStepCopy b{font-size:13px;font-weight:750;line-height:1.2}
+#changes .workflowStepCopy small{
+  overflow:hidden;color:var(--scene-secondary);font-size:10px;font-weight:560;
+  line-height:1.25;text-overflow:ellipsis;white-space:nowrap;
+}
+#changes .workflowGuidance{
+  display:flex;align-items:flex-start;gap:12px;margin-top:12px;padding:14px 16px;
+  border:1px solid var(--scene-line);border-radius:17px;background:var(--scene-surface);
+}
+#changes .workflowGuidanceMark{
+  display:grid;flex:none;place-items:center;width:25px;height:25px;border-radius:9px;
+  background:var(--scene-soft);color:var(--scene-accent);font-size:15px;font-weight:750;
+}
+#changes .workflowGuidance strong{display:block;color:var(--scene-ink);font-size:13px;line-height:1.35}
+#changes .workflowGuidance small{display:block;margin-top:3px;color:var(--scene-secondary);font-size:12px;line-height:1.45}
+#changes .workflowGuidance-attention{border-color:color-mix(in srgb,var(--liquid-warning) 32%,var(--scene-line));background:color-mix(in srgb,var(--liquid-warning) 5%,var(--scene-surface))}
+#changes .workflowGuidance-attention .workflowGuidanceMark{background:color-mix(in srgb,var(--liquid-warning) 16%,var(--scene-surface));color:var(--liquid-warning)}
+#changes .workflowGuidance-automatic{padding:11px 14px;border-style:dashed}
+#changes .workflowGuidance-automatic strong{font-size:12px}
+@media(max-width:410px){
+  #changes .workflowStep{flex-direction:column;gap:4px;min-height:66px;padding:6px 2px;text-align:center}
+  #changes .workflowStepNumber{width:23px;height:23px;border-radius:8px}
+  #changes .workflowStepCopy b{font-size:11px}
+  #changes .workflowStepCopy small{display:none}
+}
+@media(prefers-reduced-transparency:reduce){#changes .workflowSteps{background:var(--scene-surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
+#changes .changesEmptyRecord{padding:8px 0;color:var(--scene-secondary)}
+#changes .changesEmptyRecord>div{min-height:76px;padding:10px;text-align:left}
+#changes #changeList>.changesRecordGroup,
+#changes #overtimeList>.changesRecordGroup,
+#changes #allocationList>.changesAllocationGroup{
+  overflow:hidden;border:1px solid var(--scene-line);border-radius:16px;
+  background:var(--scene-surface);box-shadow:none;
+}
+#changes .changesRecordGroup>.changeItem,
+#changes .changesRecordGroup>.overtimeItem{
+  min-height:66px;margin:0;padding:12px 14px;border:0;
+  border-bottom:1px solid var(--scene-line);border-radius:0;
+  background:transparent;box-shadow:none;
+}
+#changes .changesRecordGroup>:last-child{border-bottom:0}
+#changes .changesRecordGroup .recordMoreButton{min-width:44px;min-height:44px}
+#changes .changesAllocationGroup>.allocationRow{
+  display:grid;grid-template-columns:minmax(120px,1fr) minmax(170px,1.2fr);
+  align-items:center;gap:14px;margin:0;padding:14px;
+  border:0;border-bottom:1px solid var(--scene-line);
+  border-radius:0;background:transparent;box-shadow:none;
+}
+#changes .changesAllocationGroup>.allocationRow:last-child{border-bottom:0}
+#changes .allocationRowCopy{display:grid;gap:3px;min-width:0}
+#changes .allocationRowCopy strong{font-size:14px;line-height:1.3}
+#changes .allocationRowCopy small{color:var(--scene-secondary);font-size:12px}
+#changes .allocationRowField{display:block;min-width:0;margin:0}
+#changes .allocationRowField select{width:100%;font-size:14px!important}
+@media(max-width:560px){
+  #changes .changesAllocationGroup>.allocationRow{grid-template-columns:minmax(0,1fr);gap:10px}
+  #changes .allocationRowField select{min-height:48px}
+}

@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, EmptyState, FieldShell, ListRow, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, FieldShell, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type StaffingRecord = {
   id: string;
@@ -77,29 +77,29 @@ function dispatchAction(detail: Record<string, unknown>) {
 }
 
 function EmptyRecord({ children }: { children: string }) {
-  return <Surface className="tw:shadow-none"><EmptyState title={children} /></Surface>;
+  return <div className="changesEmptyRecord"><EmptyState title={children} /></div>;
 }
 
 function RecordList({ records, empty }: { records: StaffingRecord[]; empty: string }) {
   if (!records.length) return <EmptyRecord>{empty}</EmptyRecord>;
 
-  return <>
+  return <GroupedList className="changesRecordGroup tw:shadow-none">
     {records.map(record => record.kind === 'absence'
       ? <ListRow
           key={`absence-${record.id}`}
-          className="changeItem tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/9"
+          className="changeItem"
           title={<span className="tw:flex tw:items-center tw:gap-2"><span>{record.name}</span><Badge tone="danger">{record.status}</Badge></span>}
           subtitle={record.meta}
           trailing={<Pressable
             type="button"
-            className="recordMoreButton tw:grid tw:min-h-10 tw:min-w-10 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
+            className="recordMoreButton tw:grid tw:min-h-11 tw:min-w-11 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
             onClick={() => dispatchAction({ action: 'record', kind: record.kind, id: record.id, name: record.name })}
             aria-label={`More actions for ${record.name}`}
           ><span aria-hidden="true">•••</span><small className="tw:sr-only">More</small></Pressable>}
         />
       : <ListRow
           key={`overtime-${record.id}`}
-          className="overtimeItem tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/9"
+          className="overtimeItem"
           title={record.name}
           subtitle={record.meta}
           trailing={<span className="tw:flex tw:items-center tw:gap-2">
@@ -108,13 +108,13 @@ function RecordList({ records, empty }: { records: StaffingRecord[]; empty: stri
               : <Badge tone="success">{record.status}</Badge>}
             <Pressable
               type="button"
-              className="recordMoreButton tw:grid tw:min-h-10 tw:min-w-10 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
+              className="recordMoreButton tw:grid tw:min-h-11 tw:min-w-11 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
               onClick={() => dispatchAction({ action: 'record', kind: record.kind, id: record.id, name: record.name })}
               aria-label={`More actions for ${record.name}`}
             ><span aria-hidden="true">•••</span><small className="tw:sr-only">More</small></Pressable>
           </span>}
         />)}
-  </>;
+  </GroupedList>;
 }
 
 function History({ model }: { model: ChangesExperience }) {
@@ -149,24 +149,24 @@ function AllocationList({ model }: { model: ChangesExperience }) {
     <EmptyState title={model.allocationMessage || 'No allocation decisions are waiting'} />
   </Surface>;
 
-  return <>
-    {model.allocations.map(row => <ListRow
+  return <GroupedList className="changesAllocationGroup tw:shadow-none">
+    {model.allocations.map(row => <div
       key={row.key}
-      className="allocationRow tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-sm tw:dark:border-white/9"
-      title={row.label}
-      subtitle={row.breakLabel}
-      trailing={<select
+      className="allocationRow"
+    >
+      <span className="allocationRowCopy"><strong>{row.label}</strong><small>{row.breakLabel}</small></span>
+      <label className="allocationRowField"><span className="tw:sr-only">Choose nurse for {row.label}</span><select
         defaultValue={row.selectedId}
         data-final-allocation={row.key}
         aria-label={`Choose nurse for ${row.label}`}
         onChange={event => dispatchAction({ action: 'allocation-select', key: row.key, value: event.target.value })}
-        className="tw:min-h-10 tw:max-w-44 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-2.5 tw:text-xs tw:font-semibold tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12"
+        className="tw:min-h-12 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12"
       >
         <option value="">Choose a nurse</option>
         {row.options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
-      </select>}
-    />)}
-  </>;
+      </select></label>
+    </div>)}
+  </GroupedList>;
 }
 
 function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {

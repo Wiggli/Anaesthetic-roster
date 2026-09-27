@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.53 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.54 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -60,6 +60,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.54","date":"27 September 2026","title":"Guided Changes workflow","changes":["A guided Staffing, Allocation and Confirm control shows the current step, pending decisions and what to do next.","Staffing records and selected-night allocation choices use simpler grouped rows and larger controls on phones.","The original step controls remain available if the optional presentation component cannot load.","Existing staffing validation, allocation rules, confirmation, shared data and explicit update approval remain unchanged."]},
   {"version":"37.53","date":"27 September 2026","title":"Personal-first interface foundation","changes":["Your allocation now leads the Night screen, followed by the selected night, staffing summary, live team and recent activity.","Breaks shows a personal first or second break summary above the full team plan, while pending allocations remain clearly provisional.","Night, Changes, Breaks, Chat, Account, authentication, dialogs and update surfaces share calmer spacing, solid information surfaces and restrained glass for navigation.","The presentation styles now have one ordered source instead of seven separate cascading override files, with existing React view models and roster actions preserved.","The current release dialog is titled What’s new, with the complete version history still available from Account.","The roster rotation, staffing and allocation rules, Supabase access, push and chat delivery, and explicit PWA update approval flow remain unchanged."]},
   {"version":"37.52","date":"27 September 2026","title":"React interface system","changes":["A reusable React interface system now provides consistent pressable controls, grouped lists, adaptive surfaces, glass surfaces, avatars, badges, empty states, fields and loading primitives across the app.","Motion now powers shared-layout selection in the Appearance control and consistent spring press feedback instead of each screen implementing interaction feedback separately.","Tailwind container queries let profile fields and break-plan layouts adapt to the space available to each component rather than relying only on whole-screen breakpoints.","Chat private conversations and member selection now use a cleaner grouped-list hierarchy, while the message composer is a single floating Liquid Glass capsule with preserved keyboard, character-count and send behaviour.","Changes records, allocation rows, history and staffing forms now use the shared React component system while preserving the existing workflow, identifiers and staffing logic.","Night and Breaks now use the shared Motion pressable and surface primitives for more consistent touch feedback without changing roster calculations or clinical rules.","Tailwind dark-mode utilities are now tied to Night Roster’s own Light, Automatic and Dark setting so React components follow the selected in-app appearance reliably.","Authentication, Supabase data, roster calculations, staffing safety rules, Chat delivery, notifications and the installed PWA identity are unchanged."]},
   {"version":"37.51","date":"27 September 2026","title":"Night interface refined","changes":["Your Night is now a dedicated assignment hero with a clearer identity row, role treatment, compact facts and a lighter contextual action.","Night Summary is one integrated four-part information rail instead of a two-by-two dashboard card grid.","Night Situation now uses compact grouped roster rows with semantic role accents instead of oversized grey cards.","Five-nurse mode now sits in the same visual hierarchy as the rest of Night rather than appearing as a separate heavy card.","Recent Activity is presented as a cleaner grouped timeline with lighter metadata and less visual boxing.","The floating bottom navigation is slimmer and more translucent, with a clearer moving Liquid Glass selection lens.","Night header spacing and controls are more compact while preserving 44-pixel touch targets, safe areas and dark-mode readability.","Roster calculations, staffing rules, authentication, Supabase data, Chat and notifications are unchanged."]},
@@ -383,7 +384,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.53" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.54" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
@@ -585,6 +586,7 @@ function prepareChangesView(){
   byId('changesInfoBtn').onclick=function(){openScreenInfo('changes')};
   byId('breaksInfoBtn').onclick=function(){openScreenInfo('breaks')};
   Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){button.onclick=function(){setChangesStep(button.getAttribute('data-changes-step'),true)}});
+  window.addEventListener('roster:changes-step-request',function(event){var step=event&&event.detail&&event.detail.step;if(['staffing','allocation','confirm'].indexOf(step)>=0)setChangesStep(step,true)});
   changesViewPrepared=true;renderDiagnostics();
 }
 function openScreenInfo(kind){
@@ -652,12 +654,17 @@ function refreshAutomaticNightOnReturn(){
   if(selected===automaticSelectedDate&&nextDate!==automaticSelectedDate){idx=startingIndex();automaticSelectedDate=nextDate;render();toast('Roster moved to the next available night')}
 }
 
+var lastChangesWorkflowModel=null;
 function setChangesStep(step,scroll){
   activeChangesStep=step==='confirm'?'confirm':step==='allocation'?'allocation':'staffing';
   var staffing=byId('changesStaffingPane'),allocation=byId('changesAllocationPane'),confirmation=byId('changesConfirmPane');if(!staffing||!allocation||!confirmation)return;
   staffing.classList.toggle('hidden',activeChangesStep!=='staffing');allocation.classList.toggle('hidden',activeChangesStep!=='allocation');confirmation.classList.toggle('hidden',activeChangesStep!=='confirm');
   Array.prototype.forEach.call(document.querySelectorAll('[data-changes-step]'),function(button){var selected=button.getAttribute('data-changes-step')===activeChangesStep;button.classList.toggle('active',selected);button.setAttribute('aria-selected',selected?'true':'false')});
-  if(scroll)byId('changesWorkflowState').scrollIntoView({behavior:'smooth',block:'start'});
+  if(lastChangesWorkflowModel&&typeof CustomEvent==='function'){
+    lastChangesWorkflowModel.active=activeChangesStep;
+    window.dispatchEvent(new CustomEvent('roster:changes-workflow',{detail:lastChangesWorkflowModel}));
+  }
+  if(scroll)(byId('changesWorkflowExperience').dataset.reactReady==='true'?byId('changesWorkflowExperience'):byId('changesWorkflowState')).scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function workflowTaskCount(base,plan,r){
@@ -713,6 +720,13 @@ function updateChangesWorkflow(base,plan){
   var allocationSection=document.querySelector('.allocationSection');if(allocationSection)allocationSection.classList.toggle('hidden',!tasks&&!hasManualPlan);
   var allocationHeading=document.querySelector('.allocationSection .stepHeader h3');if(allocationHeading)allocationHeading.textContent='Finalise selected-night allocations';
   var confirmationHeading=document.querySelector('#changesConfirmPane .stepHeader h3'),confirmationIntro=byId('confirmationIntro');if(confirmationHeading)confirmationHeading.textContent=confirmNeeded?'Confirm selected-night changes':shared?'Changes shared':'No changes to review';if(confirmationIntro)confirmationIntro.classList.toggle('hidden',!tasks&&!confirmNeeded);
+  lastChangesWorkflowModel={active:activeChangesStep,steps:[
+    {id:'staffing',label:'Staffing',detail:changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'Record people',complete:hasStaffingChanges,attention:false,quiet:false},
+    {id:'allocation',label:'Allocation',detail:tasks?tasks+' decision'+(tasks===1?'':'s'):'Review roles',complete:hasManualPlan&&!tasks,attention:!!tasks,quiet:!tasks},
+    {id:'confirm',label:'Confirm',detail:tasks?'After allocation':confirmNeeded?'Review changes':shared?'Shared':'When needed',complete:shared,attention:!!confirmNeeded,quiet:confirmationNotNeeded}
+  ],headline:tasks?taskInstruction:confirmNeeded?'Ready to review':shared?'Changes shared':'Standard plan is automatic',
+  guidance:tasks?(tasks>1?(tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.'):'Choose a nurse, then review the changes.'):confirmNeeded?'Check the selected night’s changes before sharing them with everyone.':shared?'The agreed changes are available to the team.':'Record an absence or overtime only when staffing changes.' ,
+  tone:tasks?'attention':confirmNeeded?'ready':shared?'complete':'automatic'};
   var fixed=fixedRolesHtml(base,plan),fixedList=byId('fixedAllocationList');fixedList.innerHTML=fixed||'<div class="time">Roles will appear after the staffing decisions are complete.</div>';byId('fixedAllocationSummary').textContent='Selected-night roles · '+(fixed.match(/fixedRoleRow/g)||[]).length;
   renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction);var save=byId('saveAllocationsBtn');if(save){save.classList.toggle('hidden',!confirmNeeded);save.dataset.workflowBlocked=tasks?'true':'false';save.disabled=!!tasks||!navigator.onLine}
   setChangesStep(activeChangesStep,false);
