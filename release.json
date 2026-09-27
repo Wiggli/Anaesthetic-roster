@@ -1,14 +1,13 @@
 {
-  "version": "37.56",
+  "version": "37.57",
   "date": "27 September 2026",
-  "title": "Clearer Chat conversations",
-  "summary": "Chat now makes unread conversations, message actions and roster member selection easier to find and use.",
+  "title": "Account and settings, clearly grouped",
+  "summary": "Personal profile, device appearance, app help and sign-in security now have a clearer place in the account sheet.",
   "changes": [
-    "Private chats now show clearer unread counts, message previews and times in a more scannable list.",
-    "Message actions have a visible control as well as the existing long-press and keyboard actions, and recent messages sit closer to the composer.",
-    "The new-message sheet can search current roster members, with registration status shown plainly rather than fading people out.",
-    "On larger screens, an empty conversation has a clear starting point instead of an inactive composer.",
-    "Chat delivery, privacy, notification preferences, roster calculations and deliberate PWA update approval remain unchanged."
+    "Account now groups personal details, appearance, app help and passkeys in a calmer sheet, with a centred dialog on larger screens.",
+    "The approved account identity is distinct from preferred profile details and the locally highlighted roster name.",
+    "Photo, profile and passkey controls have clearer spacing, touch targets and saving feedback.",
+    "Profile privacy, password access, shared roster identity and deliberate PWA update approval remain unchanged."
   ],
   "update_policy": "important"
 }

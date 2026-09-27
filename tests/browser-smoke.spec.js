@@ -816,11 +816,25 @@ test('typed account controls preserve appearance and app actions', async ({ page
   });
 
   await expect(page.locator('#appearanceExperience')).toContainText('Automatic');
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Account & settings');
+  await expect(page.locator('#accountSheet')).toContainText('Shared roster actions use this approved identity.');
   await expect(page.locator('#profileExperience')).toContainText('Personal details');
   await expect(page.locator('#profileName')).toHaveValue('Andre');
+  await expect(page.locator('#profilePhotoPreview')).toBeHidden();
+  await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
   await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'View app guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
+  const helpLayout = await page.locator('.accountActions').evaluate(el => ({ section: el.getBoundingClientRect().height, rows: el.querySelector('#accountActionsExperience').getBoundingClientRect().height }));
+  expect(helpLayout.section).toBeGreaterThan(helpLayout.rows);
   await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
+  await expect(page.locator('#securityHeading')).toHaveText('Sign-in security');
+  await page.locator('#profileName').fill('André');
+  await expect(page.locator('#saveProfileBtn')).toBeVisible();
+  const bounds = await page.locator('#accountSheet').boundingBox();
+  expect(bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
+  if (page.viewportSize().width >= 760) expect(bounds.y).toBeGreaterThan(30);
   const appearanceSurface = page.locator('#appearanceExperience > div');
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
   const lightAppearanceBackground = await appearanceSurface.evaluate(el => getComputedStyle(el).backgroundColor);
@@ -831,6 +845,8 @@ test('typed account controls preserve appearance and app actions', async ({ page
   expect(darkAppearanceBackground).not.toBe(lightAppearanceBackground);
   const actions = await page.evaluate(() => window.__accountActions);
   expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
+  await page.locator('#accountActionsExperience button', { hasText: 'Version history' }).click();
+  expect(await page.evaluate(() => window.__accountActions)).toContainEqual(expect.objectContaining({ action: 'versions' }));
 });
 
 test('typed administrator accounts separate pending access and support fast filtering', async ({ page }) => {
@@ -948,7 +964,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('What’s new describes the current Chat conversation release', async ({ page }) => {
+test('What’s new describes the current account and settings release', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -958,8 +974,8 @@ test('What’s new describes the current Chat conversation release', async ({ pa
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Private chats now show clearer unread counts');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Message actions have a visible control');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Account now groups personal details');
+  await expect(dialog.locator('.releaseHistory')).toContainText('approved account identity is distinct');
   await expect(dialog.locator('.releaseHistory')).toContainText('deliberate PWA update approval remain unchanged');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
