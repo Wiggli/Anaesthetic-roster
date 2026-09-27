@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { useLayoutEffect, useRef } from 'react';
+import { Avatar, Badge, EmptyState, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
 type Member = { personKey: string; displayName: string; initial: string; available: boolean };
@@ -18,26 +19,54 @@ function act(action: string, value: string, kind?: string) { window.dispatchEven
 
 function ConversationList({ items }: { items: Conversation[] }) {
   const reduced = useReducedMotion();
-  if (!items.length) return <div className="tw:rounded-2xl tw:bg-[var(--surface)] tw:p-5 tw:text-center"><strong className="tw:block tw:text-sm">No private chats yet</strong><span className="tw:mt-1 tw:block tw:text-xs tw:text-[var(--muted)]">Tap New message to start a one-to-one conversation.</span></div>;
-  return <div className="tw:grid tw:gap-1.5"><AnimatePresence initial={false}>{items.map((item, index) => <motion.button
-    layout key={item.id} type="button" initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: reduced ? 0 : 0.16, delay: reduced ? 0 : Math.min(index * 0.02, 0.1) }} whileTap={{ scale: reduced ? 1 : 0.99 }}
-    onClick={() => act('conversation', item.id)} aria-current={item.active ? 'true' : undefined}
-    className={`tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:px-3 tw:py-3 tw:text-left ${item.active ? 'tw:bg-teal-500/12' : 'tw:bg-[var(--card)]'}`}
-  >
-    <span className="tw:grid tw:h-11 tw:w-11 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-500/14 tw:text-sm tw:font-bold tw:text-[var(--accent-strong)]">{item.initial}</span>
-    <span className="tw:min-w-0 tw:flex-1"><span className="tw:flex tw:items-baseline tw:justify-between tw:gap-2"><strong className="tw:truncate tw:text-sm">{item.title}</strong><small className="tw:shrink-0 tw:text-[0.68rem] tw:text-[var(--muted)]">{item.time}</small></span><span className="tw:mt-0.5 tw:block tw:truncate tw:text-xs tw:text-[var(--muted)]">{item.preview}</span></span>
-    {item.unread > 0 && <em className="tw:grid tw:min-h-5 tw:min-w-5 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:px-1.5 tw:text-[0.65rem] tw:font-bold tw:not-italic tw:text-white" aria-label={`${item.unread} unread`}>{item.unread > 99 ? '99+' : item.unread}</em>}
-  </motion.button>)}</AnimatePresence></div>;
+  if (!items.length) return <Surface>
+    <EmptyState title="No private chats yet" detail="Tap New message to start a one-to-one conversation." />
+  </Surface>;
+
+  return <GroupedList className="tw:overflow-visible">
+    <AnimatePresence initial={false}>
+      {items.map((item, index) => <motion.div
+        layout
+        key={item.id}
+        initial={reduced ? false : { opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={reduced ? undefined : { opacity: 0, y: -3 }}
+        transition={{ duration: reduced ? 0 : 0.16, delay: reduced ? 0 : Math.min(index * 0.018, 0.09) }}
+      >
+        <ListRow
+          leading={<Avatar initial={item.initial} />}
+          title={<span className="tw:flex tw:min-w-0 tw:items-baseline tw:gap-2">
+            <span className="tw:min-w-0 tw:flex-1 tw:truncate">{item.title}</span>
+            <small className="tw:shrink-0 tw:text-[0.68rem] tw:font-medium tw:text-[var(--muted)]">{item.time}</small>
+          </span>}
+          subtitle={<span className="tw:block tw:truncate">{item.preview}</span>}
+          trailing={item.unread > 0 ? <Badge tone="accent">{item.unread > 99 ? '99+' : item.unread}</Badge> : undefined}
+          onClick={() => act('conversation', item.id)}
+          ariaLabel={`Open conversation with ${item.title}`}
+          className={item.active ? 'tw:bg-teal-500/8' : ''}
+        />
+      </motion.div>)}
+    </AnimatePresence>
+  </GroupedList>;
 }
 
 function MemberPicker({ members }: { members: Member[] }) {
-  if (!members.length) return <p className="tw:p-5 tw:text-center tw:text-sm tw:text-[var(--muted)]">No other nurses are currently in the roster.</p>;
-  return <div className="tw:grid tw:gap-2">{members.map(member => <motion.button key={member.personKey} type="button" disabled={!member.available} whileTap={member.available ? { scale: 0.99 } : undefined} onClick={() => member.available && act('member', member.personKey)} className="tw:flex tw:w-full tw:items-center tw:gap-3 tw:rounded-2xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-3 tw:text-left tw:disabled:opacity-55 tw:dark:border-white/10">
-    <span className="tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-[var(--surface)] tw:text-sm tw:font-bold">{member.initial}</span>
-    <span className="tw:min-w-0 tw:flex-1"><strong className="tw:block tw:text-sm">{member.displayName}</strong><small className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">{member.available ? 'Available for private chat' : 'Has not registered in Night Roster yet'}</small></span>
-    <span className={`tw:rounded-full tw:px-2.5 tw:py-1 tw:text-[0.65rem] tw:font-bold ${member.available ? 'tw:bg-teal-500/12 tw:text-teal-700 tw:dark:text-teal-200' : 'tw:bg-[var(--surface)] tw:text-[var(--muted)]'}`}>{member.available ? 'Available' : 'Not registered'}</span>
-  </motion.button>)}</div>;
+  if (!members.length) return <Surface>
+    <EmptyState title="No other nurses in this roster" detail="Private conversations will appear when another rostered nurse is registered." />
+  </Surface>;
+
+  return <GroupedList>
+    {members.map(member => <ListRow
+      key={member.personKey}
+      leading={<Avatar initial={member.initial} size="sm" />}
+      title={member.displayName}
+      subtitle={member.available ? 'Available for private chat' : 'Has not registered in Night Roster yet'}
+      trailing={<Badge tone={member.available ? 'success' : 'neutral'}>{member.available ? 'Available' : 'Not registered'}</Badge>}
+      onClick={member.available ? () => act('member', member.personKey) : undefined}
+      ariaLabel={member.available ? `Start a private chat with ${member.displayName}` : undefined}
+      className={member.available ? '' : 'tw:opacity-60'}
+    />)}
+  </GroupedList>;
 }
 
 function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'private' }) {
@@ -47,7 +76,7 @@ function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'priv
   const body = <>
     {message.replyBody && <span className="tw:mb-2 tw:block tw:rounded-xl tw:border-l-2 tw:border-teal-500 tw:bg-black/4 tw:px-2.5 tw:py-2 tw:dark:bg-white/6"><b className="tw:block tw:text-[0.68rem] tw:text-[var(--accent-strong)]">{message.replySender}</b><small className="tw:mt-0.5 tw:block tw:line-clamp-2 tw:text-[0.7rem] tw:text-[var(--muted)]">{message.replyBody}</small></span>}
     <span className={`tw:block tw:whitespace-pre-wrap tw:break-words tw:text-sm tw:leading-relaxed ${message.deleted ? 'tw:italic tw:text-[var(--muted)]' : ''}`}>{message.body}</span>
-    {message.failed && <button type="button" onClick={() => act('retry', message.id, kind)} className="tw:mt-2 tw:rounded-full tw:bg-rose-500/12 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-rose-700 tw:dark:text-rose-200">Retry</button>}
+    {message.failed && <Pressable type="button" onClick={() => act('retry', message.id, kind)} className="tw:mt-2 tw:rounded-full tw:bg-rose-500/12 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-rose-700 tw:dark:text-rose-200">Retry</Pressable>}
   </>;
   const handlers = {
     tabIndex: message.failed ? undefined : 0,
