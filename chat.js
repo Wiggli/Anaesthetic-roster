@@ -94,7 +94,8 @@ function chatDateLabel(value){
   return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'});
 }
 function chatSetStatus(message,error){
-  var el=chatEl('chatStatus');if(!el)return;el.textContent=message||'';el.classList.toggle('error',!!error);el.classList.toggle('hidden',!message);
+  var el=chatEl('chatStatus');if(!el)return;if(el.dataset.reactReady!=='true')el.textContent=message||'';el.classList.toggle('error',!!error);el.classList.toggle('hidden',!message);
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:chat-status',{detail:{message:message||'',error:!!error}}));
 }
 function chatSetPrivateStatus(message,error){
   var el=chatEl('chatComposerStatus');if(!el)return;el.textContent=message||'';el.classList.toggle('error',!!error);

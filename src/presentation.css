@@ -2139,6 +2139,14 @@ main>.view{min-width:0}
   background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
 }
 #chat .chatTeamConsoleHeader{padding:18px!important}
+#chat #chatStatus[data-react-ready="true"]{padding:0;border:0;background:none;color:inherit}
+.chatStatusCard{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--scene-line);border-radius:16px;background:var(--scene-soft);color:var(--scene-ink)}
+.chatStatusMark{flex:none;display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:var(--scene-accent);color:#fff;font-weight:800}
+.chatStatusCard strong{display:block;font-size:13px}
+.chatStatusCard p{margin:3px 0 0;font-size:13px;line-height:1.5;color:var(--scene-secondary)}
+.chatStatusCard--error{background:var(--apple-absence-fill);color:var(--apple-absence-label)}
+.chatStatusCard--error .chatStatusMark{background:var(--red)}
+.chatStatusCard--error p{color:inherit}
 #chat .chatTeamMessages,#chat .chatMessages{font-size:14px;line-height:1.5}
 #chat .chatPrivateHeader{margin-top:12px!important}
 #chat .chatNewPrivateBtn{min-height:48px}

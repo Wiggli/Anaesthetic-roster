@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.56 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.57 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -60,6 +60,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.57","date":"27 September 2026","title":"Clearer Chat connection notices","changes":["Chat connection and service notices now have clear error or update labels beside the conversation.","The existing live text remains visible if the optional presentation component cannot load.","Message delivery, unread state, notification preferences and deliberate PWA update approval remain unchanged."]},
   {"version":"37.56","date":"27 September 2026","title":"Clearer Changes save feedback","changes":["Saving and successful sharing have clear status labels in the Confirm step.","Offline guidance, conflicts and errors remain visible next to the confirmation action with explicit next steps.","The plain live message remains available if the optional presentation component cannot load.","Existing validation, shared writes, retry and deliberate PWA update approval remain unchanged."]},
   {"version":"37.55","date":"27 September 2026","title":"Clearer confirmation review","changes":["The Confirm step shows changed assignments in grouped rows, with the complete plan available when you expand it.","An unresolved allocation is clearly flagged before confirmation, and a reason remains visible alongside the changes.","The Changes heading and step guide now scroll away so they do not cover the confirmation review.","The previous preview remains available if the optional presentation component cannot load.","Staffing and allocation validation, shared confirmation, roster calculations and deliberate PWA update approval remain unchanged."]},
   {"version":"37.54","date":"27 September 2026","title":"Guided Changes workflow","changes":["A guided Staffing, Allocation and Confirm control shows the current step, pending decisions and what to do next.","Staffing records and selected-night allocation choices use simpler grouped rows and larger controls on phones.","The original step controls remain available if the optional presentation component cannot load.","Existing staffing validation, allocation rules, confirmation, shared data and explicit update approval remain unchanged."]},
@@ -386,7 +387,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.56" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.57" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}

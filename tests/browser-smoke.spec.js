@@ -85,6 +85,39 @@ test('Changes feedback retains its plain live message if the optional chunk fail
   await expect(page.locator('#allocationFormMessage')).not.toHaveAttribute('data-react-ready', 'true');
 });
 
+test('Chat reports connection errors and recovery beside the conversation', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    const host = document.getElementById('chatStatus');
+    host.classList.remove('hidden');
+    window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: 'Chat is reconnecting. Messages will send when the connection returns.', error: true } }));
+  });
+  const status = page.locator('#chatStatus');
+  await expect(status).toHaveAttribute('data-react-ready', 'true');
+  await expect(status.locator('[role="alert"]')).toContainText('Chat needs attention');
+  await expect(status).toContainText('Messages will send when the connection returns.');
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: 'Chat is ready.', error: false } })));
+  await expect(status.locator('[role="status"]')).toContainText('Chat is ready.');
+  await page.evaluate(() => {
+    document.getElementById('chatStatus').classList.add('hidden');
+    window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: '', error: false } }));
+  });
+  await expect(status).toHaveClass(/hidden/);
+});
+
+test('Chat keeps the plain status when its optional presentation fails', async ({ page }) => {
+  await page.route('**/assets/chat-experience-*.js', route => route.abort());
+  await openShell(page);
+  await page.evaluate(() => {
+    const host = document.getElementById('chatStatus');
+    host.textContent = 'Chat is temporarily unavailable.';
+    host.classList.remove('hidden');
+    window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: host.textContent, error: true } }));
+  });
+  await expect(page.locator('#chatStatus')).toHaveText('Chat is temporarily unavailable.');
+  await expect(page.locator('#chatStatus')).not.toHaveAttribute('data-react-ready', 'true');
+});
+
 test('signed-in React tabs retain badges and keyboard navigation', async ({ page }) => {
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);

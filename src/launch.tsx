@@ -134,6 +134,16 @@ window.addEventListener('roster:chat-messages', (event: Event) => {
   import('./chat-experience').then(({ renderChatMessages }) => renderChatMessages((event as CustomEvent).detail));
 });
 
+let chatStatusRequest = 0;
+window.addEventListener('roster:chat-status', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++chatStatusRequest;
+  import('./chat-experience').then(({ renderChatStatus }) => {
+    if (request === chatStatusRequest) renderChatStatus(model);
+  }).catch(() => { /* The existing live message remains visible. */ });
+});
+
 let releaseNotesRequest = 0;
 window.addEventListener('roster:releasenotes', (event: Event) => {
   if (document.body.classList.contains('authPending')) return;
