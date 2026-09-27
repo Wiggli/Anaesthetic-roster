@@ -1,0 +1,2281 @@
+/* Consolidated presentation layer, preserving the reviewed cascade order. */
+
+/* liquid-glass.css */
+/*
+ * Anaesthetic Night Roster
+ * Liquid Glass visual system
+ *
+ * Glass is deliberately limited to navigation and interactive chrome.
+ * Clinical content remains opaque and high-contrast.
+ */
+
+:root{
+  --liquid-bg:#f3f4f7;
+  --liquid-bg-alt:#f7f7f9;
+  --liquid-surface:rgba(255,255,255,.96);
+  --liquid-surface-muted:rgba(246,247,249,.92);
+  --liquid-label:#151619;
+  --liquid-secondary:#66676d;
+  --liquid-tertiary:#8b8c92;
+  --liquid-accent:#087d79;
+  --liquid-accent-strong:#066b68;
+  --liquid-success:#25834a;
+  --liquid-warning:#a96500;
+  --liquid-critical:#b8323f;
+  --liquid-info:#286f9f;
+  --liquid-separator:rgba(60,60,67,.14);
+  --liquid-hairline:.5px;
+  --liquid-radius-s:12px;
+  --liquid-radius-m:18px;
+  --liquid-radius-l:24px;
+  --liquid-radius-xl:28px;
+  --liquid-control-gap:8px;
+  --liquid-section-gap:18px;
+  --liquid-shadow-content:0 1px 2px rgba(18,25,31,.025),0 10px 28px rgba(27,45,58,.045);
+  --liquid-shadow-glass:0 10px 30px rgba(23,35,45,.12),0 2px 7px rgba(23,35,45,.08);
+  --liquid-glass-clear:rgba(250,250,252,.56);
+  --liquid-glass:rgba(248,249,252,.72);
+  --liquid-glass-elevated:rgba(250,250,252,.82);
+  --liquid-glass-tinted:rgba(231,246,245,.76);
+  --liquid-glass-border:rgba(255,255,255,.72);
+  --liquid-glass-edge:rgba(255,255,255,.94);
+  --liquid-glass-depth:rgba(76,84,92,.14);
+  --liquid-spring:380;
+  --liquid-damping:38;
+  --liquid-press-scale:.975;
+  --liquid-nav-height:68px;
+}
+
+html[data-theme="dark"],
+body.dark{
+  --liquid-bg:#0c0d0f;
+  --liquid-bg-alt:#121316;
+  --liquid-surface:rgba(28,29,32,.97);
+  --liquid-surface-muted:rgba(35,36,39,.94);
+  --liquid-label:#f5f5f7;
+  --liquid-secondary:#b7b7bd;
+  --liquid-tertiary:#85858b;
+  --liquid-accent:#68d8d2;
+  --liquid-accent-strong:#8be4df;
+  --liquid-success:#66cf85;
+  --liquid-warning:#efb35d;
+  --liquid-critical:#ff8790;
+  --liquid-info:#85c7ef;
+  --liquid-separator:rgba(235,235,245,.13);
+  --liquid-shadow-content:0 1px 0 rgba(255,255,255,.025),0 10px 34px rgba(0,0,0,.18);
+  --liquid-shadow-glass:0 14px 36px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.2);
+  --liquid-glass-clear:rgba(35,36,39,.48);
+  --liquid-glass:rgba(35,36,39,.66);
+  --liquid-glass-elevated:rgba(42,43,47,.78);
+  --liquid-glass-tinted:rgba(28,54,54,.7);
+  --liquid-glass-border:rgba(255,255,255,.12);
+  --liquid-glass-edge:rgba(255,255,255,.17);
+  --liquid-glass-depth:rgba(0,0,0,.28);
+}
+
+html{
+  background:var(--liquid-bg);
+  color-scheme:light dark;
+}
+
+body{
+  background:
+    radial-gradient(120% 68% at 50% -8%,rgba(97,181,178,.055),transparent 58%),
+    linear-gradient(180deg,var(--liquid-bg-alt),var(--liquid-bg) 36%,var(--liquid-bg));
+  color:var(--liquid-label);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif;
+  font-synthesis:none;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+body.dark,
+html[data-theme="dark"] body{
+  background:
+    radial-gradient(110% 65% at 50% -10%,rgba(87,171,167,.075),transparent 56%),
+    linear-gradient(180deg,var(--liquid-bg-alt),var(--liquid-bg) 38%,var(--liquid-bg));
+}
+
+body[data-view] main{
+  padding-bottom:calc(var(--liquid-nav-height) + 36px + env(safe-area-inset-bottom));
+}
+
+main>.view{
+  background:transparent;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  -webkit-tap-highlight-color:transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--liquid-accent) 28%,transparent);
+  outline-offset:2px;
+}
+
+/* Shared opaque content primitives. */
+.contentSurface{
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+
+.liquidSectionHeader{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin:var(--liquid-section-gap) 2px 9px;
+}
+
+.liquidSectionHeaderCopy{min-width:0}
+.liquidSectionHeader h2{
+  margin:0;
+  color:var(--liquid-label);
+  font-size:19px;
+  font-weight:720;
+  letter-spacing:-.026em;
+  line-height:1.15;
+}
+.liquidSectionHeader p{
+  margin:3px 0 0;
+  color:var(--liquid-secondary);
+  font-size:12px;
+  line-height:1.4;
+}
+.liquidSectionHeaderAction{flex:0 0 auto}
+
+.metricGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+
+.metric{
+  position:relative;
+  min-width:0;
+  min-height:66px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:3px;
+  margin:0;
+  padding:10px 11px;
+  border:0;
+  border-left:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:0;
+  background:transparent;
+  color:var(--liquid-label);
+  box-shadow:none;
+  text-align:left;
+}
+.metric:first-child{border-left:0}
+.metric strong{
+  display:block;
+  max-width:100%;
+  overflow:hidden;
+  color:var(--liquid-label);
+  font-size:17px;
+  font-weight:740;
+  letter-spacing:-.025em;
+  line-height:1.05;
+  text-overflow:ellipsis;
+}
+.metric span{
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  font-weight:590;
+  line-height:1.2;
+}
+.metricInteractive{cursor:pointer}
+.metricInteractive::after{
+  content:"";
+  position:absolute;
+  inset:auto 10px 7px auto;
+  width:5px;
+  height:5px;
+  border-right:1.5px solid var(--liquid-tertiary);
+  border-bottom:1.5px solid var(--liquid-tertiary);
+  transform:rotate(-45deg);
+}
+.metric-teal strong{color:var(--liquid-accent-strong)}
+.metric-warning strong{color:var(--liquid-warning)}
+.metric-critical strong{color:var(--liquid-critical)}
+.metric-info strong{color:var(--liquid-info)}
+
+.statusBadge{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:var(--liquid-surface-muted);
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  font-weight:680;
+  line-height:1;
+}
+.statusBadge-teal{background:color-mix(in srgb,var(--liquid-accent) 11%,transparent);color:var(--liquid-accent-strong)}
+.statusBadge-warning{background:color-mix(in srgb,var(--liquid-warning) 11%,transparent);color:var(--liquid-warning)}
+.statusBadge-critical{background:color-mix(in srgb,var(--liquid-critical) 10%,transparent);color:var(--liquid-critical)}
+.statusBadge-info{background:color-mix(in srgb,var(--liquid-info) 10%,transparent);color:var(--liquid-info)}
+
+/* Liquid Glass material layer. */
+.liquidGlass,
+.glassIconButton,
+.bottom.reactTabs,
+.changesWorkflowTabs{
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  backdrop-filter:blur(20px) saturate(150%);
+  border:var(--liquid-hairline) solid var(--liquid-glass-border);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.025) 42%,rgba(255,255,255,.01)),
+    var(--liquid-glass);
+  box-shadow:
+    inset 0 1px 0 var(--liquid-glass-edge),
+    inset 0 -1px 0 var(--liquid-glass-depth),
+    var(--liquid-shadow-glass);
+}
+
+.glassIconButton{
+  display:grid;
+  width:44px;
+  height:44px;
+  place-items:center;
+  padding:0;
+  border-radius:15px;
+  color:var(--liquid-label);
+}
+
+/* Signature floating tab bar. */
+.bottom.reactTabs{
+  position:fixed;
+  z-index:80;
+  left:50%;
+  right:auto;
+  bottom:max(10px,calc(7px + env(safe-area-inset-bottom)));
+  width:min(calc(100vw - 22px),430px);
+  min-height:var(--liquid-nav-height);
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:center;
+  padding:6px;
+  border-radius:29px;
+  isolation:isolate;
+  overflow:hidden;
+  transform:translateX(-50%);
+  touch-action:none;
+  overscroll-behavior:none;
+}
+
+.bottom.reactTabs::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.23),transparent 24%,transparent 72%,rgba(255,255,255,.08)),
+    radial-gradient(120% 90% at 50% -20%,rgba(255,255,255,.16),transparent 60%);
+  opacity:.65;
+}
+
+.bottom.reactTabs button{
+  position:relative;
+  z-index:2;
+  min-width:0;
+  height:56px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  margin:0;
+  padding:4px 2px;
+  border:0!important;
+  border-radius:21px!important;
+  background:transparent!important;
+  color:var(--liquid-secondary)!important;
+  box-shadow:none!important;
+  font-size:10.5px;
+  font-weight:610;
+  letter-spacing:-.01em;
+  transition:color 150ms ease;
+}
+.bottom.reactTabs button svg{
+  width:23px;
+  height:23px;
+  margin:0;
+  stroke-width:1.85;
+  transition:none;
+}
+.bottom.reactTabs button.active{
+  color:var(--liquid-label)!important;
+}
+.bottom.reactTabs button.active svg{transform:none}
+
+.bottom.reactTabs .tabSlidingIndicator{
+  position:absolute;
+  left:0;
+  z-index:1;
+  pointer-events:none;
+  border:var(--liquid-hairline) solid var(--liquid-glass-border);
+  border-radius:21px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08) 48%,rgba(255,255,255,.025)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 86%,var(--liquid-accent) 4%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.86),
+    inset 0 -1px 0 rgba(92,99,108,.08),
+    0 5px 14px rgba(27,45,58,.09);
+  -webkit-backdrop-filter:blur(16px) saturate(165%);
+  backdrop-filter:blur(16px) saturate(165%);
+  transform-origin:center;
+  will-change:transform;
+}
+
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.025) 58%,rgba(0,0,0,.035)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 90%,var(--liquid-accent) 5%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(0,0,0,.22),
+    0 7px 18px rgba(0,0,0,.24);
+}
+
+.navTaskBadge{
+  position:absolute;
+  top:4px;
+  right:max(9px,calc(50% - 23px));
+  min-width:17px;
+  height:17px;
+  display:grid;
+  place-items:center;
+  padding:0 4px;
+  border:2px solid color-mix(in srgb,var(--liquid-glass) 88%,transparent);
+  border-radius:999px;
+  background:var(--liquid-critical);
+  color:#fff;
+  font-size:9px;
+  font-style:normal;
+  font-weight:760;
+  line-height:1;
+}
+
+/* Horizontal page track is physically adjacent and GPU composited. */
+main>.view{
+  touch-action:pan-y pinch-zoom;
+  overscroll-behavior-x:none;
+}
+main.viewSwipeStage{
+  position:relative;
+  overflow:visible;
+  isolation:isolate;
+}
+main.viewSwipeStage>.view.swipeCurrent,
+main.viewSwipeStage>.view.swipePreview{
+  backface-visibility:hidden;
+  contain:paint;
+  opacity:1!important;
+  will-change:transform;
+  background:var(--liquid-bg);
+}
+main.viewSwipeStage>.view.swipeCurrent{z-index:2}
+main.viewSwipeStage>.view.swipePreview{
+  display:block!important;
+  z-index:1;
+  pointer-events:none;
+}
+main.viewSwipeStage.viewSwipeSettling>.view.swipeCurrent,
+main.viewSwipeStage.viewSwipeSettling>.view.swipePreview{
+  transition:none!important;
+}
+
+/* Night app header: lighter brand presence, glass control cluster. */
+#appHeader{
+  position:sticky;
+  top:0;
+  z-index:26;
+  width:calc(100% + 24px);
+  margin-inline:-12px;
+  padding:max(8px,env(safe-area-inset-top)) 12px 9px;
+  border:0;
+  border-bottom:var(--liquid-hairline) solid transparent;
+  border-radius:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--liquid-bg-alt) 94%,transparent),color-mix(in srgb,var(--liquid-bg-alt) 76%,transparent));
+  box-shadow:none;
+  color:var(--liquid-label);
+  transition:padding 260ms cubic-bezier(.2,.8,.2,1),background-color 180ms ease,border-color 180ms ease;
+}
+#appHeader .hospitalStrip{
+  min-height:37px;
+  margin:0;
+  padding:0 2px;
+  border:0;
+  background:transparent;
+  transition:opacity 180ms ease,max-height 240ms cubic-bezier(.2,.8,.2,1),transform 240ms cubic-bezier(.2,.8,.2,1);
+}
+#appHeader .hospitalStrip img{
+  width:min(176px,50vw);
+  height:35px;
+  object-fit:contain;
+  object-position:left center;
+}
+#appHeader .hospitalStrip span{
+  color:var(--liquid-secondary);
+  font-size:9px;
+  font-weight:670;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+#appHeader .head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:4px;
+}
+#appHeader .headerIdentity{min-width:0;flex:1}
+#appHeader .motto{
+  display:block;
+  margin:0;
+  overflow:hidden;
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  line-height:1.35;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  transition:opacity 150ms ease,max-height 220ms cubic-bezier(.2,.8,.2,1),transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+#appHeader .headActions{
+  display:flex;
+  flex:0 0 auto;
+  flex-wrap:nowrap;
+  gap:3px;
+  padding:3px;
+  border:var(--liquid-hairline) solid var(--liquid-glass-border);
+  border-radius:18px;
+  background:var(--liquid-glass-clear);
+  box-shadow:inset 0 1px 0 var(--liquid-glass-edge),0 6px 18px rgba(27,45,58,.08);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+  backdrop-filter:blur(18px) saturate(150%);
+}
+#appHeader .headActions button,
+#appHeader .adminSettingsBtn,
+#appHeader .accountBtn,
+#appHeader .share{
+  box-sizing:border-box;
+  flex:0 0 44px;
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  max-width:44px;
+  max-height:44px;
+  aspect-ratio:1;
+  margin:0;
+  padding:0;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  overflow:hidden;
+}
+#appHeader .accountInitial{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--liquid-accent) 16%,var(--liquid-surface));
+  color:var(--liquid-accent-strong);
+}
+body.headerCompact #appHeader{
+  padding-top:max(5px,env(safe-area-inset-top));
+  padding-bottom:6px;
+  border-bottom-color:var(--liquid-separator);
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent);
+  -webkit-backdrop-filter:blur(20px) saturate(145%);
+  backdrop-filter:blur(20px) saturate(145%);
+}
+body.headerCompact #appHeader .hospitalStrip{
+  max-height:0;
+  min-height:0;
+  opacity:0;
+  transform:translateY(-6px);
+  pointer-events:none;
+}
+body.headerCompact #appHeader .motto{
+  max-height:0;
+  opacity:0;
+  transform:translateY(-4px);
+}
+body.headerCompact #appHeader .head{margin-top:0}
+
+/* Night content. */
+#today>.nightOverviewPanel{
+  margin:0;
+  padding:10px 0 4px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+#today .sectionTitle,
+#today .sectionHeadingRow .sectionTitle{
+  color:var(--liquid-label);
+}
+#today .nightDateShell{
+  margin-bottom:10px;
+}
+#today .nightDateShell .dateNav{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#today .nightDateShell .dateNav>button,
+#today .nightDateShell .prettyDateButton{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--liquid-label)!important;
+}
+#today .nightDateShell .dateNav>button:first-child{border-right:var(--liquid-hairline) solid var(--liquid-separator)!important}
+#today .nightDateShell .dateNav>button:last-child{border-left:var(--liquid-hairline) solid var(--liquid-separator)!important}
+
+#today .personalNight>.sectionTitle{
+  margin:var(--liquid-section-gap) 2px 9px;
+  color:var(--liquid-label);
+  font-size:19px;
+  font-weight:720;
+}
+#today #personalNightCard>article{
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-l)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#today #personalNightCard>article>div:first-child{padding:13px 14px!important}
+#today #personalNightCard>article>div:nth-child(2){
+  border-color:var(--liquid-separator)!important;
+  background:color-mix(in srgb,var(--liquid-accent) 5%,var(--liquid-surface))!important;
+  padding:13px 14px!important;
+}
+#today #personalNightCard h3{font-size:18px!important;font-weight:730!important;letter-spacing:-.025em}
+#today #personalNightCard dl{background:var(--liquid-separator)!important}
+#today #personalNightCard dl>div{background:var(--liquid-surface)!important;padding:10px 13px!important}
+#today #personalNightCard dt{
+  color:var(--liquid-tertiary)!important;
+  font-size:9.5px!important;
+  font-weight:660!important;
+  letter-spacing:.055em!important;
+}
+#today #personalNightCard dd{font-size:13px!important;font-weight:590!important}
+#today #personalNightCard>article>button{
+  color:var(--liquid-accent-strong)!important;
+}
+
+#today .nightStatusRow{margin:0!important;padding:0!important}
+#today .nightStatusRow>.metricGrid{width:100%}
+#today .roles{display:block!important}
+#today #roles>.liquidRosterList{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+.rosterRow{
+  --row-accent:var(--liquid-accent);
+  position:relative;
+  width:100%;
+  min-height:66px;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:0;
+  padding:11px 34px 11px 13px;
+  border:0;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:0;
+  background:transparent;
+  color:var(--liquid-label);
+  box-shadow:none;
+  text-align:left;
+}
+.rosterRow:first-child{border-top:0}
+.rosterRow::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:13px;
+  bottom:13px;
+  width:3px;
+  border-radius:0 3px 3px 0;
+  background:var(--row-accent);
+  opacity:.78;
+}
+.rosterRow::after{
+  content:"›";
+  position:absolute;
+  right:13px;
+  top:50%;
+  color:var(--liquid-tertiary);
+  font-size:20px;
+  font-weight:300;
+  transform:translateY(-50%);
+}
+.rosterRow-first{--row-accent:#6b63c8}
+.rosterRow-second{--row-accent:#8a5bc4}
+.rosterRow-pager{--row-accent:#d58a25}
+.rosterRow-reliever{--row-accent:#3a9870}
+.rosterRow-seventh{--row-accent:#397fa8}
+.rosterRow-full{--row-accent:#b95061}
+.rosterRow.mine{background:color-mix(in srgb,var(--liquid-accent) 5%,transparent)}
+.rosterRoleMark{
+  flex:0 0 auto;
+  min-width:42px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  padding:0 7px;
+  border-radius:9px;
+  background:color-mix(in srgb,var(--row-accent) 11%,transparent);
+  color:var(--row-accent);
+  font-size:9.5px;
+  font-weight:760;
+  letter-spacing:.035em;
+}
+.rosterRowCopy{min-width:0;flex:1}
+.rosterRowName{
+  display:block;
+  overflow:hidden;
+  color:var(--liquid-label);
+  font-size:14px;
+  font-weight:690;
+  line-height:1.2;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.rosterRowMeta{
+  display:block;
+  margin-top:3px;
+  overflow:hidden;
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  line-height:1.3;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.fiveNurseSurface{
+  margin-top:var(--liquid-control-gap);
+  padding:13px 14px;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-warning) 26%,var(--liquid-separator));
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+.fiveNurseSurface .fiveNurseLabel{color:var(--liquid-warning);font-size:10px;font-weight:700}
+.fiveNurseSurface strong{display:block;margin-top:3px;font-size:14px}
+.fiveNurseSurface p{margin:4px 0 0;color:var(--liquid-secondary);font-size:11.5px}
+
+#today .recentActivityPanel{
+  margin-top:var(--liquid-section-gap);
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+#today #recentActivityList>div{
+  overflow:hidden;
+  gap:0!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#today #recentActivityList button{
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today #recentActivityList button:first-child{border-top:0!important}
+
+/* Changes: context first, glass workflow control, calm grouped forms. */
+body[data-view="changes"] main{padding-bottom:calc(var(--liquid-nav-height) + 38px + env(safe-area-inset-bottom))}
+#changes>.changesDatePanel{
+  margin:10px 0 12px;
+  padding:12px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#changes>.changePanel{
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+#changes>.changePanel>.ctop{
+  margin:0 2px 9px;
+  padding:0;
+}
+#changes .changesWorkflowTabs{
+  position:sticky;
+  top:max(8px,env(safe-area-inset-top));
+  z-index:20;
+  min-height:56px;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:0;
+  margin:0 0 14px;
+  padding:4px;
+  border-radius:20px;
+  overflow:hidden;
+  isolation:isolate;
+}
+#changes .changesWorkflowTabs::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:4px auto 4px 4px;
+  width:calc((100% - 8px)/3);
+  border:var(--liquid-hairline) solid var(--liquid-glass-border);
+  border-radius:16px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.045)),
+    var(--liquid-glass-elevated);
+  box-shadow:inset 0 1px 0 var(--liquid-glass-edge),0 4px 11px rgba(27,45,58,.08);
+  transform:translate3d(calc(var(--changes-step-index,0) * 100%),0,0);
+  transition:transform 360ms cubic-bezier(.2,.8,.2,1);
+}
+#changes .changesWorkflowTabs button{
+  position:relative;
+  z-index:1;
+  min-width:0;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:5px 6px;
+  border:0!important;
+  border-radius:16px!important;
+  background:transparent!important;
+  color:var(--liquid-secondary)!important;
+  box-shadow:none!important;
+}
+#changes .changesWorkflowTabs button.active{color:var(--liquid-label)!important}
+#changes .changesWorkflowTabs button>span{
+  width:21px;
+  height:21px;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  background:color-mix(in srgb,var(--liquid-secondary) 10%,transparent)!important;
+  color:inherit!important;
+  font-size:10px;
+}
+#changes .changesWorkflowTabs button.active>span{
+  background:color-mix(in srgb,var(--liquid-accent) 12%,transparent)!important;
+  color:var(--liquid-accent-strong)!important;
+}
+#changes .changesWorkflowTabs button small{display:none}
+#changes .changesWorkflowState{
+  margin:0 2px 10px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--liquid-success);
+  font-size:11.5px;
+  font-weight:610;
+}
+#changes .staffingSection{
+  margin:0 0 var(--liquid-section-gap);
+  padding:0;
+  border:0!important;
+  border-radius:0;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .stepHeader{
+  margin:0 2px 8px;
+}
+#changes .stepHeader>span{
+  width:24px;
+  height:24px;
+  border-radius:8px;
+  background:color-mix(in srgb,var(--liquid-accent) 10%,transparent);
+  color:var(--liquid-accent-strong);
+}
+#changes .stepHeader h3{
+  color:var(--liquid-label);
+  font-size:18px!important;
+  font-weight:710;
+}
+#changes #absenceFormExperience>div,
+#changes #overtimeFormExperience>div{
+  padding:14px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#changes #absenceFormExperience p,
+#changes #overtimeFormExperience p{
+  margin-top:0;
+  color:var(--liquid-secondary)!important;
+}
+#changes #absenceFormExperience label>span,
+#changes #overtimeFormExperience label>span,
+#changes #allocationList label span>strong{
+  color:var(--liquid-secondary)!important;
+}
+#changes #absenceFormExperience select,
+#changes #overtimeFormExperience input,
+#changes #allocationList select,
+#changes [data-night-role],
+#changes #nightRoleReason{
+  min-height:48px!important;
+  border:0!important;
+  border-radius:var(--liquid-radius-s)!important;
+  background:var(--liquid-surface-muted)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:inset 0 0 0 var(--liquid-hairline) var(--liquid-separator)!important;
+}
+#changes select{
+  appearance:none;
+  -webkit-appearance:none;
+  padding-right:35px!important;
+  background-image:
+    linear-gradient(45deg,transparent 50%,var(--liquid-secondary) 50%),
+    linear-gradient(135deg,var(--liquid-secondary) 50%,transparent 50%)!important;
+  background-position:calc(100% - 17px) calc(50% - 2px),calc(100% - 12px) calc(50% - 2px)!important;
+  background-size:5px 5px,5px 5px!important;
+  background-repeat:no-repeat!important;
+}
+#changes #saveChangeBtn,
+#changes #addOvertimeBtn,
+#changes .continueWorkflowBtn,
+#changes #saveAllocationsBtn{
+  min-height:48px;
+  border-radius:14px!important;
+}
+#changes #changeList,
+#changes #overtimeList{
+  margin-top:8px;
+}
+#changes #changeList>div,
+#changes #overtimeList>div{
+  gap:0!important;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#changes #changeList article,
+#changes #overtimeList article{
+  min-height:58px;
+  margin:0;
+  padding:11px 12px!important;
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes #changeList article:first-child,
+#changes #overtimeList article:first-child{border-top:0!important}
+#changes #changeList article button[aria-label^="More"],
+#changes #overtimeList article button[aria-label^="More"]{
+  width:38px!important;
+  height:38px!important;
+  background:transparent!important;
+  color:var(--liquid-secondary)!important;
+}
+#changes .confirmationCard{
+  padding:14px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#changes .historyBox,
+#changes .fixedAllocationBox,
+#changes .nightRoleEditor{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+
+/* Breaks: scan-first neutral surfaces with semantic accent edges. */
+#breaks>.panel{
+  margin:10px 0 0;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+#breaks>.panel>h2{margin:0 2px 8px;color:var(--liquid-label);font-size:19px}
+#breaks>.panel>.grid2{
+  padding:12px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#breaks .breakSummaryRow{margin-top:10px}
+#breaks .breakSummaryRow>.metricGrid{width:100%}
+#breaks #breakDate{margin-top:10px}
+#breaks #breakList>div{gap:10px!important}
+.liquidBreakGroup{
+  --break-accent:var(--liquid-accent);
+  position:relative;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+.liquidBreakGroup::before{
+  content:"";
+  position:absolute;
+  top:12px;
+  bottom:12px;
+  left:0;
+  width:3px;
+  border-radius:0 3px 3px 0;
+  background:var(--break-accent);
+}
+.liquidBreakGroup-first{--break-accent:#805fc3}
+.liquidBreakGroup-second{--break-accent:#188d8a}
+.liquidBreakGroup-labour{--break-accent:#c77a16}
+.liquidBreakPerson{
+  background:transparent!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:0!important;
+}
+.liquidBreakPerson:first-child{border-top:0}
+.liquidBreakPerson.mine{
+  background:color-mix(in srgb,var(--liquid-accent) 7%,transparent)!important;
+  outline:0!important;
+}
+
+/* Chat: conversation first, settings visually secondary. */
+#chat .chatScreen{
+  padding-bottom:calc(var(--liquid-nav-height) + 30px + env(safe-area-inset-bottom));
+}
+#chat .chatScreenHeader{
+  margin:0 -12px 10px;
+  padding:max(14px,env(safe-area-inset-top)) 16px 10px;
+  border:0;
+  background:transparent;
+  color:var(--liquid-label);
+}
+#chat .chatScreenHeader h1{
+  color:var(--liquid-label);
+  font-size:28px;
+  font-weight:740;
+  letter-spacing:-.045em;
+}
+#chat .chatEyebrow{color:var(--liquid-secondary)}
+#chat .chatScreenHeader p{color:var(--liquid-secondary)}
+#chat .chatWorkspace{gap:var(--liquid-section-gap)}
+#chat .chatTeamConsole,
+#chat .chatPrivatePanel,
+#chat .chatConversationPanel{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-l);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#chat .chatTeamConsoleHeader,
+#chat .chatPrivateHeader{
+  border-bottom:var(--liquid-hairline) solid var(--liquid-separator);
+  background:transparent;
+}
+#chat .chatTeamToolbar{
+  border-bottom:var(--liquid-hairline) solid var(--liquid-separator);
+  background:var(--liquid-surface-muted);
+}
+#chat .chatMessageViewport{
+  background:color-mix(in srgb,var(--liquid-bg-alt) 42%,var(--liquid-surface));
+}
+#chat .chatComposer,
+#chat .chatTeamComposer{
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:18px;
+  background:var(--liquid-glass-elevated);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 6px 18px rgba(27,45,58,.07);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+}
+#chat .chatNotificationCard{
+  margin-top:2px;
+  padding:10px 12px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface-muted);
+  box-shadow:none;
+}
+#chat .chatNotificationTop{min-height:48px}
+#chat .chatNotificationIcon{width:34px;height:34px}
+#chat .pushPreferenceRows{
+  margin-top:8px;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+}
+#chat .pushPreferenceRows>label{
+  min-height:54px;
+  border-bottom:var(--liquid-hairline) solid var(--liquid-separator);
+}
+#chat .pushPreferenceRows input[type="checkbox"]{
+  appearance:none;
+  -webkit-appearance:none;
+  width:48px;
+  min-width:48px;
+  height:28px;
+  min-height:28px;
+  padding:2px;
+  border:0;
+  border-radius:999px;
+  background:rgba(118,118,128,.24);
+  box-shadow:none;
+  transition:background-color 160ms ease;
+}
+#chat .pushPreferenceRows input[type="checkbox"]::before{
+  content:"";
+  display:block;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  transform:translateX(0);
+  transition:transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+#chat .pushPreferenceRows input[type="checkbox"]:checked{background:var(--liquid-accent)}
+#chat .pushPreferenceRows input[type="checkbox"]:checked::before{transform:translateX(20px)}
+#chat .pushPreferenceRows input[type="checkbox"]:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--liquid-accent) 28%,transparent);
+  outline-offset:2px;
+}
+
+/* Dialogs, sheets and account surfaces. */
+.appDialog,
+dialog.appDialog,
+.accountSheet,
+.releaseDialog,
+.updateDetailsSheet{
+  border:var(--liquid-hairline) solid var(--liquid-glass-border)!important;
+  background:var(--liquid-glass-elevated)!important;
+  box-shadow:inset 0 1px 0 var(--liquid-glass-edge),0 24px 70px rgba(17,22,28,.28)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
+  backdrop-filter:blur(26px) saturate(150%);
+}
+#profileExperience>section,
+#accountActionsExperience button,
+#passkeyList>div>div{
+  border-color:var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#appearanceExperience{
+  gap:4px!important;
+  padding:4px;
+  border-radius:16px;
+  background:var(--liquid-surface-muted);
+}
+#appearanceExperience button{
+  min-height:46px;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#appearanceExperience button[aria-pressed="true"]{
+  background:var(--liquid-surface)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:0 1px 5px rgba(0,0,0,.11)!important;
+}
+
+/* Onboarding inherits the same material language. */
+.onboardingDialog[open]{
+  background:var(--liquid-surface)!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:var(--liquid-radius-xl)!important;
+  box-shadow:0 28px 84px rgba(20,28,35,.28)!important;
+}
+.onboardingDialog .onboardingActions{
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent);
+  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  backdrop-filter:blur(18px) saturate(145%);
+}
+
+/* Responsive composition. */
+@media(max-width:520px){
+  :root{
+    --liquid-section-gap:16px;
+  }
+  .metricGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .metric{min-height:62px;padding:9px 7px}
+  .metric strong{font-size:15.5px}
+  .metric span{font-size:9.5px}
+  .bottom.reactTabs{width:calc(100vw - 18px)}
+  #changes .changesWorkflowTabs button b{font-size:11px}
+  #today #personalNightCard h3{font-size:17px!important}
+  #chat .chatScreenHeader h1{font-size:26px}
+}
+@media(max-width:350px){
+  .metric strong{font-size:14px}
+  .metric span{font-size:9px}
+  .bottom.reactTabs{width:calc(100vw - 12px);padding:5px}
+  .bottom.reactTabs button{height:54px;font-size:9.5px}
+  .bottom.reactTabs button svg{width:21px;height:21px}
+}
+@media(min-width:760px){
+  .bottom.reactTabs{bottom:16px}
+  #today,
+  #changes,
+  #breaks,
+  #chat{max-width:704px}
+}
+@media(min-width:980px){
+  body[data-view] main{max-width:780px}
+}
+
+/* Accessibility adaptations. */
+@media(prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    scroll-behavior:auto!important;
+  }
+  #appHeader,
+  #appHeader .hospitalStrip,
+  #appHeader .motto,
+  #changes .changesWorkflowTabs::before,
+  #chat .pushPreferenceRows input[type="checkbox"]::before{
+    transition-duration:0ms!important;
+  }
+  .bottom.reactTabs .tabSlidingIndicator{will-change:auto}
+}
+@media(prefers-contrast:more){
+  :root{--liquid-separator:rgba(60,60,67,.34)}
+  html[data-theme="dark"],body.dark{--liquid-separator:rgba(235,235,245,.3)}
+  .bottom.reactTabs,
+  .changesWorkflowTabs,
+  .glassIconButton{border-width:1px}
+}
+@media(prefers-reduced-transparency:reduce){
+  .bottom.reactTabs,
+  .changesWorkflowTabs,
+  .glassIconButton,
+  .appDialog,
+  dialog.appDialog,
+  .accountSheet,
+  .releaseDialog,
+  .updateDetailsSheet{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-surface)!important;
+  }
+}
+
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .bottom.reactTabs,
+  .changesWorkflowTabs,
+  .glassIconButton,
+  .appDialog,
+  dialog.appDialog{
+    background:var(--liquid-surface)!important;
+  }
+}
+
+
+/* liquid-compat.css */
+
+/* Narrow compatibility hooks still required by the current React-rendered shell.
+   Obsolete .role, <section>-based Breaks and old five-nurse selectors were removed
+   after those regions moved to rosterRow, Surface and fiveNurseSurface markup. */
+#nightStatusRow>div{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:0!important;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#nightStatusRow>div>button,
+#nightStatusRow>div>div{
+  min-height:66px!important;
+  margin:0!important;
+  padding:10px 11px!important;
+  border:0!important;
+  border-left:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#nightStatusRow>div>*:first-child{border-left:0!important}
+#nightStatusRow>div strong{
+  color:var(--liquid-label);
+  font-size:17px!important;
+  font-weight:740!important;
+  letter-spacing:-.025em;
+}
+#nightStatusRow>div span{
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+  font-weight:590!important;
+  letter-spacing:0!important;
+}
+
+#breakSummaryRow>div{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:var(--liquid-radius-m);
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#breakSummaryRow>div>*{
+  min-height:62px!important;
+  margin:0!important;
+  padding:9px 10px!important;
+  border:0!important;
+  border-left:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breakSummaryRow>div>*:first-child{border-left:0!important}
+
+@media(max-width:370px){
+  #nightStatusRow>div strong{font-size:15px!important}
+  #nightStatusRow>div span{font-size:9px!important}
+}
+
+
+/* liquid-workflow.css */
+
+/* Progressive interaction refinements that need no extra runtime state. */
+#changes .changesWorkflowTabs:has(button:nth-child(1).active),
+#changes .changesWorkflowTabs:has(button:nth-child(1)[aria-selected="true"]){
+  --changes-step-index:0;
+}
+#changes .changesWorkflowTabs:has(button:nth-child(2).active),
+#changes .changesWorkflowTabs:has(button:nth-child(2)[aria-selected="true"]){
+  --changes-step-index:1;
+}
+#changes .changesWorkflowTabs:has(button:nth-child(3).active),
+#changes .changesWorkflowTabs:has(button:nth-child(3)[aria-selected="true"]){
+  --changes-step-index:2;
+}
+
+/* The Night header progressively condenses when scroll-driven animations are supported. */
+@supports (animation-timeline: scroll()){
+  #appHeader{
+    animation:liquidHeaderShell linear both;
+    animation-timeline:scroll(root block);
+    animation-range:0 72px;
+  }
+  #appHeader .hospitalStrip{
+    animation:liquidHeaderBrand linear both;
+    animation-timeline:scroll(root block);
+    animation-range:0 58px;
+  }
+  #appHeader .motto{
+    animation:liquidHeaderMotto linear both;
+    animation-timeline:scroll(root block);
+    animation-range:0 52px;
+  }
+  @keyframes liquidHeaderShell{
+    from{
+      padding-top:max(8px,env(safe-area-inset-top));
+      padding-bottom:9px;
+      border-bottom-color:transparent;
+      background:linear-gradient(180deg,color-mix(in srgb,var(--liquid-bg-alt) 94%,transparent),color-mix(in srgb,var(--liquid-bg-alt) 76%,transparent));
+    }
+    to{
+      padding-top:max(5px,env(safe-area-inset-top));
+      padding-bottom:6px;
+      border-bottom-color:var(--liquid-separator);
+      background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent);
+    }
+  }
+  @keyframes liquidHeaderBrand{
+    from{opacity:1;max-height:42px;transform:translateY(0)}
+    to{opacity:0;max-height:0;transform:translateY(-8px)}
+  }
+  @keyframes liquidHeaderMotto{
+    from{opacity:1;max-height:20px;transform:translateY(0)}
+    to{opacity:0;max-height:0;transform:translateY(-5px)}
+  }
+}
+
+
+/* liquid-screen-headers.css */
+.changesScreenHeader,.breaksScreenHeader{margin:0 -12px;padding:max(13px,env(safe-area-inset-top)) 14px 10px;background:transparent!important;color:var(--liquid-label)!important}
+.changesScreenHeader .screenEyebrow,.breaksScreenHeader .screenEyebrow{color:var(--liquid-secondary)!important;font-size:9px!important;font-weight:670!important;letter-spacing:.06em!important}
+.changesScreenHeader h1,.breaksScreenHeader h1{color:var(--liquid-label)!important;font-size:27px!important;font-weight:740!important;letter-spacing:-.045em!important}
+.changesScreenHeader p,.breaksScreenHeader p{color:var(--liquid-secondary)!important;font-size:11px!important}
+.changesScreenHeader .screenInfoButton,.breaksScreenHeader .screenInfoButton{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;border:var(--liquid-hairline) solid var(--liquid-glass-border)!important;border-radius:15px!important;background:var(--liquid-glass)!important;color:var(--liquid-label)!important;box-shadow:inset 0 1px 0 var(--liquid-glass-edge),0 5px 16px rgba(27,45,58,.08)!important;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%);font-family:inherit!important;font-size:14px!important;font-weight:700!important}
+
+/* liquid-date-context.css */
+#changes>.changesDatePanel,#breaks>.panel>.grid2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+#changes>.changesDatePanel .grid2{display:contents}
+#changes>.changesDatePanel label,#breaks>.panel>.grid2>label{min-width:0}
+#changes>.changesDatePanel .dateNav,#breaks>.panel>.grid2 .dateNav{overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:var(--liquid-radius-s);background:var(--liquid-surface-muted)}
+#changes>.changesDatePanel .dateNav button,#changes>.changesDatePanel .prettyDateButton,#breaks>.panel>.grid2 .dateNav button,#breaks>.panel>.grid2 .prettyDateButton{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#changes>.changesDatePanel .staffingCount,#breaks>.panel>.grid2 .staffingCount{min-width:112px;min-height:48px;padding:7px 10px;border:0;border-left:var(--liquid-hairline) solid var(--liquid-separator);border-radius:0;background:transparent;box-shadow:none}
+#changes .confirmHint,#changes .changesWorkflowState,#breaks #breakDate{border:0!important;box-shadow:none!important}
+#changes .confirmHint{padding:8px 2px;background:transparent!important;color:var(--liquid-secondary)}
+@media(max-width:520px){#changes>.changesDatePanel,#breaks>.panel>.grid2{grid-template-columns:1fr}#changes>.changesDatePanel .staffingCount,#breaks>.panel>.grid2 .staffingCount{min-width:0;padding:8px 0 0;border-left:0;border-top:var(--liquid-hairline) solid var(--liquid-separator)}}
+
+/* liquid-chat-priority.css */
+#chatHome{display:flex!important;flex-direction:column;gap:12px!important}
+#chatHome>.chatTeamConsole{order:1}
+#chatHome>.chatPrivateHeader{order:2}
+#chatHome>#chatConversationList{order:3}
+#chatHome>.chatSafetyNotice{order:4}
+#chatHome>#pushNotificationCard{order:5}
+#chat .chatPrivateHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding:0 2px;border:0!important;background:transparent!important}
+#chat .chatPrivateHeader>div>span{color:var(--liquid-label);font-size:18px;font-weight:710;letter-spacing:-.025em}
+#chat .chatPrivateHeader small{color:var(--liquid-secondary)}
+#chat .chatNewPrivateBtn{min-height:42px;border:var(--liquid-hairline) solid var(--liquid-glass-border)!important;border-radius:14px!important;background:var(--liquid-glass)!important;color:var(--liquid-accent-strong)!important;box-shadow:inset 0 1px 0 var(--liquid-glass-edge),0 4px 13px rgba(27,45,58,.07)!important;-webkit-backdrop-filter:blur(16px) saturate(145%);backdrop-filter:blur(16px) saturate(145%)}
+#chatConversationList{overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:var(--liquid-radius-m);background:var(--liquid-surface);box-shadow:var(--liquid-shadow-content)}
+#chatConversationList>button,#chatConversationList>div{margin:0!important;border:0!important;border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#chatConversationList>*:first-child{border-top:0!important}
+
+/* React UI-system chat surfaces. Keep legacy host selectors from flattening them. */
+#chatConversationList{
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chatConversationList>.reactConversationGroup{
+  overflow:hidden!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:22px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:0 10px 28px rgba(12,22,30,.06)!important;
+}
+#chatConversationList>.reactConversationGroup>*{
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent;
+  box-shadow:none!important;
+}
+#chat .chatComposerWrap,
+#chat .chatTeamComposerWrap{
+  border-top:0!important;
+  background:
+    linear-gradient(180deg,transparent 0,color-mix(in srgb,var(--liquid-surface) 78%,transparent) 34%,var(--liquid-surface) 100%)!important;
+  padding-top:12px!important;
+}
+#chat .chatComposer{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:0!important;
+}
+#chat .chatComposerGlass{
+  width:100%;
+  -webkit-backdrop-filter:blur(26px) saturate(165%);
+  backdrop-filter:blur(26px) saturate(165%);
+}
+body.dark #chat .chatComposerWrap,
+body.dark #chat .chatTeamComposerWrap,
+html[data-theme="dark"] #chat .chatComposerWrap,
+html[data-theme="dark"] #chat .chatTeamComposerWrap{
+  background:
+    linear-gradient(180deg,transparent 0,rgba(12,12,14,.72) 36%,var(--liquid-surface) 100%)!important;
+}
+@media(prefers-reduced-transparency:reduce){
+  #chat .chatComposerGlass{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-surface)!important;
+  }
+}
+
+
+/* liquid-night-polish.css */
+/* V37.51 Night visual polish.
+   This file intentionally sits last in the visual stack so the live React Night
+   experience uses the new design-system geometry instead of legacy card rules. */
+
+#today{
+  --night-polish-accent:var(--liquid-accent);
+  --night-polish-soft:color-mix(in srgb,var(--liquid-accent) 9%,transparent);
+}
+
+/* Compact the Night chrome and let the control cluster feel deliberate. */
+#appHeader{
+  padding-top:max(7px,env(safe-area-inset-top))!important;
+  padding-bottom:8px!important;
+}
+#appHeader .hospitalStrip{
+  min-height:28px!important;
+}
+#appHeader .hospitalStrip img{
+  width:min(154px,46vw)!important;
+  height:28px!important;
+}
+#appHeader .hospitalStrip span{
+  font-size:8.5px!important;
+  letter-spacing:.05em!important;
+}
+#appHeader .head{
+  margin-top:3px!important;
+}
+#appHeader .motto{
+  font-size:9.5px!important;
+}
+#appHeader .headActions{
+  gap:2px!important;
+  padding:3px!important;
+  border-radius:24px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.025)),
+    color-mix(in srgb,var(--liquid-glass-clear) 92%,transparent)!important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,var(--liquid-glass-edge) 92%,transparent),
+    0 8px 24px rgba(12,22,30,.10)!important;
+}
+#appHeader .headActions button{
+  transition:transform 120ms ease,background-color 160ms ease!important;
+}
+#appHeader .headActions button:active{
+  transform:scale(.92);
+  background:color-mix(in srgb,var(--liquid-accent) 8%,transparent)!important;
+}
+
+/* Section titles are editorial, not dashboard labels. */
+#today .personalNight>.sectionTitle,
+#today .sectionHeadingRow .sectionTitle{
+  margin-bottom:10px!important;
+  font-size:21px!important;
+  font-weight:700!important;
+  letter-spacing:-.035em!important;
+}
+#today .sectionHeadingRow{
+  align-items:center;
+}
+
+/* Personal assignment hero. */
+#today #personalNightCard{
+  display:block!important;
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today #personalNightCard>.personalHeroSurface{
+  position:relative;
+  display:block;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-separator) 86%,var(--liquid-accent) 14%);
+  border-radius:24px;
+  background:
+    linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 4%,transparent),transparent 42%),
+    var(--liquid-surface);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 14px 38px rgba(12,22,30,.09);
+}
+#today #personalNightCard>.personalHeroSurface::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.52),transparent);
+  pointer-events:none;
+}
+#today .personalIdentity{
+  display:grid!important;
+  grid-template-columns:50px minmax(0,1fr) auto!important;
+  gap:12px!important;
+  align-items:center!important;
+  padding:15px 16px 12px!important;
+}
+#today .personalIdentity .personalAvatar{
+  width:50px!important;
+  height:50px!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 6px 16px rgba(3,72,70,.18);
+}
+#today .personalIdentityCopy b{
+  font-size:18px!important;
+  font-weight:720!important;
+  letter-spacing:-.025em;
+}
+#today .personalIdentityCopy small{
+  margin-top:2px!important;
+  font-size:11.5px!important;
+}
+#today .personalChangeBtn{
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0 7px!important;
+  border-radius:12px!important;
+  font-weight:670!important;
+}
+#today .personalChangeBtn:active{
+  background:var(--night-polish-soft)!important;
+}
+#today .personalAssignmentHero{
+  position:relative;
+  display:grid!important;
+  grid-template-columns:48px minmax(0,1fr) auto!important;
+  gap:12px!important;
+  align-items:center!important;
+  margin:0 12px!important;
+  padding:13px 14px!important;
+  border:0!important;
+  border-radius:17px!important;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--personal-role) 11%,transparent),color-mix(in srgb,var(--personal-role) 4%,transparent) 55%,transparent)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 4px 0 0 var(--personal-role)!important;
+}
+#today .personalRoleIcon{
+  display:grid!important;
+  width:44px!important;
+  height:44px!important;
+  place-items:center!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--personal-role) 11%,transparent)!important;
+  color:var(--personal-role)!important;
+  font-size:16px!important;
+  font-weight:760!important;
+  letter-spacing:-.02em;
+}
+#today .personalRoleCopy small{
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:.02em;
+}
+#today .personalRoleCopy b{
+  margin-top:2px!important;
+  color:var(--liquid-label)!important;
+  font-size:17px!important;
+  font-weight:720!important;
+  letter-spacing:-.025em;
+}
+#today .personalRoleCopy>span{
+  margin-top:3px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11.5px!important;
+}
+#today .personalFacts{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:0!important;
+  margin:12px 16px 0!important;
+  padding:0!important;
+  background:transparent!important;
+}
+#today .personalFacts>div{
+  min-width:0;
+  padding:9px 10px!important;
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  background:transparent!important;
+}
+#today .personalFacts>div:nth-child(even){
+  border-left:var(--liquid-hairline) solid var(--liquid-separator)!important;
+}
+#today .personalFacts>div:last-child{
+  grid-column:1/-1;
+  border-left:0!important;
+}
+#today .personalFacts dt{
+  font-size:9px!important;
+  font-weight:660!important;
+  letter-spacing:.045em!important;
+}
+#today .personalFacts dd{
+  margin-top:3px!important;
+  overflow:hidden;
+  font-size:13px!important;
+  font-weight:610!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#today .personalContextAction{
+  display:flex!important;
+  width:100%!important;
+  min-height:48px!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  margin-top:7px!important;
+  padding:0 16px!important;
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:670!important;
+  text-align:left!important;
+}
+#today .personalContextAction span{
+  display:grid;
+  width:28px;
+  height:28px;
+  place-items:center;
+  border-radius:50%;
+  background:var(--night-polish-soft);
+  font-size:20px;
+  font-weight:350;
+}
+
+/* One integrated summary rail rather than four dashboard cards. */
+#today .nightSummaryTitle{
+  margin-top:22px!important;
+}
+#today .nightStatusRow{
+  display:block!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightMetricRail{
+  width:100%;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  border-radius:20px!important;
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--liquid-accent) 2.5%,transparent),transparent),
+    var(--liquid-surface)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 10px 28px rgba(12,22,30,.06)!important;
+}
+#today .nightMetricRail .metric{
+  min-height:72px!important;
+  padding:11px 10px!important;
+  justify-content:center!important;
+}
+#today .nightMetricRail .metric strong{
+  font-size:18px!important;
+  font-weight:730!important;
+}
+#today .nightMetricRail .metric span{
+  margin-top:2px;
+  font-size:9.5px!important;
+  font-weight:600!important;
+}
+#today .nightMetricRail .metricInteractive::after{
+  right:8px!important;
+  bottom:8px!important;
+  opacity:.72;
+}
+
+/* Night Situation becomes a grouped timeline with strong semantic anchors. */
+#today #roles>.nightSituationTimeline{
+  position:relative;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:22px;
+  background:var(--liquid-surface);
+  box-shadow:0 10px 28px rgba(12,22,30,.06);
+}
+#today .nightSituationTimeline .rosterRow{
+  display:grid!important;
+  grid-template-columns:50px minmax(0,1fr)!important;
+  min-height:72px!important;
+  gap:12px!important;
+  padding:12px 40px 12px 15px!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  background:transparent!important;
+}
+#today .nightSituationTimeline .rosterRow:first-child{
+  border-top:0!important;
+}
+#today .nightSituationTimeline .rosterRow::before{
+  top:15px!important;
+  bottom:15px!important;
+  width:4px!important;
+  border-radius:0 4px 4px 0!important;
+  opacity:.95!important;
+}
+#today .nightSituationTimeline .rosterRow.mine{
+  background:
+    linear-gradient(90deg,color-mix(in srgb,var(--liquid-accent) 8%,transparent),transparent 62%)!important;
+}
+#today .nightSituationTimeline .rosterRoleMark{
+  width:46px!important;
+  min-width:46px!important;
+  height:34px!important;
+  padding:0 6px!important;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--row-accent) 24%,transparent);
+  border-radius:11px!important;
+  background:color-mix(in srgb,var(--row-accent) 10%,transparent)!important;
+  color:var(--row-accent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+#today .nightSituationTimeline .rosterRowName{
+  font-size:15px!important;
+  font-weight:700!important;
+  letter-spacing:-.02em!important;
+}
+#today .nightSituationTimeline .rosterRowMeta{
+  margin-top:4px!important;
+  font-size:10.8px!important;
+  line-height:1.35!important;
+  white-space:normal!important;
+}
+#today .nightSituationTimeline .rosterRow::after{
+  right:14px!important;
+  font-size:21px!important;
+}
+
+/* Lighter secondary action. */
+#today .rosterShortcutRow{
+  margin-top:10px!important;
+}
+#today .rosterShortcutBtn{
+  min-height:54px!important;
+  padding:9px 13px!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:17px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 96%,var(--liquid-accent) 4%)!important;
+  box-shadow:none!important;
+}
+#today .rosterShortcutBtn svg{
+  width:20px!important;
+  height:20px!important;
+}
+
+/* Recent activity reads as a timeline, not another stack of cards. */
+#today .recentActivityPanel{
+  margin-top:26px!important;
+}
+#today .recentActivityPanel>.sectionHeadingRow{
+  margin-bottom:10px!important;
+}
+#today .recentActivityPanel .time{
+  margin-top:3px!important;
+  font-size:11px!important;
+}
+#today #recentActivityList>.activityTimeline{
+  position:relative;
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:20px;
+  background:var(--liquid-surface);
+  box-shadow:0 10px 28px rgba(12,22,30,.055);
+}
+#today .activityTimeline .recentActivityRow{
+  display:grid!important;
+  grid-template-columns:minmax(68px,auto) minmax(0,1fr) 18px!important;
+  gap:12px!important;
+  align-items:start!important;
+  min-height:0!important;
+  padding:13px 13px!important;
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  background:transparent!important;
+}
+#today .activityTimeline .recentActivityRow:first-child{
+  border-top:0!important;
+}
+#today .activityTimeline .activityType{
+  align-self:start!important;
+  min-width:0!important;
+  margin-top:1px!important;
+  padding:5px 8px!important;
+  border-radius:9px!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+}
+#today .activityTimeline .recentActivityCopy b{
+  font-size:13.5px!important;
+  font-weight:690!important;
+  line-height:1.28!important;
+}
+#today .activityTimeline .recentActivityDetail{
+  margin-top:4px!important;
+  font-size:11.5px!important;
+  line-height:1.35!important;
+}
+#today .activityTimeline .recentActivityMeta{
+  margin-top:5px!important;
+  font-size:10.5px!important;
+}
+#today .activityTimeline .recentActivityRow>i{
+  align-self:center!important;
+  color:var(--liquid-tertiary)!important;
+  font-size:20px!important;
+  font-style:normal!important;
+}
+
+/* A slimmer, more transparent Liquid Glass dock. */
+.bottom.reactTabs{
+  bottom:max(8px,calc(5px + env(safe-area-inset-bottom)))!important;
+  width:min(calc(100vw - 26px),420px)!important;
+  min-height:0!important;
+  padding:5px!important;
+  border-radius:25px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.018)),
+    color-mix(in srgb,var(--liquid-glass) 80%,transparent)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.06),
+    0 12px 34px rgba(0,0,0,.18)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(165%)!important;
+  backdrop-filter:blur(28px) saturate(165%)!important;
+}
+.bottom.reactTabs::before{
+  opacity:.42!important;
+}
+.bottom.reactTabs button{
+  height:50px!important;
+  gap:1px!important;
+  border-radius:18px!important;
+  font-size:9.8px!important;
+  font-weight:600!important;
+}
+.bottom.reactTabs button svg{
+  width:21px!important;
+  height:21px!important;
+  stroke-width:1.8!important;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  border-radius:18px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.045)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 82%,var(--liquid-accent) 8%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    0 5px 16px rgba(0,0,0,.10)!important;
+}
+.bottom.reactTabs button.active{
+  color:var(--liquid-accent-strong)!important;
+}
+.bottom.reactTabs button.active svg{
+  filter:drop-shadow(0 1px 6px color-mix(in srgb,var(--liquid-accent) 18%,transparent));
+}
+
+/* Dark mode keeps depth without turning every surface into grey blocks. */
+body.dark #today #personalNightCard>.personalHeroSurface,
+html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
+  background:
+    linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 6%,transparent),transparent 42%),
+    color-mix(in srgb,var(--liquid-surface) 94%,#000 6%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 16px 42px rgba(0,0,0,.18);
+}
+body.dark #today .nightMetricRail,
+body.dark #today #roles>.nightSituationTimeline,
+body.dark #today #recentActivityList>.activityTimeline,
+html[data-theme="dark"] #today .nightMetricRail,
+html[data-theme="dark"] #today #roles>.nightSituationTimeline,
+html[data-theme="dark"] #today #recentActivityList>.activityTimeline{
+  background:color-mix(in srgb,var(--liquid-surface) 95%,transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 30px rgba(0,0,0,.16)!important;
+}
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.012)),
+    rgba(18,18,22,.64)!important;
+  border-color:rgba(255,255,255,.11)!important;
+}
+
+/* Keep the four summary metrics useful on the smallest supported phones. */
+@media(max-width:360px){
+  #today .nightMetricRail .metric{
+    min-height:68px!important;
+    padding-inline:7px!important;
+  }
+  #today .nightMetricRail .metric strong{font-size:16px!important}
+  #today .nightMetricRail .metric span{font-size:8.8px!important}
+  #today .personalAssignmentHero{
+    grid-template-columns:42px minmax(0,1fr)!important;
+  }
+  #today .personalAssignmentHero .personalChangedBadge{
+    grid-column:2;
+    justify-self:start;
+  }
+}
+
+@media(prefers-reduced-transparency:reduce){
+  .bottom.reactTabs{
+    background:var(--liquid-surface)!important;
+  }
+}
+
+
+/* Five-nurse mode stays part of the same Night hierarchy. */
+#today .fiveNurseSurface{
+  position:relative;
+  width:100%;
+  display:block;
+  margin-top:10px!important;
+  padding:13px 42px 13px 15px!important;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-warning) 25%,var(--liquid-separator))!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(100deg,color-mix(in srgb,var(--liquid-warning) 7%,transparent),transparent 58%),
+    var(--liquid-surface)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+#today .fiveNurseSurface.mine{
+  box-shadow:inset 4px 0 0 var(--liquid-accent)!important;
+}
+#today .fiveNurseSurface .fiveNurseLabel{
+  display:block;
+  color:var(--liquid-warning)!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+}
+#today .fiveNurseSurface strong{
+  display:block;
+  margin-top:3px!important;
+  font-size:14.5px!important;
+  font-weight:700!important;
+}
+#today .fiveNurseSurface p,
+#today .fiveNurseSurface small{
+  display:block;
+  margin:3px 0 0!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.8px!important;
+  line-height:1.35!important;
+}
+#today .fiveNurseSurface>i{
+  position:absolute;
+  right:14px;
+  top:50%;
+  color:var(--liquid-tertiary);
+  font-size:21px;
+  font-style:normal;
+  transform:translateY(-50%);
+}
+
+
+/* 37.53 presentation system. The legacy engines continue to own data and actions. */
+:root{
+  --scene-bg:#f4f6f7;
+  --scene-surface:#fff;
+  --scene-ink:#17242a;
+  --scene-secondary:#526269;
+  --scene-line:#dce3e5;
+  --scene-accent:#087c77;
+  --scene-soft:#e8f4f2;
+  --scene-radius:20px;
+  --scene-space:clamp(18px,3vw,30px);
+  --scene-shadow:0 1px 3px rgba(17,42,49,.045);
+}
+body.dark,html[data-theme="dark"]{
+  --scene-bg:#101719;
+  --scene-surface:#1b2528;
+  --scene-ink:#f4f8f8;
+  --scene-secondary:#b6c5c7;
+  --scene-line:#354349;
+  --scene-accent:#82dad0;
+  --scene-soft:#233c3c;
+  --scene-shadow:0 1px 3px rgba(0,0,0,.14);
+}
+html{background:var(--scene-bg)}
+body{background:var(--scene-bg);color:var(--scene-ink)}
+main{max-width:1040px;padding-inline:var(--scene-space)}
+main>.view{min-width:0}
+#today>.nightOverviewPanel,#today>.recentActivityPanel,
+#changes>.changesDatePanel,#changes>.changePanel,
+#breaks>.panel,#roster>.panel{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  padding:0!important;margin-block:0 var(--scene-space)!important;
+}
+#today>.nightOverviewPanel{display:flex;flex-direction:column;gap:var(--scene-space)}
+#today>.nightOverviewPanel>.sectionHeadingRow,
+#today>.nightOverviewPanel>.nightSummaryTitle{margin-bottom:-12px!important}
+#today>.nightOverviewPanel #alerts:empty,
+#today>.nightOverviewPanel #fiveArrangement:empty,
+#today>.nightOverviewPanel #personalAllocationNotice:empty{display:none}
+#today .personalNight{order:0;margin:0!important}
+#today .nightDateShell{order:1;margin:0!important;padding:0!important}
+#today .nightSummaryTitle{order:2}
+#today #nightStatusRow{order:3}
+#today #alerts{order:4}
+#today .sectionHeadingRow:not(.nightSummaryTitle){order:5}
+#today #roles{order:6}
+#today #fiveArrangement{order:7}
+#today .rosterShortcutRow{order:8}
+#appHeader{max-width:1040px;margin:0 auto 18px!important;padding-inline:var(--scene-space)!important}
+#appHeader .hospitalStrip{gap:14px}
+#appHeader .hospitalStrip span{font-size:10px!important;letter-spacing:.075em!important}
+#appHeader .motto{font-size:11px!important;white-space:normal!important}
+#appHeader .headActions{gap:4px!important}
+#appHeader .headActions button{min-width:44px;min-height:44px}
+#today .personalNight>.sectionTitle{margin:6px 0 12px!important;font-size:29px!important;line-height:1.12}
+#today #personalNightCard>.personalHeroSurface{
+  border:1px solid var(--scene-line);border-radius:var(--scene-radius);
+  background:var(--scene-surface);box-shadow:var(--scene-shadow);
+}
+#today .personalIdentity{padding:18px 20px!important}
+#today .personalAssignmentHero{padding:18px 20px!important}
+#today .personalRoleCopy b{font-size:clamp(21px,5vw,29px)!important;line-height:1.15!important}
+#today .personalFacts{background:var(--scene-surface)!important}
+#today .personalFacts>div{padding:16px 12px!important}
+#today .personalContextAction{min-height:50px!important}
+#today .nightDateShell .grid2,#changes>.changesDatePanel .grid2,#breaks>.panel>.grid2{
+  padding:12px!important;border:1px solid var(--scene-line)!important;
+  border-radius:var(--scene-radius)!important;background:var(--scene-surface)!important;
+  box-shadow:var(--scene-shadow)!important;
+}
+#today .nightDateShell .dateNav{min-height:54px}
+#today .staffingCount,#changes .staffingCount,#breaks .staffingCount{color:var(--scene-ink)}
+#today .sectionHeadingRow .sectionTitle,#breaks .breakPlanTitle h2{
+  font-size:20px!important;line-height:1.2!important;
+}
+#today #roles>.liquidRosterList,#today #recentActivityList>div,
+#breaks .breakGroup,#chatConversationList>.reactConversationGroup{
+  border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#today #roles .rosterRow{min-height:70px!important;padding:13px 18px!important}
+#today #roles .rosterRow:focus-visible{outline:3px solid var(--scene-accent);outline-offset:-3px}
+#today .rosterShortcutRow{gap:12px!important}
+#today .rosterShortcutBtn{min-height:52px!important;background:var(--scene-surface)!important;border:1px solid var(--scene-line)!important}
+#today .recentActivityPanel{margin-top:8px!important}
+#today .recentActivityPanel .sectionHeadingRow{margin-bottom:12px!important}
+#today .recentActivityRow{min-height:64px!important}
+#changes .changesScreenHeader,#breaks .breaksScreenHeader,
+#chat .chatScreenHeader{padding:14px 0 20px!important;margin:0!important}
+#changes .changesScreenHeader h1,#breaks .breaksScreenHeader h1,#chat .chatScreenHeader h1{
+  font-size:clamp(28px,5vw,36px)!important;line-height:1.1!important;
+}
+#changes .changesWorkflowTabs{
+  margin:18px 0 22px!important;padding:5px!important;border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#changes .changesWorkflowTabs button{min-height:56px!important;padding:7px 6px!important}
+#changes .changesWorkflowTabs button small{display:block!important;font-size:10px!important;line-height:1.2!important}
+#changes .changesStepPane:not(.hidden){display:grid;gap:18px}
+#changes .staffingSection,#changes .confirmationCard,#changes .nightRoleOverrideStep:not(:empty),
+#changes .fixedAllocationBox,#changes .historyBox{
+  padding:18px!important;border:1px solid var(--scene-line)!important;
+  border-radius:var(--scene-radius)!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#changes .stepHeader{margin-bottom:14px!important}
+#changes .continueWorkflowBtn,#changes #saveAllocationsBtn{min-height:52px}
+#breaks #breakPersonalSummary{margin:0 0 22px}
+.personalBreakSummary{
+  padding:22px;border:1px solid var(--scene-line);border-radius:var(--scene-radius);
+  background:var(--scene-surface);box-shadow:var(--scene-shadow);
+}
+.personalBreakEyebrow{display:block;color:var(--scene-accent);font-size:11px;font-weight:750;letter-spacing:.055em;text-transform:uppercase}
+.personalBreakMain{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:13px}
+.personalBreakMain h2{margin:0!important;color:var(--scene-ink);font-size:clamp(24px,5vw,32px)!important;line-height:1.1}
+.personalBreakMain p,.personalBreakSummary>small{display:block;margin:7px 0 0;color:var(--scene-secondary);font-size:13px;line-height:1.5}
+.personalBreakMark{display:grid;flex:none;place-items:center;width:56px;height:56px;border-radius:17px;background:var(--scene-soft);color:var(--scene-accent);font-size:26px;font-weight:750}
+#breaks>.panel>.grid2{margin:0 0 22px!important}
+#breaks .breakSummaryRow{margin-bottom:22px!important}
+#breaks .breakPlanTitle{margin:0 0 14px!important}
+#breaks .breakGroup{overflow:hidden}
+#breaks .breakPerson{min-height:58px}
+#chat .chatTeamConsole,#chat .chatNotificationCard,#chat .chatSafetyNotice{
+  border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#chat .chatTeamConsoleHeader{padding:18px!important}
+#chat .chatTeamMessages,#chat .chatMessages{font-size:14px;line-height:1.5}
+#chat .chatPrivateHeader{margin-top:12px!important}
+#chat .chatNewPrivateBtn{min-height:48px}
+.accountSheet .accountGroup,.onboardingDialog,#releaseNotes .releaseEntry.latest{
+  border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+.authGate{background:var(--scene-bg)!important}
+.authCard{border:1px solid var(--scene-line)!important;border-radius:24px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+.authCard input,.authCard select{min-height:50px}
+.authCard button{min-height:44px}
+.appDialog,.accountSheet,.onboardingDialog,.updateSheet,.chatMessageActionSheet,.chatNewConversationSheet{
+  color:var(--scene-ink);border-color:var(--scene-line);background:var(--scene-surface);
+}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,
+summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--scene-accent);outline-offset:2px}
+@media(max-width:640px){
+  main{padding-inline:16px}
+  #appHeader{padding-inline:16px!important}
+  #today .nightDateShell .grid2{grid-template-columns:minmax(0,1fr)!important}
+  #today .nightDateShell .staffingCount{min-height:0;padding:10px 4px 2px!important}
+  #changes .changesWorkflowTabs button small{font-size:9px!important}
+  #changes .staffingSection,#changes .confirmationCard{padding:16px!important}
+  #breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr)!important}
+  .personalBreakSummary{padding:18px}
+}
+@media(min-width:760px){
+  #today>.nightOverviewPanel{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);align-items:start}
+  #today .personalNight{grid-column:1;grid-row:1 / span 2}
+  #today .nightDateShell{grid-column:2;grid-row:1 / span 2}
+  #today .nightSummaryTitle,#today #nightStatusRow,#today #alerts,#today .sectionHeadingRow:not(.nightSummaryTitle),
+  #today #roles,#today #fiveArrangement,#today .rosterShortcutRow{grid-column:1 / -1}
+  #changes .changesDatePanel .grid2,#breaks>.panel>.grid2{grid-template-columns:minmax(0,1fr) minmax(160px,auto)}
+}
+@media(prefers-reduced-motion:reduce){
+  .personalBreakSummary,.authCard,#today .personalHeroSurface{animation:none!important;transition:none!important}
+}
+/* Keep the sticky header inside the same physical swipe track as its page. */
+#today>#appHeader{max-width:none;width:calc(100% + 24px);margin:0 -12px 18px!important}
+#appHeader .head{min-height:52px}
+#appHeader .motto{max-height:none!important;overflow:visible!important;line-height:1.35!important}
+#today .rosterRow-first{border-left-color:#0d928d!important}
+#today .rosterRow-first .rosterRoleMark{color:#087b78!important;background:#e2f4f1!important;border-color:#a7ded9!important}
+body.dark #today .rosterRow-first .rosterRoleMark{color:#8de2d9!important;background:#193936!important;border-color:#35635f!important}
+body.dark,html[data-theme="dark"] body{background:var(--scene-bg)!important}
+@media(max-width:540px){
+  #appHeader .motto{font-size:10px!important;line-height:1.3!important;max-width:190px}
+  #appHeader .hospitalStrip span{font-size:9px!important}
+}
+body.dark main,html[data-theme="dark"] main{background:var(--scene-bg)!important}
+body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
+  background:transparent!important;color:var(--scene-ink)!important;
+}
+#breakSummaryRow .breakSummaryItem{min-width:0;min-height:76px;padding:10px 6px!important;white-space:normal!important}
+#breakSummaryRow .breakSummaryItem b{display:block;max-width:100%;font-size:15px!important;line-height:1.2!important;overflow-wrap:anywhere}
+#breakSummaryRow .breakSummaryItem small{display:block;margin-top:4px;font-size:11px!important;line-height:1.2!important;white-space:normal!important}
+#breakSummaryRow .breakSummaryItem.labour b{font-size:12px!important}
+@media(max-width:540px){#changes .changesWorkflowTabs button small{display:none!important}}
+
+/* React-owned Changes journey. The original controls stay as a load-failure fallback. */
+#changes #absenceFormExperience>div,
+#changes #overtimeFormExperience>div{
+  padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
+}
+#changes #changeList:not(:empty),#changes #overtimeList:not(:empty){margin-top:16px}
+#changesWorkflowExperience[data-react-ready="true"]+.changesWorkflowTabs,
+#changesWorkflowExperience[data-react-ready="true"]~#changesWorkflowState{display:none!important}
+#changes .workflowExperience{margin:18px 0 22px;scroll-margin-top:max(20px,env(safe-area-inset-top))}
+#changes .workflowSteps{
+  position:sticky;top:max(8px,env(safe-area-inset-top));z-index:20;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+  padding:5px;border:1px solid var(--scene-line);border-radius:21px;
+  background:var(--liquid-glass-elevated);box-shadow:var(--scene-shadow);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+}
+#changes .workflowStep{
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
+  gap:8px;min-width:0;min-height:64px;padding:8px 6px;border:0;border-radius:16px;
+  background:transparent;box-shadow:none;color:var(--scene-secondary);text-align:left;
+}
+#changes .workflowStep.active{color:var(--scene-ink)}
+#changes .workflowSelection{
+  position:absolute;inset:0;z-index:-1;border:1px solid var(--scene-line);
+  border-radius:16px;background:var(--scene-surface);box-shadow:0 2px 8px rgba(13,43,47,.07);
+}
+#changes .workflowStepNumber{
+  display:grid;flex:none;place-items:center;width:28px;height:28px;border-radius:10px;
+  background:var(--scene-soft);color:var(--scene-accent);font-size:12px;font-weight:750;
+}
+#changes .workflowStep.hasTasks:not(.active) .workflowStepNumber{
+  background:color-mix(in srgb,var(--liquid-warning) 16%,var(--scene-surface));color:var(--liquid-warning);
+}
+#changes .workflowStepCopy{display:grid;min-width:0;gap:2px}
+#changes .workflowStepCopy b{font-size:13px;font-weight:750;line-height:1.2}
+#changes .workflowStepCopy small{
+  overflow:hidden;color:var(--scene-secondary);font-size:10px;font-weight:560;
+  line-height:1.25;text-overflow:ellipsis;white-space:nowrap;
+}
+#changes .workflowGuidance{
+  display:flex;align-items:flex-start;gap:12px;margin-top:12px;padding:14px 16px;
+  border:1px solid var(--scene-line);border-radius:17px;background:var(--scene-surface);
+}
+#changes .workflowGuidanceMark{
+  display:grid;flex:none;place-items:center;width:25px;height:25px;border-radius:9px;
+  background:var(--scene-soft);color:var(--scene-accent);font-size:15px;font-weight:750;
+}
+#changes .workflowGuidance strong{display:block;color:var(--scene-ink);font-size:13px;line-height:1.35}
+#changes .workflowGuidance small{display:block;margin-top:3px;color:var(--scene-secondary);font-size:12px;line-height:1.45}
+#changes .workflowGuidance-attention{border-color:color-mix(in srgb,var(--liquid-warning) 32%,var(--scene-line));background:color-mix(in srgb,var(--liquid-warning) 5%,var(--scene-surface))}
+#changes .workflowGuidance-attention .workflowGuidanceMark{background:color-mix(in srgb,var(--liquid-warning) 16%,var(--scene-surface));color:var(--liquid-warning)}
+#changes .workflowGuidance-automatic{padding:11px 14px;border-style:dashed}
+#changes .workflowGuidance-automatic strong{font-size:12px}
+@media(max-width:410px){
+  #changes .workflowStep{flex-direction:column;gap:4px;min-height:66px;padding:6px 2px;text-align:center}
+  #changes .workflowStepNumber{width:23px;height:23px;border-radius:8px}
+  #changes .workflowStepCopy b{font-size:11px}
+  #changes .workflowStepCopy small{display:none}
+}
+@media(prefers-reduced-transparency:reduce){#changes .workflowSteps{background:var(--scene-surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
+#changes .changesEmptyRecord{padding:8px 0;color:var(--scene-secondary)}
+#changes .changesEmptyRecord>div{min-height:76px;padding:10px;text-align:left}
+#changes #changeList>.changesRecordGroup,
+#changes #overtimeList>.changesRecordGroup,
+#changes #allocationList>.changesAllocationGroup{
+  overflow:hidden;border:1px solid var(--scene-line);border-radius:16px;
+  background:var(--scene-surface);box-shadow:none;
+}
+#changes .changesRecordGroup>.changeItem,
+#changes .changesRecordGroup>.overtimeItem{
+  min-height:66px;margin:0;padding:12px 14px;border:0;
+  border-bottom:1px solid var(--scene-line);border-radius:0;
+  background:transparent;box-shadow:none;
+}
+#changes .changesRecordGroup>:last-child{border-bottom:0}
+#changes .changesRecordGroup .recordMoreButton{min-width:44px;min-height:44px}
+#changes .changesAllocationGroup>.allocationRow{
+  display:grid;grid-template-columns:minmax(120px,1fr) minmax(170px,1.2fr);
+  align-items:center;gap:14px;margin:0;padding:14px;
+  border:0;border-bottom:1px solid var(--scene-line);
+  border-radius:0;background:transparent;box-shadow:none;
+}
+#changes .changesAllocationGroup>.allocationRow:last-child{border-bottom:0}
+#changes .allocationRowCopy{display:grid;gap:3px;min-width:0}
+#changes .allocationRowCopy strong{font-size:14px;line-height:1.3}
+#changes .allocationRowCopy small{color:var(--scene-secondary);font-size:12px}
+#changes .allocationRowField{display:block;min-width:0;margin:0}
+#changes .allocationRowField select{width:100%;font-size:14px!important}
+@media(max-width:560px){
+  #changes .changesAllocationGroup>.allocationRow{grid-template-columns:minmax(0,1fr);gap:10px}
+  #changes .allocationRowField select{min-height:48px}
+}

@@ -1,17 +1,13 @@
 {
-  "version": "37.52",
+  "version": "37.54",
   "date": "27 September 2026",
-  "title": "React interface system",
-  "summary": "Night Roster now uses a shared React, Tailwind and Motion component system across its main experiences, reducing legacy styling conflicts and making controls feel more consistent, adaptive and app-like.",
+  "title": "Guided Changes workflow",
+  "summary": "Staffing, Allocation and Confirm now form a clearer guided journey, with decision guidance and more scannable records and role choices.",
   "changes": [
-    "A reusable React interface system now provides consistent pressable controls, grouped lists, adaptive surfaces, glass surfaces, avatars, badges, empty states, fields and loading primitives across the app.",
-    "Motion now powers shared-layout selection in the Appearance control and consistent spring press feedback instead of each screen implementing interaction feedback separately.",
-    "Tailwind container queries let profile fields and break-plan layouts adapt to the space available to each component rather than relying only on whole-screen breakpoints.",
-    "Chat private conversations and member selection now use a cleaner grouped-list hierarchy, while the message composer is a single floating Liquid Glass capsule with preserved keyboard, character-count and send behaviour.",
-    "Changes records, allocation rows, history and staffing forms now use the shared React component system while preserving the existing workflow, identifiers and staffing logic.",
-    "Night and Breaks now use the shared Motion pressable and surface primitives for more consistent touch feedback without changing roster calculations or clinical rules.",
-    "Tailwind dark-mode utilities are now tied to Night Roster’s own Light, Automatic and Dark setting so React components follow the selected in-app appearance reliably.",
-    "Authentication, Supabase data, roster calculations, staffing safety rules, Chat delivery, notifications and the installed PWA identity are unchanged."
+    "A guided Staffing, Allocation and Confirm control shows the current step, pending decisions and what to do next.",
+    "Staffing records and selected-night allocation choices use simpler grouped rows and larger controls on phones.",
+    "The original step controls remain available if the optional presentation component cannot load.",
+    "Existing staffing validation, allocation rules, confirmation, shared data and explicit update approval remain unchanged."
   ],
   "update_policy": "important"
 }

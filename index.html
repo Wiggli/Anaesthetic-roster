@@ -33,13 +33,13 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="preload" href="icon-192.png?v=37.52" as="image" vite-ignore />
-    <script src="theme-bootstrap.js?v=37.52" vite-ignore></script>
-    <link rel="manifest" href="manifest.webmanifest?v=37.52" vite-ignore />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.52" vite-ignore />
+    <link rel="preload" href="icon-192.png?v=37.54" as="image" vite-ignore />
+    <script src="theme-bootstrap.js?v=37.54" vite-ignore></script>
+    <link rel="manifest" href="manifest.webmanifest?v=37.54" vite-ignore />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.54" vite-ignore />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=37.52" vite-ignore />
-    <link rel="stylesheet" href="chat.css?v=37.52" vite-ignore />
+    <link rel="stylesheet" href="styles.css?v=37.54" vite-ignore />
+    <link rel="stylesheet" href="chat.css?v=37.54" vite-ignore />
   </head>
   <body class="authPending">
     <section
@@ -55,12 +55,12 @@
       </div>
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=37.52" alt="SPTAR Mater Dei" vite-ignore />
+          <img src="mater-dei-logo.png?v=37.54" alt="SPTAR Mater Dei" vite-ignore />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
           <div class="launchMark" aria-hidden="true">
-            <span><img src="icon-192.png?v=37.52" alt="" vite-ignore /></span>
+            <span><img src="icon-192.png?v=37.54" alt="" vite-ignore /></span>
             <i></i>
           </div>
           <span>Anaesthetic Night Roster</span>
@@ -84,7 +84,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=37.52"
+              src="mater-dei-logo.png?v=37.54"
               alt="Mater Dei Hospital"
             vite-ignore /><span>Main Operating Theatres</span>
           </div>
@@ -208,7 +208,7 @@
         <header id="appHeader">
           <div class="clinicalBackdrop" aria-hidden="true"></div>
           <div class="hospitalStrip">
-            <img src="mater-dei-logo.png?v=37.52" alt="Mater Dei Hospital" vite-ignore /><span
+            <img src="mater-dei-logo.png?v=37.54" alt="Mater Dei Hospital" vite-ignore /><span
               >Main Operating Theatres</span
             >
           </div>
@@ -293,6 +293,15 @@
         </header>
         <div class="panel nightOverviewPanel">
           <h2 class="srOnly">Selected night</h2>
+          <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
+            <h2 id="personalNightHeading" class="sectionTitle">Your night</h2>
+            <div id="personalNightCard" class="personalNightCard"></div>
+            <div id="personalAllocationNotice"></div>
+            <div id="personalNamePicker" class="personalNamePicker hidden">
+              <label class="myNameLabel">Choose your name<select id="myNamePick" aria-label="Choose your name to highlight"><option value="">Select your name</option></select></label>
+              <button type="button" class="mini" id="closeNamePickerBtn">Done</button>
+            </div>
+          </section>
           <div class="nightDateShell">
           <div class="grid2">
             <label
@@ -324,22 +333,6 @@
             </div>
           </div>
           </div>
-          <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
-            <h2 id="personalNightHeading" class="sectionTitle">Your night</h2>
-            <div id="personalNightCard" class="personalNightCard"></div>
-            <div id="personalAllocationNotice"></div>
-            <div id="personalNamePicker" class="personalNamePicker hidden">
-          <label class="myNameLabel"
-                >Choose your name<select
-              id="myNamePick"
-              aria-label="Choose your name to highlight"
-            >
-              <option value="">Select your name</option>
-            </select></label
-          >
-              <button type="button" class="mini" id="closeNamePickerBtn">Done</button>
-            </div>
-          </section>
           <div class="sectionHeadingRow nightSummaryTitle">
             <h2 class="sectionTitle">Night summary</h2>
           </div>
@@ -394,13 +387,14 @@
               <span class="liveDot"></span><span id="syncText">Connecting</span>
             </div>
           </div>
-          <div class="changesWorkflowTabs" role="tablist">
+          <div id="changesWorkflowExperience"></div>
+          <div class="changesWorkflowTabs" role="tablist" aria-label="Changes steps">
             <button type="button" class="active" data-changes-step="staffing" role="tab" aria-selected="true"><span>1</span><b>Staffing</b><small id="staffingStepState">Record people</small></button>
             <button type="button" data-changes-step="allocation" role="tab" aria-selected="false"><span>2</span><b>Allocation</b><small id="allocationStepState">Review roles</small></button>
             <button type="button" data-changes-step="confirm" role="tab" aria-selected="false"><span>3</span><b>Confirm</b><small id="confirmStepState">Review plan</small></button>
           </div>
           <div id="changesWorkflowState" class="changesWorkflowState" role="status" aria-live="polite"></div>
-          <div id="changesStaffingPane" class="changesStepPane">
+          <div id="changesStaffingPane" class="changesStepPane" role="tabpanel" aria-label="Staffing">
           <div class="staffingSection absenceSection">
             <div class="stepHeader">
               <span>1</span>
@@ -419,7 +413,7 @@
           </div>
             <button type="button" id="continueToAllocationBtn" class="primary wide continueWorkflowBtn">Continue to allocation</button>
           </div>
-          <div id="changesAllocationPane" class="changesStepPane hidden">
+          <div id="changesAllocationPane" class="changesStepPane hidden" role="tabpanel" aria-label="Allocation">
             <div id="nightRoleOverrideStep" class="nightRoleOverrideStep"></div>
             <details class="fixedAllocationBox"><summary id="fixedAllocationSummary">Already allocated roles</summary><div id="fixedAllocationList"></div></details>
           <div class="staffingSection allocationSection">
@@ -438,7 +432,7 @@
             <button type="button" id="continueToConfirmBtn" class="primary wide continueWorkflowBtn">Review changes</button>
             <p id="continueToConfirmReason" class="disabledReason hidden" role="status" aria-live="polite"></p>
           </div>
-          <div id="changesConfirmPane" class="changesStepPane hidden">
+          <div id="changesConfirmPane" class="changesStepPane hidden" role="tabpanel" aria-label="Confirm">
             <div class="confirmationCard">
               <div class="stepHeader"><span>3</span><h3>Confirm selected-night changes</h3></div>
               <div class="time" id="confirmationIntro">Check the changed names and roles before sharing them with everyone.</div>
@@ -477,6 +471,7 @@
           <button type="button" class="screenInfoButton" id="breaksInfoBtn" aria-label="Break plan information">i</button>
         </div>
         <div class="panel">
+          <div id="breakPersonalSummary" aria-live="polite"></div>
           <h2>Night summary</h2>
           <div class="grid2">
             <label
@@ -1117,8 +1112,8 @@
     <dialog id="releaseNotes" class="appDialog">
       <div class="dialogHead">
         <div>
-          <h2 id="releaseNotesTitle">App updated</h2>
-          <p class="time" id="releaseNotesIntro">Version 37.46 is ready.</p>
+          <h2 id="releaseNotesTitle">What’s new</h2>
+          <p class="time" id="releaseNotesIntro">The latest Night Roster update.</p>
         </div>
         <button type="button" class="mini" id="closeReleaseNotes">
           Got it
@@ -1224,10 +1219,10 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="app-core.js?v=37.52" vite-ignore></script>
-    <script src="app-ui.js?v=37.52" vite-ignore></script>
-    <script src="push.js?v=37.52" vite-ignore></script>
-    <script src="chat.js?v=37.52" vite-ignore></script>
+    <script src="app-core.js?v=37.54" vite-ignore></script>
+    <script src="app-ui.js?v=37.54" vite-ignore></script>
+    <script src="push.js?v=37.54" vite-ignore></script>
+    <script src="chat.js?v=37.54" vite-ignore></script>
     <script type="module" src="/src/launch.tsx"></script>
   </body>
 </html>

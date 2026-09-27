@@ -80,6 +80,16 @@ window.addEventListener('roster:changes', (event: Event) => {
   import('./changes-experience').then(({ renderChangesExperience }) => renderChangesExperience((event as CustomEvent).detail));
 });
 
+let workflowRequest = 0;
+window.addEventListener('roster:changes-workflow', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++workflowRequest;
+  import('./changes-workflow').then(({ renderChangesWorkflow }) => {
+    if (request === workflowRequest) renderChangesWorkflow(model);
+  }).catch(() => { /* The original step controls remain available if this chunk fails. */ });
+});
+
 window.addEventListener('roster:full-roster', (event: Event) => {
   import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience((event as CustomEvent).detail.cards));
 });
