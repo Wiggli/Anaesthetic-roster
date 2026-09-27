@@ -9,6 +9,7 @@ type Member = { personKey: string; displayName: string; initial: string; availab
 type ChatOverview = { conversations: Conversation[]; members: Member[] };
 type Message = { id: string; sender: string; time: string; body: string; own: boolean; failed: boolean; deleted: boolean; mentioned: boolean; dateLabel: string; unreadBefore: boolean; replySender: string; replyBody: string };
 type MessageExperience = { kind: 'team' | 'private'; items: Message[]; bottomOffset: number };
+type ChatStatusModel = { message: string; error: boolean };
 const roots = new Map<string, Root>();
 
 function rootFor(id: string) {
@@ -166,4 +167,17 @@ export function renderChatOverview(model: ChatOverview) {
 export function renderChatMessages(model: MessageExperience) {
   const hostId = model.kind === 'team' ? 'chatTeamMessages' : 'chatMessages';
   rootFor(hostId)?.render(<Messages model={model} hostId={hostId} />);
+}
+
+function ChatStatus({ model }: { model: ChatStatusModel }) {
+  useLayoutEffect(() => { document.getElementById('chatStatus')?.setAttribute('data-react-ready', 'true'); }, []);
+  if (!model.message) return null;
+  return <div className={`chatStatusCard ${model.error ? 'chatStatusCard--error' : ''}`} role={model.error ? 'alert' : 'status'}>
+    <span className="chatStatusMark" aria-hidden="true">{model.error ? '!' : '·'}</span>
+    <div><strong>{model.error ? 'Chat needs attention' : 'Chat update'}</strong><p>{model.message}</p></div>
+  </div>;
+}
+
+export function renderChatStatus(model: ChatStatusModel) {
+  rootFor('chatStatus')?.render(<ChatStatus model={model} />);
 }

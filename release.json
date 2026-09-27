@@ -1,13 +1,12 @@
 {
-  "version": "37.56",
+  "version": "37.57",
   "date": "27 September 2026",
-  "title": "Clearer Changes save feedback",
-  "summary": "The Confirm step now presents saving, conflicts, offline guidance and successful sharing in a readable status surface.",
+  "title": "Clearer Chat connection notices",
+  "summary": "Chat now presents connection and service notices beside the conversation with a clearer error or update state.",
   "changes": [
-    "Saving and successful sharing have clear status labels in the Confirm step.",
-    "Offline guidance, conflicts and errors remain visible next to the confirmation action with explicit next steps.",
-    "The plain live message remains available if the optional presentation component cannot load.",
-    "Existing validation, shared writes, retry and deliberate PWA update approval remain unchanged."
+    "Chat connection and service notices now have clear error or update labels beside the conversation.",
+    "The existing live text remains visible if the optional presentation component cannot load.",
+    "Message delivery, unread state, notification preferences and deliberate PWA update approval remain unchanged."
   ],
   "update_policy": "important"
 }
