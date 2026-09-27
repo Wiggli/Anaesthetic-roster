@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 
 export function cx(...values: Array<string | false | null | undefined>) {
@@ -155,7 +155,7 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className="tw:grid tw:grid-cols-[repeat(var(--segment-count),minmax(0,1fr))] tw:gap-1 tw:rounded-[18px] tw:border tw:border-black/8 tw:bg-black/[0.035] tw:p-1 tw:dark:border-white/9 tw:dark:bg-white/[0.045]"
-      style={{ '--segment-count': options.length } as React.CSSProperties}
+      style={{ '--segment-count': options.length } as CSSProperties}
     >
       {options.map(option => {
         const selected = value === option.value;
