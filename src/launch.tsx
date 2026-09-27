@@ -100,6 +100,16 @@ window.addEventListener('roster:changes-confirmation', (event: Event) => {
   }).catch(() => { /* The escaped confirmation preview remains available. */ });
 });
 
+let feedbackRequest = 0;
+window.addEventListener('roster:changes-feedback', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++feedbackRequest;
+  import('./changes-feedback').then(({ renderChangesFeedback }) => {
+    if (request === feedbackRequest) renderChangesFeedback(model);
+  }).catch(() => { /* The plain live message remains available. */ });
+});
+
 window.addEventListener('roster:full-roster', (event: Event) => {
   import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience((event as CustomEvent).detail.cards));
 });

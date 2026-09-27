@@ -1,14 +1,13 @@
 {
-  "version": "37.55",
+  "version": "37.56",
   "date": "27 September 2026",
-  "title": "Clearer confirmation review",
-  "summary": "Changes now presents the selected night’s changed assignments first, then the complete role plan for review before sharing.",
+  "title": "Clearer Changes save feedback",
+  "summary": "The Confirm step now presents saving, conflicts, offline guidance and successful sharing in a readable status surface.",
   "changes": [
-    "The Confirm step shows changed assignments in grouped rows, with the complete plan available when you expand it.",
-    "An unresolved allocation is clearly flagged before confirmation, and a reason remains visible alongside the changes.",
-    "The Changes heading and step guide now scroll away so they do not cover the confirmation review.",
-    "The previous preview remains available if the optional presentation component cannot load.",
-    "Staffing and allocation validation, shared confirmation, roster calculations and deliberate PWA update approval remain unchanged."
+    "Saving and successful sharing have clear status labels in the Confirm step.",
+    "Offline guidance, conflicts and errors remain visible next to the confirmation action with explicit next steps.",
+    "The plain live message remains available if the optional presentation component cannot load.",
+    "Existing validation, shared writes, retry and deliberate PWA update approval remain unchanged."
   ],
   "update_policy": "important"
 }
