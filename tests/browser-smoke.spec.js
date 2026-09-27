@@ -883,6 +883,16 @@ test('typed Chat overview renders private conversations and registered members',
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await expect(page.locator('#chatConversationList')).toContainText('2');
+  await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
+  if (page.viewportSize().width >= 760) {
+    await expect(page.locator('#chatDesktopEmpty')).toBeVisible();
+    await expect(page.locator('#chatThread')).toBeHidden();
+    await page.locator('#chat').evaluate(el => el.classList.add('chat-thread-open'));
+    await expect(page.locator('#chatDesktopEmpty')).toBeHidden();
+    await expect(page.locator('#chatThread')).toBeVisible();
+    await page.locator('#chat').evaluate(el => el.classList.remove('chat-thread-open'));
+    await expect(page.locator('#chatThread')).toBeHidden();
+  }
   await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
   await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
   const composerMaterial = await page.locator('#chatTeamComposer .chatComposerGlass').evaluate(el => {
@@ -908,11 +918,17 @@ test('typed Chat overview renders private conversations and registered members',
   await expect.poll(() => page.evaluate(() => window.__chatComposerSubmitted)).toBe(true);
   await page.evaluate(() => document.getElementById('chatNewConversationSheet').showModal());
   await expect(page.locator('#chatMemberPicker')).toContainText('Not registered');
+  await page.locator('#chatMemberPicker input[type="search"]').fill('Maria');
+  await expect(page.locator('#chatMemberPicker .chatPickerRow')).toHaveCount(1);
+  await page.locator('#chatMemberPicker input[type="search"]').fill('Nobody');
+  await expect(page.locator('#chatMemberPicker')).toContainText('No matching roster members');
+  await page.locator('#chatMemberPicker input[type="search"]').fill('');
   await expect(page.locator('#chatTeamMessages')).toContainText('New messages');
   await expect(page.locator('#chatTeamMessages')).toContainText('Can anyone cover this night?');
   await page.locator('#chatMemberPicker button', { hasText: 'Maria Borg' }).click();
   await page.locator('#chatNewConversationSheet').evaluate(dialog => dialog.close());
-  await page.locator('#chatTeamMessages [tabindex="0"]').click({ button: 'right' });
+  await page.locator('#chatTeamMessages button[aria-label="Actions for message from Maria Borg"]').click();
+  await page.locator('#chatTeamMessages .chatTeamMessage[tabindex="0"]').click({ button: 'right' });
   expect(await page.evaluate(() => window.__chatActions)).toEqual(expect.arrayContaining([
     expect.objectContaining({ action: 'message', value: 'message-1', kind: 'team' }),
     expect.objectContaining({ action: 'member', value: 'Maria Borg' })
@@ -932,7 +948,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('What’s new describes the current confirmation review release', async ({ page }) => {
+test('What’s new describes the current Chat conversation release', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -942,8 +958,8 @@ test('What’s new describes the current confirmation review release', async ({ 
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText('changed assignments in grouped rows');
-  await expect(dialog.locator('.releaseHistory')).toContainText('An unresolved allocation is clearly flagged');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Private chats now show clearer unread counts');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Message actions have a visible control');
   await expect(dialog.locator('.releaseHistory')).toContainText('deliberate PWA update approval remain unchanged');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);

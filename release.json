@@ -1,14 +1,14 @@
 {
-  "version": "37.55",
+  "version": "37.56",
   "date": "27 September 2026",
-  "title": "Clearer confirmation review",
-  "summary": "Changes now presents the selected night’s changed assignments first, then the complete role plan for review before sharing.",
+  "title": "Clearer Chat conversations",
+  "summary": "Chat now makes unread conversations, message actions and roster member selection easier to find and use.",
   "changes": [
-    "The Confirm step shows changed assignments in grouped rows, with the complete plan available when you expand it.",
-    "An unresolved allocation is clearly flagged before confirmation, and a reason remains visible alongside the changes.",
-    "The Changes heading and step guide now scroll away so they do not cover the confirmation review.",
-    "The previous preview remains available if the optional presentation component cannot load.",
-    "Staffing and allocation validation, shared confirmation, roster calculations and deliberate PWA update approval remain unchanged."
+    "Private chats now show clearer unread counts, message previews and times in a more scannable list.",
+    "Message actions have a visible control as well as the existing long-press and keyboard actions, and recent messages sit closer to the composer.",
+    "The new-message sheet can search current roster members, with registration status shown plainly rather than fading people out.",
+    "On larger screens, an empty conversation has a clear starting point instead of an inactive composer.",
+    "Chat delivery, privacy, notification preferences, roster calculations and deliberate PWA update approval remain unchanged."
   ],
   "update_policy": "important"
 }

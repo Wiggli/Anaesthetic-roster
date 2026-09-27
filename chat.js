@@ -614,6 +614,7 @@ function chatBindUi(){
   window.addEventListener('roster:chat-composers-mounted',chatBindComposerUi);
   window.addEventListener('roster:chat-action',function(event){var detail=event&&event.detail||{};if(detail.action==='conversation')chatOpenPrivateConversation(detail.value);else if(detail.action==='member')chatStartPrivate(detail.value);else if(detail.action==='message'||detail.action==='retry'){var list=detail.kind==='team'?chatState.teamMessages:chatState.messages,message=list.find(function(item){return String(item.id)===String(detail.value)});if(message){if(detail.action==='message')chatOpenMessageActions(message,detail.kind);else chatRetryFailed(message,detail.kind)}}});
   var newButton=chatEl('chatNewPrivateBtn');if(newButton)newButton.onclick=chatOpenNewConversation;
+  var desktopNewButton=chatEl('chatDesktopNewMessage');if(desktopNewButton)desktopNewButton.onclick=chatOpenNewConversation;
   var closePicker=chatEl('chatCloseNewConversation');if(closePicker)closePicker.onclick=function(){var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.open)dialog.close()};
   var back=chatEl('chatBackBtn');if(back)back.onclick=chatCloseThread;
   var older=chatEl('chatLoadOlder');if(older)older.onclick=chatLoadOlderPrivate;
