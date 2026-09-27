@@ -1,5 +1,6 @@
 import { createRoot, type Root } from 'react-dom/client';
 import { Metric } from './liquid-ui';
+import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
 
 type BreakSummary = {
   date: string;
@@ -139,7 +140,7 @@ function PendingBreakPlan({ model }: { model: BreakSummary }) {
   return <>
     <b>Break plan pending</b>
     <span>{model.pendingReason}</span>
-    <button type="button" className="pendingShortcut" onClick={() => goToChanges('allocation')}>Resolve now ›</button>
+    <Pressable type="button" className="pendingShortcut" onClick={() => goToChanges('allocation')}>Resolve now ›</Pressable>
   </>;
 }
 
@@ -154,29 +155,41 @@ function BreakGroup({
   names: string[];
   highlightedName: string;
 }) {
-  return <div className={`breakGroup ${className}`}>
-    <h3>{title}</h3>
-    {names.length
-      ? names.map(name => {
-          const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
-          return <div key={name} className={`breakPerson${mine ? ' mine' : ''}`}>
-            <span>{name}</span>{mine && <small className="breakPersonYou">You</small>}
-          </div>;
-        })
-      : <div className="breakNote">Pending final allocation</div>}
-  </div>;
+  return <Surface className={`breakGroup ${className} tw:shadow-none`}>
+    <div className="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:px-3.5 tw:py-3">
+      <h3 className="tw:m-0 tw:text-sm tw:font-bold">{title}</h3>
+      <Badge tone={className.includes('first') ? 'accent' : 'info'}>{names.length || '—'}</Badge>
+    </div>
+    <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
+      {names.length
+        ? names.map(name => {
+            const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
+            return <ListRow
+              key={name}
+              className={`breakPerson ${mine ? 'mine tw:bg-teal-500/7' : ''}`}
+              title={name}
+              trailing={mine ? <Badge tone="accent" className="breakPersonYou">You</Badge> : undefined}
+            />;
+          })
+        : <EmptyState title="Pending final allocation" />}
+    </div>
+  </Surface>;
 }
 
 function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
-    <div className="breakGrid">
+    <div className="breakGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
       <BreakGroup className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
       <BreakGroup className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
     </div>
-    <div className="breakGroup lwBreak">
-      <h3>Labour Ward / Pager and additional staffing</h3>
-      {model.notes.map(note => <div key={note} className="breakNote">{note}</div>)}
-    </div>
+    <Surface className="breakGroup lwBreak tw:mt-3 tw:shadow-none">
+      <div className="tw:px-3.5 tw:py-3"><h3 className="tw:m-0 tw:text-sm tw:font-bold">Labour Ward / Pager and additional staffing</h3></div>
+      <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
+        {model.notes.length
+          ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
+          : <EmptyState title="No additional staffing notes" />}
+      </div>
+    </Surface>
   </>;
 }
 
@@ -268,7 +281,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         <b>{model.displayName}</b>
         {model.jobTitle && <small>{model.jobTitle}</small>}
       </div>
-      <button type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</button>
+      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
     </div>
     <div className={`personalAssignmentHero personalRole-${tone}`}>
       <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
@@ -284,22 +297,22 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
       <div><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
     </dl>
-    <button type="button" className="personalContextAction" onClick={action}>
+    <Pressable type="button" className="personalContextAction" onClick={action}>
       {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
       <span aria-hidden="true">›</span>
-    </button>
+    </Pressable>
   </article>;
 }
 
 function PersonalPending({ model }: { model: PersonalNight }) {
   if (!model.pending) return null;
-  return <button type="button" className="personalTaskCard" onClick={() => goToChanges('allocation')}>
+  return <Pressable type="button" className="personalTaskCard" onClick={() => goToChanges('allocation')}>
     <span>
       <b>Your allocation is not final yet</b>
       <small>Labour Ward / Pager is shared with {model.pendingOther}.</small>
       <strong>Complete allocation ›</strong>
     </span>
-  </button>;
+  </Pressable>;
 }
 
 function RecentActivityList({ model }: { model: RecentActivity }) {
@@ -307,7 +320,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
     return <div className="emptyRecentActivity">No staffing changes have been recorded for this night.</div>;
   }
   return <div className="activityTimeline">
-    {model.items.map((item, index) => <button
+    {model.items.map((item, index) => <Pressable
       key={`${item.type}-${item.title}-${item.meta}-${index}`}
       type="button"
       className="recentActivityRow"
@@ -321,7 +334,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
         <small className="recentActivityMeta">{item.meta}</small>
       </span>
       <i aria-hidden="true">›</i>
-    </button>)}
+    </Pressable>)}
   </div>;
 }
 
@@ -351,7 +364,7 @@ function roleMark(tone: NightRole['tone']) {
 function NightRoles({ model }: { model: NightSummary }) {
   return <>
     <div className="liquidRosterList nightSituationTimeline">
-      {model.roles.map(role => <button
+      {model.roles.map(role => <Pressable
         key={role.key}
         type="button"
         onClick={openRoleEditor}
@@ -363,7 +376,7 @@ function NightRoles({ model }: { model: NightSummary }) {
           <span className="rosterRowName">{role.names}</span>
           <span className="rosterRowMeta">{role.label} · {role.detail}</span>
         </span>
-      </button>)}
+      </Pressable>)}
     </div>
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
@@ -375,7 +388,7 @@ function NightRoles({ model }: { model: NightSummary }) {
 function FivePersonArrangement({ model }: { model: NightSummary }) {
   const arrangement = model.fivePerson;
   if (!arrangement) return null;
-  return <button
+  return <Pressable
     type="button"
     className={`fiveNurseSurface ${arrangement.mine ? 'mine' : ''}`}
     onClick={openRoleEditor}
@@ -386,7 +399,7 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
     <p>{arrangement.reason}</p>
     <small>Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</small>
     <i aria-hidden="true">›</i>
-  </button>;
+  </Pressable>;
 }
 
 export function renderNightExperience(model: NightSummary) {
