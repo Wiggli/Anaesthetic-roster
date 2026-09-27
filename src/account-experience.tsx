@@ -66,10 +66,21 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
         <input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { const file = event.currentTarget.files?.[0]; if (file) { setDirty(true); act('profile-photo', file); } event.currentTarget.value = ''; }} />
       </div>
     </div>
-    <div className="tw:grid tw:gap-3 tw:sm:grid-cols-2">
-      <label className="tw:grid tw:gap-1.5"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Preferred name</span><input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:dark:border-white/12" /></label>
-      <label className="tw:grid tw:gap-1.5"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Role title <small>(optional)</small></span><input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Anaesthetic Nurse" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:dark:border-white/12" /></label>
-      <label className="tw:grid tw:gap-1.5 tw:sm:col-span-2"><span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">Your roster name</span><select id="profileRosterName" defaultValue={model.rosterName} onChange={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:dark:border-white/12"><option value="">Do not highlight a name</option>{model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select><small className="tw:text-xs tw:text-[var(--muted)]">Used only to highlight your allocation on this device.</small></label>
+    <div className="tw:@container tw:grid tw:gap-3">
+      <div className="tw:grid tw:gap-3 tw:@md:grid-cols-2">
+        <FieldShell label="Preferred name">
+          <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12" />
+        </FieldShell>
+        <FieldShell label="Role title" hint="Optional">
+          <input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Anaesthetic Nurse" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12" />
+        </FieldShell>
+      </div>
+      <FieldShell label="Your roster name" hint="Used only to highlight your allocation on this device.">
+        <select id="profileRosterName" defaultValue={model.rosterName} onChange={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12">
+          <option value="">Do not highlight a name</option>
+          {model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </FieldShell>
     </div>
     <div className="tw:rounded-2xl tw:bg-[var(--surface)] tw:px-3.5 tw:py-3"><span className="tw:block tw:text-xs tw:font-bold tw:text-[var(--muted)]">Approved account</span><b id="profileApprovedName" className="tw:mt-1 tw:block tw:text-sm">{model.approvedName}</b><small id="profileEmail" className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">{model.email}</small></div>
     {!model.featureAvailable && <p className="formMessage error" role="alert">Ask the administrator to run the V32 profile upgrade before saving your profile.</p>}
