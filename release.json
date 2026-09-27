@@ -1,12 +1,12 @@
 {
-  "version": "37.57",
-  "date": "27 September 2026",
-  "title": "Clearer Chat connection notices",
-  "summary": "Chat now presents connection and service notices beside the conversation with a clearer error or update state.",
+  "version": "37.63",
+  "date": "28 September 2026",
+  "title": "A clearer full-roster view",
+  "summary": "The searchable roster has calmer controls, a visible result count and cards that adapt to phone and desktop widths.",
   "changes": [
-    "Chat connection and service notices now have clear error or update labels beside the conversation.",
-    "The existing live text remains visible if the optional presentation component cannot load.",
-    "Message delivery, unread state, notification preferences and deliberate PWA update approval remain unchanged."
+    "The full roster shows how many nights match the search and makes each night’s live plan easier to scan.",
+    "Search and staffing filters now use the shared light and dark controls, with clearer focus and touch targets.",
+    "The full-roster cards now use the correct responsive and dark-mode styles."
   ],
   "update_policy": "important"
 }

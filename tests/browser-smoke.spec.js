@@ -596,6 +596,14 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('#onboardingContent')).toContainText('@mentions');
   await expect(page.locator('#onboardingContent')).toContainText('14 days');
   await expect(page.locator('#onboardingStepLabel')).toContainText('Chat');
+  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '1');
+  await page.evaluate(() => {
+    window.onboardingChatIntro = false;
+    window.onboardingStep = 1;
+    window.renderOnboarding();
+  });
+  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuenow', '2');
+  await expect(page.locator('#onboardingTitle')).toBeFocused();
 });
 
 test('cinematic surfaces respect reduced motion', async ({ page }) => {
@@ -871,11 +879,25 @@ test('typed account controls preserve appearance and app actions', async ({ page
   });
 
   await expect(page.locator('#appearanceExperience')).toContainText('Automatic');
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Account & settings');
+  await expect(page.locator('#accountSheet')).toContainText('Shared roster actions use this approved identity.');
   await expect(page.locator('#profileExperience')).toContainText('Personal details');
   await expect(page.locator('#profileName')).toHaveValue('Andre');
+  await expect(page.locator('#profilePhotoPreview')).toBeHidden();
+  await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
   await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'View app guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
+  const helpLayout = await page.locator('.accountActions').evaluate(el => ({ section: el.getBoundingClientRect().height, rows: el.querySelector('#accountActionsExperience').getBoundingClientRect().height }));
+  expect(helpLayout.section).toBeGreaterThan(helpLayout.rows);
   await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
+  await expect(page.locator('#securityHeading')).toHaveText('Sign-in security');
+  await page.locator('#profileName').fill('André');
+  await expect(page.locator('#saveProfileBtn')).toBeVisible();
+  const bounds = await page.locator('#accountSheet').boundingBox();
+  expect(bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
+  if (page.viewportSize().width >= 760) expect(bounds.y).toBeGreaterThan(30);
   const appearanceSurface = page.locator('#appearanceExperience > div');
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
   const lightAppearanceBackground = await appearanceSurface.evaluate(el => getComputedStyle(el).backgroundColor);
@@ -886,6 +908,8 @@ test('typed account controls preserve appearance and app actions', async ({ page
   expect(darkAppearanceBackground).not.toBe(lightAppearanceBackground);
   const actions = await page.evaluate(() => window.__accountActions);
   expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
+  await page.locator('#accountActionsExperience button', { hasText: 'Version history' }).click();
+  expect(await page.evaluate(() => window.__accountActions)).toContainEqual(expect.objectContaining({ action: 'versions' }));
 });
 
 test('typed administrator accounts separate pending access and support fast filtering', async ({ page }) => {
@@ -909,6 +933,18 @@ test('typed administrator accounts separate pending access and support fast filt
   await expect(page.locator('#adminAccountsExperience')).toContainText('Current account');
   await expect(page.locator('#accountName')).toHaveAttribute('placeholder', 'Nurse name');
   await expect(page.locator('#adminAccountsExperience button', { hasText: 'Deactivate' }).first()).toBeDisabled();
+  await page.locator('[data-admin-tab="access"]').click();
+  await expect(page.locator('[data-admin-tab="access"]')).toHaveAttribute('aria-selected', 'true');
+  if (test.info().project.name === 'mobile-chromium') {
+    const row = page.locator('#adminAccountsExperience .adminAccountRow').first();
+    const bounds = await row.evaluate(element => {
+      const card = element.getBoundingClientRect();
+      const action = element.querySelector('button').getBoundingClientRect();
+      return { cardRight: card.right, actionRight: action.right, actionBottom: action.bottom, cardBottom: card.bottom };
+    });
+    expect(bounds.actionRight).toBeLessThanOrEqual(bounds.cardRight);
+    expect(bounds.actionBottom).toBeLessThanOrEqual(bounds.cardBottom);
+  }
   await page.locator('#adminAccountsExperience input[type="search"]').fill('Inactive');
   await expect(page.locator('#adminAccountsExperience')).toContainText('Inactive Member');
   await expect(page.locator('#adminAccountsExperience')).not.toContainText('Andre Bartolo');
@@ -938,6 +974,16 @@ test('typed Chat overview renders private conversations and registered members',
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await expect(page.locator('#chatConversationList')).toContainText('2');
+  await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
+  if (page.viewportSize().width >= 760) {
+    await expect(page.locator('#chatDesktopEmpty')).toBeVisible();
+    await expect(page.locator('#chatThread')).toBeHidden();
+    await page.locator('#chat').evaluate(el => el.classList.add('chat-thread-open'));
+    await expect(page.locator('#chatDesktopEmpty')).toBeHidden();
+    await expect(page.locator('#chatThread')).toBeVisible();
+    await page.locator('#chat').evaluate(el => el.classList.remove('chat-thread-open'));
+    await expect(page.locator('#chatThread')).toBeHidden();
+  }
   await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
   await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
   const composerMaterial = await page.locator('#chatTeamComposer .chatComposerGlass').evaluate(el => {
@@ -963,11 +1009,17 @@ test('typed Chat overview renders private conversations and registered members',
   await expect.poll(() => page.evaluate(() => window.__chatComposerSubmitted)).toBe(true);
   await page.evaluate(() => document.getElementById('chatNewConversationSheet').showModal());
   await expect(page.locator('#chatMemberPicker')).toContainText('Not registered');
+  await page.locator('#chatMemberPicker input[type="search"]').fill('Maria');
+  await expect(page.locator('#chatMemberPicker .chatPickerRow')).toHaveCount(1);
+  await page.locator('#chatMemberPicker input[type="search"]').fill('Nobody');
+  await expect(page.locator('#chatMemberPicker')).toContainText('No matching roster members');
+  await page.locator('#chatMemberPicker input[type="search"]').fill('');
   await expect(page.locator('#chatTeamMessages')).toContainText('New messages');
   await expect(page.locator('#chatTeamMessages')).toContainText('Can anyone cover this night?');
   await page.locator('#chatMemberPicker button', { hasText: 'Maria Borg' }).click();
   await page.locator('#chatNewConversationSheet').evaluate(dialog => dialog.close());
-  await page.locator('#chatTeamMessages [tabindex="0"]').click({ button: 'right' });
+  await page.locator('#chatTeamMessages button[aria-label="Actions for message from Maria Borg"]').click();
+  await page.locator('#chatTeamMessages .chatTeamMessage[tabindex="0"]').click({ button: 'right' });
   expect(await page.evaluate(() => window.__chatActions)).toEqual(expect.arrayContaining([
     expect.objectContaining({ action: 'message', value: 'message-1', kind: 'team' }),
     expect.objectContaining({ action: 'member', value: 'Maria Borg' })

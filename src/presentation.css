@@ -2150,10 +2150,97 @@ main>.view{min-width:0}
 #chat .chatTeamMessages,#chat .chatMessages{font-size:14px;line-height:1.5}
 #chat .chatPrivateHeader{margin-top:12px!important}
 #chat .chatNewPrivateBtn{min-height:48px}
+#chat .chatScreen{gap:18px}
+#chat .chatTeamConsole{grid-template-rows:auto auto minmax(280px,42dvh) auto;border-radius:24px}
+#chat .chatTeamConsoleHeader{min-height:76px}
+#chat .chatTeamToolbar{min-height:38px;padding-inline:18px;font-size:11px;letter-spacing:.02em}
+#chat .chatTeamMessages,#chat .chatMessages{padding:14px;scroll-padding-block:12px;background:var(--scene-surface)!important}
+#chat .chatTeamMessages>div:first-child,#chat .chatMessages>div:first-child{margin-top:auto}
+#chat .chatTeamMessage{position:relative;padding:10px 12px;border-radius:12px;color:var(--scene-ink)}
+#chat .chatTeamMessage.own{background:var(--scene-soft)}
+#chat .chatTeamMessage.mentioned{box-shadow:inset 3px 0 var(--liquid-warning);background:color-mix(in srgb,var(--liquid-warning) 7%,var(--scene-surface))}
+#chat .chatMessageHeading{display:flex;min-height:24px;align-items:center;gap:8px;color:var(--scene-secondary);font-size:12px}
+#chat .chatMessageHeading b{color:var(--scene-ink);font-weight:750}
+#chat .chatMessageTime{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+#chat .chatMessageBodyText{margin-top:2px}
+#chat .chatInlineAction{display:grid;flex:none;place-items:center;min-width:44px;min-height:44px;margin:-10px -8px -10px auto;padding:0;border:0;border-radius:12px;background:transparent;color:var(--scene-secondary);font-size:16px;letter-spacing:2px;box-shadow:none}
+#chat .chatInlineAction:hover,#chat .chatInlineAction:focus-visible{background:var(--scene-soft)}
+#chat .chatPrivateMessage{display:flex;justify-content:flex-start}
+#chat .chatPrivateMessage.own{justify-content:flex-end}
+#chat .chatPrivateBubble{max-width:min(86%,530px);min-width:100px;padding:12px 14px;border:1px solid var(--scene-line);border-radius:18px 18px 18px 6px;background:var(--scene-surface);color:var(--scene-ink);overflow-wrap:anywhere}
+#chat .chatPrivateMessage.own .chatPrivateBubble{border-color:transparent;border-radius:18px 18px 6px 18px;background:var(--scene-accent);color:white}
+#chat .chatPrivateMessage.own .chatMessageHeading b,#chat .chatPrivateMessage.own .chatMessageTime,#chat .chatPrivateMessage.own .chatInlineAction{color:rgba(255,255,255,.9)}
+#chat .chatPrivateBubble.failed{border-color:color-mix(in srgb,var(--liquid-danger) 45%,var(--scene-line))}
+#chat .chatDateSeparator{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--scene-secondary);font-size:11px;font-weight:730}
+#chat .chatDateSeparator:before,#chat .chatDateSeparator:after{content:"";height:1px;flex:1;background:var(--scene-line)}
+#chat .chatInboxList{overflow:hidden!important;border-radius:20px!important;box-shadow:none!important}
+#chat .chatInboxRow{min-height:76px;gap:14px;padding:14px 16px}
+#chat .chatInboxRow.hasUnread{background:color-mix(in srgb,var(--scene-accent) 5%,var(--scene-surface))}
+#chat .chatInboxRow.active{box-shadow:inset 3px 0 var(--scene-accent)}
+#chat .chatInboxMeta{display:grid;justify-items:end;gap:6px;color:var(--scene-secondary);font-size:11px;white-space:nowrap}
+#chat .chatInboxUnread{min-width:25px;padding-inline:6px}
+#chat .chatPrivateHeader small{font-size:12px;line-height:1.4}
+.chatPickerExperience{display:grid;gap:8px;padding:14px}
+.chatPickerSearch input{width:100%;min-height:48px;padding:10px 14px;border:1px solid var(--scene-line);border-radius:14px;background:var(--scene-soft);color:var(--scene-ink);font-size:15px}
+.chatPickerCount{padding:0 4px;color:var(--scene-secondary);font-size:12px}
+.chatPickerList{overflow:hidden;border-radius:16px;box-shadow:none}
+.chatPickerRow{min-height:72px}
+.chatPickerRow.notRegistered{color:var(--scene-secondary)}
+.chatDesktopEmpty{display:none}
+@media(min-width:760px){
+  #chat:not(.chat-thread-open) .chatThread{display:none!important}
+  #chat .chatDesktopEmpty{display:grid;min-height:600px;align-content:center;justify-items:center;padding:32px;border:1px solid var(--scene-line);border-radius:24px;background:var(--scene-surface);color:var(--scene-ink);text-align:center}
+  #chat.chat-thread-open .chatDesktopEmpty{display:none}
+  #chat .chatDesktopEmptyIcon{display:grid;place-items:center;width:64px;height:64px;margin-bottom:18px;border-radius:20px;background:var(--scene-soft);color:var(--scene-accent);font-size:30px}
+  #chat .chatDesktopEmpty h2{margin:0;font-size:23px}
+  #chat .chatDesktopEmpty p{max-width:300px;margin:9px 0 20px;color:var(--scene-secondary);font-size:14px;line-height:1.5}
+  #chat .chatDesktopEmpty button{min-height:48px;padding:12px 18px;border-radius:14px;background:var(--scene-accent);color:white}
+}
+@media(max-width:560px){#chat .chatTeamConsole{grid-template-rows:auto auto minmax(310px,46dvh) auto}#chat .chatInboxRow{padding-inline:13px}#chat .chatPrivateBubble{max-width:91%}}
 .accountSheet .accountGroup,.onboardingDialog,#releaseNotes .releaseEntry.latest{
   border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;
   background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
 }
+.accountSheet[open]{width:min(680px,100%);height:min(94dvh,920px)}
+.accountSheetHeader{padding:12px 24px 14px;background:var(--scene-surface)}
+.accountSheetHeader h2{font-size:25px;letter-spacing:-.025em}
+.accountSheetHeader button{min-width:48px;min-height:48px}
+.accountSheetScroll{grid-auto-rows:max-content;align-content:start;gap:20px;padding:18px 20px calc(26px + env(safe-area-inset-bottom));background:var(--scene-bg)}
+.accountSheetIntro{margin:0 2px;color:var(--scene-secondary);font-size:13px;line-height:1.5}
+.accountSheet .accountGroup{padding:20px}
+.accountSheet .accountGroup>h3,.accountSheet .accountSectionHeading h3{margin:0;color:var(--scene-ink);font-size:15px}
+.accountGroupDescription,.accountSheet .accountSectionHeading p{margin:5px 0 16px;color:var(--scene-secondary);font-size:13px;line-height:1.5}
+#profileExperience>.accountProfilePanel{display:grid;gap:20px;padding:20px;border:1px solid var(--scene-line)!important;border-radius:var(--scene-radius)!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+.accountProfileHero{display:flex;align-items:center;gap:20px}
+.accountPhotoControls{display:grid;flex:none;justify-items:center;gap:6px}
+.accountPhotoButton{position:relative;display:grid;place-items:center;width:82px;height:82px;min-width:82px;padding:0;overflow:visible;border:3px solid var(--scene-surface);border-radius:50%;background:var(--scene-soft);color:var(--scene-accent);box-shadow:0 0 0 1px var(--scene-line);font-size:28px;font-weight:750}
+.accountPhotoButton img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.accountPhotoButton img.hidden,.accountPhotoButton span.hidden{display:none}
+.accountPhotoAdd{position:absolute;right:-3px;bottom:-3px;display:grid;place-items:center;width:28px;height:28px;border:2px solid var(--scene-surface);border-radius:50%;background:var(--scene-accent);color:white;font-size:18px;line-height:1}
+.accountPhotoActions{display:flex;align-items:center;gap:8px}
+.accountPhotoActions button{min-height:44px;padding:4px 6px;border:0;background:none;color:var(--scene-accent);font-size:12px;font-weight:700;box-shadow:none}
+.accountPhotoActions #removeProfilePhoto{color:var(--liquid-danger)}
+.accountProfileIntro{min-width:0}
+.accountEyebrow{color:var(--scene-accent);font-size:11px;font-weight:760;letter-spacing:.045em;text-transform:uppercase}
+.accountProfileIntro h3{margin:5px 0 6px;color:var(--scene-ink);font-size:20px;letter-spacing:-.025em}
+.accountProfileIntro p{margin:0;color:var(--scene-secondary);font-size:13px;line-height:1.5}
+.accountProfileFields,.accountNameFields{display:grid;gap:14px}
+.accountProfileFields input,.accountProfileFields select{width:100%;min-height:50px;border-color:var(--scene-line)!important;border-radius:12px;background:var(--scene-soft)!important;color:var(--scene-ink);font-size:15px}
+.accountIdentity{display:grid;gap:4px;padding:16px 0;border-block:1px solid var(--scene-line);overflow-wrap:anywhere}
+.accountIdentity span{color:var(--scene-secondary);font-size:12px;font-weight:750}
+.accountIdentity b{color:var(--scene-ink);font-size:15px}
+.accountIdentity small{color:var(--scene-secondary);font-size:13px}
+.accountIdentity p{margin:4px 0 0;color:var(--scene-secondary);font-size:12px}
+.accountSaveRow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
+.accountSaveRow .formMessage{min-width:0;margin:0;line-height:1.4}
+.accountSaveRow button{flex:none;min-height:48px;padding-inline:18px}
+#accountActionsExperience .reactGroupedList{box-shadow:none}
+#accountActionsExperience button{min-height:64px;box-shadow:none!important}
+.accountPasskeyEmpty{display:grid;gap:4px;padding:14px 0;color:var(--scene-secondary);font-size:13px;line-height:1.4}
+.accountPasskeyEmpty strong{color:var(--scene-ink)}
+.accountSheet .accountSignOut{min-height:48px}
+@media(min-width:760px){.accountSheet[open]{inset:0;width:min(680px,calc(100% - 48px));height:min(82dvh,850px);margin:auto;border:1px solid var(--scene-line);border-radius:24px}.accountSheet>.sheetGrabber{display:none}}
+@media(max-width:460px){.accountSheetHeader{padding-inline:18px}.accountSheetScroll{padding-inline:14px}.accountSheet .accountGroup,#profileExperience>.accountProfilePanel{padding:16px}.accountProfileHero{align-items:flex-start;gap:14px}.accountProfileIntro h3{font-size:18px}.accountPhotoButton{width:70px;height:70px;min-width:70px}.accountPhotoActions{flex-wrap:wrap;justify-content:center;max-width:90px;gap:0}.accountPhotoActions button{min-height:40px}}
 .authGate{background:var(--scene-bg)!important}
 .authCard{border:1px solid var(--scene-line)!important;border-radius:24px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
 .authCard input,.authCard select{min-height:50px}
@@ -2313,4 +2400,126 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
 @media(max-width:560px){
   #changes .changesAllocationGroup>.allocationRow{grid-template-columns:minmax(0,1fr);gap:10px}
   #changes .allocationRowField select{min-height:48px}
+}
+
+/* Administrator navigation and account list share the same solid content surfaces. */
+#admin .adminHeader{border:1px solid var(--scene-line);border-radius:20px;background:var(--scene-surface)}
+#admin .adminHeader .ctop{align-items:flex-start;gap:16px}
+#admin .adminHeader h2{color:var(--scene-ink)}
+#admin .adminHeader .time{max-width:58ch;color:var(--scene-secondary);line-height:1.45}
+#admin .adminTabs{
+  display:flex;gap:5px;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;
+  scroll-snap-type:x proximity;scroll-padding-inline:5px;scrollbar-width:none;
+  border:1px solid var(--scene-line);border-radius:16px;
+  background:var(--scene-chrome, var(--scene-surface));
+}
+#admin .adminTabs::-webkit-scrollbar{display:none}
+#admin .adminTabs button{
+  flex:1 0 auto;min-width:88px;min-height:44px;scroll-snap-align:start;
+  border-radius:12px;color:var(--scene-secondary);font-size:13px;font-weight:650;
+}
+#admin .adminTabs button.active{
+  background:var(--scene-surface);color:var(--scene-ink);
+  box-shadow:inset 0 0 0 1px var(--scene-line),0 2px 7px rgba(13,43,47,.08);
+}
+#admin .adminTabs button:focus-visible{outline:2px solid var(--scene-accent);outline-offset:-3px}
+#admin .adminPane>.panel{border:1px solid var(--scene-line);border-radius:20px;background:var(--scene-surface)}
+#admin .adminSectionIcon{background:var(--scene-soft);color:var(--scene-accent)}
+#admin .adminAccountRow{min-width:0}
+@media(max-width:560px){
+  #admin .adminHeader .ctop{align-items:flex-start}
+  #admin .adminHeader .mini{flex:none;min-height:44px}
+  #admin .adminTabs button{flex:0 0 auto}
+  #admin .adminAccountRow{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center}
+  #admin .adminAccountRow>button{grid-column:2;justify-self:start;min-height:44px}
+}
+@media(prefers-reduced-transparency:reduce){#admin .adminTabs{background:var(--scene-surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+/* Entry and first-use screens keep the account action visible on a phone. */
+.authGate{background:var(--scene-bg)!important}
+.authIntro h1,.authCardHeading h2{color:var(--scene-ink)}
+.authIntro p,.authCardHeading p,.authMotto,.authPrivacy{color:var(--scene-secondary)}
+.authCard{max-width:470px;margin-inline:auto}
+.authCard .authSwitch{border:1px solid var(--scene-line);background:var(--scene-soft)}
+.authCard .authSwitch button.active{background:var(--scene-surface);color:var(--scene-ink)}
+.authCard .authFields input{width:100%;border-color:var(--scene-line);background:var(--scene-surface);color:var(--scene-ink)}
+.authCard .authFields input:focus-visible,.onboardingNameLabel select:focus-visible{outline:2px solid var(--scene-accent);outline-offset:2px}
+.authCard .authMessage:not(:empty){border:1px solid var(--scene-line);border-radius:12px}
+.onboardingDialog[open]{background:var(--scene-surface)!important;color:var(--scene-ink)!important}
+.onboardingDialog .onboardingContent h2{color:var(--scene-ink)}
+.onboardingDialog .onboardingContent>p,.onboardingDialog .onboardingFootnote{color:var(--scene-secondary)}
+.onboardingDialog .onboardingActions{background:var(--scene-surface);border-top:1px solid var(--scene-line);-webkit-backdrop-filter:none;backdrop-filter:none}
+.onboardingDialog #onboardingTitle:focus{outline:none}
+@media(max-width:700px){
+  .authExperience{max-width:470px}
+  .authWelcome{padding:0 2px 16px}
+  .authHospital img{height:42px}
+  .authIntro{display:grid;grid-template-columns:46px minmax(0,1fr);column-gap:12px;margin:20px 0 0}
+  .authAppMark{grid-row:1 / 3;width:46px;height:46px;margin:0;border-radius:15px}
+  .authAppMark svg{width:26px;height:26px}
+  .authEyebrow{align-self:end;margin:0;font-size:10px}
+  .authIntro h1{margin:2px 0 0;font-size:clamp(27px,7vw,36px);line-height:1.04}
+  .authIntro h1 br{display:none}
+  .authIntro p{grid-column:1 / -1;margin:12px 0 0;font-size:13px;line-height:1.4}
+  .authMotto{display:none}
+  .authCard{padding:20px}
+}
+@media(max-width:380px){
+  .authHospital span{max-width:108px;font-size:9px}
+  .authIntro{grid-template-columns:40px minmax(0,1fr);gap:0 9px}
+  .authAppMark{width:40px;height:40px}
+  .authCard{padding:16px}
+  .onboardingContent{padding-inline:16px}
+}
+
+/* Install, release and update sheets use one readable material hierarchy. */
+#installGuide[open],#releaseNotes[open],#updateDetails[open]{
+  border:1px solid var(--scene-line);background:var(--scene-surface);color:var(--scene-ink);
+  box-shadow:0 24px 72px rgba(8,24,29,.2);
+}
+#installGuide .dialogHead,#releaseNotes .dialogHead{
+  border-bottom:1px solid var(--scene-line);background:var(--scene-surface);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+#installGuide .dialogHead h2,#releaseNotes .dialogHead h2,#updateDetailsTitle{color:var(--scene-ink)}
+#installGuide .dialogHead .time,#releaseNotes .dialogHead .time,#updateDetailsSummary{color:var(--scene-secondary)}
+#installGuide .installGuideHero,#releaseNotes .releaseEntry.latest,#updateDetails .updateChanges{
+  border-color:var(--scene-line);background:var(--scene-soft);color:var(--scene-ink);
+}
+#releaseNotes .releaseHistory,#releaseNotes .releaseEntry:not(.latest),#releaseNotes .releaseArchiveHeading{
+  background:var(--scene-surface);color:var(--scene-ink);
+}
+#releaseNotes .releaseVersion h3,#releaseNotes .releaseArchiveHeading span{color:var(--scene-ink)}
+#releaseNotes .releaseEntry ul,#releaseNotes .releaseArchiveHeading small{color:var(--scene-secondary)}
+#updateDetails .updateSheetActions{
+  border-top:1px solid var(--scene-line);background:var(--scene-surface);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+#updateDetails .updateSheetActions button{min-height:48px}
+#updateDetails .updateSafetyNote{border:1px solid var(--scene-line);background:var(--scene-soft);color:var(--scene-ink)}
+@media(max-width:560px){
+  #installGuide[open],#releaseNotes[open]{width:calc(100% - 20px);max-height:calc(100dvh - 24px)}
+  #installGuide .dialogHead,#releaseNotes .dialogHead{gap:12px}
+  #installGuide .dialogHead .mini,#releaseNotes .dialogHead .mini{flex:none;min-height:44px}
+}
+@media(prefers-reduced-transparency:reduce){
+  #installGuide[open],#releaseNotes[open],#updateDetails[open]{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+
+/* The full roster remains a secondary, searchable view of the same live plan. */
+#roster .rosterPageHeader{align-items:flex-start;gap:16px;margin:0 0 18px}
+#roster .rosterPageHeader h2{color:var(--scene-ink)}
+#roster .rosterPageHeader button{min-height:44px;flex:none}
+#roster .toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(92px,120px);gap:10px}
+#roster .toolbar input,#roster .toolbar select{
+  min-width:0;min-height:48px;border:1px solid var(--scene-line);border-radius:14px;
+  background:var(--scene-surface);color:var(--scene-ink);box-shadow:none;
+}
+#roster .toolbar input:focus-visible,#roster .toolbar select:focus-visible{outline:2px solid var(--scene-accent);outline-offset:2px}
+#roster #range{margin:12px 0 16px;border:1px solid var(--scene-line);border-radius:14px;background:var(--scene-soft);color:var(--scene-secondary)}
+#roster #cards>div>div>button{border-color:var(--scene-line);background:var(--scene-surface);color:var(--scene-ink);box-shadow:var(--scene-shadow)}
+#roster #cards>div>div>button:focus-visible{outline:3px solid var(--scene-accent);outline-offset:2px}
+@media(max-width:420px){
+  #roster .rosterPageHeader h2{font-size:25px}
+  #roster .toolbar{grid-template-columns:minmax(0,1fr) 90px}
 }
