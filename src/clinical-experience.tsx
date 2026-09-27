@@ -1,6 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
-import { Metric } from './liquid-ui';
-import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, ListRow, Metric, Pressable, Surface } from './ui-system';
 
 type BreakSummary = {
   date: string;

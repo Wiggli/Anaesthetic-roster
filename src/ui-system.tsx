@@ -14,7 +14,7 @@ const toneClasses = {
   info: 'tw:bg-sky-500/12 tw:text-sky-700 tw:dark:text-sky-300'
 } as const;
 
-export type UiTone = keyof typeof toneClasses;
+type UiTone = keyof typeof toneClasses;
 
 export function Pressable({
   children,
@@ -56,6 +56,24 @@ export function GlassSurface({
       className
     )}
   >{children}</div>;
+}
+
+export function Metric({ label, value, tone = 'neutral', onClick }: {
+  label: string;
+  value: ReactNode;
+  tone?: 'neutral' | 'teal' | 'warning' | 'info' | 'critical';
+  onClick?: () => void;
+}) {
+  const inner = <>
+    <strong>{value}</strong>
+    <span>{label}</span>
+  </>;
+  if (!onClick) return <div className={`metric metric-${tone}`}>{inner}</div>;
+  return <Pressable
+    type="button"
+    className={`metric metric-${tone} metricInteractive`}
+    onClick={onClick}
+  >{inner}</Pressable>;
 }
 
 export function Badge({ children, tone = 'neutral', className = '' }: {
@@ -197,8 +215,4 @@ export function FieldShell({ label, hint, children, className = '' }: {
     {children}
     {hint ? <small className="tw:text-[0.7rem] tw:leading-relaxed tw:text-[var(--muted)]">{hint}</small> : null}
   </label>;
-}
-
-export function Skeleton({ className = '' }: { className?: string }) {
-  return <span className={cx('tw:block tw:animate-pulse tw:rounded-lg tw:bg-black/8 tw:dark:bg-white/10', className)} aria-hidden="true" />;
 }
