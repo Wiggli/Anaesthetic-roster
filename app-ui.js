@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.54 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.55 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -60,6 +60,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.55","date":"27 September 2026","title":"Clearer confirmation review","changes":["The Confirm step shows changed assignments in grouped rows, with the complete plan available when you expand it.","An unresolved allocation is clearly flagged before confirmation, and a reason remains visible alongside the changes.","The Changes heading and step guide now scroll away so they do not cover the confirmation review.","The previous preview remains available if the optional presentation component cannot load.","Staffing and allocation validation, shared confirmation, roster calculations and deliberate PWA update approval remain unchanged."]},
   {"version":"37.54","date":"27 September 2026","title":"Guided Changes workflow","changes":["A guided Staffing, Allocation and Confirm control shows the current step, pending decisions and what to do next.","Staffing records and selected-night allocation choices use simpler grouped rows and larger controls on phones.","The original step controls remain available if the optional presentation component cannot load.","Existing staffing validation, allocation rules, confirmation, shared data and explicit update approval remain unchanged."]},
   {"version":"37.53","date":"27 September 2026","title":"Personal-first interface foundation","changes":["Your allocation now leads the Night screen, followed by the selected night, staffing summary, live team and recent activity.","Breaks shows a personal first or second break summary above the full team plan, while pending allocations remain clearly provisional.","Night, Changes, Breaks, Chat, Account, authentication, dialogs and update surfaces share calmer spacing, solid information surfaces and restrained glass for navigation.","The presentation styles now have one ordered source instead of seven separate cascading override files, with existing React view models and roster actions preserved.","The current release dialog is titled What’s new, with the complete version history still available from Account.","The roster rotation, staffing and allocation rules, Supabase access, push and chat delivery, and explicit PWA update approval flow remain unchanged."]},
   {"version":"37.52","date":"27 September 2026","title":"React interface system","changes":["A reusable React interface system now provides consistent pressable controls, grouped lists, adaptive surfaces, glass surfaces, avatars, badges, empty states, fields and loading primitives across the app.","Motion now powers shared-layout selection in the Appearance control and consistent spring press feedback instead of each screen implementing interaction feedback separately.","Tailwind container queries let profile fields and break-plan layouts adapt to the space available to each component rather than relying only on whole-screen breakpoints.","Chat private conversations and member selection now use a cleaner grouped-list hierarchy, while the message composer is a single floating Liquid Glass capsule with preserved keyboard, character-count and send behaviour.","Changes records, allocation rows, history and staffing forms now use the shared React component system while preserving the existing workflow, identifiers and staffing logic.","Night and Breaks now use the shared Motion pressable and surface primitives for more consistent touch feedback without changing roster calculations or clinical rules.","Tailwind dark-mode utilities are now tied to Night Roster’s own Light, Automatic and Dark setting so React components follow the selected in-app appearance reliably.","Authentication, Supabase data, roster calculations, staffing safety rules, Chat delivery, notifications and the installed PWA identity are unchanged."]},
@@ -384,7 +385,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.54" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.55" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
@@ -732,9 +733,11 @@ function updateChangesWorkflow(base,plan){
   setChangesStep(activeChangesStep,false);
 }
 
-function confirmationRow(label,value,detail){return'<div class="confirmationRow"><div><span>'+esc(label)+'</span>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div><b>'+esc(value?professionalNames(value):'To decide')+'</b></div>'}
+function confirmationRow(label,value,detail){return'<div class="confirmationRow"><div><span>'+esc(label)+'</span>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div><b>'+esc(value||'To decide')+'</b></div>'}
 
-function confirmationChangeRow(label,before,after,detail){return'<div class="confirmationChangeRow"><div><span>'+esc(label)+'</span>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div><div class="confirmationChangeValues"><del>'+esc(professionalNames(before)||'Not assigned')+'</del><i aria-hidden="true">→</i><ins>'+esc(professionalNames(after)||'Not assigned')+'</ins></div></div>'}
+function confirmationChangeRow(label,before,after,detail){return'<div class="confirmationChangeRow"><div><span>'+esc(label)+'</span>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div><div class="confirmationChangeValues"><del>'+esc(before||'Not assigned')+'</del><i aria-hidden="true">→</i><ins>'+esc(after||'Not assigned')+'</ins></div></div>'}
+function confirmationPlanItem(label,value,detail){return{label:label,value:value?professionalNames(value):'To decide',detail:detail||''}}
+function confirmationChangeItem(label,before,after,detail){return{label:label,before:professionalNames(before)||'Not assigned',after:professionalNames(after)||'Not assigned',detail:detail||''}}
 
 function labourAssignmentDetail(name,order){
   if(!order)return'Labour Ward part pending';
@@ -743,30 +746,31 @@ function labourAssignmentDetail(name,order){
 }
 
 function confirmationPlanRows(r,order){
-  var rows=[confirmationRow('First part theatre',r.first1+' + '+r.first2,'Second break'),confirmationRow('Second part theatre',r.second1+' + '+r.second2,'First break')];
-  if(r.mode==='5')rows.push(confirmationRow('Full-night Labour Ward / Pager',r.fullLW,'Break coordinated when clinical cover allows'));
-  else{rows.push(confirmationRow('Pager',r.pager,labourAssignmentDetail(r.pager,order)));rows.push(confirmationRow('Reliever',r.reliever,labourAssignmentDetail(r.reliever,order)))}
-  if(r.mode==='7')rows.push(confirmationRow('Seventh nurse',r.seventh,'Break coordinated as required'));
+  var rows=[confirmationPlanItem('First part theatre',r.first1+' + '+r.first2,'Second break'),confirmationPlanItem('Second part theatre',r.second1+' + '+r.second2,'First break')];
+  if(r.mode==='5')rows.push(confirmationPlanItem('Full-night Labour Ward / Pager',r.fullLW,'Break coordinated when clinical cover allows'));
+  else{rows.push(confirmationPlanItem('Pager',r.pager,labourAssignmentDetail(r.pager,order)));rows.push(confirmationPlanItem('Reliever',r.reliever,labourAssignmentDetail(r.reliever,order)))}
+  if(r.mode==='7')rows.push(confirmationPlanItem('Seventh nurse',r.seventh,'Break coordinated as required'));
   return rows;
 }
 
 function confirmationChangedRows(base,r,order){
   var rostered=rawBaseForDate(base.date),labels={first1:'First Part theatre · position 1',first2:'First Part theatre · position 2',second1:'Second Part theatre · position 1',second2:'Second Part theatre · position 2',pager:'Pager',reliever:'Reliever',seventh:'Seventh nurse'},rows=[];
-  ['first1','first2','second1','second2'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeRow(labels[key],rostered[key],r[key],allocationBreak(key)))});
-  if(r.mode==='5'){var before=rostered.pager+' + '+rostered.reliever;if(canonicalNurseName(rostered.pager)!==canonicalNurseName(r.fullLW)||canonicalNurseName(rostered.reliever)!==canonicalNurseName(r.fullLW))rows.push(confirmationChangeRow('Full-night Labour Ward / Pager',before,r.fullLW,'00:00–07:00'))}
-  else ['pager','reliever'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeRow(labels[key],rostered[key],r[key],labourAssignmentDetail(r[key],order)))});
-  if(r.mode==='7'&&canonicalNurseName(rostered.seventh)!==canonicalNurseName(r.seventh))rows.push(confirmationChangeRow(labels.seventh,rostered.seventh,r.seventh,'Break coordinated as required'));
-  if(!rows.length){changesFor(base.date).forEach(function(change){rows.push(confirmationChangeRow('Absence',change.absent_name,change.replacement_name||'Not working',change.reason||'Unavailable'))});overtimeFor(base.date).forEach(function(entry){rows.push(confirmationChangeRow('Overtime','Not working',entry.nurse_name,entry.allocation_key?allocationLabel(entry.allocation_key):'Allocation to decide'))})}
+  ['first1','first2','second1','second2'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeItem(labels[key],rostered[key],r[key],allocationBreak(key)))});
+  if(r.mode==='5'){var before=rostered.pager+' + '+rostered.reliever;if(canonicalNurseName(rostered.pager)!==canonicalNurseName(r.fullLW)||canonicalNurseName(rostered.reliever)!==canonicalNurseName(r.fullLW))rows.push(confirmationChangeItem('Full-night Labour Ward / Pager',before,r.fullLW,'00:00–07:00'))}
+  else ['pager','reliever'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeItem(labels[key],rostered[key],r[key],labourAssignmentDetail(r[key],order)))});
+  if(r.mode==='7'&&canonicalNurseName(rostered.seventh)!==canonicalNurseName(r.seventh))rows.push(confirmationChangeItem(labels.seventh,rostered.seventh,r.seventh,'Break coordinated as required'));
+  if(!rows.length){changesFor(base.date).forEach(function(change){rows.push(confirmationChangeItem('Absence',change.absent_name,change.replacement_name||'Not working',change.reason||'Unavailable'))});overtimeFor(base.date).forEach(function(entry){rows.push(confirmationChangeItem('Overtime','Not working',entry.nurse_name,entry.allocation_key?allocationLabel(entry.allocation_key):'Allocation to decide'))})}
   return rows;
 }
 
-function confirmationReasonHtml(base){var reasons=[],override=nightRoleOverrides[base.date];if(override&&override.reason)reasons.push(override.reason);changesFor(base.date).forEach(function(change){if(change.reason)reasons.push(change.reason)});reasons=reasons.filter(function(reason,index,list){return list.indexOf(reason)===index});return reasons.length?'<div class="confirmationReason"><span>Reason</span><b>'+esc(reasons.join(' · '))+'</b></div>':''}
+function confirmationReason(base){var reasons=[],override=nightRoleOverrides[base.date];if(override&&override.reason)reasons.push(override.reason);changesFor(base.date).forEach(function(change){if(change.reason)reasons.push(change.reason)});reasons=reasons.filter(function(reason,index,list){return list.indexOf(reason)===index});return reasons.join(' · ')}
 
 function renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction){
   var host=byId('confirmationPreview');if(!host)return;var r=allocationPreview(base);
-  if(!tasks&&!confirmNeeded){host.innerHTML='';return}
-  var order=labourOrderDrafts[base.date]||labourOrderFor(r)||(!tasks?{first:r.pager,second:r.reliever}:null),changed=confirmationChangedRows(base,r,order),full=confirmationPlanRows(r,order);
-  host.innerHTML=(tasks?'<div class="confirmationWarning">'+esc(taskInstruction||'Complete the remaining allocation')+' before continuing.</div>':'<div class="confirmationReady">Review only what changed before sharing.</div>')+'<div class="confirmationChanges">'+changed.join('')+'</div>'+confirmationReasonHtml(base)+'<details class="confirmationFullPlan"><summary>View full plan</summary><div>'+full.join('')+'</div></details>';
+  var visible=!!(tasks||confirmNeeded),order=labourOrderDrafts[base.date]||labourOrderFor(r)||(!tasks?{first:r.pager,second:r.reliever}:null),changed=visible?confirmationChangedRows(base,r,order):[],full=visible?confirmationPlanRows(r,order):[],reason=visible?confirmationReason(base):'';
+  var model={visible:visible,blocked:!!tasks,instruction:taskInstruction||'Complete the remaining allocation',changed:changed,full:full,reason:reason};
+  if(host.dataset.reactReady!=='true')host.innerHTML=visible?(tasks?'<div class="confirmationWarning">'+esc(model.instruction)+' before continuing.</div>':'<div class="confirmationReady">Review only what changed before sharing.</div>')+'<div class="confirmationChanges">'+changed.map(function(item){return confirmationChangeRow(item.label,item.before,item.after,item.detail)}).join('')+'</div>'+(reason?'<div class="confirmationReason"><span>Reason</span><b>'+esc(reason)+'</b></div>':'')+'<details class="confirmationFullPlan"><summary>View full plan</summary><div>'+full.map(function(item){return confirmationRow(item.label,item.value,item.detail)}).join('')+'</div></details>':'';
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:changes-confirmation',{detail:model}));
 }
 
 function cur(){

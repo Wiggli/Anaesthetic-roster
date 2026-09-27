@@ -90,6 +90,16 @@ window.addEventListener('roster:changes-workflow', (event: Event) => {
   }).catch(() => { /* The original step controls remain available if this chunk fails. */ });
 });
 
+let confirmationRequest = 0;
+window.addEventListener('roster:changes-confirmation', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++confirmationRequest;
+  import('./changes-confirmation').then(({ renderChangesConfirmation }) => {
+    if (request === confirmationRequest) renderChangesConfirmation(model);
+  }).catch(() => { /* The escaped confirmation preview remains available. */ });
+});
+
 window.addEventListener('roster:full-roster', (event: Event) => {
   import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience((event as CustomEvent).detail.cards));
 });

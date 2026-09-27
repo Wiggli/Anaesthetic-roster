@@ -744,6 +744,39 @@ test('retains the original controls when its optional chunk fails', async ({ pag
 });
 });
 
+test('Changes confirmation uses a typed preview from the existing plan', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show('changes');
+    window.setChangesStep('confirm', false);
+    const base = window.cur();
+    window.renderConfirmationPreview(base, window.staffingPlan(base), 1, true, 'Choose a nurse');
+  });
+  const preview = page.locator('#confirmationPreview');
+  await expect(preview).toHaveAttribute('data-react-ready', 'true');
+  await expect(preview.getByRole('alert')).toContainText('Choose a nurse before continuing.');
+  await expect(preview.locator('.confirmationRow')).toHaveCount(4);
+  await preview.locator('summary').click();
+  await expect(preview.locator('.confirmationFullPlan')).toHaveAttribute('open', '');
+});
+
+test.describe('Changes confirmation load failure', () => {
+  test.use({ serviceWorkers: 'block' });
+  test('keeps the escaped preview if the optional chunk fails', async ({ page }) => {
+    await page.route('**/assets/changes-confirmation-*.js', route => route.abort());
+    await openShell(page);
+    await page.evaluate(() => {
+      window.show('changes');
+      const base = window.cur();
+      window.renderConfirmationPreview(base, window.staffingPlan(base), 1, true, 'Choose a nurse');
+    });
+    const preview = page.locator('#confirmationPreview');
+    await expect(preview).not.toHaveAttribute('data-react-ready', 'true');
+    await expect(preview.locator('.confirmationWarning')).toContainText('Choose a nurse before continuing.');
+    await expect(preview.locator('.confirmationRow')).toHaveCount(4);
+  });
+});
+
 test('typed full-roster cards render searchable clinical summaries and open a night', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
@@ -899,7 +932,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('What’s new describes the current guided Changes release', async ({ page }) => {
+test('What’s new describes the current confirmation review release', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -909,9 +942,9 @@ test('What’s new describes the current guided Changes release', async ({ page 
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText('A guided Staffing, Allocation and Confirm control');
-  await expect(dialog.locator('.releaseHistory')).toContainText('simpler grouped rows');
-  await expect(dialog.locator('.releaseHistory')).toContainText('explicit update approval remain unchanged');
+  await expect(dialog.locator('.releaseHistory')).toContainText('changed assignments in grouped rows');
+  await expect(dialog.locator('.releaseHistory')).toContainText('An unresolved allocation is clearly flagged');
+  await expect(dialog.locator('.releaseHistory')).toContainText('deliberate PWA update approval remain unchanged');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });

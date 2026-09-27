@@ -2188,6 +2188,22 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
 @media(max-width:540px){#changes .changesWorkflowTabs button small{display:none!important}}
 
 /* React-owned Changes journey. The original controls stay as a load-failure fallback. */
+#changes .changesScreenHeader{position:relative;top:auto;z-index:1}
+#changes .workflowSteps{position:relative;top:auto}
+#changes .confirmationExperience{display:grid;gap:14px}
+#changes .confirmationExperience .confirmationChanges{
+  overflow:hidden;border:1px solid var(--scene-line);border-radius:16px;background:var(--scene-surface);
+}
+#changes .confirmationExperience .confirmationChangeRow{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
+  gap:14px;margin:0;padding:15px;border:0;border-bottom:1px solid var(--scene-line);border-radius:0;
+}
+#changes .confirmationExperience .confirmationChangeRow:last-child{border-bottom:0}
+#changes .confirmationExperience .confirmationChangeValues{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+#changes .confirmationExperience .confirmationChangeValues del{color:var(--scene-secondary)}
+#changes .confirmationExperience .confirmationChangeValues ins{text-decoration:none;font-weight:730;color:var(--scene-ink)}
+#changes .confirmationExperience .confirmationFullPlan summary{min-height:48px;display:flex;align-items:center}
+@media(max-width:560px){#changes .confirmationExperience .confirmationChangeRow{grid-template-columns:minmax(0,1fr);gap:8px}}
 #changes #absenceFormExperience>div,
 #changes #overtimeFormExperience>div{
   padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
