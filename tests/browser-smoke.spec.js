@@ -854,7 +854,7 @@ test('launch message remains readable when the optional React module cannot load
   await expect(motto).toHaveCSS('opacity', '1');
 });
 
-test('frontend changelog explains the shared React interface system', async ({ page }) => {
+test('What’s new describes the personal-first release', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.renderReleaseNotes();
@@ -863,10 +863,10 @@ test('frontend changelog explains the shared React interface system', async ({ p
   const dialog = page.locator('#releaseNotes');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
-  await expect(dialog.locator('.releaseHistory')).toContainText('reusable React interface system');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Tailwind container queries');
-  await expect(dialog.locator('.releaseHistory')).toContainText('floating Liquid Glass capsule');
-  await expect(dialog.locator('.releaseHistory')).toContainText('Authentication, Supabase data, roster calculations');
+  await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Your allocation now leads the Night screen');
+  await expect(dialog.locator('.releaseHistory')).toContainText('Breaks shows a personal first or second break');
+  await expect(dialog.locator('.releaseHistory')).toContainText('explicit PWA update approval flow');
   const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
