@@ -5,6 +5,13 @@ const path = require('node:path');
 const release = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'release.json'), 'utf8'));
 const releaseVersionPattern = release.version.replace(/\./g, '\\.');
 
+async function captureReview(page, name) {
+  if (!process.env.CI) return;
+  const directory = path.join(__dirname, '..', 'visual-review');
+  fs.mkdirSync(directory, { recursive: true });
+  await page.screenshot({ path: path.join(directory, `${test.info().project.name}-${name}.png`) });
+}
+
 async function openShell(page) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
     status: 200,
@@ -596,6 +603,7 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('#onboardingContent')).toContainText('@mentions');
   await expect(page.locator('#onboardingContent')).toContainText('14 days');
   await expect(page.locator('#onboardingStepLabel')).toContainText('Chat');
+  await captureReview(page, 'onboarding');
   await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '1');
   await page.evaluate(() => {
     window.onboardingChatIntro = false;
@@ -699,6 +707,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Ready');
   await expect(page.locator('#nightStatusRow > .nightMetricRail > .metric')).toHaveCount(4);
+  await captureReview(page, 'night');
   const summaryGeometry = await page.locator('#nightStatusRow > .nightMetricRail').evaluate(el => {
     const style = getComputedStyle(el);
     return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
@@ -714,6 +723,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakList')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
+  await captureReview(page, 'breaks');
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
@@ -783,6 +793,7 @@ test('React Changes journey shows decisions and supports keyboard step selection
   const journey = page.locator('#changesWorkflowExperience');
   await expect(journey).toHaveAttribute('data-react-ready', 'true');
   await expect(journey.locator('[role="status"]')).toContainText('Choose a nurse for First Part 1');
+  await captureReview(page, 'changes');
   await expect(page.locator('#changes .changesWorkflowTabs')).toBeHidden();
   const staffing = journey.locator('[data-changes-step="staffing"]');
   await expect(staffing).toHaveAttribute('aria-selected', 'true');
@@ -861,6 +872,7 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   const card = page.locator('#cards button[aria-label^="Open roster for"]');
   await expect(card).toContainText('Saturday, 26 September 2026');
   await expect(card).toContainText('André Bartolo · Leave');
+  await captureReview(page, 'full-roster');
   await card.click();
   expect(await page.evaluate(() => window.__openedNights)).toContain(4);
 });
@@ -892,6 +904,7 @@ test('typed account controls preserve appearance and app actions', async ({ page
   const helpLayout = await page.locator('.accountActions').evaluate(el => ({ section: el.getBoundingClientRect().height, rows: el.querySelector('#accountActionsExperience').getBoundingClientRect().height }));
   expect(helpLayout.section).toBeGreaterThan(helpLayout.rows);
   await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
+  await captureReview(page, 'account');
   await expect(page.locator('#securityHeading')).toHaveText('Sign-in security');
   await page.locator('#profileName').fill('André');
   await expect(page.locator('#saveProfileBtn')).toBeVisible();
@@ -930,6 +943,7 @@ test('typed administrator accounts separate pending access and support fast filt
   });
 
   await expect(page.locator('#adminAccountsExperience')).toContainText('Pending access');
+  await captureReview(page, 'administrator');
   await expect(page.locator('#adminAccountsExperience')).toContainText('Current account');
   await expect(page.locator('#accountName')).toHaveAttribute('placeholder', 'Nurse name');
   await expect(page.locator('#adminAccountsExperience button', { hasText: 'Deactivate' }).first()).toBeDisabled();
@@ -973,6 +987,7 @@ test('typed Chat overview renders private conversations and registered members',
   });
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
+  await captureReview(page, 'chat');
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
   if (page.viewportSize().width >= 760) {
