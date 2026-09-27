@@ -1,13 +1,14 @@
 {
-  "version": "37.54",
+  "version": "37.55",
   "date": "27 September 2026",
-  "title": "Guided Changes workflow",
-  "summary": "Staffing, Allocation and Confirm now form a clearer guided journey, with decision guidance and more scannable records and role choices.",
+  "title": "Clearer confirmation review",
+  "summary": "Changes now presents the selected night’s changed assignments first, then the complete role plan for review before sharing.",
   "changes": [
-    "A guided Staffing, Allocation and Confirm control shows the current step, pending decisions and what to do next.",
-    "Staffing records and selected-night allocation choices use simpler grouped rows and larger controls on phones.",
-    "The original step controls remain available if the optional presentation component cannot load.",
-    "Existing staffing validation, allocation rules, confirmation, shared data and explicit update approval remain unchanged."
+    "The Confirm step shows changed assignments in grouped rows, with the complete plan available when you expand it.",
+    "An unresolved allocation is clearly flagged before confirmation, and a reason remains visible alongside the changes.",
+    "The Changes heading and step guide now scroll away so they do not cover the confirmation review.",
+    "The previous preview remains available if the optional presentation component cannot load.",
+    "Staffing and allocation validation, shared confirmation, roster calculations and deliberate PWA update approval remain unchanged."
   ],
   "update_policy": "important"
 }
