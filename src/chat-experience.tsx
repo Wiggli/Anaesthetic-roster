@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { useLayoutEffect, useRef } from 'react';
-import { Avatar, Badge, EmptyState, GroupedList, ListRow, Pressable, Surface } from './ui-system';
+import { Avatar, Badge, EmptyState, GlassSurface, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
 type Member = { personKey: string; displayName: string; initial: string; available: boolean };
@@ -124,13 +124,28 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
     window.dispatchEvent(new CustomEvent('roster:chat-composers-mounted'));
     return () => input?.removeEventListener('input', update);
   }, [team]);
-  return <>
-    <textarea id={team ? 'chatTeamInput' : 'chatMessageInput'} data-chat-composer="react" defaultValue={initialValue} maxLength={2000} rows={1} placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'} aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'} className="tw:max-h-32 tw:min-h-10 tw:flex-1 tw:resize-none tw:rounded-xl tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:outline-none tw:placeholder:text-[var(--muted)]" />
-      <span id={team ? 'chatTeamCharacterCount' : 'chatPrivateCharacterCount'} className="hidden tw:shrink-0 tw:self-center tw:text-[0.65rem] tw:font-bold tw:text-[var(--muted)]" aria-live="polite" />
-      <button type="submit" id={team ? 'chatTeamSendBtn' : 'chatSendBtn'} aria-label={team ? 'Send group message' : 'Send private message'} title="Send · Command or Control + Enter" className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600 tw:text-white tw:transition-transform tw:active:scale-95 tw:disabled:opacity-40">
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
-      </button>
-  </>;
+  return <GlassSurface className="chatComposerGlass tw:col-span-full tw:flex tw:min-w-0 tw:items-end tw:gap-1.5 tw:rounded-[22px] tw:p-1.5">
+    <textarea
+      id={team ? 'chatTeamInput' : 'chatMessageInput'}
+      data-chat-composer="react"
+      defaultValue={initialValue}
+      maxLength={2000}
+      rows={1}
+      placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'}
+      aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'}
+      className="tw:max-h-32 tw:min-h-10 tw:min-w-0 tw:flex-1 tw:resize-none tw:rounded-[16px] tw:border-0! tw:bg-transparent! tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:shadow-none! tw:outline-none tw:ring-0! tw:placeholder:text-[var(--muted)] tw:focus:border-0! tw:focus:shadow-none! tw:focus:ring-0!"
+    />
+    <span id={team ? 'chatTeamCharacterCount' : 'chatPrivateCharacterCount'} className="hidden tw:shrink-0 tw:self-center tw:px-1 tw:text-[0.62rem] tw:font-bold tw:text-[var(--muted)]" aria-live="polite" />
+    <Pressable
+      type="submit"
+      id={team ? 'chatTeamSendBtn' : 'chatSendBtn'}
+      aria-label={team ? 'Send group message' : 'Send private message'}
+      title="Send · Command or Control + Enter"
+      className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-teal-600! tw:text-white tw:shadow-[0_4px_12px_rgba(13,148,136,0.24)] tw:disabled:opacity-40"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
+    </Pressable>
+  </GlassSurface>;
 }
 
 export function renderChatOverview(model: ChatOverview) {
