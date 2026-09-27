@@ -216,7 +216,3 @@ export function FieldShell({ label, hint, children, className = '' }: {
     {hint ? <small className="tw:text-[0.7rem] tw:leading-relaxed tw:text-[var(--muted)]">{hint}</small> : null}
   </label>;
 }
-
-export function Skeleton({ className = '' }: { className?: string }) {
-  return <span className={cx('tw:block tw:animate-pulse tw:rounded-lg tw:bg-black/8 tw:dark:bg-white/10', className)} aria-hidden="true" />;
-}
