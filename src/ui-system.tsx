@@ -14,7 +14,7 @@ const toneClasses = {
   info: 'tw:bg-sky-500/12 tw:text-sky-700 tw:dark:text-sky-300'
 } as const;
 
-export type UiTone = keyof typeof toneClasses;
+type UiTone = keyof typeof toneClasses;
 
 export function Pressable({
   children,
