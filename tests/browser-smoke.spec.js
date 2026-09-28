@@ -709,6 +709,14 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
   await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
+  const assignmentContrast = await page.locator('#personalNightCard .personalAssignmentHero').evaluate(el => ({
+    background: getComputedStyle(el).backgroundColor,
+    title: getComputedStyle(el.querySelector('.personalRoleCopy b')).color,
+    facts: getComputedStyle(el.nextElementSibling).backgroundColor
+  }));
+  expect(assignmentContrast.background).toBe('rgb(23, 56, 60)');
+  expect(assignmentContrast.facts).toBe('rgb(23, 56, 60)');
+  expect(assignmentContrast.title).toBe('rgb(255, 255, 255)');
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);

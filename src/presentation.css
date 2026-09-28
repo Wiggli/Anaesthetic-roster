@@ -2799,6 +2799,18 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{backgroun
 #today .personalFacts dt{color:#a5d8d1!important}
 #today .personalFacts dd{color:#fff!important;font-size:14px!important}
 #today .personalContextAction{margin:0!important;min-height:48px!important;border-top:1px solid rgba(255,255,255,.2)!important;background:rgba(255,255,255,.055)!important;color:#fff!important}
+#today #personalNightCard>.personalHeroSurface>.personalAssignmentHero{
+  background:#17383c!important;box-shadow:none!important;border:0!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalFacts{
+  background:#17383c!important;border-color:rgba(255,255,255,.2)!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalFacts>div{
+  background:#17383c!important;border-color:rgba(255,255,255,.16)!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalContextAction{
+  background:#20464a!important;color:#fff!important;
+}
 #today .nightDateShell .grid2,#changes>.changesDatePanel,#breaks>.panel>.grid2{
   border:0!important;border-block:1px solid var(--scene-line)!important;border-radius:0!important;
   background:transparent!important;box-shadow:none!important;
@@ -2806,6 +2818,22 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{backgroun
 #today .nightDateShell .grid2{padding:12px 0!important}
 #today .nightSummaryTitle{display:none}
 .nightBrief{display:flex;align-items:center;gap:24px;padding:15px 0;border-block:1px solid var(--scene-line);color:var(--scene-ink)}
+#today #nightStatusRow>.nightBrief{
+  display:flex!important;grid-template-columns:none!important;gap:24px!important;overflow:visible!important;
+  width:100%;padding:15px 0!important;border:0!important;border-block:1px solid var(--scene-line)!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+#today #nightStatusRow>.nightBrief>.nightBriefLead,
+#today #nightStatusRow>.nightBrief>.nightBriefDetails{
+  min-height:0!important;margin:0!important;padding:0!important;border:0!important;
+  background:transparent!important;
+}
+#today #nightStatusRow>.nightBrief>.nightBriefDetails{display:flex!important;grid-template-columns:none!important;gap:6px!important}
+#today #nightStatusRow>.nightBrief .nightBriefLead strong{font-size:23px!important;color:var(--scene-ink)!important}
+#today #nightStatusRow>.nightBrief .nightBriefLead span{font-size:10px!important;color:var(--scene-secondary)!important}
+#today #nightStatusRow>.nightBrief .nightBriefDetails strong{font-size:14px!important;color:inherit!important}
+#today #nightStatusRow>.nightBrief .nightBriefReady{font-size:12px!important;color:var(--scene-accent)!important}
+.nightBriefDetails button{border:1px solid var(--scene-line)!important;border-radius:8px!important;background:var(--scene-surface)!important}
 .nightBriefLead{display:grid;gap:1px;min-width:118px}
 .nightBriefLead>span{font-size:10px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--scene-secondary)}
 .nightBriefLead strong{font-size:23px;letter-spacing:-.04em}
