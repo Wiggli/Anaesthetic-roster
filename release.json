@@ -1,12 +1,12 @@
 {
-  "version": "37.65",
+  "version": "37.66",
   "date": "28 September 2026",
-  "title": "Clarify the Night allocation dashboard",
-  "summary": "Your allocation now leads with a clearer role, shift, and break layout, followed by a compact team overview.",
+  "title": "Bring Changes decisions into view",
+  "summary": "A more compact date and workflow header brings the staffing controls closer to the top of the Changes screen.",
   "changes": [
-    "The personal Night card gives the role and assignment details more room to scan.",
-    "On-duty time, break, and context now share a compact summary strip.",
-    "The team overview uses calmer labels and a simpler surface without changing roster calculations."
+    "The selected night and staffing count now share a compact context card.",
+    "The Staffing, Allocation, and Confirm steps are easier to scan without taking over the phone screen.",
+    "The live state and decisions remain visible while the underlying workflow and roster rules stay the same."
   ],
   "update_policy": "important"
 }

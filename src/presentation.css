@@ -2535,6 +2535,63 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
 }
 #breakSummaryRow .breakSummaryItem.labour small{margin:0!important;white-space:normal!important}
 
+/* Changes opens on the decision at hand while retaining the linked date and live state. */
+#changes .changesScreenHeader{padding:4px 0 12px!important}
+#changes .changesScreenHeader h1{font-size:clamp(27px,5vw,34px)!important}
+#changes .changesScreenHeader .screenEyebrow{font-size:10px!important}
+#changes .changesScreenHeader p{margin-top:5px!important}
+#changes>.changesDatePanel{
+  display:block!important;margin:0 0 14px!important;padding:14px 16px!important;
+  border:1px solid var(--scene-line)!important;border-radius:18px!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#changes>.changesDatePanel>h2{margin:0 0 9px!important;font-size:12px!important;font-weight:750!important;letter-spacing:.05em;text-transform:uppercase;color:var(--scene-secondary)}
+#changes>.changesDatePanel .grid2{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(112px,auto)!important;
+  gap:18px;align-items:center;
+  padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+#changes>.changesDatePanel label{font-size:0!important}
+#changes>.changesDatePanel .dateNav{min-height:48px}
+#changes>.changesDatePanel .dateResetBtn{margin:6px 0 0!important;min-height:34px!important;padding:0 2px!important;font-size:12px!important;text-align:left!important}
+#changes>.changesDatePanel .staffingCount{
+  min-width:0!important;min-height:48px!important;padding:0 0 0 16px!important;
+  border:0!important;border-left:1px solid var(--scene-line)!important;
+}
+#changes>.changesDatePanel .staffingCount span{font-size:10px!important}
+#changes>.changesDatePanel .staffingCount strong{font-size:16px!important}
+#changes>.changesDatePanel .staffingCount small{display:none}
+#changes>.changePanel>.ctop{display:flex;align-items:center;gap:12px;margin:0 0 10px!important}
+#changes>.changePanel>.ctop h2{margin:0!important;font-size:17px!important}
+#changes>.changePanel>.ctop .time{display:none}
+#changes>.changePanel>.ctop .liveStatus{margin-left:auto;font-size:11px}
+#changes .workflowExperience{margin:0 0 15px!important}
+#changes .workflowSteps{
+  gap:0!important;padding:3px!important;border-radius:15px!important;
+  background:var(--scene-surface)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+#changes .workflowStep{min-height:52px!important;gap:6px!important;padding:6px 5px!important;border-radius:12px!important}
+#changes .workflowStep+.workflowStep{border-left:1px solid var(--scene-line)}
+#changes .workflowSelection{border-radius:11px!important;box-shadow:none!important;background:var(--scene-soft)!important}
+#changes .workflowStepNumber{width:22px;height:22px;border-radius:7px;font-size:11px}
+#changes .workflowStepCopy b{font-size:12px}
+#changes .workflowStepCopy small{font-size:10px}
+#changes .workflowGuidance{margin-top:10px!important;padding:11px 13px!important;border-radius:13px!important}
+#changes .workflowGuidanceMark{width:22px;height:22px;border-radius:7px}
+#changes .workflowGuidance strong{font-size:12px}
+#changes .workflowGuidance small{font-size:11px}
+#changes .changesStepPane:not(.hidden){gap:12px}
+#changes .staffingSection,#changes .confirmationCard{padding:16px!important}
+#changes .stepHeader{margin-bottom:8px!important}
+@media(max-width:520px){
+  #changes>.changesDatePanel .grid2{grid-template-columns:minmax(0,1fr) 84px!important;gap:10px}
+  #changes>.changesDatePanel .staffingCount{padding-left:10px!important}
+  #changes>.changesDatePanel .staffingCount strong{font-size:13px!important;white-space:nowrap}
+  #changes .workflowStep{flex-direction:column;gap:3px!important;min-height:53px!important;text-align:center}
+  #changes .workflowStepCopy small{display:none}
+}
+
 /* The selected nurse's assignment is the primary Night surface. */
 #today .personalNight>.sectionTitle{font-size:24px!important;margin:2px 0 12px!important}
 #today #personalNightCard>.personalHeroSurface{
