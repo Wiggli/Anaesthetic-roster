@@ -474,16 +474,16 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
     .toBeLessThan(4);
 
-  const stableGlass = await page.locator('.bottom').evaluate(el => {
+  const stableDock = await page.locator('.bottom').evaluate(el => {
     const style = getComputedStyle(el);
     return {
       background: style.backgroundColor,
       backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none'
     };
   });
-  expect(stableGlass.background).not.toBe('transparent');
-  expect(stableGlass.background).not.toBe('rgba(0, 0, 0, 0)');
-  expect(stableGlass.backdrop).not.toBe('none');
+  expect(stableDock.background).not.toBe('transparent');
+  expect(stableDock.background).not.toBe('rgba(0, 0, 0, 0)');
+  expect(stableDock.backdrop).toBe('none');
 
   const barAfterChat = await page.locator('.bottom').boundingBox();
   await realTouchSwipe(page,
