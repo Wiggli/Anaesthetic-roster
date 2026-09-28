@@ -1,12 +1,12 @@
 {
-  "version": "37.70",
-  "date": "28 September 2026",
-  "title": "Read the night at a glance",
-  "summary": "A clearer clinical journal puts your assignment first, then the live staffing picture and team detail.",
+  "version": "37.71",
+  "date": "29 September 2026",
+  "title": "Night screen prototype",
+  "summary": "Restores the earlier presentation outside Night and previews a new assignment-led Night screen.",
   "changes": [
-    "The Night screen leads with a distinct assignment panel and a concise staffing brief instead of statistic tiles.",
-    "The full roster reads as a searchable ledger, with clearer role and exception details.",
-    "Navigation, Changes, Breaks, Chat, account and first-use surfaces share a quieter visual rhythm, with clinical content kept solid."
+    "The broad 37.70 presentation treatment has been rolled back on Changes, Breaks, Chat, Account and the full roster, while the existing app stack and behavior remain intact.",
+    "Night now puts its selected date, personal role, working period, break and colleague ahead of a concise staffing state.",
+    "Team allocation is available on demand below the brief, with a calmer light and dark treatment and the existing navigation gestures."
   ],
   "update_policy": "important"
 }
