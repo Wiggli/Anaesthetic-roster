@@ -311,38 +311,38 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       ? 'View in night situation'
       : 'Choose your name';
 
-  return <article className={`personalHeroSurface personalRole-${tone}`}>
-    <span className="personalHeroAura" aria-hidden="true" />
-    <div className="personalHeroTop">
-      <div className="personalIdentity">
-        <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
+  return <article className={`personalHeroSurface nightV2Hero personalRole-${tone}`}>
+    <span className="nightV2Aura" aria-hidden="true" />
+    <div className="nightV2HeroTop">
+      <div className="nightV2Identity">
+        <div className={`nightV2Avatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
           {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}<i />
         </div>
-        <div className="personalIdentityCopy">
+        <div className="nightV2IdentityCopy">
           <small>Your night</small>
           <b>{model.displayName}</b>
           {model.jobTitle && <span>{model.jobTitle}</span>}
         </div>
       </div>
-      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Open your profile">
+      <Pressable type="button" className="nightV2ProfileButton" onClick={openAccount} aria-label="Open your profile">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25" /><path d="M5.5 20c.7-4 3-6 6.5-6s5.8 2 6.5 6" /></svg>
       </Pressable>
     </div>
-    <div className="personalAssignmentHero">
-      <div className="personalAssignmentKicker">
-        <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
+    <div className="nightV2Assignment">
+      <div className="nightV2Kicker">
+        <span className="nightV2RoleChip" aria-hidden="true">{personalMark(tone)}</span>
         <span>{model.assignmentLabel}</span>
-        {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
+        {model.changedLabel && <span className="nightV2Changed">{model.changedLabel}</span>}
       </div>
       <h2>{model.title}</h2>
       <p>{model.detail}</p>
     </div>
-    <dl className="personalFacts">
+    <dl className="personalFacts nightV2Facts">
       <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
       <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
       <div><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
     </dl>
-    <Pressable type="button" className="personalContextAction" onClick={action}>
+    <Pressable type="button" className="personalContextAction nightV2Action" onClick={action}>
       <span>{actionLabel}</span>
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
     </Pressable>
@@ -408,24 +408,24 @@ function roleMark(tone: NightRole['tone']) {
 
 function NightRoles({ model }: { model: NightSummary }) {
   return <>
-    <div className="liquidRosterList nightSituationTimeline">
+    <div className="liquidRosterList nightSituationTimeline nightV2Team">
       {model.roles.map(role => <Pressable
         key={role.key}
         type="button"
         onClick={openRoleEditor}
-        className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
+        className={`rosterRow nightTeamRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
         aria-label={`Change this night's ${role.label} allocation`}
       >
-        <span className="rosterRoleMark">{roleMark(role.tone)}</span>
-        <span className="rosterRowCopy">
-          <span className="rosterRowName">{role.names}</span>
-          <span className="rosterRowMeta">{role.detail}</span>
+        <span className="rosterRoleMark nightTeamRole">{roleMark(role.tone)}</span>
+        <span className="rosterRowCopy nightTeamCopy">
+          <span className="rosterRowName nightTeamName">{role.names}</span>
+          <span className="rosterRowMeta nightTeamMeta">{role.detail}</span>
         </span>
-        {role.mine && <span className="rosterMineLabel">You</span>}
-        <svg className="rosterRowChevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
+        {role.mine && <span className="rosterMineLabel nightTeamYou">You</span>}
+        <svg className="rosterRowChevron nightTeamChevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
       </Pressable>)}
     </div>
-    {model.extras.length > 0 && <div className="additionalStaff">
+    {model.extras.length > 0 && <div className="additionalStaff nightV2Extras">
       <b>Additional staff</b>
       <small>Allocation as required</small>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}
