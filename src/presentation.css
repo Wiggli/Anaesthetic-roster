@@ -2534,3 +2534,56 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
   overflow-wrap:normal!important;font-size:11px!important;
 }
 #breakSummaryRow .breakSummaryItem.labour small{margin:0!important;white-space:normal!important}
+
+/* The selected nurse's assignment is the primary Night surface. */
+#today .personalNight>.sectionTitle{font-size:24px!important;margin:2px 0 12px!important}
+#today #personalNightCard>.personalHeroSurface{
+  border-radius:22px;border-color:var(--scene-line);
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#today #personalNightCard>.personalHeroSurface::before{display:none}
+#today .personalIdentity{padding:16px 18px!important;border-bottom:1px solid var(--scene-line)}
+#today .personalIdentity .personalAvatar{width:42px!important;height:42px!important;box-shadow:none!important}
+#today .personalIdentity{grid-template-columns:42px minmax(0,1fr) auto!important}
+#today .personalIdentityCopy b{font-size:16px!important}
+#today .personalChangeBtn{color:var(--scene-accent)!important;font-size:12px!important}
+#today .personalAssignmentHero{
+  margin:0!important;padding:24px 20px 22px!important;
+  grid-template-columns:54px minmax(0,1fr) auto!important;align-items:start!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+#today .personalRoleIcon{
+  width:48px!important;height:48px!important;border-radius:15px!important;
+  background:var(--scene-soft)!important;color:var(--personal-role)!important;
+}
+#today .personalRoleCopy small{font-size:11px!important;text-transform:uppercase;letter-spacing:.08em!important}
+#today .personalRoleCopy b{display:block;margin:5px 0!important;font-size:clamp(25px,5vw,34px)!important;line-height:1.12!important}
+#today .personalRoleCopy>span{font-size:13px!important;line-height:1.4!important}
+#today .personalFacts{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  margin:0 18px 16px!important;border:1px solid var(--scene-line)!important;
+  border-radius:14px;background:var(--scene-soft)!important;overflow:hidden;
+}
+#today .personalFacts>div,#today .personalFacts>div:last-child{
+  grid-column:auto!important;min-height:68px;padding:12px!important;
+  border:0!important;border-left:1px solid var(--scene-line)!important;
+}
+#today .personalFacts>div:first-child{border-left:0!important}
+#today .personalFacts dt{font-size:10px!important;letter-spacing:.04em!important}
+#today .personalFacts dd{font-size:13px!important;white-space:normal;overflow:visible;line-height:1.3}
+#today .personalContextAction{margin:0!important;padding:0 18px!important;font-size:13px!important}
+#today .nightDateShell .grid2{padding:16px 18px!important}
+#today .nightMetricRail{border:1px solid var(--scene-line);border-radius:18px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+#today .nightMetricRail .metric{min-height:68px!important}
+body.dark #today #personalNightCard>.personalHeroSurface,
+html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+body.dark #today .nightMetricRail,
+html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+@media(max-width:420px){
+  #today .personalAssignmentHero{grid-template-columns:44px minmax(0,1fr)!important;padding:20px 16px!important;gap:10px!important}
+  #today .personalRoleIcon{width:40px!important;height:40px!important}
+  #today .personalAssignmentHero .personalChangedBadge{grid-column:2;justify-self:start}
+  #today .personalFacts{margin:0 12px 12px!important}
+  #today .personalFacts>div{padding:10px 8px!important}
+  #today .personalFacts dd{font-size:12px!important}
+}
