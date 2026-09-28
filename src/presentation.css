@@ -2790,10 +2790,10 @@ body.dark #today,html[data-theme="dark"] #today{
 #today>#appHeader{
   position:relative!important;
   inset:auto!important;
-  width:100%!important;
+  width:calc(100% + 24px)!important;
   max-width:none!important;
   min-height:0!important;
-  margin:0!important;
+  margin:0 -12px!important;
   padding:calc(10px + env(safe-area-inset-top)) 0 8px!important;
   border:0!important;
   border-bottom:1px solid var(--night-rule)!important;
@@ -2850,12 +2850,17 @@ body.dark #today,html[data-theme="dark"] #today{
   -webkit-backdrop-filter:none!important;
 }
 #today .headActions button{
-  width:40px!important;
-  height:40px!important;
-  min-width:40px!important;
-  min-height:40px!important;
+  box-sizing:border-box!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  max-width:42px!important;
+  max-height:42px!important;
+  aspect-ratio:1!important;
   border:1px solid var(--night-rule)!important;
-  border-radius:13px!important;
+  border-radius:50%!important;
   background:var(--night-surface)!important;
   color:var(--night-ink)!important;
   box-shadow:none!important;
@@ -3518,10 +3523,13 @@ html[data-theme="dark"] #today .nightSignal.needsReview .nightSignalGlyph{
     margin:0!important;
   }
   #today #appHeader .headActions button{
+    flex-basis:42px!important;
     width:42px!important;
     height:42px!important;
     min-width:42px!important;
     min-height:42px!important;
+    max-width:42px!important;
+    max-height:42px!important;
   }
   #today #appHeader .headerChips{
     grid-column:1/-1!important;
