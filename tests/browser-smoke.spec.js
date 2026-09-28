@@ -204,7 +204,7 @@ test('page swipes start reliably from container padding and survive an initial d
     list.innerHTML = '';
     list.style.minHeight = '120px';
   });
-  await page.locator('#chatConversationList').scrollIntoViewIfNeeded();
+  await page.locator('#chatConversationList').evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
   const listBox = await page.locator('#chatConversationList').boundingBox();
   const from = { x: listBox.x + listBox.width / 2, y: listBox.y + Math.min(60, listBox.height / 2) };
   await realTouchPath(page, [
@@ -997,6 +997,13 @@ test('typed Chat overview renders private conversations and registered members',
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await captureReview(page, 'chat');
+  if (page.viewportSize().width < 760) {
+    const composer = await page.locator('#chatTeamComposer').boundingBox();
+    const dock = await page.locator('.bottom').boundingBox();
+    expect(composer).not.toBeNull();
+    expect(dock).not.toBeNull();
+    expect(composer.y + composer.height).toBeLessThanOrEqual(dock.y);
+  }
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
   if (page.viewportSize().width >= 760) {
