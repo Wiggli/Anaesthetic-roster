@@ -2694,3 +2694,41 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface)!
   #releaseNotes .releaseEntry{padding:15px}
   #releaseNotes .releaseVersion{flex-wrap:wrap}
 }
+
+/* Breaks keeps the personal answer and the shared plan in one scan path. */
+#breaks .breaksScreenHeader{padding:4px 0 12px!important}
+#breaks .breaksScreenHeader h1{font-size:clamp(27px,5vw,34px)!important}
+#breaks #breakPersonalSummary{margin-bottom:16px!important}
+#breaks .personalBreakSummary{padding:18px 20px!important;border-radius:20px}
+#breaks .personalBreakMain{margin-top:8px;gap:14px}
+#breaks .personalBreakMain h2{font-size:clamp(25px,5vw,34px)!important}
+#breaks .personalBreakMain p{margin-top:5px;font-size:12px}
+#breaks .personalBreakMark{width:46px;height:46px;border-radius:13px;font-size:22px}
+#breaks>.panel>h2{margin:0 0 9px!important;font-size:12px!important;font-weight:750!important;letter-spacing:.05em;text-transform:uppercase;color:var(--scene-secondary)}
+#breaks>.panel>.grid2{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:14px;
+  align-items:center;margin:0 0 14px!important;padding:12px 16px!important;
+  border:1px solid var(--scene-line)!important;border-radius:16px!important;
+  background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#breaks>.panel>.grid2>label{font-size:0!important}
+#breaks>.panel>.grid2 .dateNav{min-height:48px}
+#breaks>.panel>.grid2 .staffingCount{padding:0 0 0 14px!important;min-height:44px;border:0!important;border-left:1px solid var(--scene-line)!important}
+#breaks>.panel>.grid2 .staffingCount span{font-size:10px!important}
+#breaks>.panel>.grid2 .staffingCount strong{font-size:14px!important}
+#breaks>.panel>.grid2 .staffingCount small{display:none}
+#breaks:has(#breakSummaryRow .breakSummaryItem)>.panel>.grid2 .staffingCount{display:none}
+#breaks:has(#breakSummaryRow .breakSummaryItem)>.panel>.grid2{grid-template-columns:minmax(0,1fr)!important}
+#breaks #breakSummaryRow{
+  margin-bottom:18px!important;border:1px solid var(--scene-line)!important;
+  border-radius:16px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important;
+}
+#breaks #breakSummaryRow>.breakSummaryItem{min-height:66px!important;padding:10px 8px!important}
+#breaks .breakPlanTitle{margin-bottom:11px!important}
+#breaks .breakGroup{border-radius:17px!important}
+@media(max-width:420px){
+  #breaks .personalBreakSummary{padding:16px!important}
+  #breaks .personalBreakMark{width:42px;height:42px}
+  #breaks>.panel>.grid2{padding:10px!important}
+  #breaks #breakSummaryRow>.breakSummaryItem{padding-inline:5px!important}
+}
