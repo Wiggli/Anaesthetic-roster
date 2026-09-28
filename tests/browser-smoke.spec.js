@@ -707,14 +707,17 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Ready');
-  await expect(page.locator('#nightStatusRow > .nightMetricRail > .metric')).toHaveCount(4);
+  await expect(page.locator('#nightStatusRow > .nightBrief')).toHaveCount(1);
+  await expect(page.locator('#nightStatusRow .nightBriefLead')).toContainText('6 nurses');
+  await expect(page.locator('#nightStatusRow .nightBriefReady')).toHaveText('Plan ready');
   await captureReview(page, 'night');
-  const summaryGeometry = await page.locator('#nightStatusRow > .nightMetricRail').evaluate(el => {
+  const summaryGeometry = await page.locator('#nightStatusRow > .nightBrief').evaluate(el => {
     const style = getComputedStyle(el);
-    return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
+    return { topRule: style.borderTopWidth, bottomRule: style.borderBottomWidth, layout: style.display };
   });
-  expect(summaryGeometry.columns).toBe(4);
-  expect(summaryGeometry.radius).toBeGreaterThanOrEqual(18);
+  expect(summaryGeometry.layout).toBe('flex');
+  expect(summaryGeometry.topRule).not.toBe('0px');
+  expect(summaryGeometry.bottomRule).not.toBe('0px');
   const dock = await page.locator('.bottom').boundingBox();
   expect(dock).not.toBeNull();
   expect(dock.height).toBeLessThanOrEqual(66);
@@ -875,6 +878,8 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   });
 
   const card = page.locator('#cards button[aria-label^="Open roster for"]');
+  await expect(card).toHaveClass(/rosterLedgerEntry/);
+  await expect(page.locator('#cards .rosterLedgerLine')).toHaveCount(2);
   await expect(card).toContainText('Saturday, 26 September 2026');
   await expect(card).toContainText('André Bartolo · Leave');
   if (test.info().project.name === 'desktop-chromium') {

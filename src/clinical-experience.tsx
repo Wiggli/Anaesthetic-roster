@@ -1,5 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, EmptyState, ListRow, Metric, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
 
 type BreakSummary = {
   date: string;
@@ -217,28 +217,19 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
-  return <div className="metricGrid nightMetricRail">
-    <Metric label="Nurses" value={String(model.nurseCount)} tone="teal" />
-    <Metric
-      label={model.absenceCount === 1 ? 'Absence' : 'Absences'}
-      value={model.absenceCount ? String(model.absenceCount) : 'No'}
-      tone={model.absenceCount ? 'critical' : 'teal'}
-      onClick={() => goToChanges('staffing')}
-    />
-    <Metric
-      label="Overtime"
-      value={String(model.overtimeCount)}
-      tone={model.overtimeCount ? 'warning' : 'neutral'}
-      onClick={() => goToChanges('staffing')}
-    />
-    {model.taskCount
-      ? <Metric
-          label={model.decisionTasks ? (model.taskCount === 1 ? 'Allocation' : 'Allocations') : 'Confirmation'}
-          value={`Review ${model.taskCount}`}
-          tone="warning"
-          onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}
-        />
-      : <Metric label="Plan" value="Ready" tone="teal" />}
+  return <div className="nightBrief" aria-label="Team staffing and plan status">
+    <div className="nightBriefLead"><span>On this night</span><strong>{model.nurseCount} nurses</strong></div>
+    <div className="nightBriefDetails">
+      <Pressable type="button" className={model.absenceCount ? 'hasException' : ''} onClick={() => goToChanges('staffing')}>
+        <strong>{model.absenceCount ? String(model.absenceCount) : 'No'}</strong> {model.absenceCount === 1 ? 'absence' : 'absences'}
+      </Pressable>
+      <Pressable type="button" onClick={() => goToChanges('staffing')}><strong>{model.overtimeCount}</strong> overtime</Pressable>
+      {model.taskCount
+        ? <Pressable type="button" className="hasTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
+            Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} <span aria-hidden="true">↗</span>
+          </Pressable>
+        : <span className="nightBriefReady">Plan ready</span>}
+    </div>
   </div>;
 }
 

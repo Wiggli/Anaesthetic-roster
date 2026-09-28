@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useState } from 'react';
 import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
@@ -41,11 +41,12 @@ function act(action: string, value?: unknown) {
 
 function ProfileEditor({ model }: { model: ProfileExperience }) {
   const [dirty, setDirty] = useState(!!model.changed);
+  const reduced = useReducedMotion();
   const photoUrl = model.photoUrl || '';
   const initial = model.initial || '?';
   const markDirty = () => { setDirty(true); act('profile-input'); };
   return <motion.section
-    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+    initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
     className="accountProfilePanel"
     aria-labelledby="profileHeading"
   >
