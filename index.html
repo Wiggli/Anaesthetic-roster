@@ -33,13 +33,13 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="preload" href="icon-192.png?v=37.70" as="image" vite-ignore />
-    <script src="theme-bootstrap.js?v=37.70" vite-ignore></script>
-    <link rel="manifest" href="manifest.webmanifest?v=37.70" vite-ignore />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.70" vite-ignore />
+    <link rel="preload" href="icon-192.png?v=37.71" as="image" vite-ignore />
+    <script src="theme-bootstrap.js?v=37.71" vite-ignore></script>
+    <link rel="manifest" href="manifest.webmanifest?v=37.71" vite-ignore />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.71" vite-ignore />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=37.70" vite-ignore />
-    <link rel="stylesheet" href="chat.css?v=37.70" vite-ignore />
+    <link rel="stylesheet" href="styles.css?v=37.71" vite-ignore />
+    <link rel="stylesheet" href="chat.css?v=37.71" vite-ignore />
   </head>
   <body class="authPending">
     <section
@@ -55,12 +55,12 @@
       </div>
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=37.70" alt="SPTAR Mater Dei" vite-ignore />
+          <img src="mater-dei-logo.png?v=37.71" alt="SPTAR Mater Dei" vite-ignore />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
           <div class="launchMark" aria-hidden="true">
-            <span><img src="icon-192.png?v=37.70" alt="" vite-ignore /></span>
+            <span><img src="icon-192.png?v=37.71" alt="" vite-ignore /></span>
             <i></i>
           </div>
           <span>Anaesthetic Night Roster</span>
@@ -84,7 +84,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=37.70"
+              src="mater-dei-logo.png?v=37.71"
               alt="Mater Dei Hospital"
             vite-ignore /><span>Main Operating Theatres</span>
           </div>
@@ -208,7 +208,7 @@
         <header id="appHeader">
           <div class="clinicalBackdrop" aria-hidden="true"></div>
           <div class="hospitalStrip">
-            <img src="mater-dei-logo.png?v=37.70" alt="Mater Dei Hospital" vite-ignore /><span
+            <img src="mater-dei-logo.png?v=37.71" alt="Mater Dei Hospital" vite-ignore /><span
               >Main Operating Theatres</span
             >
           </div>
@@ -294,7 +294,7 @@
         <div class="panel nightOverviewPanel">
           <h2 class="srOnly">Selected night</h2>
           <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
-            <h2 id="personalNightHeading" class="sectionTitle">Your allocation</h2>
+            <h2 id="personalNightHeading" class="sectionTitle">Your assignment</h2>
             <div id="personalNightCard" class="personalNightCard"></div>
             <div id="personalAllocationNotice"></div>
             <div id="personalNamePicker" class="personalNamePicker hidden">
@@ -334,16 +334,15 @@
           </div>
           </div>
           <div class="sectionHeadingRow nightSummaryTitle">
-            <h2 class="sectionTitle">Team at a glance</h2>
+            <h2 class="sectionTitle">The night in brief</h2>
           </div>
           <div id="nightStatusRow" class="nightStatusRow"></div>
           <div id="alerts"></div>
-          <div class="sectionHeadingRow">
-            <h2 class="sectionTitle">Night situation</h2>
-            <span class="inlineLive"><i></i>Live</span>
-          </div>
-          <div id="roles" class="roles"></div>
-          <div id="fiveArrangement"></div>
+          <details class="nightTeamDetails">
+            <summary><span><strong>Team allocation</strong><small>Roles and colleagues for this night</small></span><span aria-hidden="true">⌄</span></summary>
+            <div id="roles" class="roles"></div>
+            <div id="fiveArrangement"></div>
+          </details>
           <div class="rosterShortcutRow">
             <button type="button" class="rosterShortcutBtn" id="viewRosterBtn">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg>
@@ -1233,10 +1232,10 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="app-core.js?v=37.70" vite-ignore></script>
-    <script src="app-ui.js?v=37.70" vite-ignore></script>
-    <script src="push.js?v=37.70" vite-ignore></script>
-    <script src="chat.js?v=37.70" vite-ignore></script>
+    <script src="app-core.js?v=37.71" vite-ignore></script>
+    <script src="app-ui.js?v=37.71" vite-ignore></script>
+    <script src="push.js?v=37.71" vite-ignore></script>
+    <script src="chat.js?v=37.71" vite-ignore></script>
     <script type="module" src="/src/launch.tsx"></script>
   </body>
 </html>

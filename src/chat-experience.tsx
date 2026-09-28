@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Avatar, Badge, EmptyState, GroupedList, ListRow, Pressable, Surface } from './ui-system';
+import { Avatar, Badge, EmptyState, GlassSurface, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
 type Member = { personKey: string; displayName: string; initial: string; available: boolean };
@@ -126,7 +126,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
     window.dispatchEvent(new CustomEvent('roster:chat-composers-mounted'));
     return () => input?.removeEventListener('input', update);
   }, [team]);
-  return <Surface className="chatComposerGlass tw:col-span-full tw:flex tw:min-w-0 tw:items-end tw:gap-1.5 tw:p-1.5 tw:shadow-none">
+  return <GlassSurface className="chatComposerGlass tw:col-span-full tw:flex tw:min-w-0 tw:items-end tw:gap-1.5 tw:rounded-[22px] tw:p-1.5">
     <textarea
       id={team ? 'chatTeamInput' : 'chatMessageInput'}
       data-chat-composer="react"
@@ -147,7 +147,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
     </Pressable>
-  </Surface>;
+  </GlassSurface>;
 }
 
 export function renderChatOverview(model: ChatOverview) {
