@@ -708,6 +708,8 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   });
   expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveClass(/personalRole-pager/);
+  await expect(page.locator('#personalNightCard .personalRoleIcon')).toHaveText('P');
   await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
   const assignmentContrast = await page.locator('#personalNightCard .personalAssignmentHero').evaluate(el => ({
     background: getComputedStyle(el).backgroundColor,

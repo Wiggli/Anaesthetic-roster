@@ -248,10 +248,11 @@ function NightAlerts({ model }: { model: NightSummary }) {
 function personalTone(model: PersonalNight) {
   const text = `${model.title} ${model.detail}`.toLocaleLowerCase();
   if (model.action === 'absence' || text.includes('absent')) return 'absence';
-  if (text.includes('first part')) return 'first';
-  if (text.includes('second part')) return 'second';
+  if (text.includes('full night')) return 'full';
   if (text.includes('pager')) return 'pager';
   if (text.includes('reliever')) return 'reliever';
+  if (text.includes('first part')) return 'first';
+  if (text.includes('second part')) return 'second';
   if (text.includes('seventh')) return 'seventh';
   if (text.includes('labour')) return 'full';
   return 'task';
