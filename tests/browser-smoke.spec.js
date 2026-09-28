@@ -740,6 +740,14 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
+  await expect(page.locator('#breakList .breakGroupOrdinal')).toHaveText(['01', '02']);
+  await expect(page.locator('#breakList .breakNotesHeading')).toContainText('Labour Ward & Pager');
+  const breakLayout = await page.locator('#breakList .breakGrid').evaluate(el => ({
+    columns: getComputedStyle(el).gridTemplateColumns.split(' ').length,
+    firstBorder: getComputedStyle(el.querySelector('.breakGroup')).borderTopWidth
+  }));
+  expect(breakLayout.columns).toBe(1);
+  expect(breakLayout.firstBorder).not.toBe('0px');
   await expect(page.locator('#breakList')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');

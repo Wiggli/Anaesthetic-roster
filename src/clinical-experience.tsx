@@ -155,11 +155,12 @@ function BreakGroup({
   highlightedName: string;
 }) {
   return <Surface className={`breakGroup ${className} tw:shadow-none`}>
-    <div className="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:px-3.5 tw:py-3">
-      <h3 className="tw:m-0 tw:text-sm tw:font-bold">{title}</h3>
-      <Badge tone={className.includes('first') ? 'accent' : 'info'}>{names.length || '—'}</Badge>
+    <div className="breakGroupHeading">
+      <span className="breakGroupOrdinal" aria-hidden="true">{className.includes('first') ? '01' : '02'}</span>
+      <div><span className="breakGroupKicker">Theatre rest period</span><h3>{title}</h3></div>
+      <span className="breakGroupCount">{names.length} {names.length === 1 ? 'nurse' : 'nurses'}</span>
     </div>
-    <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
+    <div className="breakGroupPeople tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
       {names.length
         ? names.map(name => {
             const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
@@ -181,14 +182,14 @@ function BreakPlan({ model }: { model: BreakSummary }) {
       <BreakGroup className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
       <BreakGroup className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
     </div>
-    <Surface className="breakGroup lwBreak tw:mt-3 tw:shadow-none">
-      <div className="tw:px-3.5 tw:py-3"><h3 className="tw:m-0 tw:text-sm tw:font-bold">Labour Ward / Pager and additional staffing</h3></div>
+    <section className="breakNotes" aria-label="Labour Ward and additional staffing">
+      <div className="breakNotesHeading"><span>Operational notes</span><h3>Labour Ward &amp; Pager</h3></div>
       <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
         {model.notes.length
           ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
           : <EmptyState title="No additional staffing notes" />}
       </div>
-    </Surface>
+    </section>
   </>;
 }
 

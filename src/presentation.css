@@ -2958,3 +2958,88 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   .rosterLedgerEntry{padding:15px 14px}
 }
 @media(prefers-reduced-motion:reduce){.rosterLedgerEntry,.nightBriefDetails button{transition:none!important}}
+
+/* 37.70 continuation: an editorial clinical workspace across the secondary views. */
+#breaks #breakList .breakGrid{display:grid!important;grid-template-columns:1fr!important;gap:0!important;border:0;background:transparent}
+#breaks #breakList .breakGroup{display:grid!important;grid-template-columns:minmax(145px,32%) minmax(0,1fr);min-height:144px;border:0!important;border-top:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
+#breaks #breakList .breakGroup:last-child{border-bottom:1px solid var(--scene-line)!important}
+#breaks #breakList .breakGroup+.breakGroup{border-left:0!important}
+#breaks .breakGroupHeading{display:flex;align-items:flex-start;gap:14px;padding:20px 18px 18px 0}
+#breaks .breakGroupOrdinal{color:var(--scene-accent);font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+#breaks .breakGroupKicker,#breaks .breakNotesHeading span{display:block;margin-bottom:5px;color:var(--scene-secondary);font-size:10px;font-weight:750;letter-spacing:.09em;text-transform:uppercase}
+#breaks .breakGroupHeading h3,#breaks .breakNotesHeading h3{margin:0!important;color:var(--scene-ink);font-size:clamp(20px,3vw,29px)!important;line-height:1.1;letter-spacing:-.035em}
+#breaks .breakGroupCount{margin-left:auto;color:var(--scene-secondary);font-size:11px;white-space:nowrap}
+#breaks .breakGroupPeople{align-self:stretch;border-left:1px solid var(--scene-line)}
+#breaks .breakGroupPeople .breakPerson{min-height:64px!important;padding-inline:20px!important;background:transparent!important}
+#breaks .breakGroupPeople .breakPerson.mine{background:var(--scene-soft)!important}
+#breaks .breakNotes{display:grid;grid-template-columns:minmax(145px,32%) minmax(0,1fr);margin-top:0;border-bottom:1px solid var(--scene-line);color:var(--scene-ink)}
+#breaks .breakNotesHeading{padding:20px 18px 18px 0}
+#breaks .breakNotes>div:last-child{border-left:1px solid var(--scene-line)}
+#breaks .breakNotes .breakNote{padding:16px 20px!important}
+#breaks #breakSummaryRow{border:0!important;border-block:1px solid var(--scene-line)!important}
+#breaks #breakSummaryRow>.breakSummaryItem{background:transparent!important}
+#breaks .personalBreakSummary{border:0!important;border-left:5px solid var(--scene-accent)!important;border-radius:0!important;background:var(--scene-soft)!important}
+
+#chat .chatTeamConsole{overflow:hidden;border:1px solid var(--scene-line)!important;border-radius:0!important;background:var(--scene-surface)!important}
+#chat .chatTeamConsoleHeader{border-bottom:1px solid var(--scene-line);background:var(--scene-soft)!important}
+#chat .chatTeamAvatar{background:var(--scene-accent)!important;color:var(--scene-surface)!important}
+#chat .chatTeamToolbar{border-bottom:1px solid var(--scene-line);background:var(--scene-surface)!important}
+#chat .chatTeamMessages{background:var(--scene-surface)!important}
+#chat .chatTeamComposerWrap{border-top:1px solid var(--scene-line);background:var(--scene-surface)!important}
+#chat .chatComposerGlass{border-radius:8px!important}
+#chat .chatPrivateHeader{padding-top:14px!important;border-top:1px solid var(--scene-line)}
+#chat #chatConversationList{border-block:1px solid var(--scene-line)}
+#chat #chatConversationList>.reactConversationGroup{border:0!important;border-radius:0!important}
+#chat .chatSafetyNotice,#chat .chatNotificationCard{border-radius:0!important;border-inline:0!important;background:transparent!important}
+
+.accountSheet[open]{border-radius:0!important}
+.accountSheetHeader{border-bottom:1px solid var(--scene-line)!important}
+.accountSheetScroll{gap:0!important}
+.accountSheetIntro{padding:17px 2px!important;border-bottom:1px solid var(--scene-line)}
+#profileExperience>.accountProfilePanel,.accountSheet .accountGroup{padding:22px 4px!important;border:0!important;border-bottom:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
+.accountSheet .accountGroup>h3,.accountSheet .accountSectionHeading h3{font-size:18px!important;letter-spacing:-.03em}
+.accountProfileHero{padding-bottom:18px;border-bottom:1px solid var(--scene-line)}
+.accountPhotoButton{box-shadow:none!important}
+.accountProfileFields input,.accountProfileFields select{border-radius:7px!important;background:var(--scene-surface)!important}
+#accountActionsExperience .reactGroupedList{border:0!important;border-block:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
+.accountSheet .accountSignOut{margin-top:22px!important}
+
+#releaseNotes .releaseHistory{background:var(--scene-surface)!important}
+#releaseNotes .releaseEntry,#releaseNotes .releaseEntry.latest{margin:0!important;padding:22px 20px!important;border:0!important;border-bottom:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
+#releaseNotes .releaseEntry.latest{border-left:0!important;background:var(--scene-soft)!important}
+#releaseNotes .releaseArchiveHeading{border-block:1px solid var(--scene-line)}
+#releaseNotes .releaseNav{border-bottom:1px solid var(--scene-line)!important}
+
+.authCard{border:0!important;border-top:4px solid var(--scene-accent)!important;border-radius:0!important;background:var(--scene-surface)!important}
+.authWelcome .authHospital{padding-bottom:20px}
+.authIntro h1{font-size:clamp(37px,5vw,66px)!important;line-height:1.02!important}
+.authCard .authSwitch{border:0!important;border-bottom:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
+.authCard .authSwitch button,.authCard .authSwitch button.active{border-radius:0!important;box-shadow:none!important}
+.authCard .authSwitch button.active{border-bottom:3px solid var(--scene-accent)!important}
+.onboardingDialog[open]{border-radius:10px!important}
+.onboardingDialog .onboardingTop{border-bottom:1px solid var(--scene-line)}
+
+@media(min-width:1100px){
+  main,#appHeader{max-width:1320px!important}
+  #today>.nightOverviewPanel{grid-template-columns:minmax(0,1.65fr) minmax(290px,.75fr)!important}
+  #today .personalNight{max-width:none}
+  #today #roles>.liquidRosterList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:hidden}
+  #today #roles .rosterRow:nth-child(2){border-top:0!important}
+  #today #roles .rosterRow:nth-child(even){border-left:1px solid var(--scene-line)!important}
+  #chatHome{display:grid!important;grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);column-gap:32px!important;align-items:start}
+  #chatHome>.chatTeamConsole{grid-column:1;grid-row:1 / span 5}
+  #chatHome>.chatPrivateHeader{grid-column:2;grid-row:1;margin-top:0!important}
+  #chatHome>#chatConversationList{grid-column:2;grid-row:2}
+  #chatHome>.chatSafetyNotice{grid-column:2;grid-row:3}
+  #chatHome>#pushNotificationCard{grid-column:2;grid-row:4}
+  #chat .chatTeamConsole{grid-template-rows:auto auto minmax(390px,54dvh) auto!important}
+}
+@media(max-width:640px){
+  #breaks #breakList .breakGroup,#breaks .breakNotes{grid-template-columns:1fr!important}
+  #breaks .breakGroupHeading{padding:17px 4px 12px}
+  #breaks .breakGroupPeople,#breaks .breakNotes>div:last-child{border-left:0;border-top:1px solid var(--scene-line)}
+  #breaks .breakGroupPeople .breakPerson{padding-inline:14px!important}
+  #breaks .breakNotesHeading{padding:17px 4px 12px}
+  .accountSheetScroll{padding-inline:20px!important}
+  .authCard{padding-inline:14px!important}
+}
