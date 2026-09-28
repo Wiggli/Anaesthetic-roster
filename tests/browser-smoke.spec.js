@@ -204,7 +204,7 @@ test('page swipes start reliably from container padding and survive an initial d
     list.innerHTML = '';
     list.style.minHeight = '120px';
   });
-  await page.locator('#chatConversationList').scrollIntoViewIfNeeded();
+  await page.locator('#chatConversationList').evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
   const listBox = await page.locator('#chatConversationList').boundingBox();
   const from = { x: listBox.x + listBox.width / 2, y: listBox.y + Math.min(60, listBox.height / 2) };
   await realTouchPath(page, [
