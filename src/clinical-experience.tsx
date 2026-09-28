@@ -273,23 +273,30 @@ function NightAlerts({ model }: { model: NightSummary }) {
 }
 
 function personalTone(model: PersonalNight) {
-  const text = `${model.title} ${model.detail}`.toLocaleLowerCase();
-  if (model.action === 'absence' || text.includes('absent')) return 'absence';
-  if (text.includes('first part')) return 'first';
-  if (text.includes('second part')) return 'second';
-  if (text.includes('pager')) return 'pager';
-  if (text.includes('reliever')) return 'reliever';
-  if (text.includes('seventh')) return 'seventh';
-  if (text.includes('labour')) return 'full';
+  const title = model.title.toLocaleLowerCase();
+  const detail = model.detail.toLocaleLowerCase();
+  if (model.action === 'absence' || title.includes('absent') || detail.includes('absent')) return 'absence';
+  if (title.includes('pager')) return 'pager';
+  if (title.includes('reliever')) return 'reliever';
+  if (title.includes('second part')) return 'second';
+  if (title.includes('first part')) return 'first';
+  if (title.includes('seventh')) return 'seventh';
+  if (title.includes('labour')) return 'full';
+  if (detail.includes('pager')) return 'pager';
+  if (detail.includes('reliever')) return 'reliever';
+  if (detail.includes('second part')) return 'second';
+  if (detail.includes('first part')) return 'first';
+  if (detail.includes('seventh')) return 'seventh';
+  if (detail.includes('labour')) return 'full';
   return 'task';
 }
 
 function personalMark(tone: string) {
   if (tone === 'first') return '1st';
   if (tone === 'second') return '2nd';
-  if (tone === 'pager') return 'P';
-  if (tone === 'reliever') return 'R';
-  if (tone === 'seventh') return '7';
+  if (tone === 'pager') return 'Pager';
+  if (tone === 'reliever') return 'Relief';
+  if (tone === 'seventh') return '7th';
   if (tone === 'full') return 'LW';
   if (tone === 'absence') return '!';
   return '•';
