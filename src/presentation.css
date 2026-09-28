@@ -2644,3 +2644,53 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface)!
   #today .personalFacts>div{padding:10px 8px!important}
   #today .personalFacts dd{font-size:12px!important}
 }
+
+/* Account uses a short profile introduction and grouped native-style controls. */
+.accountSheetHeader{padding:10px 20px 12px!important}
+.accountSheetHeader h2{font-size:22px!important;line-height:1.15}
+.accountSheetHeader button{min-height:44px!important;border-radius:12px!important}
+.accountSheetScroll{gap:14px!important;padding-top:14px!important}
+.accountSheetIntro{margin:0 2px!important;font-size:12px!important;line-height:1.4!important}
+#profileExperience>.accountProfilePanel{gap:16px!important;padding:18px!important}
+.accountProfileHero{gap:16px!important}
+.accountPhotoButton{width:64px;height:64px;min-width:64px;font-size:24px}
+.accountPhotoControls{gap:2px}
+.accountPhotoActions button{min-height:36px;font-size:11px}
+.accountProfileIntro h3{margin:2px 0 4px!important;font-size:19px!important}
+.accountProfileIntro p{font-size:12px!important;line-height:1.35!important}
+.accountProfileFields,.accountNameFields{gap:12px!important}
+.accountSheet .accountGroup{padding:18px!important}
+.accountSheet .accountGroupDescription{margin-bottom:12px}
+#accountActionsExperience .reactGroupedList{overflow:hidden;border:1px solid var(--scene-line);border-radius:14px}
+#accountActionsExperience button{min-height:58px!important}
+
+/* Release history separates the current release from the chronological archive. */
+#releaseNotes .dialogHead{padding:16px 20px!important}
+#releaseNotes .releaseNav{gap:6px;padding:9px 14px;background:var(--scene-surface);border-color:var(--scene-line)}
+#releaseNotes .releaseNav button{min-height:44px;border:1px solid var(--scene-line);border-radius:11px;background:var(--scene-soft);box-shadow:none;color:var(--scene-ink)}
+#releaseNotes .releaseNav span{background:var(--scene-surface);color:var(--scene-accent)}
+#releaseNotes .releaseHistory{background:var(--scene-bg)!important}
+#releaseNotes .releaseEntry{margin:0;padding:17px 20px;border:0;border-bottom:1px solid var(--scene-line);background:var(--scene-surface);box-shadow:none}
+#releaseNotes .releaseEntry.latest{margin:14px;border:1px solid var(--scene-line)!important;border-radius:18px!important;background:var(--scene-surface)!important;box-shadow:var(--scene-shadow)!important}
+#releaseNotes .releaseVersion{gap:8px}
+#releaseNotes .releaseVersion span{color:var(--scene-accent);font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.055em}
+#releaseNotes .releaseVersion h3{margin-top:4px;font-size:18px;line-height:1.25}
+#releaseNotes .releaseVersion time{color:var(--scene-secondary);font-size:11px;white-space:nowrap}
+#releaseNotes .releaseEntry ul{margin-top:12px!important;color:var(--scene-secondary);font-size:12px;line-height:1.5}
+#releaseNotes .releaseArchiveHeading{position:sticky;top:0;padding:11px 20px;border-color:var(--scene-line);background:var(--scene-bg)!important;box-shadow:none}
+@media(max-width:460px){
+  .accountSheetHeader{padding-inline:16px!important}
+  .accountSheetScroll{padding-inline:12px!important}
+  #profileExperience>.accountProfilePanel{padding:15px!important}
+  .accountProfileHero{align-items:center;gap:12px!important}
+  .accountPhotoButton{width:54px!important;height:54px!important;min-width:54px!important;font-size:21px}
+  .accountPhotoAdd{width:23px;height:23px;font-size:15px}
+  .accountPhotoActions{max-width:80px!important}
+  .accountPhotoActions button{min-height:28px!important;font-size:10px!important}
+  .accountProfileIntro h3{font-size:17px!important}
+  .accountProfileIntro p{font-size:11px!important}
+  .accountSheet .accountGroup{padding:15px!important}
+  #releaseNotes .releaseEntry.latest{margin:10px}
+  #releaseNotes .releaseEntry{padding:15px}
+  #releaseNotes .releaseVersion{flex-wrap:wrap}
+}

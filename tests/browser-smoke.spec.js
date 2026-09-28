@@ -1092,6 +1092,7 @@ test('version history upgrades its escaped fallback to an on-demand React region
   await expect(dialog.locator('.releaseNav')).toBeVisible();
   await expect(dialog.locator('.releaseArchiveHeading')).toContainText('Previous updates');
   await expect(dialog.locator('.releaseHistory')).toHaveAttribute('aria-label', 'Complete Night Roster version history');
+  await captureReview(page, 'release-notes');
 });
 
 test.describe('version history load failure', () => {

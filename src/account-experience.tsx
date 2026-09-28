@@ -63,9 +63,9 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
         <input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { const file = event.currentTarget.files?.[0]; if (file) { setDirty(true); act('profile-photo', file); } event.currentTarget.value = ''; }} />
       </div>
       <div className="accountProfileIntro">
-        <span className="accountEyebrow">Personal profile</span>
+        <span className="accountEyebrow">Your profile</span>
         <h3 id="profileHeading">Personal details</h3>
-        <p>Your photo, preferred name and role title appear in Your night. Only you can change these details.</p>
+        <p>Shown in Your night. Only you can edit them.</p>
       </div>
     </div>
     <div className="accountProfileFields tw:@container">

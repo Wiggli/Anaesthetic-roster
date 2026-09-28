@@ -1,12 +1,12 @@
 {
-  "version": "37.66",
+  "version": "37.67",
   "date": "28 September 2026",
-  "title": "Bring Changes decisions into view",
-  "summary": "A more compact date and workflow header brings the staffing controls closer to the top of the Changes screen.",
+  "title": "Simplify account and release history",
+  "summary": "The account sheet opens with a concise profile and grouped settings, while version history is easier to scan.",
   "changes": [
-    "The selected night and staffing count now share a compact context card.",
-    "The Staffing, Allocation, and Confirm steps are easier to scan without taking over the phone screen.",
-    "The live state and decisions remain visible while the underlying workflow and roster rules stay the same."
+    "The profile editor uses a shorter introduction and a more compact photo and field layout.",
+    "Appearance, app help, and sign-in controls remain grouped with clearer spacing.",
+    "Version history distinguishes the current update from earlier releases without removing any entries."
   ],
   "update_policy": "important"
 }
