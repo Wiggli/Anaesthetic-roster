@@ -308,7 +308,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   const actionLabel = model.action === 'absence'
     ? 'Review absence'
     : model.action === 'role'
-      ? 'Find me in the team'
+      ? 'View in night situation'
       : 'Choose your name';
 
   return <article className={`personalHeroSurface personalRole-${tone}`}>
