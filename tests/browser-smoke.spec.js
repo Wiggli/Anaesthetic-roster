@@ -703,7 +703,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
   await expect(page.locator('#personalNightCard > .nightV2Hero > .nightV2HeroTop .nightV2Identity')).toHaveCount(1);
-  await expect(page.locator('#personalNightCard .personalAssignmentHero h2')).toHaveText('Pager');
+  await expect(page.locator('#personalNightCard .nightV2Assignment h2')).toHaveText('Pager');
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
