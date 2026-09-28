@@ -103,11 +103,6 @@ test('Chat reports connection errors and recovery beside the conversation', asyn
   await expect(status).toHaveAttribute('data-react-ready', 'true');
   await expect(status.locator('[role="alert"]')).toContainText('Chat needs attention');
   await expect(status).toContainText('Messages will send when the connection returns.');
-  await page.evaluate(() => window.show('chat'));
-  const fallbackComposer = await page.locator('#chatTeamComposer').boundingBox();
-  const fallbackSend = await page.locator('#chatTeamSendBtn').boundingBox();
-  expect(fallbackSend.y).toBeLessThan(fallbackComposer.y + fallbackComposer.height);
-  await captureReview(page, 'chat-error');
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: 'Chat is ready.', error: false } })));
   await expect(status.locator('[role="status"]')).toContainText('Chat is ready.');
   await page.evaluate(() => {
@@ -474,16 +469,16 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
     .toBeLessThan(4);
 
-  const stableDock = await page.locator('.bottom').evaluate(el => {
+  const stableGlass = await page.locator('.bottom').evaluate(el => {
     const style = getComputedStyle(el);
     return {
       background: style.backgroundColor,
       backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none'
     };
   });
-  expect(stableDock.background).not.toBe('transparent');
-  expect(stableDock.background).not.toBe('rgba(0, 0, 0, 0)');
-  expect(stableDock.backdrop).toBe('none');
+  expect(stableGlass.background).not.toBe('transparent');
+  expect(stableGlass.background).not.toBe('rgba(0, 0, 0, 0)');
+  expect(stableGlass.backdrop).not.toBe('none');
 
   const barAfterChat = await page.locator('.bottom').boundingBox();
   await realTouchSwipe(page,
@@ -588,25 +583,6 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('#launchScreen')).toBeVisible();
   await expect(page.locator('.launchMark')).toHaveCount(1);
   await expect(page.locator('.launchAtmosphere i')).toHaveCount(3);
-  await captureReview(page, 'loading');
-  await page.evaluate(() => {
-    document.head.insertAdjacentHTML('beforeend', '<style id="recoveryCaptureStyle">#launchScreen{display:grid!important}#authGate{display:none!important}</style>');
-    document.getElementById('launchScreen').classList.remove('hidden', 'dismissed');
-    document.getElementById('launchTitle').textContent = 'Connection taking longer';
-    document.getElementById('launchStatus').textContent = 'The shared roster did not respond. You can retry or open a saved copy.';
-    document.getElementById('launchRecovery').classList.remove('hidden');
-    document.getElementById('launchOfflineBtn').classList.remove('hidden');
-  });
-  await expect(page.locator('#launchRecovery')).toContainText('read-only');
-  await expect(page.locator('#launchTitle')).toBeVisible();
-  if (process.env.CI) await page.waitForTimeout(900);
-  await captureReview(page, 'offline-recovery');
-  await page.evaluate(() => {
-    document.getElementById('recoveryCaptureStyle').remove();
-    document.getElementById('launchScreen').style.display = 'none';
-    document.getElementById('authGate').style.display = 'block';
-  });
-  await captureReview(page, 'auth');
 
   await page.evaluate(() => {
     document.body.classList.remove('authPending');
@@ -726,52 +702,25 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   });
   expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
-  await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveClass(/personalRole-pager/);
-  await expect(page.locator('#personalNightCard .personalRoleIcon')).toHaveText('P');
   await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
-  const assignmentContrast = await page.locator('#personalNightCard .personalAssignmentHero').evaluate(el => ({
-    background: getComputedStyle(el).backgroundColor,
-    title: getComputedStyle(el.querySelector('.personalRoleCopy b')).color,
-    facts: getComputedStyle(el.nextElementSibling).backgroundColor
-  }));
-  expect(assignmentContrast.background).toBe('rgb(23, 56, 60)');
-  expect(assignmentContrast.facts).toBe('rgb(23, 56, 60)');
-  expect(assignmentContrast.title).toBe('rgb(255, 255, 255)');
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
-  await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
-  await expect(page.locator('#nightStatusRow > .nightBrief')).toHaveCount(1);
-  await expect(page.locator('#nightStatusRow .nightBriefLead')).toContainText('6 nurses');
-  await expect(page.locator('#nightStatusRow .nightBriefReady')).toHaveText('Plan ready');
+  await expect(page.locator('#nightStatusRow')).toContainText('Ready');
+  await expect(page.locator('#nightStatusRow > .nightMetricRail > .metric')).toHaveCount(4);
   await captureReview(page, 'night');
-  if (page.viewportSize().width >= 1100) {
-    const workspaceWidth = await page.locator('#today').evaluate(el => el.getBoundingClientRect().width);
-    expect(workspaceWidth).toBeGreaterThan(900);
-  }
-  const summaryGeometry = await page.locator('#nightStatusRow > .nightBrief').evaluate(el => {
+  const summaryGeometry = await page.locator('#nightStatusRow > .nightMetricRail').evaluate(el => {
     const style = getComputedStyle(el);
-    return { topRule: style.borderTopWidth, bottomRule: style.borderBottomWidth, layout: style.display };
+    return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
   });
-  expect(summaryGeometry.layout).toBe('flex');
-  expect(summaryGeometry.topRule).not.toBe('0px');
-  expect(summaryGeometry.bottomRule).not.toBe('0px');
+  expect(summaryGeometry.columns).toBe(4);
+  expect(summaryGeometry.radius).toBeGreaterThanOrEqual(18);
   const dock = await page.locator('.bottom').boundingBox();
   expect(dock).not.toBeNull();
   expect(dock.height).toBeLessThanOrEqual(66);
-  const indicatorHeight = await page.locator('.bottom .tabSlidingIndicator').evaluate(el => getComputedStyle(el).height);
-  expect(indicatorHeight).toBe('3px');
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
-  await expect(page.locator('#breakList .breakGroupOrdinal')).toHaveText(['01', '02']);
-  await expect(page.locator('#breakList .breakNotesHeading')).toContainText('Labour Ward & Pager');
-  const breakLayout = await page.locator('#breakList .breakGrid').evaluate(el => ({
-    columns: getComputedStyle(el).gridTemplateColumns.split(' ').length,
-    firstBorder: getComputedStyle(el.querySelector('.breakGroup')).borderTopWidth
-  }));
-  expect(breakLayout.columns).toBe(1);
-  expect(breakLayout.firstBorder).not.toBe('0px');
   await expect(page.locator('#breakList')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
@@ -781,15 +730,6 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   }
   await captureReview(page, 'breaks');
   await expect(page.locator('#breakDate')).toBeEmpty();
-  await page.evaluate(() => {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.body.classList.add('dark');
-    window.show('today');
-  });
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await captureReview(page, 'night-dark-reduced');
-  await page.setViewportSize({ width: 820, height: 1180 });
-  await captureReview(page, 'night-tablet-dark');
 });
 
 test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {
@@ -935,8 +875,6 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   });
 
   const card = page.locator('#cards button[aria-label^="Open roster for"]');
-  await expect(card).toHaveClass(/rosterLedgerEntry/);
-  await expect(page.locator('#cards .rosterLedgerLine')).toHaveCount(2);
   await expect(card).toContainText('Saturday, 26 September 2026');
   await expect(card).toContainText('André Bartolo · Leave');
   if (test.info().project.name === 'desktop-chromium') {
@@ -946,12 +884,6 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   await captureReview(page, 'full-roster');
   await card.click();
   expect(await page.evaluate(() => window.__openedNights)).toContain(4);
-  await page.evaluate(() => {
-    window.dispatchEvent(new CustomEvent('roster:full-roster', { detail: { cards: [] } }));
-    window.show('roster');
-  });
-  await expect(page.locator('#cards .rosterLedgerEmpty')).toBeVisible();
-  await captureReview(page, 'roster-empty');
 });
 
 test('typed account controls preserve appearance and app actions', async ({ page }) => {
@@ -1075,11 +1007,6 @@ test('typed Chat overview renders private conversations and registered members',
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
   if (page.viewportSize().width >= 760) {
-    const team = await page.locator('#chat .chatTeamConsole').boundingBox();
-    const privateHeading = await page.locator('#chat .chatPrivateHeader').boundingBox();
-    expect(team).not.toBeNull();
-    expect(privateHeading).not.toBeNull();
-    expect(privateHeading.y).toBeGreaterThanOrEqual(team.y + team.height - 1);
     await expect(page.locator('#chatDesktopEmpty')).toBeVisible();
     await expect(page.locator('#chatThread')).toBeHidden();
     await page.locator('#chat').evaluate(el => el.classList.add('chat-thread-open'));
@@ -1097,8 +1024,8 @@ test('typed Chat overview renders private conversations and registered members',
       radius: parseFloat(style.borderRadius)
     };
   });
-  expect(composerMaterial.backdrop).toBe('none');
-  expect(composerMaterial.radius).toBeGreaterThanOrEqual(8);
+  expect(composerMaterial.backdrop).not.toBe('none');
+  expect(composerMaterial.radius).toBeGreaterThanOrEqual(20);
   await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
   await page.locator('#chatTeamInput').fill('x'.repeat(1600));
   await expect(page.locator('#chatTeamCharacterCount')).toBeVisible();
@@ -1172,8 +1099,6 @@ test('version history upgrades its escaped fallback to an on-demand React region
   await expect(dialog.locator('.releaseNav')).toBeVisible();
   await expect(dialog.locator('.releaseArchiveHeading')).toContainText('Previous updates');
   await expect(dialog.locator('.releaseHistory')).toHaveAttribute('aria-label', 'Complete Night Roster version history');
-  await expect(dialog.locator('.releaseEntry.latest')).toBeInViewport();
-  await expect(dialog.locator('.releaseEntry.latest h3')).toBeInViewport();
   await captureReview(page, 'release-notes');
 });
 

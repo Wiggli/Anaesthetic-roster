@@ -1,12 +1,12 @@
 {
-  "version": "37.70",
+  "version": "37.69",
   "date": "28 September 2026",
-  "title": "Read the night at a glance",
-  "summary": "A clearer clinical journal puts your assignment first, then the live staffing picture and team detail.",
+  "title": "Make team chat easier to reach",
+  "summary": "The Chat screen now gives the message composer clearer space above the floating navigation on phones.",
   "changes": [
-    "The Night screen leads with a distinct assignment panel and a concise staffing brief instead of statistic tiles.",
-    "The full roster reads as a searchable ledger, with clearer role and exception details.",
-    "Navigation, Changes, Breaks, Chat, account and first-use surfaces share a quieter visual rhythm, with clinical content kept solid."
+    "The team chat header takes less space while preserving the roster member context.",
+    "The message viewport remains scrollable and leaves more room for the composer on phones.",
+    "Chat delivery, privacy controls, and navigation gestures remain unchanged."
   ],
   "update_policy": "important"
 }

@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.70 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.69 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -60,7 +60,6 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
-  {"version":"37.70","date":"28 September 2026","title":"Read the night at a glance","changes":["The Night screen leads with a distinct assignment panel and a concise staffing brief instead of statistic tiles.","The full roster reads as a searchable ledger, with clearer role and exception details.","Navigation, Changes, Breaks, Chat, account and first-use surfaces share a quieter visual rhythm, with clinical content kept solid."]},
   {"version":"37.69","date":"28 September 2026","title":"Make team chat easier to reach","changes":["The team chat header takes less space while preserving the roster member context.","The message viewport remains scrollable and leaves more room for the composer on phones.","Chat delivery, privacy controls, and navigation gestures remain unchanged."]},
   {"version":"37.68","date":"28 September 2026","title":"Bring the break plan closer","changes":["Your break is easier to read without repeating the staffing count in the personal card.","The selected night uses a compact control while the shared summary carries the staffing count and Labour Ward state.","The break plan starts higher on phone screens without changing any break or allocation rule."]},
   {"version":"37.67","date":"28 September 2026","title":"Simplify account and release history","changes":["The profile editor uses a shorter introduction and a more compact photo and field layout.","Appearance, app help, and sign-in controls remain grouped with clearer spacing.","Version history distinguishes the current update from earlier releases without removing any entries."]},
@@ -400,7 +399,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.70" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.69" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
