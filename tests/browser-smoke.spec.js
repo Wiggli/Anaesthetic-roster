@@ -702,19 +702,22 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   });
   expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
-  await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalHeroTop .personalIdentity')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard .personalAssignmentHero h2')).toHaveText('Pager');
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
-  await expect(page.locator('#nightStatusRow')).toContainText('Ready');
-  await expect(page.locator('#nightStatusRow > .nightMetricRail > .metric')).toHaveCount(4);
+  await expect(page.locator('#roles .rosterRow.mine .rosterMineLabel')).toHaveText('You');
+  await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
+  await expect(page.locator('#nightStatusRow > .nightPulse')).toHaveCount(1);
+  await expect(page.locator('#nightStatusRow .nightPulseSignal')).toHaveCount(3);
   await captureReview(page, 'night');
-  const summaryGeometry = await page.locator('#nightStatusRow > .nightMetricRail').evaluate(el => {
+  const summaryGeometry = await page.locator('#nightStatusRow > .nightPulse').evaluate(el => {
     const style = getComputedStyle(el);
-    return { columns: style.gridTemplateColumns.split(' ').length, radius: parseFloat(style.borderRadius) };
+    return { layout: style.display, height: el.getBoundingClientRect().height };
   });
-  expect(summaryGeometry.columns).toBe(4);
-  expect(summaryGeometry.radius).toBeGreaterThanOrEqual(18);
+  expect(summaryGeometry.layout).toBe('flex');
+  expect(summaryGeometry.height).toBeLessThan(62);
   const dock = await page.locator('.bottom').boundingBox();
   expect(dock).not.toBeNull();
   expect(dock.height).toBeLessThanOrEqual(66);
