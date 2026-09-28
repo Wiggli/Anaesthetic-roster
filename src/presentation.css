@@ -2987,6 +2987,8 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 #chat .chatTeamMessages{background:var(--scene-surface)!important}
 #chat .chatTeamComposerWrap{border-top:1px solid var(--scene-line);background:var(--scene-surface)!important}
 #chat .chatComposerGlass{border-radius:8px!important}
+#chat .chatTeamComposer{display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;align-items:center;gap:8px!important}
+#chat .chatTeamComposer textarea{width:100%;min-width:0}
 #chat .chatPrivateHeader{padding-top:14px!important;border-top:1px solid var(--scene-line)}
 #chat #chatConversationList{border-block:1px solid var(--scene-line)}
 #chat #chatConversationList>.reactConversationGroup{border:0!important;border-radius:0!important}

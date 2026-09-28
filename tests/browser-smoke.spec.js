@@ -104,6 +104,9 @@ test('Chat reports connection errors and recovery beside the conversation', asyn
   await expect(status.locator('[role="alert"]')).toContainText('Chat needs attention');
   await expect(status).toContainText('Messages will send when the connection returns.');
   await page.evaluate(() => window.show('chat'));
+  const fallbackComposer = await page.locator('#chatTeamComposer').boundingBox();
+  const fallbackSend = await page.locator('#chatTeamSendBtn').boundingBox();
+  expect(fallbackSend.y).toBeLessThan(fallbackComposer.y + fallbackComposer.height);
   await captureReview(page, 'chat-error');
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: 'Chat is ready.', error: false } })));
   await expect(status.locator('[role="status"]')).toContainText('Chat is ready.');
@@ -587,6 +590,8 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('.launchAtmosphere i')).toHaveCount(3);
   await captureReview(page, 'loading');
   await page.evaluate(() => {
+    document.head.insertAdjacentHTML('beforeend', '<style id="recoveryCaptureStyle">#launchScreen{display:grid!important}#authGate{display:none!important}</style>');
+    document.getElementById('launchScreen').classList.remove('hidden', 'dismissed');
     document.getElementById('launchTitle').textContent = 'Connection taking longer';
     document.getElementById('launchStatus').textContent = 'The shared roster did not respond. You can retry or open a saved copy.';
     document.getElementById('launchRecovery').classList.remove('hidden');
@@ -595,6 +600,7 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('#launchRecovery')).toContainText('read-only');
   await captureReview(page, 'offline-recovery');
   await page.evaluate(() => {
+    document.getElementById('recoveryCaptureStyle').remove();
     document.getElementById('launchScreen').style.display = 'none';
     document.getElementById('authGate').style.display = 'block';
   });
