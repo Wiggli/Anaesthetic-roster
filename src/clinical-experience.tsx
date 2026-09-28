@@ -278,6 +278,8 @@ function personalMark(tone: string) {
 
 function PersonalNightCard({ model }: { model: PersonalNight }) {
   const tone = personalTone(model);
+  const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
+  const scanContext = model.contextLabel === 'Working with' ? model.context.replace(/^With\\s+/i, '') : model.context;
   const action = () => {
     if (model.action === 'choose') return openAccount();
     if (model.action === 'absence') return goToChanges('staffing');
@@ -310,7 +312,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
       </div>
       <dl className="personalFacts personalScan" aria-label="Your night at a glance">
-        <div className="personalFactContext"><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
+        <div className="personalFactContext"><dt>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
         <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
         <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
       </dl>
