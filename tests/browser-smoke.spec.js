@@ -745,6 +745,10 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#nightStatusRow .nightBriefLead')).toContainText('6 nurses');
   await expect(page.locator('#nightStatusRow .nightBriefReady')).toHaveText('Plan ready');
   await captureReview(page, 'night');
+  if (page.viewportSize().width >= 1100) {
+    const workspaceWidth = await page.locator('#today').evaluate(el => el.getBoundingClientRect().width);
+    expect(workspaceWidth).toBeGreaterThan(900);
+  }
   const summaryGeometry = await page.locator('#nightStatusRow > .nightBrief').evaluate(el => {
     const style = getComputedStyle(el);
     return { topRule: style.borderTopWidth, bottomRule: style.borderBottomWidth, layout: style.display };

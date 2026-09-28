@@ -3041,6 +3041,9 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 .onboardingDialog .onboardingTop{border-bottom:1px solid var(--scene-line)}
 
 @media(min-width:1100px){
+  body[data-view] main{width:min(100%,1320px)!important;max-width:1320px!important}
+  main>.view{width:min(100%,1280px)!important;max-width:1280px!important}
+  #today{max-width:1280px!important}
   main,#appHeader{max-width:1320px!important}
   #today>.nightOverviewPanel{grid-template-columns:minmax(0,1.65fr) minmax(290px,.75fr)!important}
   #today .personalNight{max-width:none}
