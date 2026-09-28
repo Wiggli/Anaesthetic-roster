@@ -1,5 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, EmptyState, ListRow, Metric, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
 
 type BreakSummary = {
   date: string;
@@ -217,29 +217,47 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
-  return <div className="metricGrid nightMetricRail">
-    <Metric label="Nurses" value={String(model.nurseCount)} tone="teal" />
-    <Metric
-      label={model.absenceCount === 1 ? 'Absence' : 'Absences'}
-      value={model.absenceCount ? String(model.absenceCount) : 'No'}
-      tone={model.absenceCount ? 'critical' : 'teal'}
-      onClick={() => goToChanges('staffing')}
-    />
-    <Metric
-      label="Overtime"
-      value={String(model.overtimeCount)}
-      tone={model.overtimeCount ? 'warning' : 'neutral'}
-      onClick={() => goToChanges('staffing')}
-    />
-    {model.taskCount
-      ? <Metric
-          label={model.decisionTasks ? (model.taskCount === 1 ? 'Allocation' : 'Allocations') : 'Confirmation'}
-          value={`Review ${model.taskCount}`}
-          tone="warning"
-          onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}
-        />
-      : <Metric label="Plan" value="Ready" tone="teal" />}
-  </div>;
+  const taskLabel = model.decisionTasks
+    ? (model.taskCount === 1 ? '1 allocation' : `${model.taskCount} allocations`)
+    : 'Confirm plan';
+
+  return <section className="nightPulse" aria-label="Selected night status">
+    <div className="nightPulseLead">
+      <strong>{model.nurseCount}</strong>
+      <span>nurses on duty</span>
+    </div>
+    <div className="nightPulseSignals">
+      <Pressable
+        type="button"
+        className={`nightPulseSignal ${model.absenceCount ? 'attention danger' : 'quiet'}`}
+        onClick={() => goToChanges('staffing')}
+        aria-label={model.absenceCount ? `${model.absenceCount} absences. Review staffing.` : 'No absences. Review staffing.'}
+      >
+        <i aria-hidden="true">{model.absenceCount ? model.absenceCount : '✓'}</i>
+        <span>{model.absenceCount ? (model.absenceCount === 1 ? 'absence' : 'absences') : 'No absences'}</span>
+      </Pressable>
+      <Pressable
+        type="button"
+        className={`nightPulseSignal ${model.overtimeCount ? 'attention' : 'quiet'}`}
+        onClick={() => goToChanges('staffing')}
+        aria-label={`${model.overtimeCount} overtime nurses. Review staffing.`}
+      >
+        <i aria-hidden="true">{model.overtimeCount}</i>
+        <span>overtime</span>
+      </Pressable>
+      {model.taskCount
+        ? <Pressable
+            type="button"
+            className="nightPulseSignal attention"
+            onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}
+          >
+            <i aria-hidden="true">!</i><span>{taskLabel}</span>
+          </Pressable>
+        : <div className="nightPulseSignal ready" aria-label="Plan ready">
+            <i aria-hidden="true">✓</i><span>Plan ready</span>
+          </div>}
+    </div>
+  </section>;
 }
 
 function NightAlerts({ model }: { model: NightSummary }) {
@@ -287,25 +305,37 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     target?.focus({ preventScroll: true });
   };
 
+  const actionLabel = model.action === 'absence'
+    ? 'Review absence'
+    : model.action === 'role'
+      ? 'Find me in the team'
+      : 'Choose your name';
+
   return <article className={`personalHeroSurface personalRole-${tone}`}>
-    <div className="personalIdentity">
-      <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
-        {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}<i />
+    <span className="personalHeroAura" aria-hidden="true" />
+    <div className="personalHeroTop">
+      <div className="personalIdentity">
+        <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
+          {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}<i />
+        </div>
+        <div className="personalIdentityCopy">
+          <small>Your night</small>
+          <b>{model.displayName}</b>
+          {model.jobTitle && <span>{model.jobTitle}</span>}
+        </div>
       </div>
-      <div className="personalIdentityCopy">
-        <b>{model.displayName}</b>
-        {model.jobTitle && <small>{model.jobTitle}</small>}
-      </div>
-      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Profile</Pressable>
+      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Open your profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25" /><path d="M5.5 20c.7-4 3-6 6.5-6s5.8 2 6.5 6" /></svg>
+      </Pressable>
     </div>
-    <div className={`personalAssignmentHero personalRole-${tone}`}>
-      <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
-      <span className="personalRoleCopy">
-        <small>{model.assignmentLabel}</small>
-        <b>{model.title}</b>
-        <span>{model.detail}</span>
-      </span>
-      {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
+    <div className="personalAssignmentHero">
+      <div className="personalAssignmentKicker">
+        <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
+        <span>{model.assignmentLabel}</span>
+        {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
+      </div>
+      <h2>{model.title}</h2>
+      <p>{model.detail}</p>
     </div>
     <dl className="personalFacts">
       <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
@@ -313,8 +343,8 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       <div><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
     </dl>
     <Pressable type="button" className="personalContextAction" onClick={action}>
-      {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
-      <span aria-hidden="true">›</span>
+      <span>{actionLabel}</span>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
     </Pressable>
   </article>;
 }
@@ -389,12 +419,15 @@ function NightRoles({ model }: { model: NightSummary }) {
         <span className="rosterRoleMark">{roleMark(role.tone)}</span>
         <span className="rosterRowCopy">
           <span className="rosterRowName">{role.names}</span>
-          <span className="rosterRowMeta">{role.label} · {role.detail}</span>
+          <span className="rosterRowMeta">{role.detail}</span>
         </span>
+        {role.mine && <span className="rosterMineLabel">You</span>}
+        <svg className="rosterRowChevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
       </Pressable>)}
     </div>
     {model.extras.length > 0 && <div className="additionalStaff">
-      <b>Additional staff · allocation as required</b>
+      <b>Additional staff</b>
+      <small>Allocation as required</small>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}
     </div>}
   </>;
