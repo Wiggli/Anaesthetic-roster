@@ -381,10 +381,21 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('today'));
 
-  const assignment = await page.locator('#personalNightCard .nightV2Assignment').boundingBox();
-  expect(assignment).not.toBeNull();
-  const safeStart = { x: assignment.x + assignment.width - 28, y: assignment.y + assignment.height / 2 };
-  const safeEnd = { x: Math.max(42, safeStart.x - 185), y: safeStart.y + 42 };
+  const safeStart = await page.evaluate(() => {
+    const view = document.getElementById('today')?.getBoundingClientRect();
+    if (!view) return { x: 290, y: 400 };
+    const maxY = Math.min(window.innerHeight - 96, view.bottom - 24);
+    for (let y = Math.max(150, view.top + 110); y <= maxY; y += 22) {
+      for (let x = Math.min(view.right - 34, window.innerWidth - 34); x >= view.left + 44; x -= 34) {
+        const target = document.elementFromPoint(x, y);
+        if (!target?.closest('#today')) continue;
+        if (target.closest('button,a,input,select,textarea,summary,[role="button"],.bottom')) continue;
+        return { x, y };
+      }
+    }
+    return { x: Math.min(290, view.right - 44), y: Math.min(400, maxY) };
+  });
+  const safeEnd = { x: Math.max(42, safeStart.x - 185), y: Math.min(window.innerHeight - 96, safeStart.y + 42) };
   const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const initialPage = await page.locator('#today').boundingBox();
   let draggedIndicator;
@@ -715,6 +726,17 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#nightStatusRow > .nightPulse')).toHaveCount(1);
   await expect(page.locator('#nightStatusRow .nightPulseSignal')).toHaveCount(3);
   await captureReview(page, 'night');
+  await page.evaluate(() => {
+    document.body.classList.add('dark');
+    document.documentElement.classList.add('dark');
+    document.documentElement.dataset.theme = 'dark';
+  });
+  await captureReview(page, 'night-dark');
+  await page.evaluate(() => {
+    document.body.classList.remove('dark');
+    document.documentElement.classList.remove('dark');
+    document.documentElement.dataset.theme = 'light';
+  });
   const summaryGeometry = await page.locator('#nightStatusRow > .nightPulse').evaluate(el => {
     const style = getComputedStyle(el);
     return { layout: style.display, height: el.getBoundingClientRect().height };
