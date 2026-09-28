@@ -296,7 +296,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         <b>{model.displayName}</b>
         {model.jobTitle && <small>{model.jobTitle}</small>}
       </div>
-      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
+      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Profile</Pressable>
     </div>
     <div className={`personalAssignmentHero personalRole-${tone}`}>
       <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
@@ -308,7 +308,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
     </div>
     <dl className="personalFacts">
-      <div><dt>Time</dt><dd>{model.period || 'Pending'}</dd></div>
+      <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
       <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
       <div><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
     </dl>

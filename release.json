@@ -1,12 +1,12 @@
 {
-  "version": "37.64",
+  "version": "37.65",
   "date": "28 September 2026",
-  "title": "Fix cramped roster and break summaries",
-  "summary": "Full-roster cards now use the available desktop width, while the Labour Ward break status stays readable on phones.",
+  "title": "Clarify the Night allocation dashboard",
+  "summary": "Your allocation now leads with a clearer role, shift, and break layout, followed by a compact team overview.",
   "changes": [
-    "Full-roster cards no longer squeeze into a nested desktop grid.",
-    "The automatic Labour Ward break status stays on one readable line in the phone summary.",
-    "These changes affect layout only; the selected night and break calculations remain the same."
+    "The personal Night card gives the role and assignment details more room to scan.",
+    "On-duty time, break, and context now share a compact summary strip.",
+    "The team overview uses calmer labels and a simpler surface without changing roster calculations."
   ],
   "update_policy": "important"
 }
