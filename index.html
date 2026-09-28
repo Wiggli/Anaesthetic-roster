@@ -207,79 +207,81 @@
       <section id="today" class="view">
         <header id="appHeader">
           <div class="clinicalBackdrop" aria-hidden="true"></div>
-          <div class="hospitalStrip">
-            <img src="mater-dei-logo.png?v=37.69" alt="Mater Dei Hospital" vite-ignore /><span
-              >Main Operating Theatres</span
-            >
-          </div>
-          <div class="head">
-            <div class="headerIdentity">
-              <div class="headerBrand">
-                <div class="headerBrandMark" aria-hidden="true">
-                  <svg viewBox="0 0 32 32">
-                    <path d="M8 6v7a8 8 0 0 0 16 0V6"></path>
-                    <path d="M5 6h6M21 6h6"></path>
-                    <circle cx="16" cy="23" r="3"></circle>
-                    <path d="M16 26v3"></path>
-                  </svg>
-                </div>
-                <h1 class="headerTitle">
-                  <span class="fullTitle">Anaesthetic Night Roster</span
-                  ><span class="compactTitle">Night Roster</span>
-                </h1>
-              </div>
-              <p class="motto">
-                Fair by design. Flexible under pressure. Safe in practice.
-              </p>
+          <div class="nightV2Topbar">
+            <div class="hospitalStrip">
+              <img src="mater-dei-logo.png?v=37.69" alt="Mater Dei Hospital" vite-ignore /><span
+                >Main Operating Theatres</span
+              >
             </div>
-            <div class="headActions">
-              <button
-                class="installBtn hidden"
-                id="installBtn"
-                type="button"
-                aria-label="Install app"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 3v12"></path>
-                  <path d="m7 10 5 5 5-5"></path>
-                  <path d="M5 21h14a2 2 0 0 0 2-2v-3"></path>
-                  <path d="M3 16v3a2 2 0 0 0 2 2"></path></svg
-                ><span>Install</span></button
-              ><button
-                class="adminSettingsBtn hidden"
-                id="adminSettingsBtn"
-                type="button"
-                aria-label="Roster management"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path
-                    d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"
-                  ></path>
-                </svg></button
-              ><button
-                class="accountBtn"
-                id="accountBtn"
-                type="button"
-                aria-label="Open account"
-              >
-                <img id="accountAvatar" class="accountAvatar hidden" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" /><span
-                  id="accountInitial"
-                  class="accountInitial"
-                  >●</span
-                ></button
-              ><button
-                class="share"
-                id="themeBtn"
-                type="button"
-                aria-label="Use dark mode"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2z"
-                  ></path>
-                </svg>
-              </button>
+            <div class="head">
+              <div class="headerIdentity">
+                <div class="headerBrand">
+                  <div class="headerBrandMark" aria-hidden="true">
+                    <svg viewBox="0 0 32 32">
+                      <path d="M8 6v7a8 8 0 0 0 16 0V6"></path>
+                      <path d="M5 6h6M21 6h6"></path>
+                      <circle cx="16" cy="23" r="3"></circle>
+                      <path d="M16 26v3"></path>
+                    </svg>
+                  </div>
+                  <h1 class="headerTitle">
+                    <span class="fullTitle">Anaesthetic Night Roster</span
+                    ><span class="compactTitle">Night Roster</span>
+                  </h1>
+                </div>
+                <p class="motto">
+                  Fair by design. Flexible under pressure. Safe in practice.
+                </p>
+              </div>
+              <div class="headActions">
+                <button
+                  class="installBtn hidden"
+                  id="installBtn"
+                  type="button"
+                  aria-label="Install app"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 21h14a2 2 0 0 0 2-2v-3"></path>
+                    <path d="M3 16v3a2 2 0 0 0 2 2"></path></svg
+                  ><span>Install</span></button
+                ><button
+                  class="adminSettingsBtn hidden"
+                  id="adminSettingsBtn"
+                  type="button"
+                  aria-label="Roster management"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                      d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"
+                    ></path>
+                  </svg></button
+                ><button
+                  class="accountBtn"
+                  id="accountBtn"
+                  type="button"
+                  aria-label="Open account"
+                >
+                  <img id="accountAvatar" class="accountAvatar hidden" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" /><span
+                    id="accountInitial"
+                    class="accountInitial"
+                    >●</span
+                  ></button
+                ><button
+                  class="share"
+                  id="themeBtn"
+                  type="button"
+                  aria-label="Use dark mode"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
           <div class="headerChips" aria-label="Selected roster summary">
