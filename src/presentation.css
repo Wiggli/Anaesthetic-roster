@@ -3051,6 +3051,12 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   #today #roles .rosterRow:nth-child(2){border-top:0!important}
   #today #roles .rosterRow:nth-child(even){border-left:1px solid var(--scene-line)!important}
   #chat .chatTeamConsole{grid-template-rows:auto auto minmax(390px,54dvh) auto!important}
+  #chat .chatDesktopEmpty{
+    min-height:0!important;align-content:start!important;justify-items:start!important;
+    padding:28px 34px!important;border:0!important;border-left:1px solid var(--scene-line)!important;
+    border-radius:0!important;background:transparent!important;text-align:left!important;
+  }
+  #chat .chatDesktopEmptyIcon{width:48px;height:48px;margin-bottom:16px;border-radius:8px}
 }
 @media(max-width:640px){
   #breaks #breakList .breakGroup,#breaks .breakNotes{grid-template-columns:1fr!important}
