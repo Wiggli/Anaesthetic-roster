@@ -2582,7 +2582,7 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
 #changes .workflowGuidance strong{font-size:12px}
 #changes .workflowGuidance small{font-size:11px}
 #changes .changesStepPane:not(.hidden){gap:12px}
-#changes .staffingSection,#changes .confirmationCard{padding:16px!important}
+#changes .staffingSection,#changes .confirmationCard{margin-bottom:0!important;padding:16px!important}
 #changes .stepHeader{margin-bottom:8px!important}
 @media(max-width:520px){
   #changes>.changesDatePanel .grid2{grid-template-columns:minmax(0,1fr) 84px!important;gap:10px}
