@@ -1,12 +1,12 @@
 {
-  "version": "37.57",
-  "date": "27 September 2026",
-  "title": "Clearer Chat connection notices",
-  "summary": "Chat now presents connection and service notices beside the conversation with a clearer error or update state.",
+  "version": "37.64",
+  "date": "28 September 2026",
+  "title": "Fix cramped roster and break summaries",
+  "summary": "Full-roster cards now use the available desktop width, while the Labour Ward break status stays readable on phones.",
   "changes": [
-    "Chat connection and service notices now have clear error or update labels beside the conversation.",
-    "The existing live text remains visible if the optional presentation component cannot load.",
-    "Message delivery, unread state, notification preferences and deliberate PWA update approval remain unchanged."
+    "Full-roster cards no longer squeeze into a nested desktop grid.",
+    "The automatic Labour Ward break status stays on one readable line in the phone summary.",
+    "These changes affect layout only; the selected night and break calculations remain the same."
   ],
   "update_policy": "important"
 }

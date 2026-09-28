@@ -33,13 +33,13 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="preload" href="icon-192.png?v=37.57" as="image" vite-ignore />
-    <script src="theme-bootstrap.js?v=37.57" vite-ignore></script>
-    <link rel="manifest" href="manifest.webmanifest?v=37.57" vite-ignore />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.57" vite-ignore />
+    <link rel="preload" href="icon-192.png?v=37.64" as="image" vite-ignore />
+    <script src="theme-bootstrap.js?v=37.64" vite-ignore></script>
+    <link rel="manifest" href="manifest.webmanifest?v=37.64" vite-ignore />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=37.64" vite-ignore />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=37.57" vite-ignore />
-    <link rel="stylesheet" href="chat.css?v=37.57" vite-ignore />
+    <link rel="stylesheet" href="styles.css?v=37.64" vite-ignore />
+    <link rel="stylesheet" href="chat.css?v=37.64" vite-ignore />
   </head>
   <body class="authPending">
     <section
@@ -55,12 +55,12 @@
       </div>
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=37.57" alt="SPTAR Mater Dei" vite-ignore />
+          <img src="mater-dei-logo.png?v=37.64" alt="SPTAR Mater Dei" vite-ignore />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
           <div class="launchMark" aria-hidden="true">
-            <span><img src="icon-192.png?v=37.57" alt="" vite-ignore /></span>
+            <span><img src="icon-192.png?v=37.64" alt="" vite-ignore /></span>
             <i></i>
           </div>
           <span>Anaesthetic Night Roster</span>
@@ -84,7 +84,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=37.57"
+              src="mater-dei-logo.png?v=37.64"
               alt="Mater Dei Hospital"
             vite-ignore /><span>Main Operating Theatres</span>
           </div>
@@ -208,7 +208,7 @@
         <header id="appHeader">
           <div class="clinicalBackdrop" aria-hidden="true"></div>
           <div class="hospitalStrip">
-            <img src="mater-dei-logo.png?v=37.57" alt="Mater Dei Hospital" vite-ignore /><span
+            <img src="mater-dei-logo.png?v=37.64" alt="Mater Dei Hospital" vite-ignore /><span
               >Main Operating Theatres</span
             >
           </div>
@@ -641,6 +641,12 @@
                   <div id="chatComposerStatus" class="chatComposerStatus" role="status" aria-live="polite"></div>
                 </div>
               </div>
+              <div id="chatDesktopEmpty" class="chatDesktopEmpty" aria-label="Private conversation not selected">
+                <span class="chatDesktopEmptyIcon" aria-hidden="true">✉</span>
+                <h2>Your private conversations</h2>
+                <p>Select a roster colleague on the left to read your messages, or start a new one-to-one conversation.</p>
+                <button type="button" id="chatDesktopNewMessage">New private message</button>
+              </div>
             </div>
           </div>
         </div>
@@ -939,15 +945,17 @@
       <div class="accountSheetHeader">
         <div>
           <span>Account</span>
-          <h2 id="accountSheetTitle">Your profile</h2>
+          <h2 id="accountSheetTitle">Account &amp; settings</h2>
         </div>
         <button type="button" id="closeAccountSheet">Done</button>
       </div>
       <div class="accountSheetScroll">
+        <p class="accountSheetIntro">Your personal details and preferences stay separate from shared roster assignments.</p>
         <div id="profileExperience"></div>
 
         <section class="accountGroup" aria-labelledby="appearanceHeading">
           <h3 id="appearanceHeading">Appearance</h3>
+          <p class="accountGroupDescription">Choose how Night Roster looks on this device.</p>
           <div id="appearanceExperience" class="appearanceControl" role="group" aria-label="Appearance">
             <button type="button" data-theme-choice="light">Light</button
             ><button type="button" data-theme-choice="system">Automatic</button
@@ -955,7 +963,9 @@
           </div>
         </section>
 
-        <section id="accountActionsExperience" class="accountGroup accountActions" aria-label="App options">
+        <section class="accountGroup accountActions" aria-labelledby="accountHelpHeading">
+          <h3 id="accountHelpHeading">App &amp; help</h3>
+          <div id="accountActionsExperience">
           <button type="button" id="accountOnboardingBtn">
             <span
               ><b>View onboarding again</b
@@ -974,6 +984,7 @@
               ><small>See earlier Night Roster updates</small></span
             ><i>›</i>
           </button>
+          </div>
         </section>
 
         <section
@@ -984,8 +995,7 @@
             <div>
               <h3 id="securityHeading">Sign-in security</h3>
               <p>
-                Use your fingerprint, face recognition or device PIN instead of
-                typing a password.
+                A passkey uses your device’s own unlock. Password sign-in stays available.
               </p>
             </div>
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1046,7 +1056,11 @@
         <div
           class="onboardingProgress"
           id="onboardingProgress"
+          role="progressbar"
           aria-label="Onboarding progress"
+          aria-valuemin="1"
+          aria-valuenow="1"
+          aria-valuemax="5"
         ></div>
       </div>
       <div id="onboardingContent" class="onboardingContent"></div>
@@ -1057,10 +1071,10 @@
         </button>
       </div>
     </dialog>
-    <dialog id="installGuide" class="appDialog">
+    <dialog id="installGuide" class="appDialog" aria-labelledby="installGuideTitle" aria-describedby="installGuideIntro">
       <div class="dialogHead">
         <div>
-          <h2>Install Night Roster</h2>
+          <h2 id="installGuideTitle">Install Night Roster</h2>
           <p class="time" id="installGuideIntro">
             Install once for a full-screen app experience with automatic updates.
           </p>
@@ -1109,7 +1123,7 @@
       </div>
       <div id="activityDetailContent" class="activityDetailContent"></div>
     </dialog>
-    <dialog id="releaseNotes" class="appDialog">
+    <dialog id="releaseNotes" class="appDialog" aria-labelledby="releaseNotesTitle" aria-describedby="releaseNotesIntro">
       <div class="dialogHead">
         <div>
           <h2 id="releaseNotesTitle">What’s new</h2>
@@ -1219,10 +1233,10 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="app-core.js?v=37.57" vite-ignore></script>
-    <script src="app-ui.js?v=37.57" vite-ignore></script>
-    <script src="push.js?v=37.57" vite-ignore></script>
-    <script src="chat.js?v=37.57" vite-ignore></script>
+    <script src="app-core.js?v=37.64" vite-ignore></script>
+    <script src="app-ui.js?v=37.64" vite-ignore></script>
+    <script src="push.js?v=37.64" vite-ignore></script>
+    <script src="chat.js?v=37.64" vite-ignore></script>
     <script type="module" src="/src/launch.tsx"></script>
   </body>
 </html>

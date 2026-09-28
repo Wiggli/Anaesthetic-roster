@@ -36,6 +36,14 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run mobile and desktop browser smoke tests
         run: npx playwright test --config=playwright.config.js
+      - name: Preserve presentation review captures
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: presentation-review
+          path: visual-review
+          if-no-files-found: ignore
+          retention-days: 3
       - name: Preserve the exact tested Pages artifact
         uses: actions/upload-artifact@v4
         with:

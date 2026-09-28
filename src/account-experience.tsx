@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useState } from 'react';
-import { Badge, EmptyState, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl, Surface } from './ui-system';
+import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
 
 type ThemeChoice = 'light' | 'system' | 'dark';
 type ProfileExperience = {
@@ -41,33 +41,35 @@ function act(action: string, value?: unknown) {
 
 function ProfileEditor({ model }: { model: ProfileExperience }) {
   const [dirty, setDirty] = useState(!!model.changed);
-  const [photoUrl, setPhotoUrl] = useState(model.photoUrl || '');
+  const photoUrl = model.photoUrl || '';
   const initial = model.initial || '?';
   const markDirty = () => { setDirty(true); act('profile-input'); };
   return <motion.section
     initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-    className="tw:grid tw:gap-4 tw:rounded-3xl tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:shadow-sm tw:dark:border-white/10"
+    className="accountProfilePanel"
     aria-labelledby="profileHeading"
   >
-    <div className="tw:flex tw:items-center tw:gap-3">
-      <div className="tw:relative tw:shrink-0">
-        <button type="button" id="profilePhotoButton" aria-label="Choose profile photo" onClick={() => document.getElementById('profilePhotoInput')?.click()} className="tw:relative tw:grid tw:h-20 tw:w-20 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-[var(--surface)] tw:text-2xl tw:font-bold tw:text-[var(--accent-strong)] tw:ring-4 tw:ring-teal-500/10">
-          {photoUrl ? <img id="profilePhotoPreview" src={photoUrl} alt="Your profile photo" className="tw:h-full tw:w-full tw:object-cover" /> : <span id="profilePhotoInitial">{initial}</span>}
-          <span className="tw:absolute tw:bottom-0 tw:right-0 tw:grid tw:h-7 tw:w-7 tw:place-items-center tw:rounded-full tw:bg-[var(--accent-strong)] tw:text-sm tw:text-white" aria-hidden="true">+</span>
+    <div className="accountProfileHero">
+      <div className="accountPhotoControls">
+        <button type="button" id="profilePhotoButton" aria-label="Choose profile photo" onClick={() => document.getElementById('profilePhotoInput')?.click()} className="accountPhotoButton">
+          <img id="profilePhotoPreview" src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='} alt="Your profile photo" className={photoUrl ? '' : 'hidden'} />
+          <span id="profilePhotoInitial" className={photoUrl ? 'hidden' : ''}>{initial}</span>
+          <span className="accountPhotoAdd" aria-hidden="true">+</span>
         </button>
-      </div>
-      <div className="tw:min-w-0">
-        <h3 id="profileHeading" className="tw:text-base tw:font-bold">Personal details</h3>
-        <p className="tw:mt-1 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Your photo, preferred name and role title appear in Your night. Shared changes still use your approved account identity.</p>
-        <div className="tw:mt-2 tw:flex tw:flex-wrap tw:gap-2">
-          <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()} className="tw:rounded-full tw:bg-[var(--surface)] tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold">Choose photo</button>
-          <button type="button" id="removeProfilePhoto" onClick={() => { setPhotoUrl(''); act('profile-photo-remove'); }} className={`tw:rounded-full tw:bg-rose-500/10 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-rose-700 tw:dark:text-rose-200 ${model.photoUrl || model.pendingPhoto ? '' : 'tw:hidden'}`}>{model.pendingPhoto ? 'Cancel' : 'Remove'}</button>
+        <div className="accountPhotoActions">
+          <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>Choose photo</button>
+          <button type="button" id="removeProfilePhoto" onClick={() => act('profile-photo-remove')} className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}>{model.pendingPhoto ? 'Cancel' : 'Remove'}</button>
         </div>
         <input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { const file = event.currentTarget.files?.[0]; if (file) { setDirty(true); act('profile-photo', file); } event.currentTarget.value = ''; }} />
       </div>
+      <div className="accountProfileIntro">
+        <span className="accountEyebrow">Personal profile</span>
+        <h3 id="profileHeading">Personal details</h3>
+        <p>Your photo, preferred name and role title appear in Your night. Only you can change these details.</p>
+      </div>
     </div>
-    <div className="tw:@container tw:grid tw:gap-3">
-      <div className="tw:grid tw:gap-3 tw:@md:grid-cols-2">
+    <div className="accountProfileFields tw:@container">
+      <div className="accountNameFields tw:@md:grid-cols-2">
         <FieldShell label="Preferred name">
           <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12" />
         </FieldShell>
@@ -82,10 +84,9 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
         </select>
       </FieldShell>
     </div>
-    <div className="tw:rounded-2xl tw:bg-[var(--surface)] tw:px-3.5 tw:py-3"><span className="tw:block tw:text-xs tw:font-bold tw:text-[var(--muted)]">Approved account</span><b id="profileApprovedName" className="tw:mt-1 tw:block tw:text-sm">{model.approvedName}</b><small id="profileEmail" className="tw:mt-0.5 tw:block tw:text-xs tw:text-[var(--muted)]">{model.email}</small></div>
+    <div className="accountIdentity"><span>Approved account</span><b id="profileApprovedName">{model.approvedName}</b><small id="profileEmail">{model.email}</small><p>Shared roster actions use this approved identity.</p></div>
     {!model.featureAvailable && <p className="formMessage error" role="alert">Ask the administrator to run the V32 profile upgrade before saving your profile.</p>}
-    <button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={`primary wide ${dirty ? '' : 'hidden'}`} disabled={!model.featureAvailable}>Save profile</button>
-    <div id="profileMessage" className={`formMessage ${model.messageType || ''}`} role="status" aria-live="polite">{model.message || ''}</div>
+    <div className="accountSaveRow"><div id="profileMessage" className={`formMessage ${model.messageType || ''}`} role="status" aria-live="polite">{model.message || ''}</div><button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={`primary ${dirty ? '' : 'hidden'}`} disabled={!model.featureAvailable}>Save profile</button></div>
   </motion.section>;
 }
 
@@ -126,9 +127,7 @@ function AccountActions({ installed }: { installed: boolean }) {
 }
 
 function Passkeys({ model }: { model: PasskeyExperience }) {
-  if (!model.items.length) return <Surface>
-    <EmptyState title="No passkeys on this device" detail={model.message} />
-  </Surface>;
+  if (!model.items.length) return <div className="accountPasskeyEmpty" role="status"><strong>No passkeys added</strong><span>{model.message}</span></div>;
 
   return <GroupedList>{model.items.map(item => <motion.div layout key={item.id}>
     <ListRow

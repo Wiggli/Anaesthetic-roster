@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Avatar, Badge, EmptyState, GlassSurface, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
@@ -24,7 +24,7 @@ function ConversationList({ items }: { items: Conversation[] }) {
     <EmptyState title="No private chats yet" detail="Tap New message to start a one-to-one conversation." />
   </Surface>;
 
-  return <GroupedList className="reactConversationGroup tw:overflow-visible">
+  return <GroupedList className="reactConversationGroup chatInboxList tw:overflow-visible">
     <AnimatePresence initial={false}>
       {items.map((item, index) => <motion.div
         layout
@@ -36,15 +36,12 @@ function ConversationList({ items }: { items: Conversation[] }) {
       >
         <ListRow
           leading={<Avatar initial={item.initial} />}
-          title={<span className="tw:flex tw:min-w-0 tw:items-baseline tw:gap-2">
-            <span className="tw:min-w-0 tw:flex-1 tw:truncate">{item.title}</span>
-            <small className="tw:shrink-0 tw:text-[0.68rem] tw:font-medium tw:text-[var(--muted)]">{item.time}</small>
-          </span>}
+          title={item.title}
           subtitle={<span className="tw:block tw:truncate">{item.preview}</span>}
-          trailing={item.unread > 0 ? <Badge tone="accent">{item.unread > 99 ? '99+' : item.unread}</Badge> : undefined}
+          trailing={<span className="chatInboxMeta"><time>{item.time}</time>{item.unread > 0 && <Badge tone="accent" className="chatInboxUnread">{item.unread > 99 ? '99+' : item.unread}</Badge>}</span>}
           onClick={() => act('conversation', item.id)}
-          ariaLabel={`Open conversation with ${item.title}`}
-          className={item.active ? 'tw:bg-teal-500/8' : ''}
+          ariaLabel={`Open conversation with ${item.title}${item.unread ? `, ${item.unread} unread` : ''}`}
+          className={`chatInboxRow ${item.unread ? 'hasUnread' : ''} ${item.active ? 'active' : ''}`}
         />
       </motion.div>)}
     </AnimatePresence>
@@ -52,12 +49,16 @@ function ConversationList({ items }: { items: Conversation[] }) {
 }
 
 function MemberPicker({ members }: { members: Member[] }) {
+  const [query, setQuery] = useState('');
+  const visible = members.filter(member => member.displayName.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   if (!members.length) return <Surface>
     <EmptyState title="No other nurses in this roster" detail="Private conversations will appear when another rostered nurse is registered." />
   </Surface>;
 
-  return <GroupedList>
-    {members.map(member => <ListRow
+  return <div className="chatPickerExperience">
+    <label className="chatPickerSearch"><span className="tw:sr-only">Search roster members</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search roster members" aria-label="Search roster members" /></label>
+    <div className="chatPickerCount" role="status">{visible.length} {visible.length === 1 ? 'member' : 'members'} shown</div>
+    {visible.length ? <GroupedList className="chatPickerList">{visible.map(member => <ListRow
       key={member.personKey}
       leading={<Avatar initial={member.initial} size="sm" />}
       title={member.displayName}
@@ -65,9 +66,9 @@ function MemberPicker({ members }: { members: Member[] }) {
       trailing={<Badge tone={member.available ? 'success' : 'neutral'}>{member.available ? 'Available' : 'Not registered'}</Badge>}
       onClick={member.available ? () => act('member', member.personKey) : undefined}
       ariaLabel={member.available ? `Start a private chat with ${member.displayName}` : undefined}
-      className={member.available ? '' : 'tw:opacity-60'}
-    />)}
-  </GroupedList>;
+      className={`chatPickerRow ${member.available ? '' : 'notRegistered'}`}
+    />)}</GroupedList> : <EmptyState title="No matching roster members" detail="Try another name." />}
+  </div>;
 }
 
 function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'private' }) {
@@ -88,12 +89,12 @@ function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'priv
     onKeyDown: (event: React.KeyboardEvent) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); open(); } }
   };
   return <>
-    {message.dateLabel && <div className="tw:my-3 tw:text-center tw:text-[0.68rem] tw:font-bold tw:text-[var(--muted)]">{message.dateLabel}</div>}
+    {message.dateLabel && <div className="chatDateSeparator" role="separator" aria-label={message.dateLabel}><span>{message.dateLabel}</span></div>}
     {message.unreadBefore && <div className="tw:my-3 tw:flex tw:items-center tw:gap-2" data-chat-unread="true"><span className="tw:h-px tw:flex-1 tw:bg-teal-500/35" /><b className="tw:text-[0.68rem] tw:text-[var(--accent-strong)]">New messages</b><span className="tw:h-px tw:flex-1 tw:bg-teal-500/35" /></div>}
-    {kind === 'team' ? <div {...handlers} className={`tw:rounded-xl tw:px-2.5 tw:py-2 ${message.own ? 'tw:bg-teal-500/8' : ''} ${message.mentioned ? 'tw:ring-1 tw:ring-amber-400/50' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Long press for actions.`}>
-      <div className="tw:flex tw:items-baseline tw:gap-2"><span className="tw:text-[0.65rem] tw:text-[var(--muted)]">[{message.time}]</span><b className="tw:text-xs">{message.own ? 'You' : message.sender}:</b></div><div className="tw:mt-1">{body}</div>
-    </div> : <div className={`tw:flex ${message.own ? 'tw:justify-end' : 'tw:justify-start'}`}><div {...handlers} className={`tw:max-w-[88%] tw:rounded-[18px] tw:px-3.5 tw:py-2.5 ${message.own ? 'tw:bg-teal-600 tw:text-white' : 'tw:bg-[var(--surface)]'} ${message.failed ? 'tw:ring-1 tw:ring-rose-400/50' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Long press for actions.`}>
-      <div className="tw:mb-1 tw:flex tw:items-baseline tw:justify-between tw:gap-3"><b className="tw:text-[0.68rem]">{message.own ? 'You' : message.sender}</b><span className={`tw:text-[0.62rem] ${message.own ? 'tw:text-white/75' : 'tw:text-[var(--muted)]'}`}>{message.failed ? 'Not sent' : message.time}</span></div>{body}
+    {kind === 'team' ? <div {...handlers} className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
+      <div className="chatMessageHeading"><span className="chatMessageTime">{message.time}</span><b>{message.own ? 'You' : message.sender}</b>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div><div className="chatMessageBodyText">{body}</div>
+    </div> : <div className={`chatPrivateMessage ${message.own ? 'own' : ''}`}><div {...handlers} className={`chatPrivateBubble ${message.failed ? 'failed' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
+      <div className="chatMessageHeading"><b>{message.own ? 'You' : message.sender}</b><span className="chatMessageTime">{message.failed ? 'Not sent' : message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div>{body}
     </div></div>}
   </>;
 }
