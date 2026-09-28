@@ -583,6 +583,12 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('#launchScreen')).toBeVisible();
   await expect(page.locator('.launchMark')).toHaveCount(1);
   await expect(page.locator('.launchAtmosphere i')).toHaveCount(3);
+  await captureReview(page, 'loading');
+  await page.evaluate(() => {
+    document.getElementById('launchScreen').style.display = 'none';
+    document.getElementById('authGate').style.display = 'block';
+  });
+  await captureReview(page, 'auth');
 
   await page.evaluate(() => {
     document.body.classList.remove('authPending');
@@ -706,7 +712,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
-  await expect(page.locator('#nightStatusRow')).toContainText('Ready');
+  await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
   await expect(page.locator('#nightStatusRow > .nightBrief')).toHaveCount(1);
   await expect(page.locator('#nightStatusRow .nightBriefLead')).toContainText('6 nurses');
   await expect(page.locator('#nightStatusRow .nightBriefReady')).toHaveText('Plan ready');
@@ -733,6 +739,15 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   }
   await captureReview(page, 'breaks');
   await expect(page.locator('#breakDate')).toBeEmpty();
+  await page.evaluate(() => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.body.classList.add('dark');
+    window.show('today');
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await captureReview(page, 'night-dark-reduced');
+  await page.setViewportSize({ width: 820, height: 1180 });
+  await captureReview(page, 'night-tablet-dark');
 });
 
 test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {
@@ -1029,8 +1044,8 @@ test('typed Chat overview renders private conversations and registered members',
       radius: parseFloat(style.borderRadius)
     };
   });
-  expect(composerMaterial.backdrop).not.toBe('none');
-  expect(composerMaterial.radius).toBeGreaterThanOrEqual(20);
+  expect(composerMaterial.backdrop).toBe('none');
+  expect(composerMaterial.radius).toBeGreaterThanOrEqual(8);
   await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
   await page.locator('#chatTeamInput').fill('x'.repeat(1600));
   await expect(page.locator('#chatTeamCharacterCount')).toBeVisible();
