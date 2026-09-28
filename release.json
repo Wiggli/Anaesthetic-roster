@@ -1,12 +1,12 @@
 {
-  "version": "37.63",
+  "version": "37.64",
   "date": "28 September 2026",
-  "title": "A clearer full-roster view",
-  "summary": "The searchable roster has calmer controls, a visible result count and cards that adapt to phone and desktop widths.",
+  "title": "Fix cramped roster and break summaries",
+  "summary": "Full-roster cards now use the available desktop width, while the Labour Ward break status stays readable on phones.",
   "changes": [
-    "The full roster shows how many nights match the search and makes each night’s live plan easier to scan.",
-    "Search and staffing filters now use the shared light and dark controls, with clearer focus and touch targets.",
-    "The full-roster cards now use the correct responsive and dark-mode styles."
+    "Full-roster cards no longer squeeze into a nested desktop grid.",
+    "The automatic Labour Ward break status stays on one readable line in the phone summary.",
+    "These changes affect layout only; the selected night and break calculations remain the same."
   ],
   "update_policy": "important"
 }

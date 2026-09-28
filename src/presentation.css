@@ -2510,6 +2510,7 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
 #roster .rosterPageHeader{align-items:flex-start;gap:16px;margin:0 0 18px}
 #roster .rosterPageHeader h2{color:var(--scene-ink)}
 #roster .rosterPageHeader button{min-height:44px;flex:none}
+#roster #cards{display:block}
 #roster .toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(92px,120px);gap:10px}
 #roster .toolbar input,#roster .toolbar select{
   min-width:0;min-height:48px;border:1px solid var(--scene-line);border-radius:14px;
@@ -2523,3 +2524,13 @@ body.dark #changes>.changePanel,html[data-theme="dark"] #changes>.changePanel{
   #roster .rosterPageHeader h2{font-size:25px}
   #roster .toolbar{grid-template-columns:minmax(0,1fr) 90px}
 }
+
+#breakSummaryRow .breakSummaryItem.labour{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:center!important;gap:4px!important;text-align:center!important;
+}
+#breakSummaryRow .breakSummaryItem.labour b{
+  width:auto!important;max-width:100%!important;white-space:nowrap!important;
+  overflow-wrap:normal!important;font-size:11px!important;
+}
+#breakSummaryRow .breakSummaryItem.labour small{margin:0!important;white-space:normal!important}

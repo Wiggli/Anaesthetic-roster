@@ -603,6 +603,7 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('#onboardingContent')).toContainText('@mentions');
   await expect(page.locator('#onboardingContent')).toContainText('14 days');
   await expect(page.locator('#onboardingStepLabel')).toContainText('Chat');
+  if (process.env.CI) await page.waitForTimeout(900);
   await captureReview(page, 'onboarding');
   await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '1');
   await page.evaluate(() => {
@@ -723,6 +724,10 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakList')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
+  if (test.info().project.name === 'mobile-chromium') {
+    const labelHeight = await page.locator('#breakSummaryRow .breakSummaryItem.labour b').evaluate(el => el.getBoundingClientRect().height);
+    expect(labelHeight).toBeLessThan(30);
+  }
   await captureReview(page, 'breaks');
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
@@ -872,6 +877,10 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   const card = page.locator('#cards button[aria-label^="Open roster for"]');
   await expect(card).toContainText('Saturday, 26 September 2026');
   await expect(card).toContainText('André Bartolo · Leave');
+  if (test.info().project.name === 'desktop-chromium') {
+    const width = await card.evaluate(el => el.getBoundingClientRect().width);
+    expect(width).toBeGreaterThan(300);
+  }
   await captureReview(page, 'full-roster');
   await card.click();
   expect(await page.evaluate(() => window.__openedNights)).toContain(4);
@@ -939,7 +948,7 @@ test('typed administrator accounts separate pending access and support fast filt
     } }));
     document.getElementById('today').classList.add('hidden');
     document.getElementById('admin').classList.remove('hidden');
-    document.getElementById('adminAccess').classList.remove('hidden');
+    window.switchAdminTab('access', false);
   });
 
   await expect(page.locator('#adminAccountsExperience')).toContainText('Pending access');
