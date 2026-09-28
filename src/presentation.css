@@ -3129,7 +3129,7 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
 }
 #today .personalFacts{
   display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:0!important;
   margin:0 16px!important;
   padding:0 0 3px!important;
@@ -3149,6 +3149,17 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
   background:transparent!important;
 }
 #today .personalFacts>div:first-child{
+  padding-left:0!important;
+  border-left:0!important;
+}
+#today .personalFacts>.personalFactContext{
+  grid-column:1/-1!important;
+  min-height:56px!important;
+  padding-left:0!important;
+  border-left:0!important;
+  border-bottom:1px solid rgba(255,255,255,.12)!important;
+}
+#today .personalFacts>div:nth-child(2){
   padding-left:0!important;
   border-left:0!important;
 }
@@ -3172,7 +3183,7 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
 #today .personalContextAction{
   display:flex!important;
   width:100%!important;
-  min-height:44px!important;
+  min-height:48px!important;
   align-items:center!important;
   justify-content:space-between!important;
   margin:0!important;
@@ -3560,7 +3571,7 @@ html[data-theme="dark"] #today .nightSignal.needsReview .nightSignalGlyph{
   }
   #today .personalFacts dd{font-size:10.8px!important}
   #today .personalContextAction{
-    min-height:42px!important;
+    min-height:48px!important;
     padding:0 13px!important;
   }
   #today .nightSummaryTitle{margin-top:15px!important}
