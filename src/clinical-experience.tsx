@@ -220,12 +220,18 @@ function NightStatus({ model }: { model: NightSummary }) {
   const provisional = model.nurseCount < 5 || Boolean(model.alert || model.taskCount || model.labourPending);
   return <div className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Team staffing and plan status">
     <div className="nightSignalLead">
-      <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</span>
-      <div><small>TEAM TONIGHT</small><strong>{model.nurseCount} nurses <span>·</span> {provisional ? 'Review needed' : 'Plan ready'}</strong></div>
+      <div className="nightSignalLeadCopy">
+        <small>TEAM TONIGHT</small>
+        <strong><b>{model.nurseCount}</b> nurses</strong>
+      </div>
+      <span className="nightSignalState">
+        <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
+        <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
+      </span>
     </div>
     <div className="nightSignalMeta">
       <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences'}</Pressable>
-      <span aria-hidden="true">/</span>
+      <span aria-hidden="true">·</span>
       <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.overtimeCount} overtime</Pressable>
       {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
         Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
@@ -292,22 +298,26 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
       <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
     </div>
-    <div className={`personalAssignmentHero personalRole-${tone}`}>
-      <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
-      <span className="personalRoleCopy">
-        <small>{model.assignmentLabel}</small>
-        <b>{model.title}</b>
-        <span>{model.detail}</span>
-      </span>
-      {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
+
+    <div className="personalAssignmentStage">
+      <div className={`personalAssignmentHero personalRole-${tone}`}>
+        <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
+        <span className="personalRoleCopy">
+          <small>{model.assignmentLabel}</small>
+          <b>{model.title}</b>
+          <span>{model.detail}</span>
+        </span>
+        {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
+      </div>
+      <dl className="personalFacts personalScan" aria-label="Your night at a glance">
+        <div className="personalFactContext"><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
+        <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
+        <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
+      </dl>
     </div>
-    <dl className="personalFacts">
-      <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
-      <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
-      <div><dt>{model.contextLabel}</dt><dd>{model.context || 'Pending'}</dd></div>
-    </dl>
+
     <Pressable type="button" className="personalContextAction" onClick={action}>
-      {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
+      {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in team allocation' : 'Choose your name'}
       <span aria-hidden="true">›</span>
     </Pressable>
   </article>;
