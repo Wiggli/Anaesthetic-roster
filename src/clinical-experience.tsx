@@ -200,7 +200,7 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
   return <section className="personalBreakSummary" aria-label="Your break">
     <span className="personalBreakEyebrow">Your break · {model.formattedDate}</span>
     <div className="personalBreakMain">
-      <div><h2>{assignment}</h2><p>{model.pending ? model.pendingReason : mine ? `${mine} · ${model.nurseCount} nurses on this night` : 'Choose your name in Account to highlight your break.'}</p></div>
+      <div><h2>{assignment}</h2><p>{model.pending ? model.pendingReason : mine || 'Choose your name in Account to highlight your break.'}</p></div>
       <span className="personalBreakMark" aria-hidden="true">{model.pending ? '…' : first ? '1' : second ? '2' : '·'}</span>
     </div>
     {!model.pending && !first && !second && <small>For full-night Labour Ward cover, coordinate your break when clinical cover allows.</small>}

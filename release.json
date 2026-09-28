@@ -1,12 +1,12 @@
 {
-  "version": "37.67",
+  "version": "37.68",
   "date": "28 September 2026",
-  "title": "Simplify account and release history",
-  "summary": "The account sheet opens with a concise profile and grouped settings, while version history is easier to scan.",
+  "title": "Bring the break plan closer",
+  "summary": "Breaks now places the selected night and shared staffing summary in a shorter path beneath your own break.",
   "changes": [
-    "The profile editor uses a shorter introduction and a more compact photo and field layout.",
-    "Appearance, app help, and sign-in controls remain grouped with clearer spacing.",
-    "Version history distinguishes the current update from earlier releases without removing any entries."
+    "Your break is easier to read without repeating the staffing count in the personal card.",
+    "The selected night uses a compact control while the shared summary carries the staffing count and Labour Ward state.",
+    "The break plan starts higher on phone screens without changing any break or allocation rule."
   ],
   "update_policy": "important"
 }
