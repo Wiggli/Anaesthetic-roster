@@ -1,5 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, EmptyState, ListRow, Metric, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
 
 type BreakSummary = {
   date: string;
@@ -155,11 +155,12 @@ function BreakGroup({
   highlightedName: string;
 }) {
   return <Surface className={`breakGroup ${className} tw:shadow-none`}>
-    <div className="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:px-3.5 tw:py-3">
-      <h3 className="tw:m-0 tw:text-sm tw:font-bold">{title}</h3>
-      <Badge tone={className.includes('first') ? 'accent' : 'info'}>{names.length || '—'}</Badge>
+    <div className="breakGroupHeading">
+      <span className="breakGroupOrdinal" aria-hidden="true">{className.includes('first') ? '01' : '02'}</span>
+      <div><span className="breakGroupKicker">Theatre rest period</span><h3>{title}</h3></div>
+      <span className="breakGroupCount">{names.length} {names.length === 1 ? 'nurse' : 'nurses'}</span>
     </div>
-    <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
+    <div className="breakGroupPeople tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
       {names.length
         ? names.map(name => {
             const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
@@ -181,14 +182,14 @@ function BreakPlan({ model }: { model: BreakSummary }) {
       <BreakGroup className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
       <BreakGroup className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
     </div>
-    <Surface className="breakGroup lwBreak tw:mt-3 tw:shadow-none">
-      <div className="tw:px-3.5 tw:py-3"><h3 className="tw:m-0 tw:text-sm tw:font-bold">Labour Ward / Pager and additional staffing</h3></div>
+    <section className="breakNotes" aria-label="Labour Ward and additional staffing">
+      <div className="breakNotesHeading"><span>Operational notes</span><h3>Labour Ward &amp; Pager</h3></div>
       <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
         {model.notes.length
           ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
           : <EmptyState title="No additional staffing notes" />}
       </div>
-    </Surface>
+    </section>
   </>;
 }
 
@@ -217,28 +218,19 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
-  return <div className="metricGrid nightMetricRail">
-    <Metric label="Nurses" value={String(model.nurseCount)} tone="teal" />
-    <Metric
-      label={model.absenceCount === 1 ? 'Absence' : 'Absences'}
-      value={model.absenceCount ? String(model.absenceCount) : 'No'}
-      tone={model.absenceCount ? 'critical' : 'teal'}
-      onClick={() => goToChanges('staffing')}
-    />
-    <Metric
-      label="Overtime"
-      value={String(model.overtimeCount)}
-      tone={model.overtimeCount ? 'warning' : 'neutral'}
-      onClick={() => goToChanges('staffing')}
-    />
-    {model.taskCount
-      ? <Metric
-          label={model.decisionTasks ? (model.taskCount === 1 ? 'Allocation' : 'Allocations') : 'Confirmation'}
-          value={`Review ${model.taskCount}`}
-          tone="warning"
-          onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}
-        />
-      : <Metric label="Plan" value="Ready" tone="teal" />}
+  return <div className="nightBrief" aria-label="Team staffing and plan status">
+    <div className="nightBriefLead"><span>On this night</span><strong>{model.nurseCount} nurses</strong></div>
+    <div className="nightBriefDetails">
+      <Pressable type="button" className={model.absenceCount ? 'hasException' : ''} onClick={() => goToChanges('staffing')}>
+        <strong>{model.absenceCount ? String(model.absenceCount) : 'No'}</strong> {model.absenceCount === 1 ? 'absence' : 'absences'}
+      </Pressable>
+      <Pressable type="button" onClick={() => goToChanges('staffing')}><strong>{model.overtimeCount}</strong> overtime</Pressable>
+      {model.taskCount
+        ? <Pressable type="button" className="hasTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
+            Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} <span aria-hidden="true">↗</span>
+          </Pressable>
+        : <span className="nightBriefReady">Plan ready</span>}
+    </div>
   </div>;
 }
 
@@ -257,10 +249,11 @@ function NightAlerts({ model }: { model: NightSummary }) {
 function personalTone(model: PersonalNight) {
   const text = `${model.title} ${model.detail}`.toLocaleLowerCase();
   if (model.action === 'absence' || text.includes('absent')) return 'absence';
-  if (text.includes('first part')) return 'first';
-  if (text.includes('second part')) return 'second';
+  if (text.includes('full night')) return 'full';
   if (text.includes('pager')) return 'pager';
   if (text.includes('reliever')) return 'reliever';
+  if (text.includes('first part')) return 'first';
+  if (text.includes('second part')) return 'second';
   if (text.includes('seventh')) return 'seventh';
   if (text.includes('labour')) return 'full';
   return 'task';
