@@ -1045,6 +1045,11 @@ test('typed Chat overview renders private conversations and registered members',
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
   if (page.viewportSize().width >= 760) {
+    const team = await page.locator('#chat .chatTeamConsole').boundingBox();
+    const privateHeading = await page.locator('#chat .chatPrivateHeader').boundingBox();
+    expect(team).not.toBeNull();
+    expect(privateHeading).not.toBeNull();
+    expect(privateHeading.y).toBeGreaterThanOrEqual(team.y + team.height - 1);
     await expect(page.locator('#chatDesktopEmpty')).toBeVisible();
     await expect(page.locator('#chatThread')).toBeHidden();
     await page.locator('#chat').evaluate(el => el.classList.add('chat-thread-open'));

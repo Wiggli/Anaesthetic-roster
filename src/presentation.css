@@ -2961,8 +2961,8 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 
 /* 37.70 continuation: an editorial clinical workspace across the secondary views. */
 #breaks #breakList .breakGrid{display:grid!important;grid-template-columns:1fr!important;gap:0!important;border:0;background:transparent}
-#breaks #breakList .breakGroup{display:grid!important;grid-template-columns:minmax(145px,32%) minmax(0,1fr);min-height:144px;border:0!important;border-top:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
-#breaks #breakList .breakGroup:last-child{border-bottom:1px solid var(--scene-line)!important}
+#breaks #breakList .breakGrid .breakGroup{display:grid!important;grid-template-columns:minmax(145px,32%) minmax(0,1fr);min-height:144px;border:0!important;border-top:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
+#breaks #breakList .breakGrid .breakGroup:last-child{border-bottom:1px solid var(--scene-line)!important}
 #breaks #breakList .breakGroup+.breakGroup{border-left:0!important}
 #breaks .breakGroupHeading{display:flex;align-items:flex-start;gap:14px;padding:20px 18px 18px 0}
 #breaks .breakGroupOrdinal{color:var(--scene-accent);font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
@@ -3026,12 +3026,6 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   #today #roles>.liquidRosterList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:hidden}
   #today #roles .rosterRow:nth-child(2){border-top:0!important}
   #today #roles .rosterRow:nth-child(even){border-left:1px solid var(--scene-line)!important}
-  #chatHome{display:grid!important;grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);column-gap:32px!important;align-items:start}
-  #chatHome>.chatTeamConsole{grid-column:1;grid-row:1 / span 5}
-  #chatHome>.chatPrivateHeader{grid-column:2;grid-row:1;margin-top:0!important}
-  #chatHome>#chatConversationList{grid-column:2;grid-row:2}
-  #chatHome>.chatSafetyNotice{grid-column:2;grid-row:3}
-  #chatHome>#pushNotificationCard{grid-column:2;grid-row:4}
   #chat .chatTeamConsole{grid-template-rows:auto auto minmax(390px,54dvh) auto!important}
 }
 @media(max-width:640px){
@@ -3042,4 +3036,8 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   #breaks .breakNotesHeading{padding:17px 4px 12px}
   .accountSheetScroll{padding-inline:20px!important}
   .authCard{padding-inline:14px!important}
+  .authIntro{margin-top:12px!important}
+  .authIntro h1{font-size:clamp(27px,7vw,36px)!important}
+  .authCard{padding-block:18px!important}
+  .authCardHeading h2{font-size:22px!important}
 }
