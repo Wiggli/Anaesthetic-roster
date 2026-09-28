@@ -395,7 +395,7 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     }
     return { x: Math.min(290, view.right - 44), y: Math.min(400, maxY) };
   });
-  const safeEnd = { x: Math.max(42, safeStart.x - 185), y: Math.min(window.innerHeight - 96, safeStart.y + 42) };
+  const safeEnd = { x: Math.max(42, safeStart.x - 185), y: safeStart.y + 42 };
   const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const initialPage = await page.locator('#today').boundingBox();
   let draggedIndicator;
