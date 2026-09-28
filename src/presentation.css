@@ -1262,7 +1262,7 @@ dialog.appDialog,
   letter-spacing:0!important;
 }
 
-#breakSummaryRow>div{
+#breakSummaryRow{
   display:grid!important;
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:0!important;
@@ -1272,7 +1272,7 @@ dialog.appDialog,
   background:var(--liquid-surface);
   box-shadow:var(--liquid-shadow-content);
 }
-#breakSummaryRow>div>*{
+#breakSummaryRow>.breakSummaryItem{
   min-height:62px!important;
   margin:0!important;
   padding:9px 10px!important;
@@ -1282,7 +1282,7 @@ dialog.appDialog,
   background:transparent!important;
   box-shadow:none!important;
 }
-#breakSummaryRow>div>*:first-child{border-left:0!important}
+#breakSummaryRow>.breakSummaryItem:first-child{border-left:0!important}
 
 @media(max-width:370px){
   #nightStatusRow>div strong{font-size:15px!important}
