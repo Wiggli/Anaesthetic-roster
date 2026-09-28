@@ -997,6 +997,13 @@ test('typed Chat overview renders private conversations and registered members',
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
   await captureReview(page, 'chat');
+  if (page.viewportSize().width < 760) {
+    const composer = await page.locator('#chatTeamComposer').boundingBox();
+    const dock = await page.locator('.bottom').boundingBox();
+    expect(composer).not.toBeNull();
+    expect(dock).not.toBeNull();
+    expect(composer.y + composer.height).toBeLessThanOrEqual(dock.y);
+  }
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
   if (page.viewportSize().width >= 760) {
