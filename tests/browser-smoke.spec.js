@@ -103,6 +103,8 @@ test('Chat reports connection errors and recovery beside the conversation', asyn
   await expect(status).toHaveAttribute('data-react-ready', 'true');
   await expect(status.locator('[role="alert"]')).toContainText('Chat needs attention');
   await expect(status).toContainText('Messages will send when the connection returns.');
+  await page.evaluate(() => window.show('chat'));
+  await captureReview(page, 'chat-error');
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:chat-status', { detail: { message: 'Chat is ready.', error: false } })));
   await expect(status.locator('[role="status"]')).toContainText('Chat is ready.');
   await page.evaluate(() => {
@@ -585,6 +587,14 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   await expect(page.locator('.launchAtmosphere i')).toHaveCount(3);
   await captureReview(page, 'loading');
   await page.evaluate(() => {
+    document.getElementById('launchTitle').textContent = 'Connection taking longer';
+    document.getElementById('launchStatus').textContent = 'The shared roster did not respond. You can retry or open a saved copy.';
+    document.getElementById('launchRecovery').classList.remove('hidden');
+    document.getElementById('launchOfflineBtn').classList.remove('hidden');
+  });
+  await expect(page.locator('#launchRecovery')).toContainText('read-only');
+  await captureReview(page, 'offline-recovery');
+  await page.evaluate(() => {
     document.getElementById('launchScreen').style.display = 'none';
     document.getElementById('authGate').style.display = 'block';
   });
@@ -922,6 +932,12 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
   await captureReview(page, 'full-roster');
   await card.click();
   expect(await page.evaluate(() => window.__openedNights)).toContain(4);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:full-roster', { detail: { cards: [] } }));
+    window.show('roster');
+  });
+  await expect(page.locator('#cards .rosterLedgerEmpty')).toBeVisible();
+  await captureReview(page, 'roster-empty');
 });
 
 test('typed account controls preserve appearance and app actions', async ({ page }) => {
