@@ -2989,6 +2989,9 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 #chat .chatComposerGlass{border-radius:8px!important}
 #chat .chatTeamComposer{display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;align-items:center;gap:8px!important}
 #chat .chatTeamComposer textarea{width:100%;min-width:0}
+#chat .chatStatusCard--error{padding:12px 14px!important;border:0!important;border-left:4px solid var(--liquid-critical)!important;border-radius:0!important;background:color-mix(in srgb,var(--liquid-critical) 7%,var(--scene-bg))!important}
+#chat .chatStatusCard--error strong{font-size:13px!important}
+#chat .chatStatusCard--error p{font-size:12px!important;line-height:1.4!important}
 #chat .chatPrivateHeader{padding-top:14px!important;border-top:1px solid var(--scene-line)}
 #chat #chatConversationList{border-block:1px solid var(--scene-line)}
 #chat #chatConversationList>.reactConversationGroup{border:0!important;border-radius:0!important}
@@ -3018,6 +3021,9 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 .authCard .authSwitch{border:0!important;border-bottom:1px solid var(--scene-line)!important;border-radius:0!important;background:transparent!important}
 .authCard .authSwitch button,.authCard .authSwitch button.active{border-radius:0!important;box-shadow:none!important}
 .authCard .authSwitch button.active{border-bottom:3px solid var(--scene-accent)!important}
+.launchRecovery:not(.hidden){border-radius:0!important;border-inline:0!important;background:transparent!important}
+.launchRecoveryActions{gap:8px!important}
+.launchRecoveryActions button{border-radius:7px!important}
 .onboardingDialog[open]{border-radius:10px!important}
 .onboardingDialog .onboardingTop{border-bottom:1px solid var(--scene-line)}
 

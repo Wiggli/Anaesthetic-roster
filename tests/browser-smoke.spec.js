@@ -598,6 +598,8 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
     document.getElementById('launchOfflineBtn').classList.remove('hidden');
   });
   await expect(page.locator('#launchRecovery')).toContainText('read-only');
+  await expect(page.locator('#launchTitle')).toBeVisible();
+  if (process.env.CI) await page.waitForTimeout(900);
   await captureReview(page, 'offline-recovery');
   await page.evaluate(() => {
     document.getElementById('recoveryCaptureStyle').remove();
