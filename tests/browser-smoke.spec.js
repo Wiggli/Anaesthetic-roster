@@ -755,6 +755,8 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   const dock = await page.locator('.bottom').boundingBox();
   expect(dock).not.toBeNull();
   expect(dock.height).toBeLessThanOrEqual(66);
+  const indicatorHeight = await page.locator('.bottom .tabSlidingIndicator').evaluate(el => getComputedStyle(el).height);
+  expect(indicatorHeight).toBe('3px');
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
