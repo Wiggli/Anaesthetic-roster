@@ -381,13 +381,16 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('today'));
 
-  const safeStart = { x: 290, y: 400 };
+  const assignment = await page.locator('#personalNightCard .nightV2Assignment').boundingBox();
+  expect(assignment).not.toBeNull();
+  const safeStart = { x: assignment.x + assignment.width - 28, y: assignment.y + assignment.height / 2 };
+  const safeEnd = { x: Math.max(42, safeStart.x - 185), y: safeStart.y + 42 };
   const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const initialPage = await page.locator('#today').boundingBox();
   let draggedIndicator;
   let draggedCurrent;
   let draggedPreview;
-  await realTouchSwipe(page, safeStart, { x: 105, y: 448 }, async () => {
+  await realTouchSwipe(page, safeStart, safeEnd, async () => {
     draggedIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
     draggedCurrent = await page.locator('#today').boundingBox();
     draggedPreview = await page.locator('#changes').boundingBox();
