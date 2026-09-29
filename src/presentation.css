@@ -2756,34 +2756,67 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface)!
 
 /* 37.72 Night overhaul candidate. Other destinations retain the 37.69 presentation. */
 #today{
-  --night-paper:#f4f7f6;
+  --night-paper:#f5f5f7;
   --night-surface:#ffffff;
-  --night-ink:#10272a;
-  --night-muted:#64777a;
-  --night-rule:#d8e3e0;
-  --night-accent:#0a7770;
-  --night-accent-strong:#075f5a;
-  --night-accent-soft:#e4f1ee;
-  --night-hero:#073f3d;
-  --night-hero-soft:#0d4d49;
-  --night-hero-text:#f4fffc;
-  --night-hero-muted:#b8d8d3;
+  --night-ink:#1d1d1f;
+  --night-muted:#6e6e73;
+  --night-rule:#d2d2d7;
+  --night-accent:#0071e3;
+  --night-accent-strong:#0066cc;
+  --night-accent-soft:#eaf3ff;
+  --night-control:#e8e8ed;
+  --night-control-pressed:#dcdce1;
+  --night-hero:#1d1d1f;
+  --night-hero-soft:#2c2c2e;
+  --night-hero-text:#f5f5f7;
+  --night-hero-muted:#c7c7cc;
   background:var(--night-paper)!important;
   color:var(--night-ink);
 }
 body.dark #today,html[data-theme="dark"] #today{
-  --night-paper:#0d1719;
-  --night-surface:#152428;
-  --night-ink:#f0f8f6;
-  --night-muted:#9eb5b4;
-  --night-rule:#304749;
-  --night-accent:#76d8ca;
-  --night-accent-strong:#9ae7dc;
-  --night-accent-soft:#193a3a;
-  --night-hero:#0a3435;
-  --night-hero-soft:#104445;
-  --night-hero-text:#f1fffb;
-  --night-hero-muted:#afd4cf;
+  --night-paper:#000000;
+  --night-surface:#1c1c1e;
+  --night-ink:#f5f5f7;
+  --night-muted:#98989d;
+  --night-rule:#38383a;
+  --night-accent:#0a84ff;
+  --night-accent-strong:#409cff;
+  --night-accent-soft:#17263a;
+  --night-control:#2c2c2e;
+  --night-control-pressed:#3a3a3c;
+  --night-hero:#2c2c2e;
+  --night-hero-soft:#3a3a3c;
+  --night-hero-text:#ffffff;
+  --night-hero-muted:#d1d1d6;
+}
+
+/* On the Night destination, the shared floating navigation inherits the same neutral + blue system.
+   Other destinations keep their current 37.69 presentation until their own redesign pass. */
+body[data-view="today"]{
+  --liquid-accent:#0071e3;
+  --liquid-accent-strong:#0066cc;
+  --liquid-glass-tinted:rgba(232,240,254,.76);
+  --scene-accent:#0071e3;
+  --scene-soft:#eaf3ff;
+}
+body.dark[data-view="today"],
+html[data-theme="dark"] body[data-view="today"]{
+  --liquid-accent:#0a84ff;
+  --liquid-accent-strong:#409cff;
+  --liquid-glass-tinted:rgba(31,46,70,.74);
+  --scene-accent:#0a84ff;
+  --scene-soft:#17263a;
+}
+body[data-view="today"] .bottom.reactTabs .tabSlidingIndicator{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.055)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 94%,var(--liquid-accent) 6%)!important;
+}
+body[data-view="today"] .bottom.reactTabs button.active{
+  color:var(--liquid-accent-strong)!important;
+}
+body[data-view="today"] .bottom.reactTabs button.active svg{
+  filter:none!important;
 }
 
 /* Keep the Night header inside the same swipe track as the page. */
@@ -2869,15 +2902,15 @@ body.dark #today,html[data-theme="dark"] #today{
 }
 #today #installBtn{display:none!important}
 @media(hover:hover) and (pointer:fine){
-  #today .headActions button:hover{background:var(--night-accent-soft)!important}
+  #today .headActions button:hover{background:var(--night-control)!important}
 }
 #today .headActions button:active{
   transform:scale(.96);
-  background:var(--night-accent-soft)!important;
+  background:var(--night-control-pressed)!important;
 }
 #today .accountInitial{
-  background:var(--night-accent-soft)!important;
-  color:var(--night-accent)!important;
+  background:var(--night-control)!important;
+  color:var(--night-ink)!important;
 }
 #today .accountInitial svg{
   width:16px!important;
@@ -2901,9 +2934,9 @@ body.dark #today,html[data-theme="dark"] #today{
   font-weight:650!important;
 }
 #today .headerDateChip{display:none!important}
-#today .headerLiveDot{background:#35a889!important;box-shadow:none!important}
+#today .headerLiveDot{background:var(--night-accent)!important;box-shadow:none!important}
 #today .headerLiveChip.offline .headerLiveDot,
-#today .headerLiveChip.error .headerLiveDot{background:#df7d69!important}
+#today .headerLiveChip.error .headerLiveDot{background:#ff453a!important}
 
 /* Date comes first, then the nurse's assignment. */
 #today .nightOverviewPanel{
@@ -3044,10 +3077,14 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
   height:30px!important;
   flex:0 0 30px!important;
   border-radius:50%!important;
-  background:var(--night-accent-soft)!important;
-  color:var(--night-accent)!important;
+  background:var(--night-control)!important;
+  color:var(--night-ink)!important;
   box-shadow:none!important;
   font-size:11px!important;
+}
+#today .personalIdentity .personalAvatar i{
+  border-color:var(--night-paper)!important;
+  background:var(--night-accent)!important;
 }
 #today .personalIdentityCopy{
   display:flex!important;
@@ -3094,7 +3131,7 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
   color:var(--night-hero-text)!important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
-    0 14px 34px rgba(3,54,53,.18)!important;
+    0 10px 28px rgba(0,0,0,.11)!important;
 }
 #today .personalAssignmentHero{
   display:flex!important;
