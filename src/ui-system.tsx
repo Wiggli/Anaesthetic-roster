@@ -7,7 +7,7 @@ export function cx(...values: Array<string | false | null | undefined>) {
 
 const toneClasses = {
   neutral: 'tw:bg-black/5 tw:text-[var(--muted)] tw:dark:bg-white/8',
-  accent: 'tw:bg-teal-500/12 tw:text-[var(--accent-strong)]',
+  accent: 'tw:bg-blue-500/12 tw:text-[var(--accent-strong)]',
   success: 'tw:bg-emerald-500/12 tw:text-emerald-700 tw:dark:text-emerald-300',
   warning: 'tw:bg-amber-500/14 tw:text-amber-700 tw:dark:text-amber-300',
   danger: 'tw:bg-rose-500/12 tw:text-rose-700 tw:dark:text-rose-300',
@@ -38,7 +38,7 @@ export function Surface({
   return <div
     {...props}
     className={cx(
-      'tw:@container tw:overflow-hidden tw:rounded-[20px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:shadow-[0_1px_3px_rgba(12,22,30,0.035)] tw:dark:border-white/10',
+      'tw:@container tw:overflow-hidden tw:rounded-[18px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-none tw:dark:border-white/10',
       className
     )}
   >{children}</div>;
@@ -100,7 +100,7 @@ export function Avatar({ initial, src, size = 'md', className = '' }: {
     lg: 'tw:h-14 tw:w-14 tw:text-lg'
   };
   return <span className={cx(
-    'tw:grid tw:shrink-0 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-teal-500/12 tw:font-bold tw:text-[var(--accent-strong)] tw:ring-1 tw:ring-black/5 tw:dark:ring-white/10',
+    'tw:grid tw:shrink-0 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-blue-500/12 tw:font-bold tw:text-[var(--accent-strong)] tw:ring-1 tw:ring-black/5 tw:dark:ring-white/10',
     sizes[size],
     className
   )}>
@@ -109,9 +109,9 @@ export function Avatar({ initial, src, size = 'md', className = '' }: {
 }
 
 export function EmptyState({ title, detail, icon }: { title: string; detail?: string; icon?: ReactNode }) {
-  return <div className="tw:grid tw:min-h-36 tw:place-items-center tw:px-5 tw:py-8 tw:text-center">
+  return <div className="tw:grid tw:min-h-20 tw:place-items-center tw:px-4 tw:py-5 tw:text-center">
     <div className="tw:max-w-64">
-      {icon ? <div className="tw:mx-auto tw:mb-3 tw:grid tw:h-11 tw:w-11 tw:place-items-center tw:rounded-2xl tw:bg-black/5 tw:text-[var(--muted)] tw:dark:bg-white/8">{icon}</div> : null}
+      {icon ? <div className="tw:mx-auto tw:mb-2 tw:grid tw:h-9 tw:w-9 tw:place-items-center tw:rounded-xl tw:bg-black/5 tw:text-[var(--muted)] tw:dark:bg-white/8">{icon}</div> : null}
       <strong className="tw:block tw:text-sm tw:font-bold">{title}</strong>
       {detail ? <span className="tw:mt-1 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{detail}</span> : null}
     </div>
