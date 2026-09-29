@@ -1,14 +1,14 @@
 {
-  "version": "37.73",
+  "version": "37.74",
   "date": "29 September 2026",
-  "title": "Unify Night and the professional profile",
-  "summary": "Recomposes Night into one clear mobile hierarchy and rebuilds the private account profile as a polished professional app experience.",
+  "title": "Unify the clinical app experience",
+  "summary": "Brings Changes, Breaks, Chat and shared navigation into the same calm professional design system as Night and Profile.",
   "changes": [
-    "Night now reads as one deliberate flow from selected date to personal assignment, team state, allocation and recent activity, reducing disconnected labels, separators and floating actions.",
-    "The personal assignment combines identity, role, colleague, duty time, break and the contextual night-situation action into one focused surface while preserving existing roster and swipe behaviour.",
-    "Team status and Team allocation are grouped into one compact disclosure area, with full-roster access placed inside the allocation context and a quieter recent-activity empty state.",
-    "The account profile now uses a professional identity-first layout with a larger editable photo, preferred name and professional title, clear private roster highlighting, and a distinct verified account identity section.",
-    "The Night and profile experiences use neutral graphite and cool surfaces with restrained blue interaction cues, while light, dark and automatic appearance, accessibility and all existing account actions remain intact."
+    "Changes now behaves as a guided task flow: automatic steps recede, unresolved allocation work becomes the clear focus, staffing forms use quieter grouped surfaces, and exceptional states communicate through wording and hierarchy rather than colour alone.",
+    "Breaks is now an operational duty board with the signed-in nurse’s own break as the primary focus, compact selected-night context, a concise staffing readout and one coherent team break plan.",
+    "Chat now prioritises conversations over settings, uses a calmer familiar transcript and composer, keeps private conversations immediately accessible, and moves notification preferences into a secondary position without changing chat, push or realtime behaviour.",
+    "The signed-in app now shares neutral graphite and cool surfaces with restrained Apple-style blue interaction cues, removes the remaining teal accents, standardises typography, spacing, grouped rows, empty states, segmented controls and press feedback, and keeps glass limited to floating navigation and transient chrome.",
+    "Roster date controls now describe human context such as the current or past roster night, dark mode is treated as a primary night-shift environment, and the existing continuous swipe navigation, reduced-motion support and accessibility behaviour are preserved."
   ],
   "update_policy": "important"
 }
