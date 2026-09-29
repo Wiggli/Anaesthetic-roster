@@ -577,7 +577,8 @@ function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var bac
 function prettyDateMarkup(date){
   if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
   var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear();
-  return'<strong>'+esc(main)+'</strong><small>'+esc(year)+'</small>';
+  var context=automaticSelectedDate&&date===automaticSelectedDate?'Current roster night':automaticSelectedDate&&date<automaticSelectedDate?'Past roster night':'Roster night';
+  return'<strong>'+esc(main)+'</strong><small>'+esc(context+' · '+year)+'</small>';
 }
 
 function updatePrettyDate(input){
