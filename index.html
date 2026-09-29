@@ -551,6 +551,21 @@
                 <span><b>Staff coordination only.</b> Do not share patient-identifiable or clinical information in chat.</span>
               </div>
 
+              <div class="chatPrivateHeader">
+                <div>
+                  <span>Private chats</span>
+                  <small>One-to-one messages with nurses in the current roster</small>
+                </div>
+                <button type="button" id="chatNewPrivateBtn" class="chatNewPrivateBtn">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 18.5 4 20v-4.5A8 8 0 1 1 8.5 19H7Z"></path>
+                    <path d="M12 8v6M9 11h6"></path>
+                  </svg>
+                  <span>New message</span>
+                </button>
+              </div>
+              <div id="chatConversationList" class="chatConversationList" aria-label="Private conversations"></div>
+
               <div id="pushNotificationCard" class="chatNotificationCard">
                 <div class="chatNotificationTop">
                   <span class="chatNotificationIcon" aria-hidden="true">
@@ -586,21 +601,6 @@
                   <button type="button" id="pushDisableBtn" class="pushDisableBtn">Turn off on this device</button>
                 </div>
               </div>
-
-              <div class="chatPrivateHeader">
-                <div>
-                  <span>Private chats</span>
-                  <small>One-to-one messages with nurses in the current roster</small>
-                </div>
-                <button type="button" id="chatNewPrivateBtn" class="chatNewPrivateBtn">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M7 18.5 4 20v-4.5A8 8 0 1 1 8.5 19H7Z"></path>
-                    <path d="M12 8v6M9 11h6"></path>
-                  </svg>
-                  <span>New message</span>
-                </button>
-              </div>
-              <div id="chatConversationList" class="chatConversationList" aria-label="Private conversations"></div>
             </div>
 
             <div class="chatConversationPane">
