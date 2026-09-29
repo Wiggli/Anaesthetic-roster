@@ -342,7 +342,14 @@ function Navigation({ badges }: { badges: Badges }) {
       if (!(target instanceof Element)) return;
       const inBar = !!target.closest('.bottom');
       const view = document.body.getAttribute('data-view') as Destination;
-      if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
+      const viewElement = destinations.includes(view) ? document.getElementById(view) : null;
+      const viewRect = viewElement?.getBoundingClientRect();
+      const insideVisibleView = Boolean(viewRect
+        && touch.clientX >= viewRect.left
+        && touch.clientX <= viewRect.right
+        && touch.clientY >= viewRect.top
+        && touch.clientY <= viewRect.bottom);
+      if (!destinations.includes(view) || (!inBar && !insideVisibleView)) return;
       if (!inBar && target.closest(blockedContentSelector)) return;
       if (!inBar && window.getSelection()?.type === 'Range') return;
             animation?.stop();
