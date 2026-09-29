@@ -279,7 +279,7 @@ function personalMark(tone: string) {
 function PersonalNightCard({ model }: { model: PersonalNight }) {
   const tone = personalTone(model);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
-  const scanContext = model.contextLabel === 'Working with' ? model.context.replace(/^With\\s+/i, '') : model.context;
+  const scanContext = model.context.replace(/^With\\s+/i, '');
   const action = () => {
     if (model.action === 'choose') return openAccount();
     if (model.action === 'absence') return goToChanges('staffing');
@@ -290,18 +290,18 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   };
 
   return <article className={`personalHeroSurface personalRole-${tone}`}>
-    <div className="personalIdentity">
-      <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
-        {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}<i />
-      </div>
-      <div className="personalIdentityCopy">
-        <b>{model.displayName}</b>
-        {model.jobTitle && <small>{model.jobTitle}</small>}
-      </div>
-      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
-    </div>
-
     <div className="personalAssignmentStage">
+      <div className="personalIdentity">
+        <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
+          {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}
+        </div>
+        <div className="personalIdentityCopy">
+          <b>{model.displayName}</b>
+          {model.jobTitle && <small>{model.jobTitle}</small>}
+        </div>
+        <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
+      </div>
+
       <div className={`personalAssignmentHero personalRole-${tone}`}>
         <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
         <span className="personalRoleCopy">
@@ -311,17 +311,18 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </span>
         {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
       </div>
+
       <dl className="personalFacts personalScan" aria-label="Your night at a glance">
         <div className="personalFactContext"><dt>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
         <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
         <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
       </dl>
-    </div>
 
-    <Pressable type="button" className="personalContextAction" onClick={action}>
-      {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
-      <span aria-hidden="true">›</span>
-    </Pressable>
+      <Pressable type="button" className="personalContextAction" onClick={action}>
+        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
+        <span aria-hidden="true">›</span>
+      </Pressable>
+    </div>
   </article>;
 }
 
@@ -338,7 +339,7 @@ function PersonalPending({ model }: { model: PersonalNight }) {
 
 function RecentActivityList({ model }: { model: RecentActivity }) {
   if (!model.items.length) {
-    return <div className="emptyRecentActivity">No staffing changes have been recorded for this night.</div>;
+    return <div className="emptyRecentActivity">No changes recorded for this night.</div>;
   }
   return <div className="activityTimeline">
     {model.items.map((item, index) => <Pressable
