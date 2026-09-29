@@ -4599,3 +4599,98 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
     font-size:26px!important;
   }
 }
+
+
+/* 37.73 team composition refinement: one grouped team surface instead of stacked status/allocation cards. */
+#today .teamOverviewGroup{
+  order:2!important;
+  display:block!important;
+  margin:17px 0 0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--night-group)!important;
+  box-shadow:none!important;
+}
+#today .teamOverviewGroup .nightSummaryTitle{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:-1px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#today .teamOverviewGroup #nightStatusRow{
+  margin:0!important;
+}
+#today .teamOverviewGroup #nightStatusRow>.nightSignal{
+  margin:0!important;
+  padding:10px 12px 8px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .teamOverviewGroup .nightSignalLead,
+#today .teamOverviewGroup .nightSignalMeta,
+#today .teamOverviewGroup #nightStatusRow>.nightSignal>.nightSignalMeta{
+  min-height:0!important;
+}
+#today .teamOverviewGroup .nightSignalLead{
+  align-items:center!important;
+}
+#today .teamOverviewGroup .nightSignalMeta{
+  margin-top:2px!important;
+}
+#today .teamOverviewGroup .nightSignalMeta button{
+  min-height:22px!important;
+}
+#today .teamOverviewGroup #alerts{
+  margin:0!important;
+}
+#today .teamOverviewGroup #alerts:not(:empty){
+  padding:0 12px 9px!important;
+  border-top:1px solid var(--night-rule)!important;
+}
+#today .teamOverviewGroup .nightTeamDetails{
+  margin:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-top:1px solid var(--night-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .teamOverviewGroup .nightTeamDetails>summary{
+  min-height:52px!important;
+  padding:0 12px!important;
+}
+#today .teamOverviewGroup .nightTeamDetails[open]>summary{
+  border-bottom:1px solid var(--night-rule)!important;
+}
+#today .recentActivityPanel{
+  order:3!important;
+  margin-top:16px!important;
+}
+
+/* Keep the desktop composition editorial: assignment left, one compact team group right, activity across both. */
+@media(min-width:760px){
+  #today>.nightOverviewPanel{
+    grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr)!important;
+  }
+  #today .personalNight{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+  #today .teamOverviewGroup{
+    grid-column:2!important;
+    grid-row:2!important;
+    align-self:start!important;
+    margin-top:0!important;
+  }
+  #today .recentActivityPanel{
+    grid-column:1/-1!important;
+    grid-row:3!important;
+  }
+}
