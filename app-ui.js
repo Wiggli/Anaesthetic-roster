@@ -576,8 +576,11 @@ function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var bac
 
 function prettyDateMarkup(date){
   if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
-  var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear();
-  return'<strong>'+esc(main)+'</strong><small>'+esc(year)+'</small>';
+  var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear(),context='';
+  if(automaticSelectedDate){
+    context=date===automaticSelectedDate?'Current / next roster night':date<automaticSelectedDate?'Past roster night':'Future roster night';
+  }
+  return'<strong>'+esc(main)+'</strong><small>'+esc((context?context+' · ':'')+year)+'</small>';
 }
 
 function updatePrettyDate(input){
