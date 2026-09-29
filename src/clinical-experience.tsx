@@ -290,18 +290,18 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   };
 
   return <article className={`personalHeroSurface personalRole-${tone}`}>
-    <div className="personalAssignmentStage">
-      <div className="personalIdentity">
-        <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
-          {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}
-        </div>
-        <div className="personalIdentityCopy">
-          <b>{model.displayName}</b>
-          {model.jobTitle && <small>{model.jobTitle}</small>}
-        </div>
-        <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
+    <div className="personalIdentity">
+      <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
+        {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}
       </div>
+      <div className="personalIdentityCopy">
+        <b>{model.displayName}</b>
+        {model.jobTitle && <small>{model.jobTitle}</small>}
+      </div>
+      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
+    </div>
 
+    <div className="personalAssignmentStage">
       <div className={`personalAssignmentHero personalRole-${tone}`}>
         <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
         <span className="personalRoleCopy">
