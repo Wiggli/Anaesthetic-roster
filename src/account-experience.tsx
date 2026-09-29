@@ -44,50 +44,167 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
   const reduced = useReducedMotion();
   const photoUrl = model.photoUrl || '';
   const initial = model.initial || '?';
+  const displayName = model.name.trim() || model.approvedName || 'Your profile';
+  const displayRole = model.jobTitle.trim() || 'Anaesthetic team member';
   const markDirty = () => { setDirty(true); act('profile-input'); };
+
   return <motion.section
-    initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-    className="accountProfilePanel"
+    initial={reduced ? false : { opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={reduced ? { duration: 0 } : { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
+    className="accountProfilePanel accountProfileProfessional"
     aria-labelledby="profileHeading"
   >
-    <div className="accountProfileHero">
-      <div className="accountPhotoControls">
-        <button type="button" id="profilePhotoButton" aria-label="Choose profile photo" onClick={() => document.getElementById('profilePhotoInput')?.click()} className="accountPhotoButton">
-          <img id="profilePhotoPreview" src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='} alt="Your profile photo" className={photoUrl ? '' : 'hidden'} />
+    <div className="accountProfileHero accountProfileHeroPro">
+      <div className="accountHeroPhotoWrap">
+        <button
+          type="button"
+          id="profilePhotoButton"
+          aria-label="Choose profile photo"
+          onClick={() => document.getElementById('profilePhotoInput')?.click()}
+          className="accountPhotoButton accountHeroPhoto"
+        >
+          <img
+            id="profilePhotoPreview"
+            src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='}
+            alt="Your profile photo"
+            className={photoUrl ? '' : 'hidden'}
+          />
           <span id="profilePhotoInitial" className={photoUrl ? 'hidden' : ''}>{initial}</span>
-          <span className="accountPhotoAdd" aria-hidden="true">+</span>
+          <span className="accountPhotoEditBadge" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M8.5 7 10 5h4l1.5 2H18a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2.5Z"></path>
+              <circle cx="12" cy="13" r="3.2"></circle>
+            </svg>
+          </span>
         </button>
-        <div className="accountPhotoActions">
-          <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>Choose photo</button>
-          <button type="button" id="removeProfilePhoto" onClick={() => act('profile-photo-remove')} className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}>{model.pendingPhoto ? 'Cancel' : 'Remove'}</button>
-        </div>
-        <input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { const file = event.currentTarget.files?.[0]; if (file) { setDirty(true); act('profile-photo', file); } event.currentTarget.value = ''; }} />
+        <input
+          id="profilePhotoInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          hidden
+          onChange={event => {
+            const file = event.currentTarget.files?.[0];
+            if (file) {
+              setDirty(true);
+              act('profile-photo', file);
+            }
+            event.currentTarget.value = '';
+          }}
+        />
       </div>
-      <div className="accountProfileIntro">
-        <span className="accountEyebrow">Your profile</span>
-        <h3 id="profileHeading">Personal details</h3>
-        <p>Shown in Your night. Only you can edit them.</p>
+
+      <div className="accountProfileIntro accountProfileIntroPro">
+        <span className="accountPrivacyBadge">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 10V8a5 5 0 0 1 10 0v2"></path>
+            <rect x="5" y="10" width="14" height="10" rx="3"></rect>
+          </svg>
+          Private profile
+        </span>
+        <h3 id="profileHeading">{displayName}</h3>
+        <p className="accountProfileRole">{displayRole}</p>
+        <small className="accountProfileEmail">{model.email}</small>
       </div>
     </div>
-    <div className="accountProfileFields tw:@container">
-      <div className="accountNameFields tw:@md:grid-cols-2">
-        <FieldShell label="Preferred name">
-          <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12" />
-        </FieldShell>
-        <FieldShell label="Role title" hint="Optional">
-          <input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Anaesthetic Nurse" onInput={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12" />
-        </FieldShell>
+
+    <div className="accountPhotoActions accountPhotoActionsPro">
+      <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>
+        Change photo
+      </button>
+      <button
+        type="button"
+        id="removeProfilePhoto"
+        onClick={() => act('profile-photo-remove')}
+        className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}
+      >
+        {model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}
+      </button>
+    </div>
+
+    <section className="accountProfileSection" aria-labelledby="profileAboutHeading">
+      <div className="accountProfileSectionHeading">
+        <span>Personal profile</span>
+        <h4 id="profileAboutHeading">Personal details</h4>
+        <p>Your preferred name and professional title are visible in your own Night view. They do not change shared roster records.</p>
       </div>
-      <FieldShell label="Your roster name" hint="Used only to highlight your allocation on this device.">
-        <select id="profileRosterName" defaultValue={model.rosterName} onChange={markDirty} className="tw:min-h-11 tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12">
+
+      <div className="accountProfileFields tw:@container">
+        <div className="accountNameFields tw:@md:grid-cols-2">
+          <FieldShell label="Preferred name">
+            <input
+              id="profileName"
+              defaultValue={model.name}
+              maxLength={60}
+              autoComplete="name"
+              placeholder="How the app greets you"
+              onInput={markDirty}
+              className="accountProfileInput"
+            />
+          </FieldShell>
+          <FieldShell label="Professional title" hint="Optional">
+            <input
+              id="profileJobTitle"
+              defaultValue={model.jobTitle}
+              maxLength={80}
+              autoComplete="organization-title"
+              placeholder="For example, Senior Staff Nurse"
+              onInput={markDirty}
+              className="accountProfileInput"
+            />
+          </FieldShell>
+        </div>
+      </div>
+    </section>
+
+    <section className="accountProfileSection" aria-labelledby="profileRosterHeading">
+      <div className="accountProfileSectionHeading compact">
+        <span>On this device</span>
+        <h4 id="profileRosterHeading">Roster highlight</h4>
+        <p>Choose which roster name should be highlighted as yours. This remains a private device preference.</p>
+      </div>
+      <FieldShell label="Your roster name">
+        <select
+          id="profileRosterName"
+          defaultValue={model.rosterName}
+          onChange={markDirty}
+          className="accountProfileInput accountProfileSelect"
+        >
           <option value="">Do not highlight a name</option>
           {model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </FieldShell>
+    </section>
+
+    <div className="accountIdentity accountIdentityVerified">
+      <span className="accountIdentityIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3 19 6v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3Z"></path>
+          <path d="m9 12 2 2 4-4"></path>
+        </svg>
+      </span>
+      <div className="accountIdentityCopy">
+        <span>Verified account identity</span>
+        <b id="profileApprovedName">{model.approvedName}</b>
+        <small id="profileEmail">{model.email}</small>
+        <p>Shared roster actions use this approved identity.</p>
+      </div>
     </div>
-    <div className="accountIdentity"><span>Approved account</span><b id="profileApprovedName">{model.approvedName}</b><small id="profileEmail">{model.email}</small><p>Shared roster actions use this approved identity.</p></div>
+
     {!model.featureAvailable && <p className="formMessage error" role="alert">Ask the administrator to run the V32 profile upgrade before saving your profile.</p>}
-    <div className="accountSaveRow"><div id="profileMessage" className={`formMessage ${model.messageType || ''}`} role="status" aria-live="polite">{model.message || ''}</div><button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={`primary ${dirty ? '' : 'hidden'}`} disabled={!model.featureAvailable}>Save profile</button></div>
+
+    <div className="accountSaveRow accountSaveRowPro">
+      <div id="profileMessage" className={`formMessage ${model.messageType || ''}`} role="status" aria-live="polite">{model.message || ''}</div>
+      <button
+        type="button"
+        id="saveProfileBtn"
+        onClick={() => act('profile-save')}
+        className={`primary accountProfileSave ${dirty ? '' : 'hidden'}`}
+        disabled={!model.featureAvailable}
+      >
+        Save profile
+      </button>
+    </div>
   </motion.section>;
 }
 
@@ -119,7 +236,7 @@ function AccountActions({ installed }: { installed: boolean }) {
   return <GroupedList>
     {actions.map(item => <ListRow
       key={item.action}
-      leading={<span className="tw:grid tw:h-9 tw:w-9 tw:place-items-center tw:rounded-xl tw:bg-teal-500/10 tw:text-sm tw:font-bold tw:text-[var(--accent-strong)]" aria-hidden="true">{item.icon}</span>}
+      leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>}
       title={item.title}
       subtitle={item.detail}
       onClick={() => act(item.action)}

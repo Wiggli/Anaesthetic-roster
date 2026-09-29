@@ -3685,3 +3685,1559 @@ html[data-theme="dark"] #today .nightSignal.needsReview .nightSignalGlyph{
   #today .nightTeamDetails>summary span:last-child{transition:none!important}
   #today .headActions button{transition:none!important}
 }
+
+
+/* 37.73 Night composition pass.
+   The Night destination is treated as one editorial flow: date -> assignment -> status -> team -> activity.
+   Clinical logic and interaction contracts remain owned by the existing application code. */
+#today{
+  --night-group:color-mix(in srgb,var(--night-surface) 94%,var(--night-paper));
+  --night-group-pressed:color-mix(in srgb,var(--night-surface) 86%,var(--night-control));
+}
+
+/* The header stays useful, but stops competing with the selected night. */
+#today>#appHeader{
+  margin-bottom:0!important;
+  padding-bottom:6px!important;
+  border-bottom:0!important;
+}
+#today .hospitalStrip img{
+  width:122px!important;
+  height:27px!important;
+}
+#today .hospitalStrip span{
+  margin-top:1px!important;
+  font-size:7.5px!important;
+  letter-spacing:.085em!important;
+}
+#today .headActions{
+  gap:0!important;
+}
+#today .adminSettingsBtn{
+  color:var(--night-muted)!important;
+}
+#today .headerChips{
+  margin-top:3px!important;
+}
+#today .headerLiveChip{
+  font-size:9.5px!important;
+}
+
+/* One continuous content column on phones. */
+#today>.nightOverviewPanel{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  width:100%!important;
+  max-width:680px!important;
+  margin:0 auto!important;
+  padding:0 0 calc(96px + env(safe-area-inset-bottom))!important;
+}
+
+/* The selected night is the temporal anchor, not a label next to a detached control. */
+#today .nightDateShell{
+  order:0!important;
+  margin:0!important;
+  padding:10px 0 18px!important;
+  border:0!important;
+}
+#today .nightDateShell .grid2{
+  display:block!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightDateLabel{
+  display:block!important;
+  color:var(--night-ink)!important;
+}
+#today .nightDateContext{
+  display:block;
+  margin:0 0 6px!important;
+  color:var(--night-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  letter-spacing:0!important;
+}
+#today .nightDateShell .dateNav{
+  display:grid!important;
+  grid-template-columns:44px minmax(0,1fr) 44px!important;
+  width:100%!important;
+  min-height:52px!important;
+  gap:0!important;
+  margin:0!important;
+  padding:4px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:var(--night-group)!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .dateNav button{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border-radius:14px!important;
+  color:var(--night-accent)!important;
+  font-size:25px!important;
+}
+#today .nightDateShell .dateNav button:active{
+  background:var(--night-group-pressed)!important;
+}
+#today .nightDateShell .dateNav input,
+#today .nightDateShell .dateNav .prettyDateButton{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0 8px!important;
+  color:var(--night-ink)!important;
+  font-size:15px!important;
+  font-weight:720!important;
+  letter-spacing:-.025em!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+}
+#today .nightDateShell .dateNav .prettyDateButton small{
+  display:none!important;
+}
+#today .nightDateShell .staffingCount{display:none!important}
+
+/* Identity, assignment, facts and contextual action are one object. */
+#today .personalNight{
+  order:1!important;
+  margin:0!important;
+  padding:0!important;
+}
+#today .personalNight>.sectionTitle{
+  margin:0 2px 8px!important;
+  color:var(--night-muted)!important;
+  font-size:12px!important;
+  font-weight:680!important;
+  letter-spacing:-.008em!important;
+}
+#today #personalNightCard,
+#today #personalNightCard>.personalHeroSurface{
+  display:block!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .personalAssignmentStage,
+#today #personalNightCard>article>div.personalAssignmentStage:nth-child(1){
+  overflow:hidden!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:24px!important;
+  background:var(--night-hero)!important;
+  color:var(--night-hero-text)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.12)!important;
+}
+body.dark #today .personalAssignmentStage,
+html[data-theme="dark"] #today .personalAssignmentStage{
+  background:#202022!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24)!important;
+}
+#today .personalAssignmentStage>.personalIdentity,
+#today #personalNightCard .personalAssignmentStage>.personalIdentity{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:48px!important;
+  margin:0!important;
+  padding:12px 16px 2px!important;
+  border:0!important;
+  color:var(--night-hero-text)!important;
+}
+#today .personalAssignmentStage .personalAvatar{
+  width:32px!important;
+  height:32px!important;
+  flex:0 0 32px!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.10)!important;
+  color:var(--night-hero-text)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)!important;
+  font-size:11px!important;
+}
+#today .personalAssignmentStage .personalAvatar i{
+  display:none!important;
+}
+#today .personalAssignmentStage .personalIdentityCopy{
+  display:flex!important;
+  min-width:0!important;
+  flex:1!important;
+  align-items:baseline!important;
+  gap:6px!important;
+}
+#today .personalAssignmentStage .personalIdentityCopy b{
+  color:var(--night-hero-text)!important;
+  font-size:12px!important;
+  font-weight:720!important;
+}
+#today .personalAssignmentStage .personalIdentityCopy small{
+  color:var(--night-hero-muted)!important;
+  font-size:10px!important;
+}
+#today .personalAssignmentStage .personalChangeBtn{
+  min-width:44px!important;
+  min-height:36px!important;
+  padding:0 4px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
+}
+#today .personalAssignmentHero{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:12px!important;
+  margin:0!important;
+  padding:13px 16px 16px!important;
+  border:0!important;
+  background:transparent!important;
+}
+#today .personalRoleIcon{
+  width:40px!important;
+  height:40px!important;
+  flex:0 0 40px!important;
+  border:1px solid rgba(255,255,255,.11)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.07)!important;
+  color:var(--night-hero-text)!important;
+}
+#today .personalRoleCopy small{
+  font-size:10px!important;
+  font-weight:620!important;
+  color:var(--night-hero-muted)!important;
+}
+#today .personalRoleCopy b{
+  margin:3px 0 4px!important;
+  font-size:clamp(28px,7vw,36px)!important;
+  font-weight:735!important;
+  line-height:1.02!important;
+  letter-spacing:-.052em!important;
+}
+#today .personalRoleCopy>span{
+  color:var(--night-hero-muted)!important;
+  font-size:11.5px!important;
+}
+#today #personalNightCard .personalFacts{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,.82fr) minmax(0,.95fr)!important;
+  gap:0!important;
+  margin:0 16px!important;
+  padding:0!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.11)!important;
+  background:transparent!important;
+}
+#today #personalNightCard .personalFacts>div,
+#today #personalNightCard .personalFacts>div:last-child,
+#today #personalNightCard .personalFacts>.personalFactContext{
+  grid-column:auto!important;
+  min-width:0!important;
+  min-height:60px!important;
+  padding:11px 10px 10px!important;
+  border:0!important;
+  border-left:1px solid rgba(255,255,255,.09)!important;
+  border-bottom:0!important;
+  background:transparent!important;
+}
+#today #personalNightCard .personalFacts>div:first-child,
+#today #personalNightCard .personalFacts>.personalFactContext{
+  padding-left:0!important;
+  border-left:0!important;
+}
+#today #personalNightCard .personalFacts dt{
+  margin-bottom:4px!important;
+  color:var(--night-hero-muted)!important;
+  font-size:9.5px!important;
+  font-weight:620!important;
+}
+#today #personalNightCard .personalFacts dd{
+  color:var(--night-hero-text)!important;
+  font-size:11px!important;
+  font-weight:680!important;
+  line-height:1.25!important;
+}
+#today .personalContextAction{
+  width:100%!important;
+  min-height:50px!important;
+  margin:0!important;
+  padding:0 16px!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.11)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  font-size:11.5px!important;
+  font-weight:670!important;
+}
+#today .personalContextAction:active{
+  background:rgba(255,255,255,.055)!important;
+}
+#today .personalContextAction span{
+  color:var(--night-accent)!important;
+}
+
+/* Team status is one compact grouped readout. */
+#today .nightSummaryTitle,
+#today>.nightOverviewPanel>.nightSummaryTitle{
+  order:2!important;
+  margin:24px 2px 8px!important;
+  padding:0!important;
+  border:0!important;
+}
+#today .nightSummaryTitle .sectionTitle{
+  margin:0!important;
+  color:var(--night-ink)!important;
+  font-size:13.5px!important;
+  font-weight:720!important;
+  letter-spacing:-.018em!important;
+}
+#today #nightStatusRow{
+  order:3!important;
+  margin:0!important;
+}
+#today #nightStatusRow>.nightSignal{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  padding:12px 14px!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:17px!important;
+  background:var(--night-group)!important;
+  box-shadow:none!important;
+}
+#today .nightSignalLead{
+  gap:12px!important;
+}
+#today .nightSignalLeadCopy{
+  display:block!important;
+}
+#today .nightSignalLeadCopy small{
+  display:none!important;
+}
+#today .nightSignalLeadCopy strong{
+  display:flex!important;
+  align-items:baseline!important;
+  color:var(--night-ink)!important;
+  font-size:13px!important;
+  font-weight:650!important;
+}
+#today .nightSignalLeadCopy strong b{
+  margin-right:5px!important;
+  font-size:21px!important;
+  font-weight:760!important;
+}
+#today .nightSignalState{
+  gap:5px!important;
+  color:var(--night-accent-strong)!important;
+  font-size:11.5px!important;
+  font-weight:680!important;
+}
+#today .nightSignalGlyph{
+  display:inline!important;
+  width:auto!important;
+  height:auto!important;
+  padding:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  font-size:15px!important;
+}
+#today .nightSignalMeta,
+#today #nightStatusRow>.nightSignal>.nightSignalMeta{
+  gap:6px!important;
+  margin:5px 0 0!important;
+  color:var(--night-muted)!important;
+  font-size:10.5px!important;
+}
+#today .nightSignalMeta button{
+  min-height:30px!important;
+  font-size:10.5px!important;
+  font-weight:590!important;
+}
+#today .nightSignalMeta .nightSignalTask{
+  margin-top:1px!important;
+  color:#b86b00!important;
+  font-weight:720!important;
+}
+#today #alerts{
+  order:4!important;
+  margin-top:8px!important;
+}
+
+/* Team allocation is one disclosure group. Full roster belongs inside it, not as a loose row. */
+#today .nightTeamDetails{
+  order:5!important;
+  margin:10px 0 0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:17px!important;
+  background:var(--night-group)!important;
+  box-shadow:none!important;
+}
+#today .nightTeamDetails>summary{
+  min-height:60px!important;
+  padding:0 14px!important;
+  border:0!important;
+}
+#today .nightTeamDetails>summary strong{
+  font-size:13.5px!important;
+  font-weight:720!important;
+}
+#today .nightTeamDetails>summary small{
+  margin-top:2px!important;
+  color:var(--night-muted)!important;
+  font-size:10.5px!important;
+}
+#today .nightTeamDetails>summary span:last-child{
+  font-size:18px!important;
+}
+#today .nightTeamDetails[open]>summary{
+  border-bottom:1px solid var(--night-rule)!important;
+}
+#today .nightTeamDetails .roles{
+  margin:0!important;
+  padding:0!important;
+}
+#today #roles>.nightSituationTimeline{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .nightSituationTimeline .rosterRow{
+  min-height:60px!important;
+  padding:10px 36px 10px 14px!important;
+  border-top:1px solid var(--night-rule)!important;
+}
+#today .nightSituationTimeline .rosterRow:first-child{
+  border-top:0!important;
+}
+#today .nightSituationTimeline .rosterRow.mine{
+  background:color-mix(in srgb,var(--night-accent) 7%,transparent)!important;
+}
+#today .nightTeamDetails .rosterShortcutRow{
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  border-top:1px solid var(--night-rule)!important;
+}
+#today .nightTeamDetails .rosterShortcutBtn{
+  min-height:48px!important;
+  padding:0 14px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .nightTeamDetails .rosterShortcutBtn + .rosterShortcutBtn{
+  border-top:1px solid var(--night-rule)!important;
+}
+
+/* Recent activity is in the same flow and always reads heading -> content. */
+#today .recentActivityPanel{
+  order:6!important;
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:24px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .recentActivityPanel>.sectionHeadingRow{
+  order:0!important;
+  display:flex!important;
+  margin:0 2px 7px!important;
+  padding:0!important;
+}
+#today .recentActivityPanel .sectionTitle{
+  margin:0!important;
+  color:var(--night-ink)!important;
+  font-size:13.5px!important;
+  font-weight:720!important;
+  letter-spacing:-.018em!important;
+}
+#today .recentActivityPanel .time{
+  margin:2px 0 0!important;
+  color:var(--night-muted)!important;
+  font-size:10.5px!important;
+}
+#today #recentActivityList{
+  order:1!important;
+  display:block!important;
+}
+#today #recentActivityList>.emptyRecentActivity{
+  min-height:0!important;
+  margin:0!important;
+  padding:10px 2px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--night-muted)!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+#today #recentActivityList>.activityTimeline{
+  border:0!important;
+  border-radius:17px!important;
+  background:var(--night-group)!important;
+  box-shadow:none!important;
+}
+#today .activityTimeline .recentActivityRow{
+  min-height:58px!important;
+  padding:11px 13px!important;
+  border-top:1px solid var(--night-rule)!important;
+}
+#today .activityTimeline .recentActivityRow:first-child{
+  border-top:0!important;
+}
+
+/* Avoid tiny-phone crowding without turning the main assignment back into stacked cards. */
+@media(max-width:390px){
+  #today .hospitalStrip img{width:110px!important}
+  #today .nightDateShell .dateNav{
+    grid-template-columns:42px minmax(0,1fr) 42px!important;
+  }
+  #today .nightDateShell .dateNav button{
+    width:42px!important;
+    min-width:42px!important;
+  }
+  #today .personalAssignmentStage>.personalIdentity{
+    padding-inline:14px!important;
+  }
+  #today .personalAssignmentHero{
+    padding-inline:14px!important;
+  }
+  #today #personalNightCard .personalFacts{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    margin-inline:14px!important;
+  }
+  #today #personalNightCard .personalFacts>.personalFactContext{
+    grid-column:1/-1!important;
+    min-height:52px!important;
+    border-bottom:1px solid rgba(255,255,255,.09)!important;
+  }
+  #today #personalNightCard .personalFacts>div:nth-child(2){
+    padding-left:0!important;
+    border-left:0!important;
+  }
+  #today .personalContextAction{
+    padding-inline:14px!important;
+  }
+  #today .personalRoleCopy b{
+    font-size:28px!important;
+  }
+}
+
+/* Desktop keeps the same reading order while giving status and team detail a quiet side column. */
+@media(min-width:760px){
+  #today>.nightOverviewPanel{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr)!important;
+    column-gap:34px!important;
+    row-gap:0!important;
+    max-width:940px!important;
+  }
+  #today .nightDateShell{
+    grid-column:1/-1!important;
+    grid-row:1!important;
+  }
+  #today .personalNight{
+    grid-column:1!important;
+    grid-row:2 / span 4!important;
+  }
+  #today .nightSummaryTitle{
+    grid-column:2!important;
+    grid-row:2!important;
+    margin-top:0!important;
+  }
+  #today #nightStatusRow{
+    grid-column:2!important;
+    grid-row:3!important;
+  }
+  #today #alerts{
+    grid-column:2!important;
+    grid-row:4!important;
+  }
+  #today .nightTeamDetails{
+    grid-column:2!important;
+    grid-row:5!important;
+  }
+  #today .recentActivityPanel{
+    grid-column:1/-1!important;
+    grid-row:6!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  #today .nightDateShell .dateNav button,
+  #today .personalContextAction{
+    transition:none!important;
+  }
+}
+
+
+/* 37.73 DOM-contract correction: keep identity as a direct child while the whole assignment still reads as one surface. */
+#today #personalNightCard>.personalHeroSurface{
+  overflow:hidden!important;
+  border-radius:24px!important;
+  background:var(--night-hero)!important;
+  color:var(--night-hero-text)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.12)!important;
+}
+body.dark #today #personalNightCard>.personalHeroSurface,
+html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
+  background:#202022!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24)!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:48px!important;
+  margin:0!important;
+  padding:12px 16px 2px!important;
+  border:0!important;
+  color:var(--night-hero-text)!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalAvatar{
+  width:32px!important;
+  height:32px!important;
+  flex:0 0 32px!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.10)!important;
+  color:var(--night-hero-text)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)!important;
+  font-size:11px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy{
+  display:flex!important;
+  min-width:0!important;
+  flex:1!important;
+  align-items:baseline!important;
+  gap:6px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy b{
+  color:var(--night-hero-text)!important;
+  font-size:12px!important;
+  font-weight:720!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy small{
+  color:var(--night-hero-muted)!important;
+  font-size:10px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalChangeBtn{
+  min-width:44px!important;
+  min-height:36px!important;
+  padding:0 4px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
+}
+#today .personalAssignmentStage,
+#today #personalNightCard>article>div.personalAssignmentStage:nth-child(2){
+  overflow:visible!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+@media(max-width:390px){
+  #today #personalNightCard>.personalHeroSurface>.personalIdentity{
+    padding-inline:14px!important;
+  }
+}
+
+
+/* 37.73 mobile density refinement after screenshot review.
+   Keep the hierarchy, but make the first screen operationally useful at a glance. */
+#today .nightDateContext{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#today .nightDateShell{
+  padding:8px 0 13px!important;
+}
+#today .nightDateShell .dateNav{
+  grid-template-columns:40px minmax(0,1fr) 40px!important;
+  min-height:46px!important;
+  padding:2px!important;
+  border-radius:15px!important;
+}
+#today .nightDateShell .dateNav button{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  min-height:40px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-size:22px!important;
+}
+#today .nightDateShell .dateNav input,
+#today .nightDateShell .dateNav .prettyDateButton{
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 6px!important;
+  font-size:14px!important;
+  font-weight:710!important;
+}
+
+#today .personalNight>.sectionTitle{
+  margin:0 2px 6px!important;
+  font-size:11.5px!important;
+}
+#today #personalNightCard>.personalHeroSurface{
+  border-radius:20px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity{
+  min-height:40px!important;
+  padding:9px 14px 0!important;
+  gap:8px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalAvatar{
+  width:28px!important;
+  height:28px!important;
+  flex-basis:28px!important;
+  font-size:10px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy{
+  gap:5px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy b{
+  font-size:11.5px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy small{
+  font-size:9.5px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalChangeBtn{
+  min-height:34px!important;
+  font-size:11px!important;
+}
+#today .personalAssignmentHero{
+  gap:10px!important;
+  padding:8px 14px 11px!important;
+}
+#today .personalRoleIcon{
+  width:36px!important;
+  height:36px!important;
+  flex-basis:36px!important;
+  border-radius:11px!important;
+  font-size:11.5px!important;
+}
+#today .personalRoleCopy small{
+  font-size:9.5px!important;
+}
+#today .personalRoleCopy b{
+  margin:2px 0 3px!important;
+  font-size:clamp(26px,6.4vw,32px)!important;
+}
+#today .personalRoleCopy>span{
+  font-size:10.5px!important;
+}
+#today #personalNightCard .personalFacts{
+  grid-template-columns:minmax(0,1.22fr) minmax(0,.9fr) minmax(0,.96fr)!important;
+  margin:0 14px!important;
+}
+#today #personalNightCard .personalFacts>div,
+#today #personalNightCard .personalFacts>div:last-child,
+#today #personalNightCard .personalFacts>.personalFactContext{
+  grid-column:auto!important;
+  min-height:50px!important;
+  padding:8px 8px 8px!important;
+  border-left:1px solid rgba(255,255,255,.09)!important;
+  border-bottom:0!important;
+}
+#today #personalNightCard .personalFacts>div:first-child,
+#today #personalNightCard .personalFacts>.personalFactContext{
+  padding-left:0!important;
+  border-left:0!important;
+}
+#today #personalNightCard .personalFacts dt{
+  margin-bottom:3px!important;
+  font-size:9px!important;
+}
+#today #personalNightCard .personalFacts dd{
+  font-size:10.5px!important;
+  line-height:1.2!important;
+}
+#today .personalContextAction{
+  min-height:44px!important;
+  padding:0 14px!important;
+  font-size:11px!important;
+}
+
+/* The status title is carried by the status readout itself, saving a redundant line. */
+#today .nightSummaryTitle,
+#today>.nightOverviewPanel>.nightSummaryTitle{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#today #nightStatusRow{
+  margin:17px 0 0!important;
+}
+#today #nightStatusRow>.nightSignal{
+  padding:10px 12px!important;
+  border-radius:15px!important;
+}
+#today .nightSignalLeadCopy{
+  display:grid!important;
+  gap:1px!important;
+}
+#today .nightSignalLeadCopy small{
+  display:block!important;
+  color:var(--night-muted)!important;
+  font-size:9px!important;
+  font-weight:620!important;
+}
+#today .nightSignalLeadCopy strong{
+  font-size:11.5px!important;
+}
+#today .nightSignalLeadCopy strong b{
+  margin-right:4px!important;
+  font-size:19px!important;
+}
+#today .nightSignalState{
+  font-size:11px!important;
+}
+#today .nightSignalMeta,
+#today #nightStatusRow>.nightSignal>.nightSignalMeta{
+  margin-top:3px!important;
+  font-size:10px!important;
+}
+#today .nightSignalMeta button{
+  min-height:26px!important;
+  font-size:10px!important;
+}
+#today .nightTeamDetails{
+  margin-top:8px!important;
+  border-radius:15px!important;
+}
+#today .nightTeamDetails>summary{
+  min-height:54px!important;
+  padding:0 12px!important;
+}
+#today .nightTeamDetails>summary strong{
+  font-size:12.5px!important;
+}
+#today .nightTeamDetails>summary small{
+  font-size:9.5px!important;
+}
+#today .recentActivityPanel{
+  margin-top:18px!important;
+}
+#today .recentActivityPanel>.sectionHeadingRow{
+  margin-bottom:5px!important;
+}
+#today .recentActivityPanel .sectionTitle{
+  font-size:12.5px!important;
+}
+#today .recentActivityPanel .time{
+  font-size:9.5px!important;
+}
+#today #recentActivityList>.emptyRecentActivity{
+  padding-top:7px!important;
+  font-size:10.5px!important;
+}
+
+/* Keep the three at-a-glance facts on one row even on narrow supported phones. */
+@media(max-width:390px){
+  #today #personalNightCard .personalFacts{
+    grid-template-columns:minmax(0,1.22fr) minmax(0,.9fr) minmax(0,.96fr)!important;
+  }
+  #today #personalNightCard .personalFacts>.personalFactContext{
+    grid-column:auto!important;
+    min-height:50px!important;
+    border-bottom:0!important;
+  }
+  #today #personalNightCard .personalFacts>div:nth-child(2){
+    padding-left:8px!important;
+    border-left:1px solid rgba(255,255,255,.09)!important;
+  }
+  #today #personalNightCard .personalFacts dd{
+    font-size:10px!important;
+  }
+  #today .personalRoleCopy b{
+    font-size:26px!important;
+  }
+}
+
+
+/* 37.73 team composition refinement: one grouped team surface instead of stacked status/allocation cards. */
+#today .teamOverviewGroup{
+  order:2!important;
+  display:block!important;
+  margin:17px 0 0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--night-group)!important;
+  box-shadow:none!important;
+}
+#today .teamOverviewGroup .nightSummaryTitle{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:-1px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#today .teamOverviewGroup #nightStatusRow{
+  margin:0!important;
+}
+#today .teamOverviewGroup #nightStatusRow>.nightSignal{
+  margin:0!important;
+  padding:10px 12px 8px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .teamOverviewGroup .nightSignalLead,
+#today .teamOverviewGroup .nightSignalMeta,
+#today .teamOverviewGroup #nightStatusRow>.nightSignal>.nightSignalMeta{
+  min-height:0!important;
+}
+#today .teamOverviewGroup .nightSignalLead{
+  align-items:center!important;
+}
+#today .teamOverviewGroup .nightSignalMeta{
+  margin-top:2px!important;
+}
+#today .teamOverviewGroup .nightSignalMeta button{
+  min-height:22px!important;
+}
+#today .teamOverviewGroup #alerts{
+  margin:0!important;
+}
+#today .teamOverviewGroup #alerts:not(:empty){
+  padding:0 12px 9px!important;
+  border-top:1px solid var(--night-rule)!important;
+}
+#today .teamOverviewGroup .nightTeamDetails{
+  margin:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-top:1px solid var(--night-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .teamOverviewGroup .nightTeamDetails>summary{
+  min-height:52px!important;
+  padding:0 12px!important;
+}
+#today .teamOverviewGroup .nightTeamDetails[open]>summary{
+  border-bottom:1px solid var(--night-rule)!important;
+}
+#today .recentActivityPanel{
+  order:3!important;
+  margin-top:16px!important;
+}
+
+/* Keep the desktop composition editorial: assignment left, one compact team group right, activity across both. */
+@media(min-width:760px){
+  #today>.nightOverviewPanel{
+    grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr)!important;
+  }
+  #today .personalNight{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+  #today .teamOverviewGroup{
+    grid-column:2!important;
+    grid-row:2!important;
+    align-self:start!important;
+    margin-top:0!important;
+  }
+  #today .recentActivityPanel{
+    grid-column:1/-1!important;
+    grid-row:3!important;
+  }
+}
+
+
+/* 37.73 final phone hierarchy: remove legacy metric sizing from the new team readout
+   and let horizontal page gestures win over the assignment disclosure button. */
+#today #nightStatusRow>.nightSignal>.nightSignalLead{
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today #nightStatusRow>.nightSignal>.nightSignalMeta{
+  min-height:0!important;
+  margin:3px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .personalContextAction{
+  touch-action:pan-y pinch-zoom!important;
+}
+
+/* 37.73 dark-mode contrast correction after visual review.
+   Legacy dark rules target the nested date <strong>; keep the selected night fully legible. */
+body.dark #today .nightDateShell .prettyDateButton strong,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
+  color:var(--night-ink)!important;
+}
+
+/* 37.73 physical page geometry.
+   The visible Night destination must own at least the same viewport-height region as
+   a staged swipe page, so direct manipulation remains available below compact content. */
+#today{
+  min-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important;
+}
+
+/* 37.73 dark-mode date anchor.
+   The selected night is primary navigation content, not secondary metadata. */
+body.dark #today .nightDateShell .prettyDateButton,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton{
+  color:#f5f5f7!important;
+  opacity:1!important;
+}
+body.dark #today .nightDateShell .prettyDateButton strong,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
+  color:#f5f5f7!important;
+  opacity:1!important;
+}
+
+
+/* Professional account profile candidate.
+   The profile is treated as a first-class app destination inside the account sheet:
+   identity first, editable personal details second, verified account context third. */
+.accountSheet{
+  --account-accent:#0071e3;
+  --account-accent-strong:#0066cc;
+  --account-accent-soft:#eaf3ff;
+  --account-paper:#f5f5f7;
+  --account-surface:#ffffff;
+  --account-surface-subtle:#f2f2f7;
+  --account-ink:#1d1d1f;
+  --account-muted:#6e6e73;
+  --account-rule:#d2d2d7;
+  --scene-accent:var(--account-accent);
+  --scene-soft:var(--account-accent-soft);
+  --liquid-accent:var(--account-accent);
+  --liquid-accent-strong:var(--account-accent-strong);
+}
+body.dark .accountSheet,
+html[data-theme="dark"] .accountSheet{
+  --account-accent:#0a84ff;
+  --account-accent-strong:#409cff;
+  --account-accent-soft:#17263a;
+  --account-paper:#000000;
+  --account-surface:#1c1c1e;
+  --account-surface-subtle:#2c2c2e;
+  --account-ink:#f5f5f7;
+  --account-muted:#98989d;
+  --account-rule:#38383a;
+}
+
+.accountSheet[open]{
+  color:var(--account-ink)!important;
+  background:var(--account-paper)!important;
+}
+.accountSheetHeader{
+  position:sticky!important;
+  top:0;
+  z-index:4;
+  border-bottom:1px solid color-mix(in srgb,var(--account-rule) 76%,transparent)!important;
+  background:color-mix(in srgb,var(--account-paper) 90%,transparent)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  backdrop-filter:blur(20px) saturate(150%);
+}
+.accountSheetHeader>div>span{
+  color:var(--account-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+.accountSheetHeader h2{
+  color:var(--account-ink)!important;
+  font-size:24px!important;
+  font-weight:740!important;
+  letter-spacing:-.035em!important;
+}
+.accountSheetHeader button{
+  color:var(--account-accent)!important;
+  font-weight:700!important;
+}
+.accountSheetScroll{
+  gap:18px!important;
+  background:var(--account-paper)!important;
+}
+.accountSheetIntro{
+  display:none!important;
+}
+
+#profileExperience>.accountProfilePanel.accountProfileProfessional{
+  display:grid!important;
+  gap:16px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.accountProfileHeroPro{
+  display:grid!important;
+  justify-items:center!important;
+  gap:12px!important;
+  padding:24px 20px 20px!important;
+  border:0!important;
+  border-radius:24px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+  text-align:center!important;
+}
+.accountHeroPhotoWrap{
+  display:grid;
+  place-items:center;
+}
+.accountHeroPhoto.accountPhotoButton{
+  position:relative!important;
+  display:grid!important;
+  width:104px!important;
+  height:104px!important;
+  min-width:104px!important;
+  min-height:104px!important;
+  place-items:center!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:4px solid var(--account-surface)!important;
+  border-radius:50%!important;
+  background:var(--account-surface-subtle)!important;
+  color:var(--account-accent)!important;
+  box-shadow:0 0 0 1px var(--account-rule),0 10px 28px rgba(0,0,0,.08)!important;
+  font-size:34px!important;
+  font-weight:760!important;
+}
+body.dark .accountHeroPhoto.accountPhotoButton,
+html[data-theme="dark"] .accountHeroPhoto.accountPhotoButton{
+  box-shadow:0 0 0 1px var(--account-rule),0 12px 30px rgba(0,0,0,.34)!important;
+}
+.accountHeroPhoto img{
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+}
+.accountHeroPhoto img.hidden,
+.accountHeroPhoto>span.hidden{
+  display:none!important;
+}
+.accountPhotoEditBadge{
+  position:absolute!important;
+  right:-1px!important;
+  bottom:3px!important;
+  display:grid!important;
+  width:31px!important;
+  height:31px!important;
+  place-items:center!important;
+  border:3px solid var(--account-surface)!important;
+  border-radius:50%!important;
+  background:var(--account-accent)!important;
+  color:#fff!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.14)!important;
+}
+.accountPhotoEditBadge svg{
+  width:15px!important;
+  height:15px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
+.accountProfileIntroPro{
+  display:grid!important;
+  justify-items:center!important;
+  gap:3px!important;
+  min-width:0!important;
+}
+.accountPrivacyBadge{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  margin-bottom:4px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:var(--account-accent-soft)!important;
+  color:var(--account-accent-strong)!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+.accountPrivacyBadge svg{
+  width:12px!important;
+  height:12px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.accountProfileIntroPro h3{
+  max-width:100%!important;
+  margin:0!important;
+  overflow:hidden!important;
+  color:var(--account-ink)!important;
+  font-size:25px!important;
+  font-weight:750!important;
+  line-height:1.1!important;
+  letter-spacing:-.04em!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.accountProfileRole{
+  margin:2px 0 0!important;
+  color:var(--account-muted)!important;
+  font-size:13px!important;
+  font-weight:600!important;
+}
+.accountProfileEmail{
+  max-width:100%!important;
+  overflow:hidden!important;
+  color:var(--account-muted)!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.accountPhotoActionsPro{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:14px!important;
+  min-height:30px!important;
+  margin-top:-4px!important;
+}
+.accountPhotoActionsPro button{
+  min-height:32px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--account-accent)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.accountPhotoActionsPro #removeProfilePhoto{
+  color:#d70015!important;
+}
+
+.accountProfileSection{
+  display:grid!important;
+  gap:14px!important;
+  padding:18px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+.accountProfileSectionHeading{
+  display:grid!important;
+  gap:3px!important;
+}
+.accountProfileSectionHeading>span{
+  color:var(--account-accent-strong)!important;
+  font-size:10px!important;
+  font-weight:720!important;
+}
+.accountProfileSectionHeading h4{
+  margin:0!important;
+  color:var(--account-ink)!important;
+  font-size:16px!important;
+  font-weight:730!important;
+  line-height:1.2!important;
+  letter-spacing:-.02em!important;
+}
+.accountProfileSectionHeading p{
+  margin:2px 0 0!important;
+  color:var(--account-muted)!important;
+  font-size:11.5px!important;
+  line-height:1.45!important;
+}
+.accountProfileSectionHeading.compact p{
+  margin-top:1px!important;
+}
+
+.accountProfileFields,
+.accountNameFields{
+  display:grid!important;
+  gap:12px!important;
+}
+.accountProfileInput{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:50px!important;
+  padding:0 13px!important;
+  border:1px solid var(--account-rule)!important;
+  border-radius:13px!important;
+  background:var(--account-surface-subtle)!important;
+  color:var(--account-ink)!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+  font-weight:560!important;
+  outline:none!important;
+  transition:border-color 120ms ease,box-shadow 120ms ease,background-color 120ms ease!important;
+}
+.accountProfileInput:focus{
+  border-color:color-mix(in srgb,var(--account-accent) 55%,var(--account-rule))!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--account-accent) 13%,transparent)!important;
+}
+.accountProfileInput::placeholder{
+  color:color-mix(in srgb,var(--account-muted) 76%,transparent)!important;
+}
+.accountProfileSelect{
+  appearance:auto!important;
+  -webkit-appearance:menulist!important;
+}
+#profileExperience .fieldShell label,
+#profileExperience .fieldLabel{
+  color:var(--account-muted)!important;
+}
+
+.accountIdentityVerified{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:start!important;
+  padding:16px 18px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+.accountIdentityIcon{
+  display:grid!important;
+  width:40px!important;
+  height:40px!important;
+  place-items:center!important;
+  border-radius:13px!important;
+  background:var(--account-accent-soft)!important;
+  color:var(--account-accent-strong)!important;
+}
+.accountIdentityIcon svg{
+  width:20px!important;
+  height:20px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.accountIdentityCopy{
+  display:grid!important;
+  min-width:0!important;
+  gap:2px!important;
+}
+.accountIdentityCopy>span{
+  color:var(--account-muted)!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+.accountIdentityCopy>b{
+  overflow:hidden!important;
+  color:var(--account-ink)!important;
+  font-size:14px!important;
+  font-weight:720!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.accountIdentityCopy>small{
+  overflow:hidden!important;
+  color:var(--account-muted)!important;
+  font-size:11px!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.accountIdentityCopy>p{
+  margin:5px 0 0!important;
+  color:var(--account-muted)!important;
+  font-size:10.5px!important;
+  line-height:1.4!important;
+}
+
+.accountSaveRowPro{
+  display:flex!important;
+  min-height:0!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:12px!important;
+  padding:0 2px!important;
+}
+.accountSaveRowPro .formMessage{
+  min-width:0!important;
+  flex:1!important;
+  margin:0!important;
+  color:var(--account-muted)!important;
+  font-size:11px!important;
+}
+.accountProfileSave{
+  min-width:118px!important;
+  min-height:46px!important;
+  border-radius:14px!important;
+  background:var(--account-accent)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:720!important;
+}
+
+.accountSheet .accountGroup{
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+.accountSheet .accountGroup>h3,
+.accountSheet .accountSectionHeading h3{
+  color:var(--account-ink)!important;
+}
+.accountGroupDescription,
+.accountSheet .accountSectionHeading p{
+  color:var(--account-muted)!important;
+}
+.accountSheet #appearanceExperience{
+  background:var(--account-surface-subtle)!important;
+}
+.accountSheet #appearanceExperience button[aria-pressed="true"]{
+  background:var(--account-surface)!important;
+  color:var(--account-ink)!important;
+}
+.accountActionIcon{
+  display:grid!important;
+  width:36px!important;
+  height:36px!important;
+  place-items:center!important;
+  border-radius:11px!important;
+  background:var(--account-accent-soft)!important;
+  color:var(--account-accent-strong)!important;
+  font-size:14px!important;
+  font-weight:760!important;
+}
+.accountSheet .accountSignOut{
+  min-height:48px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--account-surface)!important;
+  color:#d70015!important;
+  box-shadow:none!important;
+  font-weight:700!important;
+}
+.accountSheet .accountVersion{
+  color:var(--account-muted)!important;
+}
+
+@media(max-width:520px){
+  .accountSheet[open]{
+    inset:auto 0 0!important;
+    width:100%!important;
+    max-width:none!important;
+    height:min(96dvh,980px)!important;
+    max-height:96dvh!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:28px 28px 0 0!important;
+  }
+  .accountSheetHeader{
+    padding:10px 18px 12px!important;
+  }
+  .accountSheetScroll{
+    padding:14px 14px calc(24px + env(safe-area-inset-bottom))!important;
+  }
+  .accountProfileHeroPro{
+    padding:22px 16px 18px!important;
+  }
+  .accountHeroPhoto.accountPhotoButton{
+    width:96px!important;
+    height:96px!important;
+    min-width:96px!important;
+    min-height:96px!important;
+  }
+  .accountProfileIntroPro h3{
+    font-size:23px!important;
+  }
+  .accountProfileSection,
+  .accountIdentityVerified{
+    padding:16px!important;
+  }
+}
+
+@media(min-width:760px){
+  .accountProfileHeroPro{
+    grid-template-columns:auto minmax(0,1fr)!important;
+    justify-items:start!important;
+    align-items:center!important;
+    gap:20px!important;
+    text-align:left!important;
+  }
+  .accountProfileIntroPro{
+    justify-items:start!important;
+    text-align:left!important;
+  }
+  .accountPhotoActionsPro{
+    justify-content:flex-start!important;
+    padding-left:124px!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .accountProfileInput{
+    transition:none!important;
+  }
+}

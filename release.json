@@ -1,12 +1,14 @@
 {
-  "version": "37.72",
+  "version": "37.73",
   "date": "29 September 2026",
-  "title": "Refine Night with Apple-style clarity",
-  "summary": "Rebuilds the Night screen around a graphite assignment focus, neutral surfaces and restrained blue interaction cues.",
+  "title": "Unify Night and the professional profile",
+  "summary": "Recomposes Night into one clear mobile hierarchy and rebuilds the private account profile as a polished professional app experience.",
   "changes": [
-    "Night now uses a graphite and cool-neutral visual system with restrained blue reserved for actions, selected navigation and meaningful status instead of the previous teal treatment.",
-    "The personal assignment is the clear focal point, with role, colleague, duty time and break organised through calmer system typography, spacing and progressive disclosure.",
-    "The redundant header appearance shortcut has been removed; Light, Automatic and Dark remain available in Account settings, while the existing swipe gestures and clinical roster behaviour stay unchanged."
+    "Night now reads as one deliberate flow from selected date to personal assignment, team state, allocation and recent activity, reducing disconnected labels, separators and floating actions.",
+    "The personal assignment combines identity, role, colleague, duty time, break and the contextual night-situation action into one focused surface while preserving existing roster and swipe behaviour.",
+    "Team status and Team allocation are grouped into one compact disclosure area, with full-roster access placed inside the allocation context and a quieter recent-activity empty state.",
+    "The account profile now uses a professional identity-first layout with a larger editable photo, preferred name and professional title, clear private roster highlighting, and a distinct verified account identity section.",
+    "The Night and profile experiences use neutral graphite and cool surfaces with restrained blue interaction cues, while light, dark and automatic appearance, accessibility and all existing account actions remain intact."
   ],
   "update_policy": "important"
 }
