@@ -2790,11 +2790,12 @@ body.dark #today,html[data-theme="dark"] #today{
 #today>#appHeader{
   position:relative!important;
   inset:auto!important;
+  box-sizing:border-box!important;
   width:calc(100% + 24px)!important;
   max-width:none!important;
   min-height:0!important;
   margin:0 -12px!important;
-  padding:calc(10px + env(safe-area-inset-top)) 0 8px!important;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 8px!important;
   border:0!important;
   border-bottom:1px solid var(--night-rule)!important;
   border-radius:0!important;
