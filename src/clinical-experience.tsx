@@ -221,7 +221,7 @@ function NightStatus({ model }: { model: NightSummary }) {
   return <div className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Team staffing and plan status">
     <div className="nightSignalLead">
       <div className="nightSignalLeadCopy">
-        <small>TEAM TONIGHT</small>
+        <small>Team tonight</small>
         <strong><b>{model.nurseCount}</b> nurses</strong>
       </div>
       <span className="nightSignalState">
