@@ -971,7 +971,7 @@ body[data-view="changes"] main{padding-bottom:calc(var(--liquid-nav-height) + 38
   background:var(--break-accent);
 }
 .liquidBreakGroup-first{--break-accent:#805fc3}
-.liquidBreakGroup-second{--break-accent:#188d8a}
+.liquidBreakGroup-second{--break-accent:#0071e3}
 .liquidBreakGroup-labour{--break-accent:#c77a16}
 .liquidBreakPerson{
   background:transparent!important;
@@ -2005,7 +2005,7 @@ html[data-theme="dark"] .bottom.reactTabs{
   --scene-ink:#17242a;
   --scene-secondary:#526269;
   --scene-line:#dce3e5;
-  --scene-accent:#087c77;
+  --scene-accent:#0071e3;
   --scene-soft:#e8f4f2;
   --scene-radius:20px;
   --scene-space:clamp(18px,3vw,30px);
@@ -2271,9 +2271,9 @@ summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--scene-acc
 #today>#appHeader{max-width:none;width:calc(100% + 24px);margin:0 -12px 18px!important}
 #appHeader .head{min-height:52px}
 #appHeader .motto{max-height:none!important;overflow:visible!important;line-height:1.35!important}
-#today .rosterRow-first{border-left-color:#0d928d!important}
-#today .rosterRow-first .rosterRoleMark{color:#087b78!important;background:#e2f4f1!important;border-color:#a7ded9!important}
-body.dark #today .rosterRow-first .rosterRoleMark{color:#8de2d9!important;background:#193936!important;border-color:#35635f!important}
+#today .rosterRow-first{border-left-color:#0071e3!important}
+#today .rosterRow-first .rosterRoleMark{color:#0066cc!important;background:#eaf3ff!important;border-color:#b7d7ff!important}
+body.dark #today .rosterRow-first .rosterRoleMark{color:#409cff!important;background:#17263a!important;border-color:#274a70!important}
 body.dark,html[data-theme="dark"] body{background:var(--scene-bg)!important}
 @media(max-width:540px){
   #appHeader .motto{font-size:10px!important;line-height:1.3!important;max-width:190px}
@@ -6467,5 +6467,46 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   }
   #chat .chatTeamConsole{
     grid-template-rows:auto auto minmax(170px,28dvh) auto!important;
+  }
+}
+
+
+/* 37.74 final context and transcript polish. */
+#today .nightDateShell .dateNav{
+  min-height:48px!important;
+}
+#today .nightDateShell .prettyDateButton{
+  display:grid!important;
+  height:44px!important;
+  min-height:44px!important;
+  align-content:center!important;
+  gap:1px!important;
+}
+#today .nightDateShell .prettyDateButton strong{
+  color:var(--night-ink)!important;
+  font-size:13.5px!important;
+  font-weight:730!important;
+  line-height:1.12!important;
+}
+#today .nightDateShell .prettyDateButton small{
+  display:block!important;
+  color:var(--night-muted)!important;
+  font-size:8.5px!important;
+  font-weight:600!important;
+  line-height:1.1!important;
+}
+body.dark #today .nightDateShell .prettyDateButton small,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton small{
+  color:var(--night-muted)!important;
+}
+#chat .chatTeamConsole{
+  grid-template-rows:auto auto minmax(200px,32dvh) auto!important;
+}
+#chat .chatTeamMessages{
+  min-height:200px!important;
+}
+@media(max-width:520px){
+  #chat .chatTeamConsole{
+    grid-template-rows:auto auto minmax(200px,32dvh) auto!important;
   }
 }
