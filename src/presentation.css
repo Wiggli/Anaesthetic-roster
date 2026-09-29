@@ -4748,3 +4748,496 @@ html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
   color:#f5f5f7!important;
   opacity:1!important;
 }
+
+
+/* Professional account profile candidate.
+   The profile is treated as a first-class app destination inside the account sheet:
+   identity first, editable personal details second, verified account context third. */
+.accountSheet{
+  --account-accent:#0071e3;
+  --account-accent-strong:#0066cc;
+  --account-accent-soft:#eaf3ff;
+  --account-paper:#f5f5f7;
+  --account-surface:#ffffff;
+  --account-surface-subtle:#f2f2f7;
+  --account-ink:#1d1d1f;
+  --account-muted:#6e6e73;
+  --account-rule:#d2d2d7;
+  --scene-accent:var(--account-accent);
+  --scene-soft:var(--account-accent-soft);
+  --liquid-accent:var(--account-accent);
+  --liquid-accent-strong:var(--account-accent-strong);
+}
+body.dark .accountSheet,
+html[data-theme="dark"] .accountSheet{
+  --account-accent:#0a84ff;
+  --account-accent-strong:#409cff;
+  --account-accent-soft:#17263a;
+  --account-paper:#000000;
+  --account-surface:#1c1c1e;
+  --account-surface-subtle:#2c2c2e;
+  --account-ink:#f5f5f7;
+  --account-muted:#98989d;
+  --account-rule:#38383a;
+}
+
+.accountSheet[open]{
+  color:var(--account-ink)!important;
+  background:var(--account-paper)!important;
+}
+.accountSheetHeader{
+  position:sticky!important;
+  top:0;
+  z-index:4;
+  border-bottom:1px solid color-mix(in srgb,var(--account-rule) 76%,transparent)!important;
+  background:color-mix(in srgb,var(--account-paper) 90%,transparent)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  backdrop-filter:blur(20px) saturate(150%);
+}
+.accountSheetHeader>div>span{
+  color:var(--account-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+.accountSheetHeader h2{
+  color:var(--account-ink)!important;
+  font-size:24px!important;
+  font-weight:740!important;
+  letter-spacing:-.035em!important;
+}
+.accountSheetHeader button{
+  color:var(--account-accent)!important;
+  font-weight:700!important;
+}
+.accountSheetScroll{
+  gap:18px!important;
+  background:var(--account-paper)!important;
+}
+.accountSheetIntro{
+  display:none!important;
+}
+
+#profileExperience>.accountProfilePanel.accountProfileProfessional{
+  display:grid!important;
+  gap:16px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.accountProfileHeroPro{
+  display:grid!important;
+  justify-items:center!important;
+  gap:12px!important;
+  padding:24px 20px 20px!important;
+  border:0!important;
+  border-radius:24px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+  text-align:center!important;
+}
+.accountHeroPhotoWrap{
+  display:grid;
+  place-items:center;
+}
+.accountHeroPhoto.accountPhotoButton{
+  position:relative!important;
+  display:grid!important;
+  width:104px!important;
+  height:104px!important;
+  min-width:104px!important;
+  min-height:104px!important;
+  place-items:center!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:4px solid var(--account-surface)!important;
+  border-radius:50%!important;
+  background:var(--account-surface-subtle)!important;
+  color:var(--account-accent)!important;
+  box-shadow:0 0 0 1px var(--account-rule),0 10px 28px rgba(0,0,0,.08)!important;
+  font-size:34px!important;
+  font-weight:760!important;
+}
+body.dark .accountHeroPhoto.accountPhotoButton,
+html[data-theme="dark"] .accountHeroPhoto.accountPhotoButton{
+  box-shadow:0 0 0 1px var(--account-rule),0 12px 30px rgba(0,0,0,.34)!important;
+}
+.accountHeroPhoto img{
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+}
+.accountHeroPhoto img.hidden,
+.accountHeroPhoto>span.hidden{
+  display:none!important;
+}
+.accountPhotoEditBadge{
+  position:absolute!important;
+  right:-1px!important;
+  bottom:3px!important;
+  display:grid!important;
+  width:31px!important;
+  height:31px!important;
+  place-items:center!important;
+  border:3px solid var(--account-surface)!important;
+  border-radius:50%!important;
+  background:var(--account-accent)!important;
+  color:#fff!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.14)!important;
+}
+.accountPhotoEditBadge svg{
+  width:15px!important;
+  height:15px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
+.accountProfileIntroPro{
+  display:grid!important;
+  justify-items:center!important;
+  gap:3px!important;
+  min-width:0!important;
+}
+.accountPrivacyBadge{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  margin-bottom:4px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:var(--account-accent-soft)!important;
+  color:var(--account-accent-strong)!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+.accountPrivacyBadge svg{
+  width:12px!important;
+  height:12px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.accountProfileIntroPro h3{
+  max-width:100%!important;
+  margin:0!important;
+  overflow:hidden!important;
+  color:var(--account-ink)!important;
+  font-size:25px!important;
+  font-weight:750!important;
+  line-height:1.1!important;
+  letter-spacing:-.04em!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.accountProfileRole{
+  margin:2px 0 0!important;
+  color:var(--account-muted)!important;
+  font-size:13px!important;
+  font-weight:600!important;
+}
+.accountProfileEmail{
+  max-width:100%!important;
+  overflow:hidden!important;
+  color:var(--account-muted)!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.accountPhotoActionsPro{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:14px!important;
+  min-height:30px!important;
+  margin-top:-4px!important;
+}
+.accountPhotoActionsPro button{
+  min-height:32px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--account-accent)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.accountPhotoActionsPro #removeProfilePhoto{
+  color:#d70015!important;
+}
+
+.accountProfileSection{
+  display:grid!important;
+  gap:14px!important;
+  padding:18px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+.accountProfileSectionHeading{
+  display:grid!important;
+  gap:3px!important;
+}
+.accountProfileSectionHeading>span{
+  color:var(--account-accent-strong)!important;
+  font-size:10px!important;
+  font-weight:720!important;
+}
+.accountProfileSectionHeading h4{
+  margin:0!important;
+  color:var(--account-ink)!important;
+  font-size:16px!important;
+  font-weight:730!important;
+  line-height:1.2!important;
+  letter-spacing:-.02em!important;
+}
+.accountProfileSectionHeading p{
+  margin:2px 0 0!important;
+  color:var(--account-muted)!important;
+  font-size:11.5px!important;
+  line-height:1.45!important;
+}
+.accountProfileSectionHeading.compact p{
+  margin-top:1px!important;
+}
+
+.accountProfileFields,
+.accountNameFields{
+  display:grid!important;
+  gap:12px!important;
+}
+.accountProfileInput{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:50px!important;
+  padding:0 13px!important;
+  border:1px solid var(--account-rule)!important;
+  border-radius:13px!important;
+  background:var(--account-surface-subtle)!important;
+  color:var(--account-ink)!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+  font-weight:560!important;
+  outline:none!important;
+  transition:border-color 120ms ease,box-shadow 120ms ease,background-color 120ms ease!important;
+}
+.accountProfileInput:focus{
+  border-color:color-mix(in srgb,var(--account-accent) 55%,var(--account-rule))!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--account-accent) 13%,transparent)!important;
+}
+.accountProfileInput::placeholder{
+  color:color-mix(in srgb,var(--account-muted) 76%,transparent)!important;
+}
+.accountProfileSelect{
+  appearance:auto!important;
+  -webkit-appearance:menulist!important;
+}
+#profileExperience .fieldShell label,
+#profileExperience .fieldLabel{
+  color:var(--account-muted)!important;
+}
+
+.accountIdentityVerified{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:start!important;
+  padding:16px 18px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+.accountIdentityIcon{
+  display:grid!important;
+  width:40px!important;
+  height:40px!important;
+  place-items:center!important;
+  border-radius:13px!important;
+  background:var(--account-accent-soft)!important;
+  color:var(--account-accent-strong)!important;
+}
+.accountIdentityIcon svg{
+  width:20px!important;
+  height:20px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.accountIdentityCopy{
+  display:grid!important;
+  min-width:0!important;
+  gap:2px!important;
+}
+.accountIdentityCopy>span{
+  color:var(--account-muted)!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+.accountIdentityCopy>b{
+  overflow:hidden!important;
+  color:var(--account-ink)!important;
+  font-size:14px!important;
+  font-weight:720!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.accountIdentityCopy>small{
+  overflow:hidden!important;
+  color:var(--account-muted)!important;
+  font-size:11px!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.accountIdentityCopy>p{
+  margin:5px 0 0!important;
+  color:var(--account-muted)!important;
+  font-size:10.5px!important;
+  line-height:1.4!important;
+}
+
+.accountSaveRowPro{
+  display:flex!important;
+  min-height:0!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:12px!important;
+  padding:0 2px!important;
+}
+.accountSaveRowPro .formMessage{
+  min-width:0!important;
+  flex:1!important;
+  margin:0!important;
+  color:var(--account-muted)!important;
+  font-size:11px!important;
+}
+.accountProfileSave{
+  min-width:118px!important;
+  min-height:46px!important;
+  border-radius:14px!important;
+  background:var(--account-accent)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:720!important;
+}
+
+.accountSheet .accountGroup{
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+.accountSheet .accountGroup>h3,
+.accountSheet .accountSectionHeading h3{
+  color:var(--account-ink)!important;
+}
+.accountGroupDescription,
+.accountSheet .accountSectionHeading p{
+  color:var(--account-muted)!important;
+}
+.accountSheet #appearanceExperience{
+  background:var(--account-surface-subtle)!important;
+}
+.accountSheet #appearanceExperience button[aria-pressed="true"]{
+  background:var(--account-surface)!important;
+  color:var(--account-ink)!important;
+}
+.accountActionIcon{
+  display:grid!important;
+  width:36px!important;
+  height:36px!important;
+  place-items:center!important;
+  border-radius:11px!important;
+  background:var(--account-accent-soft)!important;
+  color:var(--account-accent-strong)!important;
+  font-size:14px!important;
+  font-weight:760!important;
+}
+.accountSheet .accountSignOut{
+  min-height:48px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--account-surface)!important;
+  color:#d70015!important;
+  box-shadow:none!important;
+  font-weight:700!important;
+}
+.accountSheet .accountVersion{
+  color:var(--account-muted)!important;
+}
+
+@media(max-width:520px){
+  .accountSheet[open]{
+    inset:auto 0 0!important;
+    width:100%!important;
+    max-width:none!important;
+    height:min(96dvh,980px)!important;
+    max-height:96dvh!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:28px 28px 0 0!important;
+  }
+  .accountSheetHeader{
+    padding:10px 18px 12px!important;
+  }
+  .accountSheetScroll{
+    padding:14px 14px calc(24px + env(safe-area-inset-bottom))!important;
+  }
+  .accountProfileHeroPro{
+    padding:22px 16px 18px!important;
+  }
+  .accountHeroPhoto.accountPhotoButton{
+    width:96px!important;
+    height:96px!important;
+    min-width:96px!important;
+    min-height:96px!important;
+  }
+  .accountProfileIntroPro h3{
+    font-size:23px!important;
+  }
+  .accountProfileSection,
+  .accountIdentityVerified{
+    padding:16px!important;
+  }
+}
+
+@media(min-width:760px){
+  .accountProfileHeroPro{
+    grid-template-columns:auto minmax(0,1fr)!important;
+    justify-items:start!important;
+    align-items:center!important;
+    gap:20px!important;
+    text-align:left!important;
+  }
+  .accountProfileIntroPro{
+    justify-items:start!important;
+    text-align:left!important;
+  }
+  .accountPhotoActionsPro{
+    justify-content:flex-start!important;
+    padding-left:124px!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .accountProfileInput{
+    transition:none!important;
+  }
+}
