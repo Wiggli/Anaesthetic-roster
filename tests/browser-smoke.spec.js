@@ -391,25 +391,6 @@ test('continuous tab drag and direction-locked page swipes work across Night and
     draggedIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
     draggedCurrent = await page.locator('#today').boundingBox();
     draggedPreview = await page.locator('#changes').boundingBox();
-    const swipeDiagnostic = await page.evaluate(() => {
-      const point = document.elementFromPoint(290, 400);
-      const today = document.getElementById('today');
-      const rect = today?.getBoundingClientRect();
-      return {
-        bodyView: document.body.getAttribute('data-view'),
-        bodyClass: document.body.className,
-        openDialog: Boolean(document.querySelector('dialog[open]')),
-        reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
-        pointTag: point?.tagName || null,
-        pointId: point?.id || null,
-        pointClass: point instanceof Element ? point.className : null,
-        pointView: point instanceof Element ? point.closest('main .view')?.id || null : null,
-        todayRect: rect ? { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height } : null,
-        mainClass: document.querySelector('main')?.className || '',
-        touchAction: point instanceof Element ? getComputedStyle(point).touchAction : null
-      };
-    });
-    console.log('SWIPE_DIAGNOSTIC', JSON.stringify(swipeDiagnostic));
     await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
   });
   expect(draggedCurrent.x).toBeLessThan(initialPage.x - 45);
