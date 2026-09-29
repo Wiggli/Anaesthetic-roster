@@ -5241,3 +5241,910 @@ html[data-theme="dark"] .accountHeroPhoto.accountPhotoButton{
     transition:none!important;
   }
 }
+
+
+/* 37.74 product system pass.
+   Night and Profile are the visual reference: neutral clinical surfaces, restrained blue interaction,
+   hierarchy from type and spacing, glass only for floating chrome, and motion that stays purposeful. */
+:root{
+  --product-bg:#f5f5f7;
+  --product-surface:#ffffff;
+  --product-surface-2:#f2f2f7;
+  --product-surface-3:#e8e8ed;
+  --product-ink:#1d1d1f;
+  --product-muted:#6e6e73;
+  --product-tertiary:#8e8e93;
+  --product-rule:#d2d2d7;
+  --product-blue:#0071e3;
+  --product-blue-strong:#0066cc;
+  --product-blue-soft:#eaf3ff;
+  --product-danger:#d70015;
+  --product-warning:#a15c00;
+  --product-success:#237a43;
+  --product-radius:18px;
+  --product-radius-small:14px;
+  --product-section:20px;
+  --product-title:clamp(29px,7vw,36px);
+  --product-heading:17px;
+  --product-row:14px;
+  --product-support:12px;
+  --liquid-bg:var(--product-bg);
+  --liquid-bg-alt:var(--product-bg);
+  --liquid-surface:var(--product-surface);
+  --liquid-surface-muted:var(--product-surface-2);
+  --liquid-label:var(--product-ink);
+  --liquid-secondary:var(--product-muted);
+  --liquid-tertiary:var(--product-tertiary);
+  --liquid-accent:var(--product-blue);
+  --liquid-accent-strong:var(--product-blue-strong);
+  --liquid-separator:rgba(60,60,67,.18);
+  --liquid-glass-tinted:rgba(234,243,255,.76);
+  --scene-bg:var(--product-bg);
+  --scene-surface:var(--product-surface);
+  --scene-ink:var(--product-ink);
+  --scene-secondary:var(--product-muted);
+  --scene-line:var(--product-rule);
+  --scene-accent:var(--product-blue);
+  --scene-soft:var(--product-blue-soft);
+  --scene-shadow:none;
+  --bg:var(--product-bg);
+  --card:var(--product-surface);
+  --surface:var(--product-surface-2);
+  --text:var(--product-ink);
+  --muted:var(--product-muted);
+  --accent:var(--product-blue);
+  --accent-strong:var(--product-blue-strong);
+}
+html[data-theme="dark"],body.dark{
+  --product-bg:#000000;
+  --product-surface:#1c1c1e;
+  --product-surface-2:#2c2c2e;
+  --product-surface-3:#3a3a3c;
+  --product-ink:#f5f5f7;
+  --product-muted:#98989d;
+  --product-tertiary:#8e8e93;
+  --product-rule:#38383a;
+  --product-blue:#0a84ff;
+  --product-blue-strong:#409cff;
+  --product-blue-soft:#17263a;
+  --product-danger:#ff453a;
+  --product-warning:#ffb340;
+  --product-success:#30d158;
+  --liquid-glass-clear:rgba(32,32,34,.70);
+  --liquid-glass:rgba(32,32,34,.78);
+  --liquid-glass-elevated:rgba(38,38,40,.86);
+  --liquid-glass-tinted:rgba(23,38,58,.82);
+}
+html,body{
+  background:var(--product-bg)!important;
+}
+body,body.dark,html[data-theme="dark"] body{
+  background:var(--product-bg)!important;
+  color:var(--product-ink)!important;
+}
+main{
+  width:min(100%,820px)!important;
+  max-width:820px!important;
+  padding-inline:clamp(14px,3.2vw,24px)!important;
+}
+main>.view{
+  color:var(--product-ink);
+}
+.screenHeader{
+  min-height:0!important;
+  margin:0!important;
+  padding:calc(10px + env(safe-area-inset-top)) 0 13px!important;
+  border:0!important;
+  background:transparent!important;
+}
+.screenHeader .screenEyebrow,
+.chatScreenHeader .chatEyebrow{
+  display:none!important;
+}
+.screenHeader h1,
+.chatScreenHeader h1{
+  margin:0!important;
+  color:var(--product-ink)!important;
+  font-size:var(--product-title)!important;
+  font-weight:745!important;
+  line-height:1.04!important;
+  letter-spacing:-.05em!important;
+}
+.screenHeader p,
+.chatScreenHeader p{
+  margin:6px 0 0!important;
+  color:var(--product-muted)!important;
+  font-size:11px!important;
+  font-weight:560!important;
+}
+.screenInfoButton{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  min-height:40px!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:var(--product-surface-2)!important;
+  color:var(--product-ink)!important;
+  box-shadow:none!important;
+  font-size:15px!important;
+  font-weight:720!important;
+}
+.screenInfoButton:active{
+  transform:scale(.96);
+  background:var(--product-surface-3)!important;
+}
+
+/* Floating navigation is the one persistent translucent material. */
+.bottom.reactTabs{
+  box-sizing:border-box!important;
+  width:min(500px,calc(100vw - 20px))!important;
+  height:62px!important;
+  min-height:62px!important;
+  padding:4px!important;
+  border:1px solid color-mix(in srgb,var(--product-rule) 70%,transparent)!important;
+  border-radius:22px!important;
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.22)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(150%)!important;
+  backdrop-filter:blur(22px) saturate(150%)!important;
+}
+.bottom.reactTabs button{
+  height:54px!important;
+  min-height:54px!important;
+  border-radius:18px!important;
+  gap:1px!important;
+  padding:4px 4px 5px!important;
+  color:var(--product-muted)!important;
+  font-size:9.5px!important;
+  font-weight:620!important;
+}
+.bottom.reactTabs button svg{
+  width:21px!important;
+  height:21px!important;
+  stroke-width:1.8!important;
+}
+.bottom.reactTabs button.active{
+  color:var(--product-blue-strong)!important;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  border:1px solid color-mix(in srgb,var(--product-blue) 10%,var(--product-rule))!important;
+  border-radius:18px!important;
+  background:color-mix(in srgb,var(--product-surface) 94%,var(--product-blue) 6%)!important;
+  box-shadow:0 2px 10px rgba(0,0,0,.08)!important;
+}
+.navTaskBadge{
+  background:var(--product-blue)!important;
+  color:#fff!important;
+}
+
+/* Shared date controls communicate human context, not only a calendar value. */
+.prettyDateControl{
+  min-width:0!important;
+}
+.dateNav{
+  border:0!important;
+  border-radius:15px!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+.dateNav>button{
+  border:0!important;
+  background:transparent!important;
+  color:var(--product-blue)!important;
+  box-shadow:none!important;
+}
+.prettyDateButton{
+  display:grid!important;
+  min-width:0!important;
+  align-content:center!important;
+  justify-items:center!important;
+  gap:1px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--product-ink)!important;
+}
+.prettyDateButton strong{
+  max-width:100%;
+  overflow:hidden;
+  color:var(--product-ink)!important;
+  font-size:13px!important;
+  font-weight:710!important;
+  line-height:1.15!important;
+  letter-spacing:-.02em!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.prettyDateButton small{
+  display:block!important;
+  max-width:100%;
+  overflow:hidden;
+  color:var(--product-muted)!important;
+  font-size:8.5px!important;
+  font-weight:560!important;
+  line-height:1.15!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* Night: preserve 37.73 composition, add contextual-date legibility and slightly quieter chrome. */
+#today .nightDateShell .dateNav{
+  min-height:48px!important;
+}
+#today .nightDateShell .dateNav input,
+#today .nightDateShell .dateNav .prettyDateButton{
+  height:44px!important;
+  min-height:44px!important;
+}
+#today .nightDateShell .prettyDateButton small{
+  display:block!important;
+  margin-top:1px!important;
+  font-size:8px!important;
+}
+#today .nightDateShell .prettyDateButton strong{
+  font-size:13px!important;
+}
+#today .personalChangeBtn,
+#today .personalContextAction{
+  color:var(--product-blue)!important;
+}
+
+/* Changes: date context first, then only the decision that matters. */
+#changes{
+  padding-bottom:calc(88px + env(safe-area-inset-bottom))!important;
+}
+#changes>.changesDatePanel{
+  margin:0 0 14px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes>.changesDatePanel>h2{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#changes>.changesDatePanel .grid2{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+  align-items:center!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#changes>.changesDatePanel label{
+  min-width:0!important;
+  font-size:0!important;
+}
+#changes>.changesDatePanel .dateNav{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) 40px!important;
+  min-height:48px!important;
+  padding:2px!important;
+  background:var(--product-surface)!important;
+}
+#changes>.changesDatePanel .dateNav>button{
+  width:40px!important;
+  min-width:40px!important;
+  height:44px!important;
+  min-height:44px!important;
+  border-radius:12px!important;
+  font-size:21px!important;
+}
+#changes>.changesDatePanel .dateNav .prettyDateButton,
+#changes>.changesDatePanel .dateNav input{
+  width:100%!important;
+  min-width:0!important;
+  height:44px!important;
+  min-height:44px!important;
+}
+#changes>.changesDatePanel .dateResetBtn{
+  min-height:30px!important;
+  margin:4px 2px 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--product-blue)!important;
+  box-shadow:none!important;
+  font-size:10.5px!important;
+  font-weight:650!important;
+  text-align:left!important;
+}
+#changes>.changesDatePanel .staffingCount{
+  min-width:78px!important;
+  min-height:48px!important;
+  display:grid!important;
+  align-content:center!important;
+  justify-items:end!important;
+  gap:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#changes>.changesDatePanel .staffingCount span{
+  color:var(--product-muted)!important;
+  font-size:8.5px!important;
+  font-weight:650!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+#changes>.changesDatePanel .staffingCount strong{
+  color:var(--product-ink)!important;
+  font-size:13px!important;
+  font-weight:720!important;
+}
+#changes>.changePanel{
+  margin:0!important;
+  padding:0!important;
+}
+#changes>.changePanel>.ctop{
+  display:flex!important;
+  min-height:28px!important;
+  align-items:center!important;
+  margin:0 2px 9px!important;
+}
+#changes>.changePanel>.ctop h2{
+  color:var(--product-muted)!important;
+  font-size:11px!important;
+  font-weight:680!important;
+  letter-spacing:0!important;
+}
+#changes>.changePanel>.ctop .liveStatus{
+  margin-left:auto!important;
+  color:var(--product-muted)!important;
+  font-size:9.5px!important;
+}
+#changes>.changePanel>.ctop .liveDot{
+  width:6px!important;
+  height:6px!important;
+  box-shadow:none!important;
+}
+#changes .workflowExperience{
+  margin:0 0 14px!important;
+}
+#changes .workflowSteps{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:2px!important;
+  padding:3px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--product-surface-2)!important;
+  box-shadow:none!important;
+}
+#changes .workflowStep{
+  position:relative!important;
+  min-height:48px!important;
+  gap:5px!important;
+  padding:5px 4px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:transparent!important;
+  color:var(--product-muted)!important;
+  box-shadow:none!important;
+}
+#changes .workflowStep+.workflowStep{
+  border-left:0!important;
+}
+#changes .workflowStep.active{
+  color:var(--product-ink)!important;
+}
+#changes .workflowStep.quiet:not(.active){
+  opacity:.62!important;
+}
+#changes .workflowStep.hasTasks:not(.active){
+  color:var(--product-warning)!important;
+  opacity:1!important;
+}
+#changes .workflowSelection{
+  border:0!important;
+  border-radius:13px!important;
+  background:var(--product-surface)!important;
+  box-shadow:0 1px 5px rgba(0,0,0,.09)!important;
+}
+#changes .workflowStepNumber{
+  width:20px!important;
+  height:20px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:var(--product-surface-3)!important;
+  color:var(--product-muted)!important;
+  font-size:10px!important;
+  font-weight:760!important;
+}
+#changes .workflowStep.active .workflowStepNumber{
+  background:var(--product-blue-soft)!important;
+  color:var(--product-blue-strong)!important;
+}
+#changes .workflowStep.hasTasks .workflowStepNumber{
+  background:color-mix(in srgb,var(--product-warning) 13%,var(--product-surface))!important;
+  color:var(--product-warning)!important;
+}
+#changes .workflowStepCopy b{
+  color:inherit!important;
+  font-size:11.5px!important;
+  font-weight:680!important;
+}
+#changes .workflowStepCopy small{
+  color:var(--product-muted)!important;
+  font-size:8.5px!important;
+  font-weight:540!important;
+}
+#changes .workflowGuidance{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:9px!important;
+  margin:8px 0 0!important;
+  padding:10px 11px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--product-surface)!important;
+  color:var(--product-ink)!important;
+  box-shadow:none!important;
+}
+#changes .workflowGuidance-automatic,
+#changes .workflowGuidance-complete{
+  background:transparent!important;
+  padding-inline:2px!important;
+}
+#changes .workflowGuidance-attention{
+  background:color-mix(in srgb,var(--product-warning) 8%,var(--product-surface))!important;
+}
+#changes .workflowGuidance-ready{
+  background:var(--product-blue-soft)!important;
+}
+#changes .workflowGuidanceMark{
+  width:22px!important;
+  height:22px!important;
+  flex:0 0 22px!important;
+  border-radius:8px!important;
+  background:var(--product-blue-soft)!important;
+  color:var(--product-blue-strong)!important;
+}
+#changes .workflowGuidance-attention .workflowGuidanceMark{
+  background:color-mix(in srgb,var(--product-warning) 14%,var(--product-surface))!important;
+  color:var(--product-warning)!important;
+}
+#changes .workflowGuidance strong{
+  font-size:11.5px!important;
+  font-weight:700!important;
+}
+#changes .workflowGuidance small{
+  margin-top:2px!important;
+  color:var(--product-muted)!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+}
+#changes .changesStepPane:not(.hidden){
+  display:grid!important;
+  gap:10px!important;
+}
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .nightRoleOverrideStep:not(:empty),
+#changes .fixedAllocationBox{
+  margin:0!important;
+  padding:14px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+#changes .stepHeader{
+  display:flex!important;
+  min-height:28px!important;
+  align-items:center!important;
+  gap:9px!important;
+  margin:0 0 9px!important;
+}
+#changes .stepHeader>span{
+  display:grid!important;
+  width:25px!important;
+  height:25px!important;
+  place-items:center!important;
+  border-radius:8px!important;
+  background:var(--product-blue-soft)!important;
+  color:var(--product-blue-strong)!important;
+  font-size:11px!important;
+  font-weight:760!important;
+}
+#changes .stepHeader h3{
+  margin:0!important;
+  color:var(--product-ink)!important;
+  font-size:15px!important;
+  font-weight:710!important;
+  letter-spacing:-.015em!important;
+}
+#changes .staffingSection .time,
+#changes .confirmationCard>.time{
+  color:var(--product-muted)!important;
+  font-size:10.5px!important;
+  line-height:1.45!important;
+}
+#changes input,
+#changes select,
+#changes textarea{
+  border-color:var(--product-rule)!important;
+  background:var(--product-surface-2)!important;
+  color:var(--product-ink)!important;
+  box-shadow:none!important;
+}
+#changes input:focus,
+#changes select:focus,
+#changes textarea:focus{
+  border-color:color-mix(in srgb,var(--product-blue) 52%,var(--product-rule))!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--product-blue) 12%,transparent)!important;
+}
+#changes .continueWorkflowBtn,
+#changes #saveAllocationsBtn{
+  min-height:48px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--product-blue)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:720!important;
+}
+#changes .historyBox{
+  margin-top:3px!important;
+  border:0!important;
+  border-top:1px solid var(--product-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .historyBox>summary{
+  min-height:48px!important;
+  color:var(--product-muted)!important;
+  font-size:11px!important;
+  font-weight:650!important;
+}
+
+/* Breaks: one operational glance, then a compact duty board. */
+#breaks{
+  padding-bottom:calc(88px + env(safe-area-inset-bottom))!important;
+}
+#breaks>.panel{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:12px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .personalBreakSummary{
+  order:0!important;
+  margin:0!important;
+  padding:16px 17px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:#1d1d1f!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+body.dark #breaks .personalBreakSummary,
+html[data-theme="dark"] #breaks .personalBreakSummary{
+  background:#1c1c1e!important;
+}
+#breaks .personalBreakEyebrow{
+  color:#c7c7cc!important;
+  font-size:9px!important;
+  font-weight:650!important;
+  letter-spacing:.01em!important;
+  text-transform:none!important;
+}
+#breaks .personalBreakMain{
+  margin-top:5px!important;
+}
+#breaks .personalBreakMain h2{
+  color:#fff!important;
+  font-size:clamp(28px,7vw,34px)!important;
+  font-weight:740!important;
+  line-height:1.02!important;
+  letter-spacing:-.045em!important;
+}
+#breaks .personalBreakMain p{
+  margin-top:5px!important;
+  color:#c7c7cc!important;
+  font-size:11.5px!important;
+}
+#breaks .personalBreakMark{
+  width:52px!important;
+  height:52px!important;
+  border-radius:16px!important;
+  background:rgba(10,132,255,.18)!important;
+  color:#64a8ff!important;
+  font-size:24px!important;
+  font-weight:760!important;
+}
+#breaks .personalBreakSummary>small{
+  margin-top:7px!important;
+  color:#c7c7cc!important;
+  font-size:9.5px!important;
+}
+#breaks>.panel>h2{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#breaks>.panel>.grid2{
+  order:1!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks>.panel>.grid2>label{
+  font-size:0!important;
+}
+#breaks>.panel>.grid2 .dateNav{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) 40px!important;
+  min-height:48px!important;
+  padding:2px!important;
+  background:var(--product-surface)!important;
+}
+#breaks>.panel>.grid2 .dateNav>button{
+  width:40px!important;
+  height:44px!important;
+  min-width:40px!important;
+  min-height:44px!important;
+  border-radius:12px!important;
+  font-size:21px!important;
+}
+#breaks>.panel>.grid2 .dateNav .prettyDateButton,
+#breaks>.panel>.grid2 .dateNav input{
+  width:100%!important;
+  min-width:0!important;
+  height:44px!important;
+  min-height:44px!important;
+}
+#breaks>.panel>.grid2 .staffingCount{
+  display:none!important;
+}
+#breakSummaryRow{
+  order:2!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  min-height:56px!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+#breakSummaryRow>.breakSummaryItem{
+  min-height:56px!important;
+  padding:8px 6px!important;
+  border:0!important;
+  border-left:1px solid var(--product-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--product-ink)!important;
+  box-shadow:none!important;
+}
+#breakSummaryRow>.breakSummaryItem:first-child{
+  border-left:0!important;
+}
+#breakSummaryRow>.breakSummaryItem::after{
+  display:none!important;
+}
+#breakSummaryRow>.breakSummaryItem b{
+  color:var(--product-ink)!important;
+  font-size:12px!important;
+  font-weight:720!important;
+  line-height:1.15!important;
+}
+#breakSummaryRow>.breakSummaryItem small{
+  margin-top:2px!important;
+  color:var(--product-muted)!important;
+  font-size:9px!important;
+  line-height:1.2!important;
+}
+#breakSummaryRow>.breakSummaryItem.pending b{
+  color:var(--product-warning)!important;
+}
+#breakDate{
+  order:3!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--product-warning) 8%,var(--product-surface))!important;
+  color:var(--product-ink)!important;
+  box-shadow:none!important;
+}
+#breakDate:empty{
+  display:none!important;
+}
+#breaks .breakPlanTitle{
+  order:4!important;
+  display:flex!important;
+  min-height:28px!important;
+  align-items:center!important;
+  margin:3px 2px 0!important;
+}
+#breaks .breakPlanTitle h2{
+  margin:0!important;
+  color:var(--product-ink)!important;
+  font-size:15px!important;
+  font-weight:710!important;
+  letter-spacing:-.015em!important;
+}
+#breaks .breakPlanTitle>span{
+  margin-left:auto!important;
+  color:var(--product-muted)!important;
+  font-size:9.5px!important;
+}
+#breakList{
+  order:5!important;
+}
+#breakList>.breakGrid{
+  display:grid!important;
+  gap:1px!important;
+  overflow:hidden!important;
+  border:1px solid var(--product-rule)!important;
+  border-radius:18px!important;
+  background:var(--product-rule)!important;
+}
+#breakList .breakGroup{
+  margin:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:0!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+#breakList .breakGroup>div:first-child{
+  min-height:48px!important;
+  padding:10px 13px!important;
+}
+#breakList .breakGroup h3{
+  color:var(--product-ink)!important;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+#breakList .breakGroup .breakPerson{
+  min-height:52px!important;
+  padding:10px 13px!important;
+  background:var(--product-surface)!important;
+}
+#breakList .breakGroup .breakPerson.mine{
+  background:var(--product-blue-soft)!important;
+}
+#breakList .breakPersonYou{
+  background:color-mix(in srgb,var(--product-blue) 13%,var(--product-surface))!important;
+  color:var(--product-blue-strong)!important;
+}
+#breakList .firstBreak,
+#breakList .secondBreak{
+  color:var(--product-ink)!important;
+}
+#breakList>.lwBreak{
+  margin-top:10px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+#breakList>.lwBreak h3{
+  color:var(--product-muted)!important;
+  font-size:11px!important;
+  font-weight:680!important;
+}
+
+/* Full roster remains secondary and information-dense. */
+#roster{
+  padding-bottom:calc(88px + env(safe-area-inset-bottom))!important;
+}
+#roster .rosterPageHeader{
+  min-height:56px!important;
+  align-items:center!important;
+  margin:0 0 12px!important;
+}
+#roster .rosterPageHeader h2{
+  margin:0!important;
+  color:var(--product-ink)!important;
+  font-size:28px!important;
+  font-weight:740!important;
+  letter-spacing:-.04em!important;
+}
+#roster .rosterPageHeader button{
+  border:0!important;
+  background:transparent!important;
+  color:var(--product-blue)!important;
+  box-shadow:none!important;
+}
+#roster .toolbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 92px!important;
+  gap:8px!important;
+  margin-bottom:10px!important;
+}
+#roster .toolbar input,
+#roster .toolbar select{
+  min-height:46px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--product-surface)!important;
+  color:var(--product-ink)!important;
+  box-shadow:none!important;
+}
+#roster #range{
+  border:0!important;
+  background:transparent!important;
+  color:var(--product-muted)!important;
+  box-shadow:none!important;
+}
+#roster .cards{
+  gap:8px!important;
+}
+#roster .card,
+#roster .rosterCard{
+  border:0!important;
+  border-radius:18px!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+
+/* Keep primary actions reachable on a phone without making the whole screen sticky. */
+@media(max-width:640px){
+  body[data-view] main{
+    padding-bottom:calc(82px + env(safe-area-inset-bottom))!important;
+  }
+  #changes .workflowStepCopy small{
+    display:none!important;
+  }
+  #changes .continueWorkflowBtn,
+  #changes #saveAllocationsBtn{
+    position:sticky!important;
+    bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    z-index:12!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
+  }
+  #changes>.changesDatePanel .grid2{
+    grid-template-columns:minmax(0,1fr) 72px!important;
+  }
+  #changes>.changesDatePanel .staffingCount{
+    min-width:72px!important;
+  }
+  #breakList>.breakGrid{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* Stronger accessibility modes remain first-class. */
+@media(prefers-reduced-transparency:reduce){
+  .bottom.reactTabs{
+    background:var(--product-surface)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
+@media(prefers-contrast:more){
+  :root{--product-rule:#8e8e93}
+  html[data-theme="dark"],body.dark{--product-rule:#636366}
+}
