@@ -4694,3 +4694,30 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
     grid-row:3!important;
   }
 }
+
+
+/* 37.73 final phone hierarchy: remove legacy metric sizing from the new team readout
+   and let horizontal page gestures win over the assignment disclosure button. */
+#today #nightStatusRow>.nightSignal>.nightSignalLead{
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today #nightStatusRow>.nightSignal>.nightSignalMeta{
+  min-height:0!important;
+  margin:3px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .personalContextAction{
+  touch-action:pan-y pinch-zoom!important;
+}
