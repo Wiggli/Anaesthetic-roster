@@ -1,12 +1,12 @@
 {
-  "version": "37.71",
+  "version": "37.72",
   "date": "29 September 2026",
-  "title": "Night screen prototype",
-  "summary": "Restores the earlier presentation outside Night and previews a new assignment-led Night screen.",
+  "title": "Refine Night with Apple-style clarity",
+  "summary": "Rebuilds the Night screen around a graphite assignment focus, neutral surfaces and restrained blue interaction cues.",
   "changes": [
-    "The broad 37.70 presentation treatment has been rolled back on Changes, Breaks, Chat, Account and the full roster, while the existing app stack and behavior remain intact.",
-    "Night now puts its selected date, personal role, working period, break and colleague ahead of a concise staffing state.",
-    "Team allocation is available on demand below the brief, with a calmer light and dark treatment and the existing navigation gestures."
+    "Night now uses a graphite and cool-neutral visual system with restrained blue reserved for actions, selected navigation and meaningful status instead of the previous teal treatment.",
+    "The personal assignment is the clear focal point, with role, colleague, duty time and break organised through calmer system typography, spacing and progressive disclosure.",
+    "The redundant header appearance shortcut has been removed; Light, Automatic and Dark remain available in Account settings, while the existing swipe gestures and clinical roster behaviour stay unchanged."
   ],
   "update_policy": "important"
 }

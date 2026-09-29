@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.71 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.72 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -60,6 +60,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.72","date":"29 September 2026","title":"Refine Night with Apple-style clarity","changes":["Night now uses a graphite and cool-neutral visual system with restrained blue reserved for actions, selected navigation and meaningful status instead of the previous teal treatment.","The personal assignment is the clear focal point, with role, colleague, duty time and break organised through calmer system typography, spacing and progressive disclosure.","The redundant header appearance shortcut has been removed; Light, Automatic and Dark remain available in Account settings, while the existing swipe gestures and clinical roster behaviour stay unchanged."]},
   {"version":"37.71","date":"29 September 2026","title":"Night screen prototype","changes":["The broad 37.70 presentation treatment has been rolled back on Changes, Breaks, Chat, Account and the full roster, while the existing app stack and behavior remain intact.","Night now puts its selected date, personal role, working period, break and colleague ahead of a concise staffing state.","Team allocation is available on demand below the brief, with a calmer light and dark treatment and the existing navigation gestures."]},
   {"version":"37.70","date":"28 September 2026","title":"Read the night at a glance","changes":["The Night screen leads with a distinct assignment panel and a concise staffing brief instead of statistic tiles.","The full roster reads as a searchable ledger, with clearer role and exception details.","Navigation, Changes, Breaks, Chat, account and first-use surfaces share a quieter visual rhythm, with clinical content kept solid."]},
   {"version":"37.69","date":"28 September 2026","title":"Make team chat easier to reach","changes":["The team chat header takes less space while preserving the roster member context.","The message viewport remains scrollable and leaves more room for the composer on phones.","Chat delivery, privacy controls, and navigation gestures remain unchanged."]},
@@ -401,7 +402,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.71" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.72" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
