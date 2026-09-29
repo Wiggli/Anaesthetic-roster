@@ -2879,6 +2879,15 @@ body.dark #today,html[data-theme="dark"] #today{
   background:var(--night-accent-soft)!important;
   color:var(--night-accent)!important;
 }
+#today .accountInitial svg{
+  width:16px!important;
+  height:16px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
 #today .headerChips{
   margin:7px 0 0!important;
   gap:9px!important;
