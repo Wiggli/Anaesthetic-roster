@@ -236,7 +236,7 @@ function AccountActions({ installed }: { installed: boolean }) {
   return <GroupedList>
     {actions.map(item => <ListRow
       key={item.action}
-      leading={<span className="tw:grid tw:h-9 tw:w-9 tw:place-items-center tw:rounded-xl tw:bg-teal-500/10 tw:text-sm tw:font-bold tw:text-[var(--accent-strong)]" aria-hidden="true">{item.icon}</span>}
+      leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>}
       title={item.title}
       subtitle={item.detail}
       onClick={() => act(item.action)}
