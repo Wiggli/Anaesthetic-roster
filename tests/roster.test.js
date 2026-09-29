@@ -309,7 +309,8 @@ assert.ok(navigation.includes('const hitTarget = document.elementFromPoint(touch
 assert.doesNotMatch(navigation, /dialog\[open\][^\n]*main\.viewSwipeSettling/, 'touch start must not reject a gesture solely because the previous page is settling');
 assert.ok(navigation.includes('indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));'), 'bottom-tab dragging must track the finger continuously across the full bar');
 assert.ok(navigation.includes("const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get())"), 'a long bottom-bar drag must settle on the nearest tab rather than only one neighbour');
-assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;"), 'Chat must no longer be excluded from safe content swipes');
+assert.ok(navigation.includes("const viewElement = destinations.includes(view) ? document.getElementById(view) : null;"), 'content swipes must resolve the currently visible destination before claiming a gesture');
+assert.ok(navigation.includes("if (!destinations.includes(view) || (!inBar && !insideVisibleView)) return;"), 'all destinations including Chat must accept safe content swipes across their visible page bounds');
 assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*chatMessageViewport/, 'Chat transcript whitespace must remain eligible for horizontal app swipes');
 assert.ok(navigation.includes("const blockedContentSelector = 'input,select,textarea,[contenteditable=\"true\"]';"), 'text-entry controls must remain protected while tappable rows can participate in deliberate horizontal drags');
 assert.doesNotMatch(navigation, /blockedContentSelector[^\n]*\[tabindex\]/, 'focusable Chat messages must not be rejected solely because they support keyboard actions');
