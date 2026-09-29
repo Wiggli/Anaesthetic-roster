@@ -105,21 +105,20 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
         <h3 id="profileHeading">{displayName}</h3>
         <p className="accountProfileRole">{displayRole}</p>
         <small className="accountProfileEmail">{model.email}</small>
+        <div className="accountPhotoActions accountPhotoActionsPro">
+          <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>
+            Change photo
+          </button>
+          <button
+            type="button"
+            id="removeProfilePhoto"
+            onClick={() => act('profile-photo-remove')}
+            className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}
+          >
+            {model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}
+          </button>
+        </div>
       </div>
-    </div>
-
-    <div className="accountPhotoActions accountPhotoActionsPro">
-      <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>
-        Change photo
-      </button>
-      <button
-        type="button"
-        id="removeProfilePhoto"
-        onClick={() => act('profile-photo-remove')}
-        className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}
-      >
-        {model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}
-      </button>
     </div>
 
     <section className="accountProfileSection" aria-labelledby="profileAboutHeading">

@@ -51,7 +51,7 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
         data-changes-step={step.id}
         onClick={() => chooseStep(step.id)}
         onKeyDown={event => moveFocus(event, index)}
-        className={`workflowStep ${model.active === step.id ? 'active' : ''} ${step.attention ? 'hasTasks' : ''}`}
+        className={`workflowStep ${model.active === step.id ? 'active' : ''} ${step.attention ? 'hasTasks' : ''} ${step.quiet ? 'quiet' : ''}`}
       >
         {model.active === step.id && <motion.span
           className="workflowSelection"
