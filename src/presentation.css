@@ -2754,175 +2754,934 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface)!
 }
 
 
-/* 37.71 Night prototype. Other destinations retain the 37.69 presentation. */
+/* 37.72 Night overhaul candidate. Other destinations retain the 37.69 presentation. */
 #today{
-  --night-paper:#f6f8f7;--night-ink:#142a2d;--night-muted:#5d7173;
-  --night-rule:#d6e2df;--night-accent:#087c75;--night-accent-soft:#e6f3ef;
-  --night-surface:#fff;background:var(--night-paper)!important;color:var(--night-ink);
+  --night-paper:#f5f5f7;
+  --night-surface:#ffffff;
+  --night-ink:#1d1d1f;
+  --night-muted:#6e6e73;
+  --night-rule:#d2d2d7;
+  --night-accent:#0071e3;
+  --night-accent-strong:#0066cc;
+  --night-accent-soft:#eaf3ff;
+  --night-control:#e8e8ed;
+  --night-control-pressed:#dcdce1;
+  --night-hero:#1d1d1f;
+  --night-hero-soft:#2c2c2e;
+  --night-hero-text:#f5f5f7;
+  --night-hero-muted:#c7c7cc;
+  background:var(--night-paper)!important;
+  color:var(--night-ink);
 }
 body.dark #today,html[data-theme="dark"] #today{
-  --night-paper:#101b1e;--night-ink:#eef7f4;--night-muted:#a4bdbb;
-  --night-rule:#344d4d;--night-accent:#70d6c7;--night-accent-soft:#1c3b3c;
-  --night-surface:#18282c;
+  --night-paper:#000000;
+  --night-surface:#1c1c1e;
+  --night-ink:#f5f5f7;
+  --night-muted:#98989d;
+  --night-rule:#38383a;
+  --night-accent:#0a84ff;
+  --night-accent-strong:#409cff;
+  --night-accent-soft:#17263a;
+  --night-control:#2c2c2e;
+  --night-control-pressed:#3a3a3c;
+  --night-hero:#2c2c2e;
+  --night-hero-soft:#3a3a3c;
+  --night-hero-text:#ffffff;
+  --night-hero-muted:#d1d1d6;
 }
-#today #appHeader{
-  border-radius:0!important;background:var(--night-paper)!important;color:var(--night-ink)!important;
-  box-shadow:none!important;padding:calc(9px + env(safe-area-inset-top)) 19px 10px!important;
-  border-bottom:1px solid var(--night-rule);
+
+/* On the Night destination, the shared floating navigation inherits the same neutral + blue system.
+   Other destinations keep their current 37.69 presentation until their own redesign pass. */
+body[data-view="today"]{
+  --liquid-accent:#0071e3;
+  --liquid-accent-strong:#0066cc;
+  --liquid-glass-tinted:rgba(232,240,254,.76);
+  --scene-accent:#0071e3;
+  --scene-soft:#eaf3ff;
 }
-#today .clinicalBackdrop,#today .motto,#today .headerBrandMark,#today .headerModeChip{display:none!important}
-#today .hospitalStrip{background:transparent!important;border:0!important;padding:0!important;margin:0 0 5px!important;min-height:24px}
-#today .hospitalStrip img{width:115px!important;height:25px!important;object-position:left center}
-#today .hospitalStrip span{font-size:8px!important;letter-spacing:.1em!important;color:var(--night-muted)!important}
-#today .head{align-items:center!important}
-#today .headerTitle{font-size:19px!important;line-height:1.2!important;color:var(--night-ink)!important;text-shadow:none!important;letter-spacing:-.035em}
-#today .fullTitle{display:none!important}#today .compactTitle{display:inline!important}
-#today .headActions{max-width:none!important;flex-wrap:nowrap!important;gap:5px!important}
-#today .headActions button{width:38px!important;height:38px!important;border-radius:12px!important;background:transparent!important;color:var(--night-ink)!important;border:1px solid var(--night-rule)!important}
-#today .headActions button:active{transform:scale(.96)}
-#today .accountInitial{background:var(--night-accent-soft)!important;color:var(--night-accent)!important}
-#today .headerChips{margin:7px 0 0!important;gap:8px!important}
-#today .headerChip{padding:0!important;background:none!important;border:0!important;color:var(--night-muted)!important;font-size:10px!important;font-weight:650!important}
+body.dark[data-view="today"],
+html[data-theme="dark"] body[data-view="today"]{
+  --liquid-accent:#0a84ff;
+  --liquid-accent-strong:#409cff;
+  --liquid-glass-tinted:rgba(31,46,70,.74);
+  --scene-accent:#0a84ff;
+  --scene-soft:#17263a;
+}
+body[data-view="today"] .bottom.reactTabs .tabSlidingIndicator{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.055)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 94%,var(--liquid-accent) 6%)!important;
+}
+body[data-view="today"] .bottom.reactTabs button.active{
+  color:var(--liquid-accent-strong)!important;
+}
+body[data-view="today"] .bottom.reactTabs button.active svg{
+  filter:none!important;
+}
+
+/* Keep the Night header inside the same swipe track as the page. */
+#today>#appHeader{
+  position:relative!important;
+  inset:auto!important;
+  box-sizing:border-box!important;
+  width:calc(100% + 24px)!important;
+  max-width:none!important;
+  min-height:0!important;
+  margin:0 -12px!important;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 8px!important;
+  border:0!important;
+  border-bottom:1px solid var(--night-rule)!important;
+  border-radius:0!important;
+  background:var(--night-paper)!important;
+  color:var(--night-ink)!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#today .clinicalBackdrop,
+#today .motto,
+#today .headerBrandMark,
+#today .headerModeChip{display:none!important}
+#today .hospitalStrip{
+  min-height:24px!important;
+  margin:0 0 4px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#today .hospitalStrip img{
+  width:116px!important;
+  height:25px!important;
+  object-position:left center;
+}
+#today .hospitalStrip span{
+  color:var(--night-muted)!important;
+  font-size:8px!important;
+  font-weight:720!important;
+  letter-spacing:.1em!important;
+}
+#today .head{align-items:center!important;margin:0!important}
+#today .headerIdentity{min-width:0}
+#today .headerTitle{
+  color:var(--night-ink)!important;
+  font-size:19px!important;
+  font-weight:760!important;
+  line-height:1.15!important;
+  letter-spacing:-.038em!important;
+  text-shadow:none!important;
+}
+#today .fullTitle{display:none!important}
+#today .compactTitle{display:inline!important}
+#today .headActions{
+  max-width:none!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  padding:0!important;
+  border:0!important;
+  background:none!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#today .headActions button{
+  box-sizing:border-box!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  max-width:42px!important;
+  max-height:42px!important;
+  aspect-ratio:1!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:var(--night-ink)!important;
+  box-shadow:none!important;
+  transition:transform 100ms ease-out,background-color 120ms ease-out!important;
+}
+#today #installBtn{display:none!important}
+@media(hover:hover) and (pointer:fine){
+  #today .headActions button:hover{background:var(--night-control)!important}
+}
+#today .headActions button:active{
+  transform:scale(.96);
+  background:var(--night-control-pressed)!important;
+}
+#today .accountInitial{
+  background:var(--night-control)!important;
+  color:var(--night-ink)!important;
+}
+#today .accountInitial svg{
+  width:16px!important;
+  height:16px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#today .headerChips{
+  margin:7px 0 0!important;
+  gap:9px!important;
+}
+#today .headerChip{
+  padding:0!important;
+  border:0!important;
+  background:none!important;
+  color:var(--night-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+}
 #today .headerDateChip{display:none!important}
-#today .headerLiveDot{background:#35a889!important;box-shadow:none!important}
-#today .headerLiveChip.offline .headerLiveDot,#today .headerLiveChip.error .headerLiveDot{background:#df7d69!important}
+#today .headerLiveDot{background:var(--night-accent)!important;box-shadow:none!important}
+#today .headerLiveChip.offline .headerLiveDot,
+#today .headerLiveChip.error .headerLiveDot{background:#ff453a!important}
+
+/* Date comes first, then the nurse's assignment. */
 #today .nightOverviewPanel{
-  display:flex;flex-direction:column;gap:0;margin:0 auto!important;padding:0 19px 20px!important;
-  max-width:1000px;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  width:100%;
+  max-width:980px;
+  margin:0 auto!important;
+  padding:0 0 22px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
 }
-#today .nightDateShell{order:0;margin:0!important;padding:20px 0 18px!important;border-bottom:1px solid var(--night-rule)}
-#today .nightDateShell .grid2{display:block!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important}
-#today .nightDateLabel{display:grid!important;grid-template-columns:1fr auto;align-items:center;gap:10px;color:var(--night-muted)!important;font-size:10px!important;font-weight:800!important;letter-spacing:.1em!important;text-transform:uppercase}
+#today .nightDateShell{
+  order:0;
+  margin:0!important;
+  padding:16px 0 14px!important;
+  border-bottom:1px solid var(--night-rule)!important;
+}
+#today .nightDateShell .grid2{
+  display:block!important;
+  padding:0!important;
+  border:0!important;
+  background:none!important;
+  box-shadow:none!important;
+}
+#today .nightDateLabel{
+  display:grid!important;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:12px;
+  color:var(--night-muted)!important;
+  font-size:12px!important;
+  font-weight:650!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
 #today .nightDateShell .staffingCount{display:none!important}
-#today .nightDateShell .dateNav{margin:0!important;display:flex!important;align-items:center!important;gap:0!important;background:var(--night-surface)!important;border:1px solid var(--night-rule)!important;border-radius:13px!important;padding:2px!important;box-shadow:none!important}
-#today .dateNav button{min-width:38px!important;width:38px!important;min-height:38px!important;height:38px!important;background:transparent!important;box-shadow:none!important;border:0!important;color:var(--night-accent)!important;font-size:25px!important;padding:0!important}
-#today .dateNav input{min-width:0!important;width:132px!important;height:38px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--night-ink)!important;font-size:13px!important;font-weight:750!important;padding:0 2px!important;text-align:center}
-#today .personalNight{order:1;padding:21px 0 0!important;margin:0!important}
-#today .personalNight>.sectionTitle{font-size:10px!important;line-height:1.2!important;font-weight:850!important;letter-spacing:.13em!important;text-transform:uppercase!important;color:var(--night-muted)!important;margin:0 0 10px!important}
+#today .nightDateShell .dateNav{
+  display:flex!important;
+  align-items:center!important;
+  gap:0!important;
+  margin:0!important;
+  padding:2px!important;
+  overflow:hidden;
+  border:1px solid var(--night-rule)!important;
+  border-radius:14px!important;
+  background:var(--night-surface)!important;
+  box-shadow:none!important;
+}
+#today .dateNav button{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  min-height:38px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  box-shadow:none!important;
+  font-size:24px!important;
+}
+#today .dateNav input,
+#today .dateNav .prettyDateButton{
+  width:134px!important;
+  min-width:134px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 4px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--night-ink)!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:760!important;
+  line-height:1.15!important;
+  text-align:center!important;
+}
+#today .dateNav .prettyDateButton{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#today .dateNav .prettyDateButton small{display:none!important}
+
+/* Personal assignment is the one dominant surface. */
+#today .personalNight{
+  order:1;
+  margin:0!important;
+  padding:18px 0 0!important;
+}
+#today .personalNight>.sectionTitle{
+  margin:0 0 8px!important;
+  color:var(--night-muted)!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  line-height:1.25!important;
+  letter-spacing:-.01em!important;
+  text-transform:none!important;
+}
+#today #personalNightCard{
+  display:block!important;
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
 #today #personalNightCard>.personalHeroSurface{
-  overflow:hidden;border:1px solid var(--night-rule)!important;border-radius:17px!important;
-  background:var(--night-surface)!important;box-shadow:0 8px 24px rgba(13,47,49,.065)!important;
+  position:relative;
+  display:block;
+  overflow:visible;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
 }
-body.dark #today #personalNightCard>.personalHeroSurface{box-shadow:0 12px 32px rgba(0,0,0,.18)!important}
+body.dark #today #personalNightCard>.personalHeroSurface,
+html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
 #today #personalNightCard>.personalHeroSurface::before{display:none!important}
-#today .personalIdentity{display:flex!important;gap:9px!important;align-items:center!important;padding:13px 16px 0!important;border:0!important}
-#today .personalIdentity .personalAvatar{width:29px!important;height:29px!important;border-radius:50%!important;font-size:11px!important;box-shadow:none!important}
-#today .personalIdentityCopy{min-width:0;flex:1;display:flex;align-items:baseline;gap:6px}
-#today .personalIdentityCopy b{font-size:12px!important;color:var(--night-ink)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#today .personalIdentityCopy small{font-size:10px!important;color:var(--night-muted)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#today .personalChangeBtn{min-height:32px!important;padding:0 4px!important;background:none!important;border:0!important;box-shadow:none!important;color:var(--night-accent)!important;font-size:11px!important}
-#today .personalAssignmentHero{
-  display:flex!important;align-items:flex-start!important;gap:12px!important;margin:0!important;
-  padding:17px 16px 19px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+#today .personalIdentity,
+#today #personalNightCard>article>.personalIdentity{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:0 2px 10px!important;
+  border:0!important;
 }
-#today .personalRoleIcon{width:38px!important;height:38px!important;flex:0 0 38px!important;display:grid!important;place-items:center;border-radius:11px!important;background:var(--night-accent-soft)!important;color:var(--night-accent)!important;font-size:13px!important;font-weight:850!important}
-#today .personalRoleCopy{min-width:0;flex:1;color:var(--night-ink)!important}
-#today .personalRoleCopy small{font-size:10px!important;letter-spacing:.1em!important;color:var(--night-muted)!important;text-transform:uppercase}
-#today .personalRoleCopy b{display:block;margin:2px 0 4px!important;font-size:clamp(25px,6.5vw,35px)!important;line-height:1.08!important;letter-spacing:-.05em!important;color:var(--night-ink)!important}
-#today .personalRoleCopy>span{display:block;font-size:12px!important;line-height:1.4!important;color:var(--night-muted)!important}
-#today .personalChangedBadge{align-self:flex-start;font-size:10px!important}
-#today .personalFacts{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;margin:0 16px!important;border:0!important;border-top:1px solid var(--night-rule)!important;border-radius:0!important;background:transparent!important}
-#today .personalFacts>div,#today .personalFacts>div:last-child{grid-column:auto!important;min-width:0!important;min-height:68px!important;padding:12px 8px 10px!important;border:0!important;border-left:1px solid var(--night-rule)!important}
-#today .personalFacts>div:first-child{padding-left:0!important;border-left:0!important}
-#today .personalFacts dt{margin:0 0 5px!important;font-size:9px!important;font-weight:800!important;letter-spacing:.08em!important;text-transform:uppercase;color:var(--night-muted)!important}
-#today .personalFacts dd{font-size:12px!important;line-height:1.3!important;font-weight:750!important;color:var(--night-ink)!important;white-space:normal!important;overflow-wrap:anywhere}
-#today .personalContextAction{display:flex!important;justify-content:space-between!important;align-items:center!important;width:100%!important;min-height:43px!important;margin:0!important;padding:0 16px!important;border:0!important;border-top:1px solid var(--night-rule)!important;border-radius:0!important;background:var(--night-accent-soft)!important;color:var(--night-accent)!important;box-shadow:none!important;font-size:11px!important;font-weight:750!important}
-#today .nightSummaryTitle{order:2;margin:20px 0 8px!important}
-#today .nightSummaryTitle .sectionTitle{font-size:10px!important;letter-spacing:.13em!important;text-transform:uppercase!important;color:var(--night-muted)!important}
-#today #nightStatusRow{order:3;margin:0!important}
-#today .nightSignal{padding:14px 16px!important;border:1px solid var(--night-rule)!important;border-radius:15px!important;background:var(--night-surface)!important}
-#today .nightSignalLead{display:flex;align-items:center;gap:11px}
-#today .nightSignalGlyph{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--night-accent-soft);color:var(--night-accent);font-size:16px;font-weight:800}
-#today .nightSignal.needsReview .nightSignalGlyph{background:#fff0d8;color:#9e5a05}
-#today .nightSignalLead div{min-width:0;display:grid;gap:2px}
-#today .nightSignalLead small{font-size:9px;letter-spacing:.1em;font-weight:800;color:var(--night-muted)}
-#today .nightSignalLead strong{font-size:15px;letter-spacing:-.02em;color:var(--night-ink)}
-#today .nightSignalLead strong span{color:var(--night-muted);font-weight:450}
-#today .nightSignalMeta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0 0 41px;font-size:11px;color:var(--night-muted)}
-#today .nightSignalMeta button{min-height:24px!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;color:inherit!important;font-size:11px!important;font-weight:600!important}
-#today .nightSignalMeta .nightSignalTask{color:#a86812!important;font-weight:800!important;width:100%;text-align:left}
-#today #alerts{order:4;margin-top:8px}
-#today .nightTeamDetails{order:5;margin-top:16px;border-top:1px solid var(--night-rule)}
-#today .nightTeamDetails>summary{display:flex;align-items:center;justify-content:space-between;min-height:62px;list-style:none;cursor:pointer;color:var(--night-ink)}
+#today .personalIdentity .personalAvatar{
+  width:30px!important;
+  height:30px!important;
+  flex:0 0 30px!important;
+  border-radius:50%!important;
+  background:var(--night-control)!important;
+  color:var(--night-ink)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+}
+#today .personalIdentity .personalAvatar i{
+  border-color:var(--night-paper)!important;
+  background:var(--night-accent)!important;
+}
+#today .personalIdentityCopy{
+  display:flex!important;
+  min-width:0;
+  flex:1;
+  align-items:baseline;
+  gap:6px;
+}
+#today .personalIdentityCopy b{
+  overflow:hidden;
+  color:var(--night-ink)!important;
+  font-size:12px!important;
+  font-weight:760!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#today .personalIdentityCopy small{
+  overflow:hidden;
+  color:var(--night-muted)!important;
+  font-size:10px!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#today .personalChangeBtn{
+  min-width:42px!important;
+  min-height:34px!important;
+  padding:0 5px!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  font-weight:730!important;
+}
+#today .personalAssignmentStage,
+#today #personalNightCard>article>div.personalAssignmentStage:nth-child(2){
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden;
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--night-hero)!important;
+  color:var(--night-hero-text)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 10px 28px rgba(0,0,0,.11)!important;
+}
+#today .personalAssignmentHero{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:13px!important;
+  margin:0!important;
+  padding:18px 18px 15px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .personalRoleIcon{
+  display:grid!important;
+  width:42px!important;
+  height:42px!important;
+  flex:0 0 42px!important;
+  place-items:center!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:var(--night-hero-text)!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+  font-weight:850!important;
+}
+#today .personalRoleCopy{
+  min-width:0;
+  flex:1;
+  color:var(--night-hero-text)!important;
+}
+#today .personalRoleCopy small{
+  color:var(--night-hero-muted)!important;
+  font-size:10.5px!important;
+  font-weight:650!important;
+  letter-spacing:.01em!important;
+  text-transform:none!important;
+}
+#today .personalRoleCopy b{
+  display:block;
+  margin:3px 0 5px!important;
+  color:var(--night-hero-text)!important;
+  font-size:clamp(29px,7.3vw,38px)!important;
+  font-weight:760!important;
+  line-height:1.02!important;
+  letter-spacing:-.055em!important;
+}
+#today .personalRoleCopy>span{
+  display:block;
+  color:var(--night-hero-muted)!important;
+  font-size:12px!important;
+  font-weight:560!important;
+  line-height:1.4!important;
+}
+#today .personalChangedBadge{
+  align-self:flex-start;
+  border:1px solid rgba(255,255,255,.16)!important;
+  background:rgba(255,255,255,.10)!important;
+  color:var(--night-hero-text)!important;
+  font-size:9px!important;
+}
+#today .personalFacts{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:0!important;
+  margin:0 16px!important;
+  padding:0 0 3px!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.14)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .personalFacts>div,
+#today .personalFacts>div:last-child{
+  grid-column:auto!important;
+  min-width:0!important;
+  min-height:67px!important;
+  padding:11px 10px 10px!important;
+  border:0!important;
+  border-left:1px solid rgba(255,255,255,.12)!important;
+  background:transparent!important;
+}
+#today .personalFacts>div:first-child{
+  padding-left:0!important;
+  border-left:0!important;
+}
+#today .personalFacts>.personalFactContext{
+  grid-column:1/-1!important;
+  min-height:56px!important;
+  padding-left:0!important;
+  border-left:0!important;
+  border-bottom:1px solid rgba(255,255,255,.12)!important;
+}
+#today .personalFacts>div:nth-child(2){
+  padding-left:0!important;
+  border-left:0!important;
+}
+#today .personalFacts dt{
+  margin:0 0 5px!important;
+  color:var(--night-hero-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:.01em!important;
+  text-transform:none!important;
+}
+#today .personalFacts dd,
+#today #personalNightCard .personalFacts dd{
+  margin:0!important;
+  color:var(--night-hero-text)!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
+  line-height:1.3!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+}
+#today #personalNightCard .personalFacts{
+  background:transparent!important;
+}
+#today #personalNightCard .personalFacts>div{
+  background:transparent!important;
+  color:var(--night-hero-text)!important;
+}
+#today #personalNightCard .personalFacts dt{
+  color:var(--night-hero-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:.01em!important;
+  text-transform:none!important;
+}
+#today .personalContextAction{
+  display:flex!important;
+  width:100%!important;
+  min-height:48px!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  margin:4px 0 0!important;
+  padding:0 2px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--night-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:650!important;
+  text-align:left!important;
+}
+#today .personalContextAction span{
+  display:inline!important;
+  width:auto!important;
+  height:auto!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  font-size:19px!important;
+  font-weight:420!important;
+}
+
+/* Team status is a readout, not another dashboard card. */
+#today .nightSummaryTitle,
+#today>.nightOverviewPanel>.nightSummaryTitle{
+  order:2;
+  margin:20px 0 8px!important;
+  padding:0!important;
+  border:0!important;
+}
+#today .nightSummaryTitle .sectionTitle{
+  margin:0!important;
+  color:var(--night-muted)!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  letter-spacing:-.01em!important;
+  text-transform:none!important;
+}
+#today #nightStatusRow{
+  order:3;
+  margin:0!important;
+}
+#today #nightStatusRow>.nightSignal{
+  display:block!important;
+  width:100%!important;
+  overflow:visible!important;
+  padding:13px 0 12px!important;
+  border:0!important;
+  border-top:1px solid var(--night-rule)!important;
+  border-bottom:1px solid var(--night-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightSignalLead{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+}
+#today .nightSignalLeadCopy{
+  display:grid;
+  min-width:0;
+  gap:2px;
+}
+#today .nightSignalLeadCopy small{
+  color:var(--night-muted)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:0!important;
+}
+#today .nightSignalLeadCopy strong{
+  color:var(--night-ink)!important;
+  font-size:13px!important;
+  font-weight:650!important;
+  letter-spacing:-.01em!important;
+}
+#today .nightSignalLeadCopy strong b{
+  margin-right:3px;
+  color:var(--night-ink)!important;
+  font-size:24px!important;
+  font-weight:780!important;
+  letter-spacing:-.04em!important;
+}
+#today .nightSignalState{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:var(--night-accent-strong);
+  font-size:12px;
+  font-weight:760;
+  white-space:nowrap;
+}
+#today .nightSignalGlyph{
+  display:grid!important;
+  width:25px!important;
+  height:25px!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:var(--night-accent-soft)!important;
+  color:var(--night-accent)!important;
+  font-size:13px!important;
+  font-style:normal!important;
+  font-weight:850!important;
+}
+#today .nightSignal.needsReview .nightSignalState{color:#9d610c}
+#today .nightSignal.needsReview .nightSignalGlyph{background:#fff1dc!important;color:#a26108!important}
+body.dark #today .nightSignal.needsReview .nightSignalGlyph,
+html[data-theme="dark"] #today .nightSignal.needsReview .nightSignalGlyph{
+  background:#4d3719!important;
+  color:#ffd292!important;
+}
+#today .nightSignalMeta,
+#today #nightStatusRow>.nightSignal>.nightSignalMeta{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:7px!important;
+  min-height:0!important;
+  margin:7px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--night-muted)!important;
+  box-shadow:none!important;
+  font-size:10.5px!important;
+}
+#today .nightSignalMeta button{
+  min-height:24px!important;
+  padding:0!important;
+  border:0!important;
+  background:none!important;
+  color:inherit!important;
+  box-shadow:none!important;
+  font-size:10.5px!important;
+  font-weight:620!important;
+}
+#today .nightSignalMeta .nightSignalTask{
+  width:100%;
+  color:#a86812!important;
+  font-weight:800!important;
+  text-align:left!important;
+}
+#today #alerts{
+  order:4;
+  margin-top:8px!important;
+}
+
+/* Team allocation is deliberately secondary and expands in place. */
+#today .nightTeamDetails{
+  order:5;
+  margin-top:9px!important;
+  border:0!important;
+  border-bottom:1px solid var(--night-rule)!important;
+}
+#today .nightTeamDetails>summary{
+  display:flex!important;
+  min-height:58px!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  list-style:none!important;
+  cursor:pointer;
+  color:var(--night-ink)!important;
+}
 #today .nightTeamDetails>summary::-webkit-details-marker{display:none}
-#today .nightTeamDetails>summary span:first-child{display:grid;gap:3px}
-#today .nightTeamDetails>summary strong{font-size:14px;letter-spacing:-.02em}
-#today .nightTeamDetails>summary small{font-size:11px;color:var(--night-muted)}
-#today .nightTeamDetails>summary span:last-child{color:var(--night-accent);font-size:21px;transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+#today .nightTeamDetails>summary span:first-child{
+  display:grid;
+  gap:2px;
+}
+#today .nightTeamDetails>summary strong{
+  color:var(--night-ink)!important;
+  font-size:13.5px!important;
+  font-weight:750!important;
+  letter-spacing:-.015em!important;
+}
+#today .nightTeamDetails>summary small{
+  color:var(--night-muted)!important;
+  font-size:10.5px!important;
+}
+#today .nightTeamDetails>summary span:last-child{
+  color:var(--night-accent)!important;
+  font-size:20px!important;
+  transition:transform .2s cubic-bezier(.2,.8,.2,1);
+}
 #today .nightTeamDetails[open]>summary span:last-child{transform:rotate(180deg)}
 #today .nightTeamDetails .roles{margin:0 0 8px!important}
-#today .rosterShortcutRow{order:6;margin-top:0!important}
-#today .rosterShortcutBtn{border:0!important;border-top:1px solid var(--night-rule)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--night-accent)!important;min-height:48px!important;padding:0 2px!important;font-size:12px!important}
-#today .recentActivityPanel{max-width:1000px;margin:0 auto 22px!important;padding:15px 19px 0!important;border:0!important;border-top:1px solid var(--night-rule)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
-#today .recentActivityPanel .sectionTitle{font-size:14px!important}
-@media(min-width:760px){#today .nightOverviewPanel{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);column-gap:35px}#today .nightDateShell{grid-column:1/-1}#today .personalNight{grid-column:1;grid-row:2/6}#today .nightSummaryTitle{grid-column:2;grid-row:2;align-self:end}#today #nightStatusRow{grid-column:2;grid-row:3}#today #alerts{grid-column:2;grid-row:4}#today .nightTeamDetails{grid-column:2;grid-row:5}#today .rosterShortcutRow{grid-column:1/-1}}
-@media(max-width:370px){#today .hospitalStrip img{width:96px!important}#today .hospitalStrip span{font-size:7px!important}#today .dateNav input{width:118px!important}#today .personalFacts dd{font-size:11px!important}}
-@media(prefers-reduced-motion:reduce){#today .nightTeamDetails>summary span:last-child{transition:none}}
-/* The older metric rail selector targeted every child of this host; neutralise it for the new summary. */
-#today #nightStatusRow>.nightSignal{display:block!important;width:100%!important;overflow:visible!important;box-shadow:none!important}
-#today #nightStatusRow>.nightSignal>.nightSignalLead,#today #nightStatusRow>.nightSignal>.nightSignalMeta{min-height:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
-#today #nightStatusRow>.nightSignal>.nightSignalMeta{display:flex!important;margin:10px 0 0 41px!important}
-#today #nightStatusRow>.nightSignal .nightSignalLead strong{font-size:15px!important;color:var(--night-ink)!important}
-#today #nightStatusRow>.nightSignal .nightSignalLead small{font-size:9px!important;color:var(--night-muted)!important}
-#today #nightStatusRow>.nightSignal .nightSignalGlyph{font-size:16px!important;color:var(--night-accent)!important}
-#today .dateNav .prettyDateButton{min-width:130px!important;width:130px!important;min-height:38px!important;height:38px!important;padding:0 5px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:0!important;background:transparent!important;box-shadow:none!important;color:var(--night-ink)!important;font-size:12px!important;font-weight:750!important;line-height:1.1!important;text-align:center!important}
-#today .dateNav .prettyDateButton small{display:none!important}
-#today #appHeader{margin-bottom:0!important}
-#today .headerBrand{min-width:0!important}
-#today .headerBrand .headerTitle{display:block!important}
-#today .personalAssignmentHero{background:transparent!important}
-#today .rosterShortcutRow{display:block!important}
-#today .rosterShortcutRow .smartNightBtn{display:none!important}
-#today #appHeader .headerBrand{display:flex!important}
-#today #appHeader .headerTitle{display:block!important}
-#today #appHeader .headerChips{display:flex!important}
+#today #roles>.nightSituationTimeline{
+  overflow:hidden;
+  border:1px solid var(--night-rule)!important;
+  border-radius:16px!important;
+  background:var(--night-surface)!important;
+  box-shadow:none!important;
+}
+#today .nightSituationTimeline .rosterRow{
+  display:grid!important;
+  grid-template-columns:52px minmax(0,1fr)!important;
+  min-height:64px!important;
+  gap:11px!important;
+  padding:11px 38px 11px 12px!important;
+  border:0!important;
+  border-top:1px solid var(--night-rule)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightSituationTimeline .rosterRow:first-child{border-top:0!important}
+#today .nightSituationTimeline .rosterRow.mine{
+  background:color-mix(in srgb,var(--night-accent) 7%,var(--night-surface))!important;
+}
+#today .nightSituationTimeline .rosterRoleMark{
+  width:48px!important;
+  min-width:48px!important;
+  height:32px!important;
+  padding:0 5px!important;
+  border:1px solid color-mix(in srgb,var(--row-accent) 22%,var(--night-rule))!important;
+  border-radius:10px!important;
+  background:color-mix(in srgb,var(--row-accent) 8%,var(--night-surface))!important;
+  color:var(--row-accent)!important;
+  box-shadow:none!important;
+}
+#today .nightSituationTimeline .rosterRowName{
+  color:var(--night-ink)!important;
+  font-size:14px!important;
+  font-weight:730!important;
+  letter-spacing:-.015em!important;
+}
+#today .nightSituationTimeline .rosterRowMeta{
+  margin-top:3px!important;
+  color:var(--night-muted)!important;
+  font-size:10.5px!important;
+  line-height:1.35!important;
+  white-space:normal!important;
+}
+#today .additionalStaff{
+  border-color:var(--night-rule)!important;
+  background:var(--night-surface)!important;
+}
+#today .fiveNurseSurface{
+  border-color:var(--night-rule)!important;
+  background:var(--night-surface)!important;
+  box-shadow:none!important;
+}
+
+/* Roster link and activity stay visually quiet. */
+#today .rosterShortcutRow{
+  order:6;
+  display:block!important;
+  margin-top:0!important;
+}
+#today .rosterShortcutBtn{
+  min-height:48px!important;
+  padding:0 2px!important;
+  border:0!important;
+  border-bottom:1px solid var(--night-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--night-accent)!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+}
 #today .rosterShortcutRow .smartNightBtn{display:flex!important}
 #today .rosterShortcutRow .smartNightBtn.hidden{display:none!important}
-#today .personalAssignmentHero{background:var(--night-surface)!important}
-/* Phone density: the staffing state remains visible with the assignment. */
+#today .recentActivityPanel{
+  width:100%;
+  max-width:980px;
+  margin:0 auto 22px!important;
+  padding:14px 0 0!important;
+  border:0!important;
+  border-top:1px solid var(--night-rule)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .recentActivityPanel .sectionTitle{
+  color:var(--night-ink)!important;
+  font-size:14px!important;
+}
+#today .recentActivityPanel .time{
+  color:var(--night-muted)!important;
+  font-size:10.5px!important;
+}
+#today .activityTimeline{
+  border-color:var(--night-rule)!important;
+  background:var(--night-surface)!important;
+  box-shadow:none!important;
+}
+
+/* Desktop keeps the same hierarchy without stretching the focal assignment. */
+@media(min-width:760px){
+  #today .nightOverviewPanel{
+    display:grid;
+    grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);
+    column-gap:36px;
+    align-items:start;
+  }
+  #today .nightDateShell{grid-column:1/-1;grid-row:1}
+  #today .personalNight{grid-column:1;grid-row:2/7}
+  #today .nightSummaryTitle{grid-column:2;grid-row:2;align-self:end;margin-top:18px!important}
+  #today #nightStatusRow{grid-column:2;grid-row:3}
+  #today #alerts{grid-column:2;grid-row:4}
+  #today .nightTeamDetails{grid-column:2;grid-row:5}
+  #today .rosterShortcutRow{grid-column:2;grid-row:6}
+}
+
+/* Phone spacing is dense enough for real night-shift use, while preserving full touch targets. */
 @media(max-width:640px){
-  #today #appHeader{position:relative!important;min-height:91px!important;padding:calc(8px + env(safe-area-inset-top)) 19px 8px!important}
+  #today>#appHeader{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;
+    align-items:center!important;
+    gap:2px 8px!important;
+    padding-top:calc(8px + env(safe-area-inset-top))!important;
+  }
   #today #appHeader .headerIdentity{display:none!important}
-  #today #appHeader .head{position:absolute!important;right:19px;top:calc(8px + env(safe-area-inset-top));margin:0!important}
-  #today #appHeader .headActions{padding:0!important;border:0!important;background:none!important;box-shadow:none!important}
-  #today #appHeader .headActions button{width:43px!important;height:43px!important;min-width:43px!important;min-height:43px!important}
-  #today #appHeader .hospitalStrip{display:grid!important;justify-items:start;width:46%;gap:0!important;margin:0!important}
-  #today #appHeader .hospitalStrip img{width:110px!important;height:26px!important}
-  #today #appHeader .hospitalStrip span{max-width:140px!important;text-align:left!important;font-size:7px!important;line-height:1.2!important}
-  #today #appHeader .headerChips{margin:8px 0 0!important}
-  #today .nightDateShell{padding:12px 0!important}
-  #today .nightDateLabel{font-size:9px!important}
-  #today .dateNav button{height:42px!important;min-height:42px!important;width:42px!important;min-width:42px!important}
-  #today .dateNav .prettyDateButton{height:42px!important;min-height:42px!important}
+  #today #appHeader .hospitalStrip{
+    grid-column:1!important;
+    grid-row:1!important;
+    display:grid!important;
+    justify-items:start!important;
+    width:auto!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  #today #appHeader .hospitalStrip img{width:108px!important;height:25px!important}
+  #today #appHeader .hospitalStrip span{
+    max-width:140px!important;
+    font-size:7px!important;
+    line-height:1.15!important;
+    text-align:left!important;
+  }
+  #today #appHeader .head{
+    grid-column:2!important;
+    grid-row:1!important;
+    position:static!important;
+    display:block!important;
+    margin:0!important;
+  }
+  #today #appHeader .headActions button{
+    flex-basis:42px!important;
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+    max-width:42px!important;
+    max-height:42px!important;
+  }
+  #today #appHeader .headerChips{
+    grid-column:1/-1!important;
+    grid-row:2!important;
+    margin:2px 0 0!important;
+  }
+  #today .nightDateShell{padding:12px 0 11px!important}
+  #today .nightDateLabel{font-size:11px!important}
+  #today .dateNav button{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+  }
+  #today .dateNav .prettyDateButton,
+  #today .dateNav input{
+    height:42px!important;
+    min-height:42px!important;
+  }
   #today .personalNight{padding-top:14px!important}
   #today .personalNight>.sectionTitle{margin-bottom:7px!important}
-  #today #personalNightCard>.personalHeroSurface{border:0!important;border-left:3px solid var(--night-accent)!important;border-radius:0!important;box-shadow:none!important}
-  #today .personalIdentity{padding:9px 12px 0!important}
-  #today .personalIdentity .personalAvatar{width:24px!important;height:24px!important;font-size:10px!important}
-  #today .personalAssignmentHero{padding:9px 12px 13px!important;gap:10px!important}
-  #today .personalRoleIcon{width:33px!important;height:33px!important;flex-basis:33px!important;border-radius:9px!important}
-  #today .personalRoleCopy b{font-size:29px!important}
-  #today .personalFacts{margin:0 12px!important}
-  #today .personalFacts>div,#today .personalFacts>div:last-child{min-height:61px!important;padding:10px 6px 8px!important}
-  #today .personalFacts dd{font-size:11px!important}
-  #today .personalContextAction{min-height:37px!important;padding:0 12px!important}
-  #today .nightSummaryTitle{margin:13px 0 7px!important}
-  #today .nightSignal{border-radius:11px!important;padding:11px 13px!important}
-  #today .nightSignalMeta{margin-top:5px!important}
-  #today #nightStatusRow>.nightSignal>.nightSignalMeta{margin-top:5px!important}
+  #today #personalNightCard>.personalHeroSurface{border-radius:0!important}
+  #today .personalIdentity,
+  #today #personalNightCard>article>.personalIdentity{padding:0 2px 9px!important}
+  #today .personalIdentity .personalAvatar{
+    width:27px!important;
+    height:27px!important;
+    flex-basis:27px!important;
+    font-size:10px!important;
+  }
+  #today .personalAssignmentStage{
+    margin:0!important;
+    border-radius:18px!important;
+  }
+  #today .personalAssignmentHero{padding:16px 14px 13px!important;gap:11px!important}
+  #today .personalRoleIcon{
+    width:38px!important;
+    height:38px!important;
+    flex-basis:38px!important;
+    border-radius:12px!important;
+  }
+  #today .personalRoleCopy b{font-size:31px!important}
+  #today .personalFacts{margin:0 14px!important}
+  #today .personalFacts>div,
+  #today .personalFacts>div:last-child{
+    min-height:63px!important;
+    padding:10px 7px 9px!important;
+  }
+  #today .personalFacts dd{font-size:10.8px!important}
+  #today .personalContextAction{
+    min-height:48px!important;
+    padding:0 2px!important;
+  }
+  #today .nightSummaryTitle,
+  #today>.nightOverviewPanel>.nightSummaryTitle{margin:18px 0 8px!important}
+  #today #nightStatusRow>.nightSignal{padding:11px 0 10px!important}
+  #today .nightSignalLeadCopy strong b{font-size:22px!important}
+  #today .nightTeamDetails>summary{min-height:54px!important}
 }
-@media(max-width:640px){
-  #today #appHeader{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;align-items:center!important;min-height:0!important;gap:2px 6px!important}
-  #today #appHeader .hospitalStrip{grid-column:1!important;grid-row:1!important;width:auto!important;min-width:0!important}
-  #today #appHeader .head{grid-column:2!important;grid-row:1!important;position:static!important;right:auto!important;top:auto!important;display:block!important}
-  #today #appHeader .headerChips{grid-column:1/-1!important;grid-row:2!important;margin:0!important}
+
+@media(max-width:370px){
+  #today .hospitalStrip img{width:96px!important}
+  #today .dateNav .prettyDateButton,
+  #today .dateNav input{width:118px!important;min-width:118px!important}
+  #today .personalRoleCopy b{font-size:28px!important}
+  #today .personalFacts dd{font-size:10px!important}
 }
-body.dark #today .personalContextAction,html[data-theme="dark"] #today .personalContextAction{background:#214746!important;color:#a5e9dd!important}
-body.dark #today .personalContextAction span,html[data-theme="dark"] #today .personalContextAction span{color:#a5e9dd!important;background:transparent!important}
-body.dark #today .dateNav .prettyDateButton,html[data-theme="dark"] #today .dateNav .prettyDateButton{color:#eff8f6!important;background:transparent!important}
-body.dark #today .dateNav button,html[data-theme="dark"] #today .dateNav button{color:#c8eee7!important;background:transparent!important}
-body.dark #today #appHeader .hospitalStrip,html[data-theme="dark"] #today #appHeader .hospitalStrip{background:#edf4f2!important;border-radius:8px!important;padding:3px 6px!important}
-body.dark #today #appHeader .hospitalStrip span,html[data-theme="dark"] #today #appHeader .hospitalStrip span{color:#425b5d!important}
-body.dark #today #personalNightCard .personalContextAction,html[data-theme="dark"] #today #personalNightCard .personalContextAction{background:#1d4844!important;background-image:none!important;color:#e5faf6!important}
-body.dark #today #personalNightCard .personalContextAction *,html[data-theme="dark"] #today #personalNightCard .personalContextAction *{color:#e5faf6!important}
-body.dark #today .dateNav .prettyDateButton *,html[data-theme="dark"] #today .dateNav .prettyDateButton *{color:#eef9f6!important}
+
+@media(prefers-reduced-motion:reduce){
+  #today .nightTeamDetails>summary span:last-child{transition:none!important}
+  #today .headActions button{transition:none!important}
+}
