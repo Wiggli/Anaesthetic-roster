@@ -576,3 +576,39 @@ body[data-view="chat"] main{
     grid-template-rows:auto minmax(320px,46dvh) auto!important;
   }
 }
+
+
+/* 37.74 Chat specificity correction after visual/browser review. */
+#chat .chatTeamConsole{
+  display:grid!important;
+  grid-template-rows:auto minmax(210px,32dvh) auto!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamConsoleHeader{
+  border:0!important;
+  background:transparent!important;
+}
+#chat .chatComposerGlass{
+  border:1px solid color-mix(in srgb,var(--product-rule,#d2d2d7) 72%,transparent)!important;
+  border-radius:20px!important;
+  background:color-mix(in srgb,var(--product-surface,#fff) 82%,transparent)!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.06)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
+  backdrop-filter:blur(20px) saturate(145%)!important;
+}
+@media(min-width:760px){
+  #chat .chatTeamConsole{
+    grid-template-rows:auto minmax(300px,42dvh) auto!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  #chat .chatComposerGlass{
+    background:var(--product-surface,#fff)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
