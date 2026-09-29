@@ -11,7 +11,7 @@ function openNight(index: number) {
 }
 
 function DetailRow({ detail }: { detail: RosterDetail }) {
-  const tone = detail.tone === 'first' ? 'tw:bg-teal-400/12 tw:text-teal-800 tw:dark:text-teal-200'
+  const tone = detail.tone === 'first' ? 'tw:bg-blue-400/12 tw:text-blue-800 tw:dark:text-blue-200'
     : detail.tone === 'second' ? 'tw:bg-sky-400/12 tw:text-sky-800 tw:dark:text-sky-200'
       : detail.tone === 'warning' ? 'tw:bg-amber-400/14 tw:text-amber-800 tw:dark:text-amber-200'
         : 'tw:bg-[var(--surface)] tw:text-[var(--accent-strong)]';
@@ -45,7 +45,7 @@ function Cards({ cards }: { cards: RosterCard[] }) {
           <strong className="tw:block tw:text-[1.05rem]">{card.date}</strong>
           <span className="tw:mt-1 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{card.status}</span>
         </div>
-        <span className="tw:shrink-0 tw:rounded-full tw:bg-teal-400/12 tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold tw:text-teal-800 tw:dark:text-teal-200">{card.count} nurses</span>
+        <span className="tw:shrink-0 tw:rounded-full tw:bg-blue-400/12 tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold tw:text-blue-800 tw:dark:text-blue-200">{card.count} nurses</span>
       </div>
       <div className="tw:mt-3">{card.details.map((detail, row) => <DetailRow key={`${detail.label}-${row}`} detail={detail} />)}</div>
     </motion.button>)}
