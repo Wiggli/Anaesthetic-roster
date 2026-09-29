@@ -4721,3 +4721,10 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
 #today .personalContextAction{
   touch-action:pan-y pinch-zoom!important;
 }
+
+/* 37.73 dark-mode contrast correction after visual review.
+   Legacy dark rules target the nested date <strong>; keep the selected night fully legible. */
+body.dark #today .nightDateShell .prettyDateButton strong,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
+  color:var(--night-ink)!important;
+}
