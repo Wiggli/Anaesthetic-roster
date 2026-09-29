@@ -6369,3 +6369,103 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
     backdrop-filter:none!important;
   }
 }
+
+
+/* 37.74 screenshot refinement: remove duplicated/empty visual weight without hiding functionality. */
+#breaks>.panel>h2{
+  margin:0 2px 7px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:680!important;
+  line-height:1.2!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+#breaks>.panel>.grid2{
+  grid-template-columns:minmax(0,1fr)!important;
+  min-height:48px!important;
+  margin-bottom:11px!important;
+  padding:2px!important;
+}
+#breaks>.panel>.grid2 .staffingCount{
+  display:none!important;
+}
+#breaks>.panel>.grid2 .dateNav{
+  min-height:44px!important;
+}
+#breaks>.panel>.grid2 .prettyDateButton{
+  min-height:40px!important;
+}
+#breaks #breakSummaryRow{
+  margin-bottom:12px!important;
+}
+
+#changes .staffingSection:has(#absenceFormExperience:empty):has(#changeList:empty),
+#changes .staffingSection:has(#overtimeFormExperience:empty):has(#overtimeList:empty){
+  min-height:0!important;
+  padding:13px 14px!important;
+}
+#changes .staffingSection:has(#absenceFormExperience:empty):has(#changeList:empty) .stepHeader,
+#changes .staffingSection:has(#overtimeFormExperience:empty):has(#overtimeList:empty) .stepHeader{
+  margin:0!important;
+}
+#changes .staffingSection:has(#absenceFormExperience:empty):has(#changeList:empty) .stepHeader>span,
+#changes .staffingSection:has(#overtimeFormExperience:empty):has(#overtimeList:empty) .stepHeader>span{
+  width:21px!important;
+  height:21px!important;
+}
+#changes .staffingSection:has(#absenceFormExperience:empty):has(#changeList:empty) .stepHeader h3,
+#changes .staffingSection:has(#overtimeFormExperience:empty):has(#overtimeList:empty) .stepHeader h3{
+  font-size:12.5px!important;
+}
+
+#chat .chatTeamConsole{
+  grid-template-rows:auto auto minmax(180px,30dvh) auto!important;
+}
+#chat .chatTeamMessages{
+  min-height:180px!important;
+}
+#chat .chatDateSeparator{
+  margin:5px 0 3px!important;
+  color:var(--scene-secondary)!important;
+  font-size:8px!important;
+  font-weight:680!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+#chat [data-chat-unread="true"]{
+  margin-block:6px!important;
+  color:var(--scene-accent)!important;
+}
+#chat [data-chat-unread="true"] b{
+  color:var(--scene-accent)!important;
+  font-size:9px!important;
+  font-weight:700!important;
+}
+
+.accountPhotoActionsPro{
+  width:auto!important;
+  max-width:none!important;
+  min-height:28px!important;
+  justify-content:center!important;
+  margin:5px 0 0!important;
+  padding:0!important;
+}
+.accountPhotoActionsPro button{
+  white-space:nowrap!important;
+}
+@media(min-width:760px){
+  .accountPhotoActionsPro{
+    justify-content:flex-start!important;
+    padding-left:0!important;
+  }
+}
+@media(max-width:520px){
+  .accountPhotoActionsPro{
+    flex-wrap:nowrap!important;
+    max-width:none!important;
+  }
+  #chat .chatTeamConsole{
+    grid-template-rows:auto auto minmax(170px,28dvh) auto!important;
+  }
+}
