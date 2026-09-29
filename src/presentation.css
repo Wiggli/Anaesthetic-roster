@@ -6164,3 +6164,100 @@ html[data-theme="dark"] #breaks .personalBreakSummary{
 #breaks>.panel{
   gap:10px!important;
 }
+
+
+/* 37.74 final cascade ownership after presentation review.
+   These selectors intentionally beat older pre-product-system Chat and Account rules. */
+#chat .chatTeamConsole{
+  display:grid!important;
+  grid-template-rows:auto minmax(210px,32dvh) auto!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamConsoleHeader{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) auto!important;
+  min-height:52px!important;
+  gap:10px!important;
+  padding:0 2px 9px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamToolbar{
+  display:none!important;
+}
+#chat .chatMessageViewport{
+  min-height:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamMessages{
+  min-height:210px!important;
+  padding:10px 10px 12px!important;
+  background:var(--product-surface)!important;
+}
+#chat .chatTeamComposerWrap{
+  padding:8px 0 0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#chat .chatComposerGlass{
+  border:1px solid color-mix(in srgb,var(--product-rule) 72%,transparent)!important;
+  border-radius:20px!important;
+  background:color-mix(in srgb,var(--product-surface) 82%,transparent)!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.06)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
+  backdrop-filter:blur(20px) saturate(145%)!important;
+}
+#chat .chatSafetyNotice{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatNotificationCard{
+  border:0!important;
+  background:var(--product-surface)!important;
+  box-shadow:none!important;
+}
+@media(min-width:760px){
+  #chat .chatTeamConsole{
+    grid-template-rows:auto minmax(300px,42dvh) auto!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  #chat .chatComposerGlass{
+    background:var(--product-surface)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
+
+#accountSheet .accountSheetHeader button,
+.accountSheet .accountSheetHeader button{
+  min-width:52px!important;
+  min-height:44px!important;
+  padding:0 4px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  color:var(--account-accent,var(--product-blue))!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+#profileExperience .accountPhotoActionsPro{
+  display:flex!important;
+  width:100%!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:14px!important;
+  padding-left:0!important;
+}
