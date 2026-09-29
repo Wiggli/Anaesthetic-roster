@@ -4728,3 +4728,10 @@ body.dark #today .nightDateShell .prettyDateButton strong,
 html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
   color:var(--night-ink)!important;
 }
+
+/* 37.73 physical page geometry.
+   The visible Night destination must own at least the same viewport-height region as
+   a staged swipe page, so direct manipulation remains available below compact content. */
+#today{
+  min-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important;
+}
