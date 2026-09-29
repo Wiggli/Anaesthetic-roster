@@ -4735,3 +4735,16 @@ html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
 #today{
   min-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important;
 }
+
+/* 37.73 dark-mode date anchor.
+   The selected night is primary navigation content, not secondary metadata. */
+body.dark #today .nightDateShell .prettyDateButton,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton{
+  color:#f5f5f7!important;
+  opacity:1!important;
+}
+body.dark #today .nightDateShell .prettyDateButton strong,
+html[data-theme="dark"] #today .nightDateShell .prettyDateButton strong{
+  color:#f5f5f7!important;
+  opacity:1!important;
+}
