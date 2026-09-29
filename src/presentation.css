@@ -4369,3 +4369,233 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
     padding-inline:14px!important;
   }
 }
+
+
+/* 37.73 mobile density refinement after screenshot review.
+   Keep the hierarchy, but make the first screen operationally useful at a glance. */
+#today .nightDateContext{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#today .nightDateShell{
+  padding:8px 0 13px!important;
+}
+#today .nightDateShell .dateNav{
+  grid-template-columns:40px minmax(0,1fr) 40px!important;
+  min-height:46px!important;
+  padding:2px!important;
+  border-radius:15px!important;
+}
+#today .nightDateShell .dateNav button{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  min-height:40px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-size:22px!important;
+}
+#today .nightDateShell .dateNav input,
+#today .nightDateShell .dateNav .prettyDateButton{
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 6px!important;
+  font-size:14px!important;
+  font-weight:710!important;
+}
+
+#today .personalNight>.sectionTitle{
+  margin:0 2px 6px!important;
+  font-size:11.5px!important;
+}
+#today #personalNightCard>.personalHeroSurface{
+  border-radius:20px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity{
+  min-height:40px!important;
+  padding:9px 14px 0!important;
+  gap:8px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalAvatar{
+  width:28px!important;
+  height:28px!important;
+  flex-basis:28px!important;
+  font-size:10px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy{
+  gap:5px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy b{
+  font-size:11.5px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy small{
+  font-size:9.5px!important;
+}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalChangeBtn{
+  min-height:34px!important;
+  font-size:11px!important;
+}
+#today .personalAssignmentHero{
+  gap:10px!important;
+  padding:8px 14px 11px!important;
+}
+#today .personalRoleIcon{
+  width:36px!important;
+  height:36px!important;
+  flex-basis:36px!important;
+  border-radius:11px!important;
+  font-size:11.5px!important;
+}
+#today .personalRoleCopy small{
+  font-size:9.5px!important;
+}
+#today .personalRoleCopy b{
+  margin:2px 0 3px!important;
+  font-size:clamp(26px,6.4vw,32px)!important;
+}
+#today .personalRoleCopy>span{
+  font-size:10.5px!important;
+}
+#today #personalNightCard .personalFacts{
+  grid-template-columns:minmax(0,1.22fr) minmax(0,.9fr) minmax(0,.96fr)!important;
+  margin:0 14px!important;
+}
+#today #personalNightCard .personalFacts>div,
+#today #personalNightCard .personalFacts>div:last-child,
+#today #personalNightCard .personalFacts>.personalFactContext{
+  grid-column:auto!important;
+  min-height:50px!important;
+  padding:8px 8px 8px!important;
+  border-left:1px solid rgba(255,255,255,.09)!important;
+  border-bottom:0!important;
+}
+#today #personalNightCard .personalFacts>div:first-child,
+#today #personalNightCard .personalFacts>.personalFactContext{
+  padding-left:0!important;
+  border-left:0!important;
+}
+#today #personalNightCard .personalFacts dt{
+  margin-bottom:3px!important;
+  font-size:9px!important;
+}
+#today #personalNightCard .personalFacts dd{
+  font-size:10.5px!important;
+  line-height:1.2!important;
+}
+#today .personalContextAction{
+  min-height:44px!important;
+  padding:0 14px!important;
+  font-size:11px!important;
+}
+
+/* The status title is carried by the status readout itself, saving a redundant line. */
+#today .nightSummaryTitle,
+#today>.nightOverviewPanel>.nightSummaryTitle{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#today #nightStatusRow{
+  margin:17px 0 0!important;
+}
+#today #nightStatusRow>.nightSignal{
+  padding:10px 12px!important;
+  border-radius:15px!important;
+}
+#today .nightSignalLeadCopy{
+  display:grid!important;
+  gap:1px!important;
+}
+#today .nightSignalLeadCopy small{
+  display:block!important;
+  color:var(--night-muted)!important;
+  font-size:9px!important;
+  font-weight:620!important;
+}
+#today .nightSignalLeadCopy strong{
+  font-size:11.5px!important;
+}
+#today .nightSignalLeadCopy strong b{
+  margin-right:4px!important;
+  font-size:19px!important;
+}
+#today .nightSignalState{
+  font-size:11px!important;
+}
+#today .nightSignalMeta,
+#today #nightStatusRow>.nightSignal>.nightSignalMeta{
+  margin-top:3px!important;
+  font-size:10px!important;
+}
+#today .nightSignalMeta button{
+  min-height:26px!important;
+  font-size:10px!important;
+}
+#today .nightTeamDetails{
+  margin-top:8px!important;
+  border-radius:15px!important;
+}
+#today .nightTeamDetails>summary{
+  min-height:54px!important;
+  padding:0 12px!important;
+}
+#today .nightTeamDetails>summary strong{
+  font-size:12.5px!important;
+}
+#today .nightTeamDetails>summary small{
+  font-size:9.5px!important;
+}
+#today .recentActivityPanel{
+  margin-top:18px!important;
+}
+#today .recentActivityPanel>.sectionHeadingRow{
+  margin-bottom:5px!important;
+}
+#today .recentActivityPanel .sectionTitle{
+  font-size:12.5px!important;
+}
+#today .recentActivityPanel .time{
+  font-size:9.5px!important;
+}
+#today #recentActivityList>.emptyRecentActivity{
+  padding-top:7px!important;
+  font-size:10.5px!important;
+}
+
+/* Keep the three at-a-glance facts on one row even on narrow supported phones. */
+@media(max-width:390px){
+  #today #personalNightCard .personalFacts{
+    grid-template-columns:minmax(0,1.22fr) minmax(0,.9fr) minmax(0,.96fr)!important;
+  }
+  #today #personalNightCard .personalFacts>.personalFactContext{
+    grid-column:auto!important;
+    min-height:50px!important;
+    border-bottom:0!important;
+  }
+  #today #personalNightCard .personalFacts>div:nth-child(2){
+    padding-left:8px!important;
+    border-left:1px solid rgba(255,255,255,.09)!important;
+  }
+  #today #personalNightCard .personalFacts dd{
+    font-size:10px!important;
+  }
+  #today .personalRoleCopy b{
+    font-size:26px!important;
+  }
+}
