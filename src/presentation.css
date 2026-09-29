@@ -6510,3 +6510,13 @@ html[data-theme="dark"] #today .nightDateShell .prettyDateButton small{
     grid-template-rows:auto auto minmax(200px,32dvh) auto!important;
   }
 }
+
+
+/* Ensure the human roster context wins over the earlier compact Night rule. */
+#today .nightDateShell .dateNav .prettyDateButton small{
+  display:block!important;
+  color:var(--night-muted)!important;
+  font-size:8.5px!important;
+  font-weight:600!important;
+  line-height:1.1!important;
+}
