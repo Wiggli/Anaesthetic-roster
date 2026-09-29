@@ -6148,3 +6148,19 @@ html[data-theme="dark"] #breaks .personalBreakSummary{
   :root{--product-rule:#8e8e93}
   html[data-theme="dark"],body.dark{--product-rule:#636366}
 }
+
+
+/* 37.74 Breaks first-screen rhythm correction after visual review. */
+#breaks #breakPersonalSummary{
+  margin:0!important;
+}
+#breaks .breakSummaryRow,
+#breaks #breakSummaryRow{
+  margin:0!important;
+}
+#breaks .breakPlanTitle{
+  margin:2px 2px 0!important;
+}
+#breaks>.panel{
+  gap:10px!important;
+}
