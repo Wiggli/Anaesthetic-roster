@@ -486,14 +486,14 @@ function Navigation({ badges }: { badges: Badges }) {
       if (first.bar) moveTo(first.view); else returnContentDrag(first);
     };
     window.addEventListener('roster:viewchange', sync);
-    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchstart', onStart, { passive: true, capture: true });
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend', onEnd, { passive: true });
     document.addEventListener('touchcancel', onCancel, { passive: true });
     document.addEventListener('click', onClick, true);
     return () => {
       window.removeEventListener('roster:viewchange', sync);
-      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchstart', onStart, true);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onEnd);
       document.removeEventListener('touchcancel', onCancel);
