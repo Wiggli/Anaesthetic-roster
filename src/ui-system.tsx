@@ -7,7 +7,7 @@ export function cx(...values: Array<string | false | null | undefined>) {
 
 const toneClasses = {
   neutral: 'tw:bg-black/5 tw:text-[var(--muted)] tw:dark:bg-white/8',
-  accent: 'tw:bg-teal-500/12 tw:text-[var(--accent-strong)]',
+  accent: 'tw:bg-blue-500/12 tw:text-[var(--accent-strong)]',
   success: 'tw:bg-emerald-500/12 tw:text-emerald-700 tw:dark:text-emerald-300',
   warning: 'tw:bg-amber-500/14 tw:text-amber-700 tw:dark:text-amber-300',
   danger: 'tw:bg-rose-500/12 tw:text-rose-700 tw:dark:text-rose-300',
@@ -26,7 +26,7 @@ export function Pressable({
     {...props}
     whileTap={props.disabled || reduced ? undefined : { scale: 0.975 }}
     transition={{ type: 'spring', stiffness: 540, damping: 38, mass: 0.45 }}
-    className={cx('tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-teal-500/45 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
+    className={cx('tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-blue-500/42 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
   >{children}</motion.button>;
 }
 
@@ -100,7 +100,7 @@ export function Avatar({ initial, src, size = 'md', className = '' }: {
     lg: 'tw:h-14 tw:w-14 tw:text-lg'
   };
   return <span className={cx(
-    'tw:grid tw:shrink-0 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-teal-500/12 tw:font-bold tw:text-[var(--accent-strong)] tw:ring-1 tw:ring-black/5 tw:dark:ring-white/10',
+    'tw:grid tw:shrink-0 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-blue-500/12 tw:font-bold tw:text-[var(--accent-strong)] tw:ring-1 tw:ring-black/5 tw:dark:ring-white/10',
     sizes[size],
     className
   )}>
