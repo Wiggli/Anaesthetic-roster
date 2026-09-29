@@ -3017,6 +3017,8 @@ body.dark #today,html[data-theme="dark"] #today{
 }
 body.dark #today #personalNightCard>.personalHeroSurface,
 html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
+  border:0!important;
+  background:transparent!important;
   box-shadow:none!important;
 }
 #today #personalNightCard>.personalHeroSurface::before{display:none!important}
@@ -3242,9 +3244,12 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
 }
 
 /* Team status is a readout, not another dashboard card. */
-#today .nightSummaryTitle{
+#today .nightSummaryTitle,
+#today>.nightOverviewPanel>.nightSummaryTitle{
   order:2;
-  margin:18px 0 6px!important;
+  margin:20px 0 8px!important;
+  padding:0!important;
+  border:0!important;
 }
 #today .nightSummaryTitle .sectionTitle{
   margin:0!important;
@@ -3615,7 +3620,8 @@ html[data-theme="dark"] #today .nightSignal.needsReview .nightSignalGlyph{
     min-height:48px!important;
     padding:0 2px!important;
   }
-  #today .nightSummaryTitle{margin-top:15px!important}
+  #today .nightSummaryTitle,
+  #today>.nightOverviewPanel>.nightSummaryTitle{margin:18px 0 8px!important}
   #today #nightStatusRow>.nightSignal{padding:11px 0 10px!important}
   #today .nightSignalLeadCopy strong b{font-size:22px!important}
   #today .nightTeamDetails>summary{min-height:54px!important}
