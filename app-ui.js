@@ -451,7 +451,7 @@ function populateAccountSheet(){
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{theme:themePreference(),installed:isStandaloneApp(),profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.',messageType:profileFeatureAvailable?'':'error',changed:false}}}));
 }
 
-async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
+async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();try{dialog.focus({preventScroll:true})}catch(error){dialog.focus()}await loadPasskeys()}}
 
 async function runAccountAction(action){
   if(action==='theme')return;
