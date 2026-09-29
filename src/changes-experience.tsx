@@ -160,7 +160,7 @@ function AllocationList({ model }: { model: ChangesExperience }) {
         data-final-allocation={row.key}
         aria-label={`Choose nurse for ${row.label}`}
         onChange={event => dispatchAction({ action: 'allocation-select', key: row.key, value: event.target.value })}
-        className="tw:min-h-12 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12"
+        className="tw:min-h-12 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-blue-500/50 tw:focus:ring-2 tw:focus:ring-blue-500/15 tw:dark:border-white/12"
       >
         <option value="">Choose a nurse</option>
         {row.options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
@@ -174,7 +174,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
     dispatchAction({ action: 'staffing-mounted' });
   }, [model, mode]);
 
-  const inputClass = 'tw:min-h-11 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-teal-500/50 tw:focus:ring-2 tw:focus:ring-teal-500/15 tw:dark:border-white/12';
+  const inputClass = 'tw:min-h-11 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-blue-500/50 tw:focus:ring-2 tw:focus:ring-blue-500/15 tw:dark:border-white/12';
 
   if (mode === 'absence') {
     return <div className="tw:grid tw:gap-3">
