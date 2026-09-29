@@ -10,67 +10,67 @@
  */
 
 :root{
-  --liquid-bg:#f3f4f7;
-  --liquid-bg-alt:#f7f7f9;
-  --liquid-surface:rgba(255,255,255,.96);
-  --liquid-surface-muted:rgba(246,247,249,.92);
-  --liquid-label:#151619;
-  --liquid-secondary:#66676d;
-  --liquid-tertiary:#8b8c92;
-  --liquid-accent:#087d79;
-  --liquid-accent-strong:#066b68;
-  --liquid-success:#25834a;
-  --liquid-warning:#a96500;
-  --liquid-critical:#b8323f;
-  --liquid-info:#286f9f;
-  --liquid-separator:rgba(60,60,67,.14);
+  --liquid-bg:#f5f5f7;
+  --liquid-bg-alt:#fbfbfd;
+  --liquid-surface:rgba(255,255,255,.98);
+  --liquid-surface-muted:rgba(242,242,247,.96);
+  --liquid-label:#1d1d1f;
+  --liquid-secondary:#6e6e73;
+  --liquid-tertiary:#8e8e93;
+  --liquid-accent:#0071e3;
+  --liquid-accent-strong:#0066cc;
+  --liquid-success:#248a3d;
+  --liquid-warning:#a85f00;
+  --liquid-critical:#d70015;
+  --liquid-info:#0071e3;
+  --liquid-separator:rgba(60,60,67,.17);
   --liquid-hairline:.5px;
   --liquid-radius-s:12px;
   --liquid-radius-m:18px;
-  --liquid-radius-l:24px;
-  --liquid-radius-xl:28px;
+  --liquid-radius-l:22px;
+  --liquid-radius-xl:26px;
   --liquid-control-gap:8px;
-  --liquid-section-gap:18px;
-  --liquid-shadow-content:0 1px 2px rgba(18,25,31,.025),0 10px 28px rgba(27,45,58,.045);
-  --liquid-shadow-glass:0 10px 30px rgba(23,35,45,.12),0 2px 7px rgba(23,35,45,.08);
-  --liquid-glass-clear:rgba(250,250,252,.56);
-  --liquid-glass:rgba(248,249,252,.72);
-  --liquid-glass-elevated:rgba(250,250,252,.82);
-  --liquid-glass-tinted:rgba(231,246,245,.76);
-  --liquid-glass-border:rgba(255,255,255,.72);
-  --liquid-glass-edge:rgba(255,255,255,.94);
-  --liquid-glass-depth:rgba(76,84,92,.14);
-  --liquid-spring:380;
-  --liquid-damping:38;
+  --liquid-section-gap:20px;
+  --liquid-shadow-content:0 1px 2px rgba(0,0,0,.025);
+  --liquid-shadow-glass:0 12px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  --liquid-glass-clear:rgba(250,250,252,.58);
+  --liquid-glass:rgba(248,248,250,.72);
+  --liquid-glass-elevated:rgba(250,250,252,.84);
+  --liquid-glass-tinted:rgba(235,243,255,.78);
+  --liquid-glass-border:rgba(255,255,255,.76);
+  --liquid-glass-edge:rgba(255,255,255,.95);
+  --liquid-glass-depth:rgba(60,60,67,.13);
+  --liquid-spring:390;
+  --liquid-damping:40;
   --liquid-press-scale:.975;
   --liquid-nav-height:68px;
 }
 
 html[data-theme="dark"],
 body.dark{
-  --liquid-bg:#0c0d0f;
-  --liquid-bg-alt:#121316;
-  --liquid-surface:rgba(28,29,32,.97);
-  --liquid-surface-muted:rgba(35,36,39,.94);
+  --liquid-bg:#000000;
+  --liquid-bg-alt:#0b0b0c;
+  --liquid-surface:rgba(28,28,30,.98);
+  --liquid-surface-muted:rgba(44,44,46,.96);
   --liquid-label:#f5f5f7;
-  --liquid-secondary:#b7b7bd;
-  --liquid-tertiary:#85858b;
-  --liquid-accent:#68d8d2;
-  --liquid-accent-strong:#8be4df;
-  --liquid-success:#66cf85;
-  --liquid-warning:#efb35d;
-  --liquid-critical:#ff8790;
-  --liquid-info:#85c7ef;
-  --liquid-separator:rgba(235,235,245,.13);
-  --liquid-shadow-content:0 1px 0 rgba(255,255,255,.025),0 10px 34px rgba(0,0,0,.18);
-  --liquid-shadow-glass:0 14px 36px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.2);
-  --liquid-glass-clear:rgba(35,36,39,.48);
-  --liquid-glass:rgba(35,36,39,.66);
-  --liquid-glass-elevated:rgba(42,43,47,.78);
-  --liquid-glass-tinted:rgba(28,54,54,.7);
-  --liquid-glass-border:rgba(255,255,255,.12);
-  --liquid-glass-edge:rgba(255,255,255,.17);
-  --liquid-glass-depth:rgba(0,0,0,.28);
+  --liquid-secondary:#aeaeb2;
+  --liquid-tertiary:#8e8e93;
+  --liquid-accent:#0a84ff;
+  --liquid-accent-strong:#409cff;
+  --liquid-success:#30d158;
+  --liquid-warning:#ff9f0a;
+  --liquid-critical:#ff453a;
+  --liquid-info:#64d2ff;
+  --liquid-separator:rgba(84,84,88,.62);
+  --liquid-shadow-content:0 1px 0 rgba(255,255,255,.025);
+  --liquid-shadow-glass:0 14px 36px rgba(0,0,0,.38),0 2px 8px rgba(0,0,0,.22);
+  --liquid-glass-clear:rgba(28,28,30,.54);
+  --liquid-glass:rgba(28,28,30,.72);
+  --liquid-glass-elevated:rgba(44,44,46,.82);
+  --liquid-glass-tinted:rgba(24,42,67,.78);
+  --liquid-glass-border:rgba(255,255,255,.11);
+  --liquid-glass-edge:rgba(255,255,255,.16);
+  --liquid-glass-depth:rgba(0,0,0,.30);
 }
 
 html{
@@ -79,9 +79,7 @@ html{
 }
 
 body{
-  background:
-    radial-gradient(120% 68% at 50% -8%,rgba(97,181,178,.055),transparent 58%),
-    linear-gradient(180deg,var(--liquid-bg-alt),var(--liquid-bg) 36%,var(--liquid-bg));
+  background:var(--liquid-bg);
   color:var(--liquid-label);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif;
   font-synthesis:none;
@@ -91,9 +89,7 @@ body{
 
 body.dark,
 html[data-theme="dark"] body{
-  background:
-    radial-gradient(110% 65% at 50% -10%,rgba(87,171,167,.075),transparent 56%),
-    linear-gradient(180deg,var(--liquid-bg-alt),var(--liquid-bg) 38%,var(--liquid-bg));
+  background:var(--liquid-bg);
 }
 
 body[data-view] main{
