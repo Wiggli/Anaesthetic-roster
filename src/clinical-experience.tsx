@@ -165,7 +165,7 @@ function BreakGroup({
             const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
             return <ListRow
               key={name}
-              className={`breakPerson ${mine ? 'mine tw:bg-teal-500/7' : ''}`}
+              className={`breakPerson ${mine ? 'mine tw:bg-blue-500/7' : ''}`}
               title={name}
               trailing={mine ? <Badge tone="accent" className="breakPersonYou">You</Badge> : undefined}
             />;
