@@ -125,7 +125,7 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
     <section className="accountProfileSection" aria-labelledby="profileAboutHeading">
       <div className="accountProfileSectionHeading">
         <span>Personal profile</span>
-        <h4 id="profileAboutHeading">How you appear in Night Roster</h4>
+        <h4 id="profileAboutHeading">Personal details</h4>
         <p>Your preferred name and professional title are visible in your own Night view. They do not change shared roster records.</p>
       </div>
 
@@ -187,7 +187,7 @@ function ProfileEditor({ model }: { model: ProfileExperience }) {
         <span>Verified account identity</span>
         <b id="profileApprovedName">{model.approvedName}</b>
         <small id="profileEmail">{model.email}</small>
-        <p>Shared staffing and roster actions continue to use this approved identity.</p>
+        <p>Shared roster actions use this approved identity.</p>
       </div>
     </div>
 
