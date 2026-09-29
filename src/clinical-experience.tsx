@@ -230,9 +230,13 @@ function NightStatus({ model }: { model: NightSummary }) {
       </span>
     </div>
     <div className="nightSignalMeta">
-      <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences'}</Pressable>
+      {model.absenceCount
+        ? <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.absenceCount} {model.absenceCount === 1 ? 'absence' : 'absences'}</Pressable>
+        : <span>No absences</span>}
       <span aria-hidden="true">·</span>
-      <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.overtimeCount} overtime</Pressable>
+      {model.overtimeCount
+        ? <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.overtimeCount} overtime</Pressable>
+        : <span>0 overtime</span>}
       {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
         Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
       </Pressable>}
