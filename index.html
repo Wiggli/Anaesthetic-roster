@@ -283,8 +283,25 @@
         </header>
         <div class="panel nightOverviewPanel">
           <h2 class="srOnly">Selected night</h2>
+
+          <div class="nightDateShell">
+            <div class="grid2">
+              <label class="nightDateLabel">
+                <span class="nightDateContext">Selected night</span>
+                <div class="dateNav">
+                  <button type="button" id="prevNightBtn" aria-label="Previous roster night">‹</button>
+                  <input id="datePick" type="date" aria-label="Choose a date to open that night or the next rostered night" />
+                  <button type="button" id="nextNightBtn" aria-label="Next roster night">›</button>
+                </div>
+              </label>
+              <div class="staffingCount" aria-live="polite">
+                <span>Staffing</span><strong id="modeStatus">6 nurses</strong><small>Calculated automatically</small>
+              </div>
+            </div>
+          </div>
+
           <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
-            <h2 id="personalNightHeading" class="sectionTitle">Your night</h2>
+            <h2 id="personalNightHeading" class="sectionTitle">Your assignment</h2>
             <div id="personalNightCard" class="personalNightCard"></div>
             <div id="personalAllocationNotice"></div>
             <div id="personalNamePicker" class="personalNamePicker hidden">
@@ -292,64 +309,42 @@
               <button type="button" class="mini" id="closeNamePickerBtn">Done</button>
             </div>
           </section>
-          <div class="nightDateShell">
-          <div class="grid2">
-            <label
-              class="nightDateLabel"
-              >Night
-              <div class="dateNav">
-                <button
-                  type="button"
-                  id="prevNightBtn"
-                  aria-label="Previous roster night"
-                >
-                  ‹</button
-                ><input
-                  id="datePick"
-                  type="date"
-                  aria-label="Choose a date to open that night or the next rostered night"
-                /><button
-                  type="button"
-                  id="nextNightBtn"
-                  aria-label="Next roster night"
-                >
-                  ›
-                </button>
-              </div></label
-            >
-            <div class="staffingCount" aria-live="polite">
-              <span>Staffing</span><strong id="modeStatus">6 nurses</strong
-              ><small>Calculated automatically</small>
-            </div>
-          </div>
-          </div>
+
           <div class="sectionHeadingRow nightSummaryTitle">
             <h2 class="sectionTitle">Team status</h2>
           </div>
           <div id="nightStatusRow" class="nightStatusRow"></div>
           <div id="alerts"></div>
+
           <details class="nightTeamDetails">
-            <summary><span><strong>Team allocation</strong><small>Roles and colleagues for this night</small></span><span aria-hidden="true">⌄</span></summary>
+            <summary>
+              <span><strong>Team allocation</strong><small>Roles and colleagues for this night</small></span>
+              <span aria-hidden="true">⌄</span>
+            </summary>
             <div id="roles" class="roles"></div>
             <div id="fiveArrangement"></div>
+            <div class="rosterShortcutRow">
+              <button type="button" class="rosterShortcutBtn" id="viewRosterBtn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg>
+                <span>View full roster</span><b aria-hidden="true">›</b>
+              </button>
+              <button type="button" class="rosterShortcutBtn smartNightBtn" id="smartNightBtn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg>
+                <span>Return to roster night</span>
+              </button>
+            </div>
           </details>
-          <div class="rosterShortcutRow">
-            <button type="button" class="rosterShortcutBtn" id="viewRosterBtn">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"></path></svg>
-              <span>View full roster</span><b aria-hidden="true">›</b>
-            </button>
-            <button type="button" class="rosterShortcutBtn smartNightBtn" id="smartNightBtn">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l3 2M17 3h4v4"></path></svg>
-              <span>Return to roster night</span>
-            </button>
-          </div>
-        </div>
-        <div class="panel recentActivityPanel">
-          <div class="sectionHeadingRow">
-            <div><h2 class="sectionTitle">Recent activity</h2><p class="time">Shared changes for this selected night</p></div>
-            <span id="changedSinceChip" class="changedSinceChip hidden">Updated</span>
-          </div>
-          <div id="recentActivityList" class="recentActivityList"></div>
+
+          <section class="panel recentActivityPanel" aria-labelledby="recentActivityHeading">
+            <div class="sectionHeadingRow">
+              <div>
+                <h2 id="recentActivityHeading" class="sectionTitle">Recent activity</h2>
+                <p class="time">Shared changes for this selected night</p>
+              </div>
+              <span id="changedSinceChip" class="changedSinceChip hidden">Updated</span>
+            </div>
+            <div id="recentActivityList" class="recentActivityList"></div>
+          </section>
         </div>
       </section>
       <section id="changes" class="view hidden">
