@@ -24,8 +24,8 @@ export function Pressable({
   const reduced = useReducedMotion();
   return <motion.button
     {...props}
-    whileTap={props.disabled || reduced ? undefined : { scale: 0.975 }}
-    transition={{ type: 'spring', stiffness: 540, damping: 38, mass: 0.45 }}
+    whileTap={props.disabled || reduced ? undefined : { scale: 0.98 }}
+    transition={{ type: 'spring', stiffness: 520, damping: 44, mass: 0.48 }}
     className={cx('tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-blue-500/42 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
   >{children}</motion.button>;
 }
@@ -38,7 +38,7 @@ export function Surface({
   return <div
     {...props}
     className={cx(
-      'tw:@container tw:overflow-hidden tw:rounded-[20px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:shadow-[0_1px_3px_rgba(12,22,30,0.035)] tw:dark:border-white/10',
+      'tw:@container tw:overflow-hidden tw:rounded-[18px] tw:border-0 tw:bg-[var(--card)] tw:shadow-none',
       className
     )}
   >{children}</div>;
@@ -109,11 +109,11 @@ export function Avatar({ initial, src, size = 'md', className = '' }: {
 }
 
 export function EmptyState({ title, detail, icon }: { title: string; detail?: string; icon?: ReactNode }) {
-  return <div className="tw:grid tw:min-h-36 tw:place-items-center tw:px-5 tw:py-8 tw:text-center">
-    <div className="tw:max-w-64">
-      {icon ? <div className="tw:mx-auto tw:mb-3 tw:grid tw:h-11 tw:w-11 tw:place-items-center tw:rounded-2xl tw:bg-black/5 tw:text-[var(--muted)] tw:dark:bg-white/8">{icon}</div> : null}
-      <strong className="tw:block tw:text-sm tw:font-bold">{title}</strong>
-      {detail ? <span className="tw:mt-1 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{detail}</span> : null}
+  return <div className="tw:flex tw:min-h-16 tw:items-start tw:gap-2.5 tw:px-3 tw:py-4 tw:text-left">
+    {icon ? <div className="tw:mt-0.5 tw:grid tw:h-7 tw:w-7 tw:shrink-0 tw:place-items-center tw:rounded-lg tw:bg-black/5 tw:text-xs tw:text-[var(--muted)] tw:dark:bg-white/8">{icon}</div> : null}
+    <div className="tw:min-w-0">
+      <strong className="tw:block tw:text-[0.8rem] tw:font-semibold">{title}</strong>
+      {detail ? <span className="tw:mt-0.5 tw:block tw:text-[0.7rem] tw:leading-relaxed tw:text-[var(--muted)]">{detail}</span> : null}
     </div>
   </div>;
 }
@@ -172,7 +172,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="group"
       aria-label={ariaLabel}
-      className="tw:grid tw:grid-cols-[repeat(var(--segment-count),minmax(0,1fr))] tw:gap-1 tw:rounded-[18px] tw:border tw:border-black/8 tw:bg-black/[0.035] tw:p-1 tw:dark:border-white/9 tw:dark:bg-white/[0.045]"
+      className="tw:grid tw:grid-cols-[repeat(var(--segment-count),minmax(0,1fr))] tw:gap-1 tw:rounded-[16px] tw:border-0 tw:bg-black/[0.04] tw:p-1 tw:dark:bg-white/[0.06]"
       style={{ '--segment-count': options.length } as CSSProperties}
     >
       {options.map(option => {
@@ -191,7 +191,7 @@ export function SegmentedControl<T extends string>({
           {selected ? <motion.span
             layoutId="selection"
             transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 42, mass: 0.55 }}
-            className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[14px] tw:border tw:border-black/7 tw:bg-[var(--card)] tw:shadow-[0_4px_12px_rgba(0,0,0,0.07)] tw:dark:border-white/10"
+            className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[14px] tw:border-0 tw:bg-[var(--card)] tw:shadow-none"
           /> : null}
           <span className="tw:flex tw:items-center tw:justify-center tw:gap-1.5">
             {option.icon}
