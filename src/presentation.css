@@ -9898,7 +9898,7 @@ html[data-theme="dark"] #chat .chatComposerGlass{
   gap:4px;
   align-items:center;
   overflow:hidden;
-  padding:0 max(12px,env(safe-area-inset-left)) 4px max(12px,env(safe-area-inset-right));
+  padding:0 max(12px,env(safe-area-inset-right)) 4px max(12px,env(safe-area-inset-left));
   will-change:height,opacity,transform;
 }
 .scrollGlassRail-changes{
