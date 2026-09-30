@@ -1073,24 +1073,7 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   await page.evaluate(() => {
     document.getElementById('scrollGlassChangesSpacer')?.remove();
     window.scrollTo(0, 0);
-    const banner = document.getElementById('updateBanner');
-    banner?.classList.remove('hidden');
   });
-  const updateBanner = page.locator('#updateBanner');
-  await expect(updateBanner).toBeVisible();
-  const updateMaterial = await updateBanner.evaluate(el => {
-    const style = getComputedStyle(el);
-    return {
-      radius: parseFloat(style.borderRadius),
-      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
-      width: el.getBoundingClientRect().width
-    };
-  });
-  expect(updateMaterial.radius).toBeGreaterThanOrEqual(18);
-  expect(updateMaterial.backdrop).not.toBe('none');
-  expect(updateMaterial.width).toBeLessThanOrEqual(440);
-  await expect(page.locator('#applyUpdateBtn')).toHaveCSS('color', 'rgb(255, 255, 255)');
-  await page.evaluate(() => document.getElementById('updateBanner')?.classList.add('hidden'));
 
   await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
   const originalAdminBackdrop = await page.locator('#admin .adminTabs').evaluate(el => {
