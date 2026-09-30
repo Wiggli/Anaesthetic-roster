@@ -23,6 +23,7 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 test-results/
+review/
 
 # Supabase CLI temporary state
 .supabase/
