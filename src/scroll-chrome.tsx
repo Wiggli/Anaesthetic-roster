@@ -2,12 +2,27 @@ import { motion, useReducedMotion } from 'motion/react';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+type ChromeRailKind = 'changes' | 'admin';
+
+type ChromeRailItem = {
+  key: string;
+  label: string;
+  active: boolean;
+};
+
+type ChromeRail = {
+  kind: ChromeRailKind;
+  ariaLabel: string;
+  items: ChromeRailItem[];
+};
+
 type ChromeModel = {
   view: string;
   title: string;
   context: string;
   status?: string;
   closeAdmin?: boolean;
+  rail?: ChromeRail;
 };
 
 const supportedViews = new Set(['today', 'changes', 'breaks', 'chat', 'admin', 'roster']);
@@ -16,17 +31,48 @@ function clean(value?: string | null) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function shortDate(value?: string | null) {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return '';
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
+function readRail(kind: ChromeRailKind): ChromeRail | undefined {
+  const selector = kind === 'admin' ? '#admin .adminTabs [data-admin-tab]' : '#changes .changesWorkflowTabs [data-changes-step]';
+  const attribute = kind === 'admin' ? 'data-admin-tab' : 'data-changes-step';
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(selector));
+  if (!buttons.length) return undefined;
+  const items = buttons.map(button => ({
+    key: button.getAttribute(attribute) || '',
+    label: clean(kind === 'changes' ? button.querySelector('b')?.textContent : button.textContent),
+    active: button.classList.contains('active') || button.getAttribute('aria-selected') === 'true'
+  })).filter(item => item.key && item.label);
+  if (!items.length) return undefined;
+  return {
+    kind,
+    ariaLabel: kind === 'admin' ? 'Roster management sections' : 'Changes steps',
+    items
+  };
+}
+
 function readModel(): ChromeModel {
   const view = document.body.getAttribute('data-view') || 'today';
   if (view === 'today') {
     const assignment = clean(document.querySelector('#personalNightCard .personalRoleCopy b')?.textContent);
-    const period = clean(document.querySelector('#personalNightCard .personalFacts div:nth-child(2) dd')?.textContent);
-    return { view, title: 'Night', context: assignment || 'Your selected roster night', status: period || undefined };
+    const selectedDate = shortDate((document.getElementById('datePick') as HTMLInputElement | null)?.value);
+    return { view, title: 'Night', context: assignment || 'Your selected roster night', status: selectedDate || undefined };
   }
   if (view === 'changes') {
     const count = clean(document.querySelector('#changes .staffingCount strong')?.textContent);
     const live = clean(document.querySelector('#changes .liveStatus')?.textContent);
-    return { view, title: 'Changes', context: count ? `${count} on the selected night` : 'Staffing and allocation', status: live || undefined };
+    return {
+      view,
+      title: 'Changes',
+      context: count || 'Staffing and allocation',
+      status: live || 'Live',
+      rail: readRail('changes')
+    };
   }
   if (view === 'breaks') {
     const ownBreak = clean(document.querySelector('#breakPersonalSummary .personalBreakMain h2')?.textContent);
@@ -38,8 +84,13 @@ function readModel(): ChromeModel {
     return { view, title: 'Anaesthetic Team', context: 'Team chat', status: status || 'Live' };
   }
   if (view === 'admin') {
-    const tab = clean(document.querySelector('#admin .adminTabs button.active')?.textContent) || 'Overview';
-    return { view, title: 'Roster management', context: tab, closeAdmin: true };
+    return {
+      view,
+      title: 'Roster management',
+      context: 'Administrator controls',
+      closeAdmin: true,
+      rail: readRail('admin')
+    };
   }
   if (view === 'roster') {
     const date = clean(document.querySelector('#roster .rosterContext')?.textContent || document.querySelector('#roster h2')?.textContent);
@@ -57,12 +108,24 @@ function Icon({ view }: { view: string }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z" /><path d="M15.5 7.5h5M18 5v5" /></svg>;
 }
 
+function activateRailItem(kind: ChromeRailKind, key: string) {
+  const selector = kind === 'admin' ? '[data-admin-tab]' : '[data-changes-step]';
+  const attribute = kind === 'admin' ? 'data-admin-tab' : 'data-changes-step';
+  const target = Array.from(document.querySelectorAll<HTMLButtonElement>(selector))
+    .find(button => button.getAttribute(attribute) === key);
+  target?.click();
+}
+
 function ScrollGlassChrome() {
   const reducedMotion = useReducedMotion();
   const barRef = useRef<HTMLElement>(null);
   const frame = useRef<number | null>(null);
   const [model, setModel] = useState<ChromeModel>(() => readModel());
-  const modelKey = useMemo(() => `${model.view}:${model.title}:${model.context}:${model.status || ''}`, [model]);
+  const modelKey = useMemo(
+    () => model.view + ':' + model.title + ':' + model.context + ':' + (model.status || '') + ':' +
+      (model.rail?.items.map(item => item.key + (item.active ? '*' : '')).join(',') || ''),
+    [model]
+  );
 
   useEffect(() => {
     const updateModel = () => setModel(readModel());
@@ -75,13 +138,25 @@ function ScrollGlassChrome() {
       const y = Math.max(0, Number(window.scrollY || 0));
       const raw = Math.max(0, Math.min(1, (y - 24) / 72));
       const progress = supported ? (reducedMotion ? (y >= 58 ? 1 : 0) : raw) : 0;
+      const railProgress = model.rail ? Math.max(0, Math.min(1, (progress - 0.46) / 0.54)) : 0;
+      const railHeight = Math.round(42 * railProgress);
       document.documentElement.style.setProperty('--scroll-glass-progress', String(progress));
-      document.documentElement.style.setProperty('--scroll-glass-offset', `${Math.round(progress * 54)}px`);
+      document.documentElement.style.setProperty('--scroll-glass-offset', Math.round(progress * 54) + 'px');
       root.style.setProperty('--scroll-glass-progress', String(progress));
+      root.style.setProperty('--scroll-glass-rail-height', railHeight + 'px');
+      root.style.setProperty('--chrome-glass-blur', Math.round(8 + progress * 22) + 'px');
+      root.style.setProperty('--chrome-glass-saturate', Math.round(125 + progress * 55) + '%');
       root.style.opacity = String(progress);
-      root.style.transform = `translate3d(0,${Math.round((1 - progress) * -11)}px,0)`;
+      root.style.transform = 'translate3d(0,' + Math.round((1 - progress) * -11) + 'px,0)';
       root.toggleAttribute('data-visible', progress > 0.03);
-      const interactive = view === 'admin' && progress > 0.72;
+      root.toggleAttribute('data-collapsed', progress > 0.72);
+      const rail = root.querySelector<HTMLElement>('.scrollGlassRail');
+      if (rail) {
+        rail.style.opacity = String(railProgress);
+        rail.style.transform = 'translate3d(0,' + Math.round((1 - railProgress) * -6) + 'px,0)';
+        rail.style.pointerEvents = railProgress > 0.72 ? 'auto' : 'none';
+      }
+      const interactive = Boolean(model.closeAdmin || model.rail) && progress > 0.72;
       root.style.pointerEvents = interactive ? 'auto' : 'none';
       root.setAttribute('aria-hidden', interactive ? 'false' : 'true');
     };
@@ -93,10 +168,20 @@ function ScrollGlassChrome() {
       updateModel();
       scheduleScroll();
     };
-    const events = ['roster:viewchange', 'roster:personal-night', 'roster:changes', 'roster:breaks', 'roster:chat-status', 'roster:admin-account-action'];
+    const events = [
+      'roster:viewchange',
+      'roster:personal-night',
+      'roster:changes',
+      'roster:changes-workflow',
+      'roster:breaks',
+      'roster:chat-status',
+      'roster:admin-account-action'
+    ];
     const onDocumentClick = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target : null;
-      if (target?.closest('[data-admin-tab]')) window.setTimeout(updateModel, 0);
+      if (target?.closest('[data-admin-tab],[data-changes-step],.scrollGlassRail button')) {
+        window.setTimeout(updateModel, 0);
+      }
     };
     events.forEach(name => window.addEventListener(name, refresh));
     document.addEventListener('click', onDocumentClick);
@@ -118,26 +203,49 @@ function ScrollGlassChrome() {
       document.documentElement.style.removeProperty('--scroll-glass-progress');
       document.documentElement.style.removeProperty('--scroll-glass-offset');
     };
-  }, [reducedMotion, model.view]);
+  }, [reducedMotion, model.view, model.rail?.kind]);
 
   const closeAdmin = () => document.getElementById('closeAdminBtn')?.click();
+  const hasRail = Boolean(model.rail?.items.length);
 
-  return <header ref={barRef} className={`scrollGlassHeader scrollGlass-${model.view}`} aria-hidden="true">
+  return <header
+    ref={barRef}
+    className={'scrollGlassHeader scrollGlass-' + model.view + (hasRail ? ' hasRail' : '')}
+    aria-hidden="true"
+  >
     <div className="scrollGlassMaterial" aria-hidden="true" />
-    <div className="scrollGlassContent">
-      <span className="scrollGlassIcon"><Icon view={model.view} /></span>
-      <motion.span
-        key={modelKey}
-        className="scrollGlassCopy"
-        initial={reducedMotion ? false : { opacity: 0, y: 3 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reducedMotion ? 0 : 0.16 }}
+    <div className="scrollGlassStack">
+      <div className="scrollGlassContent">
+        <span className="scrollGlassIcon"><Icon view={model.view} /></span>
+        <motion.span
+          key={modelKey}
+          className="scrollGlassCopy"
+          initial={reducedMotion ? false : { opacity: 0, y: 3 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reducedMotion ? 0 : 0.16 }}
+        >
+          <b>{model.title}</b>
+          <small>{model.context}</small>
+        </motion.span>
+        {model.status && <span className="scrollGlassStatus"><i aria-hidden="true" />{model.status}</span>}
+        {model.closeAdmin && <button type="button" className="scrollGlassClose" onClick={closeAdmin}>Close</button>}
+      </div>
+      {model.rail && <nav
+        className={'scrollGlassRail scrollGlassRail-' + model.rail.kind}
+        role="tablist"
+        aria-label={model.rail.ariaLabel}
       >
-        <b>{model.title}</b>
-        <small>{model.context}</small>
-      </motion.span>
-      {model.status && <span className="scrollGlassStatus"><i aria-hidden="true" />{model.status}</span>}
-      {model.closeAdmin && <button type="button" className="scrollGlassClose" onClick={closeAdmin}>Close</button>}
+        {model.rail.items.map(item => <button
+          key={item.key}
+          type="button"
+          role="tab"
+          aria-selected={item.active}
+          className={item.active ? 'active' : ''}
+          onClick={() => activateRailItem(model.rail!.kind, item.key)}
+        >
+          {item.label}
+        </button>)}
+      </nav>}
     </div>
   </header>;
 }

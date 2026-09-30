@@ -1048,7 +1048,7 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
   await expect(page.locator('#applyUpdateBtn')).toHaveCSS('color', 'rgb(255, 255, 255)');
   await page.evaluate(() => document.getElementById('updateBanner')?.classList.add('hidden'));
 
-  await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'sticky');
+  await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
   await expect(page.locator('#admin .statusGrid')).toHaveCSS('display', 'block');
   const floatingMaterials = await page.evaluate(() => {
     const read = selector => {
@@ -1252,3 +1252,47 @@ test('worker keeps private backend traffic out of caches and navigates offline',
   await expect(page.locator('#launchScreen')).toBeVisible();
   await context.setOffline(false);
 });
+
+test('collapsed glass chrome carries workflow and management navigation in one slab', async ({ page }) => {
+  await openShell(page);
+
+  await page.evaluate(() => {
+    window.show('changes');
+    const spacer = document.createElement('div');
+    spacer.id = 'contextualChromeSmokeSpacer';
+    spacer.style.height = '1100px';
+    document.getElementById('changes')?.appendChild(spacer);
+    window.scrollTo(0, 140);
+  });
+
+  const changesRail = page.locator('#reactScrollChrome .scrollGlassRail-changes');
+  await expect(changesRail.locator('button')).toHaveCount(3);
+  await expect(changesRail.locator('button.active')).toContainText('Staffing');
+  await expect.poll(() => changesRail.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(34);
+  await changesRail.locator('button', { hasText: 'Allocation' }).click();
+  await expect(page.locator('#changes .changesWorkflowTabs [data-changes-step="allocation"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(changesRail.locator('button.active')).toContainText('Allocation');
+
+  await page.evaluate(() => {
+    document.getElementById('contextualChromeSmokeSpacer')?.remove();
+    window.scrollTo(0, 0);
+    document.getElementById('changes')?.classList.add('hidden');
+    document.getElementById('admin')?.classList.remove('hidden');
+    document.body.setAttribute('data-view', 'admin');
+    window.dispatchEvent(new CustomEvent('roster:viewchange'));
+    const spacer = document.createElement('div');
+    spacer.id = 'contextualAdminChromeSmokeSpacer';
+    spacer.style.height = '1100px';
+    document.getElementById('admin')?.appendChild(spacer);
+    window.scrollTo(0, 140);
+  });
+
+  const adminRail = page.locator('#reactScrollChrome .scrollGlassRail-admin');
+  await expect(adminRail.locator('button')).toHaveCount(5);
+  await expect(adminRail.locator('button.active')).toContainText('Overview');
+  await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
+  await adminRail.locator('button', { hasText: 'Publish' }).click();
+  await expect(page.locator('#admin .adminTabs [data-admin-tab="publish"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(adminRail.locator('button.active')).toContainText('Publish');
+});
+
