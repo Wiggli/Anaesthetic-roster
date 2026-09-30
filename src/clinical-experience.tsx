@@ -177,7 +177,7 @@ function BreakScheduleSection({
 
 function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
-    <Surface className="breakScheduleBoard tw:shadow-none">
+    <Surface className="breakGrid breakScheduleBoard tw:shadow-none">
       <BreakScheduleSection className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
       <BreakScheduleSection className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
     </Surface>

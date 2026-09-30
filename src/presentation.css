@@ -7091,7 +7091,7 @@ html[data-theme="dark"] body{
   min-height:50px!important;
   padding:4px!important;
   border:1px solid var(--scene-line)!important;
-  border-radius:18px!important;
+  border-radius:20px!important;
   background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent)!important;
   box-shadow:0 4px 18px rgba(0,0,0,.07)!important;
 }
