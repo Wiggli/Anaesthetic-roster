@@ -38,7 +38,7 @@ export function Surface({
   return <div
     {...props}
     className={cx(
-      'tw:@container tw:overflow-hidden tw:rounded-[18px] tw:border-0 tw:bg-[var(--card)] tw:shadow-none',
+      'tw:@container tw:overflow-hidden tw:rounded-[18px] tw:border tw:border-black/[0.055] tw:bg-[var(--card)] tw:shadow-[0_1px_2px_rgba(0,0,0,0.025)] tw:dark:border-white/[0.075]',
       className
     )}
   >{children}</div>;
@@ -52,7 +52,7 @@ export function GlassSurface({
   return <div
     {...props}
     className={cx(
-      'tw:rounded-[22px] tw:border tw:border-white/18 tw:bg-white/55 tw:shadow-[inset_0_1px_0_rgba(255,255,255,0.36),0_12px_32px_rgba(0,0,0,0.10)] tw:backdrop-blur-2xl tw:backdrop-saturate-150 tw:dark:border-white/10 tw:dark:bg-[#121216]/60',
+      'tw:rounded-[20px] tw:border tw:border-white/20 tw:bg-white/64 tw:shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_8px_24px_rgba(0,0,0,0.08)] tw:backdrop-blur-2xl tw:backdrop-saturate-150 tw:dark:border-white/10 tw:dark:bg-[#161618]/68',
       className
     )}
   >{children}</div>;
@@ -149,7 +149,7 @@ export function ListRow({
     {onClick ? <span className="tw:ml-1 tw:shrink-0 tw:text-xl tw:font-light tw:text-[var(--muted)]" aria-hidden="true">›</span> : null}
   </>;
 
-  const common = 'tw:flex tw:min-h-14 tw:w-full tw:items-center tw:gap-3 tw:px-4 tw:py-3.5 tw:text-left';
+  const common = 'tw:flex tw:min-h-[52px] tw:w-full tw:items-center tw:gap-3 tw:px-3.5 tw:py-3 tw:text-left';
   if (!onClick) return <div className={cx(common, className)}>{content}</div>;
   return <Pressable type="button" onClick={onClick} aria-label={ariaLabel} className={cx(common, 'tw:bg-transparent', className)}>{content}</Pressable>;
 }
@@ -172,7 +172,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="group"
       aria-label={ariaLabel}
-      className="tw:grid tw:grid-cols-[repeat(var(--segment-count),minmax(0,1fr))] tw:gap-1 tw:rounded-[16px] tw:border-0 tw:bg-black/[0.04] tw:p-1 tw:dark:bg-white/[0.06]"
+      className="tw:grid tw:grid-cols-[repeat(var(--segment-count),minmax(0,1fr))] tw:gap-1 tw:rounded-[15px] tw:border tw:border-black/[0.045] tw:bg-black/[0.035] tw:p-1 tw:dark:border-white/[0.07] tw:dark:bg-white/[0.055]"
       style={{ '--segment-count': options.length } as CSSProperties}
     >
       {options.map(option => {
@@ -191,7 +191,7 @@ export function SegmentedControl<T extends string>({
           {selected ? <motion.span
             layoutId="selection"
             transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 42, mass: 0.55 }}
-            className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[14px] tw:border-0 tw:bg-[var(--card)] tw:shadow-none"
+            className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[12px] tw:border tw:border-black/[0.045] tw:bg-[var(--card)] tw:shadow-[0_1px_2px_rgba(0,0,0,0.035)] tw:dark:border-white/[0.07]"
           /> : null}
           <span className="tw:flex tw:items-center tw:justify-center tw:gap-1.5">
             {option.icon}

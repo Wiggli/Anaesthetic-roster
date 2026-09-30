@@ -143,7 +143,7 @@ function PendingBreakPlan({ model }: { model: BreakSummary }) {
   </>;
 }
 
-function BreakGroup({
+function BreakScheduleSection({
   className,
   title,
   names,
@@ -154,12 +154,12 @@ function BreakGroup({
   names: string[];
   highlightedName: string;
 }) {
-  return <Surface className={`breakGroup ${className} tw:shadow-none`}>
-    <div className="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:px-3.5 tw:py-3">
-      <h3 className="tw:m-0 tw:text-sm tw:font-bold">{title}</h3>
+  return <section className={`breakScheduleSection ${className}`} aria-label={title}>
+    <div className="breakScheduleHeader">
+      <div><h3>{title}</h3><small>{names.length ? `${names.length} nurses` : 'Awaiting allocation'}</small></div>
       <Badge tone={className.includes('first') ? 'accent' : 'info'}>{names.length || '—'}</Badge>
     </div>
-    <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
+    <div className="breakScheduleRows">
       {names.length
         ? names.map(name => {
             const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
@@ -172,23 +172,25 @@ function BreakGroup({
           })
         : <EmptyState title="Pending final allocation" />}
     </div>
-  </Surface>;
+  </section>;
 }
 
 function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
-    <div className="breakGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
-      <BreakGroup className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
-      <BreakGroup className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
-    </div>
-    <Surface className="breakGroup lwBreak tw:mt-3 tw:shadow-none">
-      <div className="tw:px-3.5 tw:py-3"><h3 className="tw:m-0 tw:text-sm tw:font-bold">Labour Ward / Pager and additional staffing</h3></div>
-      <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
-        {model.notes.length
-          ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
-          : <EmptyState title="No additional staffing notes" />}
-      </div>
+    <Surface className="breakGrid breakScheduleBoard tw:shadow-none">
+      <BreakScheduleSection className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
+      <BreakScheduleSection className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
     </Surface>
+    <section className="breakNotesBlock" aria-labelledby="breakNotesTitle">
+      <div className="breakNotesHeading"><h3 id="breakNotesTitle">Labour Ward / Pager and additional staffing</h3></div>
+      <Surface className="breakNotesBoard tw:shadow-none">
+        <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
+          {model.notes.length
+            ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
+            : <EmptyState title="No additional staffing notes" />}
+        </div>
+      </Surface>
+    </section>
   </>;
 }
 

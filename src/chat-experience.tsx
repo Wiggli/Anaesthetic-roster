@@ -92,7 +92,7 @@ function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'priv
     {message.dateLabel && <div className="chatDateSeparator" role="separator" aria-label={message.dateLabel}><span>{message.dateLabel}</span></div>}
     {message.unreadBefore && <div className="tw:my-3 tw:flex tw:items-center tw:gap-2" data-chat-unread="true"><span className="tw:h-px tw:flex-1 tw:bg-blue-500/35" /><b className="tw:text-[0.68rem] tw:text-[var(--accent-strong)]">New messages</b><span className="tw:h-px tw:flex-1 tw:bg-blue-500/35" /></div>}
     {kind === 'team' ? <div {...handlers} className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
-      <div className="chatMessageHeading"><span className="chatMessageTime">{message.time}</span><b>{message.own ? 'You' : message.sender}</b>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div><div className="chatMessageBodyText">{body}</div>
+      <div className="chatMessageHeading"><b>{message.own ? 'You' : message.sender}</b><span className="chatMessageTime">{message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div><div className="chatMessageBodyText">{body}</div>
     </div> : <div className={`chatPrivateMessage ${message.own ? 'own' : ''}`}><div {...handlers} className={`chatPrivateBubble ${message.failed ? 'failed' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
       <div className="chatMessageHeading"><b>{message.own ? 'You' : message.sender}</b><span className="chatMessageTime">{message.failed ? 'Not sent' : message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div>{body}
     </div></div>}
@@ -143,7 +143,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
       id={team ? 'chatTeamSendBtn' : 'chatSendBtn'}
       aria-label={team ? 'Send group message' : 'Send private message'}
       title="Send · Command or Control + Enter"
-      className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-blue-600! tw:text-white tw:shadow-[0_4px_12px_rgba(13,148,136,0.24)] tw:disabled:opacity-40"
+      className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-blue-600! tw:text-white tw:shadow-[0_4px_12px_rgba(0,113,227,0.20)] tw:disabled:opacity-40"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
     </Pressable>
