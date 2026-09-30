@@ -92,6 +92,19 @@ test('Changes feedback retains its plain live message if the optional chunk fail
   await expect(page.locator('#allocationFormMessage')).not.toHaveAttribute('data-react-ready', 'true');
 });
 
+test('completed Changes plan keeps confirmation controls hidden after allocation remount', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    const button = document.getElementById('saveAllocationsBtn');
+    const hint = document.getElementById('confirmHint');
+    button.classList.remove('hidden');
+    hint.classList.remove('hidden');
+    window.updateConfirmationControls(false, 0);
+  });
+  await expect(page.locator('#saveAllocationsBtn')).toHaveClass(/hidden/);
+  await expect(page.locator('#confirmHint')).toHaveClass(/hidden/);
+});
+
 test('Chat reports connection errors and recovery beside the conversation', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
