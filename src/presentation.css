@@ -10009,10 +10009,10 @@ html[data-theme="dark"]{
 #chat .chatComposerWrap,
 #chat .chatTeamComposerWrap,
 .updateBanner{
-  background-color:var(--glass-regular-fill)!important;
   background:
     radial-gradient(120% 180% at 12% -72%,var(--glass-light-spill),transparent 54%),
     linear-gradient(180deg,var(--glass-regular-fill-raised),var(--glass-regular-fill))!important;
+  background-color:var(--glass-regular-fill)!important;
   border-color:var(--glass-regular-edge)!important;
   -webkit-backdrop-filter:
     blur(var(--chrome-glass-blur,20px))
