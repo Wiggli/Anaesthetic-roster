@@ -304,6 +304,9 @@ test('page track stays covered across saved scroll positions and Night carries i
   test.skip(!isMobile, 'mobile transition regression');
   await openShell(page);
   await expect(page.locator('#today > #appHeader')).toHaveCount(1);
+  await expect(page.locator('#changes .primaryInstitution img')).toHaveCount(1);
+  await expect(page.locator('#breaks .primaryInstitution img')).toHaveCount(1);
+  await expect(page.locator('#chat .primaryInstitution img')).toHaveCount(1);
 
   await page.locator('.bottom button[data-v="breaks"]').click();
   await expect(page.locator('#breaks')).toBeVisible();
@@ -761,8 +764,12 @@ test('typed Changes records render live staffing and expose stable actions', asy
 
   await expect(page.locator('#changeList')).toContainText('André Bartolo');
   await expect(page.locator('#changeList > .changesRecordGroup > .changeItem')).toHaveCount(1);
+  await page.locator('#absenceFormExperience .staffingAddButton').click();
   await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
+  await page.locator('#absenceFormExperience .staffingSheetClose').click();
+  await page.locator('#overtimeFormExperience .staffingAddButton').click();
   await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
+  await page.locator('#overtimeFormExperience .staffingSheetClose').click();
   await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
   await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
   await expect(page.locator('#overtimeList > .changesRecordGroup > .overtimeItem')).toHaveCount(1);

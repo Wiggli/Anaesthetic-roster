@@ -157,7 +157,7 @@ function BreakScheduleSection({
   return <section className={`breakScheduleSection ${className}`} aria-label={title}>
     <div className="breakScheduleHeader">
       <div><h3>{title}</h3><small>{names.length ? `${names.length} nurses` : 'Awaiting allocation'}</small></div>
-      <Badge tone={className.includes('first') ? 'accent' : 'info'}>{names.length || '—'}</Badge>
+      <Badge tone="neutral">{names.length || '—'}</Badge>
     </div>
     <div className="breakScheduleRows">
       {names.length
@@ -220,29 +220,24 @@ export function renderBreaksExperience(model: BreakSummary) {
 
 function NightStatus({ model }: { model: NightSummary }) {
   const provisional = model.nurseCount < 5 || Boolean(model.alert || model.taskCount || model.labourPending);
+  const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
+  const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : '0 overtime';
   return <div className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Team staffing and plan status">
-    <div className="nightSignalLead">
-      <div className="nightSignalLeadCopy">
-        <small>Team tonight</small>
-        <strong><b>{model.nurseCount}</b> nurses</strong>
-      </div>
-      <span className="nightSignalState">
-        <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
-        <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
-      </span>
-    </div>
-    <div className="nightSignalMeta">
-      {model.absenceCount
-        ? <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.absenceCount} {model.absenceCount === 1 ? 'absence' : 'absences'}</Pressable>
-        : <span>No absences</span>}
-      <span aria-hidden="true">·</span>
-      {model.overtimeCount
-        ? <Pressable type="button" onClick={() => goToChanges('staffing')}>{model.overtimeCount} overtime</Pressable>
-        : <span>0 overtime</span>}
-      {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
-        Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
-      </Pressable>}
-    </div>
+    <span className="nightOverviewIcon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M2.5 20c.4-4 2.7-6 6-6s5.6 2 6 6" /><path d="M16.5 10a3 3 0 1 0 0-6" /><path d="M16.5 14c2.8 0 4.5 1.6 5 4.5" /></svg>
+    </span>
+    <span className="nightSignalLeadCopy">
+      <small>Team tonight</small>
+      <strong>{model.nurseCount} nurses</strong>
+      <span>{absenceLabel} · {overtimeLabel}</span>
+    </span>
+    <span className="nightSignalState">
+      <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
+      <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
+    </span>
+    {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
+      Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
+    </Pressable>}
   </div>;
 }
 
@@ -345,7 +340,10 @@ function PersonalPending({ model }: { model: PersonalNight }) {
 
 function RecentActivityList({ model }: { model: RecentActivity }) {
   if (!model.items.length) {
-    return <div className="emptyRecentActivity">No changes recorded for this night.</div>;
+    return <div className="emptyRecentActivity">
+      <span className="nightOverviewIcon nightOverviewIconSuccess" aria-hidden="true">✓</span>
+      <span><b>No changes tonight</b><small>No shared staffing or allocation changes are recorded.</small></span>
+    </div>;
   }
   return <div className="activityTimeline">
     {model.items.map((item, index) => <Pressable
@@ -366,9 +364,20 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
   </div>;
 }
 
+function NightBreakShortcut({ model }: { model: PersonalNight }) {
+  return <Pressable type="button" className="nightOverviewShortcut nightBreakShortcut" onClick={() => window.show?.('breaks')}>
+    <span className="nightOverviewIcon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2" /></svg>
+    </span>
+    <span className="nightOverviewShortcutCopy"><small>Your break</small><strong>{model.breakLabel || 'Pending'}</strong><span>Open the full break plan</span></span>
+    <i aria-hidden="true">›</i>
+  </Pressable>;
+}
+
 export function renderPersonalNightExperience(model: PersonalNight) {
   rootFor('personalNightCard')?.render(<PersonalNightCard model={model} />);
   rootFor('personalAllocationNotice')?.render(<PersonalPending model={model} />);
+  rootFor('nightBreakShortcut')?.render(<NightBreakShortcut model={model} />);
 }
 
 export function renderRecentActivityExperience(model: RecentActivity) {
