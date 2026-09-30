@@ -1,14 +1,13 @@
 {
-  "version": "37.83",
+  "version": "37.84",
   "date": "30 September 2026",
-  "title": "Make floating chrome behave like Liquid Glass",
-  "summary": "Reworks the shared navigation and transient control material so scrolling content remains perceptible through it, selected controls behave like moving lenses, and the interface uses one neutral floating glass plane instead of opaque blue-tinted slabs.",
+  "title": "Make Liquid Glass respond to touch",
+  "summary": "Adds localized light and gentle lens energy at the exact touch point so the shared glass control plane feels directly connected to the user's finger without adding extra glass layers.",
   "changes": [
-    "Floating headers, workflow rails, Roster Management tabs, bottom navigation, Chat chrome and the update prompt now use a much clearer neutral Regular material, allowing shapes and colour from scrolling content to remain visible through the glass.",
-    "The compact header now materializes by progressively strengthening blur, saturation, contrast, depth and the scroll-edge dissolve instead of relying on a simple whole-surface fade.",
-    "Changes and Roster Management use a single spring-driven selected lens inside the collapsed glass rail, while the bottom navigation lens subtly stretches and compresses during taps, drags and page swipes.",
-    "Chat now avoids glass on glass: the outer composer remains the floating material and the input control becomes a thin translucent overlay, while larger account and release sheets use a deliberately thicker Regular material.",
-    "Reduced transparency, increased contrast, reduced motion and unsupported-backdrop fallbacks remain intact, and browser coverage now guards transparency, scroll-edge treatment, moving lenses and the single-layer composer."
+    "The bottom navigation now illuminates from the finger position during taps and continuous tab drags, while the selected lens subtly brightens and keeps its existing gel-like flex.",
+    "Collapsed Changes and Roster Management controls now receive the same localized touch illumination inside their existing glass plane, preserving the single-material hierarchy.",
+    "Touch energy follows the pointer while it moves and disappears cleanly on release or cancellation, without changing navigation, swipe, roster, staffing, authentication, realtime or update behavior.",
+    "Reduced Transparency disables the light bloom and Reduced Motion removes its elastic expansion, while browser smoke coverage now guards the new touch-response state."
   ],
   "update_policy": "important"
 }
