@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react';
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -138,16 +138,27 @@ function ScrollGlassChrome() {
       const y = Math.max(0, Number(window.scrollY || 0));
       const raw = Math.max(0, Math.min(1, (y - 24) / 72));
       const progress = supported ? (reducedMotion ? (y >= 58 ? 1 : 0) : raw) : 0;
+      const eased = progress * progress * (3 - 2 * progress);
+      const foreground = Math.max(0, Math.min(1, (progress - 0.14) / 0.56));
       const railProgress = model.rail ? Math.max(0, Math.min(1, (progress - 0.46) / 0.54)) : 0;
       const railHeight = Math.round(42 * railProgress);
-      document.documentElement.style.setProperty('--scroll-glass-progress', String(progress));
-      document.documentElement.style.setProperty('--scroll-glass-offset', Math.round(progress * 54) + 'px');
-      root.style.setProperty('--scroll-glass-progress', String(progress));
+      const materialOpacity = Math.max(0, Math.min(1, progress * 1.18));
+      const depth = Math.max(0, Math.min(1, progress * 0.72 + railProgress * 0.28));
+      const edgeOpacity = Math.max(0, Math.min(1, (progress - 0.10) / 0.90));
+      document.documentElement.style.setProperty('--scroll-glass-progress', String(eased));
+      document.documentElement.style.setProperty('--scroll-glass-offset', Math.round(eased * 58) + 'px');
+      root.style.setProperty('--scroll-glass-progress', String(eased));
+      root.style.setProperty('--scroll-glass-material-opacity', String(materialOpacity));
+      root.style.setProperty('--scroll-glass-copy-opacity', String(foreground));
+      root.style.setProperty('--scroll-glass-depth', String(depth));
+      root.style.setProperty('--scroll-glass-edge-opacity', String(edgeOpacity));
       root.style.setProperty('--scroll-glass-rail-height', railHeight + 'px');
-      root.style.setProperty('--chrome-glass-blur', Math.round(8 + progress * 22) + 'px');
-      root.style.setProperty('--chrome-glass-saturate', Math.round(125 + progress * 55) + '%');
-      root.style.opacity = String(progress);
-      root.style.transform = 'translate3d(0,' + Math.round((1 - progress) * -11) + 'px,0)';
+      root.style.setProperty('--scroll-glass-rail-progress', String(railProgress));
+      root.style.setProperty('--chrome-glass-blur', Math.round(12 + progress * 8 + railProgress * 4) + 'px');
+      root.style.setProperty('--chrome-glass-saturate', Math.round(150 + progress * 28 + railProgress * 12) + '%');
+      root.style.setProperty('--chrome-glass-contrast', (1.02 + depth * 0.025).toFixed(3));
+      root.style.opacity = progress > 0.015 ? '1' : '0';
+      root.style.transform = 'translate3d(0,' + Math.round((1 - eased) * -8) + 'px,0)';
       root.toggleAttribute('data-visible', progress > 0.03);
       root.toggleAttribute('data-collapsed', progress > 0.72);
       const rail = root.querySelector<HTMLElement>('.scrollGlassRail');
@@ -230,22 +241,30 @@ function ScrollGlassChrome() {
         {model.status && <span className="scrollGlassStatus"><i aria-hidden="true" />{model.status}</span>}
         {model.closeAdmin && <button type="button" className="scrollGlassClose" onClick={closeAdmin}>Close</button>}
       </div>
-      {model.rail && <nav
-        className={'scrollGlassRail scrollGlassRail-' + model.rail.kind}
-        role="tablist"
-        aria-label={model.rail.ariaLabel}
-      >
-        {model.rail.items.map(item => <button
-          key={item.key}
-          type="button"
-          role="tab"
-          aria-selected={item.active}
-          className={item.active ? 'active' : ''}
-          onClick={() => activateRailItem(model.rail!.kind, item.key)}
+      {model.rail && <LayoutGroup id={'scroll-glass-rail-' + model.rail.kind}>
+        <nav
+          className={'scrollGlassRail scrollGlassRail-' + model.rail.kind}
+          role="tablist"
+          aria-label={model.rail.ariaLabel}
         >
-          {item.label}
-        </button>)}
-      </nav>}
+          {model.rail.items.map(item => <button
+            key={item.key}
+            type="button"
+            role="tab"
+            aria-selected={item.active}
+            className={item.active ? 'active' : ''}
+            onClick={() => activateRailItem(model.rail!.kind, item.key)}
+          >
+            {item.active && <motion.span
+              layoutId={'scroll-glass-rail-lens-' + model.rail.kind}
+              className="scrollGlassRailLens"
+              transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 42, mass: 0.55 }}
+              aria-hidden="true"
+            />}
+            <span className="scrollGlassRailLabel">{item.label}</span>
+          </button>)}
+        </nav>
+      </LayoutGroup>}
     </div>
   </header>;
 }
