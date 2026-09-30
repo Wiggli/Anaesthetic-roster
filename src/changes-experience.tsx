@@ -77,12 +77,8 @@ function dispatchAction(detail: Record<string, unknown>) {
   window.dispatchEvent(new CustomEvent('roster:changes-action', { detail }));
 }
 
-function EmptyRecord({ children }: { children: string }) {
-  return <div className="changesEmptyRecord"><EmptyState title={children} /></div>;
-}
-
-function RecordList({ records, empty }: { records: StaffingRecord[]; empty: string }) {
-  if (!records.length) return <EmptyRecord>{empty}</EmptyRecord>;
+function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; empty: string }) {
+  if (!records.length) return null;
 
   return <GroupedList className="changesRecordGroup tw:shadow-none">
     {records.map(record => record.kind === 'absence'

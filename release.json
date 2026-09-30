@@ -1,14 +1,14 @@
 {
-  "version": "37.76",
+  "version": "37.77",
   "date": "30 September 2026",
-  "title": "Unify the primary app shell",
-  "summary": "Makes Night, Changes, Breaks and Chat feel like one product, while turning routine night information and staffing edits into calmer, more purposeful interactions.",
+  "title": "Finish the mobile craftsmanship pass",
+  "summary": "Refines the four primary destinations with one institutional masthead, flatter grouped surfaces, real message bubbles, calmer typography and more deliberate night-shift depth.",
   "changes": [
-    "Changes, Breaks and Chat now share Mater Dei institutional branding, section-title rhythm and selected-night styling with Night, removing the previous sense that each destination belonged to a different interface.",
-    "Night now groups team state, allocation, the signed-in nurse’s break and selected-night activity into one Tonight board, replacing the loose lower-page text with clear operational rows and a deliberate no-changes state.",
-    "Changes now keeps absence and overtime forms out of the way during a normal night: compact staffing summaries open focused Motion bottom sheets only when a user chooses to add or edit a staffing change, with blue primary actions.",
-    "Break headings and counts are now neutral, while blue is reserved for the signed-in nurse and interaction, removing the leftover purple and teal section colours.",
-    "Primary date navigators, spacing, hierarchy and status treatment are more consistent across Night, Changes and Breaks without changing roster logic, shared-data behaviour, swipe navigation, accessibility or PWA update semantics."
+    "Night now has the same clear destination identity as Changes, Breaks and Chat, while its Tonight board relies on spacing and hairline separators rather than extra shadow and card furniture.",
+    "Changes now presents Absences and Overtime as one grouped staffing surface, removes duplicated no-record messages and keeps exceptional editing in focused Motion sheets.",
+    "Breaks now uses flat nurse rows inside one schedule surface, with blue reserved for the signed-in nurse and interaction rather than decorative section colour.",
+    "Chat now keeps notifications after conversations, fixes the masthead composition and renders team messages as true left/right conversation bubbles with lighter metadata and a sticky native-style composer.",
+    "Shared chrome gains consistent account and administrator controls, tighter radii, restrained tactile feedback, a lighter Motion tab indicator and a more intentional dark-mode treatment for night-shift use."
   ],
   "update_policy": "important"
 }

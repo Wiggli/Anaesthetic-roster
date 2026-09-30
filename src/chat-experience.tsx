@@ -91,9 +91,21 @@ function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'priv
   return <>
     {message.dateLabel && <div className="chatDateSeparator" role="separator" aria-label={message.dateLabel}><span>{message.dateLabel}</span></div>}
     {message.unreadBefore && <div className="tw:my-3 tw:flex tw:items-center tw:gap-2" data-chat-unread="true"><span className="tw:h-px tw:flex-1 tw:bg-blue-500/35" /><b className="tw:text-[0.68rem] tw:text-[var(--accent-strong)]">New messages</b><span className="tw:h-px tw:flex-1 tw:bg-blue-500/35" /></div>}
-    {kind === 'team' ? <div {...handlers} className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
-      <div className="chatMessageHeading"><b>{message.own ? 'You' : message.sender}</b><span className="chatMessageTime">{message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div><div className="chatMessageBodyText">{body}</div>
-    </div> : <div className={`chatPrivateMessage ${message.own ? 'own' : ''}`}><div {...handlers} className={`chatPrivateBubble ${message.failed ? 'failed' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
+    {kind === 'team' ? <motion.div
+      {...handlers}
+      layout
+      whileTap={{ scale: 0.995 }}
+      transition={{ type: 'spring', stiffness: 520, damping: 46, mass: 0.5 }}
+      className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''}`}
+      aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}
+    >
+      {!message.own && <span className="chatTeamSender">{message.sender}</span>}
+      <div className="chatTeamBubble"><div className="chatMessageBodyText">{body}</div></div>
+      <div className="chatTeamMessageMeta">
+        <span>{message.failed ? 'Not sent' : message.time}</span>
+        {!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}
+      </div>
+    </motion.div> : <div className={`chatPrivateMessage ${message.own ? 'own' : ''}`}><div {...handlers} className={`chatPrivateBubble ${message.failed ? 'failed' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
       <div className="chatMessageHeading"><b>{message.own ? 'You' : message.sender}</b><span className="chatMessageTime">{message.failed ? 'Not sent' : message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div>{body}
     </div></div>}
   </>;
