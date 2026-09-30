@@ -745,10 +745,29 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   expect(dock.height).toBeLessThanOrEqual(66);
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
+  await expect(page.locator('#breakList')).toContainText('Second break');
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
-  await expect(page.locator('#breakList')).toContainText('You');
+  await expect(page.locator('#breakList .breakScheduleSection')).toHaveCount(2);
+  await expect(page.locator('#breakList .breakScheduleOrdinal')).toHaveText(['1', '2']);
+  await expect(page.locator('#breakList .breakScheduleHeader').first().locator('small')).toHaveText(/\d+ nurses|Awaiting allocation/);
+  await expect(page.locator('#breakList .breakPersonYou')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
+  await expect(page.locator('#breakNotesTitle')).toContainText('Labour Ward / Pager');
+  await expect(page.locator('#breaks .breakNotesHeading')).toContainText('Additional coverage');
+  const breakBoardStyle = await page.locator('#breakList .breakScheduleBoard').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { background: style.backgroundColor, borderWidth: parseFloat(style.borderTopWidth), gap: parseFloat(style.gap) };
+  });
+  expect(breakBoardStyle.background).toBe('rgba(0, 0, 0, 0)');
+  expect(breakBoardStyle.borderWidth).toBe(0);
+  expect(breakBoardStyle.gap).toBeGreaterThanOrEqual(10);
+  const mineStyle = await page.locator('#breakList .breakPerson.mine').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { radius: parseFloat(style.borderRadius), paddingLeft: parseFloat(style.paddingLeft) };
+  });
+  expect(mineStyle.radius).toBe(0);
+  expect(mineStyle.paddingLeft).toBeGreaterThanOrEqual(15);
   if (test.info().project.name === 'mobile-chromium') {
     const labelHeight = await page.locator('#breakSummaryRow .breakSummaryItem.labour b').evaluate(el => el.getBoundingClientRect().height);
     expect(labelHeight).toBeLessThan(30);
@@ -846,6 +865,19 @@ test('React Changes journey shows decisions and supports keyboard step selection
   const journey = page.locator('#changesWorkflowExperience');
   await expect(journey).toHaveAttribute('data-react-ready', 'true');
   await expect(journey.locator('[role="status"]')).toContainText('Choose a nurse for First Part 1');
+  const activeWorkflow = journey.locator('[data-changes-step="staffing"]');
+  const workflowMetrics = await activeWorkflow.evaluate(el => {
+    const selection = el.querySelector('.workflowSelection');
+    const style = getComputedStyle(el);
+    const selectionStyle = selection ? getComputedStyle(selection) : null;
+    return {
+      height: el.getBoundingClientRect().height,
+      color: style.color,
+      selectionBorder: selectionStyle ? parseFloat(selectionStyle.borderTopWidth) : -1
+    };
+  });
+  expect(workflowMetrics.height).toBeLessThanOrEqual(49);
+  expect(workflowMetrics.selectionBorder).toBe(0);
   await captureReview(page, 'changes');
   await expect(page.locator('#changes .changesWorkflowTabs')).toBeHidden();
   const staffing = journey.locator('[data-changes-step="staffing"]');
@@ -1063,8 +1095,15 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   });
   await expect(chrome).toHaveAttribute('data-mode', 'compact');
   await expect.poll(() => chrome.evaluate(el => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.8);
-  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toContainText('Changes');
+  const compactTitle = page.locator('#reactScrollChrome .scrollGlassCompactTitle');
+  await expect(compactTitle).toContainText('Changes');
   await expect(page.locator('#reactScrollChrome .scrollGlassRail-changes')).toHaveCount(0);
+  const compactChromeMetrics = await chrome.evaluate(el => ({
+    height: el.getBoundingClientRect().height,
+    titleSize: parseFloat(getComputedStyle(el.querySelector('.scrollGlassCompactTitle')).fontSize)
+  }));
+  expect(compactChromeMetrics.height).toBeGreaterThanOrEqual(56);
+  expect(compactChromeMetrics.titleSize).toBeGreaterThanOrEqual(16);
   const compactMaterial = await page.locator('#reactScrollChrome .scrollGlassMaterial').evaluate(el => {
     const style = getComputedStyle(el);
     const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];

@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, ListRow, Pressable } from './ui-system';
 
 type BreakSummary = {
   date: string;
@@ -146,19 +146,24 @@ function PendingBreakPlan({ model }: { model: BreakSummary }) {
 
 function BreakScheduleSection({
   className,
+  ordinal,
   title,
   names,
   highlightedName
 }: {
   className: string;
+  ordinal: string;
   title: string;
   names: string[];
   highlightedName: string;
 }) {
   return <section className={`breakScheduleSection ${className}`} aria-label={title}>
     <div className="breakScheduleHeader">
-      <div><h3>{title}</h3><small>{names.length ? `${names.length} nurses` : 'Awaiting allocation'}</small></div>
-      <Badge tone="neutral">{names.length || '—'}</Badge>
+      <span className="breakScheduleOrdinal" aria-hidden="true">{ordinal}</span>
+      <div className="breakScheduleHeadingCopy">
+        <h3>{title}</h3>
+        <small>{names.length ? `${names.length} nurses` : 'Awaiting allocation'}</small>
+      </div>
     </div>
     <div className="breakScheduleRows">
       {names.length
@@ -166,7 +171,7 @@ function BreakScheduleSection({
             const mine = Boolean(highlightedName) && name.toLocaleLowerCase() === highlightedName.toLocaleLowerCase();
             return <ListRow
               key={name}
-              className={`breakPerson ${mine ? 'mine tw:bg-blue-500/7' : ''}`}
+              className={`breakPerson ${mine ? 'mine' : ''}`}
               title={name}
               trailing={mine ? <Badge tone="accent" className="breakPersonYou">You</Badge> : undefined}
             />;
@@ -178,19 +183,19 @@ function BreakScheduleSection({
 
 function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
-    <Surface className="breakGrid breakScheduleBoard tw:shadow-none">
-      <BreakScheduleSection className="firstBreak" title="First break" names={model.first} highlightedName={model.highlightedName} />
-      <BreakScheduleSection className="secondBreak" title="Second break" names={model.second} highlightedName={model.highlightedName} />
-    </Surface>
+    <div className="breakGrid breakScheduleBoard">
+      <BreakScheduleSection className="firstBreak" ordinal="1" title="First break" names={model.first} highlightedName={model.highlightedName} />
+      <BreakScheduleSection className="secondBreak" ordinal="2" title="Second break" names={model.second} highlightedName={model.highlightedName} />
+    </div>
     <section className="breakNotesBlock" aria-labelledby="breakNotesTitle">
-      <div className="breakNotesHeading"><h3 id="breakNotesTitle">Labour Ward / Pager and additional staffing</h3></div>
-      <Surface className="breakNotesBoard tw:shadow-none">
+      <div className="breakNotesHeading"><span>Additional coverage</span><h3 id="breakNotesTitle">Labour Ward / Pager</h3></div>
+      <div className="breakNotesBoard">
         <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
           {model.notes.length
             ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
             : <EmptyState title="No additional staffing notes" />}
         </div>
-      </Surface>
+      </div>
     </section>
   </>;
 }
