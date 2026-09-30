@@ -10938,3 +10938,279 @@ html[data-theme="dark"] body[data-view] .bottom.reactTabs .tabSlidingIndicator{
     border-color:color-mix(in srgb,var(--scene-ink) 42%,transparent)!important;
   }
 }
+
+
+/* 37.86 break-plan clarity and compact chrome refinement. */
+
+/* The compact scroll bar should feel like a deliberate navigation bar, not a thin label strip. */
+.scrollGlassHeader.scrollGlassMode-compact{
+  height:calc(58px + env(safe-area-inset-top))!important;
+  min-height:calc(58px + env(safe-area-inset-top))!important;
+}
+.scrollGlassMode-compact .scrollGlassContent{
+  height:58px!important;
+  padding:0 max(18px,env(safe-area-inset-left))!important;
+}
+.scrollGlassCompactTitle{
+  font-size:17px!important;
+  font-weight:720!important;
+  letter-spacing:-.022em!important;
+}
+.scrollGlassMode-compact .scrollGlassMaterial{
+  background:rgba(247,248,250,.20)!important;
+}
+body.dark .scrollGlassMode-compact .scrollGlassMaterial,
+html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
+  background:rgba(20,20,22,.30)!important;
+}
+.scrollGlassMode-compact::after{
+  height:24px!important;
+  opacity:calc(var(--scroll-glass-edge-opacity,0) * .62)!important;
+}
+
+/* Break plan: two immediately readable groups, no detached count badges and no giant outer card. */
+#breaks .breakPlanTitle{
+  margin:2px 3px 10px!important;
+}
+#breaks .breakPlanTitle h2{
+  font-size:21px!important;
+  font-weight:740!important;
+  letter-spacing:-.03em!important;
+}
+#breaks .breakPlanTitle #breakPlanLive{
+  gap:6px!important;
+  font-size:10.5px!important;
+  font-weight:650!important;
+}
+#breaks .breakScheduleBoard{
+  display:grid!important;
+  gap:12px!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleSection,
+#breaks .breakScheduleSection + .breakScheduleSection{
+  overflow:hidden!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:16px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleHeader{
+  display:grid!important;
+  grid-template-columns:32px minmax(0,1fr)!important;
+  align-items:center!important;
+  justify-content:initial!important;
+  gap:10px!important;
+  min-height:58px!important;
+  padding:10px 13px!important;
+  border-bottom:1px solid color-mix(in srgb,var(--craft-hairline) 74%,transparent)!important;
+  background:color-mix(in srgb,var(--scene-secondary) 3.5%,var(--scene-surface))!important;
+}
+#breaks .breakScheduleOrdinal{
+  display:grid!important;
+  width:30px!important;
+  height:30px!important;
+  place-items:center!important;
+  border-radius:10px!important;
+  background:color-mix(in srgb,var(--scene-secondary) 7%,transparent)!important;
+  color:var(--scene-secondary)!important;
+  font-size:11px!important;
+  font-weight:760!important;
+}
+#breaks .breakScheduleHeadingCopy{
+  min-width:0!important;
+}
+#breaks .breakScheduleHeader h3{
+  margin:0!important;
+  color:var(--scene-ink)!important;
+  font-size:15px!important;
+  font-weight:735!important;
+  line-height:1.15!important;
+  letter-spacing:-.018em!important;
+}
+#breaks .breakScheduleHeader small{
+  display:block!important;
+  margin-top:3px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  font-weight:560!important;
+}
+#breaks .breakScheduleRows{
+  padding:0!important;
+}
+#breaks .breakScheduleRows>.breakPerson{
+  min-height:52px!important;
+  margin:0!important;
+  padding:10px 13px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleRows>.breakPerson + .breakPerson{
+  border-top:1px solid color-mix(in srgb,var(--craft-hairline) 78%,transparent)!important;
+}
+#breaks .breakScheduleRows>.breakPerson strong{
+  font-size:13.5px!important;
+  font-weight:660!important;
+  letter-spacing:-.012em!important;
+}
+#breaks .breakScheduleRows>.breakPerson.mine{
+  position:relative!important;
+  margin:0!important;
+  padding-left:16px!important;
+  border-radius:0!important;
+  background:color-mix(in srgb,var(--scene-accent) 5%,var(--scene-surface))!important;
+}
+#breaks .breakScheduleRows>.breakPerson.mine::before{
+  left:0!important;
+  top:8px!important;
+  bottom:8px!important;
+  width:3px!important;
+  border-radius:999px!important;
+  background:var(--scene-accent)!important;
+}
+#breaks .breakPersonYou{
+  padding:3px 7px!important;
+  border:0!important;
+  background:color-mix(in srgb,var(--scene-accent) 7%,transparent)!important;
+  color:var(--scene-accent)!important;
+  font-size:9.5px!important;
+  font-weight:720!important;
+}
+#breaks .breakNotesBlock{
+  margin-top:22px!important;
+}
+#breaks .breakNotesHeading{
+  display:grid!important;
+  gap:2px!important;
+  margin:0 3px 8px!important;
+}
+#breaks .breakNotesHeading>span{
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:680!important;
+  letter-spacing:.015em!important;
+  text-transform:uppercase!important;
+}
+#breaks .breakNotesHeading h3{
+  margin:0!important;
+  color:var(--scene-ink)!important;
+  font-size:16px!important;
+  font-weight:710!important;
+  letter-spacing:-.018em!important;
+}
+#breaks .breakNotesBoard{
+  overflow:visible!important;
+  border:0!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakNotesBoard .breakNote{
+  min-height:50px!important;
+  padding:10px 3px!important;
+  background:transparent!important;
+}
+#breaks .breakNotesBoard .breakNote + .breakNote{
+  border-top:1px solid color-mix(in srgb,var(--craft-hairline) 76%,transparent)!important;
+}
+
+/* Changes: make the workflow selector secondary to "Manage this night". */
+#changes .workflowExperience{
+  margin:0 0 13px!important;
+}
+#changes .workflowSteps{
+  gap:2px!important;
+  padding:2px!important;
+  border:1px solid color-mix(in srgb,var(--craft-hairline) 72%,transparent)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-secondary) 2.5%,transparent)!important;
+}
+#changes .workflowStep{
+  min-height:44px!important;
+  gap:5px!important;
+  padding:5px 4px!important;
+  border-radius:11px!important;
+  color:var(--scene-secondary)!important;
+}
+#changes .workflowStep.active{
+  color:var(--scene-accent)!important;
+}
+#changes .workflowSelection{
+  inset:3px!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:color-mix(in srgb,var(--scene-surface) 76%,transparent)!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--craft-hairline) 62%,transparent)!important;
+}
+#changes .workflowStepNumber{
+  width:20px!important;
+  height:20px!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:currentColor!important;
+  font-size:10px!important;
+}
+#changes .workflowStepCopy b{
+  font-size:11px!important;
+  font-weight:700!important;
+}
+#changes .workflowStepCopy small{
+  display:none!important;
+}
+#changes .workflowGuidance{
+  margin-top:8px!important;
+}
+
+/* Give the selected date more room and avoid needless truncation on phone widths. */
+@media(max-width:520px){
+  #changes>.changesDatePanel .grid2{
+    grid-template-columns:minmax(0,1fr) 68px!important;
+    gap:8px!important;
+  }
+  #changes>.changesDatePanel .staffingCount{
+    min-width:68px!important;
+    padding-left:8px!important;
+  }
+  #changes>.changesDatePanel .dateNav>button{
+    width:38px!important;
+    min-width:38px!important;
+  }
+  #changes>.changesDatePanel .prettyDateButton strong{
+    font-size:13px!important;
+    letter-spacing:-.02em!important;
+    white-space:nowrap!important;
+  }
+}
+
+/* Bottom navigation: selection is conveyed by icon/text and a whisper of material, not an outlined pill. */
+body[data-view] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:transparent!important;
+  background:rgba(255,255,255,.055)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16)!important;
+}
+body.dark[data-view] .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] body[data-view] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:transparent!important;
+  background:rgba(255,255,255,.035)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+.bottom.reactTabs button.active{
+  color:var(--scene-accent)!important;
+}
+.bottom.reactTabs[data-glass-touching] .tabSlidingIndicator{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 0 12px rgba(255,255,255,.035)!important;
+}
+
+@media(min-width:760px){
+  #breaks .breakScheduleBoard{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
