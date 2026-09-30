@@ -218,7 +218,7 @@ function ScrollGlassChrome() {
 
   const closeAdmin = () => document.getElementById('closeAdminBtn')?.click();
   const hasRail = Boolean(model.rail?.items.length);
-  const setRailTouch = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const setRailTouch = (event: ReactPointerEvent<HTMLElement>) => {
     const root = barRef.current;
     if (!root) return;
     const rail = event.currentTarget.closest<HTMLElement>('.scrollGlassRail');
@@ -256,6 +256,13 @@ function ScrollGlassChrome() {
           className={'scrollGlassRail scrollGlassRail-' + model.rail.kind}
           role="tablist"
           aria-label={model.rail.ariaLabel}
+          onPointerDown={setRailTouch}
+          onPointerMove={event => {
+            if (event.buttons) setRailTouch(event);
+          }}
+          onPointerUp={releaseRailTouch}
+          onPointerCancel={releaseRailTouch}
+          onPointerLeave={releaseRailTouch}
         >
           <span className="scrollGlassTouchGlow" aria-hidden="true" />
           {model.rail.items.map(item => <button
@@ -264,13 +271,6 @@ function ScrollGlassChrome() {
             role="tab"
             aria-selected={item.active}
             className={item.active ? 'active' : ''}
-            onPointerDown={setRailTouch}
-            onPointerMove={event => {
-              if (event.buttons) setRailTouch(event);
-            }}
-            onPointerUp={releaseRailTouch}
-            onPointerCancel={releaseRailTouch}
-            onPointerLeave={releaseRailTouch}
             onClick={() => activateRailItem(model.rail!.kind, item.key)}
           >
             {item.active && <motion.span
