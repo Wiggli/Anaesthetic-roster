@@ -10470,3 +10470,430 @@ html[data-theme="dark"] .scrollGlassHeader[data-glass-touching] .scrollGlassRail
     opacity:0!important;
   }
 }
+
+
+/* 37.85 native navigation hierarchy and content restraint. */
+
+/* Night owns the canvas. It never grows a duplicate floating title while scrolling. */
+.scrollGlassHeader.scrollGlassMode-off{
+  display:none!important;
+}
+
+/* Changes, Breaks, Chat and Full Roster use a quiet navigation edge, not a floating capsule. */
+.scrollGlassHeader.scrollGlassMode-compact{
+  height:calc(46px + env(safe-area-inset-top))!important;
+  padding-top:env(safe-area-inset-top)!important;
+  overflow:visible!important;
+}
+.scrollGlassMode-compact .scrollGlassMaterial{
+  inset:0!important;
+  border:0!important;
+  border-bottom:1px solid rgba(60,60,67,.08)!important;
+  border-radius:0!important;
+  background:rgba(247,248,250,.16)!important;
+  box-shadow:none!important;
+  opacity:var(--scroll-glass-material-opacity,0)!important;
+  -webkit-backdrop-filter:
+    blur(var(--chrome-glass-blur,16px))
+    saturate(var(--chrome-glass-saturate,150%))
+    contrast(var(--chrome-glass-contrast,1.02))!important;
+  backdrop-filter:
+    blur(var(--chrome-glass-blur,16px))
+    saturate(var(--chrome-glass-saturate,150%))
+    contrast(var(--chrome-glass-contrast,1.02))!important;
+}
+body.dark .scrollGlassMode-compact .scrollGlassMaterial,
+html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
+  border-bottom-color:rgba(255,255,255,.065)!important;
+  background:rgba(23,23,25,.20)!important;
+}
+.scrollGlassMode-compact .scrollGlassStack{
+  width:100%!important;
+  max-width:none!important;
+}
+.scrollGlassMode-compact .scrollGlassContent{
+  height:46px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0 max(64px,env(safe-area-inset-left))!important;
+}
+.scrollGlassCompactTitle{
+  display:block;
+  opacity:var(--scroll-glass-copy-opacity,0);
+  color:var(--scene-ink);
+  font-size:15px;
+  font-weight:690;
+  line-height:1;
+  letter-spacing:-.018em;
+  white-space:nowrap;
+}
+.scrollGlassMode-compact::after{
+  top:100%!important;
+  left:0!important;
+  right:0!important;
+  height:22px!important;
+  background:transparent!important;
+  -webkit-backdrop-filter:blur(10px) saturate(118%)!important;
+  backdrop-filter:blur(10px) saturate(118%)!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.60) 34%,rgba(0,0,0,.18) 72%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.60) 34%,rgba(0,0,0,.18) 72%,transparent 100%)!important;
+  opacity:calc(var(--scroll-glass-edge-opacity,0) * .72)!important;
+}
+
+/* Admin keeps only its section navigation when the original rail scrolls away. */
+.scrollGlassHeader.scrollGlassMode-rail{
+  height:calc(54px + env(safe-area-inset-top))!important;
+  padding-top:env(safe-area-inset-top)!important;
+  overflow:visible!important;
+}
+.scrollGlassMode-rail .scrollGlassMaterial{
+  inset:calc(env(safe-area-inset-top) + 4px) 8px 0!important;
+  border:1px solid rgba(255,255,255,.30)!important;
+  border-radius:18px!important;
+  background:rgba(247,248,250,.26)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.48),
+    0 7px 24px rgba(28,34,44,.055)!important;
+  opacity:var(--scroll-glass-material-opacity,0)!important;
+  -webkit-backdrop-filter:
+    blur(var(--chrome-glass-blur,18px))
+    saturate(var(--chrome-glass-saturate,154%))
+    contrast(var(--chrome-glass-contrast,1.02))!important;
+  backdrop-filter:
+    blur(var(--chrome-glass-blur,18px))
+    saturate(var(--chrome-glass-saturate,154%))
+    contrast(var(--chrome-glass-contrast,1.02))!important;
+}
+body.dark .scrollGlassMode-rail .scrollGlassMaterial,
+html[data-theme="dark"] .scrollGlassMode-rail .scrollGlassMaterial{
+  border-color:rgba(255,255,255,.075)!important;
+  background:rgba(29,29,31,.30)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.075),0 8px 24px rgba(0,0,0,.20)!important;
+}
+.scrollGlassMode-rail .scrollGlassStack{
+  width:min(calc(100% - 16px),620px)!important;
+  height:50px!important;
+  margin:4px auto 0!important;
+}
+.scrollGlassMode-rail .scrollGlassRail{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  height:46px!important;
+  gap:2px!important;
+  align-items:stretch!important;
+  padding:4px!important;
+  border:0!important;
+  background:transparent!important;
+}
+.scrollGlassMode-rail .scrollGlassRail button{
+  min-width:0!important;
+  min-height:38px!important;
+  padding:0 2px!important;
+  border-radius:12px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+}
+.scrollGlassMode-rail .scrollGlassRail button.active{
+  color:var(--scene-ink)!important;
+}
+.scrollGlassMode-rail .scrollGlassRailLens{
+  inset:1px!important;
+  border-color:rgba(255,255,255,.34)!important;
+  border-radius:11px!important;
+  background:
+    radial-gradient(110% 150% at 18% -46%,rgba(255,255,255,.28),transparent 58%),
+    rgba(255,255,255,.16)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.40),0 2px 8px rgba(28,34,44,.045)!important;
+}
+body.dark .scrollGlassMode-rail .scrollGlassRailLens,
+html[data-theme="dark"] .scrollGlassMode-rail .scrollGlassRailLens{
+  border-color:rgba(255,255,255,.07)!important;
+  background:rgba(255,255,255,.065)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.075),0 2px 9px rgba(0,0,0,.18)!important;
+}
+.scrollGlassMode-rail::after{
+  top:100%!important;
+  left:10px!important;
+  right:10px!important;
+  height:18px!important;
+  background:transparent!important;
+  -webkit-backdrop-filter:blur(9px) saturate(120%)!important;
+  backdrop-filter:blur(9px) saturate(120%)!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.46) 42%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.46) 42%,transparent 100%)!important;
+  opacity:calc(var(--scroll-glass-edge-opacity,0) * .62)!important;
+}
+
+/* The original Admin rail is content until it leaves the page; it is no longer a second sticky glass layer. */
+#admin .adminTabs{
+  position:relative!important;
+  top:auto!important;
+  z-index:auto!important;
+  margin:0 0 18px!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 72%,transparent)!important;
+  border-radius:15px!important;
+  background:color-mix(in srgb,var(--scene-soft) 72%,var(--scene-surface))!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+#admin .adminTabs button.active{
+  background:var(--scene-surface)!important;
+  border-color:transparent!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--scene-line) 64%,transparent)!important;
+}
+
+/* Management reads like a native settings directory instead of a dashboard of nested cards. */
+#admin .statusGrid,
+#admin .adminSummary{
+  overflow:visible!important;
+  border:0!important;
+  border-top:1px solid color-mix(in srgb,var(--scene-line) 72%,transparent)!important;
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 72%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin .statusGrid>*{
+  min-height:48px!important;
+  padding:9px 2px!important;
+  background:transparent!important;
+}
+#admin .adminOperationalRow{
+  padding:10px 2px!important;
+  background:transparent!important;
+}
+#admin .adminSummary>.time{
+  padding:8px 2px!important;
+}
+#admin .adminHealthPanel{
+  margin-top:22px!important;
+}
+#admin .adminHealthGrid,
+#admin .adminAccountList,
+#admin .adminAccountRows{
+  box-shadow:none!important;
+}
+
+/* Night: preserve the dark assignment as the signature object, flatten everything around it. */
+#today .personalNight>.sectionTitle{
+  margin:0 2px 7px!important;
+  color:var(--scene-secondary)!important;
+  font-size:13px!important;
+  font-weight:680!important;
+  letter-spacing:-.008em!important;
+}
+#today .personalAssignmentStage,
+#today #personalNightCard>article>div.personalAssignmentStage:nth-child(2){
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:21px!important;
+  background:
+    radial-gradient(110% 92% at 14% -18%,rgba(255,255,255,.085),transparent 48%),
+    linear-gradient(158deg,#171c20 0%,#101419 56%,#090c0f 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.11),
+    inset 0 -1px 0 rgba(0,0,0,.30),
+    0 12px 28px rgba(8,12,16,.14)!important;
+}
+#today .personalRoleIcon{
+  border-color:rgba(255,255,255,.10)!important;
+  background:rgba(255,255,255,.075)!important;
+}
+#today .personalFacts{
+  border-top-color:rgba(255,255,255,.105)!important;
+}
+#today .personalFacts>div,
+#today .personalFacts>.personalFactContext{
+  border-color:rgba(255,255,255,.09)!important;
+}
+#today .nightDateShell .grid2{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .dateNav{
+  border-radius:14px!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .staffingCount{
+  min-height:0!important;
+  padding:10px 2px 0!important;
+  background:transparent!important;
+  border:0!important;
+}
+#today .teamOverviewGroup{
+  margin-top:26px!important;
+}
+#today .nightSummaryTitle{
+  margin:0 2px 6px!important;
+}
+#today .nightSummaryTitle .sectionTitle{
+  font-size:17px!important;
+  font-weight:710!important;
+  letter-spacing:-.02em!important;
+}
+#today .nightOverviewBoard{
+  overflow:visible!important;
+  border:0!important;
+  border-top:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightSignal,
+#today .nightOverviewBoard .nightTeamDetails>summary,
+#today .nightOverviewShortcut{
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
+#today .nightOverviewIcon{
+  width:32px!important;
+  height:32px!important;
+  flex-basis:32px!important;
+  border-radius:10px!important;
+  background:color-mix(in srgb,var(--scene-accent) 5%,transparent)!important;
+}
+#today .nightOverviewBoard>#alerts:not(:empty){
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
+#today .recentActivityPanel{
+  padding:0!important;
+}
+#today .nightOverviewRowHeading{
+  padding:11px 2px 7px!important;
+}
+#today .recentActivityList{
+  padding:0!important;
+}
+#today #recentActivityList>.activityTimeline,
+#today #recentActivityList>div{
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .activityTimeline .recentActivityRow,
+#today .emptyRecentActivity{
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
+#today .rosterShortcutRow{
+  gap:0!important;
+  border-top:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+}
+#today .rosterShortcutBtn{
+  min-height:48px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .rosterShortcutBtn+ .rosterShortcutBtn{
+  border-left:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+}
+
+/* Bottom navigation recedes; the moving lens is the expressive element. */
+.bottom.reactTabs{
+  --chrome-glass-blur:18px;
+  --chrome-glass-saturate:158%;
+  min-height:62px!important;
+  padding:5px!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  border-radius:27px!important;
+  background:rgba(247,248,250,.24)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.36),
+    0 8px 26px rgba(28,34,44,.055)!important;
+}
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.065)!important;
+  background:rgba(28,28,30,.28)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 9px 28px rgba(0,0,0,.20)!important;
+}
+.bottom.reactTabs::before{
+  opacity:.42!important;
+}
+.bottom.reactTabs::after{
+  opacity:.50!important;
+}
+.bottom.reactTabs button{
+  height:50px!important;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  border-color:rgba(255,255,255,.28)!important;
+  border-radius:18px!important;
+  background:
+    radial-gradient(100% 150% at 18% -52%,rgba(255,255,255,.30),transparent 60%),
+    rgba(255,255,255,.13)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 2px 8px rgba(28,34,44,.045)!important;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:rgba(255,255,255,.06)!important;
+  background:rgba(255,255,255,.055)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 2px 9px rgba(0,0,0,.16)!important;
+}
+.bottom.reactTabs[data-glass-touching] .tabTouchGlow{
+  opacity:.54!important;
+}
+.bottom.reactTabs[data-glass-touching] .tabSlidingIndicator{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.46),
+    0 3px 10px rgba(28,34,44,.055),
+    0 0 14px rgba(255,255,255,.055)!important;
+}
+
+/* Tighter, deliberate type hierarchy across operational content. */
+#changes .changesScreenHeader h1,
+#breaks .breaksScreenHeader h1,
+#chat .chatScreenHeader h1{
+  font-size:clamp(32px,8vw,36px)!important;
+  font-weight:740!important;
+  letter-spacing:-.045em!important;
+}
+#changes .stepHeader h3,
+#breaks .breakPlanTitle h2,
+#admin .adminSectionIntro h2{
+  font-size:17px!important;
+  font-weight:710!important;
+  letter-spacing:-.02em!important;
+}
+#today .nightSignalLeadCopy>span,
+#today .nightOverviewShortcutCopy>span,
+#today .nightOverviewRowHeading p,
+#admin .adminSectionIntro .time{
+  font-size:10.5px!important;
+  line-height:1.35!important;
+}
+
+/* Accessibility fallbacks keep hierarchy without relying on translucency or motion. */
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  .scrollGlassMode-rail .scrollGlassMaterial,
+  .bottom.reactTabs{
+    background:var(--scene-surface)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .scrollGlassMode-compact::after,
+  .scrollGlassMode-rail::after{
+    display:none!important;
+  }
+}
+@media(prefers-contrast:more){
+  .scrollGlassMode-compact .scrollGlassMaterial{
+    border-bottom-color:color-mix(in srgb,var(--scene-ink) 38%,transparent)!important;
+  }
+  .scrollGlassMode-rail .scrollGlassMaterial,
+  .bottom.reactTabs{
+    border-color:color-mix(in srgb,var(--scene-ink) 42%,transparent)!important;
+  }
+}
