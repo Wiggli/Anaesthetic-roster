@@ -304,6 +304,8 @@ test('page track stays covered across saved scroll positions and Night carries i
   test.skip(!isMobile, 'mobile transition regression');
   await openShell(page);
   await expect(page.locator('#today > #appHeader')).toHaveCount(1);
+  await expect(page.locator('#today .nightSectionIdentity')).toContainText('Night');
+  await expect(page.locator('[data-shell-account]')).toHaveCount(3);
   await expect(page.locator('#changes .primaryInstitution img')).toHaveCount(1);
   await expect(page.locator('#breaks .primaryInstitution img')).toHaveCount(1);
   await expect(page.locator('#chat .primaryInstitution img')).toHaveCount(1);
@@ -1027,6 +1029,9 @@ test('typed Chat overview renders private conversations and registered members',
   }
   await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
   await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
+  await expect(page.locator('#chatTeamMessages .chatTeamBubble')).toHaveCount(1);
+  await expect(page.locator('#chatHome > .chatTeamConsole')).toHaveCSS('order', '1');
+  await expect(page.locator('#chatHome > .chatNotificationDisclosure')).toHaveCSS('order', '5');
   const composerMaterial = await page.locator('#chatTeamComposer .chatComposerGlass').evaluate(el => {
     const style = getComputedStyle(el);
     return {

@@ -8114,3 +8114,822 @@ body[data-view] main{
     transition:none!important;
   }
 }
+
+
+/* 37.77 final craftsmanship pass: restraint, shared chrome, flatter groups and native message composition. */
+:root{
+  --craft-radius-xs:10px;
+  --craft-radius-s:14px;
+  --craft-radius-m:20px;
+  --craft-radius-l:24px;
+  --craft-hairline:color-mix(in srgb,var(--scene-line) 82%,transparent);
+}
+
+/* Shared institutional masthead */
+#changes .primaryScreenHeader,
+#breaks .primaryScreenHeader,
+#chat .primaryScreenHeader{
+  display:block!important;
+  margin:0 auto 10px!important;
+  padding:calc(9px + env(safe-area-inset-top)) 0 13px!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+}
+#changes .primaryInstitution,
+#breaks .primaryInstitution,
+#chat .primaryInstitution{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  width:100%!important;
+  min-height:42px!important;
+  margin:0 0 9px!important;
+  padding:0 2px!important;
+}
+#changes .primaryInstitutionBrand,
+#breaks .primaryInstitutionBrand,
+#chat .primaryInstitutionBrand{
+  display:flex;
+  min-width:0;
+  align-items:center;
+  gap:11px;
+}
+#changes .primaryInstitutionBrand img,
+#breaks .primaryInstitutionBrand img,
+#chat .primaryInstitutionBrand img{
+  width:112px!important;
+  height:28px!important;
+  flex:0 0 auto!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+#changes .primaryInstitutionBrand>span,
+#breaks .primaryInstitutionBrand>span,
+#chat .primaryInstitutionBrand>span{
+  overflow:hidden;
+  color:var(--scene-secondary)!important;
+  font-size:8px!important;
+  font-weight:690!important;
+  line-height:1.2!important;
+  letter-spacing:.07em!important;
+  text-overflow:ellipsis;
+  text-transform:uppercase!important;
+  white-space:nowrap;
+}
+#changes .primaryHeaderActions,
+#breaks .primaryHeaderActions,
+#chat .primaryHeaderActions{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:4px;
+}
+#changes .primaryHeaderAction,
+#breaks .primaryHeaderAction,
+#chat .primaryHeaderAction{
+  display:grid;
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  min-height:38px!important;
+  place-items:center;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:var(--scene-ink)!important;
+  box-shadow:none!important;
+  transition:transform 110ms ease,background-color 140ms ease!important;
+}
+#changes .primaryHeaderAction:active,
+#breaks .primaryHeaderAction:active,
+#chat .primaryHeaderAction:active{
+  transform:scale(.94);
+  background:color-mix(in srgb,var(--scene-secondary) 10%,transparent)!important;
+}
+#changes .primaryHeaderAction svg,
+#breaks .primaryHeaderAction svg,
+#chat .primaryHeaderAction svg{
+  width:21px;
+  height:21px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#changes .primaryHeaderAccount,
+#breaks .primaryHeaderAccount,
+#chat .primaryHeaderAccount{
+  background:color-mix(in srgb,var(--scene-secondary) 8%,transparent)!important;
+}
+#changes .primaryHeaderAccountInitial,
+#breaks .primaryHeaderAccountInitial,
+#chat .primaryHeaderAccountInitial{
+  display:grid;
+  width:100%;
+  height:100%;
+  place-items:center;
+  font-size:12px;
+  font-weight:740;
+}
+#changes .primaryHeaderAccountAvatar,
+#breaks .primaryHeaderAccountAvatar,
+#chat .primaryHeaderAccountAvatar{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow,
+#chat .primaryScreenTitleRow{
+  display:flex!important;
+  width:100%!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  padding:0 2px!important;
+}
+#chat .primaryScreenTitleRow{
+  display:block!important;
+}
+#changes .primaryScreenHeader h1,
+#breaks .primaryScreenHeader h1,
+#chat .primaryScreenHeader h1{
+  font-size:32px!important;
+  font-weight:755!important;
+  line-height:.98!important;
+  letter-spacing:-.047em!important;
+}
+#changes .primaryScreenHeader p,
+#breaks .primaryScreenHeader p,
+#chat .primaryScreenHeader p{
+  margin-top:6px!important;
+  font-size:10.5px!important;
+  font-weight:560!important;
+}
+#changes .screenEyebrow,
+#breaks .screenEyebrow,
+#chat .chatEyebrow{
+  font-size:9px!important;
+  font-weight:625!important;
+}
+#changes .screenInfoButton,
+#breaks .screenInfoButton{
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  min-height:34px!important;
+  margin-bottom:1px!important;
+  border-color:var(--craft-hairline)!important;
+  box-shadow:none!important;
+}
+
+/* Night gains the same clear destination identity without competing with the assignment hero. */
+#today .nightSectionIdentity{
+  width:100%;
+  max-width:980px;
+  margin:0 auto;
+  padding:10px 0 5px;
+}
+#today .nightSectionIdentity>span{
+  display:block;
+  color:var(--night-muted);
+  font-size:9px;
+  font-weight:630;
+}
+#today .nightSectionIdentity h1{
+  margin:2px 0 0;
+  color:var(--night-ink);
+  font-size:32px;
+  font-weight:755;
+  line-height:.98;
+  letter-spacing:-.047em;
+}
+#today .nightSectionIdentity p{
+  margin:6px 0 0;
+  color:var(--night-muted);
+  font-size:10.5px;
+  font-weight:560;
+}
+#today #appHeader{
+  margin-bottom:0!important;
+  padding-bottom:8px!important;
+  border-bottom:1px solid var(--night-rule)!important;
+}
+#today .nightDateShell{
+  padding-top:9px!important;
+}
+
+/* One date-control silhouette, not nested pills. */
+#today .nightDateShell .dateNav,
+#changes>.changesDatePanel .dateNav,
+#breaks>.panel>.grid2 .dateNav{
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-s)!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .dateNav>button:first-child,
+#changes>.changesDatePanel .dateNav>button:first-child,
+#breaks>.panel>.grid2 .dateNav>button:first-child{
+  border-right:1px solid var(--craft-hairline)!important;
+}
+#today .nightDateShell .dateNav>button:last-child,
+#changes>.changesDatePanel .dateNav>button:last-child,
+#breaks>.panel>.grid2 .dateNav>button:last-child{
+  border-left:1px solid var(--craft-hairline)!important;
+}
+
+/* Night grouped content uses surface contrast and separators rather than a card shadow. */
+#today .nightOverviewBoard{
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-m)!important;
+  box-shadow:none!important;
+}
+#today .nightSignal{
+  min-height:70px!important;
+  padding:10px 13px!important;
+}
+#today .nightSignalLeadCopy strong{
+  font-size:14px!important;
+}
+#today .nightSignalState{
+  align-self:center!important;
+  font-weight:630!important;
+}
+#today .nightOverviewIcon{
+  width:34px!important;
+  height:34px!important;
+  flex-basis:34px!important;
+  border-radius:11px!important;
+}
+#today .nightOverviewBoard .nightTeamDetails>summary,
+#today .nightOverviewShortcut{
+  min-height:64px!important;
+  padding:9px 13px!important;
+}
+#today .nightOverviewBoard .nightTeamDetails>summary:active,
+#today .nightOverviewShortcut:active{
+  background:color-mix(in srgb,var(--scene-secondary) 6%,transparent)!important;
+}
+#today .nightOverviewRowHeading{
+  min-height:48px!important;
+  padding:9px 13px 5px!important;
+}
+#today .recentActivityList{
+  padding:0 9px 9px!important;
+}
+#today .emptyRecentActivity{
+  min-height:54px!important;
+  padding:8px 4px!important;
+}
+#today .emptyRecentActivity .nightOverviewIcon{
+  width:32px!important;
+  height:32px!important;
+}
+#today .personalHeroSurface{
+  box-shadow:0 14px 34px rgba(0,0,0,.08)!important;
+}
+#today .personalAssignmentStage{
+  overflow:hidden;
+}
+#today .personalContextAction{
+  transition:background-color 140ms ease!important;
+}
+#today .personalContextAction:active{
+  background:rgba(255,255,255,.055)!important;
+}
+
+/* Changes is one grouped staffing surface in the automatic state. */
+#changes>.changesDatePanel{
+  margin-bottom:14px!important;
+}
+#changes>.changePanel>.ctop{
+  margin-bottom:9px!important;
+}
+#changes>.changePanel>.ctop h2{
+  font-size:19px!important;
+}
+#changes .liveStatus{
+  padding:3px 7px!important;
+  background:transparent!important;
+  color:var(--scene-secondary)!important;
+}
+#changes .liveStatus .liveDot{
+  width:6px!important;
+  height:6px!important;
+  box-shadow:none!important;
+}
+#changes .changesWorkflowTabs,
+#changes #changesWorkflowExperience [role="tablist"]{
+  margin-bottom:15px!important;
+  border-color:var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-s)!important;
+  background:color-mix(in srgb,var(--scene-secondary) 4%,transparent)!important;
+  box-shadow:none!important;
+}
+#changes #changesStaffingPane:not(.hidden){
+  display:grid!important;
+  gap:0!important;
+  overflow:hidden!important;
+  margin:0 0 15px!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-m)!important;
+  background:var(--scene-surface)!important;
+  box-shadow:none!important;
+}
+#changes #changesStaffingPane>.staffingSection{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes #changesStaffingPane>.staffingSection + .staffingSection{
+  border-top:1px solid var(--craft-hairline)!important;
+}
+#changes .staffingSection>.stepHeader{
+  min-height:44px!important;
+  padding:10px 13px 5px!important;
+}
+#changes .staffingSection>.stepHeader>span{
+  width:22px!important;
+  height:22px!important;
+  border-radius:7px!important;
+  font-size:9px!important;
+}
+#changes .staffingActionRow{
+  min-height:58px!important;
+  padding:7px 13px 11px!important;
+  border-top:0!important;
+}
+#changes .staffingActionCopy strong{
+  font-size:12.5px!important;
+}
+#changes .staffingActionCopy small{
+  max-width:240px;
+  font-size:9.5px!important;
+}
+#changes .staffingAddButton{
+  min-height:34px!important;
+  padding-inline:12px!important;
+  border-radius:11px!important;
+}
+#changes #continueToAllocationBtn{
+  grid-row:auto;
+  margin:15px 0 0!important;
+  border-radius:var(--craft-radius-s)!important;
+}
+#changes .historyBox{
+  margin-top:0!important;
+  padding:0!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-s)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .historyBox>summary{
+  min-height:46px!important;
+  padding:0 13px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:630!important;
+}
+#changes .changesRecordGroup{
+  margin:0 10px 10px!important;
+  border:0!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#changes .changesRecordGroup>*{
+  border-radius:0!important;
+}
+#changes .continueWorkflowBtn,
+#changes #saveAllocationsBtn{
+  box-shadow:0 5px 14px color-mix(in srgb,var(--scene-accent) 17%,transparent)!important;
+}
+#changes .continueWorkflowBtn:active,
+#changes #saveAllocationsBtn:active{
+  transform:scale(.988);
+}
+
+/* Break plan: one white group, ordinary rows, personal relevance gets the only blue fill. */
+#breaks #breakSummaryRow{
+  margin:10px 0 15px!important;
+  border-color:var(--craft-hairline)!important;
+}
+#breaks .breakSummaryItem{
+  min-height:48px!important;
+  padding:8px 8px!important;
+}
+#breaks .breakSummaryItem b{
+  font-size:12px!important;
+}
+#breaks .breakSummaryItem small{
+  font-size:8.8px!important;
+}
+#breaks .breakScheduleBoard{
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-m)!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleHeader{
+  padding:11px 13px 7px!important;
+}
+#breaks .breakScheduleHeader h3{
+  font-size:13px!important;
+}
+#breaks .breakScheduleRows{
+  padding:0!important;
+}
+#breaks .breakScheduleRows>.breakPerson{
+  min-height:54px!important;
+  margin:0!important;
+  padding:11px 14px!important;
+  border:0!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleRows>.breakPerson strong{
+  font-size:13px!important;
+  font-weight:650!important;
+}
+#breaks .breakScheduleRows>.breakPerson.mine{
+  margin:5px 10px!important;
+  padding:10px 11px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,var(--scene-surface))!important;
+}
+#breaks .breakScheduleRows>.breakPerson.mine + .breakPerson{
+  border-top:1px solid var(--craft-hairline)!important;
+}
+#breaks .breakScheduleRows>.breakPerson.mine::before{
+  left:0!important;
+  top:8px!important;
+  bottom:8px!important;
+  width:3px!important;
+}
+#breaks .breakNotesBlock{
+  margin-top:15px!important;
+}
+#breaks .breakNotesBoard{
+  border-color:var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-s)!important;
+  box-shadow:none!important;
+}
+#breaks .breakNotesBoard .breakNote{
+  min-height:52px!important;
+  padding:10px 13px!important;
+}
+#breaks .personalBreakSummary{
+  border-radius:var(--craft-radius-m)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.085)!important;
+}
+
+/* Chat: conversation first, settings last, and actual message bubbles. */
+#chat .chatScreen{
+  gap:0!important;
+}
+#chat .chatHome{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:14px!important;
+}
+#chatHome>.chatTeamConsole{order:1!important}
+#chatHome>.chatPrivateHeader{order:2!important}
+#chatHome>#chatConversationList{order:3!important}
+#chatHome>.chatSafetyNotice{order:4!important}
+#chatHome>.chatNotificationDisclosure{order:5!important}
+#chat .chatNotificationDisclosure{
+  margin-top:2px!important;
+}
+#chat .chatTeamConsole{
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-m)!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamConsoleHeader{
+  min-height:62px!important;
+  padding:10px 13px!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+}
+#chat .chatTeamToolbar{
+  min-height:29px!important;
+  padding:6px 13px!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+}
+#chat .chatMessageViewport{
+  background:color-mix(in srgb,var(--scene-canvas) 44%,var(--scene-surface))!important;
+}
+#chat .chatTeamMessages{
+  padding:13px 11px 15px!important;
+  background:transparent!important;
+}
+#chat .chatTeamMessages>div{
+  gap:3px!important;
+}
+#chat .chatDateSeparator{
+  margin:12px 0 10px!important;
+  gap:8px!important;
+  color:var(--scene-secondary)!important;
+  font-size:8.8px!important;
+  font-weight:610!important;
+}
+#chat .chatDateSeparator::before,
+#chat .chatDateSeparator::after{
+  opacity:.8;
+}
+#chat .chatTeamMessage{
+  display:flex!important;
+  width:100%!important;
+  max-width:100%!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  margin:3px 0 7px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+#chat .chatTeamMessage.own{
+  align-items:flex-end!important;
+  margin-left:0!important;
+}
+#chat .chatTeamSender{
+  margin:0 8px 3px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:650!important;
+}
+#chat .chatTeamBubble{
+  position:relative!important;
+  width:fit-content!important;
+  max-width:82%!important;
+  padding:8px 11px!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 72%,transparent)!important;
+  border-radius:16px 16px 16px 5px!important;
+  background:var(--scene-surface)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:0 1px 1px rgba(0,0,0,.018)!important;
+}
+#chat .chatTeamMessage.own .chatTeamBubble{
+  border-color:color-mix(in srgb,var(--scene-accent) 10%,transparent)!important;
+  border-radius:16px 16px 5px 16px!important;
+  background:color-mix(in srgb,var(--scene-accent) 11%,var(--scene-surface))!important;
+}
+#chat .chatTeamMessage.mentioned .chatTeamBubble{
+  border-color:color-mix(in srgb,var(--liquid-warning) 28%,var(--scene-line))!important;
+  box-shadow:inset 3px 0 var(--liquid-warning)!important;
+}
+#chat .chatMessageBodyText{
+  margin:0!important;
+  color:var(--scene-ink)!important;
+  font-size:12.5px!important;
+  line-height:1.42!important;
+}
+#chat .chatTeamMessageMeta{
+  display:flex!important;
+  min-height:18px!important;
+  align-items:center!important;
+  gap:4px!important;
+  margin:2px 5px 0!important;
+  color:var(--scene-secondary)!important;
+  font-size:8.5px!important;
+  font-variant-numeric:tabular-nums!important;
+}
+#chat .chatTeamMessage.own .chatTeamMessageMeta{
+  justify-content:flex-end!important;
+}
+#chat .chatTeamMessageMeta .chatInlineAction{
+  display:grid!important;
+  width:24px!important;
+  height:20px!important;
+  min-width:24px!important;
+  min-height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:8px!important;
+  background:transparent!important;
+  color:var(--scene-secondary)!important;
+  font-size:11px!important;
+  letter-spacing:1px!important;
+}
+#chat .chatTeamMessageMeta .chatInlineAction:active{
+  background:color-mix(in srgb,var(--scene-secondary) 8%,transparent)!important;
+}
+#chat .chatTeamMessage:focus-visible .chatTeamBubble{
+  outline:2px solid color-mix(in srgb,var(--scene-accent) 55%,transparent)!important;
+  outline-offset:2px!important;
+}
+#chat .chatTeamComposerWrap{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:4!important;
+  padding:8px 10px 10px!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  background:color-mix(in srgb,var(--scene-surface) 90%,transparent)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%)!important;
+  backdrop-filter:blur(18px) saturate(145%)!important;
+}
+#chat .chatComposerGlass{
+  min-height:46px!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:20px!important;
+  background:color-mix(in srgb,var(--scene-canvas) 55%,var(--scene-surface))!important;
+  box-shadow:none!important;
+}
+#chat .chatComposerGlass textarea{
+  min-height:38px!important;
+  padding:8px 10px!important;
+  font-size:12.5px!important;
+}
+#chat .chatComposerGlass .chatSendBtn{
+  width:38px!important;
+  height:38px!important;
+  box-shadow:none!important;
+}
+#chat .chatPrivateHeader{
+  margin-top:5px!important;
+}
+#chat .chatPrivateHeader>div>span{
+  font-size:17px!important;
+  font-weight:710!important;
+}
+#chat .chatPrivateHeader small{
+  font-size:9.5px!important;
+}
+#chat .chatNewPrivateBtn{
+  min-height:36px!important;
+  border-radius:11px!important;
+}
+#chatConversationList>.reactConversationGroup{
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-s)!important;
+  box-shadow:none!important;
+}
+#chat .chatSafetyNotice{
+  order:4!important;
+  margin:0 2px!important;
+  padding:3px 2px!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+}
+#chat .chatNotificationDisclosure{
+  border-color:var(--craft-hairline)!important;
+  border-radius:var(--craft-radius-s)!important;
+  box-shadow:none!important;
+}
+#chat .chatNotificationDisclosure>summary{
+  min-height:52px!important;
+  padding:8px 11px!important;
+}
+#chat .chatNotificationDisclosureIcon{
+  width:32px!important;
+  height:32px!important;
+  border-radius:10px!important;
+}
+
+/* Navigation feels lighter while keeping the existing Motion indicator and full touch targets. */
+.bottom.reactTabs{
+  width:calc(100% - 28px)!important;
+  max-width:452px!important;
+  height:57px!important;
+  min-height:57px!important;
+  bottom:calc(7px + env(safe-area-inset-bottom))!important;
+  border:1px solid rgba(255,255,255,.46)!important;
+  border-radius:23px!important;
+  background:color-mix(in srgb,var(--liquid-glass) 88%,transparent)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.10)!important;
+}
+.bottom.reactTabs button{
+  height:49px!important;
+  min-height:49px!important;
+  border-radius:17px!important;
+  font-size:9.5px!important;
+}
+.bottom.reactTabs .tabSlidingIndicator,
+body[data-view="today"] .bottom.reactTabs .tabSlidingIndicator{
+  border:1px solid color-mix(in srgb,var(--scene-accent) 5%,rgba(255,255,255,.45))!important;
+  border-radius:17px!important;
+  background:color-mix(in srgb,var(--scene-accent) 6.5%,rgba(255,255,255,.72))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 1px 5px rgba(0,0,0,.025)!important;
+}
+.bottom.reactTabs button.active{
+  font-weight:690!important;
+}
+
+/* Dark mode is a first-class night-shift presentation. */
+body.dark #changes .primaryScreenHeader,
+body.dark #breaks .primaryScreenHeader,
+body.dark #chat .primaryScreenHeader,
+html[data-theme="dark"] #changes .primaryScreenHeader,
+html[data-theme="dark"] #breaks .primaryScreenHeader,
+html[data-theme="dark"] #chat .primaryScreenHeader{
+  border-bottom-color:rgba(255,255,255,.075)!important;
+}
+body.dark #today .nightOverviewBoard,
+body.dark #changes #changesStaffingPane:not(.hidden),
+body.dark #breaks .breakScheduleBoard,
+body.dark #chat .chatTeamConsole,
+html[data-theme="dark"] #today .nightOverviewBoard,
+html[data-theme="dark"] #changes #changesStaffingPane:not(.hidden),
+html[data-theme="dark"] #breaks .breakScheduleBoard,
+html[data-theme="dark"] #chat .chatTeamConsole{
+  border-color:rgba(255,255,255,.075)!important;
+  background:color-mix(in srgb,var(--scene-surface) 96%,#000 4%)!important;
+  box-shadow:none!important;
+}
+body.dark #chat .chatMessageViewport,
+html[data-theme="dark"] #chat .chatMessageViewport{
+  background:#0e0e10!important;
+}
+body.dark #chat .chatTeamBubble,
+html[data-theme="dark"] #chat .chatTeamBubble{
+  border-color:rgba(255,255,255,.07)!important;
+  background:#1c1c1e!important;
+}
+body.dark #chat .chatTeamMessage.own .chatTeamBubble,
+html[data-theme="dark"] #chat .chatTeamMessage.own .chatTeamBubble{
+  border-color:rgba(10,132,255,.18)!important;
+  background:#17304c!important;
+}
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.10)!important;
+  background:rgba(20,20,22,.78)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.26)!important;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:rgba(255,255,255,.06)!important;
+  background:color-mix(in srgb,var(--scene-accent) 13%,#2c2c2e)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+
+/* Static controls receive the same tactile feedback as React Pressable without changing their semantics. */
+#changes button,
+#breaks button,
+#chat button{
+  -webkit-tap-highlight-color:transparent;
+}
+#changes .dateNav>button:active,
+#breaks .dateNav>button:active,
+#chat .chatNewPrivateBtn:active,
+#changes .screenInfoButton:active,
+#breaks .screenInfoButton:active{
+  transform:scale(.95);
+}
+
+@media(max-width:390px){
+  #changes .primaryInstitutionBrand>span,
+  #breaks .primaryInstitutionBrand>span,
+  #chat .primaryInstitutionBrand>span{
+    max-width:118px;
+    font-size:7.4px!important;
+  }
+  #changes .primaryInstitutionBrand img,
+  #breaks .primaryInstitutionBrand img,
+  #chat .primaryInstitutionBrand img{
+    width:102px!important;
+  }
+  #changes .primaryScreenHeader h1,
+  #breaks .primaryScreenHeader h1,
+  #chat .primaryScreenHeader h1,
+  #today .nightSectionIdentity h1{
+    font-size:30px!important;
+  }
+  #chat .chatTeamBubble{
+    max-width:86%!important;
+  }
+  #today .nightSignal{
+    grid-template-columns:32px minmax(0,1fr) auto!important;
+    gap:9px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #changes .primaryHeaderAction,
+  #breaks .primaryHeaderAction,
+  #chat .primaryHeaderAction,
+  #changes .dateNav>button,
+  #breaks .dateNav>button{
+    transition:none!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  #chat .chatTeamComposerWrap,
+  .bottom.reactTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--scene-surface)!important;
+  }
+}
