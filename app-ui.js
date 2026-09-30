@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.78 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.79 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -9,6 +9,9 @@ var reloadTimer=null;
 var updateRegistration=null;
 var reloadForUpdate=false;
 var serviceWorkerCacheVersion='Checking…';
+var waitingUpdateVersion='';
+var waitingUpdateState='new';
+var updateActivationTimer=null;
 var pendingRemovals={};
 var labourOrders={};
 var labourOrderAvailable=true;
@@ -60,6 +63,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.79","date":"30 September 2026","title":"Fix PWA update state","changes":["The app now asks both the active and waiting service workers for their real cache version, so a page that already shows the new interface is described as finishing installation rather than incorrectly claiming that a new version is available.","The update banner is cleared as soon as the accepted service worker takes control, with a timed recovery path that reloads once if the normal controller-change event is missed.","Choosing Later is now scoped to the specific waiting version, so deferring one release cannot accidentally suppress a later update during the same app session.","Same-version component refreshes and partially installed current releases now have distinct, accurate update copy while the explicit ACTIVATE_UPDATE approval flow remains unchanged."]},
   {"version":"37.78","date":"30 September 2026","title":"Add scroll-linked glass and night-shift depth","changes":["Night, Changes, Breaks, Chat, Roster and Roster Management now gain a scroll-linked compact glass header that fades and settles continuously as content moves underneath it, while reduced-motion and reduced-transparency preferences remain respected.","Roster Management now uses a sticky frosted section rail plus grouped status, operational and system-health rows instead of a dashboard of repeated tiles.","The PWA update prompt is smaller, theme-aware and translucent, with a quieter Later action and a clear blue Update action while preserving the existing user-approved service-worker activation flow.","The black personal assignment hero keeps its signature dark identity but gains restrained blue light, inner depth, richer shift-token treatment, scan icons and a subtle Motion entrance.","Chat composer and management chrome now share the same content-under-glass material language so scrolling feels more continuous without adding glass to clinical content surfaces."]},
   {"version":"37.77","date":"30 September 2026","title":"Finish the mobile craftsmanship pass","changes":["Night now has the same clear destination identity as Changes, Breaks and Chat, while its Tonight board relies on spacing and hairline separators rather than extra shadow and card furniture.","Changes now presents Absences and Overtime as one grouped staffing surface, removes duplicated no-record messages and keeps exceptional editing in focused Motion sheets.","Breaks now uses flat nurse rows inside one schedule surface, with blue reserved for the signed-in nurse and interaction rather than decorative section colour.","Chat now keeps notifications after conversations, fixes the masthead composition and renders team messages as true left/right conversation bubbles with lighter metadata and a sticky native-style composer.","Shared chrome gains consistent account and administrator controls, tighter radii, restrained tactile feedback, a lighter Motion tab indicator and a more intentional dark-mode treatment for night-shift use."]},
   {"version":"37.76","date":"30 September 2026","title":"Unify the primary app shell","changes":["Changes, Breaks and Chat now share Mater Dei institutional branding, section-title rhythm and selected-night styling with Night, removing the previous sense that each destination belonged to a different interface.","Night now groups team state, allocation, the signed-in nurse’s break and selected-night activity into one Tonight board, replacing the loose lower-page text with clear operational rows and a deliberate no-changes state.","Changes now keeps absence and overtime forms out of the way during a normal night: compact staffing summaries open focused Motion bottom sheets only when a user chooses to add or edit a staffing change, with blue primary actions.","Break headings and counts are now neutral, while blue is reserved for the signed-in nurse and interaction, removing the leftover purple and teal section colours.","Primary date navigators, spacing, hierarchy and status treatment are more consistent across Night, Changes and Breaks without changing roster logic, shared-data behaviour, swipe navigation, accessibility or PWA update semantics."]},
@@ -414,7 +418,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.78" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.79" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
@@ -1565,37 +1569,92 @@ function fallbackUpdateMeta(){return{version:'',date:'',title:'Night Roster upda
 
 function validUpdateMeta(value){return !!(value&&typeof value==='object'&&/^\d+(?:\.\d+)+$/.test(String(value.version||''))&&typeof value.title==='string'&&Array.isArray(value.changes)&&value.changes.length&&value.changes.every(function(item){return typeof item==='string'&&item.trim().length>0})&&(!value.update_policy||value.update_policy==='automatic'||value.update_policy==='important'))}
 function updateIsAutomatic(){return !!(pendingUpdateMeta&&pendingUpdateMeta.update_policy==='automatic')}
+function cacheVersionNumber(value){var match=String(value||'').match(/anaesthetic-night-roster-v(\d+(?:-\d+)+)/);return match?match[1].replace(/-/g,'.'):''}
+function waitingUpdateDeferralKey(){return'anaes_update_later_'+(waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'unknown')}
+function clearUpdateNotice(){var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close()}
+function classifyWaitingUpdate(){
+  var incoming=waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'',active=cacheVersionNumber(serviceWorkerCacheVersion);
+  if(incoming&&incoming!==APP_VERSION)return'new';
+  if(incoming&&active===incoming)return'refresh';
+  return'finish';
+}
+function workerCacheName(worker){
+  if(!worker||typeof MessageChannel!=='function')return Promise.resolve('');
+  return new Promise(function(resolve){
+    var settled=false,channel=new MessageChannel(),timer=setTimeout(function(){if(!settled){settled=true;resolve('')}},900);
+    channel.port1.onmessage=function(event){if(settled)return;settled=true;clearTimeout(timer);resolve(event.data&&event.data.type==='CACHE_VERSION'?String(event.data.value||''):'')};
+    try{worker.postMessage({type:'GET_CACHE_VERSION'},[channel.port2])}catch(error){clearTimeout(timer);settled=true;resolve('')}
+  });
+}
+async function refreshControllerCacheVersion(){
+  var worker=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!worker)return'';
+  var value=await workerCacheName(worker);if(value){serviceWorkerCacheVersion=value;renderDiagnostics()}return value;
+}
 
 function renderPendingUpdate(){
-  var meta=pendingUpdateMeta||fallbackUpdateMeta(),automatic=meta.update_policy==='automatic',version=meta.version&&meta.version!==APP_VERSION?'Version '+meta.version+(meta.date?' · '+meta.date:''):'New version ready';
-  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList');
+  var meta=pendingUpdateMeta||fallbackUpdateMeta(),automatic=meta.update_policy==='automatic',incoming=waitingUpdateVersion||meta.version||'',state=waitingUpdateState||classifyWaitingUpdate(),version=incoming?'Version '+incoming+(meta.date?' · '+meta.date:''):'Update ready';
+  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerTitle=banner&&banner.querySelector('.updateBannerSummary b'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList');
   if(banner)banner.classList.toggle('automatic',automatic);
-  if(bannerVersion)bannerVersion.textContent=automatic?'Ready for next reopen · '+version:version;
-  if(bannerSmall)bannerSmall.textContent=automatic?'No action required. It will install safely when Night Roster is next reopened.':(meta.title||'Review what changed or update now.');
-  if(sheetVersion)sheetVersion.textContent=automatic?'Automatic update · '+version:version;
-  if(sheetTitle)sheetTitle.textContent=meta.title||'Night Roster update';
-  if(sheetSummary)sheetSummary.textContent=meta.summary||'Review what is changing, then update when convenient.';
-  if(safety){var copy=safety.querySelector('span');if(copy)copy.innerHTML=automatic?'<b>Your shared roster data stays intact.</b> Close and reopen Night Roster to take this update automatically, or update now.':'<b>Your shared roster data stays intact.</b> The app will reopen once after the update is installed.'}
+  if(state==='finish'){
+    if(bannerVersion)bannerVersion.textContent=(incoming?'Version '+incoming:'This version')+' is already open';
+    if(bannerTitle)bannerTitle.textContent='Finish installing the update';
+    if(bannerSmall)bannerSmall.textContent='One quick restart will sync the app cache.';
+    if(sheetVersion)sheetVersion.textContent='Finish install · '+(incoming||APP_VERSION);
+  }else if(state==='refresh'){
+    if(bannerVersion)bannerVersion.textContent=(incoming?'Version '+incoming:'Current version')+' · app components';
+    if(bannerTitle)bannerTitle.textContent='Finish refreshing Night Roster';
+    if(bannerSmall)bannerSmall.textContent='The app is open, but updated components are still waiting.';
+    if(sheetVersion)sheetVersion.textContent='Component refresh · '+(incoming||APP_VERSION);
+  }else{
+    if(bannerVersion)bannerVersion.textContent=automatic?'Ready for next reopen · '+version:version;
+    if(bannerTitle)bannerTitle.textContent='Night Roster update ready';
+    if(bannerSmall)bannerSmall.textContent=automatic?'No action required. It will install safely when Night Roster is next reopened.':(meta.title||'Review what changed or update now.');
+    if(sheetVersion)sheetVersion.textContent=automatic?'Automatic update · '+version:version;
+  }
+  if(sheetTitle)sheetTitle.textContent=state==='new'?(meta.title||'Night Roster update'):'Finish installing '+(incoming||APP_VERSION);
+  if(sheetSummary)sheetSummary.textContent=state==='new'?(meta.summary||'Review what is changing, then update when convenient.'):'The visible app and its cached PWA shell are temporarily on different states. Updating once will activate the waiting service worker and reopen Night Roster in sync.';
+  if(safety){var copy=safety.querySelector('span');if(copy)copy.innerHTML=automatic?'<b>Your shared roster data stays intact.</b> Close and reopen Night Roster to take this update automatically, or update now.':'<b>Your shared roster data stays intact.</b> The app will reopen once after the waiting update is activated.'}
   if(list)list.innerHTML=meta.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('');
 }
 
 async function loadPendingUpdateMeta(){
   pendingUpdateMeta=fallbackUpdateMeta();renderPendingUpdate();
   try{var response=await fetch('./release.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});if(!response.ok)throw new Error('Release information unavailable');var value=await response.json();if(validUpdateMeta(value))pendingUpdateMeta=value}catch(error){}
-  renderPendingUpdate();return pendingUpdateMeta;
+  if(!waitingUpdateVersion&&pendingUpdateMeta&&pendingUpdateMeta.version)waitingUpdateVersion=pendingUpdateMeta.version;
+  waitingUpdateState=classifyWaitingUpdate();renderPendingUpdate();return pendingUpdateMeta;
 }
 
 async function showUpdate(registration){
-  updateRegistration=registration;renderDiagnostics();pendingUpdateMeta=null;renderPendingUpdate();await loadPendingUpdateMeta();
-  if(sessionStorage.getItem('anaes_update_later')==='1'&&!updateIsAutomatic())return;
+  updateRegistration=registration;var waiting=registration&&registration.waiting;if(!waiting){clearUpdateNotice();renderDiagnostics();return}
+  pendingUpdateMeta=null;waitingUpdateVersion=cacheVersionNumber(await workerCacheName(waiting));await loadPendingUpdateMeta();waitingUpdateState=classifyWaitingUpdate();renderPendingUpdate();renderDiagnostics();
+  sessionStorage.removeItem('anaes_update_later');
+  if(sessionStorage.getItem(waitingUpdateDeferralKey())==='1'&&!updateIsAutomatic())return;
   var banner=byId('updateBanner');if(banner)banner.classList.remove('hidden');
 }
 
-function openUpdateDetails(){var dialog=byId('updateDetails');if(!dialog||!dialog.showModal)return;renderPendingUpdate();byId('updateDetailsStatus').textContent=updateIsAutomatic()?'This update will install on a future reopen even if you do nothing.':'';if(!dialog.open)dialog.showModal()}
+function openUpdateDetails(){var dialog=byId('updateDetails');if(!dialog||!dialog.showModal)return;renderPendingUpdate();byId('updateDetailsStatus').textContent=updateIsAutomatic()?'This update will install on a future reopen even if you do nothing.':waitingUpdateState==='new'?'':'Night Roster will reopen once to finish synchronising this version.';if(!dialog.open)dialog.showModal()}
 
-function dismissWaitingUpdate(){sessionStorage.setItem('anaes_update_later','1');var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close();toast(updateIsAutomatic()?'Update will install when Night Roster is reopened':'Update saved for later')}
+function dismissWaitingUpdate(){sessionStorage.setItem(waitingUpdateDeferralKey(),'1');clearUpdateNotice();toast(updateIsAutomatic()?'Update will install when Night Roster is reopened':'Update saved for later')}
 
-function applyWaitingUpdate(){if(!updateRegistration||!updateRegistration.waiting){toast('The update is not ready yet');return}var buttons=[byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')],status=byId('updateDetailsStatus');reloadForUpdate=true;buttons.forEach(function(button){if(button){button.disabled=true;button.textContent='Updating…'}});if(status)status.textContent='Installing the update. Night Roster will reopen automatically.';updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'})}
+function finishUpdateActivation(){
+  if(updateActivationTimer){clearTimeout(updateActivationTimer);updateActivationTimer=null}
+  clearUpdateNotice();waitingUpdateVersion='';waitingUpdateState='new';
+}
+function resetUpdateButtons(){
+  [byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')].forEach(function(button){if(button){button.disabled=false;button.textContent='Update'}});
+}
+function applyWaitingUpdate(){
+  if(!updateRegistration||!updateRegistration.waiting){clearUpdateNotice();toast('Night Roster is already up to date');return}
+  var buttons=[byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')],status=byId('updateDetailsStatus');reloadForUpdate=true;sessionStorage.removeItem(waitingUpdateDeferralKey());buttons.forEach(function(button){if(button){button.disabled=true;button.textContent='Updating…'}});if(status)status.textContent='Activating the update. Night Roster will reopen automatically.';
+  updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'});
+  if(updateActivationTimer)clearTimeout(updateActivationTimer);
+  updateActivationTimer=setTimeout(async function(){
+    if(!reloadForUpdate)return;
+    try{if(updateRegistration)await updateRegistration.update()}catch(error){}
+    if(updateRegistration&&!updateRegistration.waiting){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
+    reloadForUpdate=false;resetUpdateButtons();if(status)status.textContent='The update is still waiting. Try Update once more.';toast('Update is still waiting to activate');
+  },5000);
+}
 
 function applyStandaloneUi(){
   pwaStandalone=isStandaloneApp();document.body.classList.toggle('standaloneApp',pwaStandalone);
@@ -1622,9 +1681,9 @@ function setupPWA(){
   window.addEventListener('appinstalled',function(){deferredInstallPrompt=null;applyStandaloneUi();toast('Night Roster installed')});
   byId('applyUpdateBtn').onclick=applyWaitingUpdate;byId('applyUpdateSheetBtn').onclick=applyWaitingUpdate;byId('openUpdateDetailsBtn').onclick=openUpdateDetails;byId('laterUpdateBtn').onclick=dismissWaitingUpdate;byId('laterUpdateSheetBtn').onclick=dismissWaitingUpdate;
   if(navigator.serviceWorker&&typeof navigator.serviceWorker.addEventListener==='function'&&typeof navigator.serviceWorker.register==='function'){
-    navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='CACHE_VERSION'){serviceWorkerCacheVersion=event.data.value||'Unknown';renderDiagnostics()}});navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloadForUpdate){reloadForUpdate=false;window.location.reload()}});
+    navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='CACHE_VERSION'){serviceWorkerCacheVersion=event.data.value||'Unknown';renderDiagnostics()}});navigator.serviceWorker.addEventListener('controllerchange',function(){finishUpdateActivation();refreshControllerCacheVersion();if(reloadForUpdate){reloadForUpdate=false;window.location.reload()}else renderDiagnostics()});
     var check=function(){if(updateRegistration&&navigator.onLine)updateRegistration.update().catch(function(){})};
-    window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});if(updateRegistration.waiting)showUpdate(updateRegistration);updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await navigator.serviceWorker.ready;if(navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_VERSION'});else{serviceWorkerCacheVersion='Not active';renderDiagnostics()}await updateRegistration.update();setInterval(check,900000)}catch(e){serviceWorkerCacheVersion='Not active';renderDiagnostics()}});
+    window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await navigator.serviceWorker.ready;if(navigator.serviceWorker.controller){var activeCache=await refreshControllerCacheVersion();if(!activeCache)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_VERSION'})}else{serviceWorkerCacheVersion='Not active';renderDiagnostics()}if(updateRegistration.waiting)await showUpdate(updateRegistration);await updateRegistration.update();setInterval(check,900000)}catch(e){serviceWorkerCacheVersion='Not active';renderDiagnostics()}});
     window.addEventListener('focus',check);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()});
   }
   var closeInstall=byId('closeInstallGuide'),closeRelease=byId('closeReleaseNotes'),releaseDialog=byId('releaseNotes');if(closeInstall)closeInstall.onclick=function(){byId('installGuide').close()};if(closeRelease)closeRelease.onclick=function(){releaseDialog.close()};if(releaseDialog&&typeof releaseDialog.addEventListener==='function')releaseDialog.addEventListener('close',function(){releaseNotesQueued=false;showOnboardingIfNeeded()});showReleaseNotesIfNeeded();
