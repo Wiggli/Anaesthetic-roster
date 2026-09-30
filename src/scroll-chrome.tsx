@@ -221,7 +221,8 @@ function ScrollGlassChrome() {
   const setRailTouch = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const root = barRef.current;
     if (!root) return;
-    const rect = root.getBoundingClientRect();
+    const rail = event.currentTarget.closest<HTMLElement>('.scrollGlassRail');
+    const rect = rail?.getBoundingClientRect() || root.getBoundingClientRect();
     root.style.setProperty('--glass-touch-x', Math.max(0, Math.min(rect.width, event.clientX - rect.left)).toFixed(1) + 'px');
     root.style.setProperty('--glass-touch-y', Math.max(0, Math.min(rect.height, event.clientY - rect.top)).toFixed(1) + 'px');
     root.setAttribute('data-glass-touching', 'true');
