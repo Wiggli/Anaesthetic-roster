@@ -1276,6 +1276,8 @@ test('collapsed glass chrome carries workflow and management navigation in one s
   await page.evaluate(() => {
     document.getElementById('contextualChromeSmokeSpacer')?.remove();
     window.scrollTo(0, 0);
+    document.getElementById('changes')?.classList.add('hidden');
+    document.getElementById('admin')?.classList.remove('hidden');
     document.body.setAttribute('data-view', 'admin');
     window.dispatchEvent(new CustomEvent('roster:viewchange'));
     const spacer = document.createElement('div');
