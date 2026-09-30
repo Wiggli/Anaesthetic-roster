@@ -38,7 +38,7 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
     document.querySelector<HTMLElement>(`#changesWorkflowExperience [data-changes-step="${model.steps[target].id}"]`)?.focus();
   };
 
-  return <section className="workflowExperience" aria-label="Manage changes for the selected night">
+  return <section className={`workflowExperience workflow-${model.tone}`} aria-label="Manage changes for the selected night">
     <div className="workflowSteps" role="tablist" aria-label="Changes steps">
       {model.steps.map((step, index) => <Pressable
         key={step.id}

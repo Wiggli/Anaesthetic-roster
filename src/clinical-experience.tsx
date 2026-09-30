@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, ListRow, Pressable } from './ui-system';
@@ -35,12 +36,16 @@ type NightSummary = {
   alert: string;
   firstTask: string;
   labourPending: boolean;
+  breakLabel: string;
+  chatUnread: number;
+  liveState: string;
   roles: NightRole[];
   extras: string[];
   fivePerson?: { name: string; reason: string; mine: boolean };
 };
 
 type PersonalNight = {
+  date: string;
   displayName: string;
   jobTitle: string;
   avatarUrl: string;
@@ -56,6 +61,7 @@ type PersonalNight = {
   action: 'absence' | 'role' | 'choose';
   pending: boolean;
   pendingOther: string;
+  liveStatus: string;
 };
 
 type ActivityItem = {
@@ -68,16 +74,27 @@ type ActivityItem = {
 
 type RecentActivity = {
   updated: boolean;
+  updatedCount: number;
+  sinceLabel: string;
   items: ActivityItem[];
 };
 
 declare global {
   interface Window {
     show?: (view: string) => void;
+    openChatView?: () => void;
   }
 }
 
 const roots = new Map<string, Root>();
+
+function softHaptic() {
+  try {
+    if ('vibrate' in navigator && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(8);
+  } catch {
+    // Haptics are an optional enhancement only.
+  }
+}
 
 function rootFor(id: string) {
   const host = document.getElementById(id);
@@ -90,7 +107,53 @@ function rootFor(id: string) {
   return root;
 }
 
+function maltaClock(value: Date) {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Malta', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(value);
+  const bag: Record<string, number> = {};
+  parts.forEach(part => { if (part.type !== 'literal') bag[part.type] = Number(part.value); });
+  const date = `${bag.year}-${String(bag.month).padStart(2, '0')}-${String(bag.day).padStart(2, '0')}`;
+  const operationalDate = bag.hour < 7
+    ? new Date(`${date}T12:00:00Z`)
+    : undefined;
+  if (operationalDate) operationalDate.setUTCDate(operationalDate.getUTCDate() - 1);
+  return {
+    date: operationalDate ? operationalDate.toISOString().slice(0, 10) : date,
+    hour: bag.hour,
+    minute: bag.minute || 0
+  };
+}
+
+function nightProgress(model: PersonalNight, value = new Date()) {
+  const clock = maltaClock(value);
+  if (clock.date !== model.date || clock.hour >= 7) return null;
+  const minutes = clock.hour * 60 + clock.minute;
+  return Math.max(0, Math.min(100, minutes / (7 * 60) * 100));
+}
+
+function personalLiveStatus(model: PersonalNight, value = new Date()) {
+  const clock = maltaClock(value);
+  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return model.liveStatus;
+  const decimal = clock.hour + clock.minute / 60;
+  if (/absent/i.test(model.title)) return 'Not on duty tonight';
+  if (model.pending || /pending/i.test(model.period)) return 'Allocation pending';
+  if (model.period === '00:00–03:30') {
+    if (clock.hour >= 19) return 'On duty next · starts 00:00';
+    return decimal < 3.5 ? 'On duty now' : 'Duty block complete';
+  }
+  if (model.period === '03:30–07:00') {
+    if (clock.hour >= 19 || decimal < 3.5) return 'On duty later · starts 03:30';
+    return 'On duty now';
+  }
+  if (model.period === '00:00–07:00') return 'On duty now';
+  if (/seventh/i.test(model.title)) return 'Supporting tonight’s team';
+  return model.liveStatus;
+}
+
 function goToChanges(target: 'staffing' | 'allocation') {
+  softHaptic();
   window.show?.('changes');
   window.setTimeout(() => {
     const selector = target === 'staffing' ? '#changesStaffingPane' : '#changesAllocationPane';
@@ -181,20 +244,43 @@ function BreakScheduleSection({
   </section>;
 }
 
+function coverageRow(note: string) {
+  const first = note.match(/^First part Labour Ward \/ Pager:\s*(.+?)\s*•\s*(.+?)\.?$/i);
+  if (first) return { label: 'First part', value: first[1], detail: first[2] };
+  const second = note.match(/^Second part Labour Ward \/ Pager:\s*(.+?)\s*•\s*(.+?)\.?$/i);
+  if (second) return { label: 'Second part', value: second[1], detail: second[2] };
+  const seventh = note.match(/^(.+?) is the seventh nurse and coordinates a break as required\.?$/i);
+  if (seventh) return { label: 'Seventh nurse', value: seventh[1], detail: 'Break as required' };
+  const full = note.match(/^(.+?) covers Labour Ward \/ Pager for the full night\./i);
+  if (full) return { label: 'Full night', value: full[1], detail: 'Break coordinated with clinical cover' };
+  return { label: 'Coverage note', value: note, detail: '' };
+}
+
+function jumpToBreak() {
+  softHaptic();
+  const target = document.querySelector<HTMLElement>('#breakList .breakPerson.mine');
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target?.classList.add('focusPulse');
+  window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
+}
+
 function BreakPlan({ model }: { model: BreakSummary }) {
+  const hasMine = Boolean(model.highlightedName) && [...model.first, ...model.second].some(name => name.toLocaleLowerCase() === model.highlightedName.toLocaleLowerCase());
   return <>
+    {hasMine && <div className="breakPlanTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToBreak}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
     <div className="breakGrid breakScheduleBoard">
       <BreakScheduleSection className="firstBreak" ordinal="1" title="First break" names={model.first} highlightedName={model.highlightedName} />
       <BreakScheduleSection className="secondBreak" ordinal="2" title="Second break" names={model.second} highlightedName={model.highlightedName} />
     </div>
     <section className="breakNotesBlock" aria-labelledby="breakNotesTitle">
       <div className="breakNotesHeading"><span>Additional coverage</span><h3 id="breakNotesTitle">Labour Ward / Pager</h3></div>
-      <div className="breakNotesBoard">
-        <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
-          {model.notes.length
-            ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
-            : <EmptyState title="No additional staffing notes" />}
-        </div>
+      <div className="breakNotesBoard coverageBoard">
+        {model.notes.length
+          ? model.notes.map(note => {
+              const row = coverageRow(note);
+              return <div className="coverageRow" key={note}><span>{row.label}</span><strong>{row.value}</strong>{row.detail && <small>{row.detail}</small>}</div>;
+            })
+          : <EmptyState title="No additional staffing notes" />}
       </div>
     </section>
   </>;
@@ -226,31 +312,62 @@ export function renderBreaksExperience(model: BreakSummary) {
 
 function NightStatus({ model }: { model: NightSummary }) {
   const provisional = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
+  const [chatUnread, setChatUnread] = useState(model.chatUnread);
+  const [liveState, setLiveState] = useState(model.liveState);
+  useEffect(() => {
+    const sync = () => {
+      const badge = document.getElementById('chatUnreadBadge');
+      setChatUnread(Number(badge?.textContent || 0) || 0);
+      const live = document.querySelector<HTMLElement>('#personalNightCard .personalLiveState span');
+      if (live?.textContent) setLiveState(live.textContent);
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    const badge = document.getElementById('chatUnreadBadge');
+    const personal = document.getElementById('personalNightCard');
+    if (badge) observer.observe(badge, { childList: true, attributes: true, subtree: true });
+    if (personal) observer.observe(personal, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [model.chatUnread, model.liveState]);
   const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
-  const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : '0 overtime';
-  return <div className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Team staffing and plan status">
-    <span className="nightOverviewIcon" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M2.5 20c.4-4 2.7-6 6-6s5.6 2 6 6" /><path d="M16.5 10a3 3 0 1 0 0-6" /><path d="M16.5 14c2.8 0 4.5 1.6 5 4.5" /></svg>
-    </span>
-    <span className="nightSignalLeadCopy">
-      <small>Team tonight</small>
-      <strong>{model.nurseCount} nurses</strong>
-      <span>{absenceLabel} · {overtimeLabel}</span>
-    </span>
-    <span className="nightSignalState">
-      <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
-      <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
-    </span>
+  const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
+  const openBreaks = () => { softHaptic(); window.show?.('breaks'); };
+  const openChat = () => { softHaptic(); window.show?.('chat'); window.openChatView?.(); };
+  return <section className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Tonight at a glance">
+    <div className="nightSignalPrimary">
+      <span className="nightOverviewIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M2.5 20c.4-4 2.7-6 6-6s5.6 2 6 6" /><path d="M16.5 10a3 3 0 1 0 0-6" /><path d="M16.5 14c2.8 0 4.5 1.6 5 4.5" /></svg>
+      </span>
+      <span className="nightSignalLeadCopy">
+        <small>Team tonight</small>
+        <strong>{model.nurseCount} nurses</strong>
+        <span>{absenceLabel} · {overtimeLabel}</span>
+      </span>
+      <span className="nightSignalState">
+        <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
+        <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
+      </span>
+    </div>
+    <div className="nightQuickStrip" aria-label="Quick night status">
+      <span className="nightQuickItem current"><small>Now</small><b>{liveState || 'Night selected'}</b></span>
+      <Pressable type="button" className="nightQuickItem" onClick={openBreaks}><small>Your break</small><b>{model.breakLabel || 'Check plan'}</b></Pressable>
+      <Pressable type="button" className="nightQuickItem" onClick={openChat}><small>Chat</small><b>{chatUnread ? `${chatUnread} unread` : 'No unread'}</b></Pressable>
+    </div>
     {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
       Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
     </Pressable>}
-  </div>;
+  </section>;
 }
 
 function NightAlerts({ model }: { model: NightSummary }) {
   const needsReview = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
+  const informationalParts = !needsReview && model.alert ? model.alert.split(':') : [];
+  const infoTitle = informationalParts.length > 1 ? informationalParts.shift()?.trim() : 'Night arrangement';
+  const infoDetail = informationalParts.length ? informationalParts.join(':').trim() : model.alert;
   return <>
-    {model.alert && <div className={`alert compactNotice ${needsReview ? 'warn' : 'informational'}`}>{model.alert}</div>}
+    {model.alert && (needsReview
+      ? <div className="alert compactNotice warn">{model.alert}</div>
+      : <div className="alert compactNotice informational nightContextNotice"><span className="nightContextIcon" aria-hidden="true">i</span><span><b>{infoTitle}</b><small>{infoDetail}</small></span></div>)}
     {model.firstTask && <button type="button" className="alert gold taskAlert" onClick={() => goToChanges('allocation')}>
       <b>{model.firstTask}</b><span>Complete now ›</span>
     </button>}
@@ -286,7 +403,14 @@ function personalMark(tone: string) {
 
 function PersonalNightCard({ model }: { model: PersonalNight }) {
   const reducedMotion = useReducedMotion();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
   const tone = personalTone(model);
+  const liveStatus = personalLiveStatus(model, new Date(now));
+  const progress = nightProgress(model, new Date(now));
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
   const scanContext = model.context.replace(/^With\\s+/i, '');
   const action = () => {
@@ -325,6 +449,11 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </span>
         {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
       </div>
+      {liveStatus && <div className="personalLiveState"><i aria-hidden="true" /><span>{liveStatus}</span></div>}
+      {progress !== null && <div className="nightProgressRail" aria-label="Progress through the 00:00 to 07:00 night">
+        <div className="nightProgressTrack" aria-hidden="true"><span style={{ width: `${progress}%` }} /><i style={{ left: `${progress}%` }} /></div>
+        <div className="nightProgressMarks"><span>00:00</span><span>03:30</span><span>07:00</span></div>
+      </div>}
 
       <dl className="personalFacts personalScan" aria-label="Your night at a glance">
         <div className="personalFactContext"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.4-3.5 2.4-5.2 5.5-5.2s5.1 1.7 5.5 5.2" /><path d="M17 6.5a2.5 2.5 0 1 1 0 5" /><path d="M17 14.5c2.2.4 3.4 1.8 3.6 4" /></svg>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
@@ -359,6 +488,10 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
     </div>;
   }
   return <div className="activityTimeline">
+    {model.updated && model.updatedCount > 0 && <div className="recentActivityDigest">
+      <span className="recentActivityDigestMark" aria-hidden="true">↻</span>
+      <span><b>{model.updatedCount} {model.updatedCount === 1 ? 'change' : 'changes'} since {model.sinceLabel || 'you last opened Night'}</b><small>Review the latest shared staffing and allocation updates below.</small></span>
+    </div>}
     {model.items.map((item, index) => <Pressable
       key={`${item.type}-${item.title}-${item.meta}-${index}`}
       type="button"
@@ -378,7 +511,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
 }
 
 function NightBreakShortcut({ model }: { model: PersonalNight }) {
-  return <Pressable type="button" className="nightOverviewShortcut nightBreakShortcut" onClick={() => window.show?.('breaks')}>
+  return <Pressable type="button" className="nightOverviewShortcut nightBreakShortcut" onClick={() => { softHaptic(); window.show?.('breaks'); }}>
     <span className="nightOverviewIcon" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2" /></svg>
     </span>
@@ -398,7 +531,7 @@ export function renderRecentActivityExperience(model: RecentActivity) {
   const chip = document.getElementById('changedSinceChip');
   if (chip) {
     chip.classList.toggle('hidden', !model.updated);
-    chip.textContent = model.updated ? 'Updated since last opened' : 'Updated';
+    chip.textContent = model.updated ? (model.updatedCount ? `${model.updatedCount} new` : 'Updated') : 'Updated';
   }
 }
 
@@ -412,7 +545,16 @@ function roleMark(tone: NightRole['tone']) {
 }
 
 function NightRoles({ model }: { model: NightSummary }) {
+  const hasMine = model.roles.some(role => role.mine);
+  const jumpToMine = () => {
+    softHaptic();
+    const target = document.querySelector<HTMLElement>('#roles .rosterRow.mine,#fiveArrangement .fiveNurseSurface.mine');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target?.classList.add('focusPulse');
+    window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
+  };
   return <>
+    {hasMine && <div className="nightRoleTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToMine}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => <Pressable
         key={role.key}
@@ -423,7 +565,7 @@ function NightRoles({ model }: { model: NightSummary }) {
       >
         <span className="rosterRoleMark">{roleMark(role.tone)}</span>
         <span className="rosterRowCopy">
-          <span className="rosterRowName">{role.names}</span>
+          <span className="rosterRowName">{role.names}{role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}</span>
           <span className="rosterRowMeta">{role.label} · {role.detail}</span>
         </span>
       </Pressable>)}

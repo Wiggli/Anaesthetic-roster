@@ -12819,3 +12819,586 @@ html[data-theme="dark"] #chat .pushMuteActions{
     font-weight:800!important;
   }
 }
+
+
+/* 37.92 world-class coherence pass.
+   Clinical content stays solid and legible; hierarchy, spacing, semantic colour and chrome do the work. */
+:root{
+  --ui-action:var(--scene-accent);
+  --ui-success:var(--liquid-success,#34c759);
+  --ui-warning:var(--liquid-warning,#ff9f0a);
+  --ui-danger:var(--liquid-danger,#ff453a);
+  --ui-info:var(--scene-accent);
+  --ui-meta-size:12px;
+  --ui-support-size:13.5px;
+  --ui-row-title-size:15.5px;
+  --ui-section-size:21px;
+}
+
+/* Shared type rhythm: avoid tiny dashboard copy on a phone used during a night shift. */
+#today .time,
+#changes .time,
+#breaks .time,
+#today small,
+#changes small,
+#breaks small{
+  line-height:1.38;
+}
+#today .nightSectionIdentity>span,
+#changes .screenEyebrow,
+#breaks .screenEyebrow{
+  font-size:11.5px!important;
+}
+#today .nightSectionIdentity>p,
+#changes .primaryScreenHeader p,
+#breaks .primaryScreenHeader p{
+  font-size:13.5px!important;
+  line-height:1.4!important;
+}
+#today .nightSummaryTitle .sectionTitle,
+#changes>.changePanel>.ctop h2,
+#breaks .breakPlanTitle h2{
+  font-size:var(--ui-section-size)!important;
+}
+#today .nightOverviewShortcutCopy span,
+#today .nightSignalLeadCopy span,
+#changes .staffingActionCopy small,
+#changes .workflowStepCopy small,
+#changes .workflowGuidance small,
+#breaks .breakScheduleHeadingCopy small,
+#breaks .coverageRow small{
+  font-size:var(--ui-meta-size)!important;
+}
+
+/* Night: turn the lower dashboard into one calm operational hierarchy. */
+#today .personalLiveState{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  width:max-content!important;
+  max-width:calc(100% - 28px)!important;
+  margin:-2px 14px 10px!important;
+  padding:5px 9px!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--ui-action) 9%,transparent)!important;
+  color:var(--ui-action)!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+#today .personalLiveState i{
+  width:7px!important;
+  height:7px!important;
+  flex:0 0 7px!important;
+  border-radius:50%!important;
+  background:currentColor!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,currentColor 10%,transparent)!important;
+}
+#today .nightSignal{
+  display:block!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:none!important;
+}
+#today .nightSignalPrimary{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:86px!important;
+  padding:13px 14px!important;
+}
+#today .nightSignalLeadCopy small{
+  font-size:12px!important;
+}
+#today .nightSignalLeadCopy strong{
+  font-size:19px!important;
+  line-height:1.15!important;
+  letter-spacing:-.02em!important;
+}
+#today .nightSignalLeadCopy>span{
+  margin-top:3px!important;
+  color:var(--scene-secondary)!important;
+}
+#today .nightSignalState{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  padding:6px 9px!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--ui-success) 9%,transparent)!important;
+  color:var(--ui-success)!important;
+  white-space:nowrap!important;
+}
+#today .nightSignal.needsReview .nightSignalState{
+  background:color-mix(in srgb,var(--ui-warning) 10%,transparent)!important;
+  color:var(--ui-warning)!important;
+}
+#today .nightSignalState b{
+  font-size:12px!important;
+  font-weight:760!important;
+}
+#today .nightQuickStrip{
+  display:grid!important;
+  grid-template-columns:1.08fr 1fr .9fr!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  background:color-mix(in srgb,var(--scene-canvas) 35%,var(--scene-surface))!important;
+}
+#today .nightQuickItem{
+  min-width:0!important;
+  min-height:58px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:3px!important;
+  margin:0!important;
+  padding:9px 11px!important;
+  border:0!important;
+  border-right:1px solid var(--craft-hairline)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--scene-ink)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+#today .nightQuickItem:last-child{border-right:0!important}
+#today button.nightQuickItem:active{
+  background:color-mix(in srgb,var(--ui-action) 7%,transparent)!important;
+}
+#today .nightQuickItem small{
+  color:var(--scene-secondary)!important;
+  font-size:11px!important;
+  font-weight:620!important;
+}
+#today .nightQuickItem b{
+  overflow:hidden!important;
+  color:var(--scene-ink)!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+  font-weight:730!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#today .nightQuickItem.current b{
+  color:var(--ui-action)!important;
+}
+#today .nightSignalTask{
+  width:100%!important;
+  min-height:46px!important;
+  border:0!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  border-radius:0!important;
+  background:color-mix(in srgb,var(--ui-warning) 7%,transparent)!important;
+  color:var(--ui-warning)!important;
+  font-size:13px!important;
+  font-weight:720!important;
+}
+#today .nightContextNotice{
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr)!important;
+  align-items:start!important;
+  gap:9px!important;
+  padding:10px 12px!important;
+  border:0!important;
+  border-left:3px solid var(--ui-info)!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--ui-info) 6%,transparent)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:none!important;
+}
+#today .nightContextIcon{
+  display:grid!important;
+  width:24px!important;
+  height:24px!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--ui-info) 12%,transparent)!important;
+  color:var(--ui-info)!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+#today .nightContextNotice b{
+  display:block!important;
+  font-size:13px!important;
+  font-weight:740!important;
+}
+#today .nightContextNotice small{
+  display:block!important;
+  margin-top:2px!important;
+  color:var(--scene-secondary)!important;
+  font-size:12.5px!important;
+  line-height:1.4!important;
+}
+#today .nightRoleTools,
+#breaks .breakPlanTools{
+  display:flex!important;
+  justify-content:flex-end!important;
+  margin:0 0 7px!important;
+}
+.jumpToMeButton{
+  min-height:34px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  padding:0 10px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--ui-action) 8%,transparent)!important;
+  color:var(--ui-action)!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+  font-weight:720!important;
+}
+#today .rosterRow.mine{
+  background:color-mix(in srgb,var(--ui-action) 5%,transparent)!important;
+  box-shadow:inset 3px 0 var(--ui-action)!important;
+}
+#today .rosterRowName{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+}
+#today .rosterYouBadge{
+  flex:0 0 auto!important;
+  font-size:9.5px!important;
+}
+.focusPulse{
+  animation:focusPulse37 800ms ease-out both!important;
+}
+@keyframes focusPulse37{
+  0%{box-shadow:inset 3px 0 var(--ui-action),0 0 0 0 color-mix(in srgb,var(--ui-action) 26%,transparent)}
+  60%{box-shadow:inset 3px 0 var(--ui-action),0 0 0 8px transparent}
+  100%{box-shadow:inset 3px 0 var(--ui-action),0 0 0 0 transparent}
+}
+
+/* Since-last-open activity is informational, never an amber warning. */
+#today .changedSinceChip{
+  border:0!important;
+  background:color-mix(in srgb,var(--ui-action) 9%,transparent)!important;
+  color:var(--ui-action)!important;
+  font-size:11px!important;
+  font-weight:740!important;
+}
+#today .recentActivityDigest{
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr)!important;
+  gap:9px!important;
+  align-items:start!important;
+  padding:10px 12px!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+  background:color-mix(in srgb,var(--ui-action) 4%,transparent)!important;
+}
+#today .recentActivityDigestMark{
+  display:grid!important;
+  width:24px!important;
+  height:24px!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--ui-action) 10%,transparent)!important;
+  color:var(--ui-action)!important;
+  font-size:13px!important;
+  font-weight:800!important;
+}
+#today .recentActivityDigest b{
+  display:block!important;
+  color:var(--scene-ink)!important;
+  font-size:13px!important;
+  font-weight:740!important;
+}
+#today .recentActivityDigest small{
+  display:block!important;
+  margin-top:2px!important;
+  color:var(--scene-secondary)!important;
+  font-size:12px!important;
+}
+#today .activityType.overtime{
+  background:color-mix(in srgb,var(--scene-secondary) 9%,transparent)!important;
+  color:var(--scene-secondary)!important;
+}
+#today .activityType.allocation{
+  background:color-mix(in srgb,var(--ui-action) 9%,transparent)!important;
+  color:var(--ui-action)!important;
+}
+
+/* Changes: when a plan is already shared, completion is a calm state, not another form CTA. */
+#changes .workflowExperience{
+  gap:8px!important;
+}
+#changes .workflowSteps{
+  min-height:54px!important;
+  padding:4px!important;
+  border-color:color-mix(in srgb,var(--scene-line) 72%,transparent)!important;
+  background:color-mix(in srgb,var(--scene-surface) 76%,transparent)!important;
+}
+#changes .workflowStep{
+  min-height:46px!important;
+}
+#changes .workflowStepCopy b{
+  font-size:13px!important;
+}
+#changes .workflowStepCopy small{
+  margin-top:1px!important;
+  color:var(--scene-secondary)!important;
+}
+#changes .workflow-complete .workflowSelection{
+  background:color-mix(in srgb,var(--ui-success) 6%,transparent)!important;
+}
+#changes .workflow-complete .workflowStepNumber{
+  color:var(--ui-success)!important;
+}
+#changes .workflowGuidance-complete{
+  min-height:50px!important;
+  padding:9px 11px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--ui-success) 7%,transparent)!important;
+  color:var(--scene-ink)!important;
+}
+#changes .workflowGuidance-complete .workflowGuidanceMark{
+  color:var(--ui-success)!important;
+}
+#changes .workflowGuidance-complete strong{
+  font-size:13px!important;
+}
+#changes .workflowGuidance-complete small{
+  color:var(--scene-secondary)!important;
+}
+#changes .planShared #continueToAllocationBtn.quietAction,
+#changes #continueToAllocationBtn.quietAction{
+  min-height:44px!important;
+  border:1px solid color-mix(in srgb,var(--ui-action) 18%,transparent)!important;
+  background:color-mix(in srgb,var(--ui-action) 6%,transparent)!important;
+  color:var(--ui-action)!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+}
+#changes .planShared .changesWorkflowState.complete{
+  border:0!important;
+  background:transparent!important;
+}
+#changes .liveStatus{
+  gap:5px!important;
+  color:var(--scene-secondary)!important;
+  font-size:11.5px!important;
+  opacity:.82!important;
+}
+#changes .liveStatus .liveDot{
+  width:6px!important;
+  height:6px!important;
+}
+
+/* Breaks: two schedules read as one board; coverage becomes structured rows. */
+#breaks .breakScheduleBoard{
+  overflow:hidden!important;
+  gap:0!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+}
+#breaks .breakScheduleSection{
+  overflow:visible!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleSection+.breakScheduleSection{
+  border-top:1px solid var(--craft-hairline)!important;
+}
+#breaks .breakScheduleHeader{
+  min-height:58px!important;
+  padding:10px 12px!important;
+  background:color-mix(in srgb,var(--scene-secondary) 2.5%,transparent)!important;
+}
+#breaks .breakScheduleHeadingCopy h3{
+  font-size:15.5px!important;
+}
+#breaks .breakPerson{
+  min-height:52px!important;
+}
+#breaks .breakPerson .listRowTitle,
+#breaks .breakPerson [data-ui-title]{
+  font-size:14.5px!important;
+}
+#breaks .coverageBoard{
+  overflow:hidden!important;
+  border-top:1px solid var(--craft-hairline)!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+  background:transparent!important;
+}
+#breaks .coverageRow{
+  display:grid!important;
+  grid-template-columns:84px minmax(0,1fr)!important;
+  gap:2px 10px!important;
+  align-items:center!important;
+  min-height:58px!important;
+  padding:10px 2px!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+}
+#breaks .coverageRow:last-child{border-bottom:0!important}
+#breaks .coverageRow>span{
+  grid-row:1/3!important;
+  color:var(--scene-secondary)!important;
+  font-size:11.5px!important;
+  font-weight:680!important;
+}
+#breaks .coverageRow strong{
+  color:var(--scene-ink)!important;
+  font-size:14px!important;
+  font-weight:720!important;
+  line-height:1.25!important;
+}
+#breaks .coverageRow small{
+  color:var(--scene-secondary)!important;
+}
+#breaks .breakNotesHeading{
+  margin-bottom:7px!important;
+}
+#breaks .breakNotesHeading span{
+  font-size:10.5px!important;
+}
+#breaks .breakNotesHeading h3{
+  font-size:17px!important;
+}
+
+/* Reduce card furniture globally on the three core workflow screens. */
+#today .recentActivityPanel,
+#changes>.changePanel,
+#breaks>.panel{
+  box-shadow:none!important;
+}
+#changes>.changePanel,
+#breaks>.panel{
+  border-color:transparent!important;
+}
+#changes .staffingSection,
+#changes .allocationSection,
+#changes #changesConfirmPane,
+#today .recentActivityList{
+  box-shadow:none!important;
+}
+#changes .staffingSection,
+#changes .allocationSection{
+  border-color:color-mix(in srgb,var(--scene-line) 74%,transparent)!important;
+}
+
+/* Liquid chrome: clearer content-under-glass without making clinical surfaces translucent. */
+.scrollGlassHeader,
+.bottom.reactTabs{
+  background-color:color-mix(in srgb,var(--scene-surface) 38%,transparent)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(185%) contrast(1.04)!important;
+  backdrop-filter:blur(24px) saturate(185%) contrast(1.04)!important;
+}
+.scrollGlassHeader::before,
+.bottom.reactTabs::before{
+  opacity:.72!important;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  border-color:color-mix(in srgb,var(--glass-lens-rim) 52%,transparent)!important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--glass-lens-fill-active) 72%,transparent),color-mix(in srgb,var(--glass-lens-fill) 52%,transparent))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 5px 16px rgba(0,0,0,.035)!important;
+}
+
+/* Accessibility and semantic colour fallbacks. */
+@media(prefers-contrast:more){
+  #today .nightQuickStrip,
+  #breaks .breakScheduleBoard,
+  #changes .workflowSteps{
+    border-color:currentColor!important;
+  }
+  #today .nightSignalState,
+  #today .changedSinceChip,
+  .jumpToMeButton{
+    outline:1px solid currentColor!important;
+    outline-offset:-1px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .focusPulse{animation:none!important}
+  #today .personalLiveState i{box-shadow:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassHeader,
+  .bottom.reactTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--scene-surface)!important;
+  }
+}
+@media(max-width:390px){
+  #today .nightQuickStrip{
+    grid-template-columns:1fr 1fr!important;
+  }
+  #today .nightQuickItem.current{
+    grid-column:1/3!important;
+    min-height:48px!important;
+    border-right:0!important;
+    border-bottom:1px solid var(--craft-hairline)!important;
+  }
+  #today .nightSignalPrimary{
+    grid-template-columns:36px minmax(0,1fr)!important;
+  }
+  #today .nightSignalState{
+    grid-column:2!important;
+    justify-self:start!important;
+  }
+  #breaks .coverageRow{
+    grid-template-columns:72px minmax(0,1fr)!important;
+  }
+}
+
+
+/* 37.92 non-countdown phase rail: orientation only, never a remaining-time timer. */
+#today .nightProgressRail{
+  margin:-2px 14px 12px!important;
+  padding:0 1px!important;
+}
+#today .nightProgressTrack{
+  position:relative!important;
+  height:4px!important;
+  overflow:visible!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--scene-secondary) 14%,transparent)!important;
+}
+#today .nightProgressTrack>span{
+  position:absolute!important;
+  inset:0 auto 0 0!important;
+  max-width:100%!important;
+  border-radius:inherit!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ui-action) 62%,transparent),var(--ui-action))!important;
+}
+#today .nightProgressTrack>i{
+  position:absolute!important;
+  top:50%!important;
+  width:10px!important;
+  height:10px!important;
+  border:2px solid var(--scene-surface)!important;
+  border-radius:50%!important;
+  background:var(--ui-action)!important;
+  box-shadow:0 1px 5px color-mix(in srgb,var(--ui-action) 24%,transparent)!important;
+  transform:translate(-50%,-50%)!important;
+}
+#today .nightProgressMarks{
+  display:grid!important;
+  grid-template-columns:1fr 1fr 1fr!important;
+  margin-top:5px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-variant-numeric:tabular-nums!important;
+  font-weight:580!important;
+}
+#today .nightProgressMarks span:nth-child(2){text-align:center!important}
+#today .nightProgressMarks span:last-child{text-align:right!important}
+
+#changes .workflow-complete .workflowStepCopy small{
+  display:none!important;
+}
+#changes .workflow-complete .workflowStep{
+  min-height:42px!important;
+}
+#changes .workflow-complete .workflowStepCopy b{
+  font-size:12.5px!important;
+}

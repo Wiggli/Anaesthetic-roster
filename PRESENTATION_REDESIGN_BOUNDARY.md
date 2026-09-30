@@ -1,5 +1,11 @@
 # Presentation redesign boundary for 37.53
 
+## 37.92 core-screen coherence pass
+
+The 37.92 presentation pass builds on the completed incremental React migration without changing clinical calculation or persistence ownership. Night gains current-duty context, an orientation-only 00:00–07:00 progress rail with no countdown, quick links to the personal break and Chat unread state, smarter since-last-open activity presentation and Jump to me affordances. Breaks keeps the established first/second break calculation but presents the schedule as one grouped board with structured Labour Ward / Pager coverage. Changes keeps the same staffing, allocation and confirmation state machine but visually collapses a published plan into a quieter Shared state.
+
+Shared presentation tokens now enforce semantic colour roles, larger core-screen typography, reduced card and border furniture, clearer content-under-glass chrome, optional haptic feedback and the existing reduced-motion, increased-contrast and reduced-transparency fallbacks. None of these additions writes roster data, changes the Malta operational-night boundary, alters Pager/Reliever or five/seven-nurse logic, or changes the explicit PWA update approval contract.
+
 This PR is the first independently reviewable boundary of the requested complete redesign. It modernises the presentation layer in place, without replacing the clinical engine or changing the installed PWA identity. It is deliberately **not the completed redesign of every state and overlay**.
 
 ## Architecture and ownership
