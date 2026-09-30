@@ -9837,6 +9837,16 @@ html[data-theme="dark"] #chat .chatComposerGlass{
   margin-top:-1px!important;
 }
 
+/* Keep a real translucent background-color under the optical gradient. This is also
+   the stable compositor surface used while the tab bar is being dragged. */
+.scrollGlassMaterial,
+#admin .adminTabs,
+.bottom.reactTabs,
+#chat .chatTeamComposerWrap,
+.updateBanner{
+  background-color:var(--chrome-glass-bg)!important;
+}
+
 /* Protect legibility and accessibility when transparency is reduced or unsupported. */
 @media(prefers-reduced-transparency:reduce){
   .scrollGlassMaterial,
