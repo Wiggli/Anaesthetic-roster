@@ -1,14 +1,14 @@
 {
-  "version": "37.82",
+  "version": "37.83",
   "date": "30 September 2026",
-  "title": "Merge contextual controls into glass chrome",
-  "summary": "Completes the scroll-linked chrome concept by folding Changes workflow steps and Roster Management sections into the collapsed glass header instead of stacking separate floating bars.",
+  "title": "Make floating chrome behave like Liquid Glass",
+  "summary": "Reworks the shared navigation and transient control material so scrolling content remains perceptible through it, selected controls behave like moving lenses, and the interface uses one neutral floating glass plane instead of opaque blue-tinted slabs.",
   "changes": [
-    "Changes now carries Staffing, Allocation and Confirm inside the collapsed glass header, with the selected step staying in sync with the existing workflow controls.",
-    "Roster Management now folds Overview, Publish, Team, Access and Data into the same collapsed glass slab, while the in-page section rail scrolls away naturally instead of forming a second sticky bar.",
-    "The compact chrome grows continuously as its contextual rail appears, with blur and saturation increasing with scroll depth so the transition feels attached to the user’s gesture rather than switching abruptly.",
-    "Night keeps the signed-in nurse’s assignment visible with the selected date at the trailing edge, while Breaks and Chat retain their personal and live context without changing roster, staffing, authentication, realtime or update-activation behaviour.",
-    "Browser coverage now verifies the contextual Changes and administrator rails, their active-state synchronisation and the single-slab management layout."
+    "Floating headers, workflow rails, Roster Management tabs, bottom navigation, Chat chrome and the update prompt now use a much clearer neutral Regular material, allowing shapes and colour from scrolling content to remain visible through the glass.",
+    "The compact header now materializes by progressively strengthening blur, saturation, contrast, depth and the scroll-edge dissolve instead of relying on a simple whole-surface fade.",
+    "Changes and Roster Management use a single spring-driven selected lens inside the collapsed glass rail, while the bottom navigation lens subtly stretches and compresses during taps, drags and page swipes.",
+    "Chat now avoids glass on glass: the outer composer remains the floating material and the input control becomes a thin translucent overlay, while larger account and release sheets use a deliberately thicker Regular material.",
+    "Reduced transparency, increased contrast, reduced motion and unsupported-backdrop fallbacks remain intact, and browser coverage now guards transparency, scroll-edge treatment, moving lenses and the single-layer composer."
   ],
   "update_policy": "important"
 }

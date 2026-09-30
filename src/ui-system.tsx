@@ -52,7 +52,7 @@ export function GlassSurface({
   return <div
     {...props}
     className={cx(
-      'tw:rounded-[20px] tw:border tw:border-white/20 tw:bg-white/64 tw:shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_8px_24px_rgba(0,0,0,0.08)] tw:backdrop-blur-2xl tw:backdrop-saturate-150 tw:dark:border-white/10 tw:dark:bg-[#161618]/68',
+      'liquidControlOverlay tw:rounded-[20px] tw:border tw:border-white/28 tw:bg-white/24 tw:shadow-[inset_0_1px_0_rgba(255,255,255,0.42),0_4px_14px_rgba(0,0,0,0.055)] tw:dark:border-white/10 tw:dark:bg-white/7',
       className
     )}
   >{children}</div>;

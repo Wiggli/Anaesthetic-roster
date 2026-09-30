@@ -1021,9 +1021,21 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
   })).toBeGreaterThan(0.8);
   const glassMaterial = await page.locator('#reactScrollChrome .scrollGlassMaterial').evaluate(el => {
     const style = getComputedStyle(el);
-    return style.backdropFilter || style.webkitBackdropFilter || 'none';
+    const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
+    const edge = getComputedStyle(el.parentElement, '::after');
+    return {
+      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
+      alpha: rgba.length >= 4 ? rgba[3] : 1,
+      radius: parseFloat(style.borderRadius),
+      edgeBackdrop: edge.backdropFilter || edge.webkitBackdropFilter || 'none',
+      edgeMask: edge.maskImage || edge.webkitMaskImage || 'none'
+    };
   });
-  expect(glassMaterial).not.toBe('none');
+  expect(glassMaterial.backdrop).not.toBe('none');
+  expect(glassMaterial.alpha).toBeLessThanOrEqual(0.4);
+  expect(glassMaterial.radius).toBeGreaterThanOrEqual(20);
+  expect(glassMaterial.edgeBackdrop).not.toBe('none');
+  expect(glassMaterial.edgeMask).not.toBe('none');
   await expect(page.locator('#reactScrollChrome .scrollGlassCopy')).toContainText('Night');
 
   await page.evaluate(() => {
@@ -1070,7 +1082,7 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
   for (const material of Object.values(floatingMaterials)) {
     expect(material).toBeTruthy();
     expect(material.backdrop).not.toBe('none');
-    expect(material.alpha).toBeLessThan(0.9);
+    expect(material.alpha).toBeLessThanOrEqual(0.4);
   }
 });
 
@@ -1128,7 +1140,7 @@ test('typed Chat overview renders private conversations and registered members',
       radius: parseFloat(style.borderRadius)
     };
   });
-  expect(composerMaterial.backdrop).not.toBe('none');
+  expect(composerMaterial.backdrop).toBe('none');
   expect(composerMaterial.radius).toBeGreaterThanOrEqual(20);
   await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
   await page.locator('#chatTeamInput').fill('x'.repeat(1600));
@@ -1268,10 +1280,12 @@ test('collapsed glass chrome carries workflow and management navigation in one s
   const changesRail = page.locator('#reactScrollChrome .scrollGlassRail-changes');
   await expect(changesRail.locator('button')).toHaveCount(3);
   await expect(changesRail.locator('button.active')).toContainText('Staffing');
+  await expect(changesRail.locator('.scrollGlassRailLens')).toHaveCount(1);
   await expect.poll(() => changesRail.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(34);
   await changesRail.locator('button', { hasText: 'Allocation' }).click();
   await expect(page.locator('#changes .changesWorkflowTabs [data-changes-step="allocation"]')).toHaveAttribute('aria-selected', 'true');
   await expect(changesRail.locator('button.active')).toContainText('Allocation');
+  await expect(changesRail.locator('.scrollGlassRailLens')).toHaveCount(1);
 
   await page.evaluate(() => {
     document.getElementById('contextualChromeSmokeSpacer')?.remove();
@@ -1290,6 +1304,7 @@ test('collapsed glass chrome carries workflow and management navigation in one s
   const adminRail = page.locator('#reactScrollChrome .scrollGlassRail-admin');
   await expect(adminRail.locator('button')).toHaveCount(5);
   await expect(adminRail.locator('button.active')).toContainText('Overview');
+  await expect(adminRail.locator('.scrollGlassRailLens')).toHaveCount(1);
   await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
   await adminRail.locator('button', { hasText: 'Publish' }).click();
   await expect(page.locator('#admin .adminTabs [data-admin-tab="publish"]')).toHaveAttribute('aria-selected', 'true');

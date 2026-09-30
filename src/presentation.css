@@ -9973,3 +9973,388 @@ html[data-theme="dark"] .scrollGlassRail button.active{
   }
 }
 
+
+
+/* 37.83 adaptive Liquid Glass control plane. */
+/* Glass stays on navigation and transient controls while clinical content remains solid. */
+:root{
+  --glass-regular-fill:rgba(248,249,252,.26);
+  --glass-regular-fill-raised:rgba(255,255,255,.34);
+  --glass-regular-rim:rgba(255,255,255,.64);
+  --glass-regular-edge:rgba(60,60,67,.13);
+  --glass-regular-shadow:rgba(28,36,48,.14);
+  --glass-lens-fill:rgba(255,255,255,.24);
+  --glass-lens-fill-active:rgba(255,255,255,.32);
+  --glass-lens-rim:rgba(255,255,255,.68);
+  --glass-light-spill:rgba(255,255,255,.44);
+}
+body.dark,
+html[data-theme="dark"]{
+  --glass-regular-fill:rgba(18,18,22,.30);
+  --glass-regular-fill-raised:rgba(38,38,44,.34);
+  --glass-regular-rim:rgba(255,255,255,.14);
+  --glass-regular-edge:rgba(255,255,255,.10);
+  --glass-regular-shadow:rgba(0,0,0,.34);
+  --glass-lens-fill:rgba(255,255,255,.07);
+  --glass-lens-fill-active:rgba(255,255,255,.105);
+  --glass-lens-rim:rgba(255,255,255,.13);
+  --glass-light-spill:rgba(255,255,255,.10);
+}
+
+/* One neutral Regular material for the floating control plane. */
+.scrollGlassMaterial,
+.bottom.reactTabs,
+#admin .adminTabs,
+#changes .changesWorkflowTabs,
+#chat .chatComposerWrap,
+#chat .chatTeamComposerWrap,
+.updateBanner{
+  background:
+    radial-gradient(120% 180% at 12% -72%,var(--glass-light-spill),transparent 54%),
+    linear-gradient(180deg,var(--glass-regular-fill-raised),var(--glass-regular-fill))!important;
+  background-color:var(--glass-regular-fill)!important;
+  border-color:var(--glass-regular-edge)!important;
+  -webkit-backdrop-filter:
+    blur(var(--chrome-glass-blur,20px))
+    saturate(var(--chrome-glass-saturate,180%))
+    contrast(var(--chrome-glass-contrast,1.035))!important;
+  backdrop-filter:
+    blur(var(--chrome-glass-blur,20px))
+    saturate(var(--chrome-glass-saturate,180%))
+    contrast(var(--chrome-glass-contrast,1.035))!important;
+}
+
+.bottom.reactTabs{
+  --chrome-glass-blur:20px;
+  --chrome-glass-saturate:185%;
+  --chrome-glass-contrast:1.035;
+  border:1px solid var(--glass-regular-edge)!important;
+  border-radius:27px!important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-regular-rim),
+    inset 0 -1px 0 color-mix(in srgb,var(--glass-regular-edge) 72%,transparent),
+    0 12px 34px var(--glass-regular-shadow)!important;
+}
+#admin .adminTabs,
+#changes .changesWorkflowTabs{
+  --chrome-glass-blur:18px;
+  --chrome-glass-saturate:180%;
+  --chrome-glass-contrast:1.03;
+}
+#chat .chatComposerWrap,
+#chat .chatTeamComposerWrap{
+  --chrome-glass-blur:20px;
+  --chrome-glass-saturate:178%;
+  --chrome-glass-contrast:1.03;
+}
+.updateBanner{
+  --chrome-glass-blur:24px;
+  --chrome-glass-saturate:182%;
+  --chrome-glass-contrast:1.035;
+}
+
+/* The compact header materializes by strengthening its optics instead of fading in as a tinted slab. */
+.scrollGlassHeader{
+  height:calc(58px + var(--scroll-glass-rail-height) + env(safe-area-inset-top))!important;
+  padding-top:env(safe-area-inset-top)!important;
+  overflow:visible!important;
+}
+.scrollGlassMaterial{
+  z-index:0;
+  inset:3px 6px 0!important;
+  overflow:hidden;
+  border:1px solid var(--glass-regular-edge)!important;
+  border-radius:22px!important;
+  opacity:var(--scroll-glass-material-opacity,0);
+  box-shadow:
+    inset 0 1px 0 var(--glass-regular-rim),
+    0 10px 30px var(--glass-regular-shadow)!important;
+}
+.scrollGlassMaterial::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    radial-gradient(90% 120% at 10% -24%,rgba(255,255,255,.42),transparent 56%),
+    radial-gradient(70% 120% at 96% 122%,rgba(255,255,255,.11),transparent 58%),
+    linear-gradient(112deg,rgba(255,255,255,.13),transparent 20%,transparent 78%,rgba(255,255,255,.055));
+  opacity:.58;
+}
+.scrollGlassMaterial::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  height:auto;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 32%,transparent 76%,rgba(255,255,255,.045));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--glass-lens-rim) 34%,transparent);
+  opacity:.72;
+}
+body.dark .scrollGlassMaterial::before,
+html[data-theme="dark"] .scrollGlassMaterial::before{
+  background:
+    radial-gradient(90% 120% at 10% -24%,rgba(255,255,255,.11),transparent 56%),
+    linear-gradient(112deg,rgba(255,255,255,.045),transparent 24%,transparent 78%,rgba(255,255,255,.025));
+}
+.scrollGlassStack{
+  z-index:1;
+  width:min(calc(100% - 12px),980px)!important;
+  opacity:var(--scroll-glass-copy-opacity,0);
+}
+.scrollGlassContent{
+  height:55px!important;
+  padding-inline:max(14px,env(safe-area-inset-left))!important;
+}
+.scrollGlassHeader::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:calc(100% - 1px);
+  left:12px;
+  right:12px;
+  height:16px;
+  pointer-events:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--glass-regular-fill) 20%,transparent),transparent);
+  -webkit-backdrop-filter:blur(8px) saturate(130%);
+  backdrop-filter:blur(8px) saturate(130%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.62) 36%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.62) 36%,transparent 100%);
+  opacity:var(--scroll-glass-edge-opacity,0);
+}
+.scrollGlassHeader[data-collapsed] .scrollGlassMaterial{
+  box-shadow:
+    inset 0 1px 0 var(--glass-regular-rim),
+    0 14px 38px color-mix(in srgb,var(--glass-regular-shadow) 82%,transparent)!important;
+}
+
+/* Context rails use one moving lens inside the parent glass, not a second glass layer. */
+.scrollGlassRail{
+  z-index:1;
+  padding-inline:max(10px,env(safe-area-inset-left))!important;
+}
+.scrollGlassRail button{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transition:color 150ms ease,filter 120ms ease;
+}
+.scrollGlassRail button.active{
+  border-color:transparent!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.scrollGlassRail button:active{
+  filter:brightness(1.07);
+}
+.scrollGlassRailLens{
+  position:absolute;
+  z-index:0;
+  inset:1px;
+  border:1px solid var(--glass-lens-rim);
+  border-radius:10px;
+  pointer-events:none;
+  background:
+    radial-gradient(120% 140% at 20% -38%,rgba(255,255,255,.36),transparent 56%),
+    linear-gradient(180deg,var(--glass-lens-fill-active),var(--glass-lens-fill));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.52),
+    inset 0 -1px 0 rgba(60,60,67,.05),
+    0 4px 12px rgba(28,36,48,.07);
+}
+.scrollGlassRailLabel{
+  position:relative;
+  z-index:1;
+}
+body.dark .scrollGlassRailLens,
+html[data-theme="dark"] .scrollGlassRailLens{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 5px 14px rgba(0,0,0,.18);
+}
+
+/* The bottom destination lens concentrates light without becoming opaque. */
+.bottom.reactTabs::before{
+  z-index:0!important;
+  background:
+    radial-gradient(88% 150% at 14% -54%,rgba(255,255,255,.48),transparent 58%),
+    radial-gradient(54% 120% at 86% 130%,rgba(255,255,255,.10),transparent 62%),
+    linear-gradient(180deg,rgba(255,255,255,.09),transparent 58%)!important;
+  opacity:.74!important;
+}
+.bottom.reactTabs::after{
+  z-index:0!important;
+  inset:0!important;
+  height:auto!important;
+  border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 38%,transparent 78%,rgba(0,0,0,.025))!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--glass-lens-rim) 28%,transparent);
+}
+.bottom.reactTabs>button,
+.bottom.reactTabs>.tabSlidingIndicator{
+  z-index:2!important;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  overflow:hidden;
+  border:1px solid var(--glass-lens-rim)!important;
+  background:
+    radial-gradient(100% 160% at 18% -46%,rgba(255,255,255,.42),transparent 58%),
+    linear-gradient(180deg,var(--glass-lens-fill-active),var(--glass-lens-fill))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.58),
+    inset 0 -1px 0 rgba(60,60,67,.045),
+    0 5px 14px rgba(28,36,48,.075)!important;
+  transform-origin:center;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:var(--glass-lens-rim)!important;
+  background:
+    radial-gradient(100% 160% at 18% -46%,rgba(255,255,255,.105),transparent 58%),
+    linear-gradient(180deg,var(--glass-lens-fill-active),var(--glass-lens-fill))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 5px 14px rgba(0,0,0,.18)!important;
+}
+.bottom.reactTabs button:active{
+  filter:brightness(1.06);
+}
+
+/* In-page navigation uses the same material and keeps the active item as a thin lens overlay. */
+#admin .adminTabs{
+  border:1px solid var(--glass-regular-edge)!important;
+  box-shadow:inset 0 1px 0 var(--glass-regular-rim),0 7px 22px rgba(28,36,48,.06)!important;
+}
+#admin .adminTabs button.active{
+  border:1px solid var(--glass-lens-rim)!important;
+  background:linear-gradient(180deg,var(--glass-lens-fill-active),var(--glass-lens-fill))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 3px 10px rgba(28,36,48,.06)!important;
+}
+#changes .changesWorkflowTabs{
+  border:1px solid var(--glass-regular-edge)!important;
+  box-shadow:inset 0 1px 0 var(--glass-regular-rim),0 7px 22px rgba(28,36,48,.055)!important;
+}
+#changes .changesWorkflowTabs::before{
+  border-color:var(--glass-lens-rim)!important;
+  background:
+    radial-gradient(120% 140% at 18% -44%,rgba(255,255,255,.34),transparent 56%),
+    linear-gradient(180deg,var(--glass-lens-fill-active),var(--glass-lens-fill))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 3px 10px rgba(28,36,48,.06)!important;
+}
+
+/* Chat keeps one glass plane. The composer control is a thin overlay within it. */
+#chat .chatComposerWrap,
+#chat .chatTeamComposerWrap{
+  border-top:1px solid var(--glass-regular-edge)!important;
+  box-shadow:0 -10px 30px rgba(28,36,48,.055),inset 0 1px 0 var(--glass-regular-rim)!important;
+}
+#chat .chatComposerWrap::before,
+#chat .chatTeamComposerWrap::before{
+  background:linear-gradient(180deg,rgba(255,255,255,.11),transparent 60%)!important;
+}
+#chat .chatComposerGlass,
+.liquidControlOverlay{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  background:linear-gradient(180deg,var(--glass-lens-fill-active),var(--glass-lens-fill))!important;
+  border-color:var(--glass-lens-rim)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.48),0 3px 11px rgba(28,36,48,.045)!important;
+}
+
+/* Larger transient sheets use a thicker Regular material rather than a Clear variant. */
+.accountSheet,
+.releaseDialog,
+.updateDetailsSheet{
+  background:
+    radial-gradient(130% 90% at 8% -18%,rgba(255,255,255,.42),transparent 54%),
+    color-mix(in srgb,var(--scene-surface) 56%,transparent)!important;
+  border-color:var(--glass-regular-edge)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(168%) contrast(1.025)!important;
+  backdrop-filter:blur(30px) saturate(168%) contrast(1.025)!important;
+  box-shadow:inset 0 1px 0 var(--glass-regular-rim),0 26px 74px rgba(17,22,28,.24)!important;
+}
+
+/* Small chrome buttons borrow the same neutral optical treatment. */
+.glassIconButton,
+.changesScreenHeader .screenInfoButton,
+.breaksScreenHeader .screenInfoButton{
+  background:linear-gradient(180deg,var(--glass-regular-fill-raised),var(--glass-regular-fill))!important;
+  border-color:var(--glass-regular-edge)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(175%)!important;
+  backdrop-filter:blur(16px) saturate(175%)!important;
+  box-shadow:inset 0 1px 0 var(--glass-regular-rim),0 5px 15px rgba(28,36,48,.065)!important;
+}
+
+/* Accessibility modifiers keep hierarchy while disabling optical effects. */
+@media(prefers-contrast:more){
+  .scrollGlassMaterial,
+  .bottom.reactTabs,
+  #admin .adminTabs,
+  #changes .changesWorkflowTabs,
+  #chat .chatComposerWrap,
+  #chat .chatTeamComposerWrap,
+  .updateBanner{
+    border-color:color-mix(in srgb,var(--scene-ink) 32%,transparent)!important;
+  }
+  .scrollGlassRailLens,
+  .bottom.reactTabs .tabSlidingIndicator,
+  #admin .adminTabs button.active,
+  #changes .changesWorkflowTabs::before{
+    border-color:color-mix(in srgb,var(--scene-ink) 42%,transparent)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .scrollGlassRail button,
+  .bottom.reactTabs button{
+    transition:none!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMaterial,
+  .bottom.reactTabs,
+  #admin .adminTabs,
+  #changes .changesWorkflowTabs,
+  #chat .chatComposerWrap,
+  #chat .chatTeamComposerWrap,
+  .updateBanner,
+  .accountSheet,
+  .releaseDialog,
+  .updateDetailsSheet,
+  .glassIconButton,
+  .changesScreenHeader .screenInfoButton,
+  .breaksScreenHeader .screenInfoButton{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--scene-surface)!important;
+  }
+  .scrollGlassHeader::after{
+    display:none!important;
+  }
+  .scrollGlassRailLens,
+  .bottom.reactTabs .tabSlidingIndicator,
+  #admin .adminTabs button.active,
+  #changes .changesWorkflowTabs::before,
+  #chat .chatComposerGlass,
+  .liquidControlOverlay{
+    background:var(--scene-soft)!important;
+    box-shadow:none!important;
+  }
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .scrollGlassMaterial,
+  .bottom.reactTabs,
+  #admin .adminTabs,
+  #changes .changesWorkflowTabs,
+  #chat .chatComposerWrap,
+  #chat .chatTeamComposerWrap,
+  .updateBanner,
+  .accountSheet,
+  .releaseDialog,
+  .updateDetailsSheet{
+    background:var(--scene-surface)!important;
+  }
+  .scrollGlassHeader::after{
+    display:none!important;
+  }
+}

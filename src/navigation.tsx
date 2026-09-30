@@ -26,6 +26,7 @@ function Navigation({ badges }: { badges: Badges }) {
   const [active, setActive] = useState(document.body.getAttribute('data-view') || 'today');
   const indicatorX = useMotionValue(0);
   const indicatorScaleX = useMotionValue(1);
+  const indicatorScaleY = useMotionValue(1);
   const positions = useRef<number[]>([]);
   const transitionToRef = useRef<((view: Destination) => void) | null>(null);
   const [indicatorSize, setIndicatorSize] = useState({ top: 0, width: 0, height: 0 });
@@ -39,9 +40,21 @@ function Navigation({ badges }: { badges: Badges }) {
       const left = positions.current[destinations.indexOf(view as Destination)];
       if (left === undefined) return;
       animation?.stop();
-      indicatorScaleX.set(reducedMotion ? 1 : 1.045);
-      if (reducedMotion) indicatorX.set(left);
-      else animation = animate(indicatorX, left, { type: 'spring', stiffness: 460, damping: 42, mass: 0.68, onComplete: () => animate(indicatorScaleX, 1, { type: 'spring', stiffness: 520, damping: 45 }) });
+      indicatorScaleX.set(reducedMotion ? 1 : 1.052);
+      indicatorScaleY.set(reducedMotion ? 1 : 0.975);
+      if (reducedMotion) {
+        indicatorX.set(left);
+        indicatorScaleY.set(1);
+      } else animation = animate(indicatorX, left, {
+        type: 'spring',
+        stiffness: 460,
+        damping: 42,
+        mass: 0.68,
+        onComplete: () => {
+          animate(indicatorScaleX, 1, { type: 'spring', stiffness: 520, damping: 45 });
+          animate(indicatorScaleY, 1, { type: 'spring', stiffness: 520, damping: 45 });
+        }
+      });
     };
     const measure = () => {
       const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
@@ -386,7 +399,9 @@ function Navigation({ badges }: { badges: Badges }) {
         const lastPosition = positions.current[positions.current.length - 1];
         if (firstPosition !== undefined && lastPosition !== undefined)
           indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));
-        indicatorScaleX.set(1 + Math.min(0.075, Math.abs(dx) / Math.max(1, window.innerWidth) * 0.18));
+        const flex = Math.min(0.075, Math.abs(dx) / Math.max(1, window.innerWidth) * 0.18);
+        indicatorScaleX.set(1 + flex);
+        indicatorScaleY.set(1 - flex * 0.52);
         return;
       }
 
@@ -401,7 +416,9 @@ function Navigation({ badges }: { badges: Badges }) {
       if (neighbor !== undefined) {
         const progress = Math.min(1, Math.abs(dx) / width);
         indicatorX.set(origin + (neighbor - origin) * progress);
-        indicatorScaleX.set(1 + Math.sin(progress * Math.PI) * 0.065);
+        const flex = Math.sin(progress * Math.PI) * 0.065;
+        indicatorScaleX.set(1 + flex);
+        indicatorScaleY.set(1 - flex * 0.45);
       }
     };
 
@@ -498,7 +515,7 @@ function Navigation({ badges }: { badges: Badges }) {
       animation?.stop();
       bar.classList.remove('reactTabs', 'liquidTabBar');
     };
-  }, [indicatorX, indicatorScaleX, reducedMotion]);
+  }, [indicatorX, indicatorScaleX, indicatorScaleY, reducedMotion]);
 
   function navigate(view: Destination) {
     const transition = transitionToRef.current;
@@ -515,7 +532,7 @@ function Navigation({ badges }: { badges: Badges }) {
 
   return <div className="tw:contents" data-react-navigation="ready">
     <motion.span className="tabSlidingIndicator" aria-hidden="true"
-      style={{ x: indicatorX, scaleX: indicatorScaleX, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
+      style={{ x: indicatorX, scaleX: indicatorScaleX, scaleY: indicatorScaleY, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
     <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}
       aria-current={active === 'today' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
       onClick={() => navigate('today')}>
