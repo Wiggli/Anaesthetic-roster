@@ -1,14 +1,14 @@
 {
-  "version": "37.77",
+  "version": "37.78",
   "date": "30 September 2026",
-  "title": "Finish the mobile craftsmanship pass",
-  "summary": "Refines the four primary destinations with one institutional masthead, flatter grouped surfaces, real message bubbles, calmer typography and more deliberate night-shift depth.",
+  "title": "Add scroll-linked glass and night-shift depth",
+  "summary": "Adds a continuous frosted scroll header across the app, makes roster management easier to scan, compacts the update prompt and gives the Night assignment hero more dimensional polish.",
   "changes": [
-    "Night now has the same clear destination identity as Changes, Breaks and Chat, while its Tonight board relies on spacing and hairline separators rather than extra shadow and card furniture.",
-    "Changes now presents Absences and Overtime as one grouped staffing surface, removes duplicated no-record messages and keeps exceptional editing in focused Motion sheets.",
-    "Breaks now uses flat nurse rows inside one schedule surface, with blue reserved for the signed-in nurse and interaction rather than decorative section colour.",
-    "Chat now keeps notifications after conversations, fixes the masthead composition and renders team messages as true left/right conversation bubbles with lighter metadata and a sticky native-style composer.",
-    "Shared chrome gains consistent account and administrator controls, tighter radii, restrained tactile feedback, a lighter Motion tab indicator and a more intentional dark-mode treatment for night-shift use."
+    "Night, Changes, Breaks, Chat, Roster and Roster Management now gain a scroll-linked compact glass header that fades and settles continuously as content moves underneath it, while reduced-motion and reduced-transparency preferences remain respected.",
+    "Roster Management now uses a sticky frosted section rail plus grouped status, operational and system-health rows instead of a dashboard of repeated tiles.",
+    "The PWA update prompt is smaller, theme-aware and translucent, with a quieter Later action and a clear blue Update action while preserving the existing user-approved service-worker activation flow.",
+    "The black personal assignment hero keeps its signature dark identity but gains restrained blue light, inner depth, richer shift-token treatment, scan icons and a subtle Motion entrance.",
+    "Chat composer and management chrome now share the same content-under-glass material language so scrolling feels more continuous without adding glass to clinical content surfaces."
   ],
   "update_policy": "important"
 }

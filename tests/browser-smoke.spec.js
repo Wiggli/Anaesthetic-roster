@@ -985,6 +985,54 @@ test('typed administrator accounts separate pending access and support fast filt
   await expect(page.locator('#adminAccountsExperience')).not.toContainText('Andre Bartolo');
 });
 
+test('scroll-linked glass chrome, update prompt and management surfaces keep native material hierarchy', async ({ page }) => {
+  await openShell(page);
+  await expect(page.locator('#reactScrollChrome .scrollGlassHeader')).toHaveCount(1);
+
+  await page.evaluate(() => {
+    const spacer = document.createElement('div');
+    spacer.id = 'scrollGlassSmokeSpacer';
+    spacer.style.height = '900px';
+    document.getElementById('today')?.appendChild(spacer);
+    window.scrollTo(0, 130);
+  });
+  await expect.poll(() => page.evaluate(() => {
+    const header = document.querySelector('#reactScrollChrome .scrollGlassHeader');
+    return header ? Number(getComputedStyle(header).opacity) : 0;
+  })).toBeGreaterThan(0.8);
+  const glassMaterial = await page.locator('#reactScrollChrome .scrollGlassMaterial').evaluate(el => {
+    const style = getComputedStyle(el);
+    return style.backdropFilter || style.webkitBackdropFilter || 'none';
+  });
+  expect(glassMaterial).not.toBe('none');
+  await expect(page.locator('#reactScrollChrome .scrollGlassCopy')).toContainText('Night');
+
+  await page.evaluate(() => {
+    document.getElementById('scrollGlassSmokeSpacer')?.remove();
+    window.scrollTo(0, 0);
+    const banner = document.getElementById('updateBanner');
+    banner?.classList.remove('hidden');
+  });
+  const updateBanner = page.locator('#updateBanner');
+  await expect(updateBanner).toBeVisible();
+  const updateMaterial = await updateBanner.evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      radius: parseFloat(style.borderRadius),
+      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
+      width: el.getBoundingClientRect().width
+    };
+  });
+  expect(updateMaterial.radius).toBeGreaterThanOrEqual(18);
+  expect(updateMaterial.backdrop).not.toBe('none');
+  expect(updateMaterial.width).toBeLessThanOrEqual(440);
+  await expect(page.locator('#applyUpdateBtn')).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await page.evaluate(() => document.getElementById('updateBanner')?.classList.add('hidden'));
+
+  await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'sticky');
+  await expect(page.locator('#admin .statusGrid')).toHaveCSS('display', 'block');
+});
+
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {

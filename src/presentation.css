@@ -8933,3 +8933,663 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
     background:var(--scene-surface)!important;
   }
 }
+
+
+/* 37.78 scroll-linked material pass: one continuous glass language across scrolling chrome. */
+:root{
+  --scroll-glass-progress:0;
+  --scroll-glass-offset:0px;
+}
+
+/* Existing full mastheads remain part of the document flow. The compact chrome owns the sticky state. */
+#changes .primaryScreenHeader,
+#breaks .primaryScreenHeader,
+#chat .primaryScreenHeader{
+  position:relative!important;
+  top:auto!important;
+  z-index:auto!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .primaryScreenHeader::after,
+#breaks .primaryScreenHeader::after,
+#chat .primaryScreenHeader::after{
+  display:none!important;
+}
+
+/* Scroll-linked glass bar. Progress is written by the React controller on every animation frame. */
+#reactScrollChrome{
+  position:fixed;
+  inset:0 0 auto;
+  z-index:64;
+  height:0;
+  pointer-events:none;
+}
+.scrollGlassHeader{
+  --scroll-glass-progress:0;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:64;
+  height:calc(52px + env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top);
+  opacity:0;
+  transform:translate3d(0,-11px,0);
+  will-change:opacity,transform;
+  color:var(--scene-ink);
+  pointer-events:none;
+}
+.scrollGlassMaterial{
+  position:absolute;
+  inset:0;
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 72%,transparent);
+  background:linear-gradient(to bottom,color-mix(in srgb,var(--liquid-glass-elevated) 86%,transparent),color-mix(in srgb,var(--liquid-glass) 78%,transparent));
+  -webkit-backdrop-filter:blur(28px) saturate(158%);
+  backdrop-filter:blur(28px) saturate(158%);
+  box-shadow:0 1px 0 rgba(255,255,255,.18),0 7px 22px rgba(0,0,0,.045);
+}
+.scrollGlassMaterial::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(to bottom,rgba(255,255,255,.17),transparent 58%);
+  opacity:.78;
+}
+.scrollGlassContent{
+  position:relative;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  width:min(100%,980px);
+  height:52px;
+  margin:0 auto;
+  padding:0 max(16px,env(safe-area-inset-left)) 0 max(16px,env(safe-area-inset-left));
+}
+.scrollGlassIcon{
+  display:grid;
+  width:32px;
+  height:32px;
+  place-items:center;
+  border-radius:10px;
+  background:color-mix(in srgb,var(--scene-accent) 8%,transparent);
+  color:var(--scene-accent);
+  transform:scale(1);
+}
+.scrollGlassIcon svg{
+  width:17px;
+  height:17px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.scrollGlassCopy{
+  display:grid;
+  min-width:0;
+  gap:1px;
+}
+.scrollGlassCopy b{
+  overflow:hidden;
+  color:var(--scene-ink);
+  font-size:13px;
+  font-weight:720;
+  line-height:1.15;
+  letter-spacing:-.018em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassCopy small{
+  overflow:hidden;
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  font-weight:560;
+  line-height:1.15;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassStatus{
+  display:inline-flex;
+  max-width:138px;
+  align-items:center;
+  gap:5px;
+  overflow:hidden;
+  color:var(--scene-secondary);
+  font-size:9px;
+  font-weight:620;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassStatus i{
+  width:6px;
+  height:6px;
+  flex:0 0 6px;
+  border-radius:50%;
+  background:var(--liquid-success);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--liquid-success) 9%,transparent);
+}
+.scrollGlass-today .scrollGlassStatus i,
+.scrollGlass-breaks .scrollGlassStatus i,
+.scrollGlass-roster .scrollGlassStatus i{
+  display:none;
+}
+.scrollGlassClose{
+  min-width:48px;
+  min-height:34px;
+  padding:0 10px;
+  border:0;
+  border-radius:11px;
+  background:color-mix(in srgb,var(--scene-secondary) 8%,transparent);
+  color:var(--scene-accent);
+  font-size:10.5px;
+  font-weight:700;
+}
+.scrollGlass-admin .scrollGlassStatus{display:none}
+.scrollGlass-admin .scrollGlassCopy small{color:var(--scene-accent);font-weight:640}
+
+/* The admin tab rail becomes the same material when it reaches the top. */
+#admin .adminTabs{
+  position:sticky!important;
+  top:calc(env(safe-area-inset-top) + var(--scroll-glass-offset))!important;
+  z-index:52!important;
+  margin:0 0 14px!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 74%,transparent)!important;
+  border-radius:15px!important;
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 86%,transparent)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(150%)!important;
+  backdrop-filter:blur(24px) saturate(150%)!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.045)!important;
+}
+#admin .adminTabs button{
+  min-height:39px!important;
+  border-radius:11px!important;
+  font-size:9.5px!important;
+}
+#admin .adminTabs button.active{
+  background:color-mix(in srgb,var(--scene-surface) 88%,transparent)!important;
+  box-shadow:0 1px 4px rgba(0,0,0,.045),inset 0 1px rgba(255,255,255,.26)!important;
+}
+
+/* Management overview becomes a scan-friendly settings surface rather than a dashboard of tiles. */
+#admin .adminHeader{
+  margin:0 0 8px!important;
+  padding:8px 2px 12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin .adminHeader h2{
+  font-size:30px!important;
+  font-weight:755!important;
+  letter-spacing:-.045em!important;
+}
+#admin .adminHeader .time{
+  max-width:460px!important;
+  margin-top:5px!important;
+  font-size:10.5px!important;
+  line-height:1.4!important;
+}
+#admin .adminPane>.panel{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin .adminSectionIntro{
+  margin:0 2px 10px!important;
+  padding:0!important;
+}
+#admin .adminSectionIcon{
+  width:34px!important;
+  height:34px!important;
+  flex-basis:34px!important;
+  border-radius:10px!important;
+}
+#admin .adminSectionIntro h2{
+  font-size:17px!important;
+  font-weight:715!important;
+}
+#admin .adminSectionIntro .time{
+  max-width:360px!important;
+  font-size:9.5px!important;
+}
+#admin .statusGrid{
+  display:block!important;
+  overflow:hidden!important;
+  margin:0!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 78%,transparent)!important;
+  border-radius:17px!important;
+  background:var(--scene-surface)!important;
+}
+#admin .statusGrid>*{
+  display:flex!important;
+  min-height:49px!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  margin:0!important;
+  padding:9px 13px!important;
+  border:0!important;
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 72%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin .statusGrid>*:last-child{
+  border-bottom:0!important;
+}
+#admin .statusGrid .time{
+  order:0;
+  margin:0!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  font-weight:590!important;
+  line-height:1.25!important;
+}
+#admin .statusGrid b,
+#admin .statusGrid strong{
+  order:1;
+  max-width:58%;
+  color:var(--scene-ink)!important;
+  font-size:11.5px!important;
+  font-weight:680!important;
+  line-height:1.25!important;
+  letter-spacing:-.01em!important;
+  text-align:right!important;
+}
+#admin .statusGrid b.verified,
+#admin .statusGrid strong.verified{
+  color:var(--liquid-success)!important;
+}
+#admin .adminSummary{
+  overflow:hidden!important;
+  margin:12px 0 0!important;
+  padding:0!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 74%,transparent)!important;
+  border-radius:17px!important;
+  background:var(--scene-surface)!important;
+}
+#admin .adminOperationalRow{
+  display:grid!important;
+  gap:3px!important;
+  min-height:52px!important;
+  padding:10px 13px!important;
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+}
+#admin .adminOperationalRow:last-of-type{
+  border-bottom:0!important;
+}
+#admin .adminOperationalRow b{
+  color:var(--scene-ink)!important;
+  font-size:11px!important;
+  font-weight:670!important;
+}
+#admin .adminOperationalRow span{
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  line-height:1.35!important;
+}
+#admin .adminSummary>.time{
+  margin:0!important;
+  padding:8px 13px!important;
+  border-top:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+  color:var(--scene-secondary)!important;
+  font-size:9px!important;
+}
+#admin .adminHealthPanel{
+  margin:16px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#admin .adminHealthHeader{
+  margin:0 2px 8px!important;
+  padding:0!important;
+}
+#admin .adminHealthHeader span{
+  color:var(--scene-secondary)!important;
+  font-size:8px!important;
+  letter-spacing:.04em!important;
+}
+#admin .adminHealthHeader h3{
+  margin-top:2px!important;
+  color:var(--scene-ink)!important;
+  font-size:14px!important;
+  font-weight:690!important;
+}
+#admin .adminHealthHeader .mini{
+  min-height:34px!important;
+  padding:0 10px!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:color-mix(in srgb,var(--scene-accent) 7%,transparent)!important;
+  color:var(--scene-accent)!important;
+  box-shadow:none!important;
+  font-size:9.5px!important;
+}
+#admin .adminHealthGrid{
+  display:block!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 74%,transparent)!important;
+  border-radius:17px!important;
+  background:var(--scene-surface)!important;
+}
+#admin .adminHealthMetric{
+  display:flex!important;
+  min-height:46px!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:8px 13px!important;
+  border:0!important;
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#admin .adminHealthMetric:last-child{
+  border-bottom:0!important;
+}
+#admin .adminHealthMetric span{
+  order:0;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  line-height:1.25!important;
+}
+#admin .adminHealthMetric b{
+  order:1;
+  color:var(--scene-ink)!important;
+  font-size:11px!important;
+  font-weight:680!important;
+  line-height:1.25!important;
+  text-align:right!important;
+}
+#admin .adminHealthMetric.warning b{color:var(--liquid-warning)!important}
+#admin .adminHealthMetric.error b{color:var(--liquid-critical)!important}
+#admin .adminHealthLoading{
+  padding:14px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+}
+
+/* Update prompt is a compact, theme-aware floating glass sheet above persistent navigation. */
+.updateBanner{
+  left:12px!important;
+  right:12px!important;
+  bottom:calc(74px + env(safe-area-inset-bottom))!important;
+  z-index:72!important;
+  display:grid!important;
+  width:auto!important;
+  max-width:430px!important;
+  grid-template-columns:38px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:8px 10px!important;
+  margin:0!important;
+  padding:10px!important;
+  border:1px solid rgba(255,255,255,.54)!important;
+  border-radius:21px!important;
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:0 14px 40px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.36)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(155%)!important;
+  backdrop-filter:blur(28px) saturate(155%)!important;
+}
+.updateBanner:not(.hidden){
+  animation:updateGlassIn 320ms cubic-bezier(.2,.78,.26,1) both!important;
+}
+@keyframes updateGlassIn{
+  from{opacity:0;transform:translateY(18px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.updateBannerIcon{
+  display:grid!important;
+  width:38px!important;
+  height:38px!important;
+  place-items:center!important;
+  align-self:start!important;
+  margin:0!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--scene-accent) 10%,transparent)!important;
+  color:var(--scene-accent)!important;
+}
+.updateBannerIcon svg{
+  width:20px!important;
+  height:20px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.updateBannerSummary{
+  display:grid!important;
+  min-width:0!important;
+  min-height:40px!important;
+  gap:1px!important;
+  padding:0 2px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--scene-ink)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+.updateBannerSummary #updateBannerVersion{
+  order:3;
+  margin:2px 0 0!important;
+  color:var(--scene-secondary)!important;
+  font-size:8.5px!important;
+  font-weight:590!important;
+  line-height:1.2!important;
+}
+.updateBannerSummary b{
+  order:1;
+  color:var(--scene-ink)!important;
+  font-size:13px!important;
+  font-weight:720!important;
+  line-height:1.2!important;
+  letter-spacing:-.015em!important;
+}
+.updateBannerSummary small{
+  order:2;
+  overflow:hidden!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:540!important;
+  line-height:1.3!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.updateBannerActions{
+  grid-column:2!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:6px!important;
+  margin-top:1px!important;
+}
+.updateBannerActions button{
+  width:auto!important;
+  min-height:34px!important;
+  padding:0 12px!important;
+  border:0!important;
+  border-radius:11px!important;
+  box-shadow:none!important;
+  font-size:10.5px!important;
+  font-weight:700!important;
+}
+.updateBannerActions .updateLaterBtn{
+  background:transparent!important;
+  color:var(--scene-secondary)!important;
+}
+.updateBannerActions #applyUpdateBtn{
+  min-width:74px!important;
+  background:var(--scene-accent)!important;
+  color:#fff!important;
+}
+.updateBannerActions button:active{
+  transform:scale(.96)!important;
+}
+body.dark .updateBanner,
+html[data-theme="dark"] .updateBanner{
+  border-color:rgba(255,255,255,.10)!important;
+  background:rgba(30,30,33,.82)!important;
+  box-shadow:0 16px 44px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+
+/* Night hero keeps the black signature, but gains restrained light, depth and richer scan details. */
+#today #personalNightCard>.personalHeroSurface{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:22px!important;
+  background:
+    radial-gradient(120% 110% at 96% -8%,rgba(10,132,255,.095),transparent 42%),
+    radial-gradient(80% 80% at 12% 10%,rgba(255,255,255,.035),transparent 46%),
+    linear-gradient(145deg,#202024 0%,#19191c 52%,#151517 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.075),
+    inset 0 -1px 0 rgba(0,0,0,.28),
+    0 16px 38px rgba(15,19,24,.14)!important;
+}
+#today #personalNightCard>.personalHeroSurface::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:180px;
+  height:180px;
+  top:-94px;
+  right:-42px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(10,132,255,.13),rgba(10,132,255,0) 68%);
+  filter:blur(4px);
+  pointer-events:none;
+}
+#today #personalNightCard>.personalHeroSurface::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  opacity:.12;
+  pointer-events:none;
+  background-image:linear-gradient(110deg,rgba(255,255,255,.04),transparent 26%,transparent 72%,rgba(255,255,255,.025));
+}
+#today .personalRoleIcon{
+  border-color:rgba(255,255,255,.13)!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.055))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 5px 16px rgba(0,0,0,.16)!important;
+}
+#today #personalNightCard .personalFacts dt{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  color:rgba(235,235,245,.55)!important;
+  letter-spacing:.02em!important;
+}
+#today #personalNightCard .personalFacts dt svg{
+  width:12px!important;
+  height:12px!important;
+  flex:0 0 12px!important;
+  fill:none!important;
+  stroke:rgba(235,235,245,.50)!important;
+  stroke-width:1.65!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#today #personalNightCard .personalFacts dd{
+  color:rgba(255,255,255,.94)!important;
+  font-weight:640!important;
+}
+#today .personalContextAction{
+  position:relative!important;
+  background:linear-gradient(to right,rgba(10,132,255,.035),transparent 44%)!important;
+}
+#today .personalContextAction::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:14px;
+  right:14px;
+  height:1px;
+  background:rgba(255,255,255,.075);
+}
+#today .personalContextAction:active{
+  background:rgba(10,132,255,.065)!important;
+}
+body.dark #today #personalNightCard>.personalHeroSurface,
+html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
+  background:
+    radial-gradient(120% 110% at 96% -8%,rgba(10,132,255,.10),transparent 42%),
+    radial-gradient(80% 80% at 12% 10%,rgba(255,255,255,.03),transparent 46%),
+    linear-gradient(145deg,#1b1b1f 0%,#151518 54%,#101012 100%)!important;
+  border-color:rgba(255,255,255,.07)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 42px rgba(0,0,0,.30)!important;
+}
+
+/* The top and bottom Chat materials now form one continuous content-under-glass frame. */
+#chat .chatTeamComposerWrap{
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 84%,transparent)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(150%)!important;
+  backdrop-filter:blur(24px) saturate(150%)!important;
+  box-shadow:0 -1px 0 color-mix(in srgb,var(--scene-line) 70%,transparent)!important;
+}
+#chat .chatMessageViewport{
+  scroll-padding-top:60px!important;
+  scroll-padding-bottom:64px!important;
+}
+
+/* Reduced effects retain hierarchy without motion or transparent material. */
+@media(prefers-reduced-motion:reduce){
+  .scrollGlassHeader{
+    transform:none!important;
+  }
+  .updateBanner:not(.hidden){
+    animation:none!important;
+  }
+  #today #personalNightCard>.personalHeroSurface{
+    transition:none!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMaterial,
+  #admin .adminTabs,
+  .updateBanner,
+  #chat .chatTeamComposerWrap{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--scene-surface)!important;
+  }
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .scrollGlassMaterial,
+  #admin .adminTabs,
+  .updateBanner{
+    background:var(--scene-surface)!important;
+  }
+}
+@media(max-width:420px){
+  .scrollGlassContent{
+    padding-inline:12px!important;
+  }
+  .scrollGlassStatus{
+    max-width:108px!important;
+  }
+  .updateBanner{
+    width:calc(100% - 20px)!important;
+    border-radius:19px!important;
+  }
+  #admin .statusGrid b,
+  #admin .statusGrid strong{
+    max-width:62%!important;
+  }
+}

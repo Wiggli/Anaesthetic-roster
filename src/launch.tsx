@@ -38,6 +38,23 @@ if (navigation) {
   onAuthorised();
 }
 
+const scrollChrome = document.getElementById('reactScrollChrome');
+if (scrollChrome) {
+  let loading = false;
+  const onAuthorised = () => {
+    if (loading || document.body.classList.contains('authPending')) return;
+    loading = true;
+    observer.disconnect();
+    import('./scroll-chrome').then(({ mountScrollChrome }) => mountScrollChrome(scrollChrome)).catch(() => {
+      loading = false;
+      observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    });
+  };
+  const observer = new MutationObserver(onAuthorised);
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  onAuthorised();
+}
+
 let screenInfoRequest = 0;
 window.addEventListener('roster:screeninfo', (event: Event) => {
   if (document.body.classList.contains('authPending')) return;
