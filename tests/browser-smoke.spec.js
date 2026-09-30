@@ -110,8 +110,15 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   await page.evaluate(() => window.show && window.show('chat'));
   await expect(page.locator('#chat')).toBeVisible();
   await expect(page.locator('#chatTeamEntry')).toBeVisible();
-  await expect(page.locator('#chatInboxHeading')).toContainText('Messages');
-  await expect(page.locator('#chatNewPrivateBtn')).toHaveAttribute('aria-label', 'Start a new private message');
+  await expect(page.locator('#chatInboxHeading')).toHaveText('Team chat');
+  await expect(page.locator('#chatTeamEntry')).toContainText('Chat with everyone on tonight’s roster');
+  await expect(page.locator('#chatNewPrivateBtn')).toContainText('New private chat');
+  await expect(page.locator('#chatNewPrivateBtn')).toHaveAttribute('aria-label', 'Start a new private chat');
+  const newPrivateChatSizing = await page.locator('#chatNewPrivateBtn').evaluate(el => ({
+    clientWidth: el.clientWidth,
+    scrollWidth: el.scrollWidth
+  }));
+  expect(newPrivateChatSizing.scrollWidth).toBeLessThanOrEqual(newPrivateChatSizing.clientWidth + 1);
   await expect(page.locator('#chatTeamThread')).toHaveClass(/hidden/);
   await expect(page.locator('#chatSafetyInfo')).toContainText('Staff coordination only');
 
@@ -127,7 +134,7 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   await expect(page.locator('#chatTeamThread')).toBeVisible();
   await expect(page.locator('#chatTeamThread .chatThreadHeading')).toContainText('Anaesthetic Team');
   await expect(page.locator('#chatTeamComposer')).toBeVisible();
-  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Message Anaesthetic Team…');
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Write to Anaesthetic Team…');
   if (isMobile) {
     await expect(page.locator('#chatHome')).not.toBeVisible();
     const pane = await page.locator('#chat .chatConversationPane').boundingBox();
@@ -1199,27 +1206,19 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   expect(originalAdminBackdrop).toBe('none');
   await expect(page.locator('#admin .statusGrid')).toHaveCSS('display', 'block');
 
-  const floatingMaterials = await page.evaluate(() => {
-    const read = selector => {
-      const element = document.querySelector(selector);
-      if (!element) return null;
-      const style = getComputedStyle(element);
-      const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
-      return {
-        backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
-        alpha: rgba.length >= 4 ? rgba[3] : 1
-      };
-    };
+  const bottomMaterial = await page.evaluate(() => {
+    const element = document.querySelector('.bottom.reactTabs');
+    if (!element) return null;
+    const style = getComputedStyle(element);
+    const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
     return {
-      bottom: read('.bottom.reactTabs'),
-      composer: read('#chat .chatTeamComposerWrap')
+      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
+      alpha: rgba.length >= 4 ? rgba[3] : 1
     };
   });
-  for (const material of Object.values(floatingMaterials)) {
-    expect(material).toBeTruthy();
-    expect(material.backdrop).not.toBe('none');
-    expect(material.alpha).toBeLessThanOrEqual(0.4);
-  }
+  expect(bottomMaterial).toBeTruthy();
+  expect(bottomMaterial.backdrop).not.toBe('none');
+  expect(bottomMaterial.alpha).toBeLessThanOrEqual(0.4);
 });
 
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
@@ -1245,8 +1244,9 @@ test('typed Chat overview renders private conversations and registered members',
   });
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
-  await expect(page.locator('#chatInboxHeading')).toContainText('Messages');
+  await expect(page.locator('#chatInboxHeading')).toHaveText('Team chat');
   await expect(page.locator('#chatTeamEntry')).toContainText('Anaesthetic Team');
+  await expect(page.locator('#chatTeamEntry')).toContainText('Chat with everyone on tonight’s roster');
   await captureReview(page, 'chat');
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
@@ -1263,6 +1263,7 @@ test('typed Chat overview renders private conversations and registered members',
 
   await expect(page.locator('#chatTeamThread')).toBeVisible();
   if (page.viewportSize().width >= 760) await expect(page.locator('#chatDesktopEmpty')).toBeHidden();
+  await captureReview(page, 'chat-team-thread');
 
   await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
   await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
@@ -1282,8 +1283,12 @@ test('typed Chat overview renders private conversations and registered members',
       radius: parseFloat(style.borderRadius)
     };
   });
-  expect(composerMaterial.backdrop).toBe('none');
-  expect(composerMaterial.radius).toBeGreaterThanOrEqual(20);
+  expect(composerMaterial.backdrop).not.toBe('none');
+  expect(composerMaterial.radius).toBeGreaterThanOrEqual(24);
+  await expect(page.locator('#chatTeamComposer .liquidControlOverlay')).toHaveCount(0);
+  await expect(page.locator('#chatTeamInput')).toHaveCSS('border-top-width', '0px');
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Write to Anaesthetic Team…');
+  await expect(page.locator('#chatSafetyInfo .chatRetentionNote')).toHaveCount(0);
   await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
   await page.locator('#chatTeamInput').fill('x'.repeat(1600));
   await expect(page.locator('#chatTeamCharacterCount')).toBeVisible();
