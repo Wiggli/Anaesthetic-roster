@@ -1,14 +1,16 @@
 {
-  "version": "37.84",
+  "version": "37.85",
   "date": "30 September 2026",
-  "title": "Make Liquid Glass respond to touch",
-  "summary": "Adds localized light and gentle lens energy at the exact touch point so the shared glass control plane feels directly connected to the user's finger without adding extra glass layers.",
+  "title": "Let content lead the interface",
+  "summary": "Removes the intrusive one-size-fits-all scroll capsule and gives each screen a calmer navigation hierarchy, while flattening Night and management content so Liquid Glass stays in the control layer.",
   "changes": [
-    "The bottom navigation now illuminates from the finger position during taps and continuous tab drags, while the selected lens subtly brightens and keeps its existing gel-like flex.",
-    "The moving destination lens is now a thin light-and-tint overlay inside the parent material instead of inheriting its own second blur, removing the remaining glass-on-glass over-frosting.",
-    "Collapsed Changes and Roster Management controls now receive the same localized touch illumination inside their existing glass plane, preserving the single-material hierarchy.",
-    "Touch energy follows the pointer while it moves and disappears cleanly on release or cancellation, without changing navigation, swipe, roster, staffing, authentication, realtime or update behavior.",
-    "Reduced Transparency disables the light bloom and Reduced Motion removes its elastic expansion, while browser smoke coverage now guards the new touch-response and single-layer lens states."
+    "Night no longer creates a floating scroll header; the selected assignment remains the visual anchor while the page scrolls naturally.",
+    "Changes, Breaks, Chat and Full Roster now form a slim neutral navigation edge only as their large page heading leaves the viewport, with no duplicated workflow rail or oversized glass capsule.",
+    "Roster Management keeps its normal section tabs in the page and replaces them with one compact Liquid Glass section rail only after those tabs scroll away.",
+    "Night now uses a more instrument-like dark assignment surface, a clearer Tonight's assignment label, flatter date and overview groups, hairline-separated rows and fewer card-like containers.",
+    "Roster Management status and summary content now reads as grouped settings rows instead of nested dashboard cards, while the original section tabs are no longer a second sticky glass layer.",
+    "The bottom navigation is clearer and quieter, with less tint and shadow so the moving lens and the content passing underneath provide the visual depth.",
+    "Scroll-edge feathering, typography hierarchy, Reduced Transparency, Increased Contrast and Reduced Motion behavior were aligned with the simplified control-plane model."
   ],
   "update_policy": "important"
 }
