@@ -1613,7 +1613,7 @@ function renderPendingUpdate(){
   if(banner)banner.classList.toggle('automatic',automatic);
   if(bannerVersion)bannerVersion.textContent=automatic?'Ready for next reopen · '+version:version;
   if(bannerTitle)bannerTitle.textContent=automatic?'Night Roster update is ready':(meta.version?'Night Roster '+meta.version+' is ready':'Night Roster update is ready');
-  if(bannerSmall)bannerSmall.textContent=automatic?'Installs safely on next reopen':'What’s new · '+(meta.title||'Latest improvements');
+  if(bannerSmall)bannerSmall.textContent=automatic?'No action required · installs safely on next reopen':'What’s new · '+(meta.title||'Latest improvements');
   if(sheetVersion)sheetVersion.textContent=automatic?'Automatic update · '+version:version;
   if(sheetTitle)sheetTitle.textContent=meta.title||'Night Roster update';
   if(sheetSummary)sheetSummary.textContent=meta.summary||'Review what is changing, then update when convenient.';
