@@ -1,14 +1,14 @@
 {
-  "version": "37.77",
+  "version": "37.78",
   "date": "30 September 2026",
-  "title": "Finish the mobile craftsmanship pass",
-  "summary": "Refines the four primary destinations with one institutional masthead, flatter grouped surfaces, real message bubbles, calmer typography and more deliberate night-shift depth.",
+  "title": "Add scroll-linked glass and night-shift depth",
+  "summary": "Introduces a shared scroll-edge glass bar, a compact update card, cleaner roster management and a more dimensional personal assignment hero without changing clinical or PWA behaviour.",
   "changes": [
-    "Night now has the same clear destination identity as Changes, Breaks and Chat, while its Tonight board relies on spacing and hairline separators rather than extra shadow and card furniture.",
-    "Changes now presents Absences and Overtime as one grouped staffing surface, removes duplicated no-record messages and keeps exceptional editing in focused Motion sheets.",
-    "Breaks now uses flat nurse rows inside one schedule surface, with blue reserved for the signed-in nurse and interaction rather than decorative section colour.",
-    "Chat now keeps notifications after conversations, fixes the masthead composition and renders team messages as true left/right conversation bubbles with lighter metadata and a sticky native-style composer.",
-    "Shared chrome gains consistent account and administrator controls, tighter radii, restrained tactile feedback, a lighter Motion tab indicator and a more intentional dark-mode treatment for night-shift use."
+    "Night, Changes, Breaks, Chat, Full roster and Roster management now share a continuously scroll-linked glass header that fades and settles into place as content moves beneath it, while preserving reduced-motion and reduced-transparency fallbacks.",
+    "The waiting PWA update prompt is now a compact theme-aware glass card with a blue Update action and quieter version/detail hierarchy, while the existing user-approved ACTIVATE_UPDATE flow is unchanged.",
+    "Roster management now uses a cleaner administrator header, a sticky glass section control, quieter health indicators and flatter grouped status surfaces with less nested card furniture.",
+    "The Night assignment hero keeps its black identity but adds restrained blue lighting, richer near-black depth, a dimensional role token and icon-led Colleague, On duty and Break facts.",
+    "Scroll chrome context adapts to the active destination, showing the most useful compact state such as the current role, break, staffing count, chat status or administrator section."
   ],
   "update_policy": "important"
 }

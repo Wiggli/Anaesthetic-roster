@@ -314,9 +314,18 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
 
       <dl className="personalFacts personalScan" aria-label="Your night at a glance">
-        <div className="personalFactContext"><dt>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
-        <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
-        <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
+        <div className="personalFactContext">
+          <span className="personalFactIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.4-3.5 2.4-5.4 5.5-5.4s5.1 1.9 5.5 5.4M17 8.5h4M19 6.5v4" /></svg></span>
+          <dt>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd>
+        </div>
+        <div>
+          <span className="personalFactIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2" /></svg></span>
+          <dt>On duty</dt><dd>{model.period || 'Pending'}</dd>
+        </div>
+        <div>
+          <span className="personalFactIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /></svg></span>
+          <dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd>
+        </div>
       </dl>
 
       <Pressable type="button" className="personalContextAction" onClick={action}>

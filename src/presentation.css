@@ -8933,3 +8933,703 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
     background:var(--scene-surface)!important;
   }
 }
+
+
+/* 37.78 interaction/material pass: scroll-linked glass, compact update prompt, admin polish and a dimensional Night hero. */
+:root{
+  --scroll-chrome-progress:0;
+  --scroll-chrome-offset:-12px;
+}
+
+/* A single scroll-edge material for every primary destination. Content remains visible beneath the blur. */
+.scrollGlassHeader{
+  position:fixed;
+  z-index:58;
+  top:0;
+  left:0;
+  right:0;
+  height:calc(54px + env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top);
+  opacity:var(--scroll-chrome-progress);
+  transform:translate3d(0,var(--scroll-chrome-offset),0);
+  pointer-events:none;
+  background:rgba(247,247,250,.76);
+  border-bottom:1px solid rgba(60,60,67,.12);
+  box-shadow:0 8px 24px rgba(18,24,32,.055);
+  -webkit-backdrop-filter:saturate(185%) blur(24px);
+  backdrop-filter:saturate(185%) blur(24px);
+  will-change:opacity,transform;
+}
+.scrollGlassHeader::after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.88),transparent);
+  opacity:.55;
+}
+.scrollGlassInner{
+  width:min(100%,1040px);
+  height:54px;
+  margin:0 auto;
+  padding:0 max(18px,env(safe-area-inset-left)) 0 max(18px,env(safe-area-inset-right));
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+}
+.scrollGlassGlyph{
+  display:grid;
+  width:30px;
+  height:30px;
+  place-items:center;
+  border:1px solid color-mix(in srgb,var(--scene-accent) 12%,transparent);
+  border-radius:10px;
+  background:color-mix(in srgb,var(--scene-accent) 8%,rgba(255,255,255,.55));
+  color:var(--scene-accent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+.scrollGlassGlyph svg{
+  width:16px;
+  height:16px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+}
+.scrollGlassCopy{
+  min-width:0;
+}
+.scrollGlassCopy small{
+  display:block;
+  overflow:hidden;
+  color:var(--scene-secondary);
+  font-size:8.5px;
+  font-weight:620;
+  line-height:1.1;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassCopy strong{
+  display:block;
+  overflow:hidden;
+  margin-top:1px;
+  color:var(--scene-ink);
+  font-size:14px;
+  font-weight:720;
+  line-height:1.15;
+  letter-spacing:-.018em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassMeta{
+  max-width:42vw;
+  overflow:hidden;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(118,118,128,.08);
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  font-weight:640;
+  line-height:1;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body.dark .scrollGlassHeader,
+html[data-theme="dark"] .scrollGlassHeader{
+  background:rgba(20,20,22,.72);
+  border-bottom-color:rgba(255,255,255,.08);
+  box-shadow:0 10px 28px rgba(0,0,0,.20);
+}
+body.dark .scrollGlassHeader::after,
+html[data-theme="dark"] .scrollGlassHeader::after{
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+}
+body.dark .scrollGlassGlyph,
+html[data-theme="dark"] .scrollGlassGlyph{
+  background:rgba(10,132,255,.11);
+  border-color:rgba(10,132,255,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+body.dark .scrollGlassMeta,
+html[data-theme="dark"] .scrollGlassMeta{
+  background:rgba(255,255,255,.07);
+}
+
+/* Roster Management uses the same material language and keeps its section control within reach. */
+#admin{
+  padding-top:calc(8px + env(safe-area-inset-top))!important;
+}
+#admin .adminHeader{
+  margin:0 0 12px!important;
+  padding:8px 4px 14px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin .adminHeader .ctop{
+  align-items:flex-start!important;
+  gap:18px!important;
+}
+#admin .adminHeaderCopy{
+  min-width:0;
+  flex:1;
+}
+#admin .adminHeaderEyebrow{
+  display:block;
+  margin-bottom:3px;
+  color:var(--scene-secondary);
+  font-size:9px;
+  font-weight:680;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#admin .adminHeader h2{
+  margin:0!important;
+  font-size:32px!important;
+  font-weight:755!important;
+  line-height:1!important;
+  letter-spacing:-.045em!important;
+}
+#admin .adminHeader .time{
+  max-width:480px!important;
+  margin-top:7px!important;
+  color:var(--scene-secondary)!important;
+  font-size:11px!important;
+  line-height:1.38!important;
+}
+#admin #closeAdminBtn{
+  min-width:58px!important;
+  min-height:38px!important;
+  padding:0 12px!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:14px!important;
+  background:var(--scene-surface)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+  font-weight:660!important;
+}
+#admin .adminTabs{
+  position:sticky!important;
+  z-index:42!important;
+  top:calc(54px + env(safe-area-inset-top))!important;
+  margin:0 0 14px!important;
+  padding:4px!important;
+  border:1px solid rgba(60,60,67,.11)!important;
+  border-radius:17px!important;
+  background:rgba(247,247,250,.74)!important;
+  box-shadow:0 8px 24px rgba(18,24,32,.045)!important;
+  -webkit-backdrop-filter:saturate(185%) blur(22px)!important;
+  backdrop-filter:saturate(185%) blur(22px)!important;
+}
+#admin .adminTabs button{
+  min-height:40px!important;
+  border-radius:12px!important;
+  font-size:9.5px!important;
+  font-weight:650!important;
+}
+#admin .adminTabs button.active{
+  background:rgba(255,255,255,.86)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.035),inset 0 1px 0 rgba(255,255,255,.65)!important;
+}
+#admin #adminOverview>.panel{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin #adminOverview .adminSectionIntro{
+  margin:0 2px 10px!important;
+}
+#admin #adminOverview .adminSectionIcon{
+  width:34px!important;
+  height:34px!important;
+  flex-basis:34px!important;
+  border-radius:11px!important;
+  background:color-mix(in srgb,var(--liquid-success) 9%,transparent)!important;
+  color:var(--liquid-success)!important;
+}
+#admin #adminOverview .adminSectionIntro h2{
+  font-size:18px!important;
+  font-weight:720!important;
+}
+#admin #adminOverview .statusGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:0!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+}
+#admin #adminOverview .statusGrid>.statusCard{
+  min-height:66px!important;
+  padding:11px 12px!important;
+  border:0!important;
+  border-right:1px solid var(--craft-hairline)!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+  background:transparent!important;
+}
+#admin #adminOverview .statusGrid>.statusCard:nth-child(2n){
+  border-right:0!important;
+}
+#admin #adminOverview .statusGrid>.statusCard:nth-last-child(-n+2){
+  border-bottom:0!important;
+}
+#admin #adminOverview .statusCard .time{
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:560!important;
+}
+#admin #adminOverview .statusCard b{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin-top:4px!important;
+  color:var(--scene-ink)!important;
+  font-size:14px!important;
+  font-weight:710!important;
+  line-height:1.25!important;
+}
+#admin #adminOverview .statusCard b.verified::before{
+  content:"";
+  width:7px;
+  height:7px;
+  flex:0 0 7px;
+  border-radius:50%;
+  background:var(--liquid-success);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--liquid-success) 10%,transparent);
+}
+#admin #adminOverview .adminSummary{
+  overflow:hidden!important;
+  margin:12px 0 0!important;
+  padding:0!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+}
+#admin #adminOverview .adminOperationalRow{
+  padding:11px 13px!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+}
+#admin #adminOverview .adminOperationalRow b{
+  font-size:11.5px!important;
+  font-weight:680!important;
+}
+#admin #adminOverview .adminOperationalRow span{
+  margin-top:3px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+}
+#admin #adminOverview .adminSummary>.time{
+  padding:9px 13px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+}
+#admin #adminOverview .adminHealthPanel{
+  margin:14px 0 0!important;
+  padding:13px!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+}
+#admin #adminOverview .adminHealthHeader{
+  align-items:center!important;
+}
+#admin #adminOverview .adminHealthHeader span{
+  color:var(--scene-secondary)!important;
+  font-size:8.5px!important;
+  letter-spacing:.055em!important;
+}
+#admin #adminOverview .adminHealthHeader h3{
+  margin-top:2px!important;
+  font-size:16px!important;
+  font-weight:710!important;
+  letter-spacing:-.02em!important;
+}
+#admin #adminOverview #refreshAdminHealthBtn{
+  min-height:34px!important;
+  padding:0 11px!important;
+  border:1px solid var(--craft-hairline)!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:var(--scene-accent)!important;
+  box-shadow:none!important;
+  font-size:10px!important;
+}
+#admin #adminOverview .adminHealthGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:0!important;
+  margin-top:11px!important;
+  overflow:hidden!important;
+  border-top:1px solid var(--craft-hairline)!important;
+}
+#admin #adminOverview .adminHealthMetric{
+  min-height:58px!important;
+  padding:10px 9px!important;
+  border:0!important;
+  border-right:1px solid var(--craft-hairline)!important;
+  border-bottom:1px solid var(--craft-hairline)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#admin #adminOverview .adminHealthMetric:nth-child(2n){
+  border-right:0!important;
+}
+#admin #adminOverview .adminHealthMetric b{
+  font-size:13px!important;
+  font-weight:700!important;
+}
+#admin #adminOverview .adminHealthMetric span{
+  margin-top:2px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9px!important;
+  line-height:1.25!important;
+}
+body.dark #admin .adminTabs,
+html[data-theme="dark"] #admin .adminTabs{
+  border-color:rgba(255,255,255,.08)!important;
+  background:rgba(24,24,27,.72)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.18)!important;
+}
+body.dark #admin .adminTabs button.active,
+html[data-theme="dark"] #admin .adminTabs button.active{
+  background:rgba(58,58,62,.82)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+
+/* The waiting update is now a compact, theme-aware glass card instead of a heavy charcoal alert. */
+.updateBanner.hidden,
+body:not([data-view="today"]) .updateBanner{
+  display:none!important;
+}
+.updateBanner{
+  left:14px!important;
+  right:14px!important;
+  bottom:calc(74px + env(safe-area-inset-bottom))!important;
+  width:min(520px,calc(100% - 28px))!important;
+  max-width:520px!important;
+  min-height:0!important;
+  margin:0 auto!important;
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:8px 10px!important;
+  padding:10px 11px!important;
+  border:1px solid rgba(255,255,255,.7)!important;
+  border-radius:20px!important;
+  background:rgba(248,248,250,.84)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:0 18px 44px rgba(18,24,32,.16)!important;
+  -webkit-backdrop-filter:saturate(185%) blur(28px)!important;
+  backdrop-filter:saturate(185%) blur(28px)!important;
+  animation:updateBannerMaterialIn 280ms cubic-bezier(.22,.78,.2,1) both;
+}
+.updateBannerIcon{
+  width:38px!important;
+  height:38px!important;
+  border:1px solid color-mix(in srgb,var(--scene-accent) 12%,transparent)!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,rgba(255,255,255,.55))!important;
+  color:var(--scene-accent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72)!important;
+}
+.updateBannerIcon svg{
+  width:20px!important;
+  height:20px!important;
+}
+.updateBannerSummary{
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--scene-ink)!important;
+}
+.updateBannerSummary>span{
+  color:var(--scene-secondary)!important;
+  font-size:8.8px!important;
+  font-weight:650!important;
+  letter-spacing:.015em!important;
+}
+.updateBannerSummary>b{
+  margin-top:2px!important;
+  color:var(--scene-ink)!important;
+  font-size:13.5px!important;
+  font-weight:720!important;
+  line-height:1.2!important;
+  letter-spacing:-.015em!important;
+}
+.updateBannerSummary>small{
+  max-width:100%!important;
+  margin-top:2px!important;
+  overflow:hidden!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  line-height:1.25!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.updateBannerActions{
+  grid-column:1 / -1!important;
+  display:grid!important;
+  grid-template-columns:.72fr 1.28fr!important;
+  gap:7px!important;
+  width:100%!important;
+  margin-top:2px!important;
+}
+.updateBannerActions button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:38px!important;
+  padding:0 11px!important;
+  border-radius:12px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.updateBannerActions .updateLaterBtn{
+  background:transparent!important;
+  color:var(--scene-secondary)!important;
+}
+.updateBannerActions #applyUpdateBtn{
+  background:var(--scene-accent)!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px color-mix(in srgb,var(--scene-accent) 18%,transparent)!important;
+}
+.updateBanner.automatic .updateBannerActions #applyUpdateBtn{
+  background:var(--scene-accent)!important;
+}
+body.dark .updateBanner,
+html[data-theme="dark"] .updateBanner{
+  border-color:rgba(255,255,255,.10)!important;
+  background:rgba(31,31,34,.84)!important;
+  box-shadow:0 20px 48px rgba(0,0,0,.32)!important;
+}
+body.dark .updateBannerIcon,
+html[data-theme="dark"] .updateBannerIcon{
+  border-color:rgba(10,132,255,.16)!important;
+  background:rgba(10,132,255,.11)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+@keyframes updateBannerMaterialIn{
+  from{opacity:0;transform:translateY(18px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+
+/* Night's assignment card stays black, but now has dimensional material and a focused blue light. */
+#today #personalNightCard>.personalHeroSurface{
+  isolation:isolate!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:24px!important;
+  background:
+    radial-gradient(circle at 87% 13%,rgba(0,113,227,.16),transparent 30%),
+    radial-gradient(circle at 12% 96%,rgba(255,255,255,.035),transparent 38%),
+    linear-gradient(145deg,#242427 0%,#1a1a1d 52%,#121214 100%)!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.32),
+    0 22px 48px rgba(13,18,25,.17)!important;
+}
+#today #personalNightCard>.personalHeroSurface::before{
+  z-index:-1!important;
+  height:auto!important;
+  inset:0!important;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.055),transparent 24%,transparent 72%,rgba(0,113,227,.04))!important;
+}
+#today #personalNightCard>.personalHeroSurface::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 18%);
+}
+#today .personalIdentity{
+  padding:15px 17px 10px!important;
+}
+#today .personalIdentityCopy b,
+#today .personalRoleCopy b,
+#today .personalFacts dd{
+  color:#f8f8fa!important;
+}
+#today .personalIdentityCopy small,
+#today .personalRoleCopy small,
+#today .personalRoleCopy>span,
+#today .personalFacts dt{
+  color:#a9a9b0!important;
+}
+#today .personalIdentity .personalAvatar{
+  width:42px!important;
+  height:42px!important;
+  border:1px solid rgba(255,255,255,.11)!important;
+  background:rgba(255,255,255,.065)!important;
+  color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+#today .personalChangeBtn{
+  color:#2f9bff!important;
+  background:transparent!important;
+}
+#today .personalAssignmentHero{
+  grid-template-columns:52px minmax(0,1fr) auto!important;
+  gap:13px!important;
+  margin:0 12px!important;
+  padding:13px 13px 15px!important;
+  border:0!important;
+  border-radius:17px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .personalRoleIcon{
+  width:50px!important;
+  height:50px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:16px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045))!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 7px 18px rgba(0,0,0,.18)!important;
+}
+#today .personalRoleCopy b{
+  font-size:clamp(25px,6.3vw,31px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.045em!important;
+}
+#today .personalRoleCopy small{
+  font-size:9.5px!important;
+  font-weight:620!important;
+}
+#today .personalRoleCopy>span{
+  font-size:11px!important;
+}
+#today .personalFacts{
+  margin:7px 13px 0!important;
+  border-top:1px solid rgba(255,255,255,.09)!important;
+  background:transparent!important;
+}
+#today .personalFacts>div{
+  display:grid!important;
+  grid-template-columns:25px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  column-gap:7px!important;
+  min-height:68px!important;
+  padding:11px 10px!important;
+  border-left:1px solid rgba(255,255,255,.075)!important;
+}
+#today .personalFacts>div:first-child{
+  border-left:0!important;
+}
+#today .personalFactIcon{
+  grid-column:1!important;
+  grid-row:1 / 3!important;
+  display:grid!important;
+  width:24px!important;
+  height:24px!important;
+  place-items:center!important;
+  border-radius:8px!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#8ec9ff!important;
+}
+#today .personalFactIcon svg{
+  width:14px!important;
+  height:14px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.75!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#today .personalFacts dt{
+  grid-column:2!important;
+  grid-row:1!important;
+  margin:0!important;
+  font-size:8.8px!important;
+  font-weight:600!important;
+}
+#today .personalFacts dd{
+  grid-column:2!important;
+  grid-row:2!important;
+  margin:2px 0 0!important;
+  font-size:11.5px!important;
+  font-weight:680!important;
+  line-height:1.22!important;
+}
+#today .personalContextAction{
+  min-height:48px!important;
+  padding:0 16px!important;
+  border-top:1px solid rgba(255,255,255,.09)!important;
+  background:transparent!important;
+  color:#2f9bff!important;
+  font-size:11.5px!important;
+  font-weight:680!important;
+}
+#today .personalContextAction:active{
+  background:rgba(255,255,255,.045)!important;
+}
+
+/* Reduced transparency still keeps hierarchy without relying on blur. */
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassHeader{
+    background:rgba(247,247,250,.98)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  body.dark .scrollGlassHeader,
+  html[data-theme="dark"] .scrollGlassHeader{
+    background:rgba(28,28,30,.98)!important;
+  }
+  #admin .adminTabs{
+    background:var(--scene-surface)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .updateBanner{
+    background:var(--scene-surface)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .scrollGlassHeader{
+    transform:none!important;
+  }
+  .updateBanner{
+    animation:none!important;
+  }
+}
+@media(max-width:390px){
+  .scrollGlassInner{
+    grid-template-columns:28px minmax(0,1fr) auto;
+    gap:8px;
+    padding-inline:14px;
+  }
+  .scrollGlassGlyph{
+    width:28px;
+    height:28px;
+  }
+  .scrollGlassMeta{
+    max-width:36vw;
+    font-size:8.8px;
+  }
+  #admin .adminTabs button{
+    font-size:9px!important;
+  }
+  #today .personalFacts>div{
+    grid-template-columns:22px minmax(0,1fr)!important;
+    column-gap:5px!important;
+    padding-inline:7px!important;
+  }
+  #today .personalFactIcon{
+    width:22px!important;
+    height:22px!important;
+  }
+}

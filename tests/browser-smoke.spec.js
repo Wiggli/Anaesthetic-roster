@@ -710,6 +710,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   expect(nightOrder).toBe(true);
   await expect(page.locator('#personalNightCard > article.personalHeroSurface')).toHaveCount(1);
   await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard .personalFactIcon')).toHaveCount(3);
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
@@ -738,6 +739,37 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   }
   await captureReview(page, 'breaks');
   await expect(page.locator('#breakDate')).toBeEmpty();
+});
+
+test('scroll-linked chrome and update prompt use translucent mobile materials', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.scrollTo(0, 180);
+    window.dispatchEvent(new Event('scroll'));
+  });
+  await expect.poll(() => page.locator('#scrollGlassHeader').evaluate(el => Number.parseFloat(getComputedStyle(el).opacity))).toBeGreaterThan(0.8);
+  const chromeMaterial = await page.locator('#scrollGlassHeader').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none', position: style.position };
+  });
+  expect(chromeMaterial.backdrop).not.toBe('none');
+  expect(chromeMaterial.position).toBe('fixed');
+  await expect(page.locator('#scrollGlassTitle')).toHaveText('Night');
+
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+    document.getElementById('updateBanner').classList.remove('hidden');
+  });
+  await expect(page.locator('#updateBanner')).toBeVisible();
+  const updateMaterial = await page.locator('#updateBanner').evaluate(el => {
+    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return { backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none', height: rect.height };
+  });
+  expect(updateMaterial.backdrop).not.toBe('none');
+  expect(updateMaterial.height).toBeLessThan(170);
+  await expect(page.locator('#applyUpdateBtn')).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await page.evaluate(() => document.getElementById('updateBanner').classList.add('hidden'));
 });
 
 test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {

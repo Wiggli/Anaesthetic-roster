@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.77 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.78 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -60,6 +60,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.78","date":"30 September 2026","title":"Add scroll-linked glass and night-shift depth","changes":["Night, Changes, Breaks, Chat, Full roster and Roster management now share a continuously scroll-linked glass header that fades and settles into place as content moves beneath it, while preserving reduced-motion and reduced-transparency fallbacks.","The waiting PWA update prompt is now a compact theme-aware glass card with a blue Update action and quieter version/detail hierarchy, while the existing user-approved ACTIVATE_UPDATE flow is unchanged.","Roster management now uses a cleaner administrator header, a sticky glass section control, quieter health indicators and flatter grouped status surfaces with less nested card furniture.","The Night assignment hero keeps its black identity but adds restrained blue lighting, richer near-black depth, a dimensional role token and icon-led Colleague, On duty and Break facts.","Scroll chrome context adapts to the active destination, showing the most useful compact state such as the current role, break, staffing count, chat status or administrator section."]},
   {"version":"37.77","date":"30 September 2026","title":"Finish the mobile craftsmanship pass","changes":["Night now has the same clear destination identity as Changes, Breaks and Chat, while its Tonight board relies on spacing and hairline separators rather than extra shadow and card furniture.","Changes now presents Absences and Overtime as one grouped staffing surface, removes duplicated no-record messages and keeps exceptional editing in focused Motion sheets.","Breaks now uses flat nurse rows inside one schedule surface, with blue reserved for the signed-in nurse and interaction rather than decorative section colour.","Chat now keeps notifications after conversations, fixes the masthead composition and renders team messages as true left/right conversation bubbles with lighter metadata and a sticky native-style composer.","Shared chrome gains consistent account and administrator controls, tighter radii, restrained tactile feedback, a lighter Motion tab indicator and a more intentional dark-mode treatment for night-shift use."]},
   {"version":"37.76","date":"30 September 2026","title":"Unify the primary app shell","changes":["Changes, Breaks and Chat now share Mater Dei institutional branding, section-title rhythm and selected-night styling with Night, removing the previous sense that each destination belonged to a different interface.","Night now groups team state, allocation, the signed-in nurse’s break and selected-night activity into one Tonight board, replacing the loose lower-page text with clear operational rows and a deliberate no-changes state.","Changes now keeps absence and overtime forms out of the way during a normal night: compact staffing summaries open focused Motion bottom sheets only when a user chooses to add or edit a staffing change, with blue primary actions.","Break headings and counts are now neutral, while blue is reserved for the signed-in nurse and interaction, removing the leftover purple and teal section colours.","Primary date navigators, spacing, hierarchy and status treatment are more consistent across Night, Changes and Breaks without changing roster logic, shared-data behaviour, swipe navigation, accessibility or PWA update semantics."]},
   {"version":"37.75","date":"30 September 2026","title":"Polish the night shift interface","changes":["Changes now uses a tighter selected-night bar, calmer step control, compact staffing editors and lower-noise empty states, while preserving the existing Staffing → Allocation → Confirm workflow and every shared-data action.","Breaks now presents First break and Second break as one coherent schedule board, uses a subtle blue personal marker instead of the previous heavy outline, and keeps Labour Ward/Pager notes readable without truncating the operational text.","Chat now presents team messages as familiar conversation bubbles, uses a lighter composer and places notification management behind a secondary disclosure so conversations remain the primary content.","Roster management now fits all five sections on a phone without clipped tabs and compresses overview/status surfaces into a clearer operational summary.","Shared React and Tailwind primitives now use quieter borders, tighter rows and more restrained glass, while the floating navigation is slimmer and keeps the existing continuous swipe, reduced-motion, dark-mode and accessibility behaviour."]},
@@ -413,7 +414,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.77" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.78" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
@@ -1001,7 +1002,48 @@ function renderRecentActivity(date){
 
 function openActivityDetail(item,date){var dialog=byId('activityDetailSheet'),type=byId('activityDetailType'),title=byId('activityDetailTitle'),content=byId('activityDetailContent');if(!dialog||!item)return;type.className='activityType '+item.type;type.textContent=item.label;title.textContent=item.title;var rows=[['Night',fmt(date)],['Details',item.detail||'No additional reason was recorded.'],['Recorded by',item.changed_by||'Roster member'],['Recorded',new Date(item.changed_at).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})]];content.innerHTML=rows.map(function(row){return'<div class="activityDetailRow"><span>'+esc(row[0])+'</span><b>'+esc(row[1])+'</b></div>'}).join('');if(!dialog.open)dialog.showModal()}
 
-function updateScrollChrome(){scrollChromeFrame=null;document.body.classList.toggle('uiScrolled',window.scrollY>18)}
+function scrollChromeContext(){
+  var active=document.querySelector('main>.view:not(.hidden)'),view=active&&active.id||document.body.getAttribute('data-view')||'today',title='Night Roster',meta='',eyebrow='Anaesthetic Night Roster';
+  if(view==='today'){
+    title='Night';
+    var role=document.querySelector('#personalNightCard .personalRoleCopy b');
+    meta=role&&role.textContent?role.textContent.trim():'Your assignment';
+  }else if(view==='changes'){
+    title='Changes';
+    var count=byId('changesModeStatus'),live=byId('changesHeaderLive');
+    meta=(count&&count.textContent?count.textContent.trim():'Staffing')+(live&&live.textContent?' · Live':'');
+  }else if(view==='breaks'){
+    title='Breaks';
+    var personalBreak=document.querySelector('#breakPersonalSummary .personalBreakMain h2');
+    meta=personalBreak&&personalBreak.textContent?personalBreak.textContent.trim():'Tonight’s rest plan';
+  }else if(view==='chat'){
+    title='Anaesthetic Team';
+    var chatState=byId('chatLiveStatus');
+    meta=chatState&&chatState.textContent?chatState.textContent.trim():'Team chat';
+  }else if(view==='admin'){
+    title='Roster management';eyebrow='Administrator';
+    var tab=document.querySelector('#admin .adminTabs button.active');
+    meta=tab&&tab.textContent?tab.textContent.trim():'Overview';
+  }else if(view==='roster'){
+    title='Full roster';meta='Published nights';
+  }
+  return{title:title,meta:meta,eyebrow:eyebrow};
+}
+
+function updateScrollChrome(){
+  scrollChromeFrame=null;
+  var y=Math.max(0,Number(window.scrollY||0)),progress=Math.max(0,Math.min(1,(y-20)/76)),root=document.documentElement,bar=byId('scrollGlassHeader'),context=scrollChromeContext();
+  root.style.setProperty('--scroll-chrome-progress',progress.toFixed(3));
+  root.style.setProperty('--scroll-chrome-offset',(-12+(12*progress)).toFixed(2)+'px');
+  document.body.classList.toggle('uiScrolled',progress>.42);
+  if(bar){
+    var eyebrow=byId('scrollGlassEyebrow'),title=byId('scrollGlassTitle'),meta=byId('scrollGlassMeta');
+    if(eyebrow)eyebrow.textContent=context.eyebrow;
+    if(title)title.textContent=context.title;
+    if(meta)meta.textContent=context.meta;
+    bar.classList.toggle('scrollGlassVisible',progress>.02);
+  }
+}
 function scheduleScrollChrome(){if(scrollChromeFrame)return;scrollChromeFrame=requestAnimationFrame(updateScrollChrome)}
 
 function failedAction(message,retry){lastFailedAction=retry||null;toast(message,retry?{label:'Retry',run:function(){var action=lastFailedAction;lastFailedAction=null;return action&&action()}}:null)}
@@ -1567,10 +1609,11 @@ function updateIsAutomatic(){return !!(pendingUpdateMeta&&pendingUpdateMeta.upda
 
 function renderPendingUpdate(){
   var meta=pendingUpdateMeta||fallbackUpdateMeta(),automatic=meta.update_policy==='automatic',version=meta.version&&meta.version!==APP_VERSION?'Version '+meta.version+(meta.date?' · '+meta.date:''):'New version ready';
-  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList');
+  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerTitle=byId('updateBannerTitle'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList');
   if(banner)banner.classList.toggle('automatic',automatic);
   if(bannerVersion)bannerVersion.textContent=automatic?'Ready for next reopen · '+version:version;
-  if(bannerSmall)bannerSmall.textContent=automatic?'No action required. It will install safely when Night Roster is next reopened.':'See what changed and update when convenient.';
+  if(bannerTitle)bannerTitle.textContent=automatic?'Night Roster update is ready':(meta.version?'Night Roster '+meta.version+' is ready':'Night Roster update is ready');
+  if(bannerSmall)bannerSmall.textContent=automatic?'Installs safely on next reopen':'What’s new · '+(meta.title||'Latest improvements');
   if(sheetVersion)sheetVersion.textContent=automatic?'Automatic update · '+version:version;
   if(sheetTitle)sheetTitle.textContent=meta.title||'Night Roster update';
   if(sheetSummary)sheetSummary.textContent=meta.summary||'Review what is changing, then update when convenient.';
@@ -1668,7 +1711,7 @@ async function authorizeUser(user,session){
 }
 
 function bind(){
-  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
+  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});window.addEventListener('roster:viewchange',scheduleScrollChrome);document.addEventListener('click',function(event){if(event.target&&event.target.closest&&event.target.closest('[data-admin-tab]'))requestAnimationFrame(scheduleScrollChrome)});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
   window.addEventListener('roster:activity-open',function(event){var index=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(index)&&recentActivityItems[index])openActivityDetail(recentActivityItems[index],recentActivityDate)});
   window.addEventListener('roster:changes-action',function(event){var detail=event&&event.detail||{};if(detail.action==='record')showRecordActions(detail.kind,detail.id,detail.name);else if(detail.action==='allocation')setChangesStep('allocation',true);else if(detail.action==='history'){var date=cur().date;historyExpandedDates[date]=!historyExpandedDates[date];renderChanges(cur())}else if(detail.action==='allocation-select'){var base=cur(),date=base.date;if(!allocationDrafts[date])allocationDrafts[date]={};allocationDrafts[date][detail.key]=detail.value;updateAllocationSaveControl(base);updateChangesWorkflow(base,staffingPlan(base));formMessage('allocationFormMessage','Selections ready to review.','')}else if(detail.action==='allocation-mounted')updateAllocationSaveControl(cur());else if(detail.action==='absence-save')saveNightChange();else if(detail.action==='overtime-save')saveOvertime();else if(detail.action==='absence-cancel')cancelAbsenceEdit();else if(detail.action==='role-select'){var roleBase=cur(),assignments=roleEditorAssignments(roleBase),chosen=detail.value,assignmentKeys=roleAssignmentKeys(assignments),source=assignmentKeys.find(function(candidate){return canonicalNurseName(assignments[candidate])===canonicalNurseName(chosen)}),previous=assignments[detail.key];if(source&&source!==detail.key)assignments[source]=previous;assignments[detail.key]=chosen;if(roleAssignmentsDiffer(assignments,currentRoleAssignments(roleBase)))nightRoleOverrideDrafts[roleBase.date]={assignments:assignments,reason:(nightRoleOverrideDrafts[roleBase.date]&&nightRoleOverrideDrafts[roleBase.date].reason)||''};else delete nightRoleOverrideDrafts[roleBase.date];renderChanges(roleBase)}else if(detail.action==='role-reason'){var reasonDraft=nightRoleOverrideDrafts[cur().date];if(reasonDraft){reasonDraft.reason=detail.value;nightRoleOverrideDrafts[cur().date]=reasonDraft}}else if(detail.action==='role-save')saveNightRoleOverride(cur());else if(detail.action==='role-reset')resetNightRoleOverride(cur());else if(detail.action==='staffing-input'){updateStaffingActionAvailability();markInvalid('absentName',false);markInvalid('overtimeName',false);formMessage('absenceFormMessage','');formMessage('overtimeFormMessage','')}else if(detail.action==='staffing-mounted')updateStaffingActionAvailability()});
   window.addEventListener('roster:open-night',function(event){var next=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(next)&&R[next]){idx=next;show('today')}});
