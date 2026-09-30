@@ -10999,6 +10999,12 @@ html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
   background:var(--scene-surface)!important;
   box-shadow:none!important;
 }
+body.dark #breaks .breakScheduleBoard,
+html[data-theme="dark"] #breaks .breakScheduleBoard{
+  border-color:transparent!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
 #breaks .breakScheduleHeader{
   display:grid!important;
   grid-template-columns:32px minmax(0,1fr)!important;
@@ -11141,6 +11147,12 @@ html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
   color:var(--scene-secondary)!important;
 }
 #changes .workflowStep.active{
+  color:var(--scene-accent)!important;
+}
+#changes .workflowStep[aria-selected="true"]{
+  border-color:transparent!important;
+  background:transparent!important;
+  box-shadow:none!important;
   color:var(--scene-accent)!important;
 }
 #changes .workflowSelection{
