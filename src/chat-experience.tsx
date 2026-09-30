@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Avatar, Badge, EmptyState, GlassSurface, GroupedList, ListRow, Pressable, Surface } from './ui-system';
+import { Avatar, Badge, EmptyState, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
 type Member = { personKey: string; displayName: string; initial: string; available: boolean };
@@ -21,7 +21,7 @@ function act(action: string, value: string, kind?: string) { window.dispatchEven
 function ConversationList({ items }: { items: Conversation[] }) {
   const reduced = useReducedMotion();
   if (!items.length) return <Surface>
-    <EmptyState title="No private chats yet" detail="Tap New message to start a one-to-one conversation." />
+    <EmptyState title="No private chats yet" detail="Tap New private chat to message one colleague." />
   </Surface>;
 
   return <GroupedList className="reactConversationGroup chatInboxList tw:overflow-visible">
@@ -156,14 +156,14 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
     window.dispatchEvent(new CustomEvent('roster:chat-composers-mounted'));
     return () => input?.removeEventListener('input', update);
   }, [team]);
-  return <GlassSurface className="chatComposerGlass tw:col-span-full tw:flex tw:min-w-0 tw:items-end tw:gap-1.5 tw:rounded-[22px] tw:p-1.5">
+  return <div className="chatComposerGlass tw:col-span-full tw:flex tw:min-w-0 tw:items-end tw:gap-1.5">
     <textarea
       id={team ? 'chatTeamInput' : 'chatMessageInput'}
       data-chat-composer="react"
       defaultValue={initialValue}
       maxLength={2000}
       rows={1}
-      placeholder={team ? 'Message Anaesthetic Team…' : 'Message…'}
+      placeholder={team ? 'Write to Anaesthetic Team…' : 'Write a message…'}
       aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'}
       className="tw:max-h-32 tw:min-h-10 tw:min-w-0 tw:flex-1 tw:resize-none tw:rounded-[16px] tw:border-0! tw:bg-transparent! tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:shadow-none! tw:outline-none tw:ring-0! tw:placeholder:text-[var(--muted)] tw:focus:border-0! tw:focus:shadow-none! tw:focus:ring-0!"
     />
@@ -177,7 +177,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
     </Pressable>
-  </GlassSurface>;
+  </div>;
 }
 
 export function renderChatOverview(model: ChatOverview) {

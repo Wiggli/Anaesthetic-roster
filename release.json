@@ -1,12 +1,12 @@
 {
-  "version": "37.89",
+  "version": "37.90",
   "date": "30 September 2026",
-  "title": "A real Chat inbox",
-  "summary": "Rebuilds Chat around a clean inbox and dedicated conversation threads while preserving the existing realtime, privacy and unread behaviour.",
+  "title": "Make Team Chat obvious",
+  "summary": "Makes group messaging easier to understand at a glance and repairs the mobile composer so it reads as one clear control instead of nested glass rings.",
   "changes": [
-    "Chat now opens as an inbox with Anaesthetic Team pinned alongside private conversations, instead of embedding the full group conversation above the inbox.",
-    "Team and private conversations now open in a dedicated full-height thread with Liquid Glass header and composer chrome, clearer message grouping, unread dividers and cleaner timestamps.",
-    "Unread state is now tied to the conversation actually being open, while replies, @mentions, long-press actions, retry/delete behaviour, notification preferences and the staff-coordination safety boundary remain intact."
+    "The Chat inbox now labels Anaesthetic Team plainly as Team chat, explains that it reaches everyone on tonight’s roster, uses team-member wording, and gives New private chat a visible text label.",
+    "The staff-coordination notice is shorter and no longer repeats the 14-day retention message, while notification settings are visually quieter beneath the conversations.",
+    "Team and private composers now use one glass dock with a plain text field and one send button, clearer placeholder text, cleaner spacing above the tab bar, and no duplicate borders or glow rings."
   ],
   "update_policy": "important"
 }
