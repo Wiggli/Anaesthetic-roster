@@ -5,6 +5,7 @@ const vm = require('node:vm');
 
 const root = path.join(__dirname, '..');
 const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
+const push = fs.readFileSync(path.join(root, 'push.js'), 'utf8');
 const chatCss = fs.readFileSync(path.join(root, 'chat.css'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
@@ -28,6 +29,10 @@ assert.match(html, /id="chatTeamEntry"[\s\S]*Anaesthetic Team/, 'Anaesthetic Tea
 assert.match(html, /id="chatInboxHeading">Team chat<[\s\S]*Everyone on tonight’s roster/, 'the group conversation must be labelled plainly as Team chat');
 assert.match(html, /id="chatTeamEntry"[\s\S]*Chat with everyone on tonight’s roster/, 'the team row must explain who receives a Team chat message');
 assert.match(html, /id="chatNewPrivateBtn"[\s\S]*New private chat/, 'the private-message action must use a visible text label, not an icon alone');
+assert.match(html, /data-switch-state-for="pushTeamToggle">On/, 'Team chat notifications must expose a non-colour On state label');
+assert.match(html, /data-switch-state-for="pushPrivateToggle">On/, 'Private-message notifications must expose a non-colour On state label');
+assert.match(push, /function pushSetSwitchState\(/, 'dynamic notification preferences must share the explicit switch-state renderer');
+assert.match(push, /teamMuted\?\(mutedUntil\?'Muted':'Off'\):'On'/, 'Team chat mute state must be described as On, Off or Muted');
 assert.match(html, /id="chatTeamThread"[\s\S]*id="chatTeamMessages"/, 'team chat must open into a dedicated scrolling thread');
 assert.match(html, /id="chatTeamThread"[\s\S]*id="chatTeamComposer"[\s\S]*id="chatTeamInput"/, 'group messages must be sent from the dedicated team thread');
 assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversations"/, 'private conversations must remain a distinct inbox section');

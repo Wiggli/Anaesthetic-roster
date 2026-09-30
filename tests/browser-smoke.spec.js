@@ -143,6 +143,55 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   }
 });
 
+test('notification settings use readable rows and explicit switch states', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show && window.show('chat');
+    const disclosure = document.querySelector('.chatNotificationDisclosure');
+    if (disclosure) disclosure.open = true;
+    const settings = document.getElementById('pushPreferenceRows');
+    if (settings) settings.classList.remove('hidden');
+    const badge = document.getElementById('pushStateBadge');
+    if (badge) { badge.textContent = 'On'; badge.className = 'pushStateBadge active'; }
+    const team = document.getElementById('pushTeamToggle');
+    if (team) team.checked = true;
+    const state = document.querySelector('[data-switch-state-for="pushTeamToggle"]');
+    if (state) { state.textContent = 'On'; state.classList.add('on'); }
+  });
+
+  await expect(page.locator('.chatNotificationDisclosure')).toHaveAttribute('open', '');
+  await expect(page.locator('[data-switch-state-for="pushTeamToggle"]')).toHaveText('On');
+  await expect(page.locator('#pushTeamToggle')).toBeChecked();
+
+  const metrics = await page.evaluate(() => {
+    const rowTitle = document.querySelector('#pushTeamToggle')?.closest('label')?.querySelector('b');
+    const rowDetail = document.querySelector('#pushTeamToggle')?.closest('label')?.querySelector('small');
+    const toggle = document.getElementById('pushTeamToggle');
+    const state = document.querySelector('[data-switch-state-for="pushTeamToggle"]');
+    const onStyle = toggle ? getComputedStyle(toggle) : null;
+    const onBackground = onStyle?.backgroundColor || '';
+    if (toggle) toggle.checked = false;
+    const offBackground = toggle ? getComputedStyle(toggle).backgroundColor : '';
+    if (toggle) toggle.checked = true;
+    return {
+      titleSize: rowTitle ? parseFloat(getComputedStyle(rowTitle).fontSize) : 0,
+      detailSize: rowDetail ? parseFloat(getComputedStyle(rowDetail).fontSize) : 0,
+      toggleWidth: toggle ? toggle.getBoundingClientRect().width : 0,
+      toggleHeight: toggle ? toggle.getBoundingClientRect().height : 0,
+      stateVisible: state ? state.getBoundingClientRect().width > 0 : false,
+      onBackground,
+      offBackground
+    };
+  });
+  expect(metrics.titleSize).toBeGreaterThanOrEqual(15);
+  expect(metrics.detailSize).toBeGreaterThanOrEqual(12);
+  expect(metrics.toggleWidth).toBeGreaterThanOrEqual(52);
+  expect(metrics.toggleHeight).toBeGreaterThanOrEqual(30);
+  expect(metrics.stateVisible).toBe(true);
+  expect(metrics.onBackground).not.toBe(metrics.offBackground);
+  await captureReview(page, 'chat-notification-settings');
+});
+
 test('Chat reports connection errors and recovery beside the conversation', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {

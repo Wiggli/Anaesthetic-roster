@@ -121,14 +121,23 @@ function pushPreferenceDefaults(){
 }
 function pushCreatePreferenceRow(id,title,detail){
   var label=document.createElement('label');label.id=id+'Row';
-  var copy=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),input=document.createElement('input');
+  var copy=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),control=document.createElement('span'),state=document.createElement('em'),input=document.createElement('input');
   strong.textContent=title;small.textContent=detail;copy.appendChild(strong);copy.appendChild(small);
+  control.className='settingsSwitchControl';state.className='settingsSwitchState';state.setAttribute('data-switch-state-for',id);state.textContent='On';
   input.id=id;input.type='checkbox';input.checked=true;input.setAttribute('aria-label',title+' notifications');
-  label.appendChild(copy);label.appendChild(input);return label;
+  control.appendChild(state);control.appendChild(input);label.appendChild(copy);label.appendChild(control);return label;
+}
+function pushSetSwitchState(input,text){
+  if(!input)return;
+  var label=input.closest('label'),state=label&&label.querySelector('[data-switch-state-for="'+input.id+'"]');
+  if(!state)return;
+  state.textContent=text||(input.checked?'On':'Off');
+  state.classList.toggle('on',state.textContent==='On');
+  state.classList.toggle('muted',state.textContent==='Muted');
 }
 function pushEnsurePreferenceUi(){
   var settings=pushEl('pushPreferenceRows');if(!settings)return;
-  var heading=document.querySelector('#pushNotificationCard .chatNotificationCopy b');if(heading)heading.textContent='Notifications';
+  var heading=document.querySelector('#pushNotificationCard .chatNotificationCopy b');if(heading)heading.textContent='This device';
   var details=settings.querySelector('.pushDeviceDetails');
   if(!pushEl('pushMentionToggle'))settings.insertBefore(pushCreatePreferenceRow('pushMentionToggle','Mentions','Alert me when someone @mentions me, even if Team chat is muted'),details);
   if(!pushEl('pushRosterToggle'))settings.insertBefore(pushCreatePreferenceRow('pushRosterToggle','Roster updates','Staffing, allocation and night-only role changes'),details);
@@ -148,18 +157,28 @@ function pushRender(){
     pushSetStatus(pushIsIos()&&!pushIsStandalone()?'Add Night Roster to your Home Screen to use notifications.':'Notifications are not supported on this device.',false);return;
   }
   var permission=Notification.permission,enabled=permission==='granted'&&!!pushState.subscription;
-  button.classList.remove('hidden');button.textContent=enabled?'Active':'Enable';button.classList.toggle('enabled',enabled);button.disabled=pushState.busy||permission==='denied';
-  if(stateBadge){stateBadge.textContent=enabled?'Active on this device':permission==='denied'?'Blocked':'Off';stateBadge.className='pushStateBadge '+(enabled?'active':permission==='denied'?'blocked':'off')}
+  button.classList.toggle('hidden',enabled);button.textContent='Enable';button.classList.remove('enabled');button.disabled=pushState.busy||permission==='denied';
+  if(stateBadge){stateBadge.textContent=enabled?'On':permission==='denied'?'Blocked':'Off';stateBadge.className='pushStateBadge '+(enabled?'active':permission==='denied'?'blocked':'off')}
   if(settings)settings.classList.toggle('hidden',!enabled);
   if(enabled){
-    pushSetStatus('Chat and roster alerts can reach this device when Night Roster is closed or in the background.',false);
-    var prefs=Object.assign(pushPreferenceDefaults(),pushState.preferences||{});
-    if(team)team.checked=prefs.team_enabled!==false;
+    pushSetStatus('Notifications are on for this device.',false);
+    var prefs=Object.assign(pushPreferenceDefaults(),pushState.preferences||{}),mutedUntil=pushMutedUntil(),teamMuted=prefs.team_enabled===false||!!mutedUntil;
+    if(team)team.checked=!teamMuted;
     if(priv)priv.checked=prefs.private_enabled!==false;
     if(mention)mention.checked=prefs.mentions_enabled!==false;
     if(roster)roster.checked=prefs.roster_enabled!==false;
     if(access)access.checked=prefs.access_request_enabled!==false;
-    if(muteStatus){var summary=pushMuteSummary();muteStatus.textContent=summary||'Group chat alerts are on';muteStatus.classList.toggle('muted',!!summary)}
+    pushSetSwitchState(team,teamMuted?(mutedUntil?'Muted':'Off'):'On');
+    pushSetSwitchState(priv);
+    pushSetSwitchState(mention);
+    pushSetSwitchState(roster);
+    pushSetSwitchState(access);
+    if(muteStatus){var summary=pushMuteSummary();muteStatus.textContent=summary||'Alerts are on';muteStatus.classList.toggle('muted',!!summary)}
+    Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(muteButton){
+      var unmute=muteButton.getAttribute('data-push-mute')==='off';
+      muteButton.classList.toggle('hidden',teamMuted?!unmute:unmute);
+    });
+    var muteLabel=document.querySelector('.pushMuteLabel');if(muteLabel)muteLabel.textContent=teamMuted?'Team chat is muted':'Mute Team chat';
     pushRenderDevices();
   }else if(permission==='denied'){
     pushSetStatus('Notifications are blocked in your phone or browser settings.',true);button.textContent='Blocked';
