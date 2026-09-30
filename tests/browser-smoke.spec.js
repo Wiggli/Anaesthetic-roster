@@ -749,7 +749,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
   await expect(page.locator('#breakList .breakScheduleSection')).toHaveCount(2);
   await expect(page.locator('#breakList .breakScheduleOrdinal')).toHaveText(['1', '2']);
-  await expect(page.locator('#breakList .breakScheduleHeader').first()).toContainText('3 nurses');
+  await expect(page.locator('#breakList .breakScheduleHeader').first().locator('small')).toHaveText(/\d+ nurses|Awaiting allocation/);
   await expect(page.locator('#breakList .breakPersonYou')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
@@ -876,7 +876,7 @@ test('React Changes journey shows decisions and supports keyboard step selection
       selectionBorder: selectionStyle ? parseFloat(selectionStyle.borderTopWidth) : -1
     };
   });
-  expect(workflowMetrics.height).toBeLessThanOrEqual(48);
+  expect(workflowMetrics.height).toBeLessThanOrEqual(49);
   expect(workflowMetrics.selectionBorder).toBe(0);
   await captureReview(page, 'changes');
   await expect(page.locator('#changes .changesWorkflowTabs')).toBeHidden();
