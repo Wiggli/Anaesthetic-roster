@@ -1,16 +1,12 @@
 {
-  "version": "37.86",
+  "version": "37.87",
   "date": "30 September 2026",
-  "title": "Make Breaks faster to scan",
-  "summary": "Strengthens the compact scroll navigation and rebuilds the Break plan hierarchy so first break, second break, personal placement and additional coverage are immediately readable during a night shift.",
+  "title": "Keep shared plans complete",
+  "summary": "Removes stale confirmation prompts after a selected-night plan has already been confirmed and shared, while keeping the action ready to return if staffing or roles change again.",
   "changes": [
-    "The compact scroll navigation on Changes, Breaks, Chat and Full Roster is taller and uses a clearer 17px title with more breathing room while retaining the neutral content-under-glass treatment.",
-    "Break plan now presents First break and Second break as two clearly separated schedule groups with numbered section markers and integrated nurse counts instead of detached count badges.",
-    "Break nurse rows are tighter and easier to scan, while the signed-in nurse uses only a slim blue leading marker, subtle tint and compact You badge rather than a heavy blue block.",
-    "Labour Ward and Pager notes now sit under a clearer Additional coverage heading and use flatter separated rows instead of another large rounded card.",
-    "The Changes Staffing, Allocation and Confirm selector is shorter and visually secondary to Manage this night, with a thin neutral selection lens and blue active text rather than a large filled segment.",
-    "The Changes date control gives more width to the selected date on phone layouts by narrowing arrow controls and the staffing summary column.",
-    "The bottom destination lens is quieter and nearly borderless so the active icon and text carry selection while underlying content remains more visible."
+    "The Confirm step now hides the primary Confirm and share action once the selected-night plan is already published, including after the allocation view remounts.",
+    "The Night and Breaks confirmation hint is shown only while confirmation is actually required, so a completed shared plan no longer looks unfinished.",
+    "If staffing, allocations or night-only roles change after publication, the confirmation controls automatically return so the revised plan can be reviewed and shared again."
   ],
   "update_policy": "important"
 }
