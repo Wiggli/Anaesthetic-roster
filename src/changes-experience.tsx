@@ -160,7 +160,7 @@ function AllocationList({ model }: { model: ChangesExperience }) {
         data-final-allocation={row.key}
         aria-label={`Choose nurse for ${row.label}`}
         onChange={event => dispatchAction({ action: 'allocation-select', key: row.key, value: event.target.value })}
-        className="tw:min-h-12 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-blue-500/50 tw:focus:ring-2 tw:focus:ring-blue-500/15 tw:dark:border-white/12"
+        className="tw:min-h-12 tw:w-full tw:rounded-[14px] tw:border tw:border-black/[0.07] tw:bg-[var(--card)] tw:px-3.5 tw:text-sm tw:font-semibold tw:outline-none tw:focus:border-blue-500/45 tw:focus:ring-2 tw:focus:ring-blue-500/12 tw:dark:border-white/10"
       >
         <option value="">Choose a nurse</option>
         {row.options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
@@ -174,11 +174,11 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
     dispatchAction({ action: 'staffing-mounted' });
   }, [model, mode]);
 
-  const inputClass = 'tw:min-h-11 tw:w-full tw:rounded-xl tw:border tw:border-black/10 tw:bg-[var(--surface)] tw:px-3 tw:text-sm tw:outline-none tw:focus:border-blue-500/50 tw:focus:ring-2 tw:focus:ring-blue-500/15 tw:dark:border-white/12';
+  const inputClass = 'tw:min-h-12 tw:w-full tw:rounded-[14px] tw:border tw:border-black/[0.07] tw:bg-[var(--card)] tw:px-3.5 tw:text-sm tw:outline-none tw:focus:border-blue-500/45 tw:focus:ring-2 tw:focus:ring-blue-500/12 tw:dark:border-white/10';
 
   if (mode === 'absence') {
     return <div className="tw:grid tw:gap-3">
-      <p className="tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Select the absent nurse. You can arrange cover afterwards.</p>
+      <p className="staffingFormIntro tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Select the absent nurse. You can arrange cover afterwards.</p>
       <div className="changeGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
         <FieldShell label="Nurse">
           <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
@@ -192,7 +192,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
           </select>
         </FieldShell>
       </div>
-      <Pressable className="primary wide tw:min-h-11" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
+      <Pressable className="primary wide staffingPrimaryAction tw:min-h-12" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
         {model.forms.editing ? 'Update absence' : 'Save absence'}
       </Pressable>
       <Pressable
@@ -208,7 +208,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
   }
 
   return <div className="tw:grid tw:gap-3">
-    <p className="tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Add confirmed overtime staff. Their role can be assigned afterwards.</p>
+    <p className="staffingFormIntro tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Add confirmed overtime staff. Their role can be assigned afterwards.</p>
     <div className="overtimeAdd tw:flex tw:items-end tw:gap-2">
       <FieldShell label="Overtime nurse" className="tw:min-w-0 tw:flex-1">
         <input
@@ -228,7 +228,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
           {model.forms.overtimeSuggestions.map(name => <option key={name} value={name} />)}
         </datalist>
       </FieldShell>
-      <Pressable className="soft tw:min-h-11 tw:shrink-0" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
+      <Pressable className="soft overtimeAddButton tw:min-h-12 tw:shrink-0" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
         Add overtime
       </Pressable>
     </div>

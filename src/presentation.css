@@ -6520,3 +6520,902 @@ html[data-theme="dark"] #today .nightDateShell .prettyDateButton small{
   font-weight:600!important;
   line-height:1.1!important;
 }
+
+
+/* 37.75 clinical polish: tighter hierarchy, fewer containers and calmer native-like chrome. */
+:root{
+  --polish-shadow:0 1px 2px rgba(0,0,0,.025),0 8px 24px rgba(0,0,0,.035);
+  --liquid-nav-height:58px;
+}
+body.dark,
+html[data-theme="dark"] body{
+  --polish-shadow:0 1px 0 rgba(255,255,255,.025),0 10px 28px rgba(0,0,0,.20);
+}
+
+/* Shared page-header rhythm for the three operational destinations. */
+#changes .screenHeader,
+#breaks .screenHeader,
+#chat .chatScreenHeader{
+  min-height:0!important;
+  margin:0 0 12px!important;
+  padding:calc(14px + env(safe-area-inset-top)) 3px 5px!important;
+  align-items:flex-end!important;
+}
+#changes .screenEyebrow,
+#breaks .screenEyebrow,
+#chat .chatEyebrow{
+  margin:0 0 3px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  font-weight:680!important;
+  letter-spacing:.015em!important;
+  text-transform:none!important;
+}
+#changes .screenHeader h1,
+#breaks .screenHeader h1,
+#chat .chatScreenHeader h1{
+  margin:0!important;
+  color:var(--scene-ink)!important;
+  font-size:36px!important;
+  font-weight:760!important;
+  letter-spacing:-.045em!important;
+  line-height:.98!important;
+}
+#changes .screenHeader p,
+#breaks .screenHeader p,
+#chat .chatScreenHeader p{
+  min-height:18px!important;
+  margin:8px 0 0!important;
+  color:var(--scene-secondary)!important;
+  font-size:11.5px!important;
+  font-weight:600!important;
+}
+#changes .screenHeader p i,
+#breaks .screenHeader p i,
+#chat .chatScreenHeader .chatLiveDot{
+  width:7px!important;
+  height:7px!important;
+  margin-right:7px!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--liquid-success) 12%,transparent)!important;
+}
+#changes .screenInfoButton,
+#breaks .screenInfoButton{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  min-height:40px!important;
+  margin-bottom:1px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:50%!important;
+  background:var(--scene-surface)!important;
+  color:var(--scene-accent)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.025)!important;
+  font-size:17px!important;
+  font-weight:650!important;
+}
+
+/* Compact shared selected-night context instead of another oversized card. */
+#changes>.changesDatePanel,
+#breaks>.panel{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes>.changesDatePanel{
+  margin:0 0 16px!important;
+  padding:0!important;
+}
+#changes>.changesDatePanel>h2{
+  margin:0 3px 7px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:680!important;
+}
+#changes>.changesDatePanel>.grid2,
+#breaks>.panel>.grid2{
+  overflow:hidden!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.02)!important;
+}
+#changes>.changesDatePanel>.grid2>label,
+#breaks>.panel>.grid2>label{
+  margin:0!important;
+  padding:3px!important;
+  color:transparent!important;
+  font-size:0!important;
+}
+#changes>.changesDatePanel .dateNav,
+#breaks>.panel>.grid2 .dateNav{
+  min-height:50px!important;
+  margin:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#changes>.changesDatePanel .dateNav>button,
+#breaks>.panel>.grid2 .dateNav>button{
+  width:42px!important;
+  min-width:42px!important;
+  height:44px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:transparent!important;
+  color:var(--scene-accent)!important;
+  box-shadow:none!important;
+  font-size:25px!important;
+  font-weight:400!important;
+}
+#changes>.changesDatePanel .prettyDateButton,
+#breaks>.panel>.grid2 .prettyDateButton{
+  min-height:44px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes>.changesDatePanel .staffingCount{
+  min-width:92px!important;
+  padding:8px 13px!important;
+  border-left:1px solid var(--scene-line)!important;
+  background:transparent!important;
+}
+#changes>.changesDatePanel .staffingCount span{
+  font-size:9px!important;
+  letter-spacing:.08em!important;
+}
+#changes>.changesDatePanel .staffingCount strong{
+  font-size:14px!important;
+}
+#changes>.changesDatePanel .staffingCount small,
+#changes>.changesDatePanel .dateResetBtn{
+  display:none!important;
+}
+
+/* Changes reads as one workflow, with forms only where action is needed. */
+#changes>.changePanel{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes>.changePanel>.ctop{
+  align-items:center!important;
+  margin:0 3px 11px!important;
+}
+#changes>.changePanel>.ctop h2{
+  margin:0!important;
+  font-size:20px!important;
+  font-weight:735!important;
+  letter-spacing:-.025em!important;
+}
+#changes>.changePanel>.ctop .time{
+  max-width:420px!important;
+  margin-top:2px!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+#changes .liveStatus{
+  min-height:28px!important;
+  padding:4px 8px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--liquid-success) 8%,transparent)!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  box-shadow:none!important;
+}
+#changes .changesWorkflowTabs{
+  gap:3px!important;
+  margin:0 0 12px!important;
+  padding:4px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:17px!important;
+  background:color-mix(in srgb,var(--scene-surface) 86%,var(--scene-canvas))!important;
+  box-shadow:none!important;
+}
+#changes .changesWorkflowTabs button,
+#changes .workflowStep{
+  min-height:48px!important;
+  padding:7px 5px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .changesWorkflowTabs button.active,
+#changes .workflowStep[aria-selected="true"]{
+  background:var(--scene-surface)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.035)!important;
+}
+#changes .changesWorkflowTabs button>span,
+#changes .workflowStepMark{
+  width:22px!important;
+  height:22px!important;
+  border:0!important;
+  border-radius:8px!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,transparent)!important;
+  color:var(--scene-accent)!important;
+  font-size:10px!important;
+}
+#changes .changesWorkflowTabs button b,
+#changes .workflowStepCopy b{
+  font-size:11.5px!important;
+  font-weight:700!important;
+}
+#changes .changesWorkflowTabs button small{display:none!important}
+#changes .changesWorkflowState{margin:0 2px 12px!important}
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .nightRoleOverrideStep:not(:empty),
+#changes .fixedAllocationBox,
+#changes .historyBox{
+  margin:0 0 12px!important;
+  padding:14px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.02)!important;
+}
+#changes .staffingSection .stepHeader{margin:0 0 10px!important}
+#changes .staffingSection .stepHeader>span,
+#changes .confirmationCard .stepHeader>span{
+  width:24px!important;
+  height:24px!important;
+  border:0!important;
+  border-radius:8px!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,transparent)!important;
+  color:var(--scene-accent)!important;
+  font-size:10px!important;
+}
+#changes .staffingSection .stepHeader h3,
+#changes .confirmationCard .stepHeader h3{
+  font-size:16px!important;
+  font-weight:720!important;
+  letter-spacing:-.02em!important;
+}
+#changes .staffingFormIntro{
+  margin-bottom:2px!important;
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+#changes .changeGrid{gap:10px!important}
+#changes .changeGrid label>span,
+#changes .overtimeAdd label>span{
+  font-size:10.5px!important;
+  font-weight:650!important;
+}
+#changes select,
+#changes input[type="text"],
+#changes input[type="search"]{
+  min-height:48px!important;
+  border-color:var(--scene-line)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-canvas) 58%,var(--scene-surface))!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+}
+#changes .staffingPrimaryAction,
+#changes .overtimeAddButton,
+#changes .continueWorkflowBtn,
+#changes #saveAllocationsBtn{
+  min-height:46px!important;
+  border-radius:14px!important;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+#changes .changesEmptyRecord{
+  margin-top:8px!important;
+  border-top:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#changes .changesEmptyRecord>div{
+  min-height:0!important;
+  padding:10px 0 1px!important;
+}
+#changes .changesEmptyRecord strong{
+  color:var(--scene-secondary)!important;
+  font-size:11.5px!important;
+  font-weight:610!important;
+}
+#changes .allocationRow{
+  gap:10px!important;
+  min-height:64px!important;
+  padding:10px 12px!important;
+}
+#changes .allocationRowCopy strong{font-size:13px!important}
+#changes .allocationRowCopy small{font-size:10.5px!important}
+
+/* Breaks becomes one schedule board instead of a stack of cards. */
+#breaks>.panel{
+  margin:0!important;
+  padding:0!important;
+}
+#breaks #breakPersonalSummary{margin-bottom:14px!important}
+#breaks .personalBreakSummary{
+  overflow:hidden!important;
+  margin:0!important;
+  padding:16px 18px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:22px!important;
+  background:#1c1c1e!important;
+  box-shadow:0 14px 30px rgba(0,0,0,.10)!important;
+}
+#breaks .personalBreakEyebrow{
+  color:#a7a7ad!important;
+  font-size:10px!important;
+  font-weight:650!important;
+}
+#breaks .personalBreakMain{margin-top:7px!important}
+#breaks .personalBreakMain h2{
+  margin:0!important;
+  color:#fff!important;
+  font-size:30px!important;
+  font-weight:760!important;
+  letter-spacing:-.045em!important;
+}
+#breaks .personalBreakMain p,
+#breaks .personalBreakSummary small{color:#b8b8bd!important}
+#breaks .personalBreakMark{
+  width:48px!important;
+  height:48px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:16px!important;
+  background:#2c2c2e!important;
+  color:#fff!important;
+  font-size:21px!important;
+}
+#breaks>.panel>h2{margin:0 3px 7px!important}
+#breaks #breakSummaryRow{
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  margin:11px 0 16px!important;
+  border-top:1px solid var(--scene-line)!important;
+  border-bottom:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#breaks .breakSummaryItem{
+  min-height:52px!important;
+  padding:9px 10px!important;
+  border:0!important;
+  border-left:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakSummaryItem:first-child{border-left:0!important}
+#breaks .breakSummaryItem b{
+  font-size:13.5px!important;
+  font-weight:720!important;
+}
+#breaks .breakSummaryItem small{
+  margin-top:1px!important;
+  font-size:9.5px!important;
+  font-weight:560!important;
+}
+#breaks .breakPlanTitle{margin:0 3px 8px!important}
+#breaks .breakPlanTitle h2{
+  font-size:20px!important;
+  font-weight:735!important;
+  letter-spacing:-.025em!important;
+}
+#breaks .breakScheduleBoard{
+  overflow:hidden!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:20px!important;
+  background:var(--scene-surface)!important;
+}
+#breaks .breakScheduleSection + .breakScheduleSection{
+  border-top:1px solid var(--scene-line)!important;
+}
+#breaks .breakScheduleHeader{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  padding:13px 14px 8px!important;
+}
+#breaks .breakScheduleHeader h3{
+  margin:0!important;
+  font-size:14px!important;
+  font-weight:720!important;
+}
+#breaks .breakScheduleHeader small{
+  display:block!important;
+  margin-top:1px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+}
+#breaks .breakScheduleRows{padding:0 10px 8px!important}
+#breaks .breakScheduleRows>div{border-top:1px solid var(--scene-line)!important}
+#breaks .breakPerson{
+  position:relative!important;
+  min-height:50px!important;
+  padding:10px!important;
+  border:0!important;
+  border-radius:12px!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+#breaks .breakPerson strong{font-size:14px!important}
+#breaks .breakPerson.mine{
+  margin:4px 0!important;
+  border:0!important;
+  outline:0!important;
+  background:color-mix(in srgb,var(--scene-accent) 8%,var(--scene-surface))!important;
+  box-shadow:none!important;
+}
+#breaks .breakPerson.mine::before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  top:9px!important;
+  bottom:9px!important;
+  width:3px!important;
+  border-radius:999px!important;
+  background:var(--scene-accent)!important;
+}
+#breaks .breakPersonYou{
+  border:0!important;
+  background:color-mix(in srgb,var(--scene-accent) 11%,transparent)!important;
+}
+#breaks .breakNotesBlock{margin-top:16px!important}
+#breaks .breakNotesHeading{margin:0 3px 7px!important}
+#breaks .breakNotesHeading h3{
+  margin:0!important;
+  color:var(--scene-secondary)!important;
+  font-size:11px!important;
+  font-weight:680!important;
+}
+#breaks .breakNotesBoard{
+  border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;
+}
+#breaks .breakNote strong{
+  overflow:visible!important;
+  white-space:normal!important;
+  text-overflow:clip!important;
+  font-size:12.5px!important;
+  line-height:1.35!important;
+}
+
+/* Chat prioritises conversations. Preferences remain available but secondary. */
+#chat .chatScreen{padding-bottom:8px!important}
+#chat .chatWorkspace,
+#chat .chatHome{gap:14px!important}
+#chat .chatTeamConsole{
+  overflow:hidden!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:22px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:var(--polish-shadow)!important;
+}
+#chat .chatTeamConsoleHeader{
+  min-height:64px!important;
+  padding:12px 14px!important;
+  border-bottom:1px solid var(--scene-line)!important;
+}
+#chat .chatTeamAvatar{
+  width:40px!important;
+  height:40px!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,var(--scene-surface))!important;
+  color:var(--scene-accent)!important;
+  font-size:12px!important;
+}
+#chat .chatTeamConsoleTitle h2{
+  font-size:16px!important;
+  font-weight:730!important;
+  letter-spacing:-.02em!important;
+}
+#chat .chatTeamEyebrow,
+#chat .chatTeamMemberCount{font-size:9.5px!important}
+#chat .chatTeamToolbar{
+  min-height:32px!important;
+  padding:7px 14px!important;
+  border-bottom:0!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+}
+#chat .chatTeamMessages{padding:8px 12px 12px!important}
+#chat .chatTeamMessage{
+  display:block!important;
+  width:fit-content!important;
+  max-width:86%!important;
+  margin:3px auto 3px 0!important;
+  padding:8px 10px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:15px 15px 15px 5px!important;
+  background:color-mix(in srgb,var(--scene-canvas) 44%,var(--scene-surface))!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamMessage.own{
+  margin-left:auto!important;
+  margin-right:0!important;
+  border-color:color-mix(in srgb,var(--scene-accent) 12%,var(--scene-line))!important;
+  border-radius:15px 15px 5px 15px!important;
+  background:color-mix(in srgb,var(--scene-accent) 8%,var(--scene-surface))!important;
+}
+#chat .chatTeamMessage.mentioned{box-shadow:inset 3px 0 0 var(--scene-accent)!important}
+#chat .chatMessageHeading{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-height:16px!important;
+  margin:0 0 2px!important;
+}
+#chat .chatMessageHeading b{
+  color:var(--scene-ink)!important;
+  font-size:10.5px!important;
+  font-weight:700!important;
+}
+#chat .chatMessageTime{
+  color:var(--scene-secondary)!important;
+  font-size:9px!important;
+  font-weight:550!important;
+}
+#chat .chatMessageBodyText{
+  color:var(--scene-ink)!important;
+  font-size:13px!important;
+  line-height:1.42!important;
+}
+#chat .chatInlineAction{
+  width:24px!important;
+  min-width:24px!important;
+  min-height:20px!important;
+  margin-left:auto!important;
+  padding:0!important;
+  background:transparent!important;
+}
+#chat .chatDateSeparator{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:9px 0 7px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9px!important;
+}
+#chat .chatDateSeparator::before,
+#chat .chatDateSeparator::after{
+  content:""!important;
+  height:1px!important;
+  flex:1!important;
+  background:var(--scene-line)!important;
+}
+#chat .chatComposerGlass{
+  min-height:50px!important;
+  padding:4px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 88%,transparent)!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.07)!important;
+}
+#chat .chatComposerGlass textarea{
+  min-height:40px!important;
+  padding:9px 10px!important;
+  font-size:13px!important;
+}
+#chat .chatComposerGlass .chatSendBtn{
+  width:40px!important;
+  height:40px!important;
+}
+#chat .chatPrivateHeader{
+  margin-top:5px!important;
+  padding:0 2px!important;
+}
+#chat .chatPrivateHeader>div>span{
+  font-size:18px!important;
+  font-weight:735!important;
+  letter-spacing:-.025em!important;
+}
+#chat .chatPrivateHeader small{font-size:10.5px!important}
+#chat .chatNewPrivateBtn{
+  min-height:38px!important;
+  padding:7px 10px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--scene-accent) 7%,transparent)!important;
+  color:var(--scene-accent)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+}
+#chat .chatSafetyNotice{
+  gap:8px!important;
+  margin:0 2px!important;
+  padding:8px 2px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+}
+#chat .chatSafetyNotice svg{
+  width:16px!important;
+  height:16px!important;
+}
+#chat .chatNotificationDisclosure{
+  overflow:hidden!important;
+  margin-top:4px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+}
+#chat .chatNotificationDisclosure:has(#pushNotificationCard.hidden){display:none!important}
+#chat .chatNotificationDisclosure>summary{
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr) 18px!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:58px!important;
+  padding:10px 13px!important;
+  cursor:pointer!important;
+  list-style:none!important;
+}
+#chat .chatNotificationDisclosure>summary::-webkit-details-marker{display:none!important}
+#chat .chatNotificationDisclosureIcon{
+  display:grid!important;
+  width:34px!important;
+  height:34px!important;
+  place-items:center!important;
+  border-radius:11px!important;
+  background:color-mix(in srgb,var(--scene-accent) 8%,transparent)!important;
+  color:var(--scene-accent)!important;
+}
+#chat .chatNotificationDisclosureIcon svg{
+  width:18px!important;
+  height:18px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+}
+#chat .chatNotificationDisclosure>summary span:nth-child(2){min-width:0!important}
+#chat .chatNotificationDisclosure>summary b{
+  display:block!important;
+  font-size:12.5px!important;
+  font-weight:700!important;
+}
+#chat .chatNotificationDisclosure>summary small{
+  display:block!important;
+  margin-top:1px!important;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+}
+#chat .chatNotificationDisclosure>summary i{
+  color:var(--scene-secondary)!important;
+  font-size:22px!important;
+  font-style:normal!important;
+  transform:rotate(0deg)!important;
+  transition:transform .18s ease!important;
+}
+#chat .chatNotificationDisclosure[open]>summary i{transform:rotate(90deg)!important}
+#chat .chatNotificationDisclosure #pushNotificationCard{
+  margin:0!important;
+  border:0!important;
+  border-top:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#chat .chatNotificationTop{
+  min-height:56px!important;
+  padding:10px 12px!important;
+}
+#chat .pushPreferenceRows>label{
+  min-height:52px!important;
+  padding:10px 12px!important;
+}
+#chat .pushMuteActions{
+  gap:6px!important;
+  overflow-x:auto!important;
+  padding:8px 12px!important;
+  scrollbar-width:none!important;
+}
+#chat .pushMuteActions::-webkit-scrollbar{display:none!important}
+#chat .pushMuteActions button{
+  flex:0 0 auto!important;
+  min-height:34px!important;
+  white-space:nowrap!important;
+  border-radius:999px!important;
+  font-size:10px!important;
+}
+
+/* Roster management fits every section on a phone without clipped navigation. */
+#admin{padding-top:calc(10px + env(safe-area-inset-top))!important}
+#admin .adminHeader{
+  margin:0 0 10px!important;
+  padding:8px 3px 12px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#admin .adminHeader .ctop{align-items:flex-start!important}
+#admin .adminHeader h2{
+  margin:0!important;
+  font-size:28px!important;
+  font-weight:760!important;
+  letter-spacing:-.04em!important;
+}
+#admin .adminHeader .time{
+  max-width:430px!important;
+  margin-top:5px!important;
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+#admin #closeAdminBtn{
+  min-width:54px!important;
+  min-height:40px!important;
+  padding:0 12px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:14px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+}
+#admin .adminTabs{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:3px!important;
+  overflow:visible!important;
+  margin:0 0 14px!important;
+  padding:4px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:16px!important;
+  background:color-mix(in srgb,var(--scene-surface) 80%,var(--scene-canvas))!important;
+  box-shadow:none!important;
+}
+#admin .adminTabs button{
+  min-width:0!important;
+  min-height:42px!important;
+  padding:7px 2px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  font-weight:680!important;
+}
+#admin .adminTabs button.active{
+  background:var(--scene-surface)!important;
+  color:var(--scene-ink)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.035)!important;
+}
+#admin .adminPane>.panel{
+  margin:0!important;
+  padding:14px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:20px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:var(--polish-shadow)!important;
+}
+#admin .adminSectionIntro{
+  gap:10px!important;
+  margin-bottom:12px!important;
+}
+#admin .adminSectionIcon{
+  width:36px!important;
+  height:36px!important;
+  flex-basis:36px!important;
+  border-radius:11px!important;
+  background:color-mix(in srgb,var(--scene-accent) 8%,transparent)!important;
+  color:var(--scene-accent)!important;
+  font-size:16px!important;
+}
+#admin .adminSectionIntro h2{
+  font-size:18px!important;
+  font-weight:735!important;
+  letter-spacing:-.025em!important;
+}
+#admin .adminSectionIntro .time{font-size:10.5px!important}
+#admin .statusGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:1px!important;
+  overflow:hidden!important;
+  margin:0!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:16px!important;
+  background:var(--scene-line)!important;
+}
+#admin .statusGrid>*{
+  min-height:74px!important;
+  margin:0!important;
+  padding:12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:var(--scene-surface)!important;
+  box-shadow:none!important;
+}
+#admin .statusGrid strong{
+  font-size:16px!important;
+  letter-spacing:-.02em!important;
+}
+#admin .statusGrid span,
+#admin .statusGrid small{font-size:10px!important}
+#admin .adminSummary{
+  margin:12px 0 0!important;
+  padding:10px 12px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-canvas) 62%,var(--scene-surface))!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+}
+#admin .adminHealthPanel{
+  margin-top:12px!important;
+  padding-top:12px!important;
+  border-top:1px solid var(--scene-line)!important;
+}
+
+/* Persistent chrome remains glass, but no longer dominates the viewport. */
+.bottom.reactTabs{
+  width:calc(100% - 24px)!important;
+  max-width:460px!important;
+  min-height:58px!important;
+  height:58px!important;
+  bottom:calc(7px + env(safe-area-inset-bottom))!important;
+  padding:4px!important;
+  border-radius:24px!important;
+  background:color-mix(in srgb,var(--liquid-glass) 91%,transparent)!important;
+  box-shadow:0 8px 26px rgba(0,0,0,.12)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  backdrop-filter:blur(22px) saturate(145%)!important;
+}
+.bottom.reactTabs button{
+  height:50px!important;
+  min-height:50px!important;
+  gap:0!important;
+  border-radius:18px!important;
+  font-size:10px!important;
+  font-weight:620!important;
+}
+.bottom.reactTabs button svg{
+  width:20px!important;
+  height:20px!important;
+  margin-bottom:1px!important;
+}
+.bottom.reactTabs .tabSlidingIndicator,
+body[data-view="today"] .bottom.reactTabs .tabSlidingIndicator{
+  border-radius:18px!important;
+  background:color-mix(in srgb,var(--scene-accent) 7%,var(--liquid-glass-elevated))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  background:color-mix(in srgb,var(--scene-accent) 12%,rgba(44,44,46,.96))!important;
+}
+body[data-view] main{
+  padding-bottom:calc(58px + 34px + env(safe-area-inset-bottom))!important;
+}
+
+@media(max-width:390px){
+  #changes .screenHeader h1,
+  #breaks .screenHeader h1,
+  #chat .chatScreenHeader h1{font-size:33px!important}
+  #changes>.changesDatePanel .staffingCount{
+    min-width:82px!important;
+    padding-inline:10px!important;
+  }
+  #changes .staffingSection,
+  #changes .confirmationCard{padding:12px!important}
+  #breaks .personalBreakSummary{padding:15px!important}
+  #breaks .personalBreakMain h2{font-size:28px!important}
+  #chat .chatTeamMessage{max-width:90%!important}
+  #admin .adminTabs button{font-size:9.5px!important}
+}
+@media(min-width:760px){
+  #breaks .breakScheduleBoard{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #breaks .breakScheduleSection + .breakScheduleSection{
+    border-top:0!important;
+    border-left:1px solid var(--scene-line)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #chat .chatNotificationDisclosure>summary i{transition:none!important}
+}
