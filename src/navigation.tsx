@@ -94,6 +94,18 @@ function Navigation({ badges }: { badges: Badges }) {
     let suppressClick = false;
     let clickTimer: number | undefined;
     let settleTimer: number | undefined;
+
+    const setGlassTouch = (clientX: number, clientY: number) => {
+      const rect = bar.getBoundingClientRect();
+      const x = clamp(clientX - rect.left, 0, rect.width);
+      const y = clamp(clientY - rect.top, 0, rect.height);
+      bar.style.setProperty('--glass-touch-x', x.toFixed(1) + 'px');
+      bar.style.setProperty('--glass-touch-y', y.toFixed(1) + 'px');
+      bar.setAttribute('data-glass-touching', 'true');
+    };
+    const releaseGlassTouch = () => {
+      bar.removeAttribute('data-glass-touching');
+    };
     let settleTarget: Destination | null = null;
     let committingTarget: Destination | null = null;
     const blockedContentSelector = 'input,select,textarea,[contenteditable="true"]';
@@ -354,6 +366,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const target = hitTarget instanceof Element ? hitTarget : event.target;
       if (!(target instanceof Element)) return;
       const inBar = !!target.closest('.bottom');
+      if (inBar) setGlassTouch(touch.clientX, touch.clientY);
       const view = document.body.getAttribute('data-view') as Destination;
       if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
       if (!inBar && target.closest(blockedContentSelector)) return;
@@ -395,6 +408,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const index = destinations.indexOf(start.view);
       const origin = positions.current[index];
       if (start.bar) {
+        setGlassTouch(touch.clientX, touch.clientY);
         const firstPosition = positions.current[0];
         const lastPosition = positions.current[positions.current.length - 1];
         if (firstPosition !== undefined && lastPosition !== undefined)
@@ -426,6 +440,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const first = start;
       start = null;
       if (!first) return;
+      if (first.bar) releaseGlassTouch();
       if (document.body.getAttribute('data-view') !== first.view || document.querySelector('dialog[open]')) {
         clearContentDrag();
         moveTo(document.body.getAttribute('data-view') || first.view);
@@ -493,7 +508,10 @@ function Navigation({ badges }: { badges: Badges }) {
       const first = start;
       start = null;
       if (!first) return;
-      if (first.bar) moveTo(first.view); else returnContentDrag(first);
+      if (first.bar) {
+        releaseGlassTouch();
+        moveTo(first.view);
+      } else returnContentDrag(first);
     };
     window.addEventListener('roster:viewchange', sync);
     document.addEventListener('touchstart', onStart, { passive: true });
@@ -513,6 +531,9 @@ function Navigation({ badges }: { badges: Badges }) {
       clearContentDrag();
       observer.disconnect();
       animation?.stop();
+      releaseGlassTouch();
+      bar.style.removeProperty('--glass-touch-x');
+      bar.style.removeProperty('--glass-touch-y');
       bar.classList.remove('reactTabs', 'liquidTabBar');
     };
   }, [indicatorX, indicatorScaleX, indicatorScaleY, reducedMotion]);
@@ -531,6 +552,7 @@ function Navigation({ badges }: { badges: Badges }) {
   }
 
   return <div className="tw:contents" data-react-navigation="ready">
+    <span className="tabTouchGlow" aria-hidden="true" />
     <motion.span className="tabSlidingIndicator" aria-hidden="true"
       style={{ x: indicatorX, scaleX: indicatorScaleX, scaleY: indicatorScaleY, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
     <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}

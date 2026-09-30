@@ -466,10 +466,22 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   const barStart = { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 };
   const barEnd = { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 };
   let longDragIndicator;
+  let touchEnergy;
   await realTouchSwipe(page, barStart, barEnd, async () => {
     longDragIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+    touchEnergy = await page.locator('.bottom').evaluate(el => ({
+      energized: el.hasAttribute('data-glass-touching'),
+      x: el.style.getPropertyValue('--glass-touch-x'),
+      y: el.style.getPropertyValue('--glass-touch-y'),
+      glow: Boolean(el.querySelector('.tabTouchGlow'))
+    }));
   });
   expect(longDragIndicator.x).toBeGreaterThan(nightTab.x + nightTab.width);
+  expect(touchEnergy.energized).toBe(true);
+  expect(touchEnergy.glow).toBe(true);
+  expect(touchEnergy.x).toMatch(/px$/);
+  expect(touchEnergy.y).toMatch(/px$/);
+  await expect(page.locator('.bottom')).not.toHaveAttribute('data-glass-touching');
   await expect(page.locator('#chat')).toBeVisible();
   await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
     .toBeLessThan(4);
@@ -484,6 +496,11 @@ test('continuous tab drag and direction-locked page swipes work across Night and
   expect(stableGlass.background).not.toBe('transparent');
   expect(stableGlass.background).not.toBe('rgba(0, 0, 0, 0)');
   expect(stableGlass.backdrop).not.toBe('none');
+  const lensBackdrop = await page.locator('.tabSlidingIndicator').evaluate(el => {
+    const style = getComputedStyle(el);
+    return style.backdropFilter || style.webkitBackdropFilter || 'none';
+  });
+  expect(lensBackdrop).toBe('none');
 
   const barAfterChat = await page.locator('.bottom').boundingBox();
   await realTouchSwipe(page,
@@ -1084,6 +1101,34 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
     expect(material.backdrop).not.toBe('none');
     expect(material.alpha).toBeLessThanOrEqual(0.4);
   }
+
+  await page.evaluate(() => {
+    window.show('changes');
+    window.scrollTo(0, 130);
+  });
+  const contextualRail = page.locator('#reactScrollChrome .scrollGlassRail-changes');
+  await expect(contextualRail).toBeVisible();
+  const railBox = await contextualRail.boundingBox();
+  await contextualRail.dispatchEvent('pointerdown', {
+    pointerId: 1,
+    pointerType: 'mouse',
+    isPrimary: true,
+    buttons: 1,
+    clientX: railBox.x + railBox.width / 2,
+    clientY: railBox.y + railBox.height / 2
+  });
+  const railEnergy = await page.locator('#reactScrollChrome .scrollGlassHeader').evaluate(el => ({
+    energized: el.hasAttribute('data-glass-touching'),
+    x: el.style.getPropertyValue('--glass-touch-x'),
+    y: el.style.getPropertyValue('--glass-touch-y'),
+    glow: Boolean(el.querySelector('.scrollGlassTouchGlow'))
+  }));
+  expect(railEnergy.energized).toBe(true);
+  expect(railEnergy.glow).toBe(true);
+  expect(railEnergy.x).toMatch(/px$/);
+  expect(railEnergy.y).toMatch(/px$/);
+  await contextualRail.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0 });
+  await expect(page.locator('#reactScrollChrome .scrollGlassHeader')).not.toHaveAttribute('data-glass-touching');
 });
 
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
