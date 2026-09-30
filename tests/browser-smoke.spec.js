@@ -1050,6 +1050,28 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
 
   await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'sticky');
   await expect(page.locator('#admin .statusGrid')).toHaveCSS('display', 'block');
+  const floatingMaterials = await page.evaluate(() => {
+    const read = selector => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
+      return {
+        backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
+        alpha: rgba.length >= 4 ? rgba[3] : 1
+      };
+    };
+    return {
+      admin: read('#admin .adminTabs'),
+      bottom: read('.bottom.reactTabs'),
+      composer: read('#chat .chatTeamComposerWrap')
+    };
+  });
+  for (const material of Object.values(floatingMaterials)) {
+    expect(material).toBeTruthy();
+    expect(material.backdrop).not.toBe('none');
+    expect(material.alpha).toBeLessThan(0.9);
+  }
 });
 
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {

@@ -9597,3 +9597,280 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
     max-width:62%!important;
   }
 }
+
+
+/* 37.81 unified floating glass chrome.
+   Only floating interface chrome uses translucency. Clinical content remains solid. */
+:root{
+  --chrome-glass-bg:rgba(247,248,251,.62);
+  --chrome-glass-bg-strong:rgba(252,252,254,.72);
+  --chrome-glass-border:rgba(255,255,255,.58);
+  --chrome-glass-edge:rgba(60,60,67,.14);
+  --chrome-glass-shadow:0 10px 30px rgba(24,32,44,.085);
+  --chrome-glass-blur:30px;
+  --chrome-glass-saturate:180%;
+}
+body.dark,
+html[data-theme="dark"]{
+  --chrome-glass-bg:rgba(25,25,29,.60);
+  --chrome-glass-bg-strong:rgba(34,34,38,.70);
+  --chrome-glass-border:rgba(255,255,255,.10);
+  --chrome-glass-edge:rgba(255,255,255,.08);
+  --chrome-glass-shadow:0 12px 34px rgba(0,0,0,.30);
+}
+
+/* Shared material recipe. */
+.scrollGlassMaterial,
+#admin .adminTabs,
+.bottom.reactTabs,
+#chat .chatTeamComposerWrap,
+.updateBanner{
+  -webkit-backdrop-filter:blur(var(--chrome-glass-blur)) saturate(var(--chrome-glass-saturate))!important;
+  backdrop-filter:blur(var(--chrome-glass-blur)) saturate(var(--chrome-glass-saturate))!important;
+  background:linear-gradient(
+    180deg,
+    color-mix(in srgb,var(--chrome-glass-bg-strong) 94%,transparent),
+    color-mix(in srgb,var(--chrome-glass-bg) 96%,transparent)
+  )!important;
+  border-color:var(--chrome-glass-edge)!important;
+  box-shadow:
+    inset 0 1px 0 var(--chrome-glass-border),
+    var(--chrome-glass-shadow)!important;
+}
+
+/* The compact scroll bar should feel like a thin pane of material, not a white overlay. */
+.scrollGlassMaterial{
+  border-top:0!important;
+  border-left:0!important;
+  border-right:0!important;
+}
+.scrollGlassMaterial::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.22),transparent 22%,transparent 74%,rgba(255,255,255,.07)),
+    linear-gradient(180deg,rgba(255,255,255,.12),transparent 54%);
+  opacity:.58;
+}
+.scrollGlassMaterial::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.62) 22%,rgba(60,60,67,.16) 50%,rgba(255,255,255,.48) 78%,transparent);
+  opacity:.68;
+}
+body.dark .scrollGlassMaterial::before,
+html[data-theme="dark"] .scrollGlassMaterial::before{
+  opacity:.18;
+}
+body.dark .scrollGlassMaterial::after,
+html[data-theme="dark"] .scrollGlassMaterial::after{
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08) 24%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.06) 76%,transparent);
+}
+
+/* Restore the high-translucency administrator rail. Rows visibly travel underneath it. */
+#admin .adminTabs{
+  position:sticky!important;
+  top:calc(env(safe-area-inset-top) + var(--scroll-glass-offset))!important;
+  z-index:53!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  margin:0 0 14px!important;
+  padding:4px!important;
+  border:1px solid var(--chrome-glass-edge)!important;
+  border-radius:17px!important;
+}
+#admin .adminTabs::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(85% 140% at 8% -40%,rgba(255,255,255,.50),transparent 58%),
+    linear-gradient(180deg,rgba(255,255,255,.15),transparent 68%);
+}
+#admin .adminTabs::after{
+  content:"";
+  position:absolute;
+  z-index:2;
+  left:10px;
+  right:10px;
+  top:0;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.86),transparent);
+  opacity:.78;
+}
+#admin .adminTabs button{
+  position:relative!important;
+  z-index:3!important;
+  background:transparent!important;
+}
+#admin .adminTabs button.active{
+  background:rgba(255,255,255,.52)!important;
+  border:1px solid rgba(255,255,255,.46)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.70),
+    0 2px 8px rgba(28,34,44,.07)!important;
+}
+body.dark #admin .adminTabs button.active,
+html[data-theme="dark"] #admin .adminTabs button.active{
+  background:rgba(255,255,255,.10)!important;
+  border-color:rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 10px rgba(0,0,0,.16)!important;
+}
+
+/* Bottom navigation uses the same optical material so content subtly tints it as it passes below. */
+.bottom.reactTabs{
+  overflow:hidden!important;
+  border:1px solid var(--chrome-glass-edge)!important;
+}
+.bottom.reactTabs::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(90% 120% at 18% -45%,rgba(255,255,255,.48),transparent 62%),
+    linear-gradient(180deg,rgba(255,255,255,.08),transparent 60%);
+}
+.bottom.reactTabs::after{
+  content:"";
+  position:absolute;
+  left:18px;
+  right:18px;
+  top:0;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.78),transparent);
+}
+.bottom.reactTabs>button,
+.bottom.reactTabs>.tabSlidingIndicator{
+  position:relative;
+  z-index:2;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  background:rgba(255,255,255,.43)!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.62),0 1px 5px rgba(0,0,0,.035)!important;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  background:rgba(255,255,255,.075)!important;
+  border-color:rgba(255,255,255,.06)!important;
+}
+
+/* Chat gets matching glass at the bottom edge so messages visibly disappear behind the composer. */
+#chat .chatTeamComposerWrap{
+  border-top:1px solid var(--chrome-glass-edge)!important;
+  box-shadow:0 -10px 28px rgba(28,34,44,.055),inset 0 1px 0 var(--chrome-glass-border)!important;
+}
+#chat .chatTeamComposerWrap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.13),transparent 62%);
+}
+#chat .chatComposerGlass{
+  position:relative!important;
+  z-index:1!important;
+  background:rgba(255,255,255,.48)!important;
+  border-color:rgba(255,255,255,.44)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.62)!important;
+}
+body.dark #chat .chatComposerGlass,
+html[data-theme="dark"] #chat .chatComposerGlass{
+  background:rgba(255,255,255,.065)!important;
+  border-color:rgba(255,255,255,.07)!important;
+}
+
+/* Update cards and other floating notices share the same pane rather than switching to a separate visual language. */
+.updateBanner{
+  isolation:isolate!important;
+  overflow:hidden!important;
+  border:1px solid var(--chrome-glass-edge)!important;
+}
+.updateBanner::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(90% 130% at 8% -30%,rgba(255,255,255,.44),transparent 62%),
+    linear-gradient(180deg,rgba(255,255,255,.08),transparent 58%);
+}
+.updateBanner::after{
+  content:"";
+  position:absolute;
+  left:18px;
+  right:18px;
+  top:0;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.82),transparent);
+}
+
+/* The compact scroll header is allowed to become optically denser only as it settles into place. */
+.scrollGlassHeader[data-visible] .scrollGlassMaterial{
+  background:linear-gradient(
+    180deg,
+    color-mix(in srgb,var(--chrome-glass-bg-strong) 96%,transparent),
+    color-mix(in srgb,var(--chrome-glass-bg) 98%,transparent)
+  )!important;
+}
+
+/* The admin rail keeps content underneath instead of creating an opaque gap. */
+#admin .adminPane{
+  position:relative;
+  z-index:1;
+}
+#admin .adminTabs + .adminPane{
+  margin-top:-1px!important;
+}
+
+/* Keep a real translucent background-color under the optical gradient. This is also
+   the stable compositor surface used while the tab bar is being dragged. */
+.scrollGlassMaterial,
+#admin .adminTabs,
+.bottom.reactTabs,
+#chat .chatTeamComposerWrap,
+.updateBanner{
+  background-color:var(--chrome-glass-bg)!important;
+}
+
+/* Protect legibility and accessibility when transparency is reduced or unsupported. */
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMaterial,
+  #admin .adminTabs,
+  .bottom.reactTabs,
+  #chat .chatTeamComposerWrap,
+  .updateBanner{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--scene-surface)!important;
+    box-shadow:0 6px 20px rgba(0,0,0,.06)!important;
+  }
+  #admin .adminTabs button.active,
+  .bottom.reactTabs .tabSlidingIndicator,
+  #chat .chatComposerGlass{
+    background:var(--scene-soft)!important;
+  }
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .scrollGlassMaterial,
+  #admin .adminTabs,
+  .bottom.reactTabs,
+  #chat .chatTeamComposerWrap,
+  .updateBanner{
+    background:var(--scene-surface)!important;
+  }
+}
