@@ -1,13 +1,14 @@
 {
-  "version": "37.81",
+  "version": "37.82",
   "date": "30 September 2026",
-  "title": "Restore unified floating glass",
-  "summary": "Brings back the stronger translucent material on the administrator rail and applies the same restrained glass recipe to the app’s floating chrome.",
+  "title": "Merge contextual controls into glass chrome",
+  "summary": "Completes the scroll-linked chrome concept by folding Changes workflow steps and Roster Management sections into the collapsed glass header instead of stacking separate floating bars.",
   "changes": [
-    "Roster Management’s Overview, Publish, Team, Access and Data rail is translucent again, with stronger blur, saturation, edge highlights and a more transparent selected segment so content visibly travels underneath it while scrolling.",
-    "The scroll-linked compact header, floating bottom navigation, Chat composer and update card now share one optical glass material instead of using slightly different translucent treatments.",
-    "Floating chrome gains subtle edge refraction and specular highlights while solid clinical content remains opaque for legibility and hierarchy.",
-    "Reduced-transparency and unsupported-browser fallbacks remain solid and accessible, and browser coverage now verifies that the major floating surfaces are genuinely translucent rather than opaque."
+    "Changes now carries Staffing, Allocation and Confirm inside the collapsed glass header, with the selected step staying in sync with the existing workflow controls.",
+    "Roster Management now folds Overview, Publish, Team, Access and Data into the same collapsed glass slab, while the in-page section rail scrolls away naturally instead of forming a second sticky bar.",
+    "The compact chrome grows continuously as its contextual rail appears, with blur and saturation increasing with scroll depth so the transition feels attached to the user’s gesture rather than switching abruptly.",
+    "Night keeps the signed-in nurse’s assignment visible with the selected date at the trailing edge, while Breaks and Chat retain their personal and live context without changing roster, staffing, authentication, realtime or update-activation behaviour.",
+    "Browser coverage now verifies the contextual Changes and administrator rails, their active-state synchronisation and the single-slab management layout."
   ],
   "update_policy": "important"
 }
