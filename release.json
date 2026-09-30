@@ -1,12 +1,12 @@
 {
-  "version": "37.90",
+  "version": "37.91",
   "date": "30 September 2026",
-  "title": "Make Team Chat obvious",
-  "summary": "Makes group messaging easier to understand at a glance and repairs the mobile composer so it reads as one clear control instead of nested glass rings.",
+  "title": "Make settings easier to read",
+  "summary": "Improves notification and settings controls for faster night-shift scanning, clearer On and Off states, and a more consistent colour and typography system across utility screens.",
   "changes": [
-    "The Chat inbox now labels Anaesthetic Team plainly as Team chat, explains that it reaches everyone on tonight’s roster, uses team-member wording, and gives New private chat a visible text label.",
-    "The staff-coordination notice is shorter and no longer repeats the 14-day retention message, while notification settings are visually quieter beneath the conversations.",
-    "Team and private composers now use one glass dock with a plain text field and one send button, clearer placeholder text, cleaner spacing above the tab bar, and no duplicate borders or glow rings."
+    "Notification settings now use larger row titles and descriptions, bigger switches, and visible On, Off or Muted labels so state never depends on colour alone.",
+    "Notification colour is simplified: the app accent marks interactive and enabled controls, green is reserved for healthy device status, warning and destructive colours keep their semantic roles, and mute actions use quieter neutral controls.",
+    "Account, appearance and roster-management utility surfaces now share larger settings typography, roomier tap targets and clearer grouped-row hierarchy without changing roster, notification or security behaviour."
   ],
   "update_policy": "important"
 }
