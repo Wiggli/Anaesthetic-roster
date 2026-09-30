@@ -5,9 +5,10 @@
   "summary": "Adds localized light and gentle lens energy at the exact touch point so the shared glass control plane feels directly connected to the user's finger without adding extra glass layers.",
   "changes": [
     "The bottom navigation now illuminates from the finger position during taps and continuous tab drags, while the selected lens subtly brightens and keeps its existing gel-like flex.",
+    "The moving destination lens is now a thin light-and-tint overlay inside the parent material instead of inheriting its own second blur, removing the remaining glass-on-glass over-frosting.",
     "Collapsed Changes and Roster Management controls now receive the same localized touch illumination inside their existing glass plane, preserving the single-material hierarchy.",
     "Touch energy follows the pointer while it moves and disappears cleanly on release or cancellation, without changing navigation, swipe, roster, staffing, authentication, realtime or update behavior.",
-    "Reduced Transparency disables the light bloom and Reduced Motion removes its elastic expansion, while browser smoke coverage now guards the new touch-response state."
+    "Reduced Transparency disables the light bloom and Reduced Motion removes its elastic expansion, while browser smoke coverage now guards the new touch-response and single-layer lens states."
   ],
   "update_policy": "important"
 }
