@@ -10991,6 +10991,14 @@ html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
   background:transparent!important;
   box-shadow:none!important;
 }
+#breaks #breakList>.breakGrid.breakScheduleBoard{
+  gap:12px!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
 #breaks .breakScheduleSection,
 #breaks .breakScheduleSection + .breakScheduleSection{
   overflow:hidden!important;
