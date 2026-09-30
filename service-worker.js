@@ -1,18 +1,18 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v37-78';
+const CACHE_NAME = 'anaesthetic-night-roster-v37-79';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37.78',
-  './theme-bootstrap.js?v=37.78',
-  './app-core.js?v=37.78',
-  './app-ui.js?v=37.78',
-  './manifest.webmanifest?v=37.78',
+  './styles.css?v=37.79',
+  './theme-bootstrap.js?v=37.79',
+  './app-core.js?v=37.79',
+  './app-ui.js?v=37.79',
+  './manifest.webmanifest?v=37.79',
   './release.json',
-  './icon-192.png?v=37.78',
-  './icon-512.png?v=37.78',
-  './apple-touch-icon.png?v=37.78',
-  './anaesthesia-header.jpg?v=37.78',
-  './mater-dei-logo.png?v=37.78'
+  './icon-192.png?v=37.79',
+  './icon-512.png?v=37.79',
+  './apple-touch-icon.png?v=37.79',
+  './anaesthesia-header.jpg?v=37.79',
+  './mater-dei-logo.png?v=37.79'
 ];
 
 // Vite injects the fingerprinted React/CSS assets here at build time.
@@ -39,8 +39,10 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'ACTIVATE_UPDATE') self.skipWaiting();
-  if (event.data && event.data.type === 'GET_CACHE_VERSION' && event.source) {
-    event.source.postMessage({ type: 'CACHE_VERSION', value: CACHE_NAME });
+  if (event.data && event.data.type === 'GET_CACHE_VERSION') {
+    const payload = { type: 'CACHE_VERSION', value: CACHE_NAME };
+    if (event.ports && event.ports[0]) event.ports[0].postMessage(payload);
+    else if (event.source) event.source.postMessage(payload);
   }
 });
 
@@ -143,8 +145,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=37.78', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=37.78', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=37.79', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=37.79', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
