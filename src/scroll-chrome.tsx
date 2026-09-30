@@ -256,7 +256,7 @@ function ScrollGlassChrome() {
             onClick={() => activateRailItem(model.rail!.kind, item.key)}
           >
             {item.active && <motion.span
-              layoutId={'scroll-glass-rail-lens-' + model.rail.kind}
+              layoutId={'scroll-glass-rail-lens-' + model.rail!.kind}
               className="scrollGlassRailLens"
               transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 42, mass: 0.55 }}
               aria-hidden="true"
