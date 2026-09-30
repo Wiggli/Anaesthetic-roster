@@ -105,6 +105,37 @@ test('completed Changes plan keeps confirmation controls hidden after allocation
   await expect(page.locator('#confirmHint')).toHaveClass(/hidden/);
 });
 
+test('Chat opens as an inbox and promotes conversations into a dedicated thread surface', async ({ page, isMobile }) => {
+  await openShell(page);
+  await page.evaluate(() => window.show && window.show('chat'));
+  await expect(page.locator('#chat')).toBeVisible();
+  await expect(page.locator('#chatTeamEntry')).toBeVisible();
+  await expect(page.locator('#chatInboxHeading')).toContainText('Messages');
+  await expect(page.locator('#chatNewPrivateBtn')).toHaveAttribute('aria-label', 'Start a new private message');
+  await expect(page.locator('#chatTeamThread')).toHaveClass(/hidden/);
+  await expect(page.locator('#chatSafetyInfo')).toContainText('Staff coordination only');
+
+  await page.evaluate(() => {
+    const chat = document.getElementById('chat');
+    const home = document.getElementById('chatHome');
+    const teamThread = document.getElementById('chatTeamThread');
+    chat.classList.add('chat-thread-open', 'chat-team-open');
+    document.body.classList.add('chatThreadMode');
+    teamThread.classList.remove('hidden');
+    if (home) home.setAttribute('data-test-inbox-before-thread', 'true');
+  });
+  await expect(page.locator('#chatTeamThread')).toBeVisible();
+  await expect(page.locator('#chatTeamThread .chatThreadHeading')).toContainText('Anaesthetic Team');
+  await expect(page.locator('#chatTeamComposer')).toBeVisible();
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Message Anaesthetic Team…');
+  if (isMobile) {
+    await expect(page.locator('#chatHome')).not.toBeVisible();
+    const pane = await page.locator('#chat .chatConversationPane').boundingBox();
+    expect(pane).not.toBeNull();
+    expect(pane.height).toBeGreaterThan(400);
+  }
+});
+
 test('Chat reports connection errors and recovery beside the conversation', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
@@ -249,25 +280,28 @@ test('horizontal navigation starts directly on a focusable Chat message row', as
   await expect(page.locator('#chat')).toBeVisible();
 
   await page.evaluate(() => {
-    const host = document.getElementById('chatTeamMessages');
-    host.innerHTML = '';
-    const line = document.createElement('div');
-    line.id = 'swipeFocusableChatMessage';
-    line.className = 'chatTeamLine';
-    line.tabIndex = 0;
-    line.setAttribute('aria-label', 'Message from a roster member. Long press for actions.');
-    line.style.minHeight = '58px';
-    line.style.padding = '16px 12px';
-    line.textContent = '[20:14] Michael: Can anyone swap first part?';
-    host.appendChild(line);
+    const chat = document.getElementById('chat');
+    const thread = document.getElementById('chatTeamThread');
+    chat.classList.add('chat-thread-open', 'chat-team-open');
+    document.body.classList.add('chatThreadMode');
+    thread.classList.remove('hidden');
+    window.dispatchEvent(new CustomEvent('roster:chat-messages', { detail: {
+      kind: 'team', bottomOffset: 0, items: [{
+        id: 'swipe-message-1', sender: 'Michael Galea', createdAt: new Date().toISOString(), time: '20:14',
+        body: 'Can anyone swap first part?', own: false, failed: false, deleted: false, mentioned: false,
+        dateLabel: '', unreadBefore: false, replySender: '', replyBody: ''
+      }]
+    } }));
   });
 
-  const message = page.locator('#swipeFocusableChatMessage');
+  const message = page.locator('#chatTeamMessages .chatTeamMessage').first();
+  await expect(message).toBeVisible();
   await message.scrollIntoViewIfNeeded();
   const box = await message.boundingBox();
-  const from = { x: box.x + Math.min(box.width * 0.42, 155), y: box.y + box.height / 2 };
-  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('#swipeFocusableChatMessage')?.id, from))
-    .toBe('swipeFocusableChatMessage');
+  expect(box).not.toBeNull();
+  const from = { x: box.x + Math.min(box.width * 0.42, 155), y: box.y + Math.min(box.height / 2, 24) };
+  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.chatTeamMessage')?.getAttribute('aria-label'), from))
+    .toContain('Message from Michael Galea');
 
   await realTouchPath(page, [
     from,
@@ -1211,7 +1245,29 @@ test('typed Chat overview renders private conversations and registered members',
   });
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
+  await expect(page.locator('#chatInboxHeading')).toContainText('Messages');
+  await expect(page.locator('#chatTeamEntry')).toContainText('Anaesthetic Team');
   await captureReview(page, 'chat');
+  await expect(page.locator('#chatConversationList')).toContainText('2');
+  await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
+
+  if (page.viewportSize().width >= 760) await expect(page.locator('#chatDesktopEmpty')).toBeVisible();
+
+  await page.evaluate(() => {
+    const chat = document.getElementById('chat');
+    const thread = document.getElementById('chatTeamThread');
+    chat.classList.add('chat-thread-open', 'chat-team-open');
+    document.body.classList.add('chatThreadMode');
+    thread.classList.remove('hidden');
+  });
+
+  await expect(page.locator('#chatTeamThread')).toBeVisible();
+  if (page.viewportSize().width >= 760) await expect(page.locator('#chatDesktopEmpty')).toBeHidden();
+
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
+  await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
+  await expect(page.locator('#chatTeamMessages .chatTeamBubble')).toHaveCount(1);
+
   if (page.viewportSize().width < 760) {
     const composer = await page.locator('#chatTeamComposer').boundingBox();
     const dock = await page.locator('.bottom').boundingBox();
@@ -1219,22 +1275,6 @@ test('typed Chat overview renders private conversations and registered members',
     expect(dock).not.toBeNull();
     expect(composer.y + composer.height).toBeLessThanOrEqual(dock.y);
   }
-  await expect(page.locator('#chatConversationList')).toContainText('2');
-  await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
-  if (page.viewportSize().width >= 760) {
-    await expect(page.locator('#chatDesktopEmpty')).toBeVisible();
-    await expect(page.locator('#chatThread')).toBeHidden();
-    await page.locator('#chat').evaluate(el => el.classList.add('chat-thread-open'));
-    await expect(page.locator('#chatDesktopEmpty')).toBeHidden();
-    await expect(page.locator('#chatThread')).toBeVisible();
-    await page.locator('#chat').evaluate(el => el.classList.remove('chat-thread-open'));
-    await expect(page.locator('#chatThread')).toBeHidden();
-  }
-  await expect(page.locator('#chatTeamInput')).toHaveAttribute('data-chat-composer', 'react');
-  await expect(page.locator('#chatTeamComposer .chatComposerGlass')).toHaveCount(1);
-  await expect(page.locator('#chatTeamMessages .chatTeamBubble')).toHaveCount(1);
-  await expect(page.locator('#chatHome > .chatTeamConsole')).toHaveCSS('order', '1');
-  await expect(page.locator('#chatHome > .chatNotificationDisclosure')).toHaveCSS('order', '5');
   const composerMaterial = await page.locator('#chatTeamComposer .chatComposerGlass').evaluate(el => {
     const style = getComputedStyle(el);
     return {
@@ -1263,7 +1303,7 @@ test('typed Chat overview renders private conversations and registered members',
   await page.locator('#chatMemberPicker input[type="search"]').fill('Nobody');
   await expect(page.locator('#chatMemberPicker')).toContainText('No matching roster members');
   await page.locator('#chatMemberPicker input[type="search"]').fill('');
-  await expect(page.locator('#chatTeamMessages')).toContainText('New messages');
+  await expect(page.locator('#chatTeamMessages')).toContainText('Unread messages');
   await expect(page.locator('#chatTeamMessages')).toContainText('Can anyone cover this night?');
   await page.locator('#chatMemberPicker button', { hasText: 'Maria Borg' }).click();
   await page.locator('#chatNewConversationSheet').evaluate(dialog => dialog.close());

@@ -7,7 +7,7 @@ import { Avatar, Badge, EmptyState, GlassSurface, GroupedList, ListRow, Pressabl
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
 type Member = { personKey: string; displayName: string; initial: string; available: boolean };
 type ChatOverview = { conversations: Conversation[]; members: Member[] };
-type Message = { id: string; sender: string; time: string; body: string; own: boolean; failed: boolean; deleted: boolean; mentioned: boolean; dateLabel: string; unreadBefore: boolean; replySender: string; replyBody: string };
+type Message = { id: string; sender: string; createdAt: string; time: string; body: string; own: boolean; failed: boolean; deleted: boolean; mentioned: boolean; dateLabel: string; unreadBefore: boolean; replySender: string; replyBody: string };
 type MessageExperience = { kind: 'team' | 'private'; items: Message[]; bottomOffset: number };
 type ChatStatusModel = { message: string; error: boolean };
 const roots = new Map<string, Root>();
@@ -71,14 +71,14 @@ function MemberPicker({ members }: { members: Member[] }) {
   </div>;
 }
 
-function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'private' }) {
+function MessageCard({ message, kind, groupStart, groupEnd }: { message: Message; kind: 'team' | 'private'; groupStart: boolean; groupEnd: boolean }) {
   const pointer = useRef<{ timer?: number; x: number; y: number }>({ x: 0, y: 0 });
   const cancel = () => { if (pointer.current.timer) window.clearTimeout(pointer.current.timer); pointer.current.timer = undefined; };
   const open = () => !message.failed && act('message', message.id, kind);
   const body = <>
-    {message.replyBody && <span className="tw:mb-2 tw:block tw:rounded-xl tw:border-l-2 tw:border-blue-500 tw:bg-black/4 tw:px-2.5 tw:py-2 tw:dark:bg-white/6"><b className="tw:block tw:text-[0.68rem] tw:text-[var(--accent-strong)]">{message.replySender}</b><small className="tw:mt-0.5 tw:block tw:line-clamp-2 tw:text-[0.7rem] tw:text-[var(--muted)]">{message.replyBody}</small></span>}
-    <span className={`tw:block tw:whitespace-pre-wrap tw:break-words tw:text-sm tw:leading-relaxed ${message.deleted ? 'tw:italic tw:text-[var(--muted)]' : ''}`}>{message.body}</span>
-    {message.failed && <Pressable type="button" onClick={() => act('retry', message.id, kind)} className="tw:mt-2 tw:rounded-full tw:bg-rose-500/12 tw:px-3 tw:py-1.5 tw:text-xs tw:font-bold tw:text-rose-700 tw:dark:text-rose-200">Retry</Pressable>}
+    {message.replyBody && <span className="chatReplyInline"><b>{message.replySender}</b><small>{message.replyBody}</small></span>}
+    <span className={`chatMessageText ${message.deleted ? 'deleted' : ''}`}>{message.body}</span>
+    {message.failed && <Pressable type="button" onClick={() => act('retry', message.id, kind)} className="chatRetryButton">Retry</Pressable>}
   </>;
   const handlers = {
     tabIndex: message.failed ? undefined : 0,
@@ -88,33 +88,51 @@ function MessageCard({ message, kind }: { message: Message; kind: 'team' | 'priv
     onContextMenu: (event: React.MouseEvent) => { event.preventDefault(); cancel(); open(); },
     onKeyDown: (event: React.KeyboardEvent) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); open(); } }
   };
+  const groupClass = `${groupStart ? 'groupStart' : 'groupContinue'} ${groupEnd ? 'groupEnd' : 'groupMiddle'}`;
   return <>
     {message.dateLabel && <div className="chatDateSeparator" role="separator" aria-label={message.dateLabel}><span>{message.dateLabel}</span></div>}
-    {message.unreadBefore && <div className="tw:my-3 tw:flex tw:items-center tw:gap-2" data-chat-unread="true"><span className="tw:h-px tw:flex-1 tw:bg-blue-500/35" /><b className="tw:text-[0.68rem] tw:text-[var(--accent-strong)]">New messages</b><span className="tw:h-px tw:flex-1 tw:bg-blue-500/35" /></div>}
+    {message.unreadBefore && <div className="chatUnreadMarker" data-chat-unread="true"><span /><b>Unread messages</b><span /></div>}
     {kind === 'team' ? <motion.div
       {...handlers}
       layout
-      whileTap={{ scale: 0.995 }}
+      whileTap={{ scale: 0.996 }}
       transition={{ type: 'spring', stiffness: 520, damping: 46, mass: 0.5 }}
-      className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''}`}
+      className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''} ${groupClass}`}
       aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}
     >
-      {!message.own && <span className="chatTeamSender">{message.sender}</span>}
+      {!message.own && groupStart && <span className="chatTeamSender">{message.sender}</span>}
       <div className="chatTeamBubble"><div className="chatMessageBodyText">{body}</div></div>
-      <div className="chatTeamMessageMeta">
+      {(groupEnd || message.failed) && <div className="chatTeamMessageMeta">
         <span>{message.failed ? 'Not sent' : message.time}</span>
         {!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}
+      </div>}
+    </motion.div> : <div className={`chatPrivateMessage ${message.own ? 'own' : ''} ${groupClass}`}>
+      {!message.own && groupStart && <span className="chatPrivateSender">{message.sender}</span>}
+      <div {...handlers} className={`chatPrivateBubble ${message.failed ? 'failed' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
+        {body}
       </div>
-    </motion.div> : <div className={`chatPrivateMessage ${message.own ? 'own' : ''}`}><div {...handlers} className={`chatPrivateBubble ${message.failed ? 'failed' : ''}`} aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}>
-      <div className="chatMessageHeading"><b>{message.own ? 'You' : message.sender}</b><span className="chatMessageTime">{message.failed ? 'Not sent' : message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div>{body}
-    </div></div>}
+      {(groupEnd || message.failed) && <div className="chatPrivateMeta"><span>{message.failed ? 'Not sent' : message.time}</span>{!message.failed && <Pressable type="button" className="chatInlineAction" aria-label={`Actions for message from ${message.own ? 'you' : message.sender}`} onClick={event => { event.stopPropagation(); open(); }}>•••</Pressable>}</div>}
+    </div>}
   </>;
+}
+
+function sameMessageGroup(previous: Message | undefined, current: Message | undefined) {
+  if (!previous || !current || previous.failed || current.failed || previous.deleted || current.deleted) return false;
+  if (previous.replyBody || current.replyBody || current.dateLabel || current.unreadBefore) return false;
+  if (previous.own !== current.own || previous.sender !== current.sender) return false;
+  const previousTime = new Date(previous.createdAt).getTime();
+  const currentTime = new Date(current.createdAt).getTime();
+  return Number.isFinite(previousTime) && Number.isFinite(currentTime) && currentTime - previousTime <= 5 * 60 * 1000;
 }
 
 function Messages({ model, hostId }: { model: MessageExperience; hostId: string }) {
   useLayoutEffect(() => { const host = document.getElementById(hostId); if (host) host.scrollTop = Math.max(0, host.scrollHeight - host.clientHeight - model.bottomOffset); }, [hostId, model]);
-  if (!model.items.length) return <div className="tw:grid tw:min-h-40 tw:place-items-center tw:p-5 tw:text-center"><span><b className="tw:block tw:text-sm">No messages yet</b><small className="tw:mt-1 tw:block tw:text-xs tw:text-[var(--muted)]">Start the conversation below.</small></span></div>;
-  return <div className="tw:grid tw:gap-1.5">{model.items.map(item => <MessageCard key={item.id} message={item} kind={model.kind} />)}</div>;
+  if (!model.items.length) return <div className="chatMessagesEmpty"><span><b>No messages yet</b><small>Start the conversation below.</small></span></div>;
+  return <div className="chatMessageSequence">{model.items.map((item, index) => {
+    const groupStart = !sameMessageGroup(model.items[index - 1], item);
+    const groupEnd = !sameMessageGroup(item, model.items[index + 1]);
+    return <MessageCard key={item.id} message={item} kind={model.kind} groupStart={groupStart} groupEnd={groupEnd} />;
+  })}</div>;
 }
 
 function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initialValue: string }) {
