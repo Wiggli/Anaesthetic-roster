@@ -10361,7 +10361,8 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 
 
 /* 37.84 direct-touch Liquid Glass response. */
-.bottom.reactTabs .tabSlidingIndicator{
+html body[data-view] .bottom.reactTabs .tabSlidingIndicator,
+html body .bottom.reactTabs .tabSlidingIndicator{
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
