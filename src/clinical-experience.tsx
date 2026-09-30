@@ -225,7 +225,7 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
-  const provisional = model.nurseCount < 5 || Boolean(model.alert || model.taskCount || model.labourPending);
+  const provisional = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
   const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
   const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : '0 overtime';
   return <div className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Team staffing and plan status">
@@ -248,8 +248,9 @@ function NightStatus({ model }: { model: NightSummary }) {
 }
 
 function NightAlerts({ model }: { model: NightSummary }) {
+  const needsReview = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
   return <>
-    {model.alert && <div className="alert compactNotice warn">{model.alert}</div>}
+    {model.alert && <div className={`alert compactNotice ${needsReview ? 'warn' : 'informational'}`}>{model.alert}</div>}
     {model.firstTask && <button type="button" className="alert gold taskAlert" onClick={() => goToChanges('allocation')}>
       <b>{model.firstTask}</b><span>Complete now ›</span>
     </button>}

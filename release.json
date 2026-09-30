@@ -1,12 +1,12 @@
 {
-  "version": "37.87",
+  "version": "37.88",
   "date": "30 September 2026",
-  "title": "Keep shared plans complete",
-  "summary": "Removes stale confirmation prompts after a selected-night plan has already been confirmed and shared, while keeping the action ready to return if staffing or roles change again.",
+  "title": "Keep confirmed nights ready",
+  "summary": "Aligns the Night overview with the shared confirmation state so descriptive seven-nurse context no longer appears as an unresolved warning.",
   "changes": [
-    "The Confirm step now hides the primary Confirm and share action once the selected-night plan is already published, including after the allocation view remounts.",
-    "The Night and Breaks confirmation hint is shown only while confirmation is actually required, so a completed shared plan no longer looks unfinished.",
-    "If staffing, allocations or night-only roles change after publication, the confirmation controls automatically return so the revised plan can be reviewed and shared again."
+    "A confirmed seven-nurse arrangement now shows Plan ready on Night when there are no unresolved staffing, allocation or Labour Ward tasks.",
+    "Seven-nurse arrangement text remains visible for context but is styled as informational after confirmation instead of as a warning.",
+    "Review needed is now reserved for genuine unresolved work, and it still returns automatically if a later change creates a task or requires confirmation."
   ],
   "update_policy": "important"
 }

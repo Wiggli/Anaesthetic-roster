@@ -789,6 +789,23 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
+test('confirmed seven-nurse context stays Plan ready instead of forcing review', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 7, absenceCount: 0, overtimeCount: 1, taskCount: 0, decisionTasks: 0,
+      confirmNeeded: false,
+      alert: 'Seven-nurse arrangement: Shaun moves from Labour Ward / Pager into the seventh position. Overtime fills the vacated role.',
+      firstTask: '', labourPending: false,
+      roles: [], extras: []
+    }}));
+  });
+  await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
+  await expect(page.locator('#nightStatusRow')).not.toContainText('Review needed');
+  await expect(page.locator('#alerts .compactNotice')).toHaveClass(/informational/);
+  await expect(page.locator('#alerts .compactNotice')).not.toHaveClass(/warn/);
+});
+
 test('update banner obeys hidden and Night-only visibility states', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => window.show && window.show('today'));
