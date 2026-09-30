@@ -1037,6 +1037,19 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   await expect(chrome).toHaveAttribute('data-mode', 'off');
   await expect(chrome).toHaveCSS('display', 'none');
   await expect(page.locator('#reactScrollChrome .scrollGlassMaterial')).toHaveCount(0);
+  await expect(page.locator('#nightSummaryHeading')).toBeVisible();
+  await expect(page.locator('#nightSummaryHeading')).toContainText('Tonight');
+  const nightGroupStyle = await page.locator('#today .teamOverviewGroup').evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      background: style.backgroundColor,
+      radius: parseFloat(style.borderRadius),
+      overflow: style.overflow
+    };
+  });
+  expect(nightGroupStyle.background).toBe('rgba(0, 0, 0, 0)');
+  expect(nightGroupStyle.radius).toBe(0);
+  expect(nightGroupStyle.overflow).toBe('visible');
 
   await page.evaluate(() => {
     document.getElementById('scrollGlassSmokeSpacer')?.remove();
