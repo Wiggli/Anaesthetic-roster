@@ -24,12 +24,12 @@ new vm.Script(chat, { filename: 'chat.js' });
 
 assert.match(html, /id="chat" class="view hidden"/, 'chat must remain an isolated app view');
 assert.match(html, /data-v="chat"[^>]*>[\s\S]*?<span>Chat<\/span>[\s\S]*?id="chatUnreadBadge"/, 'bottom navigation must expose Chat with an unread badge');
-assert.match(html, /class="chatTeamConsole"[\s\S]*Anaesthetic Team/, 'Anaesthetic Team must be displayed as the main chat transcript');
-assert.match(html, /id="chatTeamMessages"/, 'team chat must expose a scrolling multi-message transcript');
-assert.match(html, /id="chatTeamComposer"[\s\S]*id="chatTeamInput"/, 'group messages must be sent directly from the Chat home screen');
-assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversations"/, 'private conversations must remain visually separate from the team transcript');
-assert.match(html, /One-to-one messages with nurses in the current roster/, 'private messaging must explicitly follow roster membership');
-assert.match(html, /Staff coordination only\.<\/b> Do not share patient-identifiable or clinical information in chat\./, 'chat must retain the patient-information safety notice');
+assert.match(html, /id="chatTeamEntry"[\s\S]*Anaesthetic Team/, 'Anaesthetic Team must be pinned as the first inbox conversation');
+assert.match(html, /id="chatTeamThread"[\s\S]*id="chatTeamMessages"/, 'team chat must open into a dedicated scrolling thread');
+assert.match(html, /id="chatTeamThread"[\s\S]*id="chatTeamComposer"[\s\S]*id="chatTeamInput"/, 'group messages must be sent from the dedicated team thread');
+assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversations"/, 'private conversations must remain a distinct inbox section');
+assert.match(html, /One-to-one conversations/, 'private messaging must remain explicitly one-to-one');
+assert.match(html, /Staff coordination only[\s\S]*No patient-identifiable or clinical information/, 'chat must retain the patient-information safety notice');
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');

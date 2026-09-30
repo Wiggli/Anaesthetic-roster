@@ -28,6 +28,7 @@ var chatState={
   teamHadUnread:false,
   teamNewBelow:0,
   activeConversationId:null,
+  activeThreadKind:null,
   messages:[],
   oldestMessageId:null,
   hasOlder:false,
@@ -108,6 +109,7 @@ function chatSetConnection(state){
   if(state==='live'){live.textContent='Live';live.classList.remove('error');if(dot)dot.classList.remove('error')}
   else if(state==='offline'){live.textContent='Offline';live.classList.add('error');if(dot)dot.classList.add('error')}
   else{live.textContent='Reconnecting';live.classList.add('error');if(dot)dot.classList.add('error')}
+  chatRenderTeamHeader();
 }
 function chatShowFallback(message){
   var fallback=chatEl('chatModuleFallback');if(fallback){fallback.classList.remove('hidden');fallback.textContent=message||'Chat is temporarily unavailable. Night, Changes and Breaks are unaffected.'}
@@ -294,14 +296,21 @@ function chatRenderMessageSequence(host,messages,kind,anchor,hadUnread){
   chatDispatchMessages(host,messages,kind,anchor,hadUnread);
 }
 function chatDispatchMessages(host,messages,kind,anchor,hadUnread){
-  if(!window.dispatchEvent||typeof CustomEvent!=='function')return;var previousDate='',unreadInserted=false,bottomOffset=Math.max(0,host.scrollHeight-host.scrollTop-host.clientHeight),items=messages.map(function(message){var dateKey=chatDateKey(message.created_at),dateLabel=dateKey!==previousDate?chatDateLabel(message.created_at):'',unreadBefore=chatShouldInsertUnread(message,anchor,hadUnread,unreadInserted);previousDate=dateKey;if(unreadBefore)unreadInserted=true;var target=chatReplyTarget(message);return{id:String(message.id),sender:chatDisplayName(message.sender_display_name),time:kind==='team'?chatClock(message.created_at):(message.failed?'Not sent':chatTime(message.created_at)),body:chatMessageBodyText(message),own:chatOwnMessage(message),failed:!!message.failed,deleted:!!message.deleted_at,mentioned:chatMessageMentionsMe(message),dateLabel:dateLabel,unreadBefore:unreadBefore,replySender:target?(target.expired?'Earlier message':chatOwnMessage(target)?'You':chatDisplayName(target.sender_display_name)):'',replyBody:target?(target.expired?'This message is no longer available.':target.deleted_at?'Message deleted':String(target.body||'').slice(0,100)):''}});window.dispatchEvent(new CustomEvent('roster:chat-messages',{detail:{kind:kind,items:items,bottomOffset:bottomOffset}}));
+  if(!window.dispatchEvent||typeof CustomEvent!=='function')return;var previousDate='',unreadInserted=false,bottomOffset=Math.max(0,host.scrollHeight-host.scrollTop-host.clientHeight),items=messages.map(function(message){var dateKey=chatDateKey(message.created_at),dateLabel=dateKey!==previousDate?chatDateLabel(message.created_at):'',unreadBefore=chatShouldInsertUnread(message,anchor,hadUnread,unreadInserted);previousDate=dateKey;if(unreadBefore)unreadInserted=true;var target=chatReplyTarget(message);return{id:String(message.id),sender:chatDisplayName(message.sender_display_name),createdAt:String(message.created_at||''),time:kind==='team'?chatClock(message.created_at):(message.failed?'Not sent':chatTime(message.created_at)),body:chatMessageBodyText(message),own:chatOwnMessage(message),failed:!!message.failed,deleted:!!message.deleted_at,mentioned:chatMessageMentionsMe(message),dateLabel:dateLabel,unreadBefore:unreadBefore,replySender:target?(target.expired?'Earlier message':chatOwnMessage(target)?'You':chatDisplayName(target.sender_display_name)):'',replyBody:target?(target.expired?'This message is no longer available.':target.deleted_at?'Message deleted':String(target.body||'').slice(0,100)):''}});window.dispatchEvent(new CustomEvent('roster:chat-messages',{detail:{kind:kind,items:items,bottomOffset:bottomOffset}}));
 }
 function chatRenderTeamMessages(){chatRenderMessageSequence(chatEl('chatTeamMessages'),chatState.teamMessages,'team',chatState.teamUnreadAnchor,chatState.teamHadUnread)}
 function chatRenderPrivateMessages(){chatRenderMessageSequence(chatEl('chatMessages'),chatState.messages,'private',chatState.privateUnreadAnchor,chatState.privateHadUnread)}
 function chatRenderTeamHeader(){
-  var count=chatEl('chatTeamMemberCount'),unread=chatEl('chatTeamUnread'),team=chatTeamConversation(),rosterCount=chatRosterKeys().length;
-  if(count)count.textContent=rosterCount+' roster member'+(rosterCount===1?'':'s');
-  if(unread&&team){var number=Number(chatState.unreadByConversation[team.id]||0);unread.textContent=chatCap(number,99);unread.classList.toggle('hidden',!number)}
+  var count=chatEl('chatTeamMemberCount'),threadCount=chatEl('chatTeamThreadMemberCount'),unread=chatEl('chatTeamUnread'),preview=chatEl('chatTeamPreview'),when=chatEl('chatTeamTime'),team=chatTeamConversation(),rosterCount=chatRosterKeys().length;
+  var countLabel=rosterCount+' roster member'+(rosterCount===1?'':'s');
+  if(count)count.textContent=countLabel;
+  if(threadCount)threadCount.textContent=countLabel+' · '+((chatEl('chatLiveStatus')&&chatEl('chatLiveStatus').textContent)||'Live');
+  if(team){
+    var number=Number(chatState.unreadByConversation[team.id]||0),latest=chatState.latestByConversation[team.id];
+    if(unread){unread.textContent=chatCap(number,99);unread.classList.toggle('hidden',!number)}
+    if(preview)preview.textContent=latest?((chatOwnMessage(latest)?'You':chatDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'Group chat for roster coordination';
+    if(when)when.textContent=latest?chatTime(latest.created_at):'';
+  }
 }
 function chatRenderConversationList(){
   var host=chatEl('chatConversationList');if(!host)return;host.textContent='';
@@ -327,7 +336,8 @@ function chatDispatchOverview(){
 }
 function chatRenderHome(){chatRenderTeamHeader();chatRenderConversationList();chatRenderNewConversationMembers();chatDispatchOverview()}
 function chatSetThreadHeader(conversation){
-  var title=chatEl('chatThreadTitle'),subtitle=chatEl('chatThreadSubtitle');if(title)title.textContent=chatConversationTitle(conversation);if(subtitle)subtitle.textContent='Private conversation';
+  var name=chatConversationTitle(conversation),title=chatEl('chatThreadTitle'),subtitle=chatEl('chatThreadSubtitle'),avatar=chatEl('chatPrivateThreadAvatar');
+  if(title)title.textContent=name;if(subtitle)subtitle.textContent='Private chat';if(avatar)avatar.textContent=chatInitial(name);
 }
 async function chatEnsureOwnMember(){
   var client=chatClient(),user=chatUser(),profile=chatProfile();if(!client||!user||!profile)return false;
@@ -368,7 +378,7 @@ async function chatMarkRead(conversationId,messageId){
   chatState.readStateByConversation[conversationId]=Number(messageId);chatState.unreadByConversation[conversationId]=0;chatUpdateNavBadge();chatRenderHome();
 }
 async function chatReadTeamIfAtBottom(){
-  var team=chatTeamConversation(),host=chatEl('chatTeamMessages');if(!team||!host||!chatNearBottom(host)||!chatState.teamMessages.length)return;
+  var team=chatTeamConversation(),host=chatEl('chatTeamMessages');if(chatState.activeThreadKind!=='team'||!team||!host||!chatNearBottom(host)||!chatState.teamMessages.length)return;
   var last=chatState.teamMessages.filter(function(m){return chatIsNumericId(m.id)}).slice(-1)[0];if(!last)return;
   chatState.teamNewBelow=0;chatShowNewButton('team',0);await chatMarkRead(team.id,Number(last.id));
 }
@@ -424,14 +434,24 @@ async function chatOpenView(options){
   try{
     await chatFetchOverview(!!options.force);
     var team=chatTeamConversation();
-    if(team&&(!options.targetConversation||options.targetConversation===team.id))await chatLoadTeamMessages(false,!!options.force);
+    if(options.targetConversation&&team&&options.targetConversation===team.id)await chatOpenTeamConversation({force:!!options.force});
+    else if(options.targetConversation)await chatOpenPrivateConversation(options.targetConversation,{force:!!options.force});
   }catch(error){chatShowFallback('Chat is temporarily unavailable. Night, Changes and Breaks are unaffected.');chatSetStatus('Could not connect to chat. Try again in a moment.',true)}
+}
+async function chatOpenTeamConversation(options){
+  options=options||{};var team=chatTeamConversation();if(!team)return;
+  chatState.activeThreadKind='team';chatState.activeConversationId=null;
+  var root=chatEl('chat');if(root){root.classList.add('chat-thread-open');root.classList.add('chat-team-open')}document.body.classList.add('chatThreadMode')
+  var privateThread=chatEl('chatThread');if(privateThread)privateThread.classList.add('hidden');
+  var thread=chatEl('chatTeamThread');if(thread)thread.classList.remove('hidden');
+  chatRenderHome();chatSetTeamStatus('');
+  await chatLoadTeamMessages(false,!!options.force);
 }
 async function chatOpenPrivateConversation(conversationId,options){
   options=options||{};var conversation=chatState.conversations.find(function(item){return item.id===conversationId&&item.kind==='direct'});if(!conversation)return;
-  chatState.activeConversationId=conversationId;chatState.messages=[];chatState.oldestMessageId=null;chatState.hasOlder=false;chatState.loadingThread=true;chatState.privateNewBelow=0;chatShowNewButton('private',0);var token=++chatState.threadToken;
+  chatState.activeThreadKind='private';chatState.activeConversationId=conversationId;chatState.messages=[];chatState.oldestMessageId=null;chatState.hasOlder=false;chatState.loadingThread=true;chatState.privateNewBelow=0;chatShowNewButton('private',0);var token=++chatState.threadToken;
   chatState.privateUnreadAnchor=Number(chatState.readStateByConversation[conversationId]||0);chatState.privateHadUnread=Number(chatState.unreadByConversation[conversationId]||0)>0;
-  var root=chatEl('chat');if(root)root.classList.add('chat-thread-open');var thread=chatEl('chatThread');if(thread)thread.classList.remove('hidden');chatSetThreadHeader(conversation);chatRenderHome();chatSetPrivateStatus('');
+  var root=chatEl('chat');if(root){root.classList.add('chat-thread-open');root.classList.remove('chat-team-open')}document.body.classList.add('chatThreadMode');var teamThread=chatEl('chatTeamThread');if(teamThread)teamThread.classList.add('hidden');var thread=chatEl('chatThread');if(thread)thread.classList.remove('hidden');chatSetThreadHeader(conversation);chatRenderHome();chatSetPrivateStatus('');
   var messages=chatEl('chatMessages');if(messages){messages.textContent='';messages.appendChild(chatCreate('div','chatThreadLoading','Loading recent messages…'))}
   var result=await chatClient().from('chat_messages').select(CHAT_MESSAGE_FIELDS).eq('conversation_id',conversationId).order('id',{ascending:false}).limit(PRIVATE_PAGE_SIZE);
   if(token!==chatState.threadToken)return;chatState.loadingThread=false;if(result.error){chatSetPrivateStatus('This conversation could not be opened.',true);return}
@@ -516,11 +536,21 @@ async function chatStartPrivate(otherPersonKey){
   }
   var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.open)dialog.close();chatRenderHome();await chatOpenPrivateConversation(existing.id);
 }
+function chatOpenSafetyInfo(){
+  var dialog=chatEl('screenInfoSheet'),title=chatEl('screenInfoTitle'),intro=chatEl('screenInfoIntro'),content=chatEl('screenInfoContent');if(!dialog||!title||!intro||!content)return;
+  title.textContent='About Chat';intro.textContent='Chat is for staff coordination only.';
+  content.innerHTML='<section class="infoSheetItem"><h3>Keep patient information out of chat</h3><p>Do not share patient-identifiable details, clinical notes, images or other clinical information here.</p></section><section class="infoSheetItem"><h3>Short-lived messages</h3><p>Chat messages are automatically removed after 14 days. Use the roster workflow for staffing and allocation decisions that need to remain part of the shared night record.</p></section><section class="infoSheetItem"><h3>Notifications</h3><p>Notification previews do not include the message text. Notification preferences can be adjusted from the Chat inbox.</p></section>';
+  if(!dialog.open)dialog.showModal();
+}
 function chatOpenNewConversation(){
   if(!chatOnline()){chatSetStatus('Connect to the internet to start a private chat.',true);return}
   chatRenderNewConversationMembers();var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal();
 }
-function chatCloseThread(){var root=chatEl('chat');if(root)root.classList.remove('chat-thread-open');chatState.activeConversationId=null;chatRenderHome()}
+function chatCloseThread(){
+  var root=chatEl('chat');if(root){root.classList.remove('chat-thread-open');root.classList.remove('chat-team-open')}document.body.classList.remove('chatThreadMode')
+  var teamThread=chatEl('chatTeamThread'),privateThread=chatEl('chatThread');if(teamThread)teamThread.classList.add('hidden');if(privateThread)privateThread.classList.add('hidden');
+  chatState.activeThreadKind=null;chatState.activeConversationId=null;chatRenderHome();
+}
 function chatOpenMessageActions(message,kind){
   if(!message||message.failed)return;chatState.actionMessage=message;chatState.actionKind=kind;var dialog=chatEl('chatMessageActionSheet'),preview=chatEl('chatMessageActionPreview'),deleteBtn=chatEl('chatMessageDeleteBtn'),replyBtn=chatEl('chatMessageReplyBtn');
   if(preview)preview.textContent=message.deleted_at?'Message deleted':String(message.body||'').slice(0,120);
@@ -548,13 +578,13 @@ function chatAcceptIncoming(message){
   var team=chatTeamConversation(),own=chatOwnMessage(message);
   chatState.latestByConversation[message.conversation_id]=message;
   if(team&&message.conversation_id===team.id){
-    var host=chatEl('chatTeamMessages'),near=chatNearBottom(host),active=chatVisible()&&document.visibilityState!=='hidden';
+    var host=chatEl('chatTeamMessages'),near=chatNearBottom(host),active=chatVisible()&&chatState.activeThreadKind==='team'&&document.visibilityState!=='hidden';
     if(!chatIsDuplicate(chatState.teamMessages,message.id))chatState.teamMessages.push(message);chatRenderTeamMessages();
     if(active&&near){chatScrollToBottom(host);chatMarkRead(team.id,Number(message.id))}
     else if(!own){chatState.unreadByConversation[team.id]=Number(chatState.unreadByConversation[team.id]||0)+1;if(active){chatState.teamNewBelow+=1;chatShowNewButton('team',chatState.teamNewBelow)}}
     chatUpdateNavBadge();chatRenderTeamHeader();return;
   }
-  var activePrivate=chatState.activeConversationId===message.conversation_id&&chatVisible()&&document.visibilityState!=='hidden',privateHost=chatEl('chatMessages'),nearPrivate=chatNearBottom(privateHost);
+  var activePrivate=chatState.activeThreadKind==='private'&&chatState.activeConversationId===message.conversation_id&&chatVisible()&&document.visibilityState!=='hidden',privateHost=chatEl('chatMessages'),nearPrivate=chatNearBottom(privateHost);
   if(activePrivate){if(!chatIsDuplicate(chatState.messages,message.id))chatState.messages.push(message);chatRenderPrivateMessages();if(nearPrivate){chatScrollToBottom(privateHost);chatMarkRead(message.conversation_id,Number(message.id))}else if(!own){chatState.unreadByConversation[message.conversation_id]=Number(chatState.unreadByConversation[message.conversation_id]||0)+1;chatState.privateNewBelow+=1;chatShowNewButton('private',chatState.privateNewBelow)}}
   else if(!own)chatState.unreadByConversation[message.conversation_id]=Number(chatState.unreadByConversation[message.conversation_id]||0)+1;
   chatUpdateNavBadge();chatRenderConversationList();
@@ -583,7 +613,7 @@ function chatSubscribeRealtime(){
 }
 function chatTeardownSession(){
   var client=chatClient();clearTimeout(chatState.reconnectTimer);clearTimeout(chatState.overviewRefreshTimer);if(client&&chatState.channel)client.removeChannel(chatState.channel);
-  chatState.channel=null;chatState.startedFor=null;chatState.members=[];chatState.membersById={};chatState.directory=[];chatState.directoryByPerson={};chatState.conversations=[];chatState.latestByConversation={};chatState.unreadByConversation={};chatState.readStateByConversation={};chatState.teamMessages=[];chatState.messages=[];chatState.replyTargets={};chatState.teamReplyMessage=null;chatState.privateReplyMessage=null;chatState.overviewLoadedAt=0;chatState.activeConversationId=null;chatUpdateNavBadge();chatRenderReplyComposer('team');chatRenderReplyComposer('private');chatHideMentionMenu();
+  chatState.channel=null;chatState.startedFor=null;chatState.members=[];chatState.membersById={};chatState.directory=[];chatState.directoryByPerson={};chatState.conversations=[];chatState.latestByConversation={};chatState.unreadByConversation={};chatState.readStateByConversation={};chatState.teamMessages=[];chatState.messages=[];chatState.replyTargets={};chatState.teamReplyMessage=null;chatState.privateReplyMessage=null;chatState.overviewLoadedAt=0;chatState.activeConversationId=null;chatState.activeThreadKind=null;document.body.classList.remove('chatThreadMode');chatUpdateNavBadge();chatRenderReplyComposer('team');chatRenderReplyComposer('private');chatHideMentionMenu();
 }
 async function chatStartSession(){
   var user=chatUser(),profile=chatProfile(),client=chatClient();if(!user||!profile||!client||!chatOnline())return false;
@@ -615,9 +645,11 @@ function chatBindUi(){
   window.addEventListener('roster:chat-composers-mounted',chatBindComposerUi);
   window.addEventListener('roster:chat-action',function(event){var detail=event&&event.detail||{};if(detail.action==='conversation')chatOpenPrivateConversation(detail.value);else if(detail.action==='member')chatStartPrivate(detail.value);else if(detail.action==='message'||detail.action==='retry'){var list=detail.kind==='team'?chatState.teamMessages:chatState.messages,message=list.find(function(item){return String(item.id)===String(detail.value)});if(message){if(detail.action==='message')chatOpenMessageActions(message,detail.kind);else chatRetryFailed(message,detail.kind)}}});
   var newButton=chatEl('chatNewPrivateBtn');if(newButton)newButton.onclick=chatOpenNewConversation;
+  var safety=chatEl('chatSafetyInfo');if(safety)safety.onclick=chatOpenSafetyInfo;
+  var teamEntry=chatEl('chatTeamEntry');if(teamEntry)teamEntry.onclick=function(){chatOpenTeamConversation({force:false})};
   var desktopNewButton=chatEl('chatDesktopNewMessage');if(desktopNewButton)desktopNewButton.onclick=chatOpenNewConversation;
   var closePicker=chatEl('chatCloseNewConversation');if(closePicker)closePicker.onclick=function(){var dialog=chatEl('chatNewConversationSheet');if(dialog&&dialog.open)dialog.close()};
-  var back=chatEl('chatBackBtn');if(back)back.onclick=chatCloseThread;
+  var back=chatEl('chatBackBtn');if(back)back.onclick=chatCloseThread;var teamBack=chatEl('chatTeamBackBtn');if(teamBack)teamBack.onclick=chatCloseThread;
   var older=chatEl('chatLoadOlder');if(older)older.onclick=chatLoadOlderPrivate;
   var teamOlder=chatEl('chatTeamLoadOlder');if(teamOlder)teamOlder.onclick=function(){chatLoadTeamMessages(true,true)};
   chatBindComposerUi();

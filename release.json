@@ -1,12 +1,12 @@
 {
-  "version": "37.88",
+  "version": "37.89",
   "date": "30 September 2026",
-  "title": "Keep confirmed nights ready",
-  "summary": "Aligns the Night overview with the shared confirmation state so descriptive seven-nurse context no longer appears as an unresolved warning.",
+  "title": "A real Chat inbox",
+  "summary": "Rebuilds Chat around a clean inbox and dedicated conversation threads while preserving the existing realtime, privacy and unread behaviour.",
   "changes": [
-    "A confirmed seven-nurse arrangement now shows Plan ready on Night when there are no unresolved staffing, allocation or Labour Ward tasks.",
-    "Seven-nurse arrangement text remains visible for context but is styled as informational after confirmation instead of as a warning.",
-    "Review needed is now reserved for genuine unresolved work, and it still returns automatically if a later change creates a task or requires confirmation."
+    "Chat now opens as an inbox with Anaesthetic Team pinned alongside private conversations, instead of embedding the full group conversation above the inbox.",
+    "Team and private conversations now open in a dedicated full-height thread with Liquid Glass header and composer chrome, clearer message grouping, unread dividers and cleaner timestamps.",
+    "Unread state is now tied to the conversation actually being open, while replies, @mentions, long-press actions, retry/delete behaviour, notification preferences and the staff-coordination safety boundary remain intact."
   ],
   "update_policy": "important"
 }
