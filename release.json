@@ -1,13 +1,12 @@
 {
-  "version": "37.79",
+  "version": "37.80",
   "date": "30 September 2026",
-  "title": "Fix PWA update state",
-  "summary": "Makes the update prompt reflect the actual service-worker state, prevents stale prompts after activation and keeps Later scoped to the specific waiting release.",
+  "title": "Fix persistent update banner",
+  "summary": "Ensures the update card actually disappears when the update is already current or has been dismissed, and keeps it off non-Night screens.",
   "changes": [
-    "The app now asks both the active and waiting service workers for their real cache version, so a page that already shows the new interface is described as finishing installation rather than incorrectly claiming that a new version is available.",
-    "The update banner is cleared as soon as the accepted service worker takes control, with a timed recovery path that reloads once if the normal controller-change event is missed.",
-    "Choosing Later is now scoped to the specific waiting version, so deferring one release cannot accidentally suppress a later update during the same app session.",
-    "Same-version component refreshes and partially installed current releases now have distinct, accurate update copy while the explicit ACTIVATE_UPDATE approval flow remains unchanged."
+    "The update card now has an explicit high-priority hidden state, fixing the CSS conflict that kept it visible even after the update logic correctly marked Night Roster as already up to date.",
+    "The passive update card is now guaranteed to stay off Changes, Breaks and Chat even if a stale visibility class remains on the element.",
+    "Browser coverage now verifies both dismissal and Night-only visibility so this specific stuck-banner regression cannot silently return."
   ],
   "update_policy": "important"
 }

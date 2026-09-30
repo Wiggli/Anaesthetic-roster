@@ -9319,6 +9319,10 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
 }
 
 /* Update prompt is a compact, theme-aware floating glass sheet above persistent navigation. */
+.updateBanner.hidden,
+body:not([data-view="today"]) .updateBanner{
+  display:none!important;
+}
 .updateBanner{
   left:12px!important;
   right:12px!important;

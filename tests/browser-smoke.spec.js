@@ -740,6 +740,23 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
+test('update banner obeys hidden and Night-only visibility states', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    const banner = document.getElementById('updateBanner');
+    banner.classList.remove('hidden');
+  });
+  await expect(page.locator('#updateBanner')).toBeVisible();
+
+  await page.evaluate(() => document.getElementById('updateBanner').classList.add('hidden'));
+  await expect(page.locator('#updateBanner')).toBeHidden();
+
+  await page.evaluate(() => document.getElementById('updateBanner').classList.remove('hidden'));
+  await page.evaluate(() => window.show && window.show('changes'));
+  await expect(page.locator('#changes')).toBeVisible();
+  await expect(page.locator('#updateBanner')).toBeHidden();
+});
+
 test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
