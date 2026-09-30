@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
+import { Badge, EmptyState, ListRow, Pressable } from './ui-system';
 
 type BreakSummary = {
   date: string;
@@ -183,19 +183,19 @@ function BreakScheduleSection({
 
 function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
-    <Surface className="breakGrid breakScheduleBoard tw:shadow-none">
+    <div className="breakGrid breakScheduleBoard">
       <BreakScheduleSection className="firstBreak" ordinal="1" title="First break" names={model.first} highlightedName={model.highlightedName} />
       <BreakScheduleSection className="secondBreak" ordinal="2" title="Second break" names={model.second} highlightedName={model.highlightedName} />
-    </Surface>
+    </div>
     <section className="breakNotesBlock" aria-labelledby="breakNotesTitle">
       <div className="breakNotesHeading"><span>Additional coverage</span><h3 id="breakNotesTitle">Labour Ward / Pager</h3></div>
-      <Surface className="breakNotesBoard tw:shadow-none">
+      <div className="breakNotesBoard">
         <div className="tw:divide-y tw:divide-black/7 tw:dark:divide-white/8">
           {model.notes.length
             ? model.notes.map(note => <ListRow key={note} className="breakNote" title={note} />)
             : <EmptyState title="No additional staffing notes" />}
         </div>
-      </Surface>
+      </div>
     </section>
   </>;
 }
