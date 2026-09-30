@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, ListRow, Pressable, Surface } from './ui-system';
 
@@ -278,6 +279,7 @@ function personalMark(tone: string) {
 }
 
 function PersonalNightCard({ model }: { model: PersonalNight }) {
+  const reducedMotion = useReducedMotion();
   const tone = personalTone(model);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
   const scanContext = model.context.replace(/^With\\s+/i, '');
@@ -290,7 +292,12 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     target?.focus({ preventScroll: true });
   };
 
-  return <article className={`personalHeroSurface personalRole-${tone}`}>
+  return <motion.article
+    className={`personalHeroSurface personalRole-${tone}`}
+    initial={reducedMotion ? false : { opacity: 0.94, y: 6, scale: 0.994 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 34, mass: 0.7 }}
+  >
     <div className="personalIdentity">
       <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
         {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}
@@ -314,9 +321,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
 
       <dl className="personalFacts personalScan" aria-label="Your night at a glance">
-        <div className="personalFactContext"><dt>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
-        <div><dt>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
-        <div><dt>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
+        <div className="personalFactContext"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.4-3.5 2.4-5.2 5.5-5.2s5.1 1.7 5.5 5.2" /><path d="M17 6.5a2.5 2.5 0 1 1 0 5" /><path d="M17 14.5c2.2.4 3.4 1.8 3.6 4" /></svg>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
+        <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3.5 2" /></svg>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
+        <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5Z" /><path d="M16 11h2a2 2 0 0 1 0 4h-2" /></svg>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
       </dl>
 
       <Pressable type="button" className="personalContextAction" onClick={action}>
@@ -324,7 +331,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         <span aria-hidden="true">›</span>
       </Pressable>
     </div>
-  </article>;
+  </motion.article>;
 }
 
 function PersonalPending({ model }: { model: PersonalNight }) {
