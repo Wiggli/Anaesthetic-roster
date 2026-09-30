@@ -1,6 +1,6 @@
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { createRoot } from 'react-dom/client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
 type ChromeRailKind = 'changes' | 'admin';
 
@@ -218,6 +218,15 @@ function ScrollGlassChrome() {
 
   const closeAdmin = () => document.getElementById('closeAdminBtn')?.click();
   const hasRail = Boolean(model.rail?.items.length);
+  const setRailTouch = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const root = barRef.current;
+    if (!root) return;
+    const rect = root.getBoundingClientRect();
+    root.style.setProperty('--glass-touch-x', Math.max(0, Math.min(rect.width, event.clientX - rect.left)).toFixed(1) + 'px');
+    root.style.setProperty('--glass-touch-y', Math.max(0, Math.min(rect.height, event.clientY - rect.top)).toFixed(1) + 'px');
+    root.setAttribute('data-glass-touching', 'true');
+  };
+  const releaseRailTouch = () => barRef.current?.removeAttribute('data-glass-touching');
 
   return <header
     ref={barRef}
@@ -247,12 +256,20 @@ function ScrollGlassChrome() {
           role="tablist"
           aria-label={model.rail.ariaLabel}
         >
+          <span className="scrollGlassTouchGlow" aria-hidden="true" />
           {model.rail.items.map(item => <button
             key={item.key}
             type="button"
             role="tab"
             aria-selected={item.active}
             className={item.active ? 'active' : ''}
+            onPointerDown={setRailTouch}
+            onPointerMove={event => {
+              if (event.buttons) setRailTouch(event);
+            }}
+            onPointerUp={releaseRailTouch}
+            onPointerCancel={releaseRailTouch}
+            onPointerLeave={releaseRailTouch}
             onClick={() => activateRailItem(model.rail!.kind, item.key)}
           >
             {item.active && <motion.span
