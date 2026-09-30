@@ -7965,12 +7965,13 @@ body[data-view] main{
 #changes .staffingSheet{
   position:fixed!important;
   z-index:89!important;
-  left:50%!important;
+  left:0!important;
+  right:0!important;
   bottom:0!important;
   width:min(100%,560px)!important;
   max-height:min(82dvh,720px)!important;
   overflow:auto!important;
-  transform:translateX(-50%);
+  margin:0 auto!important;
   padding:7px 16px calc(16px + env(safe-area-inset-bottom))!important;
   border:1px solid var(--scene-line)!important;
   border-bottom:0!important;
