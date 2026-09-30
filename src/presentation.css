@@ -7700,6 +7700,11 @@ body[data-view] main{
   background:color-mix(in srgb,var(--liquid-warning) 10%,transparent)!important;
   color:var(--liquid-warning)!important;
 }
+#today .compactNotice.informational{
+  border-left-color:var(--scene-accent)!important;
+  background:color-mix(in srgb,var(--scene-accent) 7%,var(--scene-surface))!important;
+  color:var(--scene-secondary)!important;
+}
 #today .nightSignalTask{
   grid-column:2/-1!important;
   min-height:36px!important;
