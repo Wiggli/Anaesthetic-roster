@@ -1108,9 +1108,8 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
   });
   const contextualRail = page.locator('#reactScrollChrome .scrollGlassRail-changes');
   await expect(contextualRail).toBeVisible();
-  const railButton = contextualRail.locator('button').first();
-  const railBox = await railButton.boundingBox();
-  await railButton.dispatchEvent('pointerdown', {
+  const railBox = await contextualRail.boundingBox();
+  await contextualRail.dispatchEvent('pointerdown', {
     pointerId: 1,
     pointerType: 'mouse',
     isPrimary: true,
@@ -1128,7 +1127,7 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
   expect(railEnergy.glow).toBe(true);
   expect(railEnergy.x).toMatch(/px$/);
   expect(railEnergy.y).toMatch(/px$/);
-  await railButton.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0 });
+  await contextualRail.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0 });
   await expect(page.locator('#reactScrollChrome .scrollGlassHeader')).not.toHaveAttribute('data-glass-touching');
 });
 
