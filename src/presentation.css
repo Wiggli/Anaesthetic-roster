@@ -7419,3 +7419,698 @@ body[data-view] main{
 @media(prefers-reduced-motion:reduce){
   #chat .chatNotificationDisclosure>summary i{transition:none!important}
 }
+
+
+/* 37.76 composition pass: one product shell, quieter operational boards and action-on-demand forms. */
+
+/* Changes, Breaks and Chat now share the same institutional masthead language as Night. */
+#changes .primaryScreenHeader,
+#breaks .primaryScreenHeader,
+#chat .primaryScreenHeader{
+  width:100%;
+  max-width:980px;
+  margin:0 auto 12px!important;
+  padding:calc(12px + env(safe-area-inset-top)) 0 12px!important;
+  border:0!important;
+  border-bottom:1px solid var(--scene-line)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .primaryInstitution,
+#breaks .primaryInstitution,
+#chat .primaryInstitution{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:31px;
+  margin:0 3px 8px;
+}
+#changes .primaryInstitution img,
+#breaks .primaryInstitution img,
+#chat .primaryInstitution img{
+  width:112px;
+  height:27px;
+  object-fit:contain;
+  object-position:left center;
+}
+#changes .primaryInstitution span,
+#breaks .primaryInstitution span,
+#chat .primaryInstitution span{
+  color:var(--scene-secondary);
+  font-size:8px;
+  font-weight:680;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow,
+#chat .primaryScreenTitleRow{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  padding:0 3px;
+}
+#changes .screenEyebrow,
+#breaks .screenEyebrow,
+#chat .chatEyebrow{
+  display:block;
+  margin:0 0 3px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+#changes .primaryScreenHeader h1,
+#breaks .primaryScreenHeader h1,
+#chat .primaryScreenHeader h1{
+  margin:0!important;
+  color:var(--scene-ink)!important;
+  font-size:34px!important;
+  font-weight:760!important;
+  line-height:1!important;
+  letter-spacing:-.045em!important;
+}
+#changes .primaryScreenHeader p,
+#breaks .primaryScreenHeader p,
+#chat .primaryScreenHeader p{
+  margin:6px 0 0!important;
+  color:var(--scene-secondary)!important;
+  font-size:11px!important;
+  font-weight:590!important;
+  line-height:1.3!important;
+}
+#changes .screenInfoButton,
+#breaks .screenInfoButton{
+  flex:0 0 36px!important;
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  min-height:36px!important;
+  margin:0 1px 1px 0!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:50%!important;
+  background:var(--scene-surface)!important;
+  color:var(--scene-accent)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.025)!important;
+  font-size:15px!important;
+  font-weight:700!important;
+}
+#chat .primaryConnectionLine{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+#chat .chatLiveDot{
+  order:-1;
+  width:6px!important;
+  height:6px!important;
+  margin:0!important;
+  background:var(--liquid-success)!important;
+  box-shadow:none!important;
+}
+#chat #chatLiveStatus.error + .chatLiveDot,
+#chat .chatLiveDot.error{
+  background:var(--liquid-warning)!important;
+}
+
+/* The selected-night control is now visually identical across primary roster screens. */
+#today .nightDateShell .dateNav,
+#changes>.changesDatePanel .dateNav,
+#breaks>.panel>.grid2 .dateNav{
+  overflow:hidden!important;
+  min-height:52px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:18px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.02)!important;
+}
+#today .nightDateShell .dateNav>button,
+#changes>.changesDatePanel .dateNav>button,
+#breaks>.panel>.grid2 .dateNav>button{
+  width:46px!important;
+  min-width:46px!important;
+  height:50px!important;
+  min-height:50px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--scene-accent)!important;
+  box-shadow:none!important;
+  font-size:24px!important;
+  font-weight:430!important;
+}
+#today .nightDateShell .prettyDateButton,
+#changes>.changesDatePanel .prettyDateButton,
+#breaks>.panel>.grid2 .prettyDateButton{
+  min-height:50px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .prettyDateButton strong,
+#changes>.changesDatePanel .prettyDateButton strong,
+#breaks>.panel>.grid2 .prettyDateButton strong{
+  color:var(--scene-ink)!important;
+  font-size:14px!important;
+  font-weight:720!important;
+  letter-spacing:-.015em!important;
+}
+#today .nightDateShell .prettyDateButton small,
+#changes>.changesDatePanel .prettyDateButton small,
+#breaks>.panel>.grid2 .prettyDateButton small{
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:580!important;
+}
+
+/* Night lower content is one meaningful operational board instead of loose text. */
+#today .teamOverviewGroup{
+  margin-top:22px!important;
+}
+#today .nightSummaryTitle{
+  margin:0 3px 9px!important;
+}
+#today .nightSummaryTitle .sectionTitle{
+  margin:0!important;
+  font-size:21px!important;
+  font-weight:735!important;
+  letter-spacing:-.03em!important;
+}
+#today .nightOverviewBoard{
+  overflow:hidden;
+  border:1px solid var(--scene-line);
+  border-radius:22px;
+  background:var(--scene-surface);
+  box-shadow:0 1px 2px rgba(0,0,0,.025),0 10px 26px rgba(0,0,0,.035);
+}
+#today .nightStatusRow{
+  margin:0!important;
+}
+#today .nightSignal{
+  position:relative;
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:78px!important;
+  margin:0!important;
+  padding:12px 14px!important;
+  border:0!important;
+  border-bottom:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightOverviewIcon{
+  display:grid;
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  place-items:center;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--scene-accent) 8%,transparent);
+  color:var(--scene-accent);
+}
+#today .nightOverviewIcon svg{
+  width:19px;
+  height:19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#today .nightOverviewIconSuccess{
+  color:var(--liquid-success);
+  background:color-mix(in srgb,var(--liquid-success) 9%,transparent);
+  font-size:15px;
+  font-weight:760;
+}
+#today .nightSignalLeadCopy{
+  min-width:0;
+}
+#today .nightSignalLeadCopy small{
+  display:block;
+  color:var(--scene-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:620!important;
+}
+#today .nightSignalLeadCopy strong{
+  display:block;
+  margin-top:1px;
+  color:var(--scene-ink)!important;
+  font-size:15px!important;
+  font-weight:720!important;
+  letter-spacing:-.015em!important;
+}
+#today .nightSignalLeadCopy>span{
+  display:block;
+  margin-top:2px;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:560!important;
+}
+#today .nightSignalState{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  align-self:center!important;
+  padding:0!important;
+  border:0!important;
+  background:none!important;
+  color:var(--scene-ink)!important;
+  font-size:10.5px!important;
+  white-space:nowrap!important;
+}
+#today .nightSignalGlyph{
+  display:grid!important;
+  width:18px!important;
+  height:18px!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,transparent)!important;
+  color:var(--scene-accent)!important;
+  font-size:11px!important;
+  font-style:normal!important;
+}
+#today .nightSignal.needsReview .nightSignalGlyph{
+  background:color-mix(in srgb,var(--liquid-warning) 10%,transparent)!important;
+  color:var(--liquid-warning)!important;
+}
+#today .nightSignalTask{
+  grid-column:2/-1!important;
+  min-height:36px!important;
+  justify-self:stretch!important;
+  margin-top:-2px!important;
+  border-radius:11px!important;
+  background:color-mix(in srgb,var(--liquid-warning) 8%,transparent)!important;
+  color:var(--liquid-warning)!important;
+  font-size:10.5px!important;
+  font-weight:700!important;
+}
+#today .nightOverviewBoard>#alerts:not(:empty){
+  padding:10px 12px;
+  border-bottom:1px solid var(--scene-line);
+}
+#today .nightOverviewBoard .nightTeamDetails{
+  margin:0!important;
+  border:0!important;
+  border-bottom:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightOverviewBoard .nightTeamDetails>summary{
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr) 18px!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:68px!important;
+  padding:11px 14px!important;
+  border:0!important;
+  background:transparent!important;
+  list-style:none!important;
+}
+#today .nightOverviewBoard .nightTeamDetails>summary::-webkit-details-marker{
+  display:none!important;
+}
+#today .nightTeamDetails>summary>span:nth-child(2) strong{
+  display:block!important;
+  color:var(--scene-ink)!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+#today .nightTeamDetails>summary>span:nth-child(2) small{
+  display:block!important;
+  margin-top:2px!important;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+}
+#today .nightTeamDetails>summary>span:last-child{
+  color:var(--scene-secondary)!important;
+  font-size:22px!important;
+  transform:rotate(0deg)!important;
+  transition:transform .18s ease!important;
+}
+#today .nightTeamDetails[open]>summary>span:last-child{
+  transform:rotate(90deg)!important;
+}
+#today .nightTeamDetails[open] #roles,
+#today .nightTeamDetails[open] #fiveArrangement,
+#today .nightTeamDetails[open] .rosterShortcutRow{
+  border-top:1px solid var(--scene-line)!important;
+}
+#today #nightBreakShortcut{
+  border-bottom:1px solid var(--scene-line);
+}
+#today .nightOverviewShortcut{
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr) 18px!important;
+  align-items:center!important;
+  gap:11px!important;
+  width:100%!important;
+  min-height:72px!important;
+  padding:11px 14px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--scene-ink)!important;
+  text-align:left!important;
+  box-shadow:none!important;
+}
+#today .nightOverviewShortcutCopy{
+  min-width:0;
+}
+#today .nightOverviewShortcutCopy small{
+  display:block;
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  font-weight:620;
+}
+#today .nightOverviewShortcutCopy strong{
+  display:block;
+  margin-top:1px;
+  color:var(--scene-ink);
+  font-size:14px;
+  font-weight:710;
+}
+#today .nightOverviewShortcutCopy>span{
+  display:block;
+  margin-top:2px;
+  color:var(--scene-secondary);
+  font-size:10.5px;
+}
+#today .nightOverviewShortcut>i{
+  color:var(--scene-secondary);
+  font-size:22px;
+  font-style:normal;
+}
+#today .recentActivityPanel{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightOverviewRowHeading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:54px;
+  padding:10px 14px 7px;
+}
+#today .nightOverviewRowHeading h2{
+  margin:0;
+  color:var(--scene-ink);
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:-.012em;
+}
+#today .nightOverviewRowHeading p{
+  margin:2px 0 0;
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  line-height:1.3;
+}
+#today .recentActivityList{
+  padding:0 10px 10px;
+}
+#today .emptyRecentActivity{
+  display:flex!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:58px!important;
+  padding:9px 4px!important;
+  border-top:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--scene-ink)!important;
+}
+#today .emptyRecentActivity>span:last-child{
+  min-width:0;
+}
+#today .emptyRecentActivity b{
+  display:block;
+  color:var(--scene-ink);
+  font-size:12.5px;
+  font-weight:680;
+}
+#today .emptyRecentActivity small{
+  display:block;
+  margin-top:2px;
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  line-height:1.35;
+}
+#today .activityTimeline{
+  overflow:hidden;
+  border-top:1px solid var(--scene-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .activityTimeline .recentActivityRow{
+  min-height:58px!important;
+}
+
+/* Changes shows a calm staffing summary until the user asks to make a change. */
+#changes .staffingSection{
+  padding:0!important;
+  overflow:hidden!important;
+}
+#changes .staffingSection>.stepHeader{
+  min-height:50px!important;
+  margin:0!important;
+  padding:11px 14px 8px!important;
+}
+#changes .staffingSection>.stepHeader h3{
+  font-size:15px!important;
+}
+#changes .staffingEditor{
+  position:relative;
+}
+#changes .staffingActionRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:62px;
+  padding:9px 14px 13px;
+  border-top:1px solid var(--scene-line);
+}
+#changes .staffingActionCopy{
+  min-width:0;
+}
+#changes .staffingActionCopy strong{
+  display:block;
+  color:var(--scene-ink);
+  font-size:13px;
+  font-weight:680;
+}
+#changes .staffingActionCopy small{
+  display:block;
+  margin-top:2px;
+  color:var(--scene-secondary);
+  font-size:10px;
+  line-height:1.35;
+}
+#changes .staffingAddButton{
+  flex:0 0 auto;
+  min-height:36px;
+  padding:0 13px;
+  border:0;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--scene-accent) 9%,transparent);
+  color:var(--scene-accent);
+  font-size:11px;
+  font-weight:720;
+}
+#changes .changesRecordGroup{
+  margin:0 10px 10px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-canvas) 48%,var(--scene-surface))!important;
+}
+#changes .changesEmptyRecord{
+  margin:0 10px 10px!important;
+  padding:0!important;
+  border:0!important;
+}
+#changes .changesEmptyRecord>div{
+  padding:5px 4px 7px!important;
+}
+#changes .changesEmptyRecord strong{
+  font-size:10.5px!important;
+  font-weight:580!important;
+}
+#changes .staffingSheetBackdrop{
+  position:fixed!important;
+  z-index:88!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:rgba(0,0,0,.30)!important;
+  -webkit-backdrop-filter:blur(3px)!important;
+  backdrop-filter:blur(3px)!important;
+}
+#changes .staffingSheet{
+  position:fixed!important;
+  z-index:89!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  width:min(100%,560px)!important;
+  max-height:min(82dvh,720px)!important;
+  overflow:auto!important;
+  margin:0 auto!important;
+  padding:7px 16px calc(16px + env(safe-area-inset-bottom))!important;
+  border:1px solid var(--scene-line)!important;
+  border-bottom:0!important;
+  border-radius:28px 28px 0 0!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 -18px 56px rgba(0,0,0,.16)!important;
+}
+#changes .staffingSheetHandle{
+  width:38px;
+  height:4px;
+  margin:2px auto 10px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--scene-secondary) 30%,transparent);
+}
+#changes .staffingSheetHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+#changes .staffingSheetHeader small{
+  display:block;
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  font-weight:650;
+}
+#changes .staffingSheetHeader h3{
+  margin:2px 0 0;
+  color:var(--scene-ink);
+  font-size:22px;
+  font-weight:750;
+  letter-spacing:-.035em;
+}
+#changes .staffingSheetClose{
+  display:grid;
+  width:36px;
+  height:36px;
+  place-items:center;
+  border:0;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--scene-secondary) 9%,transparent);
+  color:var(--scene-ink);
+  font-size:23px;
+  font-weight:400;
+  line-height:1;
+}
+#changes .staffingSheetBody{
+  display:grid;
+  gap:12px;
+}
+#changes .staffingSheet .staffingFormIntro{
+  padding:0 2px;
+}
+#changes .staffingSheet .primary,
+#changes .staffingSheet .staffingPrimaryAction,
+#changes .staffingSheet .overtimeAddButton{
+  min-height:48px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--scene-accent)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+  font-weight:720!important;
+}
+#changes .staffingSheet select,
+#changes .staffingSheet input{
+  min-height:50px!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-canvas) 55%,var(--scene-surface))!important;
+}
+#changes .formMessage:empty{
+  display:none!important;
+}
+
+/* Break groups use neutral hierarchy. Blue is reserved for the signed-in nurse and interaction. */
+#breaks .breakScheduleHeader h3,
+#breaks .firstBreak .breakScheduleHeader h3,
+#breaks .secondBreak .breakScheduleHeader h3{
+  color:var(--scene-ink)!important;
+}
+#breaks .breakScheduleHeader>span{
+  background:color-mix(in srgb,var(--scene-secondary) 8%,transparent)!important;
+  color:var(--scene-secondary)!important;
+}
+#breaks .breakPerson.mine{
+  color:var(--scene-ink)!important;
+}
+#breaks .breakPlanTitle #breakPlanLive{
+  color:var(--scene-secondary)!important;
+}
+
+/* Slightly reduce explanatory copy so the hierarchy, not prose, does the work. */
+#changes>.changePanel>.ctop .time{
+  max-width:360px!important;
+}
+#changes .changesWorkflowState p,
+#changes .workflowGuidance p{
+  line-height:1.38!important;
+}
+
+@media(max-width:520px){
+  #changes .primaryScreenHeader,
+  #breaks .primaryScreenHeader,
+  #chat .primaryScreenHeader{
+    padding-top:calc(10px + env(safe-area-inset-top))!important;
+  }
+  #changes .primaryInstitution,
+  #breaks .primaryInstitution,
+  #chat .primaryInstitution{
+    margin-bottom:7px!important;
+  }
+  #changes .primaryInstitution img,
+  #breaks .primaryInstitution img,
+  #chat .primaryInstitution img{
+    width:104px!important;
+    height:25px!important;
+  }
+  #changes .primaryScreenHeader h1,
+  #breaks .primaryScreenHeader h1,
+  #chat .primaryScreenHeader h1{
+    font-size:32px!important;
+  }
+  #today .nightSignal{
+    grid-template-columns:36px minmax(0,1fr) auto!important;
+    padding-inline:12px!important;
+  }
+  #today .nightOverviewBoard .nightTeamDetails>summary,
+  #today .nightOverviewShortcut{
+    padding-inline:12px!important;
+  }
+  #changes .staffingSheet{
+    width:100%!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #today .nightTeamDetails>summary>span:last-child{
+    transition:none!important;
+  }
+}

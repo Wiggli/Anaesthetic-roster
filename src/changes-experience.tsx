@@ -1,4 +1,5 @@
-import { useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, FieldShell, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
@@ -170,72 +171,127 @@ function AllocationList({ model }: { model: ChangesExperience }) {
 }
 
 function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {
+  const records = mode === 'absence' ? model.absences : model.overtime;
+  const [open, setOpen] = useState(mode === 'absence' && model.forms.editing);
+  const previousCount = useRef(records.length);
+  const previousEditing = useRef(model.forms.editing);
+  const reduced = useReducedMotion();
+
   useLayoutEffect(() => {
-    dispatchAction({ action: 'staffing-mounted' });
-  }, [model, mode]);
+    if (open) dispatchAction({ action: 'staffing-mounted' });
+  }, [model, mode, open]);
+
+  useEffect(() => {
+    if (mode === 'absence' && model.forms.editing) setOpen(true);
+  }, [mode, model.forms.editing]);
+
+  useEffect(() => {
+    const countIncreased = records.length > previousCount.current;
+    const editingFinished = mode === 'absence' && previousEditing.current && !model.forms.editing;
+    if (open && (countIncreased || editingFinished)) setOpen(false);
+    previousCount.current = records.length;
+    previousEditing.current = model.forms.editing;
+  }, [mode, model.forms.editing, open, records.length]);
 
   const inputClass = 'tw:min-h-12 tw:w-full tw:rounded-[14px] tw:border tw:border-black/[0.07] tw:bg-[var(--card)] tw:px-3.5 tw:text-sm tw:outline-none tw:focus:border-blue-500/45 tw:focus:ring-2 tw:focus:ring-blue-500/12 tw:dark:border-white/10';
+  const title = mode === 'absence' ? (model.forms.editing ? 'Edit absence' : 'Add absence') : 'Add overtime nurse';
+  const summary = records.length ? `${records.length} ${mode === 'absence' ? (records.length === 1 ? 'absence' : 'absences') : 'recorded'}` : 'None recorded';
+  const detail = mode === 'absence'
+    ? (records.length ? 'Only confirmed absences are listed below.' : 'The published staffing plan is unchanged.')
+    : (records.length ? 'Confirmed overtime staff are listed below.' : 'No additional staff are recorded.');
+  const close = () => {
+    setOpen(false);
+    if (mode === 'absence' && model.forms.editing) dispatchAction({ action: 'absence-cancel' });
+  };
 
-  if (mode === 'absence') {
-    return <div className="tw:grid tw:gap-3">
-      <p className="staffingFormIntro tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Select the absent nurse. You can arrange cover afterwards.</p>
-      <div className="changeGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
-        <FieldShell label="Nurse">
-          <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
-            <option value="">{model.forms.names.length ? 'Choose a nurse' : 'Every rostered nurse is already absent'}</option>
-            {model.forms.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}
-          </select>
-        </FieldShell>
-        <FieldShell label="Reason">
-          <select id="changeReason" defaultValue="Leave" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
-            {['Leave', 'Sick leave', 'Other absence', 'Reassigned elsewhere'].map(reason => <option key={reason}>{reason}</option>)}
-          </select>
-        </FieldShell>
-      </div>
-      <Pressable className="primary wide staffingPrimaryAction tw:min-h-12" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
-        {model.forms.editing ? 'Update absence' : 'Save absence'}
-      </Pressable>
-      <Pressable
-        className={`soft wide tw:min-h-11 ${model.forms.editing ? '' : 'hidden'}`}
-        id="cancelAbsenceEditBtn"
-        type="button"
-        onClick={() => dispatchAction({ action: 'absence-cancel' })}
-      >
-        Cancel editing
-      </Pressable>
-      <div id="absenceFormMessage" className="formMessage" role="status" aria-live="polite" />
-    </div>;
-  }
-
-  return <div className="tw:grid tw:gap-3">
-    <p className="staffingFormIntro tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Add confirmed overtime staff. Their role can be assigned afterwards.</p>
-    <div className="overtimeAdd tw:flex tw:items-end tw:gap-2">
-      <FieldShell label="Overtime nurse" className="tw:min-w-0 tw:flex-1">
-        <input
-          id="overtimeName"
-          type="text"
-          autoComplete="off"
-          autoCapitalize="words"
-          placeholder="Type the nurse's name"
-          list="overtimeSuggestions"
-          onInput={() => dispatchAction({ action: 'staffing-input' })}
-          onKeyDown={event => {
-            if (event.key === 'Enter') dispatchAction({ action: 'overtime-save' });
-          }}
-          className={inputClass}
-        />
-        <datalist id="overtimeSuggestions">
-          {model.forms.overtimeSuggestions.map(name => <option key={name} value={name} />)}
-        </datalist>
+  const form = mode === 'absence' ? <>
+    <p className="staffingFormIntro tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Choose the absent nurse and record the reason. Cover can be arranged afterwards if needed.</p>
+    <div className="changeGrid tw:@container tw:grid tw:gap-3 tw:@md:grid-cols-2">
+      <FieldShell label="Nurse">
+        <select id="absentName" defaultValue="" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
+          <option value="">{model.forms.names.length ? 'Choose a nurse' : 'Every rostered nurse is already absent'}</option>
+          {model.forms.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}
+        </select>
       </FieldShell>
-      <Pressable className="soft overtimeAddButton tw:min-h-12 tw:shrink-0" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
-        Add overtime
-      </Pressable>
+      <FieldShell label="Reason">
+        <select id="changeReason" defaultValue="Leave" onChange={() => dispatchAction({ action: 'staffing-input' })} className={inputClass}>
+          {['Leave', 'Sick leave', 'Other absence', 'Reassigned elsewhere'].map(reason => <option key={reason}>{reason}</option>)}
+        </select>
+      </FieldShell>
     </div>
+    <Pressable className="primary wide staffingPrimaryAction tw:min-h-12" id="saveChangeBtn" type="button" onClick={() => dispatchAction({ action: 'absence-save' })}>
+      {model.forms.editing ? 'Update absence' : 'Save absence'}
+    </Pressable>
+    <div id="absenceFormMessage" className="formMessage" role="status" aria-live="polite" />
+  </> : <>
+    <p className="staffingFormIntro tw:m-0 tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">Add a confirmed overtime nurse. Their role can be assigned afterwards if the plan requires it.</p>
+    <FieldShell label="Overtime nurse">
+      <input
+        id="overtimeName"
+        type="text"
+        autoComplete="off"
+        autoCapitalize="words"
+        placeholder="Type the nurse's name"
+        list="overtimeSuggestions"
+        onInput={() => dispatchAction({ action: 'staffing-input' })}
+        onKeyDown={event => {
+          if (event.key === 'Enter') dispatchAction({ action: 'overtime-save' });
+        }}
+        className={inputClass}
+      />
+      <datalist id="overtimeSuggestions">
+        {model.forms.overtimeSuggestions.map(name => <option key={name} value={name} />)}
+      </datalist>
+    </FieldShell>
+    <Pressable className="primary wide overtimeAddButton tw:min-h-12" id="addOvertimeBtn" type="button" onClick={() => dispatchAction({ action: 'overtime-save' })}>
+      Add overtime
+    </Pressable>
     <div id="overtimeFormMessage" className="formMessage" role="status" aria-live="polite" />
+  </>;
+
+  return <div className="staffingEditor">
+    <div className="staffingActionRow">
+      <span className="staffingActionCopy"><strong>{summary}</strong><small>{detail}</small></span>
+      <Pressable
+        type="button"
+        className="staffingAddButton"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >{records.length ? 'Add another' : 'Add'}</Pressable>
+    </div>
+    <AnimatePresence>
+      {open && <>
+        <motion.button
+          type="button"
+          className="staffingSheetBackdrop"
+          aria-label={`Close ${title}`}
+          onClick={close}
+          initial={reduced ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        />
+        <motion.section
+          className="staffingSheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          initial={reduced ? false : { opacity: 0, y: 44 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 36 }}
+          transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 440, damping: 40, mass: 0.7 }}
+        >
+          <div className="staffingSheetHandle" aria-hidden="true" />
+          <div className="staffingSheetHeader">
+            <div><small>Staffing change</small><h3>{title}</h3></div>
+            <Pressable type="button" className="staffingSheetClose" onClick={close} aria-label={`Close ${title}`}>×</Pressable>
+          </div>
+          <div className="staffingSheetBody">{form}</div>
+        </motion.section>
+      </>}
+    </AnimatePresence>
   </div>;
 }
-
 function RoleOverrideEditor({ model }: { model: RoleOverride }) {
   if (model.notice) return <div className="time">{model.notice}</div>;
 

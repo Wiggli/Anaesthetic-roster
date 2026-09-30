@@ -1,14 +1,14 @@
 {
-  "version": "37.75",
+  "version": "37.76",
   "date": "30 September 2026",
-  "title": "Polish the night shift interface",
-  "summary": "Refines hierarchy, density and interaction across the clinical screens so the app feels calmer, more coherent and more native on a phone.",
+  "title": "Unify the primary app shell",
+  "summary": "Makes Night, Changes, Breaks and Chat feel like one product, while turning routine night information and staffing edits into calmer, more purposeful interactions.",
   "changes": [
-    "Changes now uses a tighter selected-night bar, calmer step control, compact staffing editors and lower-noise empty states, while preserving the existing Staffing → Allocation → Confirm workflow and every shared-data action.",
-    "Breaks now presents First break and Second break as one coherent schedule board, uses a subtle blue personal marker instead of the previous heavy outline, and keeps Labour Ward/Pager notes readable without truncating the operational text.",
-    "Chat now presents team messages as familiar conversation bubbles, uses a lighter composer and places notification management behind a secondary disclosure so conversations remain the primary content.",
-    "Roster management now fits all five sections on a phone without clipped tabs and compresses overview/status surfaces into a clearer operational summary.",
-    "Shared React and Tailwind primitives now use quieter borders, tighter rows and more restrained glass, while the floating navigation is slimmer and keeps the existing continuous swipe, reduced-motion, dark-mode and accessibility behaviour."
+    "Changes, Breaks and Chat now share Mater Dei institutional branding, section-title rhythm and selected-night styling with Night, removing the previous sense that each destination belonged to a different interface.",
+    "Night now groups team state, allocation, the signed-in nurse’s break and selected-night activity into one Tonight board, replacing the loose lower-page text with clear operational rows and a deliberate no-changes state.",
+    "Changes now keeps absence and overtime forms out of the way during a normal night: compact staffing summaries open focused Motion bottom sheets only when a user chooses to add or edit a staffing change, with blue primary actions.",
+    "Break headings and counts are now neutral, while blue is reserved for the signed-in nurse and interaction, removing the leftover purple and teal section colours.",
+    "Primary date navigators, spacing, hierarchy and status treatment are more consistent across Night, Changes and Breaks without changing roster logic, shared-data behaviour, swipe navigation, accessibility or PWA update semantics."
   ],
   "update_policy": "important"
 }
