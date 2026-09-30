@@ -306,9 +306,9 @@ test('page track stays covered across saved scroll positions and Night carries i
   await expect(page.locator('#today > #appHeader')).toHaveCount(1);
   await expect(page.locator('#today .nightSectionIdentity')).toContainText('Night');
   await expect(page.locator('[data-shell-account]')).toHaveCount(3);
-  await expect(page.locator('#changes .primaryInstitution img')).toHaveCount(1);
-  await expect(page.locator('#breaks .primaryInstitution img')).toHaveCount(1);
-  await expect(page.locator('#chat .primaryInstitution img')).toHaveCount(1);
+  await expect(page.locator('#changes .primaryInstitutionBrand img')).toHaveCount(1);
+  await expect(page.locator('#breaks .primaryInstitutionBrand img')).toHaveCount(1);
+  await expect(page.locator('#chat .primaryInstitutionBrand img')).toHaveCount(1);
 
   await page.locator('.bottom button[data-v="breaks"]').click();
   await expect(page.locator('#breaks')).toBeVisible();
