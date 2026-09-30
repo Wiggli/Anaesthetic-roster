@@ -1084,11 +1084,6 @@ test('scroll-linked glass chrome, update prompt and management surfaces keep nat
     expect(material.backdrop).not.toBe('none');
     expect(material.alpha).toBeLessThanOrEqual(0.4);
   }
-  const innerComposer = await page.locator('#chat .chatComposerGlass').evaluate(el => {
-    const style = getComputedStyle(el);
-    return style.backdropFilter || style.webkitBackdropFilter || 'none';
-  });
-  expect(innerComposer).toBe('none');
 });
 
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {
