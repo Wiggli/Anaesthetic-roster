@@ -572,7 +572,7 @@ const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('What matters to you stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'first-use onboarding must teach the personal Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('The normal roster is automatic.') > onboardingSequence.indexOf('What matters to you stays first.'), 'first-use onboarding must finish by explaining that the standard plan is automatic');
-assert.equal(onboardingSequence.includes('Team Chat'), false, 'Chat guidance must be contextual rather than part of first-use onboarding');
+assert.equal(onboardingSequence.includes('featureChatPreview'), false, 'Chat education must not be embedded as a first-use onboarding page');
 assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup must stay in Account rather than first-use onboarding');
 assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
 assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Team chat, when you need it\.[\s\S]*You usually don’t need this screen\.[\s\S]*Your break is already highlighted\./, 'Chat, Changes and Breaks must retain contextual first-use education');
