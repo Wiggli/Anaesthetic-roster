@@ -11,6 +11,10 @@ export type ChangesWorkflowModel = {
   headline: string;
   guidance: string;
   tone: 'attention' | 'ready' | 'complete' | 'automatic';
+  progressValue: number;
+  progressMax: number;
+  progressLabel: string;
+  draftLabel?: string;
 };
 
 let root: Root | undefined;
@@ -38,7 +42,23 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
     document.querySelector<HTMLElement>(`#changesWorkflowExperience [data-changes-step="${model.steps[target].id}"]`)?.focus();
   };
 
+  const percent = Math.max(0, Math.min(100, (model.progressValue / Math.max(1, model.progressMax)) * 100));
+
   return <section className={`workflowExperience workflow-${model.tone}`} aria-label="Manage changes for the selected night">
+    {model.tone !== 'automatic' && <div className="workflowProgress" aria-label={model.progressLabel}>
+      <div className="workflowProgressCopy">
+        <span>{model.progressLabel}</span>
+        {model.draftLabel && <b>{model.draftLabel}</b>}
+      </div>
+      <div className="workflowProgressTrack" role="progressbar" aria-valuemin={0} aria-valuemax={model.progressMax} aria-valuenow={model.progressValue}>
+        <motion.span
+          className="workflowProgressFill"
+          initial={false}
+          animate={{ width: `${percent}%` }}
+          transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 42, mass: 0.55 }}
+        />
+      </div>
+    </div>}
     <div className="workflowSteps" role="tablist" aria-label="Changes steps">
       {model.steps.map((step, index) => <Pressable
         key={step.id}
