@@ -215,6 +215,19 @@ function personalLiveStatus(model: PersonalNight, value = new Date()) {
   return model.liveStatus;
 }
 
+function nightVisualPhase(model: PersonalNight, value = new Date()) {
+  const clock = maltaClock(value);
+  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return 'selected';
+  if (model.pending || /absent/i.test(model.title)) return 'selected';
+  const now = value.getTime();
+  if (model.dutyStartUtc && now < model.dutyStartUtc) return 'upcoming';
+  if (model.handoverUtc && Math.abs(now - model.handoverUtc) <= 120000) return 'handover';
+  if (model.dutyStartUtc && model.handoverUtc && now >= model.dutyStartUtc && now < model.handoverUtc) return 'first';
+  if (model.handoverUtc && model.dutyEndUtc && now >= model.handoverUtc && now < model.dutyEndUtc) return 'second';
+  if (model.dutyEndUtc && now >= model.dutyEndUtc) return 'complete';
+  return 'selected';
+}
+
 function nextNightMessage(model: PersonalNight, value: Date) {
   if (model.pending) return { eyebrow: 'What matters next', title: 'Allocation still pending', detail: 'Open Changes to complete the shared plan.' };
   if (/absent/i.test(model.title)) return { eyebrow: 'Tonight', title: 'No duty block', detail: 'You are recorded as not working this night.' };
@@ -619,6 +632,12 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     if (model.handoverUtc && previousNow.current < model.handoverUtc && now >= model.handoverUtc && document.visibilityState === 'visible') softHaptic();
     previousNow.current = now;
   }, [now, model.handoverUtc]);
+  useEffect(() => {
+    const host = document.getElementById('today');
+    if (!host) return;
+    host.dataset.shiftPhase = nightVisualPhase(model, new Date(now));
+    return () => { delete host.dataset.shiftPhase; };
+  }, [model.date, model.title, model.pending, model.dutyStartUtc, model.handoverUtc, model.dutyEndUtc, now]);
   const value = new Date(now);
   const tone = personalTone(model);
   const liveStatus = personalLiveStatus(model, value);
@@ -712,10 +731,10 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </Pressable>
       </div>
 
-      <Pressable type="button" className="personalContextAction" onClick={action}>
-        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
+      {model.action !== 'role' && <Pressable type="button" className="personalContextAction" onClick={action}>
+        {model.action === 'absence' ? 'Review absence' : 'Choose your name'}
         <span aria-hidden="true">›</span>
-      </Pressable>
+      </Pressable>}
     </div>
   </motion.article>;
 }
