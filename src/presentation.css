@@ -14691,3 +14691,35 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{border-color:rgba(255,255
 #today #personalNightCard .personalContextAction:active{
   background:rgba(10,132,255,.055)!important;
 }
+
+
+/* 37.99 mobile compact Night header must override the earlier phone masthead layout. */
+@media(max-width:640px){
+  body.headerCompact[data-view="today"] #today>#appHeader{
+    display:block!important;
+    padding-top:max(5px,env(safe-area-inset-top))!important;
+    padding-bottom:5px!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .hospitalStrip,
+  body.headerCompact[data-view="today"] #today #appHeader .headerChips{
+    display:none!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .head{
+    display:flex!important;
+    width:100%!important;
+    min-height:44px!important;
+    align-items:center!important;
+    gap:8px!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .headerIdentity{
+    display:block!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .headerBrand{
+    display:none!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .nightCompactContext{
+    display:grid!important;
+  }
+}
