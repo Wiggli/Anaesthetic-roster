@@ -489,7 +489,7 @@ function chatAddFailed(body,conversationId,kind,replyId,clientMessageId){
 async function chatSendToConversation(conversationId,body,replyId,clientMessageId){
   var stableId=clientMessageId||chatClientMessageId(),client=chatClient();
   if(chatCapabilities().chatIdempotency){
-    return client.rpc('chat_send_message_v47',{p_conversation_id:conversationId,p_body:body,p_reply_to_message_id:replyId?Number(replyId):null,p_client_message_id:stableId}).select(CHAT_MESSAGE_FIELDS).single();
+    return client.rpc('chat_send_message_v47',{p_conversation_id:conversationId,p_body:body,p_reply_to_message_id:replyId?Number(replyId):null,p_client_message_id:stableId}).single();
   }
   var row={conversation_id:conversationId,body:body};if(replyId)row.reply_to_message_id=Number(replyId);
   return client.from('chat_messages').insert(row).select(CHAT_MESSAGE_FIELDS.replace(',client_message_id','')).single();
