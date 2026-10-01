@@ -7,6 +7,5 @@
     "Changes now opens on the step that actually needs attention for each selected night and shows genuine progress toward a ready or shared plan, while the standard automatic six-nurse plan stays quiet.",
     "Notification permission is no longer requested just after sign-in. Night Roster first lets the user reach Team Chat, then offers optional alerts with benefit-first privacy wording and keeps the operating-system permission behind an explicit tap.",
     "Unfinished local Changes selections now warn before a browser reload and block a PWA update from discarding them, while confirmation labels Rostered versus This night so exceptional changes are easier to compare before sharing."
-  ],
-  "update_policy": "normal"
+  ]
 }
