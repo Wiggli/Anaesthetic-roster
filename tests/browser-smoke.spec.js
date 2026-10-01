@@ -1131,11 +1131,10 @@ test('accepted PWA updates wait for unfinished local Changes work', async ({ pag
     body: 'self.addEventListener("install",function(){});'
   }));
   await openShell(page);
+  await page.evaluate(() => window.show('changes'));
+  await page.locator('#overtimeFormExperience .staffingAddButton').click();
+  await page.locator('#overtimeFormExperience #overtimeName').fill('Unsaved Nurse');
   const state = await page.evaluate(() => {
-    window.show('changes');
-    window.dispatchEvent(new CustomEvent('roster:changes-action', {
-      detail: { action: 'allocation-select', key: 'first1', value: 'unsaved-nurse-id' }
-    }));
     window.__updateActivated = false;
     window.updateRegistration = { waiting: { postMessage: () => { window.__updateActivated = true; } } };
     const draftCount = window.allLocalChangesDraftParts().length;
