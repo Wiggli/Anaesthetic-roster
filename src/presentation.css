@@ -14239,3 +14239,16 @@ html[data-theme="dark"] #chat .pushMuteActions{
   #today .personalNextState,
   .shareAppExperience{transition:none!important;animation:none!important}
 }
+
+#today .rosterLiveBadge{margin-left:6px;vertical-align:middle}
+.shareQrUnavailable{
+  display:grid;
+  min-height:180px;
+  place-items:center;
+  padding:20px;
+  color:#3a4650;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.45;
+  text-align:center;
+}
