@@ -797,7 +797,7 @@ function localChangesDraftSummary(base){
 }
 
 function protectLocalChangesDraft(event){
-  if(!localChangesDraftParts(cur()).length)return;
+  if(!currentUserProfile||!R.length||!localChangesDraftParts(cur()).length)return;
   event.preventDefault();event.returnValue='';
 }
 
