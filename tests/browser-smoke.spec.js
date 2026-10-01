@@ -1444,9 +1444,11 @@ test('What’s new describes the current release', async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText(release.title);
-  await expect(dialog.locator('.releaseHistory')).toContainText(release.changes[0]);
-  const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
+  const editorial = dialog.locator('.releaseEditorial');
+  await expect(editorial).toContainText(release.title);
+  await expect(editorial).toContainText(release.changes[0]);
+  await expect(editorial.locator('.releaseHighlights .releaseHighlight')).toHaveCount(release.changes.length);
+  const sizes = await editorial.evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
 
