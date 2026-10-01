@@ -620,14 +620,15 @@ assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Team chat, when you
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
 
 assert.match(clinicalExperience, /nightProgressRail/, 'Night must keep the non-countdown orientation rail');
-assert.match(clinicalExperience, /function NightTimeline[\s\S]*02:00¹[\s\S]*02:00²[\s\S]*Clock back/, 'autumn clock-change rail must distinguish the first and second 02:xx hour');
+assert.match(clinicalExperience, /function NightTimeline[\s\S]*Clock back/, 'clock-change rail must expose the rollback event');
+assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change rail must distinguish the first and second 02:xx hour');
 assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
 assert.match(clinicalExperience, /function nextNightMessage[\s\S]*What matters next[\s\S]*Handover now[\s\S]*Duty block complete/, 'personal hero must adapt to the live stage of the night without a countdown');
 assert.match(clinicalExperience, /personalFactButtons[\s\S]*View in team allocation[\s\S]*Open Breaks/, 'hero facts must be directly actionable');
 assert.match(clinicalExperience, /nightContextCapsule[\s\S]*contextLabel/, 'Night overview must expose a compact routine-or-exception context');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share Night Roster[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
-assert.match(accountExperience, /shareQrSvg[\s\S]*SHARE_QR_ROWS[\s\S]*Scan to get Night Roster/, 'share sheet must render an offline QR code rather than depending on a remote QR service');
+assert.match(accountExperience, /SHARE_QR_ROWS[\s\S]*shareQrSvg[\s\S]*Scan to get Night Roster/, 'share sheet must render an offline QR code rather than depending on a remote QR service');
 assert.match(ui, /function sharedAppUrl\(\)\{return APP_URL\+'\?welcome=1'\}/, 'shared links must use the harmless welcome entry point');
 assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(true\)/, 'a scanned shared link must open device-aware installation help');
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
