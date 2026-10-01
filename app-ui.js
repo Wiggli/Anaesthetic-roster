@@ -26,6 +26,15 @@ var activeChangesStep='staffing';
 var changesSmartDefaultDate='';
 var initialNightChosen=false;
 var automaticSelectedDate=null;
+var nightSelectionMode='automatic';
+var serverClockSyncInFlight=false;
+var serverClockLastAttempt=0;
+var sharedSyncState='starting';
+var sharedSyncMessage='Opening shared roster';
+var compatibilityStartupUseCount=0;
+var compatibilityStartupLastUsed='';
+var rosterCommandInFlight={};
+var freshnessTimer=null;
 var lastResumeRefresh=0;
 var sharedSyncTimer=null;
 var sharedSyncCheckInFlight=false;
@@ -419,10 +428,10 @@ async function requestCompatibilityStartup(){
 
 function readOfflineSnapshot(){
   try{
-    var raw=JSON.parse(localStorage.getItem('anaes_offline_snapshot')||'null');if(!plainSnapshotRecord(raw)||!Array.isArray(raw.rotationVersions)||!raw.rotationVersions.length||!plainSnapshotRecord(raw.rosterSettings))return null;
+    var raw=JSON.parse(localStorage.getItem('anaes_offline_snapshot')||'null');if(!plainSnapshotRecord(raw)||!Array.isArray(raw.rotationVersions)||!raw.rotationVersions.length||!plainSnapshotRecord(raw.rosterSettings))return null;if(window.AnaestheticDomain&&window.AnaestheticDomain.snapshotIsExpired&&window.AnaestheticDomain.snapshotIsExpired(raw.saved_at,604800000,appNowMs())){localStorage.removeItem('anaes_offline_snapshot');recordAppDiagnostic('offline','snapshot','expired');return null}
     var versions=raw.rotationVersions.filter(function(version){return plainSnapshotRecord(version)&&/^\d{4}-\d{2}-\d{2}$/.test(version.effective_from||'')&&['first1','first2','second1','second2','pager','reliever'].every(function(key){return typeof version[key]==='string'&&version[key].trim()})}).map(function(version){var copy=Object.assign({},version);copy.seventh_cycle=Array.isArray(version.seventh_cycle)&&version.seventh_cycle.length?version.seventh_cycle.filter(function(name){return typeof name==='string'&&name.trim()}):ORIGINAL_SEVENTH.slice();return copy});
     if(!versions.length||!/^\d{4}-\d{2}-\d{2}$/.test(raw.rosterSettings.published_until||''))return null;
-    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0}
+    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0}
   }catch(error){return null}
 }
 
@@ -482,14 +491,14 @@ function rememberOnboardingProfile(){var name=byId('onboardingProfileName'),titl
 function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;var account=byId('accountSheet');if(account&&account.open)account.close();onboardingChatIntro=false;onboardingFeatureKey='';onboardingGuideMenu=true;onboardingReplay=true;onboardingDirection=1;onboardingStep=0;renderOnboarding();if(!dialog.open)dialog.showModal()}
 
 function saveOfflineSnapshot(){
-  try{localStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date().toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion}))}catch(error){}
+  try{localStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0)}))}catch(error){recordAppDiagnostic('offline','snapshot-save','failed')}
 }
 
 
 function restoreOfflineSnapshot(){
   try{
     var snapshot=readOfflineSnapshot();if(!snapshot)return false;
-    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;idx=startingIndex();automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSync('offline','Offline · saved '+(lastSuccessfulSyncAt?shortTime(lastSuccessfulSyncAt):'previously'));render();return true;
+    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
   }catch(error){console.error('Saved roster could not be restored',error);return false}
 }
 
@@ -722,7 +731,7 @@ function bindOnboarding(){
 function installedReleaseState(){var latest=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version||'Unknown',cache=String(serviceWorkerCacheVersion||'').replace(/^anaesthetic-night-roster-v/,'').replace(/-/g,'.'),stale=cache!=='Checking…'&&cache!=='Not active'&&cache!==APP_VERSION;return{latest:latest,cache:serviceWorkerCacheVersion,stale:stale,waiting:!!(updateRegistration&&updateRegistration.waiting)}}
 
 function diagnosticsText(){
-  var backupAt=localStorage.getItem('anaes_last_backup_at'),release=installedReleaseState();return['Running app version: '+APP_VERSION,'Latest release-history version: '+release.latest,'Service-worker cache: '+release.cache,'Installed release: '+(release.stale?'stale cache detected':release.waiting?'update waiting for approval':'current'),'Expected database schema: '+EXPECTED_SCHEMA_VERSION,'Actual database schema: '+(schemaVersion||'legacy'),'Connection: '+(navigator.onLine?'online':'offline'),'Last successful refresh: '+(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet'),'Last roster-data export: '+(backupAt?new Date(backupAt).toLocaleString('en-GB'):'not recorded on this device'),'Published roster until: '+(rosterSettings.published_until||'unknown'),'Calculated nights: '+R.length,'Current account: '+(currentUserProfile?'signed in as '+currentUserProfile.user_role:'not signed in')].join('\n');
+  var backupAt=localStorage.getItem('anaes_last_backup_at'),release=installedReleaseState(),clock=window.AnaestheticDomain&&window.AnaestheticDomain.clockState?window.AnaestheticDomain.clockState():{source:'device',offsetMs:0},caps=rosterCapabilities(),events=window.AnaestheticDomain&&window.AnaestheticDomain.readDiagnostics?window.AnaestheticDomain.readDiagnostics().slice(-10):[],lines=['Running app version: '+APP_VERSION,'Latest release-history version: '+release.latest,'Service-worker cache: '+release.cache,'Installed release: '+(release.stale?'stale cache detected':release.waiting?'update waiting for approval':'current'),'Expected database schema: '+EXPECTED_SCHEMA_VERSION,'Actual database schema: '+(schemaVersion||'legacy'),'Capabilities: server clock '+(caps.serverClock?'yes':'no')+' · chat idempotency '+(caps.chatIdempotency?'yes':'no')+' · monotonic reads '+(caps.monotonicChatRead?'yes':'no'),'Clock source: '+clock.source+' · offset '+Math.round(Number(clock.offsetMs||0))+' ms','Connection state: '+sharedSyncState,'Last successful refresh: '+(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet'),'Startup compatibility fallback uses this session: '+compatibilityStartupUseCount+(compatibilityStartupLastUsed?' · last '+compatibilityStartupLastUsed:''),'Last roster-data export: '+(backupAt?new Date(backupAt).toLocaleString('en-GB'):'not recorded on this device'),'Published roster until: '+(rosterSettings.published_until||'unknown'),'Calculated nights: '+R.length,'Current account: '+(currentUserProfile?'signed in as '+currentUserProfile.user_role:'not signed in')];if(events.length){lines.push('Recent local diagnostics:');events.forEach(function(item){lines.push(item.at+' · '+item.category+' · '+item.operation+' · '+item.code)})}return lines.join('\n');
 }
 
 function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var backupAt=localStorage.getItem('anaes_last_backup_at'),schemaState=schemaVersion>=EXPECTED_SCHEMA_VERSION?'Current':'Upgrade required',release=installedReleaseState();el.innerHTML='<div class="diagnosticGrid"><div class="historyItem"><b>Application versions</b><div class="changeMeta">Running '+esc(APP_VERSION)+' · Release history '+esc(release.latest)+'</div></div><div class="historyItem"><b>Service-worker cache</b><div class="changeMeta">'+esc(release.cache)+' · '+esc(release.stale?'Stale cached release detected':release.waiting?'Update awaiting approval':'Current')+'</div></div><div class="historyItem"><b>Database schema</b><div class="changeMeta">Expected '+esc(EXPECTED_SCHEMA_VERSION)+' · Actual '+esc(schemaVersion||'legacy')+' · '+esc(schemaState)+'</div></div><div class="historyItem"><b>Shared-data connection</b><div class="changeMeta">'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet')+'</div></div><div class="historyItem"><b>Last roster-data export</b><div class="changeMeta">'+esc(backupAt?new Date(backupAt).toLocaleString('en-GB'):'Not recorded')+'</div></div></div>'+(release.waiting?'<button type="button" class="primary wide" id="diagnosticUpdateBtn">Update now</button>':'')+'<button type="button" class="soft wide" id="copyDiagnosticsBtn">Copy diagnostic report</button>';var button=byId('copyDiagnosticsBtn');if(button)button.onclick=async function(){try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnostic report copied')}catch(error){toast('Diagnostic report could not be copied')}};var update=byId('diagnosticUpdateBtn');if(update)update.onclick=applyWaitingUpdate}
@@ -777,31 +786,37 @@ function syncDateInputs(date){
 }
 
 function maltaDateParts(value){
+  if(window.AnaestheticDomain&&window.AnaestheticDomain.maltaParts)return window.AnaestheticDomain.maltaParts(value==null?appNow():value);
   var parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Malta',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(value||new Date()),out={};
   parts.forEach(function(part){if(part.type!=='literal')out[part.type]=Number(part.value)});return out;
 }
 
 function operationalRosterDate(value){
+  if(window.AnaestheticDomain&&window.AnaestheticDomain.operationalRosterDate)return window.AnaestheticDomain.operationalRosterDate(value==null?appNow():value);
   var p=maltaDateParts(value),date=[p.year,String(p.month).padStart(2,'0'),String(p.day).padStart(2,'0')].join('-');
   return p.hour<7?addDays(date,-1):date;
 }
 
-function startingIndex(value){
-  if(!R.length)return 0;
-  var target=operationalRosterDate(value),i=R.findIndex(function(r){return r.date>=target});
-  return i>-1?i:Math.max(0,R.length-1);
+function resolveNightContext(value,selectedDate){
+  var now=value==null?appNow():value,automatic=window.AnaestheticDomain&&window.AnaestheticDomain.resolveAutomaticNight?window.AnaestheticDomain.resolveAutomaticNight(R,now):null;
+  if(!automatic){var p=maltaDateParts(now),target=operationalRosterDate(now),autoIndex=R.findIndex(function(r){return r.date>=target});if(autoIndex<0)autoIndex=Math.max(0,R.length-1);automatic={index:autoIndex,date:R[autoIndex]&&R[autoIndex].date||null,isCurrent:!!(R[autoIndex]&&R[autoIndex].date===target&&(p.hour<7||p.hour>=19)),calendarDate:[p.year,String(p.month).padStart(2,'0'),String(p.day).padStart(2,'0')].join('-'),operationalDate:target,hour:p.hour,minute:p.minute,phase:'next'}}
+  var selected=selectedDate||(R[idx]&&R[idx].date)||automatic.date,timing=selected?nightDutyTiming(selected):null,nowValue=now instanceof Date?now.getTime():Number(new Date(now).getTime()),selectedIsAutomatic=selected===automatic.date,phase='selected';
+  if(selectedIsAutomatic&&automatic.isCurrent&&timing){phase=nowValue<timing.startUtc?'evening':nowValue<timing.handoverUtc?'first':nowValue<timing.endUtc?'second':'complete'}else if(selectedIsAutomatic)phase='next';
+  return{index:automatic.index,automaticDate:automatic.date,selectedDate:selected,isCurrent:automatic.isCurrent,selectedIsAutomatic:selectedIsAutomatic,calendarDate:automatic.calendarDate,operationalDate:automatic.operationalDate,phase:phase,timing:timing,nowMs:nowValue,selectionMode:nightSelectionMode};
 }
 
+function startingIndex(value){return R.length?resolveNightContext(value).index:0}
+
 function automaticNightState(value){
-  var autoIndex=startingIndex(value),clock=maltaDateParts(value),target=operationalRosterDate(value),isCurrent=R[autoIndex]&&R[autoIndex].date===target&&(clock.hour<7||clock.hour>=19),selected=idx===autoIndex;
-  return{index:autoIndex,isCurrent:isCurrent,selected:selected,label:selected?(isCurrent?'Current night selected':'Next night selected'):(isCurrent?'Return to current night':'Return to next roster night')};
+  var context=resolveNightContext(value),selected=idx===context.index&&nightSelectionMode==='automatic';
+  return{index:context.index,isCurrent:context.isCurrent,selected:selected,label:selected?(context.isCurrent?'Current night selected':'Next night selected'):(context.isCurrent?'Return to current night':'Return to next roster night')};
 }
 
 function selectedNightCopy(date,value){
-  var p=maltaDateParts(value),today=[p.year,String(p.month).padStart(2,'0'),String(p.day).padStart(2,'0')].join('-'),state=automaticNightState(value),automatic=R[state.index]&&R[state.index].date;
-  if(state.isCurrent&&date===automatic)return{label:'Current night',assignment:'Current night’s assignment',changed:'Changed this night'};
-  if(date===today)return{label:'Tonight',assignment:'Tonight’s assignment',changed:'Changed tonight'};
-  if(date===automatic&&date>today)return{label:'Next night',assignment:'Next night’s assignment',changed:'Changed for next night'};
+  var context=resolveNightContext(value,date),automatic=context.automaticDate;
+  if(context.isCurrent&&date===automatic)return{label:'Current night',assignment:'Current night’s assignment',changed:'Changed this night'};
+  if(date===automatic&&!context.isCurrent)return{label:'Next night',assignment:'Next night’s assignment',changed:'Changed for next night'};
+  if(date===context.calendarDate)return{label:'Tonight',assignment:'Tonight’s assignment',changed:'Changed tonight'};
   return{label:'Selected night',assignment:'Selected night’s assignment',changed:'Changed for this night'};
 }
 
@@ -820,13 +835,13 @@ function renderHeaderSummary(r){
 }
 
 function goToAutomaticNight(){
-  var state=automaticNightState();idx=state.index;automaticSelectedDate=R[idx].date;localStorage.setItem('anaes_selected_date',R[idx].date);render();toast(state.isCurrent?'Current working night opened':'Next available roster night opened');
+  nightSelectionMode='automatic';var context=resolveNightContext();idx=context.index;automaticSelectedDate=R[idx].date;localStorage.setItem('anaes_selected_date',R[idx].date);render();toast(context.isCurrent?'Current working night opened':'Next available roster night opened');
 }
 
 function refreshAutomaticNightOnReturn(){
-  if(document.visibilityState!=='visible'||!initialNightChosen||!automaticSelectedDate||!R.length)return;
-  var selected=localStorage.getItem('anaes_selected_date'),state=automaticNightState(),nextDate=R[state.index].date;
-  if(selected===automaticSelectedDate&&nextDate!==automaticSelectedDate){idx=state.index;automaticSelectedDate=nextDate;render();toast(state.isCurrent?'Roster moved to the current night':'Roster moved to the next available night')}
+  if(document.visibilityState!=='visible'||!initialNightChosen||nightSelectionMode!=='automatic'||!R.length)return;
+  var context=resolveNightContext(),nextDate=R[context.index].date;
+  if(nextDate!==automaticSelectedDate){idx=context.index;automaticSelectedDate=nextDate;localStorage.setItem('anaes_selected_date',nextDate);render();toast(context.isCurrent?'Roster moved to the current night':'Roster moved to the next available night')}
 }
 
 var lastChangesWorkflowModel=null;
@@ -1156,9 +1171,8 @@ function personalAllocation(base,r,name){
 }
 
 function personalLiveStatus(base,assignment){
-  if(!assignment||base.date!==operationalRosterDate(new Date()))return'';
-  var clock=maltaDateParts(),timing=nightDutyTiming(base.date),now=Date.now();
-  if(!(clock.hour<7||clock.hour>=19))return'';
+  var context=resolveNightContext(null,base.date);if(!assignment||!context.isCurrent||!context.selectedIsAutomatic)return'';
+  var timing=context.timing||nightDutyTiming(base.date),now=context.nowMs;
   if(assignment.key==='absence')return'Not on duty tonight';
   if(assignment.pending||assignment.key==='unallocated')return'Allocation pending';
   if(assignment.dutyPart==='first'){
@@ -1214,7 +1228,7 @@ function notifyRosterUpdate(type,date){if(window.dispatchRosterPush)window.dispa
 
 function render(){
   if(!R.length||!currentUserProfile)return;
-  var base=cur(),plan=staffingPlan(base),r=applyChanges(base),e=effective(r),count=plan.count,dutyTiming=nightDutyTiming(base.date);
+  var canonical=buildNightPlan(cur()),base=canonical.base,plan=canonical.staffing,r=canonical.effective,e=effective(r),count=plan.count,dutyTiming=canonical.timing;
   ensureAutomaticLabourOrder(base,r);
   var labourPending=r.mode!=='5'&&!planIsProvisional(base)&&!labourOrderFor(r);
   var roles=[['bFirst','First Part',r.first1+' + '+r.first2,'Works '+dutyTiming.firstPeriodDisplay+(dutyTiming.isClockChange?' · '+formatDutyHours(dutyTiming.partHours)+' actual':'')+' • Second break'],['bSecond','Second Part',r.second1+' + '+r.second2,'Works '+dutyTiming.secondPeriod+(dutyTiming.isClockChange?' · '+formatDutyHours(dutyTiming.partHours)+' actual':'')+' • First break']];
@@ -1230,10 +1244,10 @@ function render(){
   var firstTask=workflowTaskDetails(base,plan)[0]||'';
   if(r.mode==='7')roles.push(['b7','Seventh nurse',r.seventh,'Additional nurse · Break coordinated as required']);
   var extras=additionalNurses(plan);
-  var roleModel=roles.map(function(c){var tone=roleIconType(c[0]);return{key:c[0],label:c[1],names:professionalNames(c[2]),detail:c[3],tone:tone==='first'||tone==='second'||tone==='pager'||tone==='reliever'||tone==='seventh'?tone:'full',mine:isMine(c[2])}}),fivePerson=r.mode==='5'&&r.understaffedCount>=5?{name:professionalName(r.fullLW),reason:'One nurse covers Labour Ward and Pager for the full night. Their break is coordinated when clinical cover allows.',mine:isMine(r.fullLW)}:null,nightDetail={nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount,taskCount:taskCount,decisionTasks:decisionTasks,confirmNeeded:confirmNeeded,alert:count!==6&&r.mode!=='5'?e.alert:'',firstTask:decisionTasks?firstTask:'',labourPending:labourPending&&!(personal&&personal.pending),breakLabel:personal&&personal.breakLabel||'',chatUnread:Number(byId('chatUnreadBadge')&&byId('chatUnreadBadge').textContent||0)||0,liveState:personalLiveStatus(base,personal),roles:roleModel,extras:extras.map(function(o){return o.nurse_name}),fivePerson:fivePerson,clockChange:clockChangeDetailFor(base.date),contextLabel:planIsProvisional(base)?'Provisional':nightDutyTiming(base.date).isClockChange?'Clock change':r.mode==='5'?'5-nurse arrangement':r.mode==='7'?'7-nurse arrangement':absenceCount||overtimeCount||workflowHasManualPlan(base)?'Updated night':'Standard night',currentPart:(function(){var t=nightDutyTiming(base.date),now=Date.now();if(base.date!==operationalRosterDate(new Date())||now<t.startUtc||now>=t.endUtc)return'';return now<t.handoverUtc?'first':'second'})()};
+  var roleModel=roles.map(function(c){var tone=roleIconType(c[0]);return{key:c[0],label:c[1],names:professionalNames(c[2]),detail:c[3],tone:tone==='first'||tone==='second'||tone==='pager'||tone==='reliever'||tone==='seventh'?tone:'full',mine:isMine(c[2])}}),fivePerson=r.mode==='5'&&r.understaffedCount>=5?{name:professionalName(r.fullLW),reason:'One nurse covers Labour Ward and Pager for the full night. Their break is coordinated when clinical cover allows.',mine:isMine(r.fullLW)}:null,nightDetail={nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount,taskCount:taskCount,decisionTasks:decisionTasks,confirmNeeded:confirmNeeded,alert:count!==6&&r.mode!=='5'?e.alert:'',firstTask:decisionTasks?firstTask:'',labourPending:labourPending&&!(personal&&personal.pending),breakLabel:personal&&personal.breakLabel||'',chatUnread:Number(byId('chatUnreadBadge')&&byId('chatUnreadBadge').textContent||0)||0,liveState:personalLiveStatus(base,personal),roles:roleModel,extras:extras.map(function(o){return o.nurse_name}),fivePerson:fivePerson,clockChange:clockChangeDetailFor(base.date),contextLabel:planIsProvisional(base)?'Provisional':nightDutyTiming(base.date).isClockChange?'Clock change':r.mode==='5'?'5-nurse arrangement':r.mode==='7'?'7-nurse arrangement':absenceCount||overtimeCount||workflowHasManualPlan(base)?'Updated night':'Standard night',currentPart:(function(){var context=resolveNightContext(null,base.date);if(!context.isCurrent||!context.selectedIsAutomatic||context.nowMs<context.timing.startUtc||context.nowMs>=context.timing.endUtc)return'';return context.nowMs<context.timing.handoverUtc?'first':'second'})(),dataFreshness:window.AnaestheticDomain&&window.AnaestheticDomain.freshness?window.AnaestheticDomain.freshness(lastSuccessfulSyncAt,navigator.onLine&&!forcedOfflineSession,appNowMs()).label:''};
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night',{detail:nightDetail}));
   localStorage.setItem('anaes_selected_date',base.date);
-  renderChanges(base);renderRoster();renderBreaks();bindTaskLinks();queueClockChangeAttention(base.date);maybeUpcomingClockChangeReminder();
+  renderChanges(base,canonical);renderRoster();renderBreaks(canonical);bindTaskLinks();queueClockChangeAttention(base.date);maybeUpcomingClockChangeReminder();
   if(currentUserProfile.user_role==='admin')renderAdmin();
   ensureNightHistory(base.date);updateNetworkStatus();save();
 }
@@ -1348,10 +1362,11 @@ function chooseSeventhDecision(base,decision){
   setTimeout(function(){var card=document.querySelector('.seventhDecisionCard');if(card)card.scrollIntoView({behavior:'smooth',block:'center'})},120);
 }
 
-function renderChanges(base){
+function renderChanges(base,nightPlan){
+  var canonical=nightPlan&&nightPlan.date===base.date?nightPlan:buildNightPlan(base);
   if(document.body&&typeof document.body.getAttribute==='function'&&document.body.getAttribute('data-view')==='changes'&&changesSmartDefaultDate!==base.date){activeChangesStep=smartChangesStep(base);changesSmartDefaultDate=base.date}
   var changes=changesFor(base.date),absentLower=changes.map(function(c){return c.absent_name.toLowerCase()}),names=activeNames(base).filter(function(n){return absentLower.indexOf(n.toLowerCase())<0});
-  var overtime=overtimeFor(base.date),plan=staffingPlan(base),history=staffingHistoryFor(base.date),expanded=!!historyExpandedDates[base.date];
+  var overtime=overtimeFor(base.date),plan=canonical.staffing,history=staffingHistoryFor(base.date),expanded=!!historyExpandedDates[base.date];
   updateStaffingActionAvailability();
   var extraIds=additionalNurses(plan).map(function(o){return o.id});
   byId('fiveCoverStep').innerHTML=fiveCoverHtml(base,plan);
@@ -1402,8 +1417,13 @@ function editNightChange(id){
 
 function cancelAbsenceEdit(){editingAbsenceId=null;byId('absentName').value='';byId('changeReason').value='Leave';byId('saveChangeBtn').textContent='Save absence';byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage','');renderChanges(cur())}
 
-function breakData(r){
-  var base=baseForDate(r.date),plan=staffingPlan(base),timing=nightDutyTiming(r.date);
+function buildNightPlan(base){
+  base=base||cur();var plan=staffingPlan(base),r=applyChanges(base),timing=nightDutyTiming(base.date),provisional=plan.count<5||plan.requiresCoverageChoice||plan.requiresSeventhDecision||plan.unresolved.length>0,labour=labourOrderFor(r),tasks=workflowTaskDetails(base,plan),status=nightPlanStatuses[base.date]||null;
+  return{date:base.date,base:base,effective:r,staffing:plan,timing:timing,provisional:provisional,labourOrder:labour,labourPending:r.mode!=='5'&&!provisional&&!labour,tasks:tasks,revision:status?Number(status.revision||0):0,confirmed:!!(status&&status.status==='final')};
+}
+
+function breakData(r,nightPlan){
+  var base=nightPlan&&nightPlan.base||baseForDate(r.date),plan=nightPlan&&nightPlan.staffing||staffingPlan(base),timing=nightPlan&&nightPlan.timing||nightDutyTiming(r.date);
   if(plan.count<5)return{first:[],second:[],notes:['Breaks cannot be finalised while only '+plan.count+' nurses are recorded. Add sufficient overtime cover and complete the allocations first.']};
   var first=[r.second1,r.second2],second=[r.first1,r.first2],notes=[];
   if(r.mode==='5')notes.push(professionalName(r.fullLW)+' covers Labour Ward / Pager for the full night. Their break is coordinated during the shift when clinical cover allows.');
@@ -1423,10 +1443,10 @@ function breakData(r){
   return{first:first,second:second,notes:notes};
 }
 
-function renderBreaks(){
-  var base=cur(),r=applyChanges(base),plan=staffingPlan(base),staffingPending=planIsProvisional(base),labourPending=r.mode!=='5'&&!labourOrderFor(r),pending=staffingPending||labourPending,count=plan.count,b=staffingPending?{first:[],second:[],notes:['Breaks are pending until the required staffing and allocations are finalised.']}:breakData(r);
+function renderBreaks(nightPlan){
+  var model=nightPlan&&nightPlan.date===cur().date?nightPlan:buildNightPlan(cur()),base=model.base,r=model.effective,plan=model.staffing,staffingPending=model.provisional,labourPending=r.mode!=='5'&&!model.labourOrder,pending=staffingPending||labourPending,count=plan.count,b=staffingPending?{first:[],second:[],notes:['Breaks are pending until the required staffing and allocations are finalised.']}:breakData(r,model);
   byId('breakDatePick').value=r.date;byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
-  var absenceCount=changesFor(base.date).length,timing=nightDutyTiming(r.date),detail={date:r.date,formattedDate:fmt(r.date),nurseCount:count,absenceCount:absenceCount,pending:pending,pendingReason:staffingPending?'Complete the remaining staffing allocation.':'Review the Labour Ward allocation.',labourPending:labourPending,first:b.first.map(professionalName),second:b.second.map(professionalName),notes:b.notes,highlightedName:professionalName(myName()),firstDutyPeriod:timing.firstPeriodDisplay,secondDutyPeriod:timing.secondPeriod,clockChange:clockChangeDetailFor(r.date)};
+  var absenceCount=changesFor(base.date).length,timing=model.timing,detail={date:r.date,formattedDate:fmt(r.date),nurseCount:count,absenceCount:absenceCount,pending:pending,pendingReason:staffingPending?'Complete the remaining staffing allocation.':'Review the Labour Ward allocation.',labourPending:labourPending,first:b.first.map(professionalName),second:b.second.map(professionalName),notes:b.notes,highlightedName:professionalName(myName()),firstDutyPeriod:timing.firstPeriodDisplay,secondDutyPeriod:timing.secondPeriod,clockChange:clockChangeDetailFor(r.date),revision:model.revision,confirmed:model.confirmed};
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:breaks',{detail:detail}));
 }
 
@@ -1651,25 +1671,66 @@ async function loadNightHistory(date,renderAfter){
 
 function ensureNightHistory(date){if(!historyLoadedDates[date])loadNightHistory(date,true)}
 
+function setSharedSyncState(state,message){
+  sharedSyncState=state||'live';sharedSyncMessage=message||'';setSync(state==='live'?'':state==='reconnecting'?'error':state,message||'');renderDiagnostics();
+}
+async function syncServerClock(force){
+  if(serverClockSyncInFlight||!navigator.onLine||!supa||!rosterCapabilities().serverClock)return false;
+  if(!force&&Date.now()-serverClockLastAttempt<900000)return true;
+  serverClockLastAttempt=Date.now();serverClockSyncInFlight=true;var sent=Date.now();
+  try{
+    var result=await withTimeout(supa.rpc('app_server_clock_v47'),2500,'Clock check timed out'),received=Date.now();
+    if(result&&result.error)throw result.error;
+    var value=result&&result.data;if(Array.isArray(value))value=value[0];
+    if(value&&typeof value==='object'&&value.server_now)value=value.server_now;
+    if(!window.AnaestheticDomain||!window.AnaestheticDomain.setServerClock||!window.AnaestheticDomain.setServerClock(String(value||''),sent,received))throw new Error('Invalid server clock');
+    recordAppDiagnostic('clock','sync','ok');return true
+  }catch(error){recordAppDiagnostic('clock','sync',error&&error.code||'fallback');return false}
+  finally{serverClockSyncInFlight=false}
+}
+function noteCompatibilityStartup(path){
+  compatibilityStartupUseCount++;compatibilityStartupLastUsed=path;recordAppDiagnostic('compatibility','startup',path)
+}
+function commandKey(value){return String(value||'command').replace(/[^A-Za-z0-9_.:-]/g,'').slice(0,120)}
+async function runRosterMutation(key,execute,verify){
+  key=commandKey(key);if(rosterCommandInFlight[key])return rosterCommandInFlight[key];
+  var commandId=window.AnaestheticDomain&&window.AnaestheticDomain.commandId?window.AnaestheticDomain.commandId():'command-'+Date.now();
+  recordAppDiagnostic('mutation',key,'start');
+  var work=(async function(){
+    try{
+      var result=await timedRequest(execute(commandId));
+      if(result&&result.error)return result;
+      recordAppDiagnostic('mutation',key,'committed');return result
+    }catch(error){
+      recordAppDiagnostic('mutation',key,error&&error.code||((error&&error.message==='timeout')?'timeout':'error'));
+      if(typeof verify==='function'){
+        try{await loadSharedData({background:true});if(verify()){recordAppDiagnostic('mutation',key,'verified-after-timeout');return{data:{verified:true,command_id:commandId},error:null,recovered:true}}}catch(refreshError){recordAppDiagnostic('mutation',key,'verify-failed')}
+      }
+      throw error
+    }finally{delete rosterCommandInFlight[key]}
+  })();
+  rosterCommandInFlight[key]=work;return work
+}
+
 async function loadSharedData(options){
   var background=!!(options&&options.background);
   if(sharedLoadPromise){sharedReloadPending=true;sharedReloadPendingBackground=sharedReloadPendingBackground&&background;return sharedLoadPromise}
   if(!background)document.body.classList.add('dataRefreshing');
   sharedLoadPromise=(async function(){
     try{
-      sharedLoadFailureCode='';
+      sharedLoadFailureCode='';setSharedSyncState('starting','Opening shared roster');
       sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the shared roster…');
       var snapshot;if(preferCompatibilityStartup()){
         try{sharedLoadFailureStage='snapshot';setLaunchState('Preparing your night','Opening the protected Android roster…');snapshot=await requestStartupWithSessionRecovery(requestStartupSnapshotXhr)}catch(androidTransportError){
           if(androidTransportError&&androidTransportError.startupSessionFailed)throw androidTransportError;
           if(androidTransportError&&androidTransportError.code==='42501')throw androidTransportError;
-          console.warn('Protected Android startup was unavailable; using compatibility reads',androidTransportError);
+          console.warn('Protected Android startup was unavailable; using compatibility reads',androidTransportError);noteCompatibilityStartup('android-fallback');
           snapshot=await requestCompatibilityStartup()
         }
       }else try{snapshot=await requestStartupWithSessionRecovery(requestStartupSnapshot)}catch(snapshotError){
         if(snapshotError&&snapshotError.startupSessionFailed)throw snapshotError;
         if(snapshotError&&snapshotError.code==='42501')throw snapshotError;
-        console.warn('Protected startup snapshot was unavailable; using compatibility reads',snapshotError);
+        console.warn('Protected startup snapshot was unavailable; using compatibility reads',snapshotError);noteCompatibilityStartup('snapshot-fallback');
         snapshot=await requestCompatibilityStartup()
       }
       var profile=snapshot&&snapshot.profile;
@@ -1682,19 +1743,22 @@ async function loadSharedData(options){
       nightPlanStatuses=rowsIndexedByDate(snapshot.night_plan_status);
       nightRoleOverrideAvailable=true;nightRoleOverrides=rowsIndexedByDate(snapshot.night_role_overrides);
       if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings}
-      schemaVersion=Number(snapshot.schema_version||0);lastObservedSyncRevision=Number(snapshot.sync_revision||0);
+      schemaVersion=Number(snapshot.schema_version||0);var incomingRevision=Number(snapshot.sync_revision||0);
+      if(lastObservedSyncRevision!==null&&incomingRevision<lastObservedSyncRevision){var staleError=new Error('An older roster snapshot was rejected.');staleError.code='STALE_SNAPSHOT';throw staleError}
+      lastObservedSyncRevision=incomingRevision;await syncServerClock(false);
       rebuildCalculatedRoster();
-      if(!initialNightChosen){idx=startingIndex();automaticSelectedDate=R[idx].date;initialNightChosen=true}
+      if(!initialNightChosen){nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx].date;initialNightChosen=true}
+      else if(nightSelectionMode==='automatic'){idx=startingIndex(appNow());automaticSelectedDate=R[idx].date}
       else{var selected=localStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:Math.min(idx,R.length-1)}
-      lastSuccessfulSyncAt=new Date().toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';sharedLoadFailureCode='';saveOfflineSnapshot();setSync('','Up to date');render();renderDiagnostics();return true;
+      lastSuccessfulSyncAt=new Date(appNowMs()).toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';sharedLoadFailureCode='';saveOfflineSnapshot();setSharedSyncState('live','');render();renderDiagnostics();return true;
     }catch(error){
-      console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);
+      console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);recordAppDiagnostic('startup',sharedLoadFailureStage,error&&error.code||'error');
       sharedLoadFailureCode=String(error&&((error.status&&String(error.status))||error.code)||'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,32);
       if(error&&(error.startupSessionFailed||startupAuthError(error)))sharedLoadFailureStage='session';
       if(error&&error.code==='42501'){sharedLoadFailureStage='access';forcedOfflineSession=false;return false}
       var cached=currentUser&&cachedAllowedProfile(currentUser.email);if(!currentUserProfile&&cached)prepareAuthorisedShell(cached);
       forcedOfflineSession=true;if(cached&&restoreOfflineSnapshot()){updateOfflineControls();return true}forcedOfflineSession=false;
-      setSync('error','Shared data unavailable');return false
+      setSharedSyncState('error','Shared data unavailable');return false
     }
   })();
   try{return await sharedLoadPromise}finally{if(!background)document.body.classList.remove('dataRefreshing');sharedLoadPromise=null;if(sharedReloadPending){var nextBackground=sharedReloadPendingBackground;sharedReloadPending=false;sharedReloadPendingBackground=true;setTimeout(function(){loadSharedData({background:nextBackground})},120)}}
@@ -1732,7 +1796,7 @@ function subscribeToChanges(){
     }
     scheduleSharedReload(true);
   })});
-  changesChannel.subscribe(function(status){if(generation!==realtimeGeneration)return;if(status==='SUBSCRIBED'){realtimeSubscribed=true;realtimeRetryCount=0;setSync('','Up to date');checkSharedRevision()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){realtimeSubscribed=false;setSync('error','Reconnecting live updates…');scheduleRealtimeReconnect()}});
+  changesChannel.subscribe(function(status){if(generation!==realtimeGeneration)return;if(status==='SUBSCRIBED'){realtimeSubscribed=true;realtimeRetryCount=0;setSharedSyncState('live','');checkSharedRevision()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){realtimeSubscribed=false;setSharedSyncState('reconnecting','Reconnecting live updates…');recordAppDiagnostic('realtime','roster',status);scheduleRealtimeReconnect()}});
 }
 
 function resumeSharedSync(){if(forcedOfflineSession||!currentUserProfile||!navigator.onLine)return;if(!realtimeSubscribed)subscribeToChanges();checkSharedRevision();if(Date.now()-new Date(lastSuccessfulSyncAt||0).getTime()>30000)scheduleSharedReload(true)}
@@ -1746,12 +1810,12 @@ function updateOfflineControls(){
 }
 
 function updateNetworkStatus(){
-  if(!navigator.onLine||forcedOfflineSession)setSync('offline','Offline • saved information');else if(currentUserProfile)setSync('','Up to date');
+  if(!navigator.onLine||forcedOfflineSession)setSharedSyncState('offline','');else if(currentUserProfile)setSharedSyncState(realtimeSubscribed?'live':'reconnecting',realtimeSubscribed?'':'Reconnecting live updates…');
   updateOfflineControls();
 }
 
 function chooseDate(inputId){
-  var value=byId(inputId).value,previous=idx;if(!value){render();return}
+  var value=byId(inputId).value,previous=idx;if(!value){render();return}nightSelectionMode='manual';
   if(value<R[0].date){idx=0;toast('The published roster begins on '+fmt(R[0].date));render();return}
   if(value>R[R.length-1].date){idx=R.length-1;toast('The roster is currently published only until '+fmt(R[R.length-1].date));render();return}
   var i=R.findIndex(function(r){return r.date>=value});idx=i<0?R.length-1:i;if(idx!==previous)document.body.setAttribute('data-date-direction',idx>previous?'next':'previous');if(R[idx].date!==value)toast('Next rostered night: '+fmt(R[idx].date));render();setTimeout(function(){document.body.removeAttribute('data-date-direction')},360);
@@ -1800,6 +1864,12 @@ function workerCacheName(worker){
 async function refreshControllerCacheVersion(){
   var worker=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!worker)return'';
   var value=await workerCacheName(worker);if(value){serviceWorkerCacheVersion=value;renderDiagnostics()}return value;
+}
+function verifyRuntimeHealth(){
+  var release=installedReleaseState(),expected='anaesthetic-night-roster-v'+APP_VERSION.replaceAll('.','-'),healthy=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version===APP_VERSION&&(!navigator.serviceWorker||!navigator.serviceWorker.controller||serviceWorkerCacheVersion==='Checking…'||serviceWorkerCacheVersion==='Not active'||serviceWorkerCacheVersion===expected);
+  if(!healthy){recordAppDiagnostic('update','runtime-health','mismatch');setSharedSyncState('error','App update needs attention');return false}
+  if(release.stale){recordAppDiagnostic('update','runtime-health','stale-cache');return false}
+  return true
 }
 
 function renderPendingUpdate(){
@@ -1893,9 +1963,9 @@ function setupPWA(){
   window.addEventListener('appinstalled',function(){deferredInstallPrompt=null;applyStandaloneUi();toast('Night Roster installed')});
   byId('applyUpdateBtn').onclick=applyWaitingUpdate;byId('applyUpdateSheetBtn').onclick=applyWaitingUpdate;byId('openUpdateDetailsBtn').onclick=openUpdateDetails;byId('laterUpdateBtn').onclick=dismissWaitingUpdate;byId('laterUpdateSheetBtn').onclick=dismissWaitingUpdate;
   if(navigator.serviceWorker&&typeof navigator.serviceWorker.addEventListener==='function'&&typeof navigator.serviceWorker.register==='function'){
-    navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='CACHE_VERSION'){serviceWorkerCacheVersion=event.data.value||'Unknown';renderDiagnostics()}});navigator.serviceWorker.addEventListener('controllerchange',function(){finishUpdateActivation();refreshControllerCacheVersion();if(reloadForUpdate){reloadForUpdate=false;window.location.reload()}else renderDiagnostics()});
+    navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='CACHE_VERSION'){serviceWorkerCacheVersion=event.data.value||'Unknown';renderDiagnostics();verifyRuntimeHealth()}});navigator.serviceWorker.addEventListener('controllerchange',function(){finishUpdateActivation();refreshControllerCacheVersion().then(verifyRuntimeHealth);if(reloadForUpdate){reloadForUpdate=false;window.location.reload()}else renderDiagnostics()});
     var check=function(){if(updateRegistration&&navigator.onLine)updateRegistration.update().catch(function(){})};
-    window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await navigator.serviceWorker.ready;if(navigator.serviceWorker.controller){var activeCache=await refreshControllerCacheVersion();if(!activeCache)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_VERSION'})}else{serviceWorkerCacheVersion='Not active';renderDiagnostics()}if(updateRegistration.waiting)await showUpdate(updateRegistration);await updateRegistration.update();setInterval(check,900000)}catch(e){serviceWorkerCacheVersion='Not active';renderDiagnostics()}});
+    window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await navigator.serviceWorker.ready;if(navigator.serviceWorker.controller){var activeCache=await refreshControllerCacheVersion();if(!activeCache)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_VERSION'});else verifyRuntimeHealth()}else{serviceWorkerCacheVersion='Not active';renderDiagnostics()}if(updateRegistration.waiting)await showUpdate(updateRegistration);await updateRegistration.update();setInterval(check,900000)}catch(e){serviceWorkerCacheVersion='Not active';renderDiagnostics()}});
     window.addEventListener('focus',check);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()});
   }
   var closeInstall=byId('closeInstallGuide'),closeRelease=byId('closeReleaseNotes'),releaseDialog=byId('releaseNotes');if(closeInstall)closeInstall.onclick=function(){byId('installGuide').close()};if(closeRelease)closeRelease.onclick=function(){releaseDialog.close()};if(releaseDialog&&typeof releaseDialog.addEventListener==='function')releaseDialog.addEventListener('close',function(){if(releaseDialog.dataset.releaseMode==='current'||releaseDialog.dataset.releaseMode==='history')markCurrentReleaseSeen();releaseNotesQueued=false;showOnboardingIfNeeded()});showReleaseNotesIfNeeded();
@@ -1940,7 +2010,7 @@ async function authorizeUser(user,session){
 }
 
 function bind(){
-  initTheme();window.addEventListener('beforeunload',protectLocalChangesDraft);launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();bindFeatureEducation();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
+  initTheme();window.addEventListener('beforeunload',protectLocalChangesDraft);launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();bindFeatureEducation();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();syncServerClock(false).then(function(){if(nightSelectionMode==='automatic')refreshAutomaticNightOnReturn()});resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);freshnessTimer=setInterval(function(){if(currentUserProfile)setSync(sharedSyncState==='live'?'':sharedSyncState,sharedSyncMessage)},30000);updateScrollChrome();
   window.addEventListener('roster:activity-open',function(event){var index=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(index)&&recentActivityItems[index])openActivityDetail(recentActivityItems[index],recentActivityDate)});
   window.addEventListener('roster:clock-change-guide',function(){showClockChangeEducation(cur().date,true)});
   window.addEventListener('roster:share-action',function(event){var action=event&&event.detail&&event.detail.action;if(action==='native')nativeShareNightRoster();else if(action==='copy')copyNightRosterLink();else if(action==='install'){var share=byId('shareAppDialog');if(share&&share.open)share.close();showInstallGuide(true)}});

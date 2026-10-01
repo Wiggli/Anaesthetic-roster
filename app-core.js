@@ -5,7 +5,7 @@ var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
 var APP_VERSION = '38.02';
-var EXPECTED_SCHEMA_VERSION = 46;
+var EXPECTED_SCHEMA_VERSION = 47;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
 var currentAccessToken = '';
@@ -33,6 +33,11 @@ var adminHealthLoadedAt=0;
 var adminHealthLoading=false;
 var appSettings={id:1,email_recipients:[],shift_start:'19:00',shift_end:'07:00'};
 var schemaVersion=0;
+function appNow(){return window.AnaestheticDomain&&window.AnaestheticDomain.now?window.AnaestheticDomain.now():new Date()}
+function appNowMs(){return window.AnaestheticDomain&&window.AnaestheticDomain.nowMs?window.AnaestheticDomain.nowMs():Date.now()}
+function recordAppDiagnostic(category,operation,code){if(window.AnaestheticDomain&&window.AnaestheticDomain.recordDiagnostic)return window.AnaestheticDomain.recordDiagnostic(category,operation,code)}
+function rosterCapabilities(){return window.AnaestheticDomain&&window.AnaestheticDomain.capabilities?window.AnaestheticDomain.capabilities(schemaVersion):{schemaVersion:Number(schemaVersion||0),serverClock:false,chatIdempotency:false,monotonicChatRead:false,atomicFinalise:schemaVersion>=37,nightRoleOverrides:schemaVersion>=36}}
+window.rosterCapabilities=rosterCapabilities;
 var nightPlanStatuses={};
 var nightRoleOverrides={};
 var lastSuccessfulSyncAt=null;
@@ -96,10 +101,10 @@ function syncAppBadge(){
   try{var p=navigator.setAppBadge(Math.min(total,99));if(p&&p.catch)p.catch(function(){})}catch(error){}
 }
 window.syncAppBadge=syncAppBadge;
-function clearPrivateDeviceData(){['anaes_offline_snapshot','anaes_cached_profile','anaes_recent_overtime_names','anaes_seen_night_activity','anaes_my_name'].forEach(function(key){try{localStorage.removeItem(key)}catch(error){}});clearAppBadge()}
+function clearPrivateDeviceData(){['anaes_offline_snapshot','anaes_cached_profile','anaes_recent_overtime_names','anaes_seen_night_activity','anaes_seen_night_activity_at','anaes_my_name','anaes_selected_date'].forEach(function(key){try{localStorage.removeItem(key)}catch(error){}});if(window.AnaestheticDomain&&window.AnaestheticDomain.clearDiagnostics)window.AnaestheticDomain.clearDiagnostics();clearAppBadge()}
 var toastTimer=null;
 function toast(t,action){var el=byId('toast');if(!el)return;clearTimeout(toastTimer);el.innerHTML='';var text=document.createElement('span');text.textContent=t;el.appendChild(text);el.classList.toggle('hasAction',!!(action&&action.run));if(action&&action.run){var button=document.createElement('button');button.type='button';button.textContent=action.label||'Undo';button.onclick=function(){clearTimeout(toastTimer);el.style.display='none';el.classList.remove('presenting');Promise.resolve(action.run()).catch(function(){toast('That change could not be undone')})};el.appendChild(button)}el.style.display='flex';el.classList.remove('presenting');void el.offsetWidth;el.classList.add('presenting');toastTimer=setTimeout(function(){el.style.display='none';el.classList.remove('hasAction','presenting')},action&&action.run?6500:2600)}
-function setSync(state,text){var el=byId('syncStatus'),header=byId('headerLiveChip'),headerText=byId('headerLiveText'),changesLive=byId('changesHeaderLive'),stamp=lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';if(el){el.className='liveStatus '+(state||'');byId('syncText').textContent=text||'Live'}if(header){header.className='headerChip headerLiveChip '+(state||'');headerText.textContent=state==='saving'?'Saving':state==='offline'?(stamp?'Offline · '+stamp:'Offline'):state==='error'?'Problem':stamp?'Live · '+stamp:'Live';header.title=stamp?'Last refreshed at '+stamp:''}if(changesLive)changesLive.textContent=state==='saving'?'Saving changes':state==='offline'?'Offline · saved information':state==='error'?'Connection problem':text||'Live and up to date'}
+function setSync(state,text){var el=byId('syncStatus'),header=byId('headerLiveChip'),headerText=byId('headerLiveText'),changesLive=byId('changesHeaderLive'),online=navigator.onLine&&(typeof forcedOfflineSession==='undefined'||!forcedOfflineSession),fresh=window.AnaestheticDomain&&window.AnaestheticDomain.freshness?window.AnaestheticDomain.freshness(lastSuccessfulSyncAt,online,appNowMs()):null,stamp=lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'',effectiveState=state||fresh&&fresh.state==='stale'?'stale':state||'',liveLabel=fresh&&fresh.label||(stamp?'Live · '+stamp:'Live');if(el){el.className='liveStatus '+effectiveState;byId('syncText').textContent=text||liveLabel}if(header){header.className='headerChip headerLiveChip '+effectiveState;headerText.textContent=state==='saving'?'Saving':state==='offline'?(fresh&&fresh.label||'Offline'):state==='error'?'Problem':liveLabel;header.title=lastSuccessfulSyncAt?'Last refreshed '+(fresh&&fresh.age?fresh.age.label:stamp):''}if(changesLive)changesLive.textContent=state==='saving'?'Saving changes':state==='offline'?(fresh&&fresh.label||'Offline · saved information'):state==='error'?'Connection problem':text||liveLabel}
 function localCur(){return R[idx] || R[0]}
 function changesFor(date){return nightChanges[date]||[]}
 function overtimeFor(date){return nightOvertime[date]||[]}
