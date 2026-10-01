@@ -3,6 +3,22 @@ import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, ListRow, Pressable } from './ui-system';
 
+type ClockChangeInfo = {
+  direction: 'forward' | 'back';
+  title: string;
+  transitionLabel: string;
+  handover: string;
+  handoverDisplay: string;
+  firstPeriod: string;
+  secondPeriod: string;
+  partHours: number;
+  partHoursLabel: string;
+  totalHours: number;
+  totalHoursLabel: string;
+  summary: string;
+  date: string;
+};
+
 type BreakSummary = {
   date: string;
   formattedDate: string;
@@ -15,6 +31,9 @@ type BreakSummary = {
   second: string[];
   notes: string[];
   highlightedName: string;
+  firstDutyPeriod: string;
+  secondDutyPeriod: string;
+  clockChange?: ClockChangeInfo | null;
 };
 
 type NightRole = {
@@ -42,6 +61,7 @@ type NightSummary = {
   roles: NightRole[];
   extras: string[];
   fivePerson?: { name: string; reason: string; mine: boolean };
+  clockChange?: ClockChangeInfo | null;
 };
 
 type PersonalNight = {
@@ -62,6 +82,12 @@ type PersonalNight = {
   pending: boolean;
   pendingOther: string;
   liveStatus: string;
+  dutyPart?: 'first' | 'second' | 'full' | '';
+  dutyStartUtc?: number;
+  handoverUtc?: number;
+  dutyEndUtc?: number;
+  handoverLabel?: string;
+  clockChange?: ClockChangeInfo | null;
 };
 
 type ActivityItem = {
@@ -127,25 +153,25 @@ function maltaClock(value: Date) {
 }
 
 function nightProgress(model: PersonalNight, value = new Date()) {
-  const clock = maltaClock(value);
-  if (clock.date !== model.date || clock.hour >= 7) return null;
-  const minutes = clock.hour * 60 + clock.minute;
-  return Math.max(0, Math.min(100, minutes / (7 * 60) * 100));
+  if (!model.dutyStartUtc || !model.dutyEndUtc) return null;
+  const now = value.getTime();
+  if (now < model.dutyStartUtc || now > model.dutyEndUtc) return null;
+  return Math.max(0, Math.min(100, (now - model.dutyStartUtc) / (model.dutyEndUtc - model.dutyStartUtc) * 100));
 }
 
 function personalLiveStatus(model: PersonalNight, value = new Date()) {
   const clock = maltaClock(value);
   if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return model.liveStatus;
-  const decimal = clock.hour + clock.minute / 60;
+  const now = value.getTime();
   if (/absent/i.test(model.title)) return 'Not on duty tonight';
   if (model.pending || /pending/i.test(model.period)) return 'Allocation pending';
-  if (model.period === '00:00–03:30') {
-    if (clock.hour >= 19) return 'On duty next · starts 00:00';
-    return decimal < 3.5 ? 'On duty now' : 'Duty block complete';
+  if (model.dutyPart === 'first' && model.dutyStartUtc && model.handoverUtc) {
+    if (now < model.dutyStartUtc) return 'On duty next · starts 00:00';
+    return now < model.handoverUtc ? 'On duty now' : 'Duty block complete';
   }
-  if (model.period === '03:30–07:00') {
-    if (clock.hour >= 19 || decimal < 3.5) return 'On duty later · starts 03:30';
-    return 'On duty now';
+  if (model.dutyPart === 'second' && model.handoverUtc && model.dutyEndUtc) {
+    if (now < model.handoverUtc) return `On duty later · starts ${model.handoverLabel || '03:30'}`;
+    return now < model.dutyEndUtc ? 'On duty now' : 'Duty block complete';
   }
   if (model.period === '00:00–07:00') return 'On duty now';
   if (/seventh/i.test(model.title)) return 'Supporting tonight’s team';
@@ -178,6 +204,42 @@ function openRoleEditor() {
 
 function openAccount() {
   document.getElementById('accountBtn')?.click();
+}
+
+function ClockChangeNotice({ info, context }: { info?: ClockChangeInfo | null; context: 'night' | 'breaks' }) {
+  const reduced = useReducedMotion();
+  if (!info) return null;
+  return <motion.section
+    className={`clockChangeNotice clockChange-${info.direction} clockChange-${context}`}
+    role="status"
+    aria-label={`${info.transitionLabel}. Equal-duty handover ${info.handoverDisplay}. ${info.partHoursLabel} each.`}
+    initial={reduced ? false : { opacity: 0, y: 8, scale: 0.99 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32, mass: 0.65 }}
+  >
+    <motion.span
+      className="clockChangeGlyph"
+      aria-hidden="true"
+      initial={reduced ? false : { rotate: info.direction === 'back' ? 28 : -28, scale: 0.9 }}
+      animate={{ rotate: 0, scale: 1 }}
+      transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 20 }}
+    >
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3 2" /><path d={info.direction === 'back' ? 'M8 4H4v4' : 'M16 4h4v4'} /></svg>
+    </motion.span>
+    <span className="clockChangeCopy">
+      <small>{info.transitionLabel}</small>
+      <strong>Equal handover · {info.handoverDisplay}</strong>
+      <span>{info.firstPeriod} · {info.partHoursLabel} actual</span>
+      <span>{info.secondPeriod} · {info.partHoursLabel} actual</span>
+    </span>
+    <Pressable
+      type="button"
+      className="clockChangeLearn"
+      onClick={() => window.dispatchEvent(new CustomEvent('roster:clock-change-guide'))}
+    >
+      Why? <span aria-hidden="true">›</span>
+    </Pressable>
+  </motion.section>;
 }
 
 function BreakSummaryItems({ model }: { model: BreakSummary }) {
@@ -303,6 +365,7 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
 
 export function renderBreaksExperience(model: BreakSummary) {
   rootFor('breakPersonalSummary')?.render(<PersonalBreak model={model} />);
+  rootFor('breakClockChange')?.render(<ClockChangeNotice info={model.clockChange} context="breaks" />);
   rootFor('breakSummaryRow')?.render(<BreakSummaryItems model={model} />);
   const notice = document.getElementById('breakDate');
   if (notice) notice.classList.toggle('hidden', !model.pending);
@@ -365,6 +428,7 @@ function NightAlerts({ model }: { model: NightSummary }) {
   const infoTitle = informationalParts.length > 1 ? informationalParts.shift()?.trim() : 'Night arrangement';
   const infoDetail = informationalParts.length ? informationalParts.join(':').trim() : model.alert;
   return <>
+    <ClockChangeNotice info={model.clockChange} context="night" />
     {model.alert && (needsReview
       ? <div className="alert compactNotice warn">{model.alert}</div>
       : <div className="alert compactNotice informational nightContextNotice"><span className="nightContextIcon" aria-hidden="true">i</span><span><b>{infoTitle}</b><small>{infoDetail}</small></span></div>)}
@@ -450,9 +514,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
       </div>
       {liveStatus && <div className="personalLiveState"><i aria-hidden="true" /><span>{liveStatus}</span></div>}
-      {progress !== null && <div className="nightProgressRail" aria-label="Progress through the 00:00 to 07:00 night">
+      {progress !== null && <div className="nightProgressRail" aria-label={`Progress through the 00:00 to 07:00 night. Equal handover ${model.clockChange?.handoverDisplay || model.handoverLabel || '03:30'}.`}>
         <div className="nightProgressTrack" aria-hidden="true"><span style={{ width: `${progress}%` }} /><i style={{ left: `${progress}%` }} /></div>
-        <div className="nightProgressMarks"><span>00:00</span><span>03:30</span><span>07:00</span></div>
+        <div className="nightProgressMarks"><span>00:00</span><span>{model.clockChange?.handover || '03:30'}</span><span>07:00</span></div>
       </div>}
 
       <dl className="personalFacts personalScan" aria-label="Your night at a glance">
