@@ -74,7 +74,7 @@ assert.ok(context.R.some(r => r.date === '2026-09-26'), 'reference roster must i
 const wordingTestOriginalIdx = context.idx;
 context.idx = context.R.findIndex(r => r.date === '2026-09-26');
 assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-24T12:00:00Z')).assignment, 'Next night’s assignment', 'a future automatic roster date must be described as the next night');
-assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-26T10:00:00Z')).assignment, 'Tonight’s assignment', 'the same roster date may be described as tonight once its calendar date arrives');
+assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-26T10:00:00Z')).assignment, 'Next night’s assignment', 'before the 19:00 working-night boundary the selected roster date remains the next night');
 context.idx = wordingTestOriginalIdx;
 
 const normalDutyTiming = context.nightDutyTiming('2026-10-20');
