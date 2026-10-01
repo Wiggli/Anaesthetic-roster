@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, ListRow, Pressable } from './ui-system';
@@ -66,6 +66,7 @@ type NightSummary = {
   fivePerson?: { name: string; reason: string; mine: boolean };
   clockChange?: ClockChangeInfo | null;
   contextLabel?: string;
+  currentPart?: 'first' | 'second' | '';
 };
 
 type PersonalNight = {
@@ -584,10 +585,15 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
 function PersonalNightCard({ model }: { model: PersonalNight }) {
   const reducedMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
+  const previousNow = useRef(now);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
     return () => window.clearInterval(timer);
   }, []);
+  useEffect(() => {
+    if (model.handoverUtc && previousNow.current < model.handoverUtc && now >= model.handoverUtc && document.visibilityState === 'visible') softHaptic();
+    previousNow.current = now;
+  }, [now, model.handoverUtc]);
   const value = new Date(now);
   const tone = personalTone(model);
   const liveStatus = personalLiveStatus(model, value);
@@ -603,6 +609,20 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     target?.focus({ preventScroll: true });
   };
   const openBreak = () => { softHaptic(); window.show?.('breaks'); };
+  const openColleague = () => {
+    softHaptic();
+    document.querySelector<HTMLDetailsElement>('#today .nightTeamDetails')?.setAttribute('open', '');
+    const rows = Array.from(document.querySelectorAll<HTMLElement>('#roles .rosterRow'));
+    const target = rows.find(row => scanContext && row.textContent?.toLocaleLowerCase().includes(scanContext.toLocaleLowerCase())) || rows.find(row => row.classList.contains('mine'));
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target?.classList.add('focusPulse');
+    window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
+  };
+  const openDutyTiming = () => {
+    softHaptic();
+    if (model.clockChange) window.dispatchEvent(new CustomEvent('roster:clock-change-guide'));
+    else document.querySelector<HTMLElement>('#personalNightCard .nightTimeline')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   return <motion.article
     className={'personalHeroSurface personalRole-' + tone}
@@ -653,12 +673,12 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       <NightTimeline model={model} value={value} />
 
       <div className="personalFacts personalScan personalFactButtons" aria-label="Your night at a glance">
-        <Pressable type="button" className="personalFactButton personalFactContext" onClick={action}>
+        <Pressable type="button" className="personalFactButton personalFactContext" onClick={openColleague}>
           <small>{scanContextLabel}</small><b>{scanContext || 'Pending'}</b><span>View in team allocation ›</span>
         </Pressable>
-        <div className="personalFactButton static">
-          <small>On duty</small><b>{model.period || 'Pending'}</b><span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty' : 'Your duty block'}</span>
-        </div>
+        <Pressable type="button" className="personalFactButton" onClick={openDutyTiming}>
+          <small>On duty</small><b>{model.period || 'Pending'}</b><span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty · Explain ›' : 'View timeline ›'}</span>
+        </Pressable>
         <Pressable type="button" className="personalFactButton" onClick={openBreak}>
           <small>Break</small><b>{model.breakLabel || 'Pending'}</b><span>Open Breaks ›</span>
         </Pressable>
@@ -747,6 +767,13 @@ function roleMark(tone: NightRole['tone']) {
   return 'Full night';
 }
 
+function roleLiveState(role: NightRole, currentPart?: NightSummary['currentPart']) {
+  if (!currentPart) return '';
+  if (role.tone === 'first') return currentPart === 'first' ? 'Now' : 'Complete';
+  if (role.tone === 'second') return currentPart === 'first' ? 'Next' : 'Now';
+  return '';
+}
+
 function NightRoles({ model }: { model: NightSummary }) {
   const hasMine = model.roles.some(role => role.mine);
   const jumpToMine = () => {
@@ -768,7 +795,7 @@ function NightRoles({ model }: { model: NightSummary }) {
       >
         <span className="rosterRoleMark">{roleMark(role.tone)}</span>
         <span className="rosterRowCopy">
-          <span className="rosterRowName">{role.names}{role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}</span>
+          <span className="rosterRowName">{role.names}{role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}{roleLiveState(role, model.currentPart) && <Badge tone={roleLiveState(role, model.currentPart) === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{roleLiveState(role, model.currentPart)}</Badge>}</span>
           <span className="rosterRowMeta">{role.label} · {role.detail}</span>
         </span>
       </Pressable>)}
