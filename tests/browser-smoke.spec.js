@@ -904,7 +904,9 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
   await expect(journey.locator('.workflowExperience')).toHaveClass(/workflow-complete/);
   await expect(journey).toContainText('Plan shared');
   await expect(journey).toContainText('Shared');
-  await expect(journey.locator('.workflowStepCopy small')).toBeHidden();
+  const completedStepDetails = journey.locator('.workflowStepCopy small');
+  await expect(completedStepDetails).toHaveCount(3);
+  for (let index = 0; index < 3; index += 1) await expect(completedStepDetails.nth(index)).toBeHidden();
   await captureReview(page, 'changes-shared');
 });
 
