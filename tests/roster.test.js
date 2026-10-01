@@ -3,6 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const clinicalExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'clinical-experience.tsx'), 'utf8');
+const changesWorkflowExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-workflow.tsx'), 'utf8');
+const changesConfirmationExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-confirmation.tsx'), 'utf8');
+const presentationCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'presentation.css'), 'utf8');
 
 const storage = new Map();
 const noopElement = () => ({
@@ -357,6 +360,15 @@ assert.doesNotMatch(html, /historyStep">4/, 'activity history must not appear as
 assert.match(html, /Activity for this night/, 'staffing history must have a clear non-step label');
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
+assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
+assert.match(ui, /changesSmartDefaultDate!==base\.date[\s\S]*activeChangesStep=smartChangesStep\(base\)/, 'the smart Changes default must apply once per selected night rather than fighting manual navigation');
+assert.match(changesWorkflowExperience, /workflowProgress[\s\S]*role="progressbar"[\s\S]*aria-valuenow=\{model\.progressValue\}/, 'Changes must expose real completion progress instead of decorative steps only');
+assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
+assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[\s\S]*nightRoleOverrideDrafts[\s\S]*protectLocalChangesDraft[\s\S]*beforeunload',protectLocalChangesDraft/, 'leaving or reloading must protect unfinished Changes work across selected nights');
+assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
+assert.match(changesConfirmationExperience, /Rostered[\s\S]*This night/, 'confirmation must make the rostered versus selected-night comparison explicit');
+assert.match(presentationCss, /\.workflowProgress[\s\S]*\.workflowProgressTrack[\s\S]*\.workflowProgressFill/, 'meaningful workflow progress must have a restrained visual treatment');
+
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
 assert.match(ui, /pending:pending,pendingReason:/, 'Breaks must pass the derived pending state to the typed interface');
 assert.match(clinicalExperience, /if \(!model\.pending\) return null;/, 'Breaks must omit the pending notice once the plan is ready');

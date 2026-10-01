@@ -917,13 +917,18 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
       ],
       headline: 'Plan shared',
       guidance: 'Staffing and roles are up to date for everyone.',
-      tone: 'complete'
+      tone: 'complete',
+      progressValue: 3,
+      progressMax: 3,
+      progressLabel: '3 of 3 shared',
+      draftLabel: ''
     }}));
   });
   const journey = page.locator('#changesWorkflowExperience');
   await expect(journey.locator('.workflowExperience')).toHaveClass(/workflow-complete/);
   await expect(journey).toContainText('Plan shared');
   await expect(journey).toContainText('Shared');
+  await expect(journey.locator('.workflowProgress')).toContainText('3 of 3 shared');
   const completedStepDetails = journey.locator('.workflowStepCopy small');
   await expect(completedStepDetails).toHaveCount(3);
   for (let index = 0; index < 3; index += 1) await expect(completedStepDetails.nth(index)).toBeHidden();
@@ -948,6 +953,11 @@ test('confirmed seven-nurse context stays Plan ready instead of forcing review',
 });
 
 test('update banner obeys hidden and Night-only visibility states', async ({ page }) => {
+  await page.route('**/service-worker.js', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'self.addEventListener("install",function(){});'
+  }));
   await openShell(page);
   await page.evaluate(() => window.show && window.show('today'));
   await expect(page.locator('#today')).toBeVisible();
@@ -1030,12 +1040,19 @@ test('React Changes journey shows decisions and supports keyboard step selection
       ],
       headline: 'Choose a nurse for First Part 1',
       guidance: 'Choose a nurse, then review the changes.',
-      tone: 'attention'
+      tone: 'attention',
+      progressValue: 1,
+      progressMax: 3,
+      progressLabel: '1 of 3 resolved',
+      draftLabel: 'Unsaved allocation selections'
     }}));
   });
   const journey = page.locator('#changesWorkflowExperience');
   await expect(journey).toHaveAttribute('data-react-ready', 'true');
   await expect(journey.locator('[role="status"]')).toContainText('Choose a nurse for First Part 1');
+  await expect(journey.locator('.workflowProgress')).toContainText('1 of 3 resolved');
+  await expect(journey.locator('.workflowProgress')).toContainText('Unsaved allocation selections');
+  await expect(journey.locator('.workflowProgressTrack')).toHaveAttribute('aria-valuenow', '1');
   const activeWorkflow = journey.locator('[data-changes-step="staffing"]');
   const workflowMetrics = await activeWorkflow.evaluate(el => {
     const selection = el.querySelector('.workflowSelection');
@@ -1066,7 +1083,7 @@ test('retains the original controls when its optional chunk fails', async ({ pag
   await page.route('**/assets/changes-workflow-*.js', route => route.abort());
   await openShell(page);
   await page.evaluate(() => { window.show('changes'); window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
-    active: 'staffing', steps: [], headline: '', guidance: '', tone: 'automatic'
+    active: 'staffing', steps: [], headline: '', guidance: '', tone: 'automatic', progressValue: 3, progressMax: 3, progressLabel: 'Automatic plan ready'
   } })); });
   await expect(page.locator('#changesWorkflowExperience')).not.toHaveAttribute('data-react-ready', 'true');
   await expect(page.locator('#changes .changesWorkflowTabs')).toBeVisible();
@@ -1105,6 +1122,29 @@ test.describe('Changes confirmation load failure', () => {
     await expect(preview.locator('.confirmationWarning')).toContainText('Choose a nurse before continuing.');
     await expect(preview.locator('.confirmationRow')).toHaveCount(4);
   });
+});
+
+test('accepted PWA updates wait for unfinished local Changes work', async ({ page }) => {
+  await page.route('**/service-worker.js', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'self.addEventListener("install",function(){});'
+  }));
+  await openShell(page);
+  const state = await page.evaluate(() => {
+    const date = '2026-09-26';
+    window.R = [{ date }];
+    window.idx = 0;
+    window.allocationDrafts[date] = { __smokeDraft: 'unsaved-selection' };
+    window.__updateActivated = false;
+    window.updateRegistration = { waiting: { postMessage: () => { window.__updateActivated = true; } } };
+    const draftCount = window.allLocalChangesDraftParts().length;
+    window.applyWaitingUpdate();
+    return { draftCount, activated: window.__updateActivated };
+  });
+  expect(state.draftCount).toBeGreaterThan(0);
+  expect(state.activated).toBe(false);
+  await expect(page.locator('#toast')).toContainText('Finish your unsaved Changes before updating');
 });
 
 test('typed full-roster cards render searchable clinical summaries and open a night', async ({ page }) => {

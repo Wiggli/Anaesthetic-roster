@@ -39,6 +39,9 @@ function pushSetBusy(busy){
   Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(button){button.disabled=!!busy});
 }
 function pushPromptKey(){return'anaes_push_prompt_v37_25'}
+function pushValueSeenKey(){return'anaes_push_value_seen_v37_94'}
+function pushValueSeen(){try{return!!localStorage.getItem(pushValueSeenKey())}catch(error){return false}}
+function pushMarkValueSeen(){try{localStorage.setItem(pushValueSeenKey(),'1')}catch(error){}}
 function pushPromptDialog(){return pushEl('pushPromptDialog')}
 function pushMarkPromptSeen(){try{localStorage.setItem(pushPromptKey(),'1')}catch(error){}}
 function pushPromptSeen(){try{return!!localStorage.getItem(pushPromptKey())}catch(error){return false}}
@@ -46,7 +49,7 @@ function pushClosePrompt(){var dialog=pushPromptDialog();if(dialog&&dialog.open)
 function pushDismissPrompt(){pushMarkPromptSeen();pushClosePrompt()}
 function pushEnableFromPrompt(){pushMarkPromptSeen();pushClosePrompt();pushEnable()}
 function pushCanPrompt(){
-  if(!pushSupported()||!pushUser()||!pushProfile()||pushPromptSeen())return false;
+  if(!pushSupported()||!pushUser()||!pushProfile()||pushPromptSeen()||!pushValueSeen())return false;
   if(Notification.permission!=='default'||pushState.subscription)return false;
   if(pushIsIos()&&!pushIsStandalone())return false;
   if(document.visibilityState==='hidden')return false;
@@ -303,7 +306,6 @@ async function pushStartSession(){
   }
   await pushRefreshState();
   pushOpenFromUrl();
-  pushSchedulePrompt();
 }
 function pushOpenNotification(data){
   data=data||{};var notificationType=data.notificationType||data.type;
@@ -359,6 +361,7 @@ function pushBind(){
   var promptEnable=pushEl('pushPromptEnableBtn');if(promptEnable)promptEnable.onclick=pushEnableFromPrompt;
   var promptLater=pushEl('pushPromptLaterBtn');if(promptLater)promptLater.onclick=pushDismissPrompt;
   var promptDialog=pushPromptDialog();if(promptDialog&&typeof promptDialog.addEventListener==='function')promptDialog.addEventListener('cancel',function(event){event.preventDefault();pushDismissPrompt()});
+  window.addEventListener('roster:viewchange',function(event){var view=event&&event.detail&&event.detail.view;if(view!=='chat')return;pushMarkValueSeen();pushSchedulePrompt()});
   var disable=pushEl('pushDisableBtn');if(disable)disable.onclick=pushDisable;
   var team=pushEl('pushTeamToggle');if(team)team.onchange=function(){pushMuteTeam(team.checked?'off':'until_on')};
   var priv=pushEl('pushPrivateToggle');if(priv)priv.onchange=function(){pushSavePreference('private_enabled',priv.checked)};

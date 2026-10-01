@@ -20,7 +20,7 @@ const releaseVersionPattern = release.version.replace(/\./g, '\\.');
 new vm.Script(push, { filename: 'push.js' });
 
 assert.match(html, /id="pushNotificationCard"/, 'Chat must expose message notification controls');
-assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*Enable notifications/, 'app entry must offer a one-time notification opt-in prompt');
+assert.match(html, /id="pushPromptDialog"[\s\S]*id="pushPromptEnableBtn"[\s\S]*Turn on alerts/, 'Chat must offer a benefit-first one-time notification opt-in prompt');
 assert.match(html, /id="pushPromptLaterBtn"[\s\S]*Not now/, 'notification opt-in prompt must provide a non-blocking Not now choice');
 assert.match(html, /id="pushTeamToggle"/, 'users must be able to control group-chat notifications');
 assert.match(html, /id="pushPrivateToggle"/, 'users must be able to control private-message notifications');
@@ -29,8 +29,11 @@ assert.match(html, new RegExp(`push\\.js\\?v=${releaseVersionPattern}`), 'push c
 assert.match(push, /Notification\.requestPermission\(\)/, 'notification permission must only be requested by the explicit enable flow');
 assert.match(push, /function pushCanPrompt\(\)[\s\S]*Notification\.permission!=='default'/, 'the app prompt must not appear after notification permission has already been decided');
 assert.match(push, /pushPromptSeen\(\)/, 'the app prompt must be shown only once per device after a user decision');
+assert.match(push, /pushValueSeen\(\)/, 'the notification prompt must wait until the user has reached the feature that provides its value');
+assert.doesNotMatch(push, /pushOpenFromUrl\(\);\s*pushSchedulePrompt\(\);/, 'sign-in alone must not schedule the notification prompt');
+assert.match(push, /roster:viewchange[\s\S]*view!=='chat'[\s\S]*pushMarkValueSeen\(\)[\s\S]*pushSchedulePrompt\(\)/, 'opening Chat must be the contextual trigger for the optional notification prompt');
 assert.match(push, /document\.querySelector\('dialog\[open\]'\)/, 'notification prompt must wait until onboarding or another dialog is no longer open');
-assert.match(push, /pushPromptEnableBtn[\s\S]*pushEnableFromPrompt/, 'the system permission request must remain behind the user pressing Enable notifications');
+assert.match(push, /pushPromptEnableBtn[\s\S]*pushEnableFromPrompt/, 'the system permission request must remain behind the user pressing Turn on alerts');
 assert.match(push, /pushPromptLaterBtn[\s\S]*pushDismissPrompt/, 'Not now must dismiss the one-time prompt without granting permission');
 assert.match(push, /pushManager\.subscribe\(\{userVisibleOnly:true,applicationServerKey:/, 'browser subscription must use VAPID and user-visible notifications');
 assert.match(push, /register_push_subscription/, 'push endpoint registration must use the protected server RPC');

@@ -1,12 +1,11 @@
 {
-  "version": "37.93",
+  "version": "37.94",
   "date": "1 October 2026",
-  "title": "Make guidance part of the app",
-  "summary": "Rebuilds onboarding, feature education, What’s New and version history into progressive, contextual experiences that teach Night Roster only when the user needs help.",
+  "title": "Make the next safe action obvious",
+  "summary": "Applies behavioral UX principles to reduce friction without dark patterns: smarter defaults, visible workflow progress, contextual notification permission, protected drafts and clearer before-versus-after review.",
   "changes": [
-    "First use is now a focused three-step setup: confirm your roster identity, learn where your own night appears, and understand that the normal six-nurse plan is automatic unless something genuinely changes.",
-    "Changes, Breaks and Team Chat now explain themselves the first time they are opened, while Account has a proper App Guide with reusable topic shortcuts and one education-state system that still respects earlier completed guidance.",
-    "What’s New is now benefit-led and easier to scan, with feature actions, a compact expandable month-grouped version history, smarter quiet/normal/important release visibility, and update read-state recorded only after the update experience is actually viewed."
-  ],
-  "update_policy": "important"
+    "Changes now opens on the step that actually needs attention for each selected night and shows genuine progress toward a ready or shared plan, while the standard automatic six-nurse plan stays quiet.",
+    "Notification permission is no longer requested just after sign-in. Night Roster first lets the user reach Team Chat, then offers optional alerts with benefit-first privacy wording and keeps the operating-system permission behind an explicit tap.",
+    "Unfinished local Changes selections now warn before a browser reload and block a PWA update from discarding them, while confirmation labels Rostered versus This night so exceptional changes are easier to compare before sharing."
+  ]
 }
