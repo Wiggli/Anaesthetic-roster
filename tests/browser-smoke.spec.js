@@ -953,6 +953,11 @@ test('confirmed seven-nurse context stays Plan ready instead of forcing review',
 });
 
 test('update banner obeys hidden and Night-only visibility states', async ({ page }) => {
+  await page.route('**/service-worker.js', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'self.addEventListener("install",function(){});'
+  }));
   await openShell(page);
   await page.evaluate(() => window.show && window.show('today'));
   await expect(page.locator('#today')).toBeVisible();
@@ -1120,16 +1125,25 @@ test.describe('Changes confirmation load failure', () => {
 });
 
 test('accepted PWA updates wait for unfinished local Changes work', async ({ page }) => {
+  await page.route('**/service-worker.js', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'self.addEventListener("install",function(){});'
+  }));
   await openShell(page);
-  await page.evaluate(() => {
+  const state = await page.evaluate(() => {
     window.show('changes');
-    const date = window.cur().date;
-    window.allocationDrafts[date] = { first1: 'unsaved-nurse-id' };
+    window.dispatchEvent(new CustomEvent('roster:changes-action', {
+      detail: { action: 'allocation-select', key: 'first1', value: 'unsaved-nurse-id' }
+    }));
     window.__updateActivated = false;
     window.updateRegistration = { waiting: { postMessage: () => { window.__updateActivated = true; } } };
+    const draftCount = window.allLocalChangesDraftParts().length;
     window.applyWaitingUpdate();
+    return { draftCount, activated: window.__updateActivated };
   });
-  expect(await page.evaluate(() => window.__updateActivated)).toBe(false);
+  expect(state.draftCount).toBeGreaterThan(0);
+  expect(state.activated).toBe(false);
   await expect(page.locator('#toast')).toContainText('Finish your unsaved Changes before updating');
 });
 
