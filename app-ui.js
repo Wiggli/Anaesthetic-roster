@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.94 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.95 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -70,6 +70,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.95","date":"1 October 2026","title":"Keep clock-change nights fair","changes":["Clock-change nights now keep First Part and Second Part equal in real elapsed duty: the handover moves to 04:00 on spring-forward nights and to 03:00 after the rollback on autumn nights, while ordinary nights remain 03:30.","Night, Breaks, personal live-duty status and full-roster summaries now share the same Europe/Malta timing calculation, with clear actual-hours wording, animated clock-change guidance and reduced-motion support.","Affected nights now receive contextual onboarding, a one-time advance reminder when the roster night is within seven days, and a once-per-night device notification when alerts are already enabled, without introducing a new permission prompt."],"policy":"important"},
   {"version":"37.94","date":"1 October 2026","title":"Make the next safe action obvious","changes":["Changes now opens on the step that actually needs attention for each selected night and shows genuine progress toward a ready or shared plan, while the standard automatic six-nurse plan stays quiet.","Notification permission is no longer requested just after sign-in. Night Roster first lets the user reach Team Chat, then offers optional alerts with benefit-first privacy wording and keeps the operating-system permission behind an explicit tap.","Unfinished local Changes selections now warn before a browser reload and block a PWA update from discarding them, while confirmation labels Rostered versus This night so exceptional changes are easier to compare before sharing."],"policy":"normal"},
   {"version":"37.93","date":"1 October 2026","title":"Make guidance part of the app","changes":["First use is now a focused three-step setup: confirm your roster identity, learn where your own night appears, and understand that the normal six-nurse plan is automatic unless something genuinely changes.","Changes, Breaks and Team Chat now explain themselves the first time they are opened, while Account has a proper App Guide with reusable topic shortcuts and one education-state system that still respects earlier completed guidance.","What’s New is now benefit-led and easier to scan, with feature actions, a compact expandable month-grouped version history, smarter quiet/normal/important release visibility, and update read-state recorded only after the update experience is actually viewed."],"policy":"important"},
   {"version":"37.92","date":"1 October 2026","title":"Make the night feel alive","changes":["Night now shows a live duty-state cue, a non-countdown 00:00–07:00 orientation rail, an at-a-glance strip for current state, personal break and unread Chat, a calmer seven-nurse information treatment, smarter since-last-open activity summaries and Jump to me navigation.","Changes now treats an already published plan as a calm completed state with a compact Shared workflow and a quieter View or adjust roles action, while healthy realtime copy is reduced to Up to date and genuine unresolved work still restores the stronger action state.","Breaks now reads as one grouped schedule with Jump to me and structured Labour Ward, Pager and seventh-nurse coverage rows, while shared typography, semantic colours, reduced card furniture, stronger content-under-glass chrome, subtle haptics and accessibility fallbacks are applied across the core app."]},
@@ -210,6 +211,11 @@ var RELEASE_HISTORY=[
   {version:'26.0',date:'26 Aug 2026',title:'Reliability and publishing foundation',changes:['Automated safety checks were added for the verified roster rotation, staffing calculations and 07:00 working-night boundary.','The app gained clearer version, database-schema and connection diagnostics.','Night-plan confirmation and Labour Ward ordering were strengthened while earlier published roster nights remained protected.','The progressive web app update process was improved so new versions can be installed safely.']}
 ];
 var RELEASE_ACTIONS={
+  "37.95":[
+    {label:"Open Breaks",action:"view",value:"breaks"},
+    {label:"Open app guide",action:"guide"},
+    {label:"View version history",action:"history"}
+  ],
   "37.93":[
     {label:"Open app guide",action:"guide"},
     {label:"Open Team Chat",action:"view",value:"chat"},
@@ -476,7 +482,7 @@ function installGuideSteps(){
   else if(ios){label='Install Night Roster from Safari for the full-screen app experience.';steps=['Open Night Roster in Safari.','Tap Share, then choose Add to Home Screen.','Keep Open as Web App enabled, then tap Add.','Open the new Night Roster icon from your Home Screen.'];}
   else if(android){label='Install Night Roster once and keep receiving updates automatically.';steps=['Use the Install button when Chrome offers it, or open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your app launcher or Home Screen.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=37.94" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=37.95" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div><p class="installGuideFootnote">No App Store or Play Store account is required. Shared roster data stays in Supabase and existing sign-in continues to work.</p>';
 }
 
 function showInstallGuide(){var dialog=byId('installGuide');byId('installGuideSteps').innerHTML=installGuideSteps();if(dialog&&dialog.showModal)dialog.showModal()}
