@@ -15524,3 +15524,23 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
     border-color:color-mix(in srgb,var(--scene-ink) 36%,transparent)!important;
   }
 }
+
+
+/* 38.00 accessibility follow-up: keep the private-message action explicit on phones. */
+@media(max-width:640px){
+  #chat .chatHeaderCompose{
+    width:auto!important;
+    min-width:0!important;
+    padding:0 12px!important;
+    border-radius:999px!important;
+  }
+  #chat .chatHeaderCompose span{
+    display:inline!important;
+    font-size:11px!important;
+    white-space:nowrap!important;
+  }
+}
+@media(max-width:360px){
+  #chat .chatHeaderCompose span{font-size:10px!important}
+  #chat .chatHeaderCompose{padding:0 10px!important}
+}
