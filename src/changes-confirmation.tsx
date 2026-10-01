@@ -27,7 +27,11 @@ function Confirmation({ model }: { model: ConfirmationModel }) {
     <div className="confirmationChanges" aria-label="Changed assignments">
       {model.changed.map((item, index) => <div className="confirmationChangeRow" key={`${item.label}-${index}`}>
         <div><span>{item.label}</span>{item.detail && <small>{item.detail}</small>}</div>
-        <div className="confirmationChangeValues"><del>{item.before}</del><span aria-hidden="true">→</span><ins>{item.after}</ins></div>
+        <div className="confirmationChangeValues">
+          <span className="confirmationCompareValue"><small>Rostered</small><del>{item.before}</del></span>
+          <span className="confirmationCompareArrow" aria-hidden="true">→</span>
+          <span className="confirmationCompareValue current"><small>This night</small><ins>{item.after}</ins></span>
+        </div>
       </div>)}
     </div>
     {model.reason && <div className="confirmationReason"><span>Reason</span><b>{model.reason}</b></div>}
