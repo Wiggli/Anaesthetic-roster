@@ -4675,25 +4675,29 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
   #today>.nightOverviewPanel{
     grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr)!important;
   }
-  #today #nightClockChange{
-    grid-column:1!important;
+  #today .nightDateShell{
+    grid-column:1/-1!important;
     grid-row:1!important;
+  }
+  #today #nightClockChange{
+    grid-column:1/-1!important;
+    grid-row:2!important;
     align-self:start!important;
-    margin:0 18px 12px 0!important;
+    margin:0 0 14px!important;
   }
   #today .personalNight{
     grid-column:1!important;
-    grid-row:2!important;
+    grid-row:3!important;
   }
   #today .teamOverviewGroup{
     grid-column:2!important;
-    grid-row:2!important;
+    grid-row:3!important;
     align-self:start!important;
     margin-top:0!important;
   }
   #today .recentActivityPanel{
     grid-column:1/-1!important;
-    grid-row:3!important;
+    grid-row:4!important;
   }
 }
 
