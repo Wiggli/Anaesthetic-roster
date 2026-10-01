@@ -23,6 +23,7 @@ var seventhDecisionDrafts={};
 var allocationSaveInFlight=false;
 var changesViewPrepared=false;
 var activeChangesStep='staffing';
+var changesSmartDefaultDate='';
 var initialNightChosen=false;
 var automaticSelectedDate=null;
 var lastResumeRefresh=0;
@@ -769,6 +770,37 @@ function workflowTaskCount(base,plan,r){
   return workflowTaskDetails(base,plan).length;
 }
 
+function smartChangesStep(base){
+  var plan=staffingPlan(base),tasks=workflowTaskDetails(base,plan).length;
+  if(tasks)return'allocation';
+  if(workflowNeedsConfirmation(base,tasks))return'confirm';
+  return'staffing';
+}
+
+function localChangesDraftParts(base){
+  base=base||cur();var date=base.date,parts=[],draft=allocationDrafts[date]||{},plan=staffingPlan(base);
+  if(Object.keys(draft).some(function(key){var saved=plan.validAssignments.find(function(item){return item.allocation_key===key});return(draft[key]||'')!==(saved?saved.id:'')}))parts.push('allocation selections');
+  if(seventhDecisionDrafts[date])parts.push('seventh-nurse choice');
+  if(nightRoleOverrideDrafts[date])parts.push('night-only roles');
+  if(document.body.getAttribute('data-view')==='changes'&&cur().date===date){
+    var absence=byId('absentName'),overtime=byId('overtimeName');
+    if(editingAbsenceId||absence&&absence.value)parts.push('absence form');
+    if(overtime&&normaliseNurseName(overtime.value))parts.push('overtime entry');
+  }
+  return parts;
+}
+
+function localChangesDraftSummary(base){
+  var parts=localChangesDraftParts(base);
+  if(!parts.length)return'';
+  return parts.length===1?'Unsaved '+parts[0]:'Unsaved selections in '+parts.length+' places';
+}
+
+function protectLocalChangesDraft(event){
+  if(!localChangesDraftParts(cur()).length)return;
+  event.preventDefault();event.returnValue='';
+}
+
 function workflowTaskDetails(base,plan){
   var tasks=[];
   if(plan.requiresCoverageChoice)tasks.push('Choose the theatre role the rostered Reliever will cover');
@@ -805,7 +837,7 @@ function fixedRolesHtml(base,plan){
 
 function updateChangesWorkflow(base,plan){
   if(!changesViewPrepared)return;
-  var r=applyChanges(base),taskDetails=workflowTaskDetails(base,plan),tasks=taskDetails.length,taskInstruction=taskDetails[0]||'',confirmNeeded=workflowNeedsConfirmation(base,tasks),hasManualPlan=workflowHasManualPlan(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),staffingState=byId('staffingStepState'),allocationState=byId('allocationStepState'),confirmState=byId('confirmStepState'),state=byId('changesWorkflowState'),badge=byId('changesTaskBadge');
+  var r=applyChanges(base),taskDetails=workflowTaskDetails(base,plan),tasks=taskDetails.length,taskInstruction=taskDetails[0]||'',confirmNeeded=workflowNeedsConfirmation(base,tasks),hasManualPlan=workflowHasManualPlan(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),staffingState=byId('staffingStepState'),allocationState=byId('allocationStepState'),confirmState=byId('confirmStepState'),state=byId('changesWorkflowState'),badge=byId('changesTaskBadge'),draftLabel=localChangesDraftSummary(base);
   staffingState.textContent=changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'No changes';
   var published=nightPlanStatuses[base.date];allocationState.textContent=tasks?tasks+' task'+(tasks===1?'':'s')+' remaining':'Current roles';confirmState.textContent=tasks?'Resolve tasks':confirmNeeded?'Review changes':published&&published.published_at&&hasManualPlan?'Shared':'Not needed';
   var staffingTab=document.querySelector('[data-changes-step="staffing"]'),allocationTab=document.querySelector('[data-changes-step="allocation"]'),confirmTab=document.querySelector('[data-changes-step="confirm"]'),confirmationNotNeeded=!hasManualPlan&&!confirmNeeded,hasStaffingChanges=!!(changes.length||overtime.length),shared=!!(published&&published.published_at&&hasManualPlan&&!confirmNeeded);staffingTab.classList.toggle('complete',hasStaffingChanges);allocationTab.classList.toggle('complete',hasManualPlan&&!tasks);allocationTab.classList.toggle('hasTasks',!!tasks);confirmTab.classList.toggle('complete',shared);confirmTab.classList.toggle('notNeeded',confirmationNotNeeded);confirmTab.classList.toggle('hasTasks',!!confirmNeeded);
@@ -819,13 +851,14 @@ function updateChangesWorkflow(base,plan){
   var allocationSection=document.querySelector('.allocationSection');if(allocationSection)allocationSection.classList.toggle('hidden',!tasks&&!hasManualPlan);
   var allocationHeading=document.querySelector('.allocationSection .stepHeader h3');if(allocationHeading)allocationHeading.textContent='Finalise selected-night allocations';
   var confirmationHeading=document.querySelector('#changesConfirmPane .stepHeader h3'),confirmationIntro=byId('confirmationIntro');if(confirmationHeading)confirmationHeading.textContent=confirmNeeded?'Confirm selected-night changes':shared?'Changes shared':'No changes to review';if(confirmationIntro)confirmationIntro.classList.toggle('hidden',!tasks&&!confirmNeeded);
+  var progressValue=tasks?1:confirmNeeded?2:3,progressLabel=tasks?'1 of 3 resolved':confirmNeeded?'2 of 3 resolved':shared?'3 of 3 shared':'Automatic plan ready';
   lastChangesWorkflowModel={active:activeChangesStep,steps:[
     {id:'staffing',label:'Staffing',detail:changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'Record people',complete:hasStaffingChanges,attention:false,quiet:false},
     {id:'allocation',label:'Allocation',detail:tasks?tasks+' decision'+(tasks===1?'':'s'):'Review roles',complete:hasManualPlan&&!tasks,attention:!!tasks,quiet:!tasks},
     {id:'confirm',label:shared?'Shared':'Confirm',detail:tasks?'After allocation':confirmNeeded?'Review changes':shared?'Published':'When needed',complete:shared,attention:!!confirmNeeded,quiet:confirmationNotNeeded}
   ],headline:tasks?taskInstruction:confirmNeeded?'Ready to review':shared?'Plan shared':'Standard plan is automatic',
   guidance:tasks?(tasks>1?(tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.'):'Choose a nurse, then review the changes.'):confirmNeeded?'Check the selected night’s changes before sharing them with everyone.':shared?'Staffing and roles are up to date for everyone.':'Record an absence or overtime only when staffing changes.' ,
-  tone:tasks?'attention':confirmNeeded?'ready':shared?'complete':'automatic'};
+  tone:tasks?'attention':confirmNeeded?'ready':shared?'complete':'automatic',progressValue:progressValue,progressMax:3,progressLabel:progressLabel,draftLabel:draftLabel};
   var fixed=fixedRolesHtml(base,plan),fixedList=byId('fixedAllocationList');fixedList.innerHTML=fixed||'<div class="time">Roles will appear after the staffing decisions are complete.</div>';byId('fixedAllocationSummary').textContent='Selected-night roles · '+(fixed.match(/fixedRoleRow/g)||[]).length;
   renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction);updateConfirmationControls(confirmNeeded,tasks);
   setChangesStep(activeChangesStep,false);
@@ -1232,6 +1265,7 @@ function chooseSeventhDecision(base,decision){
 }
 
 function renderChanges(base){
+  if(document.body.getAttribute('data-view')==='changes'&&changesSmartDefaultDate!==base.date){activeChangesStep=smartChangesStep(base);changesSmartDefaultDate=base.date}
   var changes=changesFor(base.date),absentLower=changes.map(function(c){return c.absent_name.toLowerCase()}),names=activeNames(base).filter(function(n){return absentLower.indexOf(n.toLowerCase())<0});
   var overtime=overtimeFor(base.date),plan=staffingPlan(base),history=staffingHistoryFor(base.date),expanded=!!historyExpandedDates[base.date];
   updateStaffingActionAvailability();
@@ -1738,7 +1772,8 @@ function resetUpdateButtons(){
 }
 function applyWaitingUpdate(){
   if(!updateRegistration||!updateRegistration.waiting){clearUpdateNotice();toast('Night Roster is already up to date');return}
-  var buttons=[byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')],status=byId('updateDetailsStatus');reloadForUpdate=true;sessionStorage.removeItem(waitingUpdateDeferralKey());buttons.forEach(function(button){if(button){button.disabled=true;button.textContent='Updating…'}});if(status)status.textContent='Activating the update. Night Roster will reopen automatically.';
+  var pendingDraft=localChangesDraftSummary(cur()),status=byId('updateDetailsStatus');if(pendingDraft){if(status)status.textContent=pendingDraft+'. Save or clear it before updating so your work is not lost.';toast('Finish your unsaved Changes before updating');return}
+  var buttons=[byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')];reloadForUpdate=true;sessionStorage.removeItem(waitingUpdateDeferralKey());buttons.forEach(function(button){if(button){button.disabled=true;button.textContent='Updating…'}});if(status)status.textContent='Activating the update. Night Roster will reopen automatically.';
   updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'});
   if(updateActivationTimer)clearTimeout(updateActivationTimer);
   updateActivationTimer=setTimeout(async function(){
@@ -1821,7 +1856,7 @@ async function authorizeUser(user,session){
 }
 
 function bind(){
-  initTheme();launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();bindFeatureEducation();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
+  initTheme();window.addEventListener('beforeunload',protectLocalChangesDraft);launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();bindFeatureEducation();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()});return}resumeSharedSync()});window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});window.addEventListener('focus',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('pageshow',function(){applyThemePreference();resumeSharedSync()});window.addEventListener('scroll',scheduleScrollChrome,{passive:true});document.addEventListener('visibilitychange',function(){refreshAutomaticNightOnReturn();if(document.visibilityState==='visible'){applyThemePreference();if(currentUserProfile&&navigator.onLine){lastResumeRefresh=Date.now();resumeSharedSync()}}});setInterval(refreshAutomaticNightOnReturn,60000);updateScrollChrome();
   window.addEventListener('roster:activity-open',function(event){var index=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(index)&&recentActivityItems[index])openActivityDetail(recentActivityItems[index],recentActivityDate)});
   window.addEventListener('roster:changes-action',function(event){var detail=event&&event.detail||{};if(detail.action==='record')showRecordActions(detail.kind,detail.id,detail.name);else if(detail.action==='allocation')setChangesStep('allocation',true);else if(detail.action==='history'){var date=cur().date;historyExpandedDates[date]=!historyExpandedDates[date];renderChanges(cur())}else if(detail.action==='allocation-select'){var base=cur(),date=base.date;if(!allocationDrafts[date])allocationDrafts[date]={};allocationDrafts[date][detail.key]=detail.value;updateAllocationSaveControl(base);updateChangesWorkflow(base,staffingPlan(base));formMessage('allocationFormMessage','Selections ready to review.','')}else if(detail.action==='allocation-mounted')updateAllocationSaveControl(cur());else if(detail.action==='absence-save')saveNightChange();else if(detail.action==='overtime-save')saveOvertime();else if(detail.action==='absence-cancel')cancelAbsenceEdit();else if(detail.action==='role-select'){var roleBase=cur(),assignments=roleEditorAssignments(roleBase),chosen=detail.value,assignmentKeys=roleAssignmentKeys(assignments),source=assignmentKeys.find(function(candidate){return canonicalNurseName(assignments[candidate])===canonicalNurseName(chosen)}),previous=assignments[detail.key];if(source&&source!==detail.key)assignments[source]=previous;assignments[detail.key]=chosen;if(roleAssignmentsDiffer(assignments,currentRoleAssignments(roleBase)))nightRoleOverrideDrafts[roleBase.date]={assignments:assignments,reason:(nightRoleOverrideDrafts[roleBase.date]&&nightRoleOverrideDrafts[roleBase.date].reason)||''};else delete nightRoleOverrideDrafts[roleBase.date];renderChanges(roleBase)}else if(detail.action==='role-reason'){var reasonDraft=nightRoleOverrideDrafts[cur().date];if(reasonDraft){reasonDraft.reason=detail.value;nightRoleOverrideDrafts[cur().date]=reasonDraft}}else if(detail.action==='role-save')saveNightRoleOverride(cur());else if(detail.action==='role-reset')resetNightRoleOverride(cur());else if(detail.action==='staffing-input'){updateStaffingActionAvailability();markInvalid('absentName',false);markInvalid('overtimeName',false);formMessage('absenceFormMessage','');formMessage('overtimeFormMessage','')}else if(detail.action==='staffing-mounted')updateStaffingActionAvailability()});
   window.addEventListener('roster:open-night',function(event){var next=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(next)&&R[next]){idx=next;show('today')}});
