@@ -47,7 +47,7 @@ function readModel(): ChromeModel {
     const value = Number(clean(element.textContent));
     return Number.isFinite(value) ? value : 0;
   };
-  if (view === 'today') return { view, title: 'Night', mode: 'off' };
+  if (view === 'today') return { view, title: 'Night', mode: 'compact' };
   if (view === 'changes') {
     const tasks = count('changesTaskBadge');
     return { view, title: 'Changes', subtitle: tasks ? `${tasks} ${tasks === 1 ? 'item' : 'items'} need attention` : 'Staffing and allocation', mode: 'compact' };
@@ -57,7 +57,7 @@ function readModel(): ChromeModel {
     const unread = count('chatUnreadBadge');
     return { view, title: 'Chat', subtitle: unread ? `${unread} unread` : 'Team and private messages', mode: 'compact' };
   }
-  if (view === 'admin') return { view, title: 'Roster management', mode: 'rail', rail: readAdminRail() };
+  if (view === 'admin') return { view, title: 'Roster management', mode: 'compact' };
   if (view === 'roster') return { view, title: 'Full roster', subtitle: 'Published roster nights', mode: 'compact' };
   return { view, title: 'Night Roster', mode: 'off' };
 }
@@ -72,7 +72,8 @@ function smoothstep(value: number) {
 }
 
 function sourceElement(view: string) {
-  if (view === 'admin') return document.querySelector<HTMLElement>('#admin .adminTabs');
+  if (view === 'today') return document.querySelector<HTMLElement>('#today > #appHeader, #today .nightSectionIdentity');
+  if (view === 'admin') return document.querySelector<HTMLElement>('#admin .adminHeader');
   if (view === 'changes') return document.querySelector<HTMLElement>('#changes .changesScreenHeader, #changes .primaryScreenHeader');
   if (view === 'breaks') return document.querySelector<HTMLElement>('#breaks .breaksScreenHeader, #breaks .primaryScreenHeader');
   if (view === 'chat') return document.querySelector<HTMLElement>('#chat .chatScreenHeader, #chat .primaryScreenHeader');
@@ -120,9 +121,9 @@ function ScrollGlassChrome() {
       const progress = model.mode === 'off'
         ? 0
         : (reducedMotion ? (raw >= 0.66 ? 1 : 0) : smoothstep(raw));
-      const materialOpacity = model.mode === 'rail' ? clamp(progress * 1.04) : clamp(progress * 0.92);
-      const foreground = clamp((progress - 0.12) / 0.62);
-      const edgeOpacity = clamp((progress - 0.18) / 0.82);
+      const materialOpacity = clamp(progress * 0.98);
+      const foreground = clamp((progress - 0.08) / 0.72);
+      const edgeOpacity = clamp((progress - 0.24) / 0.76);
 
       document.documentElement.style.setProperty('--scroll-glass-progress', String(progress));
       document.documentElement.style.setProperty('--scroll-glass-offset', Math.round(progress * 48) + 'px');
@@ -130,10 +131,11 @@ function ScrollGlassChrome() {
       root.style.setProperty('--scroll-glass-material-opacity', String(materialOpacity));
       root.style.setProperty('--scroll-glass-copy-opacity', String(foreground));
       root.style.setProperty('--scroll-glass-edge-opacity', String(edgeOpacity));
-      root.style.setProperty('--chrome-glass-blur', Math.round(10 + progress * 8) + 'px');
-      root.style.setProperty('--chrome-glass-saturate', Math.round(136 + progress * 18) + '%');
-      root.style.setProperty('--chrome-glass-contrast', (1.01 + progress * 0.018).toFixed(3));
-      root.style.opacity = progress > 0.01 ? '1' : '0';
+      root.style.setProperty('--chrome-glass-blur', Math.round(18 + progress * 12) + 'px');
+      root.style.setProperty('--chrome-glass-saturate', Math.round(150 + progress * 30) + '%');
+      root.style.setProperty('--chrome-glass-contrast', (1.005 + progress * 0.015).toFixed(3));
+      root.style.opacity = String(progress);
+      root.style.transform = `translate3d(0,${((1 - progress) * -8).toFixed(2)}px,0)`;
       root.toggleAttribute('data-visible', progress > 0.02);
       root.toggleAttribute('data-collapsed', progress > 0.72);
       root.setAttribute('data-mode', model.mode);
@@ -219,7 +221,6 @@ function ScrollGlassChrome() {
           transition={{ duration: reducedMotion ? 0 : 0.14 }}
         >
           <span>{model.title}</span>
-          {model.subtitle && <small>{model.subtitle}</small>}
         </motion.span>
       </div>}
       {model.mode === 'rail' && model.rail && <LayoutGroup id="scroll-glass-rail-admin">
