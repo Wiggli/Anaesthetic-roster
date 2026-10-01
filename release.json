@@ -1,14 +1,14 @@
 {
-  "version": "37.99",
+  "version": "38.0",
   "date": "1 October 2026",
-  "title": "Give Night a quieter focus",
-  "summary": "Night now puts assignment, handover and the selected roster night ahead of surrounding chrome, with a calmer personal hero, a contextual compact header and lighter floating controls.",
+  "title": "Unify the app around a premium clinical interface",
+  "summary": "Night, Changes, Breaks, Chat, management and app sheets now share one clearer visual system with larger typography, stronger hierarchy, smoother scroll chrome and more deliberate glass navigation.",
   "changes": [
-    "Night now opens with a leaner hospital header, one clear page title and a lighter date navigator, removing repeated labels while keeping the selected roster night obvious.",
-    "Your assignment hero is calmer and more compact while preserving the live handover rail, colleague, duty and break information, clock-change guidance and every existing roster calculation.",
-    "As Night scrolls, the hospital masthead now morphs into a compact glass header carrying your assignment and selected date instead of leaving an empty collapsed header.",
-    "The update prompt and bottom navigation are smaller, clearer and more genuinely translucent, with quieter secondary actions, a refined active state and reduced-transparency fallbacks.",
-    "During the active working night, the interface subtly increases emphasis on the assignment and handover instrument without changing staffing, allocation, break or PWA update behaviour."
+    "Chat is rebuilt around readable team and private-message hierarchy, larger conversation text, cleaner previews, stronger unread states and better use of the available screen instead of tiny labels surrounded by empty space.",
+    "Changes and Breaks now use the same premium masthead, typography, spacing, surfaces and interaction language while preserving the existing staffing workflow and calculated break plan.",
+    "The compact scrolling header now morphs into a slim full-width glass veil with useful context such as unread messages or outstanding Changes items, replacing the previous detached-looking top bar.",
+    "Night, bottom navigation, Account, roster management, dialogs and update surfaces now share the same restrained clinical palette, radii, depth, touch geometry and accessibility fallbacks.",
+    "The redesign changes presentation only: the verified rotation, real handover calculation including clock-change nights, staffing rules, break logic, chat delivery, Supabase security and explicit PWA update activation remain unchanged."
   ],
   "update_policy": "important"
 }

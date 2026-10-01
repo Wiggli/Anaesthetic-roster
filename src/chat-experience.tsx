@@ -18,6 +18,14 @@ function rootFor(id: string) {
 }
 function act(action: string, value: string, kind?: string) { window.dispatchEvent(new CustomEvent('roster:chat-action', { detail: { action, value, kind } })); }
 
+function conversationPreview(item: Conversation) {
+  const prefix = item.title.trim() + ':';
+  const preview = item.preview.trim();
+  return preview.toLocaleLowerCase().startsWith(prefix.toLocaleLowerCase())
+    ? preview.slice(prefix.length).trim()
+    : preview;
+}
+
 function ConversationList({ items }: { items: Conversation[] }) {
   const reduced = useReducedMotion();
   if (!items.length) return <Surface>
@@ -37,7 +45,7 @@ function ConversationList({ items }: { items: Conversation[] }) {
         <ListRow
           leading={<Avatar initial={item.initial} />}
           title={item.title}
-          subtitle={<span className="tw:block tw:truncate">{item.preview}</span>}
+          subtitle={<span className="tw:block tw:truncate">{conversationPreview(item)}</span>}
           trailing={<span className="chatInboxMeta"><time>{item.time}</time>{item.unread > 0 && <Badge tone="accent" className="chatInboxUnread">{item.unread > 99 ? '99+' : item.unread}</Badge>}</span>}
           onClick={() => act('conversation', item.id)}
           ariaLabel={`Open conversation with ${item.title}${item.unread ? `, ${item.unread} unread` : ''}`}

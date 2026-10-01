@@ -14723,3 +14723,693 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{border-color:rgba(255,255
     display:grid!important;
   }
 }
+
+
+/* 38.0 premium clinical system
+   A single visual language for Night, Changes, Breaks, Chat, management and sheets.
+   Clinical data remains on solid surfaces; translucency is reserved for navigation and overlays. */
+:root{
+  --premium-hero-1:#163f67;
+  --premium-hero-2:#146277;
+  --premium-hero-3:#0c354f;
+  --premium-canvas:#f4f6f9;
+  --premium-card:#ffffff;
+  --premium-soft:#eef3f8;
+  --premium-ink:#111827;
+  --premium-muted:#667085;
+  --premium-line:rgba(17,24,39,.085);
+  --premium-blue:#0878ee;
+  --premium-blue-soft:#eaf4ff;
+  --premium-shadow:0 18px 48px rgba(31,45,61,.08);
+  --premium-shadow-soft:0 8px 26px rgba(31,45,61,.055);
+  --premium-radius-xl:28px;
+  --premium-radius-l:22px;
+  --premium-radius-m:17px;
+}
+body.dark,
+html[data-theme="dark"]{
+  --premium-hero-1:#10283f;
+  --premium-hero-2:#113f4c;
+  --premium-hero-3:#081c2a;
+  --premium-canvas:#0b0c0e;
+  --premium-card:#1c1c1f;
+  --premium-soft:#24262a;
+  --premium-ink:#f5f7fa;
+  --premium-muted:#a3a7ae;
+  --premium-line:rgba(255,255,255,.09);
+  --premium-blue:#49a4ff;
+  --premium-blue-soft:#132b43;
+  --premium-shadow:0 20px 52px rgba(0,0,0,.28);
+  --premium-shadow-soft:0 9px 28px rgba(0,0,0,.20);
+}
+
+/* Typography is intentionally larger than the previous utility-style UI. */
+#changes,#breaks,#chat,#admin,#roster{
+  color:var(--premium-ink);
+}
+#changes p,#breaks p,#chat p,#admin p,#roster p,
+#changes .time,#breaks .time,#chat small,#admin .time{
+  line-height:1.45;
+}
+#changes .time,#breaks .time,#admin .time{
+  font-size:13.5px!important;
+}
+#changes h2,#breaks h2,#chat h2,#admin h2{
+  letter-spacing:-.025em;
+}
+
+/* One expressive but restrained masthead system. */
+#changes .primaryScreenHeader,
+#breaks .primaryScreenHeader,
+#chat .primaryScreenHeader{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden;
+  margin:0 0 18px!important;
+  padding:14px 18px 22px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:0 0 30px 30px!important;
+  background:
+    radial-gradient(76% 115% at 94% -12%,rgba(89,213,225,.30),transparent 58%),
+    radial-gradient(80% 110% at -10% 0%,rgba(77,145,232,.28),transparent 60%),
+    linear-gradient(138deg,var(--premium-hero-1),var(--premium-hero-2) 56%,var(--premium-hero-3))!important;
+  color:#fff!important;
+  box-shadow:0 18px 42px rgba(17,45,72,.16)!important;
+}
+#changes .primaryScreenHeader::before,
+#breaks .primaryScreenHeader::before,
+#chat .primaryScreenHeader::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(115deg,rgba(255,255,255,.07),transparent 33%,transparent 70%,rgba(255,255,255,.035));
+  pointer-events:none;
+}
+#changes .primaryInstitutionBrand,
+#breaks .primaryInstitutionBrand,
+#chat .primaryInstitutionBrand{
+  color:rgba(255,255,255,.80)!important;
+}
+#changes .primaryInstitutionBrand span,
+#breaks .primaryInstitutionBrand span,
+#chat .primaryInstitutionBrand span{
+  color:rgba(255,255,255,.72)!important;
+}
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow,
+#chat .primaryScreenTitleRow{
+  align-items:flex-end!important;
+  margin-top:15px!important;
+}
+#changes .screenEyebrow,
+#breaks .screenEyebrow,
+#chat .chatEyebrow{
+  color:rgba(255,255,255,.64)!important;
+  font-size:10px!important;
+  font-weight:680!important;
+  letter-spacing:.055em!important;
+}
+#changes .primaryScreenHeader h1,
+#breaks .primaryScreenHeader h1,
+#chat .primaryScreenHeader h1{
+  margin:2px 0 0!important;
+  color:#fff!important;
+  font-size:clamp(36px,8vw,44px)!important;
+  font-weight:780!important;
+  line-height:1!important;
+  letter-spacing:-.055em!important;
+}
+#changes .primaryScreenHeader p,
+#breaks .primaryScreenHeader p,
+#chat .primaryScreenHeader p{
+  margin:7px 0 0!important;
+  color:rgba(255,255,255,.76)!important;
+  font-size:15px!important;
+  font-weight:540!important;
+}
+#changes .primaryHeaderAction,
+#breaks .primaryHeaderAction,
+#chat .primaryHeaderAction,
+#changes .screenInfoButton,
+#breaks .screenInfoButton,
+#chat .chatHeaderCompose{
+  border:1px solid rgba(255,255,255,.18)!important;
+  background:rgba(255,255,255,.11)!important;
+  color:#fff!important;
+  -webkit-backdrop-filter:blur(16px) saturate(155%)!important;
+  backdrop-filter:blur(16px) saturate(155%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 7px 20px rgba(0,0,0,.08)!important;
+}
+#chat .chatHeaderCompose{
+  min-height:44px!important;
+  border-radius:15px!important;
+  padding-inline:13px!important;
+}
+
+/* Night uses the same atmospheric family without changing its clinical hero semantics. */
+#today>#appHeader{
+  overflow:hidden!important;
+  border-bottom:0!important;
+  background:
+    radial-gradient(82% 120% at 92% -18%,rgba(83,201,215,.26),transparent 60%),
+    linear-gradient(138deg,var(--premium-hero-1),var(--premium-hero-2) 58%,var(--premium-hero-3))!important;
+  color:#fff!important;
+  box-shadow:0 12px 34px rgba(17,45,72,.13)!important;
+}
+#today>#appHeader .hospitalStrip{
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:15px!important;
+  background:rgba(255,255,255,.92)!important;
+}
+#today>#appHeader .motto{color:rgba(255,255,255,.74)!important}
+#today>#appHeader .headActions button,
+#today>#appHeader .adminSettingsBtn,
+#today>#appHeader .accountBtn{
+  border:1px solid rgba(255,255,255,.16)!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+  -webkit-backdrop-filter:blur(14px) saturate(150%)!important;
+  backdrop-filter:blur(14px) saturate(150%)!important;
+}
+body.headerCompact[data-view="today"] #appHeader{
+  background:rgba(17,48,70,.64)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(170%)!important;
+  backdrop-filter:blur(30px) saturate(170%)!important;
+}
+body.headerCompact[data-view="today"] .nightCompactContext b{color:#fff!important}
+body.headerCompact[data-view="today"] .nightCompactContext small,
+body.headerCompact[data-view="today"] .nightCompactContext>strong{color:rgba(255,255,255,.68)!important}
+
+/* Shared content rhythm. */
+#changes>.panel,
+#breaks>.panel,
+#admin .panel{
+  border-color:var(--premium-line)!important;
+}
+#changes .changesDatePanel,
+#breaks>.panel{
+  border-radius:var(--premium-radius-l)!important;
+}
+#changes .changePanel{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .changePanel>.ctop{
+  margin-bottom:14px!important;
+  padding:0 2px!important;
+}
+#changes .changePanel>.ctop h2{
+  font-size:23px!important;
+  font-weight:760!important;
+}
+#changes .changesWorkflowTabs{
+  min-height:64px!important;
+  padding:5px!important;
+  border:1px solid rgba(255,255,255,.30)!important;
+  border-radius:20px!important;
+  background:rgba(248,250,252,.36)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(160%)!important;
+  backdrop-filter:blur(22px) saturate(160%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.46),var(--premium-shadow-soft)!important;
+}
+body.dark #changes .changesWorkflowTabs,
+html[data-theme="dark"] #changes .changesWorkflowTabs{background:rgba(255,255,255,.055)!important}
+#changes .changesWorkflowTabs button{
+  min-height:52px!important;
+  border-radius:15px!important;
+}
+#changes .changesWorkflowTabs button b{font-size:13.5px!important}
+#changes .changesWorkflowTabs button small{font-size:10.5px!important}
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .fixedAllocationBox,
+#changes .historyBox{
+  overflow:hidden!important;
+  border:1px solid var(--premium-line)!important;
+  border-radius:var(--premium-radius-l)!important;
+  background:var(--premium-card)!important;
+  box-shadow:var(--premium-shadow-soft)!important;
+}
+#changes .staffingSection{
+  padding:17px!important;
+  border-left-width:1px!important;
+}
+#changes .stepHeader h3{font-size:18px!important;font-weight:740!important}
+#changes input,#changes select,#changes textarea,
+#admin input,#admin select,#accountSheet input,#accountSheet select{
+  min-height:48px!important;
+  border-radius:14px!important;
+  font-size:16px!important;
+}
+#changes button.primary,#changes .continueWorkflowBtn,
+#admin button.primary,#accountSheet button{
+  min-height:46px;
+}
+
+/* Breaks reads as a visual schedule, not a compact admin table. */
+#breaks .personalBreakSummary{
+  border-radius:26px!important;
+  background:var(--premium-card)!important;
+  box-shadow:var(--premium-shadow)!important;
+}
+#breaks .personalBreakMain h2{font-size:30px!important}
+#breaks .personalBreakMain p{font-size:14px!important;color:var(--premium-muted)!important}
+#breaks .breakPlanTitle h2{font-size:24px!important}
+#breaks .breakScheduleSection,
+#breaks .breakGroup,
+#breaks #breakSummaryRow{
+  border-radius:var(--premium-radius-l)!important;
+  border-color:var(--premium-line)!important;
+  background:var(--premium-card)!important;
+  box-shadow:var(--premium-shadow-soft)!important;
+}
+#breaks .breakScheduleHeader{
+  min-height:66px!important;
+  padding:13px 16px!important;
+}
+#breaks .breakScheduleHeader h3{font-size:17px!important}
+#breaks .breakScheduleHeader small{font-size:12px!important}
+#breaks .breakScheduleRows>.breakPerson{
+  min-height:60px!important;
+  padding:12px 16px!important;
+}
+#breaks .breakScheduleRows>.breakPerson strong{font-size:15px!important}
+#breaks .breakPersonYou{font-size:10.5px!important}
+
+/* Chat is a communication centre with readable hierarchy and no tiny-dashboard feel. */
+#chat .chatScreen{gap:14px!important}
+#chat .chatWorkspace{
+  min-height:0!important;
+  padding-bottom:18px!important;
+}
+#chat .chatHome{
+  display:grid!important;
+  gap:14px!important;
+  min-height:0!important;
+}
+#chat .chatInboxSection{
+  overflow:hidden!important;
+  border:1px solid var(--premium-line)!important;
+  border-radius:28px!important;
+  background:var(--premium-card)!important;
+  box-shadow:var(--premium-shadow)!important;
+}
+#chat .chatInboxHeading{
+  min-height:82px!important;
+  padding:18px 20px!important;
+  border-bottom:1px solid var(--premium-line)!important;
+}
+#chat .chatInboxHeading h2{
+  font-size:22px!important;
+  font-weight:770!important;
+  letter-spacing:-.035em!important;
+}
+#chat .chatInboxHeading small{
+  margin-top:4px!important;
+  color:var(--premium-muted)!important;
+  font-size:14px!important;
+  font-weight:520!important;
+}
+#chat .chatInboxTeamRow{
+  display:grid!important;
+  grid-template-columns:62px minmax(0,1fr) auto!important;
+  gap:8px 16px!important;
+  padding:20px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--premium-blue) 3.5%,var(--premium-card)),var(--premium-card))!important;
+}
+#chat .chatTeamAvatar{
+  width:62px!important;
+  height:62px!important;
+  min-width:62px!important;
+  border-radius:19px!important;
+  background:var(--premium-blue-soft)!important;
+  color:var(--premium-blue)!important;
+}
+#chat .chatTeamAvatar svg{width:31px!important;height:31px!important}
+#chat .chatInboxTeamTop b{
+  font-size:20px!important;
+  font-weight:770!important;
+  letter-spacing:-.03em!important;
+}
+#chat .chatInboxTeamTop time{
+  color:var(--premium-muted)!important;
+  font-size:12px!important;
+}
+#chat .chatTeamPurpose{
+  margin-top:5px!important;
+  color:var(--premium-ink)!important;
+  font-size:14.5px!important;
+  font-weight:590!important;
+}
+#chat .chatTeamMemberCount,
+#chat .chatInboxTeamPreview{
+  margin-top:5px!important;
+  color:var(--premium-muted)!important;
+  font-size:12.5px!important;
+}
+#chat .chatInboxOpen{
+  grid-column:2/-1!important;
+  display:flex!important;
+  min-height:44px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  margin-top:8px!important;
+  padding:0 14px!important;
+  border-radius:15px!important;
+  background:var(--premium-blue-soft)!important;
+  color:var(--premium-blue)!important;
+  font-size:14px!important;
+  font-style:normal!important;
+  font-weight:730!important;
+}
+#chat .chatInboxSectionLabel{
+  min-height:64px!important;
+  padding:15px 20px!important;
+  border-top:1px solid var(--premium-line)!important;
+  border-bottom:1px solid var(--premium-line)!important;
+}
+#chat .chatInboxSectionLabel>span{
+  font-size:18px!important;
+  font-weight:750!important;
+  letter-spacing:-.025em!important;
+}
+#chat .chatInboxSectionLabel small{
+  color:var(--premium-muted)!important;
+  font-size:12.5px!important;
+}
+#chat .chatConversationList .chatInboxRow{
+  min-height:82px!important;
+  padding:14px 20px!important;
+}
+#chat .chatConversationList .chatInboxRow strong{
+  font-size:17px!important;
+}
+#chat .chatConversationList .chatInboxRow small{
+  font-size:13.5px!important;
+}
+#chat .chatInboxMeta time{font-size:11.5px!important;color:var(--premium-muted)!important}
+#chat .chatInboxUnread,
+#chat .chatConversationBadge{
+  min-width:28px!important;
+  height:28px!important;
+  padding:0 8px!important;
+  border-radius:999px!important;
+  background:var(--premium-blue)!important;
+  color:#fff!important;
+  font-size:12px!important;
+  box-shadow:0 5px 14px rgba(8,120,238,.20)!important;
+}
+#chat .chatSafetyNotice,
+#chat .chatNotificationDisclosure{
+  overflow:hidden!important;
+  border:1px solid var(--premium-line)!important;
+  border-radius:20px!important;
+  background:var(--premium-card)!important;
+  box-shadow:var(--premium-shadow-soft)!important;
+}
+#chat .chatSafetyNotice{
+  min-height:74px!important;
+  padding:14px 18px!important;
+  border-color:rgba(194,108,28,.22)!important;
+  background:color-mix(in srgb,#fff2e2 55%,var(--premium-card))!important;
+}
+body.dark #chat .chatSafetyNotice,
+html[data-theme="dark"] #chat .chatSafetyNotice{background:color-mix(in srgb,#7a451d 16%,var(--premium-card))!important}
+#chat .chatSafetyNotice b,
+#chat .chatNotificationDisclosure summary b{
+  font-size:15px!important;
+  font-weight:720!important;
+}
+#chat .chatSafetyNotice small,
+#chat .chatNotificationDisclosure summary small{
+  margin-top:3px!important;
+  font-size:12.5px!important;
+}
+#chat .chatNotificationDisclosure summary{
+  min-height:74px!important;
+  padding:14px 18px!important;
+}
+#chat .chatNotificationDisclosureIcon{
+  width:42px!important;height:42px!important;border-radius:13px!important;
+}
+#chat .chatThreadHeader{
+  -webkit-backdrop-filter:blur(28px) saturate(165%)!important;
+  backdrop-filter:blur(28px) saturate(165%)!important;
+}
+#chat .chatTeamBubble,#chat .chatPrivateBubble{
+  font-size:15px!important;
+  line-height:1.42!important;
+}
+
+/* Management and account feel like the same app, not a separate utility. */
+#admin .adminTabs{
+  min-height:58px!important;
+  padding:5px!important;
+  border-radius:18px!important;
+  background:var(--premium-soft)!important;
+}
+#admin .adminTabs button{
+  min-height:46px!important;
+  border-radius:13px!important;
+  font-size:12px!important;
+}
+#admin .adminSectionIntro h2{font-size:21px!important}
+#admin .adminSectionIntro p{font-size:13.5px!important}
+#admin .adminPane>.panel{
+  border-radius:var(--premium-radius-l)!important;
+  background:var(--premium-card)!important;
+  box-shadow:var(--premium-shadow-soft)!important;
+}
+.accountSheet .accountGroup,
+.accountSheet .accountProfileHeroPro{
+  border-radius:var(--premium-radius-l)!important;
+  box-shadow:var(--premium-shadow-soft)!important;
+}
+.accountSheet .accountGroup h3{font-size:17px!important}
+.accountSheet .accountGroupDescription,
+.accountSheet .accountGroup p{font-size:13px!important}
+
+/* The appearing scroll bar now morphs into a thin full-width material veil instead of a floating slab. */
+.scrollGlassHeader.scrollGlassMode-compact{
+  height:calc(64px + env(safe-area-inset-top))!important;
+  min-height:calc(64px + env(safe-area-inset-top))!important;
+  transform:translate3d(0,-7px,0);
+}
+.scrollGlassMode-compact .scrollGlassMaterial{
+  border-bottom:1px solid rgba(73,89,104,.12)!important;
+  border-radius:0!important;
+  background:rgba(246,249,252,.24)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%) contrast(1.02)!important;
+  backdrop-filter:blur(32px) saturate(180%) contrast(1.02)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 9px 26px rgba(29,43,57,.055)!important;
+}
+body.dark .scrollGlassMode-compact .scrollGlassMaterial,
+html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
+  background:rgba(18,22,27,.26)!important;
+  border-bottom-color:rgba(255,255,255,.08)!important;
+}
+.scrollGlassMode-compact .scrollGlassContent{
+  display:flex!important;
+  width:min(100%,980px)!important;
+  height:64px!important;
+  align-items:center!important;
+  padding:0 max(20px,env(safe-area-inset-left))!important;
+}
+.scrollGlassCompactTitle{
+  display:grid!important;
+  min-width:0!important;
+  gap:2px!important;
+  color:var(--premium-ink)!important;
+}
+.scrollGlassCompactTitle>span{
+  overflow:hidden;
+  font-size:17.5px!important;
+  font-weight:760!important;
+  line-height:1.08!important;
+  letter-spacing:-.028em!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassCompactTitle>small{
+  overflow:hidden;
+  color:var(--premium-muted)!important;
+  font-size:10.5px!important;
+  font-weight:580!important;
+  line-height:1.15!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassMode-compact::after{
+  height:20px!important;
+  background:transparent!important;
+  -webkit-backdrop-filter:blur(10px) saturate(125%)!important;
+  backdrop-filter:blur(10px) saturate(125%)!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.42) 40%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.42) 40%,transparent 100%)!important;
+}
+
+/* Floating bottom navigation is a true translucent control layer. */
+.bottom.reactTabs{
+  min-height:72px!important;
+  padding:5px!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:26px!important;
+  background:rgba(248,250,252,.20)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%)!important;
+  backdrop-filter:blur(32px) saturate(180%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 18px 46px rgba(25,37,49,.10)!important;
+}
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  background:rgba(26,28,32,.30)!important;
+  border-color:rgba(255,255,255,.09)!important;
+}
+.bottom.reactTabs button{
+  min-height:60px!important;
+  gap:3px!important;
+  border-radius:20px!important;
+}
+.bottom.reactTabs button svg{width:23px!important;height:23px!important}
+.bottom.reactTabs button span{font-size:11.5px!important;font-weight:650!important}
+.bottom.reactTabs button.active{color:var(--premium-blue)!important}
+body[data-view] .bottom.reactTabs .tabSlidingIndicator{
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:19px!important;
+  background:color-mix(in srgb,var(--premium-blue) 8%,rgba(255,255,255,.22))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.54),0 7px 20px rgba(30,70,110,.07)!important;
+}
+.bottom.reactTabs .navTaskBadge{
+  min-width:18px!important;
+  height:18px!important;
+  padding:0 4px!important;
+  font-size:9px!important;
+}
+
+/* Sheets and lifecycle surfaces share one finish. */
+dialog.appDialog,
+.accountSheet,
+.updateSheet,
+.chatMessageActionSheet,
+.chatNewConversationSheet,
+.pushPromptDialog,
+.onboardingDialog{
+  border-color:var(--premium-line)!important;
+  border-radius:28px 28px 0 0!important;
+  background:color-mix(in srgb,var(--premium-card) 94%,transparent)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(155%)!important;
+  backdrop-filter:blur(30px) saturate(155%)!important;
+  box-shadow:0 -18px 64px rgba(16,24,40,.16)!important;
+}
+.dialogHead,.accountSheetHeader,.chatSheetHeader,.chatMessageActionHeader{
+  border-bottom-color:var(--premium-line)!important;
+}
+.sheetGrabber{
+  width:42px!important;
+  height:5px!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--premium-muted) 42%,transparent)!important;
+}
+
+/* Phone rhythm: large enough to read without turning everything into oversized cards. */
+@media(max-width:640px){
+  #changes .primaryScreenHeader,
+  #breaks .primaryScreenHeader,
+  #chat .primaryScreenHeader{
+    margin-inline:-2px!important;
+    padding:12px 16px 21px!important;
+    border-radius:0 0 28px 28px!important;
+  }
+  #changes .primaryInstitutionBrand img,
+  #breaks .primaryInstitutionBrand img,
+  #chat .primaryInstitutionBrand img{max-width:108px!important}
+  #changes .screenEyebrow,
+  #breaks .screenEyebrow,
+  #chat .chatEyebrow{display:none!important}
+  #changes .primaryScreenHeader h1,
+  #breaks .primaryScreenHeader h1,
+  #chat .primaryScreenHeader h1{font-size:38px!important}
+  #changes .primaryScreenHeader p,
+  #breaks .primaryScreenHeader p,
+  #chat .primaryScreenHeader p{font-size:14px!important}
+  #chat .chatHeaderCompose span{display:none!important}
+  #chat .chatHeaderCompose{width:44px!important;padding:0!important}
+  #chat .chatInboxHeading{min-height:76px!important;padding:16px 18px!important}
+  #chat .chatInboxTeamRow{grid-template-columns:54px minmax(0,1fr) auto!important;padding:18px!important;gap:7px 13px!important}
+  #chat .chatTeamAvatar{width:54px!important;height:54px!important;min-width:54px!important;border-radius:17px!important}
+  #chat .chatInboxTeamTop b{font-size:18px!important}
+  #chat .chatTeamPurpose{font-size:13.5px!important}
+  #chat .chatInboxOpen{grid-column:1/-1!important;margin-top:10px!important}
+  #chat .chatInboxSectionLabel{padding:14px 18px!important}
+  #chat .chatConversationList .chatInboxRow{min-height:76px!important;padding:12px 18px!important}
+  #chat .chatSafetyNotice,#chat .chatNotificationDisclosure summary{padding-inline:16px!important}
+  #changes .staffingSection{padding:15px!important}
+  .bottom.reactTabs{min-height:70px!important;border-radius:24px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .scrollGlassHeader,.scrollGlassCompactTitle,.bottom.reactTabs button,
+  #changes .primaryHeaderAction,#breaks .primaryHeaderAction,#chat .primaryHeaderAction{
+    transition:none!important;
+    animation:none!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  .bottom.reactTabs,
+  dialog.appDialog,.accountSheet,.updateSheet,
+  #changes .changesWorkflowTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--premium-card)!important;
+  }
+  #changes .primaryHeaderAction,#breaks .primaryHeaderAction,#chat .primaryHeaderAction,
+  #today>#appHeader .headActions button{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
+@media(prefers-contrast:more){
+  #changes .primaryScreenHeader,#breaks .primaryScreenHeader,#chat .primaryScreenHeader,
+  #chat .chatInboxSection,#breaks .breakScheduleSection,#changes .staffingSection,
+  .bottom.reactTabs{
+    border-color:color-mix(in srgb,var(--premium-ink) 36%,transparent)!important;
+  }
+}
+
+
+/* 38.0 transition hardening: keep fixed chrome out of horizontal page-track animation. */
+body.viewTransitioning .scrollGlassHeader{
+  opacity:0!important;
+  transform:translate3d(0,-7px,0)!important;
+  pointer-events:none!important;
+}
+main.viewSwipeStage>.view.swipeCurrent,
+main.viewSwipeStage>.view.swipePreview{
+  transform-style:preserve-3d;
+  -webkit-font-smoothing:antialiased;
+}
+.bottom.reactTabs{
+  box-sizing:border-box!important;
+  height:66px!important;
+  min-height:66px!important;
+  max-height:66px!important;
+  padding:5px!important;
+}
+.bottom.reactTabs button{
+  height:54px!important;
+  min-height:54px!important;
+  max-height:54px!important;
+}
+@media(max-width:640px){
+  .bottom.reactTabs{
+    height:66px!important;
+    min-height:66px!important;
+    max-height:66px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.viewTransitioning .scrollGlassHeader{transform:none!important}
+}

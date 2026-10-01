@@ -162,6 +162,7 @@ function Navigation({ badges }: { badges: Badges }) {
         preview.removeAttribute('inert');
       }
       main?.classList.remove('viewSwipeStage', 'viewSwipeSettling');
+      document.body.classList.remove('viewTransitioning');
       if (main) main.style.removeProperty('min-height');
     };
 
@@ -201,6 +202,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const preservedMainHeight = Math.max(1, main.getBoundingClientRect().height);
 
       main.style.minHeight = `${Math.ceil(preservedMainHeight)}px`;
+      document.body.classList.add('viewTransitioning');
       main.classList.add('viewSwipeStage');
       current.classList.add('swipeCurrent');
       preview.classList.add('swipePreview');

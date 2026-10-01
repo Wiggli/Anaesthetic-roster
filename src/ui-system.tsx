@@ -38,7 +38,7 @@ export function Surface({
   return <div
     {...props}
     className={cx(
-      'tw:@container tw:overflow-hidden tw:rounded-[18px] tw:border tw:border-black/[0.055] tw:bg-[var(--card)] tw:shadow-[0_1px_2px_rgba(0,0,0,0.025)] tw:dark:border-white/[0.075]',
+      'tw:@container tw:overflow-hidden tw:rounded-[22px] tw:border tw:border-black/[0.055] tw:bg-[var(--card)] tw:shadow-[0_7px_24px_rgba(15,23,42,0.045)] tw:dark:border-white/[0.075]',
       className
     )}
   >{children}</div>;
@@ -149,7 +149,7 @@ export function ListRow({
     {onClick ? <span className="tw:ml-1 tw:shrink-0 tw:text-xl tw:font-light tw:text-[var(--muted)]" aria-hidden="true">›</span> : null}
   </>;
 
-  const common = 'tw:flex tw:min-h-[52px] tw:w-full tw:items-center tw:gap-3 tw:px-3.5 tw:py-3 tw:text-left';
+  const common = 'tw:flex tw:min-h-[60px] tw:w-full tw:items-center tw:gap-3.5 tw:px-4 tw:py-3.5 tw:text-left';
   if (!onClick) return <div className={cx(common, className)}>{content}</div>;
   return <Pressable type="button" onClick={onClick} aria-label={ariaLabel} className={cx(common, 'tw:bg-transparent', className)}>{content}</Pressable>;
 }
