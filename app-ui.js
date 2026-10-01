@@ -783,7 +783,7 @@ function localChangesDraftParts(base){
   if(Object.keys(draft).some(function(key){var saved=plan.validAssignments.find(function(item){return item.allocation_key===key});return(draft[key]||'')!==(saved?saved.id:'')}))parts.push('allocation selections');
   if(seventhDecisionDrafts[date])parts.push('seventh-nurse choice');
   if(nightRoleOverrideDrafts[date])parts.push('night-only roles');
-  if(document.body.getAttribute('data-view')==='changes'&&cur().date===date){
+  if(document.body&&typeof document.body.getAttribute==='function'&&document.body.getAttribute('data-view')==='changes'&&cur().date===date){
     var absence=byId('absentName'),overtime=byId('overtimeName');
     if(editingAbsenceId||absence&&absence.value)parts.push('absence form');
     if(overtime&&normaliseNurseName(overtime.value))parts.push('overtime entry');
@@ -1272,7 +1272,7 @@ function chooseSeventhDecision(base,decision){
 }
 
 function renderChanges(base){
-  if(document.body.getAttribute('data-view')==='changes'&&changesSmartDefaultDate!==base.date){activeChangesStep=smartChangesStep(base);changesSmartDefaultDate=base.date}
+  if(document.body&&typeof document.body.getAttribute==='function'&&document.body.getAttribute('data-view')==='changes'&&changesSmartDefaultDate!==base.date){activeChangesStep=smartChangesStep(base);changesSmartDefaultDate=base.date}
   var changes=changesFor(base.date),absentLower=changes.map(function(c){return c.absent_name.toLowerCase()}),names=activeNames(base).filter(function(n){return absentLower.indexOf(n.toLowerCase())<0});
   var overtime=overtimeFor(base.date),plan=staffingPlan(base),history=staffingHistoryFor(base.date),expanded=!!historyExpandedDates[base.date];
   updateStaffingActionAvailability();
