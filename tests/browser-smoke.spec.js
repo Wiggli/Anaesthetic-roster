@@ -101,8 +101,8 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
     }}));
   }, clockChange);
 
-  await expect(page.locator('#alerts .clockChangeNotice')).toContainText('Equal handover · 03:00 after clock change');
-  await expect(page.locator('#alerts .clockChangeNotice')).toContainText('4h actual');
+  await expect(page.locator('#nightClockChange .clockChangeNotice')).toContainText('Equal handover · 03:00 after clock change');
+  await expect(page.locator('#nightClockChange .clockChangeNotice')).toContainText('4h actual');
   await captureReview(page, 'clock-change-night');
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('Clocks move back one hour');
@@ -118,6 +118,7 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
   await expect(page.locator('#onboardingDialog')).toContainText('The app keeps both parts equal');
   await expect(page.locator('#onboardingDialog')).toContainText('03:00 after clock change');
   await expect(page.locator('#onboardingDialog')).toContainText('4h');
+  await page.waitForTimeout(450);
   await captureReview(page, 'clock-change-onboarding');
 });
 
