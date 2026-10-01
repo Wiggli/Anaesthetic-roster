@@ -237,6 +237,7 @@ function AccountActions({ installed, newRelease, version }: { installed: boolean
   return <GroupedList>{actions.map(item => <ListRow key={item.action} leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>} title={item.title} subtitle={item.detail} trailing={item.isNew ? <Badge tone="info">New</Badge> : undefined} onClick={() => act(item.action)} />)}</GroupedList>;
 }
 
+const SHARE_QR_TARGET = 'https://wiggli.github.io/Anaesthetic-roster/?welcome=1';
 const SHARE_QR_ROWS = [
   '111111100100111011110001001111111',
   '100000100011011110000010101000001',
@@ -286,6 +287,7 @@ function ShareQr() {
 
 function ShareApp({ model }: { model: ShareExperience }) {
   const reduced = useReducedMotion();
+  const qrMatches = model.shareUrl === SHARE_QR_TARGET;
   return <motion.div
     className="shareAppExperience"
     initial={reduced ? false : { opacity: 0, y: 8, scale: 0.99 }}
@@ -296,7 +298,7 @@ function ShareApp({ model }: { model: ShareExperience }) {
       <span className="shareQrEyebrow">For authorised theatre staff</span>
       <h3 id="shareQrHeading">Scan to get Night Roster</h3>
       <p>Open the phone camera, point it at the code, then tap the link that appears.</p>
-      <div className="shareQrFrame"><ShareQr /></div>
+      <div className="shareQrFrame">{qrMatches ? <ShareQr /> : <span className="shareQrUnavailable">Use Send or Copy link on this device.</span>}</div>
       <div className="shareQrSteps" aria-label="QR installation steps">
         <span><b>1</b>Open camera</span><span><b>2</b>Scan code</span><span><b>3</b>Tap the link</span>
       </div>
