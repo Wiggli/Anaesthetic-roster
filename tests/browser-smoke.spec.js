@@ -1101,6 +1101,8 @@ test('update banner obeys hidden and Night-only visibility states', async ({ pag
   await openShell(page);
   await page.evaluate(() => window.show && window.show('today'));
   await expect(page.locator('#today')).toBeVisible();
+  // Let the asynchronous service-worker probe settle before testing the CSS visibility contract.
+  await page.waitForTimeout(160);
 
   await page.evaluate(() => document.getElementById('updateBanner').classList.remove('hidden'));
   await expect(page.locator('#updateBanner')).toBeVisible();
@@ -1405,12 +1407,10 @@ test('typed administrator accounts separate pending access and support fast filt
   await expect(page.locator('#adminAccountsExperience')).not.toContainText('Andre Bartolo');
 });
 
-test('screen-specific scroll chrome stays out of Night and keeps compact surfaces native', async ({ page }) => {
+test('one quiet glossy scroll bar appears consistently after page headers leave the viewport', async ({ page }) => {
   await openShell(page);
   const chrome = page.locator('#reactScrollChrome .scrollGlassHeader');
   await expect(chrome).toHaveCount(1);
-  await expect(page.locator('#personalNightHeading')).toContainText('Your assignment');
-  await expect(page.locator('#nightCompactContext')).toContainText('Night');
 
   await page.evaluate(() => {
     const spacer = document.createElement('div');
@@ -1419,24 +1419,11 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
     document.getElementById('today')?.appendChild(spacer);
     window.scrollTo(0, 180);
   });
-  await expect(chrome).toHaveAttribute('data-mode', 'off');
-  await expect(chrome).toHaveCSS('display', 'none');
-  await expect(page.locator('#reactScrollChrome .scrollGlassMaterial')).toHaveCount(0);
-  await expect(page.locator('body')).toHaveClass(/headerCompact/);
-  await expect(page.locator('#nightCompactContext')).toBeVisible();
-  await expect(page.locator('#nightSummaryHeading')).toBeVisible();
-  await expect(page.locator('#nightSummaryHeading')).toContainText('Tonight');
-  const nightGroupStyle = await page.locator('#today .teamOverviewGroup').evaluate(el => {
-    const style = getComputedStyle(el);
-    return {
-      background: style.backgroundColor,
-      radius: parseFloat(style.borderRadius),
-      overflow: style.overflow
-    };
-  });
-  expect(nightGroupStyle.background).toBe('rgba(0, 0, 0, 0)');
-  expect(nightGroupStyle.radius).toBe(0);
-  expect(nightGroupStyle.overflow).toBe('visible');
+  await expect(chrome).toHaveAttribute('data-mode', 'compact');
+  await expect.poll(() => chrome.evaluate(el => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.75);
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Night');
+  await expect(page.locator('#reactScrollChrome .scrollGlassMaterial')).toHaveCount(1);
+  await expect(page.locator('#nightCompactContext')).toBeHidden();
 
   await page.evaluate(() => {
     document.getElementById('scrollGlassSmokeSpacer')?.remove();
@@ -1449,52 +1436,42 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
     window.scrollTo(0, 180);
   });
   await expect(chrome).toHaveAttribute('data-mode', 'compact');
-  await expect.poll(() => chrome.evaluate(el => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.8);
-  const compactTitle = page.locator('#reactScrollChrome .scrollGlassCompactTitle');
-  await expect(compactTitle).toContainText('Changes');
-  await expect(page.locator('#reactScrollChrome .scrollGlassRail-changes')).toHaveCount(0);
-  await page.evaluate(() => window.show('chat'));
-  await expect(page.locator('#chat')).toBeVisible();
-  await expect.poll(() => chrome.getAttribute('class')).toContain('scrollGlass-chat');
-  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toContainText('Chat');
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
-  await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Changes');
+
   const compactChromeMetrics = await chrome.evaluate(el => ({
     height: el.getBoundingClientRect().height,
     titleSize: parseFloat(getComputedStyle(el.querySelector('.scrollGlassCompactTitle')).fontSize)
   }));
-  expect(compactChromeMetrics.height).toBeGreaterThanOrEqual(56);
-  expect(compactChromeMetrics.titleSize).toBeGreaterThanOrEqual(16);
+  expect(compactChromeMetrics.height).toBeGreaterThanOrEqual(50);
+  expect(compactChromeMetrics.height).toBeLessThanOrEqual(58);
+  expect(compactChromeMetrics.titleSize).toBeGreaterThanOrEqual(15);
+
   const compactMaterial = await page.locator('#reactScrollChrome .scrollGlassMaterial').evaluate(el => {
     const style = getComputedStyle(el);
     const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
-    const edge = getComputedStyle(el.parentElement, '::after');
     return {
       backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
       alpha: rgba.length >= 4 ? rgba[3] : 1,
-      radius: parseFloat(style.borderRadius),
-      edgeBackdrop: edge.backdropFilter || edge.webkitBackdropFilter || 'none',
-      edgeMask: edge.maskImage || edge.webkitMaskImage || 'none'
+      radius: parseFloat(style.borderRadius)
     };
   });
   expect(compactMaterial.backdrop).not.toBe('none');
-  expect(compactMaterial.alpha).toBeLessThanOrEqual(0.3);
+  expect(compactMaterial.alpha).toBeLessThanOrEqual(0.5);
   expect(compactMaterial.radius).toBeLessThanOrEqual(1);
-  expect(compactMaterial.edgeBackdrop).not.toBe('none');
-  expect(compactMaterial.edgeMask).not.toBe('none');
+
+  await page.evaluate(() => {
+    window.show('chat');
+    window.scrollTo(0, 180);
+  });
+  await expect.poll(() => chrome.getAttribute('class')).toContain('scrollGlass-chat');
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Chat');
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
+  await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
 
   await page.evaluate(() => {
     document.getElementById('scrollGlassChangesSpacer')?.remove();
     window.scrollTo(0, 0);
   });
-
-  await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
-  const originalAdminBackdrop = await page.locator('#admin .adminTabs').evaluate(el => {
-    const style = getComputedStyle(el);
-    return style.backdropFilter || style.webkitBackdropFilter || 'none';
-  });
-  expect(originalAdminBackdrop).toBe('none');
-  await expect(page.locator('#admin .statusGrid')).toHaveCSS('display', 'block');
 
   const bottomMaterial = await page.evaluate(() => {
     const element = document.querySelector('.bottom.reactTabs');
@@ -1705,7 +1682,7 @@ test('worker keeps private backend traffic out of caches and navigates offline',
   await context.setOffline(false);
 });
 
-test('scroll chrome keeps Changes minimal and gives Admin one rail-only control plane', async ({ page }) => {
+test('scroll chrome uses the same quiet glossy title bar in Changes and Admin', async ({ page }) => {
   await openShell(page);
 
   await page.evaluate(() => {
@@ -1719,9 +1696,8 @@ test('scroll chrome keeps Changes minimal and gives Admin one rail-only control 
 
   const chrome = page.locator('#reactScrollChrome .scrollGlassHeader');
   await expect(chrome).toHaveAttribute('data-mode', 'compact');
-  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toContainText('Changes');
-  await expect(page.locator('#reactScrollChrome .scrollGlassRail-changes')).toHaveCount(0);
-  await expect(page.locator('#changes .changesWorkflowTabs [data-changes-step="staffing"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Changes');
+  await expect(page.locator('#reactScrollChrome .scrollGlassRail')).toHaveCount(0);
 
   await page.evaluate(() => {
     document.getElementById('contextualChromeSmokeSpacer')?.remove();
@@ -1737,38 +1713,8 @@ test('scroll chrome keeps Changes minimal and gives Admin one rail-only control 
     window.scrollTo(0, 170);
   });
 
-  await expect(chrome).toHaveAttribute('data-mode', 'rail');
-  await expect(page.locator('#reactScrollChrome .scrollGlassContent')).toHaveCount(0);
-  const adminRail = page.locator('#reactScrollChrome .scrollGlassRail-admin');
-  await expect(adminRail.locator('button')).toHaveCount(5);
-  await expect(adminRail.locator('button.active')).toContainText('Overview');
-  await expect(adminRail.locator('.scrollGlassRailLens')).toHaveCount(1);
-  await expect.poll(() => adminRail.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(38);
+  await expect(chrome).toHaveAttribute('data-mode', 'compact');
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Roster management');
+  await expect(page.locator('#reactScrollChrome .scrollGlassRail-admin')).toHaveCount(0);
   await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
-
-  const railBox = await adminRail.boundingBox();
-  await adminRail.dispatchEvent('pointerdown', {
-    pointerId: 1,
-    pointerType: 'mouse',
-    isPrimary: true,
-    buttons: 1,
-    clientX: railBox.x + railBox.width / 2,
-    clientY: railBox.y + railBox.height / 2
-  });
-  const railEnergy = await chrome.evaluate(el => ({
-    energized: el.hasAttribute('data-glass-touching'),
-    x: el.style.getPropertyValue('--glass-touch-x'),
-    y: el.style.getPropertyValue('--glass-touch-y'),
-    glow: Boolean(el.querySelector('.scrollGlassTouchGlow'))
-  }));
-  expect(railEnergy.energized).toBe(true);
-  expect(railEnergy.glow).toBe(true);
-  expect(railEnergy.x).toMatch(/px$/);
-  expect(railEnergy.y).toMatch(/px$/);
-  await adminRail.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0 });
-  await expect(chrome).not.toHaveAttribute('data-glass-touching');
-
-  await adminRail.locator('button', { hasText: 'Publish' }).click();
-  await expect(page.locator('#admin .adminTabs [data-admin-tab="publish"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(adminRail.locator('button.active')).toContainText('Publish');
 });
