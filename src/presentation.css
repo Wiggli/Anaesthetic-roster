@@ -14591,7 +14591,7 @@ html[data-theme="dark"] #chat .pushMuteActions{
 
 #appHeader{padding-top:max(7px,env(safe-area-inset-top))!important;padding-bottom:7px!important;border-bottom-color:transparent!important}
 #appHeader .hospitalStrip{min-height:31px!important}
-#appHeader .hospitalStrip img{width:min(154px,46vw)!important;height:30px!important}
+#appHeader .hospitalStrip img{width:min(154px,46vw)!important;height:auto!important;max-height:30px!important}
 #appHeader .hospitalStrip span{font-size:8.5px!important;letter-spacing:.07em!important}
 #appHeader .head{margin-top:1px!important}
 #appHeader .headActions{padding:0!important;gap:2px!important;border-color:transparent!important;background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
