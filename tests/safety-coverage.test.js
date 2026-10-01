@@ -179,8 +179,18 @@ const cases = [
   ['2026-10-25T06:00:00Z', '2026-10-25']  // 07:00 after autumn transition
 ];
 for (const [instant, expected] of cases) assert.equal(context.operationalRosterDate(new Date(instant)), expected, instant);
-context.idx = context.startingIndex(new Date('2026-08-22T10:00:00Z'));
-assert.equal(context.automaticNightState(new Date('2026-08-22T10:00:00Z')).isCurrent, false, 'daytime must identify the next roster night, not a current shift');
+const currentNightCases = [
+  ['2026-10-01T21:38:00Z', '2026-09-30'], // 23:38 CEST: keep the current roster night, do not jump to 4 Oct
+  ['2026-10-04T16:59:00Z', '2026-09-30'], // 18:59 CEST: the 4 Oct night has not started yet
+  ['2026-10-04T17:00:00Z', '2026-10-04'], // 19:00 CEST: 4 Oct becomes the current roster night
+  ['2026-10-05T04:59:00Z', '2026-10-04'], // 06:59 CEST: still the 4 Oct working night
+  ['2026-10-05T10:00:00Z', '2026-10-04']  // daytime: retain the current roster night until the next roster night actually starts
+];
+for (const [instant, expected] of currentNightCases) {
+  context.idx = context.startingIndex(new Date(instant));
+  assert.equal(context.R[context.idx].date, expected, instant);
+  assert.equal(context.automaticNightState(new Date(instant)).isCurrent, true, instant + ' must identify the current roster night');
+}
 
 // Incomplete plans must remain provisional, and the visible Breaks view must derive from the effective roster.
 reset([absent('first1'), absent('first2'), absent('second1')]);

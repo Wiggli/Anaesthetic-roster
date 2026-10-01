@@ -1,14 +1,14 @@
 {
-  "version": "38.01",
+  "version": "38.02",
   "date": "1 October 2026",
-  "title": "Restore quiet headers and one glossy scroll bar",
-  "summary": "The large coloured top mastheads are gone. Screens keep a calm in-page heading, while one slim translucent glass bar appears only after the page is scrolled.",
+  "title": "Open on the current roster night",
+  "summary": "Night now follows Malta time and stays on the current roster night until the next roster night actually begins, instead of jumping ahead to a future roster date.",
   "changes": [
-    "Night, Changes, Breaks and Chat no longer use the large blue-green hero masthead introduced in 38.0; their normal top-of-page headers are quiet and content-led again.",
-    "A single slim full-width glass bar now fades and glides in only after the page header scrolls away, using the same treatment across Night, Changes, Breaks, Chat, Full Roster and Roster Management.",
-    "The scroll bar shows only the current section title, removing extra status text, oversized height and the Admin-only floating rail so the chrome stays calm and predictable.",
-    "Scroll-linked blur, opacity and vertical movement are driven continuously for a smoother transition, while screen switches temporarily suppress the bar to prevent stale-header flashes.",
-    "The improved Chat readability, content hierarchy, roster calculations, handover logic, staffing rules, break logic, Supabase security and explicit PWA update activation remain unchanged."
+    "Opening Night now selects the current roster night from the Malta clock rather than the next future rostered date.",
+    "The current roster night remains selected between roster dates and changes automatically only when the next roster night reaches its 19:00 start boundary.",
+    "Across midnight and the early-morning duty window, the same roster night remains selected so 00:00–07:00 live timing and handover tracking stay attached to the correct night.",
+    "The date control now labels the automatically selected date as Current roster night and no longer calls a future date current simply because it was auto-selected.",
+    "The app rechecks this clock rule every minute and whenever it becomes visible, while manual browsing remains respected until the user returns to Current night."
   ],
   "update_policy": "important"
 }
