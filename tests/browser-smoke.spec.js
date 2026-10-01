@@ -175,7 +175,17 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00²');
   await expect(page.locator('#personalNightCard .personalFactButtons')).toContainText('Open Breaks');
   await expect(page.locator('#personalNightCard')).toContainText('Changed tonight');
-  await captureReview(page, 'night-cockpit');
+  await expect(page.locator('#personalNightCard .nightTimelineSlimRail')).toHaveCount(1);
+  await expect(page.locator('#personalNightCard .nightTimelineOwnBand.mine')).toHaveCount(1);
+  const railVisual = await page.locator('#personalNightCard .nightTimelineSlimRail').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { height: el.getBoundingClientRect().height, background: style.backgroundColor };
+  });
+  expect(railVisual.height).toBeLessThanOrEqual(24);
+  expect(railVisual.background).toBe('rgba(0, 0, 0, 0)');
+  const nextStateBackground = await page.locator('#personalNightCard .personalNextStateIntegrated').evaluate(el => getComputedStyle(el).backgroundColor);
+  expect(nextStateBackground).not.toBe('rgb(255, 255, 255)');
+  await captureReview(page, 'night-cockpit-blue-rail');
 
   await page.evaluate(() => window.showShareApp());
   await expect(page.locator('#shareAppDialog')).toHaveAttribute('open', '');

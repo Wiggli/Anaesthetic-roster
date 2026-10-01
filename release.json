@@ -1,12 +1,12 @@
 {
-  "version": "37.96",
+  "version": "37.97",
   "date": "1 October 2026",
-  "title": "Make Night feel like a live shift",
-  "summary": "Turns Night into a richer live cockpit with a more informative personal hero and elapsed-time rail, while making Night Roster much easier to share and install through an offline QR code and device-aware guidance.",
+  "title": "Bring back the live blue Night rail",
+  "summary": "Refines the 37.96 Night cockpit so the personal hero feels integrated again: the bulky pale handover and segmented timeline surfaces are replaced by a slim blue live-progress rail inside the dark hero.",
   "changes": [
-    "The personal Night hero now adapts through the shift with a live what-matters-next state, actionable colleague, duty and break details, subtle handover feedback, and compact routine-versus-exception context across the Night overview and team allocation.",
-    "The 00:00–07:00 rail is now a true elapsed-time instrument with highlighted personal duty segments, a live moving marker, explicit handover state and clock-change geometry; autumn rollback nights visibly distinguish the first 02:xx from the second 02:xx, while spring nights show the skipped hour.",
-    "Share Night Roster now provides a large offline QR code, native phone sharing, copy-link fallback and installation help. Scanned links open a simple device-aware install welcome flow, while sharing exposes only the public app address and never roster or account data."
+    "The Night timeline is now a slim blue elapsed-time rail with a soft highlight for your own duty segment, a live blue progress fill and moving marker during the active night, and a crisp handover marker without the previous chunky segmented panel.",
+    "The What matters next / Handover state is now integrated directly into the dark hero instead of appearing as a large pale nested card, while colleague, duty and break facts keep proper high contrast inside the hero.",
+    "Clock-change intelligence is preserved on the cleaner rail, including the first and second 02:xx labels on autumn rollback nights, the spring skipped-hour marker, equal-duty handover timing, and reduced-motion support."
   ],
   "update_policy": "important"
 }

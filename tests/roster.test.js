@@ -633,6 +633,10 @@ assert.match(ui, /function sharedAppUrl\(\)\{return APP_URL\+'\?welcome=1'\}/, '
 assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(true\)/, 'a scanned shared link must open device-aware installation help');
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
 assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
+assert.match(clinicalExperience, /nightTimelineSlimRail[\s\S]*nightTimelineFill[\s\S]*nightTimelinePhaseLabels/, 'Night must use the slim progress-rail composition rather than the chunky segmented panel');
+assert.match(presentationCss, /37\.97 Night hero refinement[\s\S]*\.nightTimelineSlimRail[\s\S]*height:20px[\s\S]*\.nightTimelineFill[\s\S]*linear-gradient/, 'the live Night rail must stay slim and visibly blue');
+assert.match(presentationCss, /\.personalNextStateIntegrated[\s\S]*background:transparent!important/, 'what-matters-next must remain integrated into the dark hero instead of becoming a pale nested card');
+assert.match(presentationCss, /#today #personalNightCard \.personalFactButtons[\s\S]*background:transparent!important/, 'hero facts must remain integrated with the dark hero');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');
