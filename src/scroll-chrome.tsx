@@ -18,6 +18,7 @@ type ChromeMode = 'off' | 'compact' | 'rail';
 type ChromeModel = {
   view: string;
   title: string;
+  subtitle?: string;
   mode: ChromeMode;
   rail?: ChromeRail;
 };
@@ -40,12 +41,24 @@ function readAdminRail(): ChromeRail | undefined {
 
 function readModel(): ChromeModel {
   const view = document.body.getAttribute('data-view') || 'today';
+  const count = (id: string) => {
+    const element = document.getElementById(id);
+    if (!element || element.classList.contains('hidden')) return 0;
+    const value = Number(clean(element.textContent));
+    return Number.isFinite(value) ? value : 0;
+  };
   if (view === 'today') return { view, title: 'Night', mode: 'off' };
-  if (view === 'changes') return { view, title: 'Changes', mode: 'compact' };
-  if (view === 'breaks') return { view, title: 'Breaks', mode: 'compact' };
-  if (view === 'chat') return { view, title: 'Chat', mode: 'compact' };
+  if (view === 'changes') {
+    const tasks = count('changesTaskBadge');
+    return { view, title: 'Changes', subtitle: tasks ? `${tasks} ${tasks === 1 ? 'item' : 'items'} need attention` : 'Staffing and allocation', mode: 'compact' };
+  }
+  if (view === 'breaks') return { view, title: 'Breaks', subtitle: 'Your break and the team plan', mode: 'compact' };
+  if (view === 'chat') {
+    const unread = count('chatUnreadBadge');
+    return { view, title: 'Chat', subtitle: unread ? `${unread} unread` : 'Team and private messages', mode: 'compact' };
+  }
   if (view === 'admin') return { view, title: 'Roster management', mode: 'rail', rail: readAdminRail() };
-  if (view === 'roster') return { view, title: 'Full roster', mode: 'compact' };
+  if (view === 'roster') return { view, title: 'Full roster', subtitle: 'Published roster nights', mode: 'compact' };
   return { view, title: 'Night Roster', mode: 'off' };
 }
 
@@ -92,7 +105,7 @@ function ScrollGlassChrome() {
   const frame = useRef<number | null>(null);
   const [model, setModel] = useState<ChromeModel>(() => readModel());
   const modelKey = useMemo(
-    () => model.view + ':' + model.mode + ':' + model.title + ':' +
+    () => model.view + ':' + model.mode + ':' + model.title + ':' + (model.subtitle || '') + ':' +
       (model.rail?.items.map(item => item.key + (item.active ? '*' : '')).join(',') || ''),
     [model]
   );
@@ -205,7 +218,8 @@ function ScrollGlassChrome() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reducedMotion ? 0 : 0.14 }}
         >
-          {model.title}
+          <span>{model.title}</span>
+          {model.subtitle && <small>{model.subtitle}</small>}
         </motion.span>
       </div>}
       {model.mode === 'rail' && model.rail && <LayoutGroup id="scroll-glass-rail-admin">
