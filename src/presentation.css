@@ -14676,3 +14676,18 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{border-color:rgba(255,255
 @media(prefers-contrast:more){
   #today .nightDateShell .dateNav>button,.updateBanner,.bottom.reactTabs{border-color:color-mix(in srgb,var(--scene-ink) 34%,transparent)!important}
 }
+
+
+/* 37.99 safety-preserving direct allocation link: present, but visually secondary. */
+#today #personalNightCard .personalContextAction{
+  min-height:40px!important;
+  padding:0 15px!important;
+  border-top:1px solid rgba(255,255,255,.075)!important;
+  background:transparent!important;
+  color:rgba(132,190,255,.90)!important;
+  font-size:10.5px!important;
+  font-weight:660!important;
+}
+#today #personalNightCard .personalContextAction:active{
+  background:rgba(10,132,255,.055)!important;
+}
