@@ -5,7 +5,7 @@ var PRIVATE_PAGE_SIZE=40;
 var TEAM_PAGE_SIZE=30;
 var OVERVIEW_TTL=15000;
 var DELETE_WINDOW_MS=10*60*1000;
-var CHAT_MESSAGE_FIELDS='id,conversation_id,sender_id,sender_display_name,body,created_at,deleted_at,reply_to_message_id';
+var CHAT_MESSAGE_FIELDS='id,conversation_id,sender_id,sender_display_name,body,created_at,deleted_at,reply_to_message_id,client_message_id';
 
 var chatState={
   startedFor:null,
@@ -56,6 +56,9 @@ function chatProfile(){return typeof currentUserProfile!=='undefined'?currentUse
 function chatClient(){return typeof supa!=='undefined'?supa:null}
 function chatVisible(){return document.body.getAttribute('data-view')==='chat'}
 function chatOnline(){return navigator.onLine!==false}
+function chatCapabilities(){return typeof window.rosterCapabilities==='function'?window.rosterCapabilities():{chatIdempotency:false,monotonicChatRead:false}}
+function chatClientMessageId(){return window.AnaestheticDomain&&window.AnaestheticDomain.commandId?window.AnaestheticDomain.commandId():'chat-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)}
+function chatDiagnostic(operation,code){if(window.AnaestheticDomain&&window.AnaestheticDomain.recordDiagnostic)window.AnaestheticDomain.recordDiagnostic('chat',operation,code)}
 function chatCurrentId(){var user=chatUser();return user&&user.id||''}
 function chatRosterKeys(){
   var list=typeof TEAM!=='undefined'&&Array.isArray(TEAM)?TEAM:[];
@@ -367,14 +370,22 @@ function chatScheduleOverviewRefresh(){
 }
 async function chatMarkRead(conversationId,messageId){
   if(!conversationId||!messageId||!chatOnline())return;
-  var client=chatClient(),updated=await client.from('chat_read_state').update({last_read_message_id:messageId}).eq('conversation_id',conversationId).select('conversation_id').maybeSingle();
-  if(updated.error)return;
-  if(!updated.data){
-    var inserted=await client.from('chat_read_state').insert({conversation_id:conversationId,last_read_message_id:messageId});
-    if(inserted.error&&inserted.error.code!=='23505')return;
-    if(inserted.error&&inserted.error.code==='23505')await client.from('chat_read_state').update({last_read_message_id:messageId}).eq('conversation_id',conversationId);
+  var client=chatClient(),current=Number(chatState.readStateByConversation[conversationId]||0),target=Math.max(current,Number(messageId)||0);
+  if(!target)return;
+  if(chatCapabilities().monotonicChatRead){
+    var marked=await client.rpc('chat_mark_read_v47',{p_conversation_id:conversationId,p_message_id:target});
+    if(marked.error){chatDiagnostic('mark-read',marked.error.code||'rpc-error');return}
+    target=Math.max(target,Number(marked.data||0));
+  }else{
+    var updated=await client.from('chat_read_state').update({last_read_message_id:target}).eq('conversation_id',conversationId).select('conversation_id').maybeSingle();
+    if(updated.error)return;
+    if(!updated.data){
+      var inserted=await client.from('chat_read_state').insert({conversation_id:conversationId,last_read_message_id:target});
+      if(inserted.error&&inserted.error.code!=='23505')return;
+      if(inserted.error&&inserted.error.code==='23505')await client.from('chat_read_state').update({last_read_message_id:target}).eq('conversation_id',conversationId);
+    }
   }
-  chatState.readStateByConversation[conversationId]=Number(messageId);chatState.unreadByConversation[conversationId]=0;chatUpdateNavBadge();chatRenderHome();
+  chatState.readStateByConversation[conversationId]=Math.max(current,target);chatState.unreadByConversation[conversationId]=0;chatUpdateNavBadge();chatRenderHome();
 }
 async function chatReadTeamIfAtBottom(){
   var team=chatTeamConversation(),host=chatEl('chatTeamMessages');if(chatState.activeThreadKind!=='team'||!team||!host||!chatNearBottom(host)||!chatState.teamMessages.length)return;
@@ -465,18 +476,23 @@ async function chatLoadOlderPrivate(){
   chatState.loadingThread=false;if(button){button.disabled=false;button.textContent='Load older messages'}if(result.error){chatSetPrivateStatus('Older messages could not be loaded.',true);return}
   var rows=(result.data||[]).slice().reverse();await chatLoadReplyTargets(rows);chatState.hasOlder=(result.data||[]).length===PRIVATE_PAGE_SIZE;if(button)button.classList.toggle('hidden',!chatState.hasOlder);if(!rows.length)return;chatState.oldestMessageId=Number(rows[0].id);chatState.messages=rows.concat(chatState.messages);chatRenderPrivateMessages();if(host)host.scrollTop=host.scrollHeight-beforeHeight;
 }
-function chatFailedMessage(body,conversationId,replyId){
-  return{id:'failed-'+Date.now()+'-'+Math.random().toString(36).slice(2),conversation_id:conversationId,sender_id:chatCurrentId(),sender_display_name:chatCurrentPersonKey(),body:body,created_at:new Date().toISOString(),deleted_at:null,reply_to_message_id:replyId||null,failed:true};
+function chatFailedMessage(body,conversationId,replyId,clientMessageId){
+  var stableId=clientMessageId||chatClientMessageId();
+  return{id:'failed-'+stableId,client_message_id:stableId,conversation_id:conversationId,sender_id:chatCurrentId(),sender_display_name:chatCurrentPersonKey(),body:body,created_at:new Date().toISOString(),deleted_at:null,reply_to_message_id:replyId||null,failed:true};
 }
 function chatRemoveFailed(message,kind){
   var list=kind==='team'?chatState.teamMessages:chatState.messages,index=list.findIndex(function(item){return String(item.id)===String(message.id)});if(index>=0)list.splice(index,1);
 }
-function chatAddFailed(body,conversationId,kind,replyId){
-  var failed=chatFailedMessage(body,conversationId,replyId);if(kind==='team'){chatState.teamMessages.push(failed);chatRenderTeamMessages();chatScrollToBottom(chatEl('chatTeamMessages'))}else{chatState.messages.push(failed);chatRenderPrivateMessages();chatScrollToBottom(chatEl('chatMessages'))}
+function chatAddFailed(body,conversationId,kind,replyId,clientMessageId){
+  var failed=chatFailedMessage(body,conversationId,replyId,clientMessageId);if(kind==='team'){chatState.teamMessages.push(failed);chatRenderTeamMessages();chatScrollToBottom(chatEl('chatTeamMessages'))}else{chatState.messages.push(failed);chatRenderPrivateMessages();chatScrollToBottom(chatEl('chatMessages'))}return failed
 }
-async function chatSendToConversation(conversationId,body,replyId){
+async function chatSendToConversation(conversationId,body,replyId,clientMessageId){
+  var stableId=clientMessageId||chatClientMessageId(),client=chatClient();
+  if(chatCapabilities().chatIdempotency){
+    return client.rpc('chat_send_message_v47',{p_conversation_id:conversationId,p_body:body,p_reply_to_message_id:replyId?Number(replyId):null,p_client_message_id:stableId}).select(CHAT_MESSAGE_FIELDS).single();
+  }
   var row={conversation_id:conversationId,body:body};if(replyId)row.reply_to_message_id=Number(replyId);
-  return chatClient().from('chat_messages').insert(row).select(CHAT_MESSAGE_FIELDS).single();
+  return client.from('chat_messages').insert(row).select(CHAT_MESSAGE_FIELDS.replace(',client_message_id','')).single();
 }
 async function chatCompleteSend(result,kind){
   if(kind==='team'){
@@ -489,33 +505,33 @@ async function chatCompleteSend(result,kind){
 }
 async function chatRetryFailed(message,kind){
   if(!message||!message.failed||!chatOnline())return;
-  var result=await chatSendToConversation(message.conversation_id,message.body,message.reply_to_message_id);
+  var result=await chatSendToConversation(message.conversation_id,message.body,message.reply_to_message_id,message.client_message_id);
   if(result.error){kind==='team'?chatSetTeamStatus('Still not sent. Please retry.',true):chatSetPrivateStatus('Still not sent. Please retry.',true);return}
   chatRemoveFailed(message,kind);chatCompleteSend(result,kind).catch(function(){});
 }
 function chatClearComposerValue(textarea){textarea.value='';textarea.dispatchEvent(new Event('input',{bubbles:true}));chatAutoGrow(textarea)}
 async function chatSendTeamMessage(event){
   if(event)event.preventDefault();var team=chatTeamConversation(),textarea=chatEl('chatTeamInput'),button=chatEl('chatTeamSendBtn');if(!team||!textarea||!button)return;
-  var body=textarea.value.trim(),reply=chatState.teamReplyMessage,replyId=reply&&chatIsNumericId(reply.id)?Number(reply.id):null;if(!body)return;if(body.length>2000){chatSetTeamStatus('Keep messages under 2,000 characters.',true);return}
-  if(!chatOnline()){chatClearComposerValue(textarea);chatAddFailed(body,team.id,'team',replyId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Not sent. Retry when the connection returns.',true);return}
+  var body=textarea.value.trim(),reply=chatState.teamReplyMessage,replyId=reply&&chatIsNumericId(reply.id)?Number(reply.id):null,clientMessageId=chatClientMessageId();if(!body)return;if(body.length>2000){chatSetTeamStatus('Keep messages under 2,000 characters.',true);return}
+  if(!chatOnline()){chatClearComposerValue(textarea);chatAddFailed(body,team.id,'team',replyId,clientMessageId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Not sent. Retry when the connection returns.',true);return}
   button.disabled=true;textarea.disabled=true;chatSetTeamStatus('');
   try{
-    var result=await chatSendToConversation(team.id,body,replyId);if(result.error)throw result.error;
+    var result=await chatSendToConversation(team.id,body,replyId,clientMessageId);if(result.error)throw result.error;
     chatClearComposerValue(textarea);chatClearReply('team');chatHideMentionMenu();chatCompleteSend(result,'team').catch(function(){});
   }catch(error){
-    chatClearComposerValue(textarea);chatAddFailed(body,team.id,'team',replyId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Message not sent. Tap Retry on the message.',true);
+    chatDiagnostic('send-team',error&&error.code||'error');chatClearComposerValue(textarea);chatAddFailed(body,team.id,'team',replyId,clientMessageId);chatClearReply('team');chatHideMentionMenu();chatSetTeamStatus('Message not sent. Tap Retry on the message.',true);
   }finally{textarea.disabled=false;textarea.dispatchEvent(new Event('input',{bubbles:true}));textarea.focus()}
 }
 async function chatSendPrivateMessage(event){
   if(event)event.preventDefault();var textarea=chatEl('chatMessageInput'),button=chatEl('chatSendBtn'),conversationId=chatState.activeConversationId;if(!textarea||!conversationId)return;
-  var body=textarea.value.trim(),reply=chatState.privateReplyMessage,replyId=reply&&chatIsNumericId(reply.id)?Number(reply.id):null;if(!body)return;if(body.length>2000){chatSetPrivateStatus('Keep messages under 2,000 characters.',true);return}
-  if(!chatOnline()){chatClearComposerValue(textarea);chatAddFailed(body,conversationId,'private',replyId);chatClearReply('private');chatSetPrivateStatus('Not sent. Retry when the connection returns.',true);return}
+  var body=textarea.value.trim(),reply=chatState.privateReplyMessage,replyId=reply&&chatIsNumericId(reply.id)?Number(reply.id):null,clientMessageId=chatClientMessageId();if(!body)return;if(body.length>2000){chatSetPrivateStatus('Keep messages under 2,000 characters.',true);return}
+  if(!chatOnline()){chatClearComposerValue(textarea);chatAddFailed(body,conversationId,'private',replyId,clientMessageId);chatClearReply('private');chatSetPrivateStatus('Not sent. Retry when the connection returns.',true);return}
   button.disabled=true;textarea.disabled=true;chatSetPrivateStatus('');
   try{
-    var result=await chatSendToConversation(conversationId,body,replyId);if(result.error)throw result.error;
+    var result=await chatSendToConversation(conversationId,body,replyId,clientMessageId);if(result.error)throw result.error;
     chatClearComposerValue(textarea);chatClearReply('private');chatCompleteSend(result,'private').catch(function(){});
   }catch(error){
-    chatClearComposerValue(textarea);chatAddFailed(body,conversationId,'private',replyId);chatClearReply('private');chatSetPrivateStatus('Message not sent. Tap Retry on the message.',true);
+    chatDiagnostic('send-private',error&&error.code||'error');chatClearComposerValue(textarea);chatAddFailed(body,conversationId,'private',replyId,clientMessageId);chatClearReply('private');chatSetPrivateStatus('Message not sent. Tap Retry on the message.',true);
   }finally{textarea.disabled=false;textarea.dispatchEvent(new Event('input',{bubbles:true}));textarea.focus()}
 }
 function chatAutoGrow(textarea){if(!textarea)return;textarea.style.height='auto';textarea.style.height=Math.min(textarea.scrollHeight,120)+'px'}
@@ -607,7 +623,7 @@ function chatSubscribeRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'chat_directory'},chatHandleDirectoryChange);
   chatState.channel=channel;channel.subscribe(function(status){
     if(status==='SUBSCRIBED'){chatState.reconnectAttempt=0;chatSetConnection('live');chatRefreshUnreadCounts();return}
-    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){chatSetConnection(chatOnline()?'reconnecting':'offline');chatScheduleRealtimeReconnect()}
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){chatDiagnostic('realtime',status);chatSetConnection(chatOnline()?'reconnecting':'offline');chatScheduleRealtimeReconnect()}
   });
 }
 function chatTeardownSession(){

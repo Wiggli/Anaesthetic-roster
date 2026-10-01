@@ -1317,12 +1317,12 @@ async function saveNightRoleOverride(base){
   if(!requireOnline())return;var draft=nightRoleOverrideDrafts[base.date],reason=normaliseNurseName(draft&&draft.reason||'');
   if(!draft||!validRoleAssignmentsForNight(base,draft.assignments)||!roleAssignmentsDiffer(draft.assignments,currentRoleAssignments(base))){toast('Change a role before saving');return}if(!reason){toast('Add a short reason for the night-only change');var field=byId('nightRoleReason');if(field)field.focus();return}
   var previous=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,button=byId('saveNightRolesBtn');if(button){button.disabled=true;button.textContent='Saving…'}setSync('saving','Saving night-only roles');
-  var result=await supa.rpc('apply_night_role_override_v35',{p_roster_date:base.date,p_action:'save',p_assignments:draft.assignments,p_override_reason:reason,p_history_reason:reason,p_changed_by:currentUserProfile.display_name});
+  var expectedAssignments=JSON.parse(JSON.stringify(draft.assignments)),result=await runRosterMutation('roles:save:'+base.date,function(){return supa.rpc('apply_night_role_override_v35',{p_roster_date:base.date,p_action:'save',p_assignments:expectedAssignments,p_override_reason:reason,p_history_reason:reason,p_changed_by:currentUserProfile.display_name})},function(){var stored=nightRoleOverrides[base.date]&&nightRoleOverrides[base.date].assignments;return !!(stored&&JSON.stringify(stored)===JSON.stringify(expectedAssignments))});
   if(missingRpc(result)){setSync('error','Database update required');toast('Seven-nurse night-only changes require the current database update. Nothing was changed.');if(button){button.disabled=false;button.textContent='Save night-only change'}return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Saved for this night only. The permanent rotation is unchanged.',{label:'Undo',run:function(){return undoNightRoleChange(base.date,previous)}});
 }
 
 async function resetNightRoleOverride(base){
-  if(!requireOnline()||!confirm('Restore the rostered roles for this night?'))return;setSync('saving','Restoring rostered roles');var stored=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,result=await supa.rpc('apply_night_role_override_v35',{p_roster_date:base.date,p_action:'reset',p_assignments:null,p_override_reason:null,p_history_reason:'Restored rostered roles',p_changed_by:currentUserProfile.display_name});if(missingRpc(result)){setSync('error','Database update required');toast('This action requires database schema 36. Nothing was changed.');return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Rostered roles restored',{label:'Undo',run:function(){return undoNightRoleChange(base.date,stored)}});
+  if(!requireOnline()||!confirm('Restore the rostered roles for this night?'))return;setSync('saving','Restoring rostered roles');var stored=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,result=await runRosterMutation('roles:reset:'+base.date,function(){return supa.rpc('apply_night_role_override_v35',{p_roster_date:base.date,p_action:'reset',p_assignments:null,p_override_reason:null,p_history_reason:'Restored rostered roles',p_changed_by:currentUserProfile.display_name})},function(){return !nightRoleOverrides[base.date]});if(missingRpc(result)){setSync('error','Database update required');toast('This action requires database schema 36. Nothing was changed.');return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Rostered roles restored',{label:'Undo',run:function(){return undoNightRoleChange(base.date,stored)}});
 }
 
 async function undoNightRoleChange(date,previous){
@@ -1525,7 +1525,7 @@ async function saveNightChange(){
   markInvalid('absentName',false);formMessage('absenceFormMessage','Saving '+absent+'…','');
   setSync('saving','Saving absence');byId('saveChangeBtn').disabled=true;byId('saveChangeBtn').textContent='Saving…';
   try{
-    var result=await timedRequest(supa.rpc('record_night_absence_v25',{p_roster_date:base.date,p_absent_name:absent,p_reason:reason,p_changed_by:currentUserProfile.display_name}));
+    var result=await runRosterMutation('absence:add:'+base.date+':'+canonicalNurseName(absent),function(){return supa.rpc('record_night_absence_v25',{p_roster_date:base.date,p_absent_name:absent,p_reason:reason,p_changed_by:currentUserProfile.display_name})},function(){return changesFor(base.date).some(function(entry){return sameNurse(entry.absent_name,absent)})});
     if(missingRpc(result))result={error:result.error,atomicRequired:true};
     if(rpcError(result,'absenceFormMessage'))return;
     byId('absentName').value='';editingAbsenceId=null;byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage',absent+' saved as absent.','success');
@@ -1557,7 +1557,7 @@ async function removeNightChange(id,button){
   pendingRemovals[id]=true;if(button){button.disabled=true;button.textContent='Removing…'}setSync('saving','Removing absence');
   try{
     var allocationKey=allocationKeyForName(base,item.absent_name);
-    var result=await timedRequest(supa.rpc('remove_night_absence_v25',{p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name}));
+    var result=await runRosterMutation('absence:remove:'+base.date+':'+id,function(){return supa.rpc('remove_night_absence_v25',{p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name})},function(){return !changesFor(base.date).some(function(entry){return String(entry.id)===String(id)})});
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
     await loadSharedData();if(!recordAlreadyRemoved(result))notifyRosterUpdate('staffing',base.date);if(recordAlreadyRemoved(result))toast('Absence was already removed and the list has been refreshed');else toast('Absence removed',{label:'Undo',run:function(){return undoRemovedAbsence(base.date,item)}});
   }catch(error){setSync('error','Remove failed');failedAction('The absence could not be removed.',function(){return removeNightChange(id,button)});}
@@ -1575,7 +1575,7 @@ async function saveOvertime(){
   markInvalid('overtimeName',false);formMessage('overtimeFormMessage','Adding '+name+'…','');
   setSync('saving','Adding overtime nurse');byId('addOvertimeBtn').disabled=true;byId('addOvertimeBtn').textContent='Adding…';
   try{
-    var result=await timedRequest(supa.rpc('add_night_overtime_v25',{p_roster_date:base.date,p_nurse_name:name,p_changed_by:currentUserProfile.display_name}));
+    var result=await runRosterMutation('overtime:add:'+base.date+':'+canonicalNurseName(name),function(){return supa.rpc('add_night_overtime_v25',{p_roster_date:base.date,p_nurse_name:name,p_changed_by:currentUserProfile.display_name})},function(){return overtimeFor(base.date).some(function(entry){return sameNurse(entry.nurse_name,name)})});
     if(missingRpc(result))result={error:result.error,atomicRequired:true};
     if(rpcError(result,'overtimeFormMessage'))return;
     byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');
@@ -1592,7 +1592,7 @@ async function removeOvertime(id,button){
   if(!entry||!confirm('Remove '+entry.nurse_name+' from this night\'s overtime list?'))return;
   pendingRemovals[id]=true;if(button){button.disabled=true;button.textContent='Removing…'}setSync('saving','Removing overtime nurse');
   try{
-    var result=await timedRequest(supa.rpc('remove_night_overtime_v25',{p_overtime_id:id,p_changed_by:currentUserProfile.display_name}));
+    var result=await runRosterMutation('overtime:remove:'+base.date+':'+id,function(){return supa.rpc('remove_night_overtime_v25',{p_overtime_id:id,p_changed_by:currentUserProfile.display_name})},function(){return !overtimeFor(base.date).some(function(entry){return String(entry.id)===String(id)})});
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
     await loadSharedData();if(!recordAlreadyRemoved(result))notifyRosterUpdate('staffing',base.date);if(recordAlreadyRemoved(result))toast(entry.nurse_name+' was already removed and the list has been refreshed');else toast(entry.nurse_name+' removed from overtime',{label:'Undo',run:function(){return undoRemovedOvertime(base.date,entry)}});
   }catch(error){setSync('error','Remove failed');failedAction('The overtime nurse could not be removed.',function(){return removeOvertime(id,button)});}
@@ -1604,7 +1604,7 @@ async function saveFiveCover(){
   var base=cur(),plan=staffingPlan(base),pick=byId('fiveCoverPick'),key=pick&&pick.value;
   if(!key||plan.coverageChoices.indexOf(key)<0){toast('Choose the allocation the reliever will cover');return}
   setSync('saving','Saving reliever allocation');
-  var result=await supa.rpc('apply_staffing_allocations_v25',{p_roster_date:base.date,p_action:'reliever',p_coverage_key:key,p_assignments:null,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever});
+  var result=await runRosterMutation('five-cover:'+base.date+':'+key,function(){return supa.rpc('apply_staffing_allocations_v25',{p_roster_date:base.date,p_action:'reliever',p_coverage_key:key,p_assignments:null,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever})},function(){var stored=fiveCoverFor(base.date);return !!(stored&&stored.coverage_key===key)});
   if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('allocation',base.date);toast(base.reliever+' saved before the overtime allocations');
 }
 
