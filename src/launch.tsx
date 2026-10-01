@@ -135,6 +135,10 @@ window.addEventListener('roster:account', (event: Event) => {
   import('./account-experience').then(({ renderAccountExperience }) => renderAccountExperience((event as CustomEvent).detail));
 });
 
+window.addEventListener('roster:share-app', (event: Event) => {
+  import('./account-experience').then(({ renderShareExperience }) => renderShareExperience((event as CustomEvent).detail));
+});
+
 window.addEventListener('roster:passkeys', (event: Event) => {
   import('./account-experience').then(({ renderPasskeyExperience }) => renderPasskeyExperience((event as CustomEvent).detail));
 });

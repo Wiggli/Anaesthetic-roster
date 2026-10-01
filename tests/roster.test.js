@@ -6,6 +6,7 @@ const clinicalExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'cl
 const changesWorkflowExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-workflow.tsx'), 'utf8');
 const changesConfirmationExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-confirmation.tsx'), 'utf8');
 const presentationCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'presentation.css'), 'utf8');
+const accountExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'account-experience.tsx'), 'utf8');
 
 const storage = new Map();
 const noopElement = () => ({
@@ -88,6 +89,7 @@ assert.equal(autumnDutyTiming.totalHours, 8, 'the rollback must create eight act
 assert.equal(autumnDutyTiming.handover, '03:00', 'the rollback midpoint must be the post-change 03:00');
 assert.equal(autumnDutyTiming.partHours, 4, 'the rollback must give First and Second Part four actual hours each');
 assert.match(autumnDutyTiming.handoverDisplay, /after clock change/, 'the repeated-hour handover must be labelled unambiguously');
+assert.equal(autumnDutyTiming.transitionUtc, Date.parse('2026-10-25T01:00:00Z'), 'the Malta rollback transition instant must be exposed for the repeated-hour rail');
 
 const springDutyTiming = context.nightDutyTiming('2027-03-27');
 assert.equal(springDutyTiming.isClockChange, true, 'the night before the March 2027 Malta transition must detect the skipped hour');
@@ -95,6 +97,7 @@ assert.equal(springDutyTiming.direction, 'forward', 'the March transition must b
 assert.equal(springDutyTiming.totalHours, 6, 'the spring jump must create six actual hours between 00:00 and 07:00');
 assert.equal(springDutyTiming.handover, '04:00', 'the spring midpoint must move the handover to 04:00');
 assert.equal(springDutyTiming.partHours, 3, 'the spring jump must give First and Second Part three actual hours each');
+assert.equal(springDutyTiming.transitionUtc, Date.parse('2027-03-28T01:00:00Z'), 'the Malta spring transition instant must be exposed for the skipped-hour rail');
 
 storage.set('anaes_offline_snapshot', JSON.stringify({
   saved_at: '2026-09-18T12:00:00.000Z',
@@ -617,6 +620,19 @@ assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Team chat, when you
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
 
 assert.match(clinicalExperience, /nightProgressRail/, 'Night must keep the non-countdown orientation rail');
+assert.match(clinicalExperience, /function NightTimeline[\s\S]*Clock back/, 'clock-change rail must expose the rollback event');
+assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change rail must distinguish the first and second 02:xx hour');
+assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
+assert.match(clinicalExperience, /function nextNightMessage[\s\S]*What matters next[\s\S]*Handover now[\s\S]*Duty block complete/, 'personal hero must adapt to the live stage of the night without a countdown');
+assert.match(clinicalExperience, /personalFactButtons[\s\S]*View in team allocation[\s\S]*Open Breaks/, 'hero facts must be directly actionable');
+assert.match(clinicalExperience, /nightContextCapsule[\s\S]*contextLabel/, 'Night overview must expose a compact routine-or-exception context');
+assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
+assert.match(accountExperience, /Share Night Roster[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
+assert.match(accountExperience, /SHARE_QR_ROWS[\s\S]*shareQrSvg[\s\S]*Scan to get Night Roster/, 'share sheet must render an offline QR code rather than depending on a remote QR service');
+assert.match(ui, /function sharedAppUrl\(\)\{return APP_URL\+'\?welcome=1'\}/, 'shared links must use the harmless welcome entry point');
+assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(true\)/, 'a scanned shared link must open device-aware installation help');
+assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
+assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');

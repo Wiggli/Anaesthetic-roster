@@ -122,6 +122,71 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
   await captureReview(page, 'clock-change-onboarding');
 });
 
+test('Night hero exposes the richer rail and Share Night Roster stays scan-first', async ({ page }) => {
+  await openShell(page);
+  const transitionUtc = Date.parse('2026-10-25T01:00:00Z');
+  await page.evaluate(({ transitionUtc }) => {
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      date: '2026-10-24',
+      displayName: 'André Bartolo',
+      jobTitle: 'Senior Staff Nurse',
+      avatarUrl: '',
+      initial: 'A',
+      assignmentLabel: 'Selected night’s assignment',
+      title: 'First Part theatre',
+      detail: 'Position 1',
+      period: '00:00–03:00 after clock change',
+      breakLabel: 'Second break',
+      contextLabel: 'Working with',
+      context: 'With James Galea',
+      changedLabel: 'Changed this night',
+      changed: true,
+      action: 'role',
+      pending: false,
+      pendingOther: '',
+      liveStatus: 'Night selected',
+      dutyPart: 'first',
+      dutyStartUtc: Date.parse('2026-10-24T22:00:00Z'),
+      handoverUtc: Date.parse('2026-10-25T02:00:00Z'),
+      dutyEndUtc: Date.parse('2026-10-25T06:00:00Z'),
+      handoverLabel: '03:00 after clock change',
+      transitionUtc,
+      clockChange: {
+        direction: 'back',
+        title: 'Clock change night',
+        transitionLabel: 'Clocks move back one hour',
+        handover: '03:00',
+        handoverDisplay: '03:00 after clock change',
+        firstPeriod: '00:00–03:00 after clock change',
+        secondPeriod: '03:00–07:00',
+        partHours: 4,
+        partHoursLabel: '4h',
+        totalHours: 8,
+        totalHoursLabel: '8h',
+        summary: 'Equal duty',
+        date: '2026-10-24',
+        transitionUtc
+      }
+    }}));
+  }, { transitionUtc });
+
+  await expect(page.locator('#personalNightCard .personalNextState')).toContainText('Handover');
+  await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00¹');
+  await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00²');
+  await expect(page.locator('#personalNightCard .personalFactButtons')).toContainText('Open Breaks');
+  await expect(page.locator('#personalNightCard')).toContainText('Changed tonight');
+  await captureReview(page, 'night-cockpit');
+
+  await page.evaluate(() => window.showShareApp());
+  await expect(page.locator('#shareAppDialog')).toHaveAttribute('open', '');
+  await expect(page.locator('#shareAppDialog')).toContainText('Scan to get Night Roster');
+  await expect(page.locator('#shareAppDialog .shareQrSvg')).toHaveCount(1);
+  await expect(page.locator('#shareAppDialog')).toContainText('Open camera');
+  await expect(page.locator('#shareAppDialog')).toContainText('This only shares the public app');
+  await expect(page.locator('#shareAppDialog')).toContainText('wiggli.github.io/Anaesthetic-roster/?welcome=1');
+  await captureReview(page, 'share-night-roster');
+});
+
 test('Changes save feedback presents a conflict and recovery without changing the message', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => window.formMessage('allocationFormMessage',

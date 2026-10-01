@@ -20,6 +20,7 @@ type ProfileExperience = {
   changed?: boolean;
 };
 type AccountExperience = { theme: ThemeChoice; installed: boolean; newRelease?: boolean; version?: string; profile?: ProfileExperience };
+type ShareExperience = { shareUrl: string; installed: boolean; nativeShare: boolean };
 type PasskeyExperience = { message: string; items: { id: string; label: string }[] };
 
 const roots = new Map<string, Root>();
@@ -229,10 +230,90 @@ function AccountActions({ installed, newRelease, version }: { installed: boolean
   const actions = [
     { action: 'guide', title: 'App guide', detail: 'Help for Night, Changes, Breaks, Chat and more', icon: '✦' },
     { action: 'whatsnew', title: 'What’s new', detail: newRelease ? `New in version ${version || ''}` : 'See the latest Night Roster improvements', icon: '●', isNew: !!newRelease },
-    !installed && { action: 'install', title: 'Install Night Roster', detail: 'Add the private PWA to this device', icon: '↓' },
+    !installed && { action: 'install', title: 'Install Night Roster', detail: 'Add Night Roster to this device', icon: '↓' },
+    { action: 'share', title: 'Share Night Roster', detail: 'QR code, WhatsApp, Messages and more', icon: '↗' },
     { action: 'versions', title: 'Version history', detail: 'Browse every release without losing the current update', icon: '↺' }
   ].filter(Boolean) as { action: string; title: string; detail: string; icon: string; isNew?: boolean }[];
   return <GroupedList>{actions.map(item => <ListRow key={item.action} leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>} title={item.title} subtitle={item.detail} trailing={item.isNew ? <Badge tone="info">New</Badge> : undefined} onClick={() => act(item.action)} />)}</GroupedList>;
+}
+
+const SHARE_QR_TARGET = 'https://wiggli.github.io/Anaesthetic-roster/?welcome=1';
+const SHARE_QR_ROWS = [
+  '111111100100111011110001001111111',
+  '100000100011011110000010101000001',
+  '101110101100010110010110001011101',
+  '101110101110101111101011001011101',
+  '101110101011100101010011101011101',
+  '100000101010110111001100001000001',
+  '111111101010101010101010101111111',
+  '000000001000001100101111000000000',
+  '101111100011011101000001101111100',
+  '010101011101001010111101001101111',
+  '110001100101000110101010011010110',
+  '111100001010101100001111011011110',
+  '010010110101100100100010110111010',
+  '100011010101001111111001111001111',
+  '111001100010001000101010111110110',
+  '001111011000111010001101111101100',
+  '010001101111110001011010110110001',
+  '101010001100001011111101011101101',
+  '110010100011110101000110000110110',
+  '100010011111111011100111011111100',
+  '011000110111101010010010010011001',
+  '111001001101000101111101011000001',
+  '101000100001000111001010010001110',
+  '101011001011100100011110011011101',
+  '100110100111101101110010111110010',
+  '000000001110000010111000100010101',
+  '111111100101001110100111101010110',
+  '100000101011110100001101100011100',
+  '101110101100111100100010111111010',
+  '101110101000011111011001110010111',
+  '101110101010101001001100001101000',
+  '100000100010100010010110010010100',
+  '111111101001111000001011100100010'
+] as const;
+
+function ShareQr() {
+  const path = SHARE_QR_ROWS.flatMap((row, y) =>
+    [...row].flatMap((cell, x) => cell === '1' ? [`M${x + 4} ${y + 4}h1v1h-1z`] : [])
+  ).join('');
+  return <svg className="shareQrSvg" viewBox="0 0 41 41" role="img" aria-labelledby="shareQrTitle" shapeRendering="crispEdges">
+    <title id="shareQrTitle">Night Roster installation QR code</title>
+    <rect width="41" height="41" fill="white" rx="2" />
+    <path d={path} fill="#0b1116" />
+  </svg>;
+}
+
+function ShareApp({ model }: { model: ShareExperience }) {
+  const reduced = useReducedMotion();
+  const qrMatches = model.shareUrl === SHARE_QR_TARGET;
+  return <motion.div
+    className="shareAppExperience"
+    initial={reduced ? false : { opacity: 0, y: 8, scale: 0.99 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 32 }}
+  >
+    <section className="shareQrHero" aria-labelledby="shareQrHeading">
+      <span className="shareQrEyebrow">For authorised theatre staff</span>
+      <h3 id="shareQrHeading">Scan to get Night Roster</h3>
+      <p>Open the phone camera, point it at the code, then tap the link that appears.</p>
+      <div className="shareQrFrame">{qrMatches ? <ShareQr /> : <span className="shareQrUnavailable">Use Send or Copy link on this device.</span>}</div>
+      <div className="shareQrSteps" aria-label="QR installation steps">
+        <span><b>1</b>Open camera</span><span><b>2</b>Scan code</span><span><b>3</b>Tap the link</span>
+      </div>
+    </section>
+    <div className="shareAppActions">
+      <Pressable type="button" className="primary sharePrimaryAction" onClick={() => act('share-native')}>
+        <span aria-hidden="true">↗</span>{model.nativeShare ? 'Send Night Roster' : 'Copy app link'}
+      </Pressable>
+      <Pressable type="button" className="soft shareCopyAction" onClick={() => act('share-copy')}>Copy link</Pressable>
+      <Pressable type="button" className="shareInstallHelp" onClick={() => act('share-install')}>Installation help <span aria-hidden="true">›</span></Pressable>
+    </div>
+    <p className="sharePrivacyNote"><span aria-hidden="true">⌁</span>This only shares the public app. It never shares your account or roster data.</p>
+    {model.installed && <p className="shareInstalledNote">Night Roster is already installed on this phone.</p>}
+    <code className="shareUrlText">{model.shareUrl.replace(/^https?:\/\//, '')}</code>
+  </motion.div>;
 }
 
 function Passkeys({ model }: { model: PasskeyExperience }) {
@@ -255,6 +336,10 @@ export function renderAccountExperience(model: AccountExperience) {
   if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor model={model.profile} />);
   rootFor('appearanceExperience')?.render(<Appearance key={model.theme} initial={model.theme} />);
   rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} newRelease={model.newRelease} version={model.version} />);
+}
+
+export function renderShareExperience(model: ShareExperience) {
+  rootFor('shareAppExperience')?.render(<ShareApp model={model} />);
 }
 
 export function renderPasskeyExperience(model: PasskeyExperience) {

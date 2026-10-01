@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '37.95';
+var APP_VERSION = '37.96';
 var EXPECTED_SCHEMA_VERSION = 46;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var currentUser = null;
@@ -72,9 +72,15 @@ var MALTA_TIME_FORMATTER=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Malta
 function maltaTimePartsAt(value){var out={};MALTA_TIME_FORMATTER.formatToParts(new Date(value)).forEach(function(part){if(part.type!=='literal')out[part.type]=Number(part.value)});return out}
 function maltaOffsetMinutesAt(value){var p=maltaTimePartsAt(value);return Math.round((Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Number(value))/60000)}
 function maltaLocalTimestamp(date,hour,minute){var p=date.split('-').map(Number),naive=Date.UTC(p[0],p[1]-1,p[2],hour,minute||0,0),offset=maltaOffsetMinutesAt(naive),value=naive-offset*60000,nextOffset=maltaOffsetMinutesAt(value);if(nextOffset!==offset)value=naive-nextOffset*60000;return value}
+function maltaOffsetTransition(startUtc,endUtc){
+  var startOffset=maltaOffsetMinutesAt(startUtc),endOffset=maltaOffsetMinutesAt(endUtc);if(startOffset===endOffset)return null;
+  var low=startUtc,high=endUtc;
+  while(high-low>60000){var mid=Math.floor(((low+high)/2)/60000)*60000;if(mid<=low)mid=low+60000;var offset=maltaOffsetMinutesAt(mid);if(offset===startOffset)low=mid;else high=mid}
+  return high
+}
 function nightDutyTiming(date){
-  var dutyDate=addDays(date,1),startUtc=maltaLocalTimestamp(dutyDate,0,0),endUtc=maltaLocalTimestamp(dutyDate,7,0),startOffset=maltaOffsetMinutesAt(startUtc),endOffset=maltaOffsetMinutesAt(endUtc),handoverUtc=startUtc+(endUtc-startUtc)/2,handoverParts=maltaTimePartsAt(handoverUtc),handover=String(handoverParts.hour).padStart(2,'0')+':'+String(handoverParts.minute).padStart(2,'0'),totalHours=(endUtc-startUtc)/3600000,direction=endOffset>startOffset?'forward':endOffset<startOffset?'back':'normal',isClockChange=direction!=='normal';
-  return{date:date,dutyDate:dutyDate,isClockChange:isClockChange,direction:direction,handover:handover,handoverDisplay:direction==='back'?handover+' after clock change':handover,firstPeriod:'00:00–'+handover,firstPeriodDisplay:'00:00–'+handover+(direction==='back'?' after clock change':''),secondPeriod:handover+'–07:00',partHours:totalHours/2,totalHours:totalHours,startUtc:startUtc,handoverUtc:handoverUtc,endUtc:endUtc,startOffset:startOffset,endOffset:endOffset}
+  var dutyDate=addDays(date,1),startUtc=maltaLocalTimestamp(dutyDate,0,0),endUtc=maltaLocalTimestamp(dutyDate,7,0),startOffset=maltaOffsetMinutesAt(startUtc),endOffset=maltaOffsetMinutesAt(endUtc),handoverUtc=startUtc+(endUtc-startUtc)/2,handoverParts=maltaTimePartsAt(handoverUtc),handover=String(handoverParts.hour).padStart(2,'0')+':'+String(handoverParts.minute).padStart(2,'0'),totalHours=(endUtc-startUtc)/3600000,direction=endOffset>startOffset?'forward':endOffset<startOffset?'back':'normal',isClockChange=direction!=='normal',transitionUtc=isClockChange?maltaOffsetTransition(startUtc,endUtc):null;
+  return{date:date,dutyDate:dutyDate,isClockChange:isClockChange,direction:direction,handover:handover,handoverDisplay:direction==='back'?handover+' after clock change':handover,firstPeriod:'00:00–'+handover,firstPeriodDisplay:'00:00–'+handover+(direction==='back'?' after clock change':''),secondPeriod:handover+'–07:00',partHours:totalHours/2,totalHours:totalHours,startUtc:startUtc,handoverUtc:handoverUtc,endUtc:endUtc,startOffset:startOffset,endOffset:endOffset,transitionUtc:transitionUtc}
 }
 function versionForDate(date){var found=rotationVersions[0];rotationVersions.forEach(function(v){if(v.effective_from<=date)found=v});return found}
 function calculateNight(date,versions){var list=versions||rotationVersions,v=list[0];list.forEach(function(x){if(x.effective_from<=date)v=x});var steps=Math.floor(daysBetween(v.effective_from,date)/4),base=[v.first1,v.first2,v.second1,v.second2,v.pager,v.reliever],shift=((steps%6)+6)%6,seq=base.map(function(_,i){return base[(i-shift+6)%6]}),cycle=Array.isArray(v.seventh_cycle)&&v.seventh_cycle.length?v.seventh_cycle:ORIGINAL_SEVENTH,anchor=cycle.indexOf(v.seventh_anchor);if(anchor<0)anchor=0;var seventh=cycle[((anchor-steps)%cycle.length+cycle.length)%cycle.length];return{date:date,first1:seq[0],first2:seq[1],second1:seq[2],second2:seq[3],pager:seq[4],reliever:seq[5],fullLW:seq[4],seventh:seventh,mode:'6',notes:'',calculated:true}}

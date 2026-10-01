@@ -13698,3 +13698,557 @@ html[data-theme="dark"] #chat .pushMuteActions{
 @media(prefers-reduced-motion:reduce){
   .clockChangePreviewClock i{animation:none}
 }
+
+
+/* V37.96 Night cockpit: richer personal hero, live elapsed-time rail and quiet context. */
+#today .personalHeroSurface{
+  overflow:visible;
+}
+#today .personalLiveContext{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  align-items:center;
+  margin:10px 2px 0;
+}
+#today .personalLiveContext .personalLiveState{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:30px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--liquid-success) 11%,transparent);
+  color:var(--liquid-label);
+  font-size:11px;
+}
+#today .personalLiveContext .personalLiveState i{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--liquid-success);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--liquid-success) 13%,transparent);
+}
+#today .personalClockBadge,
+#today .personalNightChanged{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:10.5px;
+  font-weight:760;
+}
+#today .personalClockBadge{
+  background:color-mix(in srgb,var(--liquid-accent) 10%,transparent);
+  color:var(--liquid-accent-strong);
+}
+#today .personalNightChanged{
+  background:color-mix(in srgb,#ff9f0a 12%,transparent);
+  color:color-mix(in srgb,#a35c00 80%,var(--liquid-label));
+}
+#today .personalNextState{
+  display:grid;
+  gap:2px;
+  margin:11px 0 0;
+  padding:12px 13px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:17px;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--liquid-accent) 5%,transparent),transparent 58%),
+    var(--liquid-surface);
+}
+#today .personalNextState small{
+  color:var(--liquid-secondary);
+  font-size:9.5px;
+  font-weight:760;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+#today .personalNextState strong{
+  color:var(--liquid-label);
+  font-size:16px;
+  font-weight:760;
+  letter-spacing:-.025em;
+}
+#today .personalNextState span{
+  color:var(--liquid-secondary);
+  font-size:11px;
+  line-height:1.35;
+}
+
+#today .nightTimeline{
+  margin-top:12px;
+  padding:13px 12px 11px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:19px;
+  background:color-mix(in srgb,var(--liquid-surface) 92%,transparent);
+}
+#today .nightTimelineHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+#today .nightTimelineHead>span{
+  display:grid;
+  gap:1px;
+}
+#today .nightTimelineHead small{
+  color:var(--liquid-secondary);
+  font-size:9.5px;
+  font-weight:750;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+#today .nightTimelineHead b{
+  color:var(--liquid-label);
+  font-size:13px;
+  font-weight:760;
+}
+#today .nightTimelineHead em{
+  max-width:62%;
+  color:var(--liquid-accent-strong);
+  font-size:10.5px;
+  font-style:normal;
+  font-weight:760;
+  line-height:1.3;
+  text-align:right;
+}
+#today .nightTimelineTrackShell{
+  position:relative;
+  display:block;
+  width:100%;
+  height:42px;
+  min-height:42px!important;
+  padding:0!important;
+  overflow:visible;
+  border:0!important;
+  border-radius:13px!important;
+  background:color-mix(in srgb,var(--liquid-label) 5%,transparent)!important;
+  box-shadow:inset 0 0 0 var(--liquid-hairline) var(--liquid-separator)!important;
+  cursor:default;
+}
+#today .nightTimelineTrackShell:not(:disabled){cursor:pointer}
+#today .nightTimelineSegment{
+  position:absolute;
+  top:0;
+  bottom:0;
+  display:flex;
+  align-items:center;
+  padding:0 9px;
+  overflow:hidden;
+}
+#today .nightTimelineSegment.first{
+  left:0;
+  justify-content:flex-start;
+  border-radius:13px 0 0 13px;
+  background:color-mix(in srgb,#805fc3 7%,transparent);
+}
+#today .nightTimelineSegment.second{
+  justify-content:flex-end;
+  border-radius:0 13px 13px 0;
+  background:color-mix(in srgb,#0071e3 6%,transparent);
+}
+#today .nightTimelineSegment.mine{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--liquid-accent) 17%,transparent),color-mix(in srgb,var(--liquid-accent) 9%,transparent));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--liquid-accent) 18%,transparent);
+}
+#today .nightTimelineSegment i{
+  color:var(--liquid-secondary);
+  font-size:9px;
+  font-style:normal;
+  font-weight:730;
+}
+#today .nightTimelineSegment.mine i{color:var(--liquid-accent-strong)}
+#today .nightTimelineHandover{
+  position:absolute;
+  top:-4px;
+  bottom:-5px;
+  width:1px;
+  transform:translateX(-.5px);
+  background:color-mix(in srgb,var(--liquid-label) 45%,transparent);
+}
+#today .nightTimelineHandover>i{
+  position:absolute;
+  top:-1px;
+  left:50%;
+  width:8px;
+  height:8px;
+  transform:translate(-50%,-50%);
+  border:2px solid var(--liquid-surface);
+  border-radius:50%;
+  background:var(--liquid-label);
+}
+#today .nightTimelineHandover>b{
+  position:absolute;
+  top:-18px;
+  left:50%;
+  transform:translateX(-50%);
+  color:var(--liquid-tertiary);
+  font-size:7.5px;
+  font-weight:760;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#today .nightTimelineNow{
+  position:absolute;
+  top:50%;
+  z-index:5;
+  width:18px;
+  height:18px;
+  transform:translate(-50%,-50%);
+  border:3px solid var(--liquid-surface);
+  border-radius:50%;
+  background:var(--liquid-accent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb,var(--liquid-accent) 12%,transparent),
+    0 3px 9px color-mix(in srgb,var(--liquid-accent) 24%,transparent);
+}
+#today .nightTimelineNow i{
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:white;
+  opacity:.94;
+}
+#today .nightTimelineTransition{
+  position:absolute;
+  top:4px;
+  z-index:4;
+  display:grid;
+  justify-items:center;
+  gap:1px;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+#today .nightTimelineTransition i{
+  display:grid;
+  width:24px;
+  height:24px;
+  place-items:center;
+  border-radius:9px;
+  background:var(--liquid-surface);
+  box-shadow:0 3px 12px rgba(12,22,30,.08);
+  color:var(--liquid-accent-strong);
+  font-size:15px;
+  font-style:normal;
+  font-weight:800;
+}
+#today .nightTimelineTransition b{
+  color:var(--liquid-secondary);
+  font-size:7px;
+  font-weight:760;
+  white-space:nowrap;
+}
+#today .nightTimelineScale{
+  position:relative;
+  height:24px;
+  margin:7px 1px 0;
+}
+#today .nightTimelineScale>span{
+  position:absolute;
+  top:0;
+  transform:translateX(-50%);
+  color:var(--liquid-tertiary);
+  font-size:9px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+#today .nightTimelineScale>span:first-child{transform:none}
+#today .nightTimelineScale>span:last-child{transform:translateX(-100%)}
+#today .nightTimelineScale .handoverScale{
+  color:var(--liquid-label);
+  font-weight:800;
+}
+#today .nightTimelineScale .dstMark,
+#today .nightTimelineScale .dstJumpMark{
+  color:var(--liquid-accent-strong);
+  font-weight:720;
+}
+#today .nightTimelineExplain{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px 12px;
+  margin-top:1px;
+  padding-top:7px;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  color:var(--liquid-secondary);
+  font-size:9.5px;
+  line-height:1.35;
+}
+#today .nightTimelineExplain b{color:var(--liquid-label)}
+#today .personalFactButtons{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  overflow:hidden;
+  margin-top:11px!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:17px;
+  background:var(--liquid-surface);
+}
+#today .personalFactButton{
+  display:grid!important;
+  min-width:0;
+  min-height:72px!important;
+  align-content:center;
+  gap:2px;
+  padding:10px!important;
+  border:0!important;
+  border-left:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--liquid-label)!important;
+  text-align:left!important;
+}
+#today .personalFactButton:first-child{border-left:0!important}
+#today .personalFactButton small{
+  color:var(--liquid-secondary);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.045em;
+}
+#today .personalFactButton b{
+  overflow:hidden;
+  color:var(--liquid-label);
+  font-size:11px;
+  font-weight:760;
+  line-height:1.25;
+  text-overflow:ellipsis;
+}
+#today .personalFactButton span{
+  color:var(--liquid-tertiary);
+  font-size:8.5px;
+  line-height:1.25;
+}
+#today .personalFactButton:not(.static):active{
+  background:color-mix(in srgb,var(--liquid-accent) 7%,transparent)!important;
+}
+#today .nightContextLine{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+#today .nightContextLine>small{
+  color:var(--liquid-tertiary);
+  font-size:9.5px;
+  text-align:right;
+}
+#today .nightContextCapsule{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:27px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--liquid-label) 5%,transparent);
+  color:var(--liquid-secondary);
+  font-size:10px;
+  font-weight:760;
+}
+#today .nightContextCapsule i{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--liquid-success);
+}
+#today .nightContextCapsule.clock{
+  background:color-mix(in srgb,var(--liquid-accent) 10%,transparent);
+  color:var(--liquid-accent-strong);
+}
+#today .nightContextCapsule.clock i{background:var(--liquid-accent)}
+#today .nightContextCapsule.review{
+  background:color-mix(in srgb,#ff9f0a 12%,transparent);
+  color:color-mix(in srgb,#a35c00 80%,var(--liquid-label));
+}
+#today .nightContextCapsule.review i{background:#ff9f0a}
+
+/* Share Night Roster: scan-first and deliberately simple for less technical users. */
+.shareAppDialog{
+  width:min(94vw,520px)!important;
+  max-height:min(90dvh,760px)!important;
+}
+.shareAppEyebrow,
+.shareQrEyebrow{
+  color:var(--liquid-accent-strong);
+  font-size:9.5px;
+  font-weight:780;
+  letter-spacing:.065em;
+  text-transform:uppercase;
+}
+.shareAppExperience{
+  display:grid;
+  gap:14px;
+  padding:0 2px 4px;
+}
+.shareQrHero{
+  display:grid;
+  justify-items:center;
+  gap:7px;
+  padding:16px 14px 14px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--liquid-accent) 8%,transparent),transparent 45%),
+    var(--liquid-surface);
+  text-align:center;
+}
+.shareQrHero h3{
+  margin:0;
+  color:var(--liquid-label);
+  font-size:22px;
+  font-weight:780;
+  letter-spacing:-.04em;
+}
+.shareQrHero>p{
+  max-width:330px;
+  margin:0;
+  color:var(--liquid-secondary);
+  font-size:12px;
+  line-height:1.45;
+}
+.shareQrFrame{
+  display:grid;
+  width:min(72vw,292px);
+  aspect-ratio:1;
+  margin:8px 0 4px;
+  place-items:center;
+  padding:12px;
+  border-radius:24px;
+  background:#fff;
+  box-shadow:0 16px 42px rgba(13,25,34,.10);
+}
+.shareQrSvg{display:block;width:100%;height:100%}
+.shareQrSteps{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  width:100%;
+  gap:6px;
+  margin-top:3px;
+}
+.shareQrSteps span{
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  color:var(--liquid-secondary);
+  font-size:9.5px;
+  font-weight:650;
+}
+.shareQrSteps b{
+  display:grid;
+  width:25px;
+  height:25px;
+  place-items:center;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--liquid-accent) 11%,transparent);
+  color:var(--liquid-accent-strong);
+  font-size:11px;
+}
+.shareAppActions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+}
+.shareAppActions .sharePrimaryAction{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.shareAppActions .shareInstallHelp{
+  grid-column:1/-1;
+  min-height:44px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--liquid-accent-strong)!important;
+  font-size:12px!important;
+  font-weight:730!important;
+}
+.sharePrivacyNote,
+.shareInstalledNote{
+  margin:0;
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  line-height:1.45;
+  text-align:center;
+}
+.sharePrivacyNote span{
+  margin-right:5px;
+  color:var(--liquid-success);
+  font-weight:800;
+}
+.shareInstalledNote{color:var(--liquid-success)}
+.shareUrlText{
+  overflow:hidden;
+  padding:0 8px;
+  color:var(--liquid-tertiary);
+  font-family:var(--liquid-font);
+  font-size:9px;
+  text-align:center;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.onboardingShareShortcut{
+  display:flex!important;
+  width:100%;
+  min-height:54px!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+  padding:10px 12px!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:16px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+  color:var(--liquid-label)!important;
+  text-align:left!important;
+}
+.onboardingShareShortcut span{display:grid;gap:2px}
+.onboardingShareShortcut b{font-size:12px}
+.onboardingShareShortcut small{color:var(--liquid-secondary);font-size:10px;font-weight:500}
+.onboardingShareShortcut i{color:var(--liquid-accent-strong);font-size:20px;font-style:normal}
+.installGuidePrimary{margin-top:12px}
+
+@media(max-width:430px){
+  #today .personalFactButtons{grid-template-columns:1fr!important}
+  #today .personalFactButton{
+    min-height:58px!important;
+    border-left:0!important;
+    border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  }
+  #today .personalFactButton:first-child{border-top:0!important}
+  #today .nightTimeline{padding:12px 10px 10px}
+  #today .nightTimelineHead em{max-width:58%;font-size:9.5px}
+  #today .nightTimelineScale>span{font-size:8px}
+  #today .nightTimelineExplain{display:grid;gap:3px}
+  .shareAppDialog{width:calc(100vw - 18px)!important}
+  .shareQrFrame{width:min(74vw,278px);padding:10px;border-radius:22px}
+  .shareAppActions{grid-template-columns:1fr}
+  .shareAppActions .shareInstallHelp{grid-column:1}
+}
+@media(prefers-reduced-motion:reduce){
+  #today .nightTimelineNow,
+  #today .personalNextState,
+  .shareAppExperience{transition:none!important;animation:none!important}
+}
+
+#today .rosterLiveBadge{margin-left:6px;vertical-align:middle}
+.shareQrUnavailable{
+  display:grid;
+  min-height:180px;
+  place-items:center;
+  padding:20px;
+  color:#3a4650;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.45;
+  text-align:center;
+}
