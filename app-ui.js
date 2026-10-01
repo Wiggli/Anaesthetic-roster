@@ -783,7 +783,7 @@ function localChangesDraftParts(base){
   if(Object.keys(draft).some(function(key){return String(draft[key]||'').trim().length>0}))parts.push('allocation selections');
   if(seventhDecisionDrafts[date])parts.push('seventh-nurse choice');
   if(nightRoleOverrideDrafts[date])parts.push('night-only roles');
-  if(document.body&&typeof document.body.getAttribute==='function'&&document.body.getAttribute('data-view')==='changes'&&cur().date===date){
+  if(cur().date===date){
     var absence=byId('absentName'),overtime=byId('overtimeName');
     if(editingAbsenceId||absence&&absence.value)parts.push('absence form');
     if(overtime&&normaliseNurseName(overtime.value))parts.push('overtime entry');
