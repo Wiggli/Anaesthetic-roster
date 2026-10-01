@@ -1132,8 +1132,9 @@ test('accepted PWA updates wait for unfinished local Changes work', async ({ pag
   }));
   await openShell(page);
   const state = await page.evaluate(() => {
-    window.show('changes');
-    const date = window.cur().date;
+    const date = '2026-09-26';
+    window.R = [{ date }];
+    window.idx = 0;
     window.allocationDrafts[date] = { __smokeDraft: 'unsaved-selection' };
     window.__updateActivated = false;
     window.updateRegistration = { waiting: { postMessage: () => { window.__updateActivated = true; } } };
