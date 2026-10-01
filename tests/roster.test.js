@@ -76,6 +76,26 @@ assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-24T12:00:
 assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-26T10:00:00Z')).assignment, 'Tonight’s assignment', 'the same roster date may be described as tonight once its calendar date arrives');
 context.idx = wordingTestOriginalIdx;
 
+const normalDutyTiming = context.nightDutyTiming('2026-10-20');
+assert.equal(normalDutyTiming.isClockChange, false, 'an ordinary Malta night must keep the standard duty split');
+assert.equal(normalDutyTiming.handover, '03:30', 'an ordinary night must hand over at 03:30');
+assert.equal(normalDutyTiming.partHours, 3.5, 'an ordinary night must give each part 3.5 actual hours');
+
+const autumnDutyTiming = context.nightDutyTiming('2026-10-24');
+assert.equal(autumnDutyTiming.isClockChange, true, 'the 24 October 2026 roster night must detect the Malta rollback');
+assert.equal(autumnDutyTiming.direction, 'back', 'the October transition must be identified as clocks moving back');
+assert.equal(autumnDutyTiming.totalHours, 8, 'the rollback must create eight actual hours between 00:00 and 07:00');
+assert.equal(autumnDutyTiming.handover, '03:00', 'the rollback midpoint must be the post-change 03:00');
+assert.equal(autumnDutyTiming.partHours, 4, 'the rollback must give First and Second Part four actual hours each');
+assert.match(autumnDutyTiming.handoverDisplay, /after clock change/, 'the repeated-hour handover must be labelled unambiguously');
+
+const springDutyTiming = context.nightDutyTiming('2027-03-27');
+assert.equal(springDutyTiming.isClockChange, true, 'the night before the March 2027 Malta transition must detect the skipped hour');
+assert.equal(springDutyTiming.direction, 'forward', 'the March transition must be identified as clocks moving forward');
+assert.equal(springDutyTiming.totalHours, 6, 'the spring jump must create six actual hours between 00:00 and 07:00');
+assert.equal(springDutyTiming.handover, '04:00', 'the spring midpoint must move the handover to 04:00');
+assert.equal(springDutyTiming.partHours, 3, 'the spring jump must give First and Second Part three actual hours each');
+
 storage.set('anaes_offline_snapshot', JSON.stringify({
   saved_at: '2026-09-18T12:00:00.000Z',
   nightChanges: { '2026-09-18': [{ id: 'absence-1', absent_name: 'James' }], '2026-09-22': 'invalid legacy value' },
@@ -368,6 +388,11 @@ assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[
 assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
 assert.match(changesConfirmationExperience, /Rostered[\s\S]*This night/, 'confirmation must make the rostered versus selected-night comparison explicit');
 assert.match(presentationCss, /\.workflowProgress[\s\S]*\.workflowProgressTrack[\s\S]*\.workflowProgressFill/, 'meaningful workflow progress must have a restrained visual treatment');
+assert.match(ui, /function clockChangeDetailFor\(date\)[\s\S]*Handover moves to[\s\S]*First Part and Second Part each work/, 'clock-change copy must explain the equal-duty midpoint');
+assert.match(ui, /function showClockChangeEducation\(date,force\)[\s\S]*clockchange/, 'clock-change nights must have contextual onboarding');
+assert.match(ui, /showNotification\('Clock change tonight'[\s\S]*Equal-duty handover/, 'a live clock-change night may use an already-granted device notification without prompting for permission');
+assert.match(clinicalExperience, /ClockChangeNotice[\s\S]*Equal handover[\s\S]*roster:clock-change-guide/, 'Night and Breaks must expose a replayable clock-change explanation');
+assert.match(presentationCss, /\.clockChangeNotice[\s\S]*\.clockChangeOnboardingPreview[\s\S]*prefers-reduced-motion/, 'clock-change surfaces must include polished motion with a reduced-motion fallback');
 
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
 assert.match(ui, /pending:pending,pendingReason:/, 'Breaks must pass the derived pending state to the typed interface');

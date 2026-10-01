@@ -4675,19 +4675,29 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
   #today>.nightOverviewPanel{
     grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr)!important;
   }
+  #today .nightDateShell{
+    grid-column:1/-1!important;
+    grid-row:1!important;
+  }
+  #today #nightClockChange{
+    grid-column:1/-1!important;
+    grid-row:2!important;
+    align-self:start!important;
+    margin:0 0 14px!important;
+  }
   #today .personalNight{
     grid-column:1!important;
-    grid-row:2!important;
+    grid-row:3!important;
   }
   #today .teamOverviewGroup{
     grid-column:2!important;
-    grid-row:2!important;
+    grid-row:3!important;
     align-self:start!important;
     margin-top:0!important;
   }
   #today .recentActivityPanel{
     grid-column:1/-1!important;
-    grid-row:3!important;
+    grid-row:4!important;
   }
 }
 
@@ -13533,4 +13543,158 @@ html[data-theme="dark"] #chat .pushMuteActions{
 }
 @media(prefers-reduced-motion:reduce){
   #changes .workflowProgressFill{transition:none!important}
+}
+
+
+/* Clock-change nights: one shared equal-duty treatment across Night, Breaks and contextual education. */
+.clockChangeNotice{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  margin:10px 0 0;
+  padding:12px 13px;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-accent) 28%,var(--liquid-separator));
+  border-radius:18px;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--liquid-accent) 9%,transparent),transparent 62%),
+    var(--liquid-surface);
+  box-shadow:0 10px 26px rgba(12,22,30,.06);
+}
+.clockChangeGlyph{
+  display:grid;
+  width:42px;
+  height:42px;
+  place-items:center;
+  border-radius:14px;
+  background:color-mix(in srgb,var(--liquid-accent) 11%,transparent);
+  color:var(--liquid-accent-strong);
+}
+.clockChangeGlyph svg{
+  width:24px;
+  height:24px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.clockChangeCopy{
+  display:grid;
+  min-width:0;
+  gap:2px;
+}
+.clockChangeCopy>small{
+  color:var(--liquid-secondary);
+  font-size:10px;
+  font-weight:760;
+  letter-spacing:.045em;
+  text-transform:uppercase;
+}
+.clockChangeCopy>strong{
+  color:var(--liquid-label);
+  font-size:14px;
+  line-height:1.25;
+}
+.clockChangeCopy>span{
+  color:var(--liquid-secondary);
+  font-size:11px;
+  font-weight:620;
+  line-height:1.35;
+}
+.clockChangeLearn{
+  min-height:40px!important;
+  padding:0 9px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:720!important;
+  white-space:nowrap;
+}
+.clockChangeLearn span{font-size:16px;font-weight:400}
+#today #nightClockChange{margin:0 0 10px}
+#today #nightClockChange:empty{display:none}
+#breaks #breakClockChange{margin-top:10px}
+#breaks #breakClockChange:empty{display:none}
+#breaks #breakClockChange+.breakSummaryRow{margin-top:10px}
+
+.clockChangeOnboardingPreview{
+  gap:12px!important;
+  padding:16px!important;
+}
+.clockChangePreviewClock{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:58px;
+  border-radius:16px;
+  background:color-mix(in srgb,var(--liquid-accent) 7%,var(--liquid-surface));
+}
+.clockChangePreviewClock span{
+  display:grid;
+  min-width:46px;
+  min-height:38px;
+  place-items:center;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:12px;
+  background:var(--liquid-surface);
+  color:var(--liquid-label);
+  font-size:20px;
+  font-weight:760;
+  letter-spacing:-.04em;
+}
+.clockChangePreviewClock i{
+  color:var(--liquid-accent-strong);
+  font-size:20px;
+  font-style:normal;
+  animation:clockChangeNudge 1.8s ease-in-out infinite;
+}
+.clockChangePreviewSplit{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);
+  gap:10px;
+  align-items:stretch;
+}
+.clockChangePreviewSplit>i{
+  background:var(--liquid-separator);
+}
+.clockChangePreviewSplit>span{
+  display:grid;
+  gap:3px;
+  min-width:0;
+  padding:4px 2px;
+}
+.clockChangePreviewSplit small{
+  color:var(--liquid-secondary);
+  font-size:9px;
+  font-weight:780;
+  letter-spacing:.045em;
+}
+.clockChangePreviewSplit b{
+  color:var(--liquid-label);
+  font-size:12px;
+  line-height:1.3;
+}
+.clockChangePreviewSplit em{
+  color:var(--liquid-accent-strong);
+  font-size:11px;
+  font-style:normal;
+  font-weight:720;
+}
+@keyframes clockChangeNudge{
+  0%,100%{transform:translateX(0);opacity:.72}
+  50%{transform:translateX(3px);opacity:1}
+}
+@media(max-width:430px){
+  .clockChangeNotice{grid-template-columns:38px minmax(0,1fr);gap:9px;padding:11px}
+  .clockChangeGlyph{width:38px;height:38px;border-radius:13px}
+  .clockChangeLearn{grid-column:2;justify-self:start;min-height:32px!important;padding:0!important}
+  .clockChangePreviewSplit{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .clockChangePreviewClock i{animation:none}
 }

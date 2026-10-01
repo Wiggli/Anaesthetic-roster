@@ -1,11 +1,12 @@
 {
-  "version": "37.94",
+  "version": "37.95",
   "date": "1 October 2026",
-  "title": "Make the next safe action obvious",
-  "summary": "Applies behavioral UX principles to reduce friction without dark patterns: smarter defaults, visible workflow progress, contextual notification permission, protected drafts and clearer before-versus-after review.",
+  "title": "Keep clock-change nights fair",
+  "summary": "Makes daylight-saving transition nights explicit and fair by calculating the real Malta 00:00–07:00 elapsed window, moving the handover to its true midpoint, and teaching the change when it matters.",
   "changes": [
-    "Changes now opens on the step that actually needs attention for each selected night and shows genuine progress toward a ready or shared plan, while the standard automatic six-nurse plan stays quiet.",
-    "Notification permission is no longer requested just after sign-in. Night Roster first lets the user reach Team Chat, then offers optional alerts with benefit-first privacy wording and keeps the operating-system permission behind an explicit tap.",
-    "Unfinished local Changes selections now warn before a browser reload and block a PWA update from discarding them, while confirmation labels Rostered versus This night so exceptional changes are easier to compare before sharing."
-  ]
+    "Clock-change nights now keep First Part and Second Part equal in real elapsed duty: the handover moves to 04:00 on spring-forward nights and to 03:00 after the rollback on autumn nights, while ordinary nights remain 03:30.",
+    "Night, Breaks, personal live-duty status and full-roster summaries now share the same Europe/Malta timing calculation, with clear actual-hours wording, animated clock-change guidance and reduced-motion support.",
+    "Affected nights now receive contextual onboarding, a one-time advance reminder when the roster night is within seven days, and a once-per-night device notification when alerts are already enabled, without introducing a new permission prompt."
+  ],
+  "update_policy": "important"
 }

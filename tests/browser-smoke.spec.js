@@ -70,6 +70,58 @@ test('mobile shell keeps core views navigable', async ({ page }) => {
   await expect(page.locator('#chatMentionMenu')).toHaveCount(1);
 });
 
+test('clock-change nights show equal-duty guidance on Night, Breaks and onboarding', async ({ page }) => {
+  await openShell(page);
+  const clockChange = {
+    direction: 'back',
+    title: 'Clock change night',
+    transitionLabel: 'Clocks move back one hour',
+    handover: '03:00',
+    handoverDisplay: '03:00 after clock change',
+    firstPeriod: '00:00–03:00 after clock change',
+    secondPeriod: '03:00–07:00',
+    partHours: 4,
+    partHoursLabel: '4h',
+    totalHours: 8,
+    totalHoursLabel: '8h',
+    summary: 'The repeated hour makes the 00:00–07:00 duty window 8h. Handover moves to 03:00 after clock change so First Part and Second Part each work 4h of actual duty.',
+    date: '2026-10-24'
+  };
+  await page.evaluate(model => {
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 6, absenceCount: 0, overtimeCount: 0, taskCount: 0, decisionTasks: 0,
+      confirmNeeded: false, alert: '', firstTask: '', labourPending: false, breakLabel: 'Second break',
+      chatUnread: 0, liveState: 'Night selected', roles: [], extras: [], clockChange: model
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:breaks', { detail: {
+      date: '2026-10-24', formattedDate: '24 Oct 2026', nurseCount: 6, absenceCount: 0,
+      pending: false, pendingReason: '', labourPending: false, first: ['Second One'], second: ['First One'],
+      notes: [], highlightedName: 'First One', firstDutyPeriod: model.firstPeriod,
+      secondDutyPeriod: model.secondPeriod, clockChange: model
+    }}));
+  }, clockChange);
+
+  await expect(page.locator('#nightClockChange .clockChangeNotice')).toContainText('Equal handover · 03:00 after clock change');
+  await expect(page.locator('#nightClockChange .clockChangeNotice')).toContainText('4h actual');
+  await captureReview(page, 'clock-change-night');
+  await page.evaluate(() => window.show('breaks'));
+  await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('Clocks move back one hour');
+  await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('03:00–07:00');
+  await captureReview(page, 'clock-change-breaks');
+
+  await page.evaluate(() => {
+    window.currentUserProfile = { display_name: 'Test Nurse', user_role: 'member' };
+    localStorage.setItem('anaes_education_state_v1', JSON.stringify({ main: 2, changes: 1, breaks: 1, chat: 1 }));
+    window.showClockChangeEducation('2026-10-24', true);
+  });
+  await expect(page.locator('#onboardingDialog')).toHaveAttribute('open', '');
+  await expect(page.locator('#onboardingDialog')).toContainText('The app keeps both parts equal');
+  await expect(page.locator('#onboardingDialog')).toContainText('03:00 after clock change');
+  await expect(page.locator('#onboardingDialog')).toContainText('4h');
+  await page.waitForTimeout(450);
+  await captureReview(page, 'clock-change-onboarding');
+});
+
 test('Changes save feedback presents a conflict and recovery without changing the message', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => window.formMessage('allocationFormMessage',
