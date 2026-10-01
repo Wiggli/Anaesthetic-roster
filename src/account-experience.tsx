@@ -19,7 +19,7 @@ type ProfileExperience = {
   messageType?: string;
   changed?: boolean;
 };
-type AccountExperience = { theme: ThemeChoice; installed: boolean; profile?: ProfileExperience };
+type AccountExperience = { theme: ThemeChoice; installed: boolean; newRelease?: boolean; version?: string; profile?: ProfileExperience };
 type PasskeyExperience = { message: string; items: { id: string; label: string }[] };
 
 const roots = new Map<string, Root>();
@@ -225,22 +225,14 @@ function Appearance({ initial }: { initial: ThemeChoice }) {
   />;
 }
 
-function AccountActions({ installed }: { installed: boolean }) {
+function AccountActions({ installed, newRelease, version }: { installed: boolean; newRelease?: boolean; version?: string }) {
   const actions = [
-    { action: 'guide', title: 'View app guide', detail: 'Replay Night Roster’s complete introduction', icon: '✦' },
+    { action: 'guide', title: 'App guide', detail: 'Help for Night, Changes, Breaks, Chat and more', icon: '✦' },
+    { action: 'whatsnew', title: 'What’s new', detail: newRelease ? `New in version ${version || ''}` : 'See the latest Night Roster improvements', icon: '●', isNew: !!newRelease },
     !installed && { action: 'install', title: 'Install Night Roster', detail: 'Add the private PWA to this device', icon: '↓' },
-    { action: 'versions', title: 'Version history', detail: 'Review previous releases and safety improvements', icon: '↺' }
-  ].filter(Boolean) as { action: string; title: string; detail: string; icon: string }[];
-
-  return <GroupedList>
-    {actions.map(item => <ListRow
-      key={item.action}
-      leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>}
-      title={item.title}
-      subtitle={item.detail}
-      onClick={() => act(item.action)}
-    />)}
-  </GroupedList>;
+    { action: 'versions', title: 'Version history', detail: 'Browse every release without losing the current update', icon: '↺' }
+  ].filter(Boolean) as { action: string; title: string; detail: string; icon: string; isNew?: boolean }[];
+  return <GroupedList>{actions.map(item => <ListRow key={item.action} leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>} title={item.title} subtitle={item.detail} trailing={item.isNew ? <Badge tone="info">New</Badge> : undefined} onClick={() => act(item.action)} />)}</GroupedList>;
 }
 
 function Passkeys({ model }: { model: PasskeyExperience }) {
@@ -262,7 +254,7 @@ function Passkeys({ model }: { model: PasskeyExperience }) {
 export function renderAccountExperience(model: AccountExperience) {
   if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor model={model.profile} />);
   rootFor('appearanceExperience')?.render(<Appearance key={model.theme} initial={model.theme} />);
-  rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} />);
+  rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} newRelease={model.newRelease} version={model.version} />);
 }
 
 export function renderPasskeyExperience(model: PasskeyExperience) {

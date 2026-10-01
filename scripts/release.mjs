@@ -86,7 +86,8 @@ if (latest.version !== version) {
     version,
     date: release.date,
     title: release.title,
-    changes: release.changes
+    changes: release.changes,
+    policy: ['quiet', 'normal', 'important'].includes(release.update_policy) ? release.update_policy : 'normal'
   });
   ui = ui.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + ui.slice(parsedHistory.start + 1);
 } else if (latest.title !== release.title) {
