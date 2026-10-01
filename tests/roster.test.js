@@ -628,6 +628,9 @@ assert.match(clinicalExperience, /personalFactButtons[\s\S]*View in team allocat
 assert.match(clinicalExperience, /nightContextCapsule[\s\S]*contextLabel/, 'Night overview must expose a compact routine-or-exception context');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share Night Roster[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
+assert.match(accountExperience, /function shareAct\(action:[\s\S]*roster:share-action/, 'share buttons must dispatch through the dedicated share event channel');
+assert.match(accountExperience, /shareAct\('native'\)[\s\S]*shareAct\('copy'\)[\s\S]*shareAct\('install'\)/, 'Send, copy and install-help controls must all use the working share action channel');
+assert.doesNotMatch(accountExperience, /act\('share-(?:native|copy|install)'\)/, 'share controls must not accidentally dispatch account actions');
 assert.match(accountExperience, /SHARE_QR_ROWS[\s\S]*shareQrSvg[\s\S]*Scan to get Night Roster/, 'share sheet must render an offline QR code rather than depending on a remote QR service');
 assert.match(ui, /function sharedAppUrl\(\)\{return APP_URL\+'\?welcome=1'\}/, 'shared links must use the harmless welcome entry point');
 assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(true\)/, 'a scanned shared link must open device-aware installation help');
