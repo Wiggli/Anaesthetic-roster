@@ -1,14 +1,15 @@
 {
-  "version": "38.02",
-  "date": "1 October 2026",
-  "title": "Make Night follow the working-shift clock",
-  "summary": "Night now keeps the active roster night through 06:59, then switches at 07:00 to the following rostered night so opening the app always lands on the most useful night.",
+  "version": "39.0",
+  "date": "2 October 2026",
+  "title": "Harden the roster logic foundation",
+  "summary": "Night timing, shared-plan state, sync recovery, chat delivery and diagnostics now run through centralized reliability contracts so different screens and devices cannot quietly disagree.",
   "changes": [
-    "From 00:00 through 06:59, Night keeps showing the roster night whose shift is still in progress, including its live timeline and handover state.",
-    "At 07:00 Malta time, once that duty window ends, Night automatically moves to the following rostered night rather than leaving the completed night selected.",
-    "During the daytime and evening before duty begins, the app keeps showing that next rostered night; once its working night is active, it is labelled Current roster night.",
-    "The date control now distinguishes Current roster night from Next roster night correctly, avoiding the earlier misleading label on future dates.",
-    "The same clock rule is rechecked every minute and whenever the app becomes visible, while manual date browsing remains respected until the automatic-night shortcut is used."
+    "Night now uses one Malta-time context for automatic versus manual selection, current and next night labels, live duty phase and the 07:00 boundary, with an authenticated server-clock sanity check when online.",
+    "Night, Changes and Breaks now share one selected-night plan model, while shared synchronization has explicit starting, live, reconnecting, offline and stale-data states and rejects older snapshots arriving after newer ones.",
+    "Shared roster mutations now use one guarded command path that collapses duplicate in-flight actions and verifies the refreshed server outcome after an ambiguous timeout while preserving existing atomic RPCs and revision-conflict protection.",
+    "Chat retries now carry a stable client message ID with database-enforced idempotency, and read cursors can only move forward across tabs and devices.",
+    "Saved offline roster data now expires after seven days, diagnostics use a bounded privacy-safe local event ring, schema capabilities are centralized, compatibility startup fallbacks are observable, and post-update runtime versions are checked for consistency.",
+    "Typed internal event contracts and new invariant tests cover all 138 published rotation nights at the 19:00 and 07:00 boundaries, plus multi-device, retry, stale-snapshot and update-health contracts."
   ],
   "update_policy": "important"
 }
