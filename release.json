@@ -1,12 +1,12 @@
 {
-  "version": "37.97",
+  "version": "37.98",
   "date": "1 October 2026",
-  "title": "Bring back the live blue Night rail",
-  "summary": "Refines the 37.96 Night cockpit so the personal hero feels integrated again: the bulky pale handover and segmented timeline surfaces are replaced by a slim blue live-progress rail inside the dark hero.",
+  "title": "Fix Share Night Roster buttons",
+  "summary": "Repairs the Share Night Roster action wiring so Send Night Roster, Copy link and Installation help respond correctly on supported devices.",
   "changes": [
-    "The Night timeline is now a slim blue elapsed-time rail with a soft highlight for your own duty segment, a live blue progress fill and moving marker during the active night, and a crisp handover marker without the previous chunky segmented panel.",
-    "The What matters next / Handover state is now integrated directly into the dark hero instead of appearing as a large pale nested card, while colleague, duty and break facts keep proper high contrast inside the hero.",
-    "Clock-change intelligence is preserved on the cleaner rail, including the first and second 02:xx labels on autumn rollback nights, the spring skipped-hour marker, equal-duty handover timing, and reduced-motion support."
+    "Send Night Roster now dispatches through the correct share action channel and opens the device share sheet where supported.",
+    "Copy link and Installation help use the same corrected share event path instead of silently doing nothing.",
+    "Browser coverage now clicks the real Send Night Roster button and verifies that only the public Night Roster welcome URL is shared."
   ],
   "update_policy": "important"
 }
