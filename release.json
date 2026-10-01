@@ -1,14 +1,14 @@
 {
-  "version": "38.01",
+  "version": "38.02",
   "date": "1 October 2026",
-  "title": "Restore quiet headers and one glossy scroll bar",
-  "summary": "The large coloured top mastheads are gone. Screens keep a calm in-page heading, while one slim translucent glass bar appears only after the page is scrolled.",
+  "title": "Make Night follow the working-shift clock",
+  "summary": "Night now keeps the active roster night through 06:59, then switches at 07:00 to the following rostered night so opening the app always lands on the most useful night.",
   "changes": [
-    "Night, Changes, Breaks and Chat no longer use the large blue-green hero masthead introduced in 38.0; their normal top-of-page headers are quiet and content-led again.",
-    "A single slim full-width glass bar now fades and glides in only after the page header scrolls away, using the same treatment across Night, Changes, Breaks, Chat, Full Roster and Roster Management.",
-    "The scroll bar shows only the current section title, removing extra status text, oversized height and the Admin-only floating rail so the chrome stays calm and predictable.",
-    "Scroll-linked blur, opacity and vertical movement are driven continuously for a smoother transition, while screen switches temporarily suppress the bar to prevent stale-header flashes.",
-    "The improved Chat readability, content hierarchy, roster calculations, handover logic, staffing rules, break logic, Supabase security and explicit PWA update activation remain unchanged."
+    "From 00:00 through 06:59, Night keeps showing the roster night whose shift is still in progress, including its live timeline and handover state.",
+    "At 07:00 Malta time, once that duty window ends, Night automatically moves to the following rostered night rather than leaving the completed night selected.",
+    "During the daytime and evening before duty begins, the app keeps showing that next rostered night; once its working night is active, it is labelled Current roster night.",
+    "The date control now distinguishes Current roster night from Next roster night correctly, avoiding the earlier misleading label on future dates.",
+    "The same clock rule is rechecked every minute and whenever the app becomes visible, while manual date browsing remains respected until the automatic-night shortcut is used."
   ],
   "update_policy": "important"
 }

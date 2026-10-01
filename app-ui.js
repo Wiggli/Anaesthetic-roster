@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V38.01 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V38.02 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -71,6 +71,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"38.02","date":"1 October 2026","title":"Make Night follow the working-shift clock","changes":["From 00:00 through 06:59, Night keeps showing the roster night whose shift is still in progress, including its live timeline and handover state.","At 07:00 Malta time, once that duty window ends, Night automatically moves to the following rostered night rather than leaving the completed night selected.","During the daytime and evening before duty begins, the app keeps showing that next rostered night; once its working night is active, it is labelled Current roster night.","The date control now distinguishes Current roster night from Next roster night correctly, avoiding the earlier misleading label on future dates.","The same clock rule is rechecked every minute and whenever the app becomes visible, while manual date browsing remains respected until the automatic-night shortcut is used."],"policy":"important"},
   {"version":"38.01","date":"1 October 2026","title":"Restore quiet headers and one glossy scroll bar","changes":["Night, Changes, Breaks and Chat no longer use the large blue-green hero masthead introduced in 38.0; their normal top-of-page headers are quiet and content-led again.","A single slim full-width glass bar now fades and glides in only after the page header scrolls away, using the same treatment across Night, Changes, Breaks, Chat, Full Roster and Roster Management.","The scroll bar shows only the current section title, removing extra status text, oversized height and the Admin-only floating rail so the chrome stays calm and predictable.","Scroll-linked blur, opacity and vertical movement are driven continuously for a smoother transition, while screen switches temporarily suppress the bar to prevent stale-header flashes.","The improved Chat readability, content hierarchy, roster calculations, handover logic, staffing rules, break logic, Supabase security and explicit PWA update activation remain unchanged."],"policy":"important"},
   {"version":"38.0","date":"1 October 2026","title":"Unify the app around a premium clinical interface","changes":["Chat is rebuilt around readable team and private-message hierarchy, larger conversation text, cleaner previews, stronger unread states and better use of the available screen instead of tiny labels surrounded by empty space.","Changes and Breaks now use the same premium masthead, typography, spacing, surfaces and interaction language while preserving the existing staffing workflow and calculated break plan.","The compact scrolling header now morphs into a slim full-width glass veil with useful context such as unread messages or outstanding Changes items, replacing the previous detached-looking top bar.","Night, bottom navigation, Account, roster management, dialogs and update surfaces now share the same restrained clinical palette, radii, depth, touch geometry and accessibility fallbacks.","The redesign changes presentation only: the verified rotation, real handover calculation including clock-change nights, staffing rules, break logic, chat delivery, Supabase security and explicit PWA update activation remain unchanged."],"policy":"important"},
   {"version":"37.99","date":"1 October 2026","title":"Give Night a quieter focus","changes":["Night now opens with a leaner hospital header, one clear page title and a lighter date navigator, removing repeated labels while keeping the selected roster night obvious.","Your assignment hero is calmer and more compact while preserving the live handover rail, colleague, duty and break information, clock-change guidance and every existing roster calculation.","As Night scrolls, the hospital masthead now morphs into a compact glass header carrying your assignment and selected date instead of leaving an empty collapsed header.","The update prompt and bottom navigation are smaller, clearer and more genuinely translucent, with quieter secondary actions, a refined active state and reduced-transparency fallbacks.","During the active working night, the interface subtly increases emphasis on the assignment and handover instrument without changing staffing, allocation, break or PWA update behaviour."],"policy":"important"},
@@ -500,7 +501,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=38.01" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=38.02" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -728,8 +729,8 @@ function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var bac
 
 function prettyDateMarkup(date){
   if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
-  var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear();
-  var context=automaticSelectedDate&&date===automaticSelectedDate?'Current roster night':automaticSelectedDate&&date<automaticSelectedDate?'Past roster night':'Roster night';
+  var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear(),state=R.length?automaticNightState():null,automatic=state&&R[state.index]&&R[state.index].date;
+  var context=automatic&&date===automatic?(state.isCurrent?'Current roster night':'Next roster night'):automatic&&date<automatic?'Past roster night':'Roster night';
   return'<strong>'+esc(main)+'</strong><small>'+esc(context+' · '+year)+'</small>';
 }
 
@@ -819,13 +820,13 @@ function renderHeaderSummary(r){
 }
 
 function goToAutomaticNight(){
-  var hour=maltaDateParts().hour;idx=startingIndex();automaticSelectedDate=R[idx].date;localStorage.setItem('anaes_selected_date',R[idx].date);render();toast(hour<7||hour>=19?'Current working night opened':'Next available roster night opened');
+  var state=automaticNightState();idx=state.index;automaticSelectedDate=R[idx].date;localStorage.setItem('anaes_selected_date',R[idx].date);render();toast(state.isCurrent?'Current working night opened':'Next available roster night opened');
 }
 
 function refreshAutomaticNightOnReturn(){
   if(document.visibilityState!=='visible'||!initialNightChosen||!automaticSelectedDate||!R.length)return;
-  var selected=localStorage.getItem('anaes_selected_date'),nextDate=R[startingIndex()].date;
-  if(selected===automaticSelectedDate&&nextDate!==automaticSelectedDate){idx=startingIndex();automaticSelectedDate=nextDate;render();toast('Roster moved to the next available night')}
+  var selected=localStorage.getItem('anaes_selected_date'),state=automaticNightState(),nextDate=R[state.index].date;
+  if(selected===automaticSelectedDate&&nextDate!==automaticSelectedDate){idx=state.index;automaticSelectedDate=nextDate;render();toast(state.isCurrent?'Roster moved to the current night':'Roster moved to the next available night')}
 }
 
 var lastChangesWorkflowModel=null;
