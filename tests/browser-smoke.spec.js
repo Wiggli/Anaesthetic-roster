@@ -103,9 +103,11 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
 
   await expect(page.locator('#alerts .clockChangeNotice')).toContainText('Equal handover · 03:00 after clock change');
   await expect(page.locator('#alerts .clockChangeNotice')).toContainText('4h actual');
+  await captureReview(page, 'clock-change-night');
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('Clocks move back one hour');
   await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('03:00–07:00');
+  await captureReview(page, 'clock-change-breaks');
 
   await page.evaluate(() => {
     window.currentUserProfile = { display_name: 'Test Nurse', user_role: 'member' };
@@ -116,6 +118,7 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
   await expect(page.locator('#onboardingDialog')).toContainText('The app keeps both parts equal');
   await expect(page.locator('#onboardingDialog')).toContainText('03:00 after clock change');
   await expect(page.locator('#onboardingDialog')).toContainText('4h');
+  await captureReview(page, 'clock-change-onboarding');
 });
 
 test('Changes save feedback presents a conflict and recovery without changing the message', async ({ page }) => {
