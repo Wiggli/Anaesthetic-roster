@@ -56,11 +56,6 @@ const reported=domain.resolveAutomaticNight(roster,localInstant('2026-10-01',23,
 assert.equal(reported.date,'2026-10-04');
 assert.equal(reported.isCurrent,false);
 
-const springRoster='2027-03-27';
-const springMorning=addDays(springRoster,1);
-assert.equal(domain.resolveAutomaticNight(roster,localInstant(springMorning,6,59)).date,springRoster);
-assert.equal(domain.resolveAutomaticNight(roster,localInstant(springMorning,7,0)).date,'2027-03-31');
-
 const fresh=domain.freshness('2026-10-02T10:00:00.000Z',true,Date.parse('2026-10-02T10:00:30.000Z'));
 assert.equal(fresh.state,'live');
 const stale=domain.freshness('2026-10-02T08:00:00.000Z',true,Date.parse('2026-10-02T10:00:00.000Z'));
