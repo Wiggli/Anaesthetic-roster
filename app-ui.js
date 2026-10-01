@@ -797,8 +797,14 @@ function localChangesDraftSummary(base){
   return parts.length===1?'Unsaved '+parts[0]:'Unsaved selections in '+parts.length+' places';
 }
 
+function allLocalChangesDraftParts(){
+  if(!R.length)return[];var currentDate=cur().date,dates=[currentDate];
+  [allocationDrafts,seventhDecisionDrafts,nightRoleOverrideDrafts].forEach(function(map){Object.keys(map||{}).forEach(function(date){if(dates.indexOf(date)<0)dates.push(date)})});
+  var parts=[];dates.forEach(function(date){var base=R.find(function(item){return item.date===date});if(!base)return;localChangesDraftParts(base).forEach(function(part){parts.push({date:date,part:part})})});return parts;
+}
+
 function protectLocalChangesDraft(event){
-  if(!currentUserProfile||!R.length||!localChangesDraftParts(cur()).length)return;
+  if(!currentUserProfile||!allLocalChangesDraftParts().length)return;
   event.preventDefault();event.returnValue='';
 }
 
@@ -1773,7 +1779,7 @@ function resetUpdateButtons(){
 }
 function applyWaitingUpdate(){
   if(!updateRegistration||!updateRegistration.waiting){clearUpdateNotice();toast('Night Roster is already up to date');return}
-  var pendingDraft=localChangesDraftSummary(cur()),status=byId('updateDetailsStatus');if(pendingDraft){if(status)status.textContent=pendingDraft+'. Save or clear it before updating so your work is not lost.';toast('Finish your unsaved Changes before updating');return}
+  var pendingDrafts=allLocalChangesDraftParts(),status=byId('updateDetailsStatus');if(pendingDrafts.length){if(status)status.textContent='You have unfinished Changes selections. Save or clear them before updating so your work is not lost.';toast('Finish your unsaved Changes before updating');return}
   var buttons=[byId('applyUpdateBtn'),byId('applyUpdateSheetBtn'),byId('diagnosticUpdateBtn')];reloadForUpdate=true;sessionStorage.removeItem(waitingUpdateDeferralKey());buttons.forEach(function(button){if(button){button.disabled=true;button.textContent='Updating…'}});if(status)status.textContent='Activating the update. Night Roster will reopen automatically.';
   updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'});
   if(updateActivationTimer)clearTimeout(updateActivationTimer);
