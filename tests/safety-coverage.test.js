@@ -179,17 +179,18 @@ const cases = [
   ['2026-10-25T06:00:00Z', '2026-10-25']  // 07:00 after autumn transition
 ];
 for (const [instant, expected] of cases) assert.equal(context.operationalRosterDate(new Date(instant)), expected, instant);
-const currentNightCases = [
-  ['2026-10-01T21:38:00Z', '2026-09-30'], // 23:38 CEST: keep the current roster night, do not jump to 4 Oct
-  ['2026-10-04T16:59:00Z', '2026-09-30'], // 18:59 CEST: the 4 Oct night has not started yet
-  ['2026-10-04T17:00:00Z', '2026-10-04'], // 19:00 CEST: 4 Oct becomes the current roster night
-  ['2026-10-05T04:59:00Z', '2026-10-04'], // 06:59 CEST: still the 4 Oct working night
-  ['2026-10-05T10:00:00Z', '2026-10-04']  // daytime: retain the current roster night until the next roster night actually starts
+const automaticNightCases = [
+  ['2026-10-01T21:38:00Z', '2026-10-04', false], // 23:38 CEST after the previous duty ended: show the next roster night
+  ['2026-10-04T16:59:00Z', '2026-10-04', false], // 18:59 CEST: 4 Oct is next, not active yet
+  ['2026-10-04T17:00:00Z', '2026-10-04', true],  // 19:00 CEST: 4 Oct becomes current
+  ['2026-10-05T04:59:00Z', '2026-10-04', true],  // 06:59 CEST: still the 4 Oct working night
+  ['2026-10-05T05:00:00Z', '2026-10-08', false], // 07:00 CEST: duty ended, move to the following roster night
+  ['2026-10-05T10:00:00Z', '2026-10-08', false]  // daytime: keep showing the following roster night
 ];
-for (const [instant, expected] of currentNightCases) {
+for (const [instant, expected, isCurrent] of automaticNightCases) {
   context.idx = context.startingIndex(new Date(instant));
   assert.equal(context.R[context.idx].date, expected, instant);
-  assert.equal(context.automaticNightState(new Date(instant)).isCurrent, true, instant + ' must identify the current roster night');
+  assert.equal(context.automaticNightState(new Date(instant)).isCurrent, isCurrent, instant + ' current-night state');
 }
 
 // Incomplete plans must remain provisional, and the visible Breaks view must derive from the effective roster.

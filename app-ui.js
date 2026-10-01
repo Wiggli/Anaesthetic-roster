@@ -730,7 +730,7 @@ function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var bac
 function prettyDateMarkup(date){
   if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
   var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear(),state=R.length?automaticNightState():null,automatic=state&&R[state.index]&&R[state.index].date;
-  var context=automatic&&date===automatic?(state.isCurrent?'Current roster night':'First published night'):automatic&&date<automatic?'Past roster night':'Roster night';
+  var context=automatic&&date===automatic?(state.isCurrent?'Current roster night':'Next roster night'):automatic&&date<automatic?'Past roster night':'Roster night';
   return'<strong>'+esc(main)+'</strong><small>'+esc(context+' · '+year)+'</small>';
 }
 
@@ -786,21 +786,15 @@ function operationalRosterDate(value){
   return p.hour<7?addDays(date,-1):date;
 }
 
-function currentRosterNightAnchor(value){
-  var p=maltaDateParts(value),date=[p.year,String(p.month).padStart(2,'0'),String(p.day).padStart(2,'0')].join('-');
-  return p.hour<19?addDays(date,-1):date;
-}
-
 function startingIndex(value){
   if(!R.length)return 0;
-  var target=currentRosterNightAnchor(value),i=-1;
-  for(var n=0;n<R.length;n++){if(R[n].date<=target)i=n;else break}
-  return i>=0?i:0;
+  var target=operationalRosterDate(value),i=R.findIndex(function(r){return r.date>=target});
+  return i>-1?i:Math.max(0,R.length-1);
 }
 
 function automaticNightState(value){
-  var autoIndex=startingIndex(value),anchor=currentRosterNightAnchor(value),current=R[autoIndex]&&R[autoIndex].date<=anchor,selected=idx===autoIndex;
-  return{index:autoIndex,isCurrent:!!current,selected:selected,label:selected?(current?'Current night selected':'First published night selected'):(current?'Return to current night':'Return to first published night')};
+  var autoIndex=startingIndex(value),clock=maltaDateParts(value),target=operationalRosterDate(value),isCurrent=R[autoIndex]&&R[autoIndex].date===target&&(clock.hour<7||clock.hour>=19),selected=idx===autoIndex;
+  return{index:autoIndex,isCurrent:isCurrent,selected:selected,label:selected?(isCurrent?'Current night selected':'Next night selected'):(isCurrent?'Return to current night':'Return to next roster night')};
 }
 
 function selectedNightCopy(date,value){
@@ -826,13 +820,13 @@ function renderHeaderSummary(r){
 }
 
 function goToAutomaticNight(){
-  idx=startingIndex();automaticSelectedDate=R[idx].date;localStorage.setItem('anaes_selected_date',R[idx].date);render();toast('Current roster night opened');
+  var state=automaticNightState();idx=state.index;automaticSelectedDate=R[idx].date;localStorage.setItem('anaes_selected_date',R[idx].date);render();toast(state.isCurrent?'Current working night opened':'Next available roster night opened');
 }
 
 function refreshAutomaticNightOnReturn(){
   if(document.visibilityState!=='visible'||!initialNightChosen||!automaticSelectedDate||!R.length)return;
-  var selected=localStorage.getItem('anaes_selected_date'),currentIndex=startingIndex(),currentDate=R[currentIndex].date;
-  if(selected===automaticSelectedDate&&currentDate!==automaticSelectedDate){idx=currentIndex;automaticSelectedDate=currentDate;render();toast('Roster moved to the current night')}
+  var selected=localStorage.getItem('anaes_selected_date'),state=automaticNightState(),nextDate=R[state.index].date;
+  if(selected===automaticSelectedDate&&nextDate!==automaticSelectedDate){idx=state.index;automaticSelectedDate=nextDate;render();toast(state.isCurrent?'Roster moved to the current night':'Roster moved to the next available night')}
 }
 
 var lastChangesWorkflowModel=null;

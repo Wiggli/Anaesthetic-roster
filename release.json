@@ -1,14 +1,14 @@
 {
   "version": "38.02",
   "date": "1 October 2026",
-  "title": "Open on the current roster night",
-  "summary": "Night now follows Malta time and stays on the current roster night until the next roster night actually begins, instead of jumping ahead to a future roster date.",
+  "title": "Make Night follow the working-shift clock",
+  "summary": "Night now keeps the active roster night through 06:59, then switches at 07:00 to the following rostered night so opening the app always lands on the most useful night.",
   "changes": [
-    "Opening Night now selects the current roster night from the Malta clock rather than the next future rostered date.",
-    "The current roster night remains selected between roster dates and changes automatically only when the next roster night reaches its 19:00 start boundary.",
-    "Across midnight and the early-morning duty window, the same roster night remains selected so 00:00–07:00 live timing and handover tracking stay attached to the correct night.",
-    "The date control now labels the automatically selected date as Current roster night and no longer calls a future date current simply because it was auto-selected.",
-    "The app rechecks this clock rule every minute and whenever it becomes visible, while manual browsing remains respected until the user returns to Current night."
+    "From 00:00 through 06:59, Night keeps showing the roster night whose shift is still in progress, including its live timeline and handover state.",
+    "At 07:00 Malta time, once that duty window ends, Night automatically moves to the following rostered night rather than leaving the completed night selected.",
+    "During the daytime and evening before duty begins, the app keeps showing that next rostered night; once its working night is active, it is labelled Current roster night.",
+    "The date control now distinguishes Current roster night from Next roster night correctly, avoiding the earlier misleading label on future dates.",
+    "The same clock rule is rechecked every minute and whenever the app becomes visible, while manual date browsing remains respected until the automatic-night shortcut is used."
   ],
   "update_policy": "important"
 }

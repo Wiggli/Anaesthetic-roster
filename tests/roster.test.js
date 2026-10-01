@@ -73,7 +73,7 @@ assert.equal(context.R.length, 138, 'published reference must contain 138 nights
 assert.ok(context.R.some(r => r.date === '2026-09-26'), 'reference roster must include the next-night wording regression date');
 const wordingTestOriginalIdx = context.idx;
 context.idx = context.R.findIndex(r => r.date === '2026-09-26');
-assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-24T12:00:00Z')).assignment, 'Selected night’s assignment', 'a manually browsed future roster date must remain a selected night while automatic opening stays on the current roster night');
+assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-24T12:00:00Z')).assignment, 'Next night’s assignment', 'a future automatic roster date must be described as the next night');
 assert.equal(context.selectedNightCopy('2026-09-26', new Date('2026-09-26T10:00:00Z')).assignment, 'Tonight’s assignment', 'the same roster date may be described as tonight once its calendar date arrives');
 context.idx = wordingTestOriginalIdx;
 
