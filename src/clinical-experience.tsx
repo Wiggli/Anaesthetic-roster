@@ -17,6 +17,9 @@ type ClockChangeInfo = {
   totalHoursLabel: string;
   summary: string;
   date: string;
+  transitionUtc?: number | null;
+  startOffset?: number;
+  endOffset?: number;
 };
 
 type BreakSummary = {
@@ -62,6 +65,7 @@ type NightSummary = {
   extras: string[];
   fivePerson?: { name: string; reason: string; mine: boolean };
   clockChange?: ClockChangeInfo | null;
+  contextLabel?: string;
 };
 
 type PersonalNight = {
@@ -87,6 +91,8 @@ type PersonalNight = {
   handoverUtc?: number;
   dutyEndUtc?: number;
   handoverLabel?: string;
+  transitionUtc?: number;
+  changed?: boolean;
   clockChange?: ClockChangeInfo | null;
 };
 
@@ -154,9 +160,39 @@ function maltaClock(value: Date) {
 
 function nightProgress(model: PersonalNight, value = new Date()) {
   if (!model.dutyStartUtc || !model.dutyEndUtc) return null;
+  const clock = maltaClock(value);
+  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return null;
   const now = value.getTime();
-  if (now < model.dutyStartUtc || now > model.dutyEndUtc) return null;
+  if (now <= model.dutyStartUtc) return 0;
+  if (now >= model.dutyEndUtc) return 100;
   return Math.max(0, Math.min(100, (now - model.dutyStartUtc) / (model.dutyEndUtc - model.dutyStartUtc) * 100));
+}
+
+function clockText(value: Date) {
+  const p = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Malta', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(value);
+  const hour = p.find(part => part.type === 'hour')?.value || '00';
+  const minute = p.find(part => part.type === 'minute')?.value || '00';
+  return hour + ':' + minute;
+}
+
+function clockChangePhase(model: PersonalNight, value: Date) {
+  if (!model.clockChange || !model.transitionUtc) return '';
+  const after = value.getTime() >= model.transitionUtc;
+  if (model.clockChange.direction === 'back') return after ? 'winter time' : 'summer time';
+  return after ? 'summer time' : 'winter time';
+}
+
+function liveClockLabel(model: PersonalNight, value: Date) {
+  const clock = maltaClock(value);
+  const time = clockText(value);
+  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return '';
+  if (model.clockChange?.direction === 'back' && clock.hour === 2 && model.transitionUtc) {
+    return (value.getTime() < model.transitionUtc ? 'First ' : 'Second ') + time + ' · ' + clockChangePhase(model, value);
+  }
+  if (model.clockChange) return time + ' · ' + clockChangePhase(model, value);
+  return time;
 }
 
 function personalLiveStatus(model: PersonalNight, value = new Date()) {
@@ -167,15 +203,43 @@ function personalLiveStatus(model: PersonalNight, value = new Date()) {
   if (model.pending || /pending/i.test(model.period)) return 'Allocation pending';
   if (model.dutyPart === 'first' && model.dutyStartUtc && model.handoverUtc) {
     if (now < model.dutyStartUtc) return 'On duty next · starts 00:00';
-    return now < model.handoverUtc ? 'On duty now' : 'Duty block complete';
+    return now < model.handoverUtc ? 'First Part active' : 'Duty block complete';
   }
   if (model.dutyPart === 'second' && model.handoverUtc && model.dutyEndUtc) {
-    if (now < model.handoverUtc) return `On duty later · starts ${model.handoverLabel || '03:30'}`;
-    return now < model.dutyEndUtc ? 'On duty now' : 'Duty block complete';
+    if (now < model.handoverUtc) return 'Second Part later · starts ' + (model.handoverLabel || '03:30');
+    return now < model.dutyEndUtc ? 'Second Part active' : 'Duty block complete';
   }
-  if (model.period === '00:00–07:00') return 'On duty now';
+  if (model.period === '00:00–07:00') return 'Full-night cover active';
   if (/seventh/i.test(model.title)) return 'Supporting tonight’s team';
   return model.liveStatus;
+}
+
+function nextNightMessage(model: PersonalNight, value: Date) {
+  if (model.pending) return { eyebrow: 'What matters next', title: 'Allocation still pending', detail: 'Open Changes to complete the shared plan.' };
+  if (/absent/i.test(model.title)) return { eyebrow: 'Tonight', title: 'No duty block', detail: 'You are recorded as not working this night.' };
+  if (!model.dutyStartUtc || !model.handoverUtc || !model.dutyEndUtc) return { eyebrow: 'Your night', title: model.period || 'Selected night', detail: model.breakLabel || '' };
+  const clock = maltaClock(value);
+  const liveNight = clock.date === model.date && (clock.hour < 7 || clock.hour >= 19);
+  if (!liveNight) return { eyebrow: 'Handover', title: model.handoverLabel || '03:30', detail: (model.period || '') + ' · ' + (model.breakLabel || '') };
+  const now = value.getTime();
+  const handover = model.handoverUtc;
+  if (now < model.dutyStartUtc) {
+    if (model.dutyPart === 'first') return { eyebrow: 'What matters next', title: 'First Part starts at 00:00', detail: 'Handover at ' + (model.handoverLabel || '03:30') + ' · ' + model.breakLabel };
+    if (model.dutyPart === 'second') return { eyebrow: 'What matters next', title: 'Take over at ' + (model.handoverLabel || '03:30'), detail: (model.period || '') + ' · ' + model.breakLabel };
+    return { eyebrow: 'What matters next', title: 'Night duty starts at 00:00', detail: model.period || '' };
+  }
+  if (Math.abs(now - handover) <= 120000) return { eyebrow: 'Handover now', title: 'Second Part starts', detail: 'Equal-duty handover · ' + (model.handoverLabel || '03:30') };
+  if (now < handover) {
+    if (model.dutyPart === 'first') return { eyebrow: 'Now', title: 'First Part active', detail: 'Handover at ' + (model.handoverLabel || '03:30') + ' · ' + model.breakLabel };
+    if (model.dutyPart === 'second') return { eyebrow: 'What matters next', title: 'Take over at ' + (model.handoverLabel || '03:30'), detail: model.breakLabel };
+    return { eyebrow: 'Now', title: 'First Part active', detail: 'Handover at ' + (model.handoverLabel || '03:30') };
+  }
+  if (now < model.dutyEndUtc) {
+    if (model.dutyPart === 'first') return { eyebrow: 'Your duty', title: 'Duty block complete', detail: model.breakLabel };
+    if (model.dutyPart === 'second') return { eyebrow: 'Now', title: 'Second Part active', detail: 'Until 07:00 · ' + model.breakLabel };
+    return { eyebrow: 'Now', title: 'Second Part active', detail: 'Night continues until 07:00' };
+  }
+  return { eyebrow: 'Your duty', title: 'Night block complete', detail: model.breakLabel };
 }
 
 function goToChanges(target: 'staffing' | 'allocation') {
@@ -396,7 +460,8 @@ function NightStatus({ model }: { model: NightSummary }) {
   const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
   const openBreaks = () => { softHaptic(); window.show?.('breaks'); };
   const openChat = () => { softHaptic(); window.show?.('chat'); window.openChatView?.(); };
-  return <section className={`nightSignal ${provisional ? 'needsReview' : ''}`} aria-label="Tonight at a glance">
+  return <section className={'nightSignal ' + (provisional ? 'needsReview' : '')} aria-label="Tonight at a glance">
+    <div className="nightContextLine"><span className={'nightContextCapsule ' + (provisional ? 'review' : model.clockChange ? 'clock' : 'standard')}><i aria-hidden="true" />{model.contextLabel || 'Standard night'}</span><small>{provisional ? 'Shared plan needs attention' : model.clockChange ? 'Equal-duty timing active' : 'Calculated shared plan'}</small></div>
     <div className="nightSignalPrimary">
       <span className="nightOverviewIcon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M2.5 20c.4-4 2.7-6 6-6s5.6 2 6 6" /><path d="M16.5 10a3 3 0 1 0 0-6" /><path d="M16.5 14c2.8 0 4.5 1.6 5 4.5" /></svg>
@@ -464,18 +529,71 @@ function personalMark(tone: string) {
   return '•';
 }
 
+function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) {
+  const reduced = useReducedMotion();
+  const progress = nightProgress(model, value);
+  const start = model.dutyStartUtc || 0;
+  const end = model.dutyEndUtc || 0;
+  const duration = Math.max(1, end - start);
+  const handoverPct = model.handoverUtc ? (model.handoverUtc - start) / duration * 100 : 50;
+  const transitionPct = model.transitionUtc ? (model.transitionUtc - start) / duration * 100 : null;
+  const firstMine = model.dutyPart === 'first';
+  const secondMine = model.dutyPart === 'second';
+  const liveLabel = liveClockLabel(model, value);
+  const currentSide = progress === null ? '' : progress < handoverPct ? 'First Part' : 'Second Part';
+  const openClockHelp = () => { if (model.clockChange) window.dispatchEvent(new CustomEvent('roster:clock-change-guide')); };
+
+  return <section className={'nightProgressRail nightTimeline ' + (model.clockChange ? 'hasClockChange' : '')} aria-label={'Night timeline from 00:00 to 07:00. Handover ' + (model.handoverLabel || '03:30') + '.'}>
+    <div className="nightTimelineHead">
+      <span><small>Night timeline</small><b>{currentSide || 'Duty orientation'}</b></span>
+      {liveLabel && <motion.em
+        key={liveLabel}
+        initial={reduced ? false : { opacity: 0, y: 3 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reduced ? { duration: 0 } : { duration: 0.18 }}
+      >{liveLabel}</motion.em>}
+    </div>
+    <button type="button" className="nightTimelineTrackShell" onClick={openClockHelp} disabled={!model.clockChange} aria-label={model.clockChange ? 'Explain this clock-change timeline' : 'Night duty timeline'}>
+      <span className={'nightTimelineSegment first ' + (firstMine ? 'mine' : '')} style={{ width: handoverPct + '%' }}><i>First Part</i></span>
+      <span className={'nightTimelineSegment second ' + (secondMine ? 'mine' : '')} style={{ left: handoverPct + '%', width: (100 - handoverPct) + '%' }}><i>Second Part</i></span>
+      <span className="nightTimelineHandover" style={{ left: handoverPct + '%' }}><i /><b>Handover</b></span>
+      {transitionPct !== null && <span className={'nightTimelineTransition ' + (model.clockChange?.direction || '')} style={{ left: transitionPct + '%' }}><i>{model.clockChange?.direction === 'back' ? '↶' : '↗'}</i><b>{model.clockChange?.direction === 'back' ? 'Clock back' : 'Clock forward'}</b></span>}
+      {progress !== null && <motion.span
+        className="nightTimelineNow"
+        aria-hidden="true"
+        initial={false}
+        animate={{ left: progress + '%' }}
+        transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 160, damping: 28, mass: 0.7 }}
+      ><i /></motion.span>}
+    </button>
+    <div className={'nightTimelineScale ' + (model.clockChange?.direction || 'normal')}>
+      <span style={{ left: '0%' }}>00:00</span>
+      {model.clockChange?.direction === 'back' && <>
+        <span className="dstMark" style={{ left: '25%' }}>02:00¹</span>
+        <span className="dstMark" style={{ left: (transitionPct || 37.5) + '%' }}>02:00²</span>
+      </>}
+      {model.clockChange?.direction === 'forward' && <span className="dstJumpMark" style={{ left: (transitionPct || 33.33) + '%' }}>02:00 → 03:00</span>}
+      <span className="handoverScale" style={{ left: handoverPct + '%' }}>{model.clockChange?.handover || model.handoverLabel || '03:30'}</span>
+      <span style={{ left: '100%' }}>07:00</span>
+    </div>
+    {model.clockChange?.direction === 'back' && <div className="nightTimelineExplain"><span><b>02:00¹</b> first 02:xx · summer time</span><span><b>02:00²</b> second 02:xx · winter time</span></div>}
+    {model.clockChange?.direction === 'forward' && <div className="nightTimelineExplain"><span><b>02:00 → 03:00</b> skipped hour compressed on the rail</span></div>}
+  </section>;
+}
+
 function PersonalNightCard({ model }: { model: PersonalNight }) {
   const reducedMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+    const timer = window.setInterval(() => setNow(Date.now()), 30000);
     return () => window.clearInterval(timer);
   }, []);
+  const value = new Date(now);
   const tone = personalTone(model);
-  const liveStatus = personalLiveStatus(model, new Date(now));
-  const progress = nightProgress(model, new Date(now));
+  const liveStatus = personalLiveStatus(model, value);
+  const next = nextNightMessage(model, value);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
-  const scanContext = model.context.replace(/^With\\s+/i, '');
+  const scanContext = model.context.replace(/^With\s+/i, '');
   const action = () => {
     if (model.action === 'choose') return openAccount();
     if (model.action === 'absence') return goToChanges('staffing');
@@ -484,15 +602,16 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     target?.focus({ preventScroll: true });
   };
+  const openBreak = () => { softHaptic(); window.show?.('breaks'); };
 
   return <motion.article
-    className={`personalHeroSurface personalRole-${tone}`}
+    className={'personalHeroSurface personalRole-' + tone}
     initial={reducedMotion ? false : { opacity: 0.94, y: 6, scale: 0.994 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 34, mass: 0.7 }}
   >
     <div className="personalIdentity">
-      <div className={`personalAvatar ${model.avatarUrl ? 'hasPhoto' : ''}`} aria-hidden="true">
+      <div className={'personalAvatar ' + (model.avatarUrl ? 'hasPhoto' : '')} aria-hidden="true">
         {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}
       </div>
       <div className="personalIdentityCopy">
@@ -503,7 +622,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     </div>
 
     <div className="personalAssignmentStage">
-      <div className={`personalAssignmentHero personalRole-${tone}`}>
+      <div className={'personalAssignmentHero personalRole-' + tone}>
         <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
         <span className="personalRoleCopy">
           <small>{model.assignmentLabel}</small>
@@ -512,20 +631,41 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </span>
         {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
       </div>
-      {liveStatus && <div className="personalLiveState"><i aria-hidden="true" /><span>{liveStatus}</span></div>}
-      {progress !== null && <div className="nightProgressRail" aria-label={`Progress through the 00:00 to 07:00 night. Equal handover ${model.clockChange?.handoverDisplay || model.handoverLabel || '03:30'}.`}>
-        <div className="nightProgressTrack" aria-hidden="true"><span style={{ width: `${progress}%` }} /><i style={{ left: `${progress}%` }} /></div>
-        <div className="nightProgressMarks"><span>00:00</span><span>{model.clockChange?.handover || '03:30'}</span><span>07:00</span></div>
-      </div>}
 
-      <dl className="personalFacts personalScan" aria-label="Your night at a glance">
-        <div className="personalFactContext"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.4-3.5 2.4-5.2 5.5-5.2s5.1 1.7 5.5 5.2" /><path d="M17 6.5a2.5 2.5 0 1 1 0 5" /><path d="M17 14.5c2.2.4 3.4 1.8 3.6 4" /></svg>{scanContextLabel}</dt><dd>{scanContext || 'Pending'}</dd></div>
-        <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3.5 2" /></svg>On duty</dt><dd>{model.period || 'Pending'}</dd></div>
-        <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5Z" /><path d="M16 11h2a2 2 0 0 1 0 4h-2" /></svg>Break</dt><dd>{model.breakLabel || 'Pending'}</dd></div>
-      </dl>
+      <div className="personalLiveContext" aria-live="polite">
+        {liveStatus && <span className="personalLiveState"><i aria-hidden="true" /><b>{liveStatus}</b></span>}
+        {model.clockChange && <span className="personalClockBadge">Clock change</span>}
+        {model.changed && <span className="personalNightChanged">Changed tonight</span>}
+      </div>
+
+      <motion.div
+        className="personalNextState"
+        key={next.eyebrow + '-' + next.title}
+        initial={reducedMotion ? false : { opacity: 0.6, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.22 }}
+      >
+        <small>{next.eyebrow}</small>
+        <strong>{next.title}</strong>
+        <span>{next.detail}</span>
+      </motion.div>
+
+      <NightTimeline model={model} value={value} />
+
+      <div className="personalFacts personalScan personalFactButtons" aria-label="Your night at a glance">
+        <Pressable type="button" className="personalFactButton personalFactContext" onClick={action}>
+          <small>{scanContextLabel}</small><b>{scanContext || 'Pending'}</b><span>View in team allocation ›</span>
+        </Pressable>
+        <div className="personalFactButton static">
+          <small>On duty</small><b>{model.period || 'Pending'}</b><span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty' : 'Your duty block'}</span>
+        </div>
+        <Pressable type="button" className="personalFactButton" onClick={openBreak}>
+          <small>Break</small><b>{model.breakLabel || 'Pending'}</b><span>Open Breaks ›</span>
+        </Pressable>
+      </div>
 
       <Pressable type="button" className="personalContextAction" onClick={action}>
-        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
+        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View your night situation' : 'Choose your name'}
         <span aria-hidden="true">›</span>
       </Pressable>
     </div>
