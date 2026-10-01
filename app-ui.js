@@ -779,8 +779,8 @@ function smartChangesStep(base){
 }
 
 function localChangesDraftParts(base){
-  base=base||cur();var date=base.date,parts=[],draft=allocationDrafts[date]||{},plan=staffingPlan(base);
-  if(Object.keys(draft).some(function(key){var saved=plan.validAssignments.find(function(item){return item.allocation_key===key});return(draft[key]||'')!==(saved?saved.id:'')}))parts.push('allocation selections');
+  base=base||cur();var date=base.date,parts=[],draft=allocationDrafts[date]||{};
+  if(Object.keys(draft).some(function(key){return String(draft[key]||'').trim().length>0}))parts.push('allocation selections');
   if(seventhDecisionDrafts[date])parts.push('seventh-nurse choice');
   if(nightRoleOverrideDrafts[date])parts.push('night-only roles');
   if(document.body&&typeof document.body.getAttribute==='function'&&document.body.getAttribute('data-view')==='changes'&&cur().date===date){
