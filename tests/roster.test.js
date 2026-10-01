@@ -364,8 +364,8 @@ assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allo
 assert.match(ui, /changesSmartDefaultDate!==base\.date[\s\S]*activeChangesStep=smartChangesStep\(base\)/, 'the smart Changes default must apply once per selected night rather than fighting manual navigation');
 assert.match(changesWorkflowExperience, /workflowProgress[\s\S]*role="progressbar"[\s\S]*aria-valuenow=\{model\.progressValue\}/, 'Changes must expose real completion progress instead of decorative steps only');
 assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
-assert.match(ui, /beforeunload',protectLocalChangesDraft/, 'leaving or reloading with local Changes work must trigger browser-level draft protection');
-assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*localChangesDraftSummary\(cur\(\)\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
+assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[\s\S]*nightRoleOverrideDrafts[\s\S]*protectLocalChangesDraft[\s\S]*beforeunload',protectLocalChangesDraft/, 'leaving or reloading must protect unfinished Changes work across selected nights');
+assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
 assert.match(changesConfirmationExperience, /Rostered[\s\S]*This night/, 'confirmation must make the rostered versus selected-night comparison explicit');
 assert.match(presentationCss, /\.workflowProgress[\s\S]*\.workflowProgressTrack[\s\S]*\.workflowProgressFill/, 'meaningful workflow progress must have a restrained visual treatment');
 
