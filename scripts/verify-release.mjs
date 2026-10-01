@@ -54,6 +54,8 @@ if (coreVersion !== version) fail(`APP_VERSION is ${coreVersion || 'missing'}, e
 const history = releaseHistory(read('app-ui.js'));
 if (!history.length || history[0].version !== version) fail('The newest RELEASE_HISTORY version does not match release.json.');
 if (history[0].title !== release.title) fail('The newest RELEASE_HISTORY title does not match release.json.');
+const expectedPolicy = ['quiet', 'normal', 'important'].includes(release.update_policy) ? release.update_policy : 'normal';
+if ((history[0].policy || 'normal') !== expectedPolicy) fail('The newest RELEASE_HISTORY update policy does not match release.json.');
 
 const packageJson = JSON.parse(read('package.json'));
 const lock = JSON.parse(read('package-lock.json'));

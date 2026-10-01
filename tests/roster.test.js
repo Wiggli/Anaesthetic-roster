@@ -568,10 +568,14 @@ assert.match(ui, /nurseCount:count,absenceCount:absenceCount,overtimeCount:overt
 assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\s\S]*model\.absenceCount[\s\S]*model\.overtimeCount[\s\S]*model\.taskCount[\s\S]*function PersonalNightCard/, 'the typed Night interface must preserve staffing, exceptions, tasks and the personal allocation surface');
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
-const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ];', ui.indexOf('function onboardingPages')));
-assert.ok(onboardingSequence.indexOf('Your identity') > onboardingSequence.indexOf('onboardingChatPage()') && onboardingSequence.indexOf('Ready') > onboardingSequence.indexOf('Your identity'), 'onboarding must move from Chat to roster identity and then a concise ready step');
+const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
+assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
+assert.ok(onboardingSequence.indexOf('What matters to you stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'first-use onboarding must teach the personal Night hierarchy after identity');
+assert.ok(onboardingSequence.indexOf('The normal roster is automatic.') > onboardingSequence.indexOf('What matters to you stays first.'), 'first-use onboarding must finish by explaining that the standard plan is automatic');
+assert.equal(onboardingSequence.includes('featureChatPreview'), false, 'Chat education must not be embedded as a first-use onboarding page');
 assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup must stay in Account rather than first-use onboarding');
 assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
+assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Team chat, when you need it\.[\s\S]*You usually don’t need this screen\.[\s\S]*Your break is already highlighted\./, 'Chat, Changes and Breaks must retain contextual first-use education');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
 

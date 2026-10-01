@@ -724,20 +724,40 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
   });
 
   await expect(page.locator('#onboardingDialog')).toBeVisible();
-  await expect(page.locator('#onboardingTitle')).toContainText('Coordinate without leaving the roster');
-  await expect(page.locator('#onboardingContent')).toContainText('@mentions');
-  await expect(page.locator('#onboardingContent')).toContainText('14 days');
+  await expect(page.locator('#onboardingTitle')).toContainText('Team chat, when you need it');
+  await expect(page.locator('#onboardingContent')).toContainText('tonight’s roster');
+  await expect(page.locator('#onboardingContent')).toContainText('never patient-identifiable');
   await expect(page.locator('#onboardingStepLabel')).toContainText('Chat');
   if (process.env.CI) await page.waitForTimeout(900);
   await captureReview(page, 'onboarding');
   await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '1');
   await page.evaluate(() => {
     window.onboardingChatIntro = false;
+    window.onboardingFeatureKey = '';
+    window.onboardingGuideMenu = false;
     window.onboardingStep = 1;
     window.renderOnboarding();
   });
+  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '3');
   await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuenow', '2');
+  await expect(page.locator('#onboardingTitle')).toContainText('What matters to you stays first');
   await expect(page.locator('#onboardingTitle')).toBeFocused();
+});
+
+test('App Guide opens reusable contextual help without resetting first-use setup', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    localStorage.setItem('anaes_onboarding_complete_v34', '1');
+    localStorage.setItem('anaes_education_state_v1', JSON.stringify({ main: 2, chat: 1, changes: 1, breaks: 1 }));
+    window.currentUserProfile = { display_name: 'Andre Bartolo', email: 'andre@example.test', user_role: 'member' };
+    window.openOnboardingReplay();
+  });
+  const dialog = page.locator('#onboardingDialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('#onboardingTitle')).toContainText('Help that takes you to the right place');
+  await expect(dialog.locator('.appGuideList button')).toHaveCount(6);
+  await expect(dialog.locator('.appGuideList')).toContainText('Team Chat');
+  await expect(dialog.locator('#onboardingStepLabel')).toHaveText('App guide');
 });
 
 test('cinematic surfaces respect reduced motion', async ({ page }) => {
@@ -1139,7 +1159,8 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
   await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'View app guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'App guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'What’s new' })).toBeVisible();
   await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
   const helpLayout = await page.locator('.accountActions').evaluate(el => ({ section: el.getBoundingClientRect().height, rows: el.querySelector('#accountActionsExperience').getBoundingClientRect().height }));
   expect(helpLayout.section).toBeGreaterThan(helpLayout.rows);
@@ -1423,9 +1444,11 @@ test('What’s new describes the current release', async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.releaseEntry')).toHaveCount(1);
   await expect(dialog.locator('#releaseNotesTitle')).toHaveText('What’s new');
-  await expect(dialog.locator('.releaseHistory')).toContainText(release.title);
-  await expect(dialog.locator('.releaseHistory')).toContainText(release.changes[0]);
-  const sizes = await dialog.locator('.releaseHistory').evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
+  const editorial = dialog.locator('.releaseEditorial');
+  await expect(editorial).toContainText(release.title);
+  await expect(editorial).toContainText(release.changes[0]);
+  await expect(editorial.locator('.releaseHighlights .releaseHighlight')).toHaveCount(release.changes.length);
+  const sizes = await editorial.evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }));
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.width + 1);
 });
 
@@ -1440,7 +1463,8 @@ test('version history upgrades its escaped fallback to an on-demand React region
   await expect(dialog.locator('[data-react-release-notes="ready"]')).toHaveCount(1);
   await expect(dialog.locator('.releaseEntry')).toHaveCount(await page.evaluate(() => window.RELEASE_HISTORY.length));
   await expect(dialog.locator('.releaseNav')).toBeVisible();
-  await expect(dialog.locator('.releaseArchiveHeading')).toContainText('Previous updates');
+  await expect(dialog.locator('.releaseMonthHeading').first()).toBeVisible();
+  await expect(dialog.locator('.releaseHistoryItem').first()).toHaveAttribute('open', '');
   await expect(dialog.locator('.releaseHistory')).toHaveAttribute('aria-label', 'Complete Night Roster version history');
   await captureReview(page, 'release-notes');
 });
