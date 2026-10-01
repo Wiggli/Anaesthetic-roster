@@ -428,7 +428,6 @@ function NightAlerts({ model }: { model: NightSummary }) {
   const infoTitle = informationalParts.length > 1 ? informationalParts.shift()?.trim() : 'Night arrangement';
   const infoDetail = informationalParts.length ? informationalParts.join(':').trim() : model.alert;
   return <>
-    <ClockChangeNotice info={model.clockChange} context="night" />
     {model.alert && (needsReview
       ? <div className="alert compactNotice warn">{model.alert}</div>
       : <div className="alert compactNotice informational nightContextNotice"><span className="nightContextIcon" aria-hidden="true">i</span><span><b>{infoTitle}</b><small>{infoDetail}</small></span></div>)}
@@ -659,6 +658,7 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
 }
 
 export function renderNightExperience(model: NightSummary) {
+  rootFor('nightClockChange')?.render(<ClockChangeNotice info={model.clockChange} context="night" />);
   rootFor('nightStatusRow')?.render(<NightStatus model={model} />);
   rootFor('alerts')?.render(<NightAlerts model={model} />);
   rootFor('roles')?.render(<NightRoles model={model} />);
