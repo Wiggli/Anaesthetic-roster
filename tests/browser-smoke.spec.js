@@ -187,13 +187,22 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
   expect(nextStateBackground).not.toBe('rgb(255, 255, 255)');
   await captureReview(page, 'night-cockpit-blue-rail');
 
-  await page.evaluate(() => window.showShareApp());
+  await page.evaluate(() => {
+    window.__sharePayload = null;
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: async payload => { window.__sharePayload = payload; }
+    });
+    window.showShareApp();
+  });
   await expect(page.locator('#shareAppDialog')).toHaveAttribute('open', '');
   await expect(page.locator('#shareAppDialog')).toContainText('Scan to get Night Roster');
   await expect(page.locator('#shareAppDialog .shareQrSvg')).toHaveCount(1);
   await expect(page.locator('#shareAppDialog')).toContainText('Open camera');
   await expect(page.locator('#shareAppDialog')).toContainText('This only shares the public app');
   await expect(page.locator('#shareAppDialog')).toContainText('wiggli.github.io/Anaesthetic-roster/?welcome=1');
+  await page.getByRole('button', { name: 'Send Night Roster' }).click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload && window.__sharePayload.url)).toBe('https://wiggli.github.io/Anaesthetic-roster/?welcome=1');
   await captureReview(page, 'share-night-roster');
 });
 
