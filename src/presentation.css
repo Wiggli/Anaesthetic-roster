@@ -15544,3 +15544,25 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
   #chat .chatHeaderCompose span{font-size:10px!important}
   #chat .chatHeaderCompose{padding:0 10px!important}
 }
+
+
+/* 38.00 smoke-tested geometry: keep the dock compact and the admin glass rail above page content. */
+.bottom.reactTabs{
+  min-height:66px!important;
+}
+.bottom.reactTabs button{
+  min-height:54px!important;
+}
+#reactScrollChrome,
+.scrollGlassHeader{
+  z-index:180!important;
+}
+.scrollGlassMode-rail{
+  pointer-events:auto!important;
+}
+.scrollGlassMode-rail .scrollGlassStack,
+.scrollGlassMode-rail .scrollGlassRail{
+  position:relative!important;
+  z-index:2!important;
+  pointer-events:auto!important;
+}
