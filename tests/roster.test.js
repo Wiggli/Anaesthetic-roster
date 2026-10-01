@@ -268,6 +268,7 @@ const sevenRoleFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supaba
 const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260920141553_optimize_rls_policy_checks.sql'), 'utf8');
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
+const logicFoundationMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 const releaseHistorySnapshot = Array.from(context.RELEASE_HISTORY, entry => ({
   version: String(entry.version),
@@ -518,9 +519,13 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 46, 'the application must require the non-recursive chat reply policy schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 47, 'the application must require the logic-foundation schema');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
+assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');
+assert.match(logicFoundationMigration, /chat_messages_sender_client_message_uq/, 'schema 47 must deduplicate retried chat sends');
+assert.match(logicFoundationMigration, /chat_mark_read_v47[\s\S]*greatest\(/, 'schema 47 must make chat read cursors monotonic');
+assert.match(logicFoundationMigration, /update public\.app_schema_version[\s\S]*version=47/, 'schema 47 migration must advance the schema marker');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
 assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
 assert.match(accessRequestMigration, /Users can request own access[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/, 'a pending user may only create a request for their own authenticated identity');
