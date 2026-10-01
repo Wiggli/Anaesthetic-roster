@@ -16,6 +16,14 @@ declare global {
   }
 }
 
+function navigationHaptic() {
+  try {
+    if ('vibrate' in navigator && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(7);
+  } catch {
+    // Optional enhancement only.
+  }
+}
+
 function badgeFrom(id: string): Badge {
   const element = document.getElementById(id);
   return { text: element?.textContent || '0', hidden: element?.classList.contains('hidden') !== false };
@@ -467,6 +475,7 @@ function Navigation({ badges }: { badges: Badges }) {
           moveTo(first.view);
           return;
         }
+        navigationHaptic();
         suppressClick = true;
         window.clearTimeout(clickTimer);
         clickTimer = window.setTimeout(() => { suppressClick = false; }, 320);
@@ -491,6 +500,7 @@ function Navigation({ badges }: { badges: Badges }) {
         returnContentDrag(first);
         return;
       }
+      navigationHaptic();
       suppressClick = true;
       window.clearTimeout(clickTimer);
       clickTimer = window.setTimeout(() => { suppressClick = false; }, 220);
@@ -539,6 +549,7 @@ function Navigation({ badges }: { badges: Badges }) {
   }, [indicatorX, indicatorScaleX, indicatorScaleY, reducedMotion]);
 
   function navigate(view: Destination) {
+    if (view !== active) navigationHaptic();
     const transition = transitionToRef.current;
     if (transition) transition(view);
     else {

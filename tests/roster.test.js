@@ -574,3 +574,8 @@ assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional p
 assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
+
+assert.match(clinicalExperience, /nightProgressRail/, 'Night must keep the non-countdown orientation rail');
+assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
+assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
+assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');

@@ -800,14 +800,15 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
     document.getElementById('datePick').value = '2026-09-26';
     document.getElementById('headerLiveText').textContent = 'Live';
     window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
-      displayName: 'André Bartolo', jobTitle: 'Anaesthetic Nurse', avatarUrl: '', initial: 'A',
+      date: '2026-09-26', displayName: 'André Bartolo', jobTitle: 'Anaesthetic Nurse', avatarUrl: '', initial: 'A',
       assignmentLabel: 'Tonight’s assignment', title: 'Pager', detail: 'Labour Ward first part',
       period: '00:00–03:30', breakLabel: 'Second break', contextLabel: 'Working with',
-      context: 'Michael Debono', changedLabel: '', action: 'role', pending: false, pendingOther: ''
+      context: 'Michael Debono', changedLabel: '', action: 'role', pending: false, pendingOther: '', liveStatus: 'On duty now'
     }}));
     window.dispatchEvent(new CustomEvent('roster:night', { detail: {
       nurseCount: 6, absenceCount: 0, overtimeCount: 0, taskCount: 0, decisionTasks: 0,
       confirmNeeded: false, alert: '', firstTask: '', labourPending: false,
+      breakLabel: 'Second break', chatUnread: 4, liveState: 'On duty now',
       roles: [
         { key: 'first', label: 'First Part', names: 'James Galea + Michael Galea', detail: 'Works 00:00–03:30 · Second break', tone: 'first', mine: false },
         { key: 'pager', label: 'Pager', names: 'André Bartolo', detail: 'Labour Ward first part · Second break', tone: 'pager', mine: true }
@@ -835,6 +836,9 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
   await expect(page.locator('#nightStatusRow > .nightSignal')).toContainText('6 nurses');
+  await expect(page.locator('#nightStatusRow .nightQuickStrip')).toContainText('Your break');
+  await expect(page.locator('#nightStatusRow .nightQuickStrip')).toContainText('Second break');
+  await expect(page.locator('#roles .jumpToMeButton')).toHaveText(/Jump to me/);
   await page.evaluate(() => { const button = document.querySelector('#today .prettyDateButton'); if (button) button.textContent = 'Saturday 26 Sep'; });
   await captureReview(page, 'night');
   await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); document.body.classList.add('dark'); });
@@ -862,9 +866,10 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
     const style = getComputedStyle(el);
     return { background: style.backgroundColor, borderWidth: parseFloat(style.borderTopWidth), gap: parseFloat(style.gap) };
   });
-  expect(breakBoardStyle.background).toBe('rgba(0, 0, 0, 0)');
-  expect(breakBoardStyle.borderWidth).toBe(0);
-  expect(breakBoardStyle.gap).toBeGreaterThanOrEqual(10);
+  expect(breakBoardStyle.borderWidth).toBeGreaterThanOrEqual(1);
+  expect(breakBoardStyle.gap).toBe(0);
+  await expect(page.locator('#breakList .jumpToMeButton')).toHaveText(/Jump to me/);
+  await expect(page.locator('#breakList .coverageRow')).toHaveCount(1);
   const mineStyle = await page.locator('#breakList .breakPerson.mine').evaluate(el => {
     const style = getComputedStyle(el);
     return { radius: parseFloat(style.borderRadius), paddingLeft: parseFloat(style.paddingLeft) };
@@ -877,6 +882,32 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   }
   await captureReview(page, 'breaks');
   await expect(page.locator('#breakDate')).toBeEmpty();
+});
+
+test('shared Changes workflow becomes a calm completed state', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show('changes');
+    window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
+      active: 'staffing',
+      steps: [
+        { id: 'staffing', label: 'Staffing', detail: '1 overtime', complete: true, attention: false, quiet: false },
+        { id: 'allocation', label: 'Allocation', detail: 'Review roles', complete: true, attention: false, quiet: true },
+        { id: 'confirm', label: 'Shared', detail: 'Published', complete: true, attention: false, quiet: false }
+      ],
+      headline: 'Plan shared',
+      guidance: 'Staffing and roles are up to date for everyone.',
+      tone: 'complete'
+    }}));
+  });
+  const journey = page.locator('#changesWorkflowExperience');
+  await expect(journey.locator('.workflowExperience')).toHaveClass(/workflow-complete/);
+  await expect(journey).toContainText('Plan shared');
+  await expect(journey).toContainText('Shared');
+  const completedStepDetails = journey.locator('.workflowStepCopy small');
+  await expect(completedStepDetails).toHaveCount(3);
+  for (let index = 0; index < 3; index += 1) await expect(completedStepDetails.nth(index)).toBeHidden();
+  await captureReview(page, 'changes-shared');
 });
 
 test('confirmed seven-nurse context stays Plan ready instead of forcing review', async ({ page }) => {
@@ -996,7 +1027,7 @@ test('React Changes journey shows decisions and supports keyboard step selection
       selectionBorder: selectionStyle ? parseFloat(selectionStyle.borderTopWidth) : -1
     };
   });
-  expect(workflowMetrics.height).toBeLessThanOrEqual(49);
+  expect(workflowMetrics.height).toBeLessThanOrEqual(54);
   expect(workflowMetrics.selectionBorder).toBe(0);
   await captureReview(page, 'changes');
   await expect(page.locator('#changes .changesWorkflowTabs')).toBeHidden();

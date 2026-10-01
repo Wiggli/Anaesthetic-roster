@@ -1,12 +1,12 @@
 {
-  "version": "37.91",
-  "date": "30 September 2026",
-  "title": "Make settings easier to read",
-  "summary": "Improves notification and settings controls for faster night-shift scanning, clearer On and Off states, and a more consistent colour and typography system across utility screens.",
+  "version": "37.92",
+  "date": "1 October 2026",
+  "title": "Make the night feel alive",
+  "summary": "Unifies the core Night, Changes and Breaks experience around clearer hierarchy, semantic colour, current-night context, calmer completed states and more convincing Liquid Glass chrome, without adding a countdown timer.",
   "changes": [
-    "Notification settings now use larger row titles and descriptions, bigger switches, and visible On, Off or Muted labels so state never depends on colour alone.",
-    "Notification colour is simplified: the app accent marks interactive and enabled controls, green is reserved for healthy device status, warning and destructive colours keep their semantic roles, and mute actions use quieter neutral controls.",
-    "Account, appearance and roster-management utility surfaces now share larger settings typography, roomier tap targets and clearer grouped-row hierarchy without changing roster, notification or security behaviour."
+    "Night now shows a live duty-state cue, a non-countdown 00:00–07:00 orientation rail, an at-a-glance strip for current state, personal break and unread Chat, a calmer seven-nurse information treatment, smarter since-last-open activity summaries and Jump to me navigation.",
+    "Changes now treats an already published plan as a calm completed state with a compact Shared workflow and a quieter View or adjust roles action, while healthy realtime copy is reduced to Up to date and genuine unresolved work still restores the stronger action state.",
+    "Breaks now reads as one grouped schedule with Jump to me and structured Labour Ward, Pager and seventh-nurse coverage rows, while shared typography, semantic colours, reduced card furniture, stronger content-under-glass chrome, subtle haptics and accessibility fallbacks are applied across the core app."
   ],
   "update_policy": "important"
 }
