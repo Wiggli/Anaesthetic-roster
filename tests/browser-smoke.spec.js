@@ -389,6 +389,9 @@ test('bottom-tab taps move solid pages edge-to-edge without visual overlap', asy
 
   await page.locator('.bottom button[data-v="changes"]').click();
   await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
+  await expect(page.locator('body')).toHaveClass(/viewTransitioning/);
+  const transitionChromeOpacity = await page.locator('#reactScrollChrome .scrollGlassHeader').evaluate(el => Number(getComputedStyle(el).opacity));
+  expect(transitionChromeOpacity).toBe(0);
   await expect(page.locator('main')).not.toHaveClass(/viewMorphing/);
   await expect(page.locator('#today')).toHaveClass(/swipeCurrent/);
   await expect(page.locator('#changes')).toHaveClass(/swipePreview/);
@@ -422,6 +425,7 @@ test('bottom-tab taps move solid pages edge-to-edge without visual overlap', asy
 
   await expect(page.locator('#changes')).toBeVisible();
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+  await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
   await expect(page.locator('#today')).toHaveClass(/hidden/);
   const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
@@ -1449,6 +1453,12 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   const compactTitle = page.locator('#reactScrollChrome .scrollGlassCompactTitle');
   await expect(compactTitle).toContainText('Changes');
   await expect(page.locator('#reactScrollChrome .scrollGlassRail-changes')).toHaveCount(0);
+  await page.evaluate(() => window.show('chat'));
+  await expect(page.locator('#chat')).toBeVisible();
+  await expect.poll(() => chrome.getAttribute('class')).toContain('scrollGlass-chat');
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toContainText('Chat');
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
+  await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
   const compactChromeMetrics = await chrome.evaluate(el => ({
     height: el.getBoundingClientRect().height,
     titleSize: parseFloat(getComputedStyle(el.querySelector('.scrollGlassCompactTitle')).fontSize)
