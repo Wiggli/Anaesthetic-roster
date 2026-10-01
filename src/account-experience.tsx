@@ -40,6 +40,10 @@ function act(action: string, value?: unknown) {
   window.dispatchEvent(new CustomEvent('roster:account-action', { detail: { action, value } }));
 }
 
+function shareAct(action: 'native' | 'copy' | 'install') {
+  window.dispatchEvent(new CustomEvent('roster:share-action', { detail: { action } }));
+}
+
 function ProfileEditor({ model }: { model: ProfileExperience }) {
   const [dirty, setDirty] = useState(!!model.changed);
   const reduced = useReducedMotion();
@@ -304,11 +308,11 @@ function ShareApp({ model }: { model: ShareExperience }) {
       </div>
     </section>
     <div className="shareAppActions">
-      <Pressable type="button" className="primary sharePrimaryAction" onClick={() => act('share-native')}>
+      <Pressable type="button" className="primary sharePrimaryAction" onClick={() => shareAct('native')}>
         <span aria-hidden="true">↗</span>{model.nativeShare ? 'Send Night Roster' : 'Copy app link'}
       </Pressable>
-      <Pressable type="button" className="soft shareCopyAction" onClick={() => act('share-copy')}>Copy link</Pressable>
-      <Pressable type="button" className="shareInstallHelp" onClick={() => act('share-install')}>Installation help <span aria-hidden="true">›</span></Pressable>
+      <Pressable type="button" className="soft shareCopyAction" onClick={() => shareAct('copy')}>Copy link</Pressable>
+      <Pressable type="button" className="shareInstallHelp" onClick={() => shareAct('install')}>Installation help <span aria-hidden="true">›</span></Pressable>
     </div>
     <p className="sharePrivacyNote"><span aria-hidden="true">⌁</span>This only shares the public app. It never shares your account or roster data.</p>
     {model.installed && <p className="shareInstalledNote">Night Roster is already installed on this phone.</p>}
