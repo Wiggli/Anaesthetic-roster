@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V37.95 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V37.96 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -71,6 +71,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 
 var RELEASE_HISTORY=[
+  {"version":"37.96","date":"1 October 2026","title":"Make Night feel like a live shift","changes":["The personal Night hero now adapts through the shift with a live what-matters-next state, actionable colleague, duty and break details, subtle handover feedback, and compact routine-versus-exception context across the Night overview and team allocation.","The 00:00–07:00 rail is now a true elapsed-time instrument with highlighted personal duty segments, a live moving marker, explicit handover state and clock-change geometry; autumn rollback nights visibly distinguish the first 02:xx from the second 02:xx, while spring nights show the skipped hour.","Share Night Roster now provides a large offline QR code, native phone sharing, copy-link fallback and installation help. Scanned links open a simple device-aware install welcome flow, while sharing exposes only the public app address and never roster or account data."],"policy":"important"},
   {"version":"37.95","date":"1 October 2026","title":"Keep clock-change nights fair","changes":["Clock-change nights now keep First Part and Second Part equal in real elapsed duty: the handover moves to 04:00 on spring-forward nights and to 03:00 after the rollback on autumn nights, while ordinary nights remain 03:30.","Night, Breaks, personal live-duty status and full-roster summaries now share the same Europe/Malta timing calculation, with clear actual-hours wording, animated clock-change guidance and reduced-motion support.","Affected nights now receive contextual onboarding, a one-time advance reminder when the roster night is within seven days, and a once-per-night device notification when alerts are already enabled, without introducing a new permission prompt."],"policy":"important"},
   {"version":"37.94","date":"1 October 2026","title":"Make the next safe action obvious","changes":["Changes now opens on the step that actually needs attention for each selected night and shows genuine progress toward a ready or shared plan, while the standard automatic six-nurse plan stays quiet.","Notification permission is no longer requested just after sign-in. Night Roster first lets the user reach Team Chat, then offers optional alerts with benefit-first privacy wording and keeps the operating-system permission behind an explicit tap.","Unfinished local Changes selections now warn before a browser reload and block a PWA update from discarding them, while confirmation labels Rostered versus This night so exceptional changes are easier to compare before sharing."],"policy":"normal"},
   {"version":"37.93","date":"1 October 2026","title":"Make guidance part of the app","changes":["First use is now a focused three-step setup: confirm your roster identity, learn where your own night appears, and understand that the normal six-nurse plan is automatic unless something genuinely changes.","Changes, Breaks and Team Chat now explain themselves the first time they are opened, while Account has a proper App Guide with reusable topic shortcuts and one education-state system that still respects earlier completed guidance.","What’s New is now benefit-led and easier to scan, with feature actions, a compact expandable month-grouped version history, smarter quiet/normal/important release visibility, and update read-state recorded only after the update experience is actually viewed."],"policy":"important"},
@@ -212,6 +213,11 @@ var RELEASE_HISTORY=[
   {version:'26.0',date:'26 Aug 2026',title:'Reliability and publishing foundation',changes:['Automated safety checks were added for the verified roster rotation, staffing calculations and 07:00 working-night boundary.','The app gained clearer version, database-schema and connection diagnostics.','Night-plan confirmation and Labour Ward ordering were strengthened while earlier published roster nights remained protected.','The progressive web app update process was improved so new versions can be installed safely.']}
 ];
 var RELEASE_ACTIONS={
+  "37.96":[
+    {label:"Open Night",action:"view",value:"today"},
+    {label:"Share Night Roster",action:"share"},
+    {label:"View version history",action:"history"}
+  ],
   "37.95":[
     {label:"Open Breaks",action:"view",value:"breaks"},
     {label:"Open app guide",action:"guide"},
@@ -694,7 +700,7 @@ function showClockChangeEducation(date,force){
 function bindFeatureEducation(){
   refreshEducationMarkers();
   window.addEventListener('roster:viewchange',function(event){var view=event&&event.detail&&event.detail.view;if(['changes','breaks','chat'].indexOf(view)>=0){refreshEducationMarkers();setTimeout(function(){showFeatureEducation(view,false)},220)}});
-  window.addEventListener('roster:release-action',function(event){var detail=event&&event.detail||{},dialog=byId('releaseNotes');if(detail.action==='history'){renderReleaseNotes(true);return}if(dialog&&dialog.open){markCurrentReleaseSeen();dialog.close()}if(detail.action==='guide'){openOnboardingReplay();return}if(detail.action==='view'&&detail.value){show(detail.value);if(['changes','breaks','chat'].indexOf(detail.value)>=0)setTimeout(function(){showFeatureEducation(detail.value,true)},180)}})
+  window.addEventListener('roster:release-action',function(event){var detail=event&&event.detail||{},dialog=byId('releaseNotes');if(detail.action==='history'){renderReleaseNotes(true);return}if(dialog&&dialog.open){markCurrentReleaseSeen();dialog.close()}if(detail.action==='guide'){openOnboardingReplay();return}if(detail.action==='share'){showShareApp();return}if(detail.action==='view'&&detail.value){show(detail.value);if(['changes','breaks','chat'].indexOf(detail.value)>=0)setTimeout(function(){showFeatureEducation(detail.value,true)},180)}})
 }
 function bindOnboarding(){
   var dialog=byId('onboardingDialog'),next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
