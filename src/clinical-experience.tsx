@@ -541,12 +541,14 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
   const firstMine = model.dutyPart === 'first';
   const secondMine = model.dutyPart === 'second';
   const liveLabel = liveClockLabel(model, value);
-  const currentSide = progress === null ? '' : progress < handoverPct ? 'First Part' : 'Second Part';
+  const currentSide = progress === null
+    ? firstMine ? 'Your First Part' : secondMine ? 'Your Second Part' : 'Duty orientation'
+    : progress < handoverPct ? 'First Part now' : 'Second Part now';
   const openClockHelp = () => { if (model.clockChange) window.dispatchEvent(new CustomEvent('roster:clock-change-guide')); };
 
-  return <section className={'nightProgressRail nightTimeline ' + (model.clockChange ? 'hasClockChange' : '')} aria-label={'Night timeline from 00:00 to 07:00. Handover ' + (model.handoverLabel || '03:30') + '.'}>
+  return <section className={'nightProgressRail nightTimeline nightTimelineBlue ' + (model.clockChange ? 'hasClockChange' : '')} aria-label={'Night timeline from 00:00 to 07:00. Handover ' + (model.handoverLabel || '03:30') + '.'}>
     <div className="nightTimelineHead">
-      <span><small>Night timeline</small><b>{currentSide || 'Duty orientation'}</b></span>
+      <span><small>Night timeline</small><b>{currentSide}</b></span>
       {liveLabel && <motion.em
         key={liveLabel}
         initial={reduced ? false : { opacity: 0, y: 3 }}
@@ -554,9 +556,26 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
         transition={reduced ? { duration: 0 } : { duration: 0.18 }}
       >{liveLabel}</motion.em>}
     </div>
-    <button type="button" className="nightTimelineTrackShell" onClick={openClockHelp} disabled={!model.clockChange} aria-label={model.clockChange ? 'Explain this clock-change timeline' : 'Night duty timeline'}>
-      <span className={'nightTimelineSegment first ' + (firstMine ? 'mine' : '')} style={{ width: handoverPct + '%' }}><i>First Part</i></span>
-      <span className={'nightTimelineSegment second ' + (secondMine ? 'mine' : '')} style={{ left: handoverPct + '%', width: (100 - handoverPct) + '%' }}><i>Second Part</i></span>
+
+    <button type="button" className="nightTimelineTrackShell nightTimelineSlimRail" onClick={openClockHelp} disabled={!model.clockChange} aria-label={model.clockChange ? 'Explain this clock-change timeline' : 'Night duty timeline'}>
+      <span className="nightTimelineBase" aria-hidden="true" />
+      <span
+        className={'nightTimelineOwnBand first ' + (firstMine ? 'mine' : '')}
+        style={{ left: '0%', width: handoverPct + '%' }}
+        aria-hidden="true"
+      />
+      <span
+        className={'nightTimelineOwnBand second ' + (secondMine ? 'mine' : '')}
+        style={{ left: handoverPct + '%', width: (100 - handoverPct) + '%' }}
+        aria-hidden="true"
+      />
+      {progress !== null && <motion.span
+        className="nightTimelineFill"
+        aria-hidden="true"
+        initial={false}
+        animate={{ width: progress + '%' }}
+        transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 150, damping: 26, mass: 0.72 }}
+      />}
       <span className="nightTimelineHandover" style={{ left: handoverPct + '%' }}><i /><b>Handover</b></span>
       {transitionPct !== null && <span className={'nightTimelineTransition ' + (model.clockChange?.direction || '')} style={{ left: transitionPct + '%' }}><i>{model.clockChange?.direction === 'back' ? '↶' : '↗'}</i><b>{model.clockChange?.direction === 'back' ? 'Clock back' : 'Clock forward'}</b></span>}
       {progress !== null && <motion.span
@@ -567,6 +586,12 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
         transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 160, damping: 28, mass: 0.7 }}
       ><i /></motion.span>}
     </button>
+
+    <div className="nightTimelinePhaseLabels" aria-hidden="true">
+      <span className={firstMine ? 'mine' : ''} style={{ width: handoverPct + '%' }}>First Part</span>
+      <span className={secondMine ? 'mine' : ''} style={{ width: (100 - handoverPct) + '%' }}>Second Part</span>
+    </div>
+
     <div className={'nightTimelineScale ' + (model.clockChange?.direction || 'normal')}>
       <span style={{ left: '0%' }}>00:00</span>
       {model.clockChange?.direction === 'back' && <>
@@ -659,15 +684,18 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
 
       <motion.div
-        className="personalNextState"
+        className="personalNextState personalNextStateIntegrated"
         key={next.eyebrow + '-' + next.title}
         initial={reducedMotion ? false : { opacity: 0.6, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         transition={reducedMotion ? { duration: 0 } : { duration: 0.22 }}
       >
-        <small>{next.eyebrow}</small>
-        <strong>{next.title}</strong>
-        <span>{next.detail}</span>
+        <span className="personalNextIndicator" aria-hidden="true"><i /></span>
+        <span className="personalNextCopy">
+          <small>{next.eyebrow}</small>
+          <strong>{next.title}</strong>
+          <span>{next.detail}</span>
+        </span>
       </motion.div>
 
       <NightTimeline model={model} value={value} />
