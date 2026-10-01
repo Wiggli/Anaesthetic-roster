@@ -9,7 +9,7 @@
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1",
     "verify:build": "node tests/build-artifact.test.js",
-    "test": "npm run verify:release && node tests/roster.test.js && node tests/safety-coverage.test.js && node tests/startup-recovery.test.js && node tests/security-hardening.test.js && node tests/chat.test.js && node tests/push.test.js && node tests/health-smoke.test.js"
+    "test": "npm run verify:release && node tests/roster.test.js && node tests/logic-foundation.test.js && node tests/concurrency-contract.test.js && node tests/safety-coverage.test.js && node tests/startup-recovery.test.js && node tests/security-hardening.test.js && node tests/chat.test.js && node tests/push.test.js && node tests/health-smoke.test.js"
   },
   "dependencies": {
     "motion": "13.4.3",
