@@ -1205,7 +1205,7 @@ function renderRecentActivity(date){
 
 function openActivityDetail(item,date){var dialog=byId('activityDetailSheet'),type=byId('activityDetailType'),title=byId('activityDetailTitle'),content=byId('activityDetailContent');if(!dialog||!item)return;type.className='activityType '+item.type;type.textContent=item.label;title.textContent=item.title;var rows=[['Night',fmt(date)],['Details',item.detail||'No additional reason was recorded.'],['Recorded by',item.changed_by||'Roster member'],['Recorded',new Date(item.changed_at).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})]];content.innerHTML=rows.map(function(row){return'<div class="activityDetailRow"><span>'+esc(row[0])+'</span><b>'+esc(row[1])+'</b></div>'}).join('');if(!dialog.open)dialog.showModal()}
 
-function updateScrollChrome(){scrollChromeFrame=null;var scrolled=window.scrollY>18,isNight=document.body.getAttribute('data-view')==='today';document.body.classList.toggle('uiScrolled',scrolled);document.body.classList.toggle('headerCompact',isNight&&window.scrollY>72)}
+function updateScrollChrome(){scrollChromeFrame=null;var scrolled=window.scrollY>18;document.body.classList.toggle('uiScrolled',scrolled);document.body.classList.remove('headerCompact')}
 function scheduleScrollChrome(){if(scrollChromeFrame)return;scrollChromeFrame=requestAnimationFrame(updateScrollChrome)}
 
 function failedAction(message,retry){lastFailedAction=retry||null;toast(message,retry?{label:'Retry',run:function(){var action=lastFailedAction;lastFailedAction=null;return action&&action()}}:null)}

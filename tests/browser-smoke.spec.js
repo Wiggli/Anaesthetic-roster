@@ -1101,6 +1101,8 @@ test('update banner obeys hidden and Night-only visibility states', async ({ pag
   await openShell(page);
   await page.evaluate(() => window.show && window.show('today'));
   await expect(page.locator('#today')).toBeVisible();
+  // Let the asynchronous service-worker probe settle before testing the CSS visibility contract.
+  await page.waitForTimeout(160);
 
   await page.evaluate(() => document.getElementById('updateBanner').classList.remove('hidden'));
   await expect(page.locator('#updateBanner')).toBeVisible();
