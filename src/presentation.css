@@ -4675,6 +4675,12 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
   #today>.nightOverviewPanel{
     grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr)!important;
   }
+  #today #nightClockChange{
+    grid-column:1!important;
+    grid-row:1!important;
+    align-self:start!important;
+    margin:0 18px 12px 0!important;
+  }
   #today .personalNight{
     grid-column:1!important;
     grid-row:2!important;
@@ -13605,6 +13611,8 @@ html[data-theme="dark"] #chat .pushMuteActions{
   white-space:nowrap;
 }
 .clockChangeLearn span{font-size:16px;font-weight:400}
+#today #nightClockChange{margin:0 0 10px}
+#today #nightClockChange:empty{display:none}
 #breaks #breakClockChange{margin-top:10px}
 #breaks #breakClockChange:empty{display:none}
 #breaks #breakClockChange+.breakSummaryRow{margin-top:10px}
