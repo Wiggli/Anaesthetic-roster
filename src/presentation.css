@@ -14582,3 +14582,144 @@ html[data-theme="dark"] #chat .pushMuteActions{
     animation:none!important;
   }
 }
+
+
+/* 37.99 Night focus pass: less chrome, stronger hierarchy, clearer content-under-glass. */
+#today .nightSectionIdentity{margin:12px 0 4px!important;padding:0 2px!important}
+#today .nightSectionIdentity>span,#today .nightSectionIdentity>p{display:none!important}
+#today .nightSectionIdentity h1{margin:0!important;color:var(--scene-ink)!important;font-size:clamp(36px,9vw,44px)!important;font-weight:780!important;line-height:.98!important;letter-spacing:-.055em!important}
+
+#appHeader{padding-top:max(7px,env(safe-area-inset-top))!important;padding-bottom:7px!important;border-bottom-color:transparent!important}
+#appHeader .hospitalStrip{min-height:31px!important}
+#appHeader .hospitalStrip img{width:min(154px,46vw)!important;height:auto!important;max-height:30px!important}
+#appHeader .hospitalStrip span{font-size:8.5px!important;letter-spacing:.07em!important}
+#appHeader .head{margin-top:1px!important}
+#appHeader .headActions{padding:0!important;gap:2px!important;border-color:transparent!important;background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#appHeader .headActions button,#appHeader .adminSettingsBtn,#appHeader .accountBtn,#appHeader .share{background:color-mix(in srgb,var(--scene-ink) 4.5%,transparent)!important}
+#appHeader .headActions button svg{width:21px!important;height:21px!important}
+
+.nightCompactContext{display:none;min-width:0;align-items:center;grid-template-columns:minmax(0,1fr) auto;gap:12px}
+.nightCompactContext>span{display:grid;min-width:0;gap:1px}
+.nightCompactContext b{color:var(--scene-ink);font-size:16px;font-weight:760;line-height:1.05;letter-spacing:-.025em}
+.nightCompactContext small{overflow:hidden;color:var(--scene-secondary);font-size:10px;font-weight:590;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.nightCompactContext>strong{color:var(--scene-secondary);font-size:10.5px;font-weight:650;white-space:nowrap}
+body.headerCompact[data-view="today"] #appHeader{padding-top:max(5px,env(safe-area-inset-top))!important;padding-bottom:5px!important;border-bottom-color:color-mix(in srgb,var(--scene-line) 72%,transparent)!important;background:color-mix(in srgb,var(--liquid-glass-elevated) 78%,transparent)!important;-webkit-backdrop-filter:blur(26px) saturate(158%)!important;backdrop-filter:blur(26px) saturate(158%)!important;box-shadow:0 6px 22px rgba(18,24,32,.045)!important}
+body.headerCompact[data-view="today"] #appHeader .hospitalStrip{max-height:0!important;min-height:0!important;margin:0!important;opacity:0!important;transform:translateY(-6px)!important;pointer-events:none!important}
+body.headerCompact[data-view="today"] #appHeader .motto{display:none!important}
+body.headerCompact[data-view="today"] #appHeader .nightCompactContext{display:grid!important}
+body.headerCompact[data-view="today"] #appHeader .headerIdentity{min-width:0!important}
+body.headerCompact[data-view="today"] #appHeader .head{min-height:44px!important}
+
+#today .nightDateShell{margin:5px 0 20px!important}
+#today .nightDateShell .grid2{display:block!important}
+#today .nightDateShell .staffingCount{display:none!important}
+#today .nightDateLabel>.nightDateContext{display:none!important}
+#today .nightDateShell .dateNav{display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px!important;align-items:center!important;gap:8px!important;overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#today .nightDateShell .dateNav>button{width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border:1px solid color-mix(in srgb,var(--scene-line) 76%,transparent)!important;border-radius:50%!important;background:color-mix(in srgb,var(--liquid-glass-elevated) 68%,transparent)!important;color:var(--scene-accent)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 4px 14px rgba(28,34,44,.045)!important;-webkit-backdrop-filter:blur(15px) saturate(145%)!important;backdrop-filter:blur(15px) saturate(145%)!important;font-size:27px!important}
+#today .nightDateShell .dateNav>button:active{transform:scale(.94)!important;background:color-mix(in srgb,var(--scene-accent) 9%,var(--scene-surface))!important}
+#today .nightDateShell .dateNav>button:disabled{opacity:.28!important}
+#today .nightDateShell .prettyDateControl{min-width:0!important}
+#today .nightDateShell .prettyDateButton{min-height:54px!important;padding:5px 10px!important;border:0!important;border-radius:15px!important;background:transparent!important;box-shadow:none!important}
+#today .nightDateShell .prettyDateButton strong{color:var(--scene-ink)!important;font-size:17px!important;font-weight:760!important;line-height:1.15!important;letter-spacing:-.025em!important}
+#today .nightDateShell .prettyDateButton small{margin-top:3px!important;color:var(--scene-secondary)!important;font-size:10.5px!important;font-weight:570!important}
+
+#today .personalNight>.sectionTitle{margin:0 2px 9px!important;color:var(--scene-secondary)!important;font-size:14px!important;font-weight:690!important;letter-spacing:-.01em!important}
+#today #personalNightCard>.personalHeroSurface{border-radius:26px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.30),0 20px 46px rgba(12,16,22,.16)!important}
+#today #personalNightCard>.personalHeroSurface>.personalIdentity{min-height:52px!important;padding:10px 15px!important;border-bottom:1px solid rgba(255,255,255,.065)!important}
+#today #personalNightCard .personalAssignmentHero{padding:10px 15px 7px!important}
+#today #personalNightCard .personalRoleCopy small,#today #personalNightCard .personalNextCopy small,#today #personalNightCard .nightTimelineHead small{letter-spacing:.01em!important;text-transform:none!important}
+#today #personalNightCard .personalLiveContext{min-height:22px!important;margin:2px 15px 0!important;gap:8px!important}
+#today #personalNightCard .personalLiveContext .personalLiveState{min-height:22px!important;padding:0!important;background:transparent!important;color:rgba(255,255,255,.72)!important;font-size:11px!important}
+#today #personalNightCard .personalLiveContext .personalLiveState i{width:6px!important;height:6px!important;background:#0a84ff!important;box-shadow:0 0 0 4px rgba(10,132,255,.12)!important}
+#today #personalNightCard .personalClockBadge,#today #personalNightCard .personalNightChanged{min-height:22px!important;padding:2px 7px!important;border:1px solid rgba(255,255,255,.08)!important;background:rgba(255,255,255,.055)!important;color:rgba(255,255,255,.68)!important;font-size:9.5px!important}
+#today #personalNightCard .personalNextStateIntegrated{margin:7px 15px 1px!important;padding:10px 0 11px!important;border:0!important;border-top:1px solid rgba(255,255,255,.075)!important;border-radius:0!important;background:transparent!important}
+#today #personalNightCard .personalNextIndicator{box-shadow:0 0 0 5px rgba(10,132,255,.07)!important}
+#today #personalNightCard .nightTimelineBlue{margin-left:15px!important;margin-right:15px!important}
+#today #personalNightCard .personalFactButtons{margin-left:15px!important;margin-right:15px!important}
+#today #personalNightCard .personalFactButton{min-height:58px!important;padding-top:8px!important;padding-bottom:8px!important}
+#today #personalNightCard .personalFactButton span{font-size:9px!important}
+#today[data-shift-phase="upcoming"] #personalNightCard>.personalHeroSurface,#today[data-shift-phase="first"] #personalNightCard>.personalHeroSurface,#today[data-shift-phase="handover"] #personalNightCard>.personalHeroSurface,#today[data-shift-phase="second"] #personalNightCard>.personalHeroSurface{box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.30),0 22px 52px rgba(10,60,120,.17)!important}
+#today[data-shift-phase="handover"] #personalNightCard>.personalHeroSurface::before{opacity:1!important;transform:scale(1.08)!important}
+
+.updateBanner{grid-template-columns:40px minmax(0,1fr) auto!important;width:min(calc(100% - 20px),510px)!important;min-height:76px!important;padding:10px 11px!important;gap:9px!important;border-radius:22px!important;background:color-mix(in srgb,var(--liquid-glass-elevated) 70%,transparent)!important;-webkit-backdrop-filter:blur(30px) saturate(165%)!important;backdrop-filter:blur(30px) saturate(165%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 16px 42px rgba(20,28,38,.12)!important}
+.updateBannerIcon{width:40px!important;height:40px!important;border-radius:13px!important}
+.updateBannerSummary{align-self:center!important;min-height:0!important}
+.updateBannerSummary b{font-size:13.5px!important}
+.updateBannerSummary small{max-width:270px!important;font-size:10px!important}
+.updateBannerSummary #updateBannerVersion{font-size:8.5px!important}
+.updateBannerActions{grid-column:3!important;align-self:center!important;margin:0!important}
+.updateBannerActions button{min-height:40px!important;padding:0 10px!important}
+.updateBannerActions .updateLaterBtn{min-width:44px!important;padding:0 5px!important}
+.updateBannerActions #applyUpdateBtn{min-width:78px!important;border-radius:13px!important}
+
+.bottom.reactTabs{min-height:64px!important;background:rgba(247,248,250,.18)!important;-webkit-backdrop-filter:blur(30px) saturate(175%)!important;backdrop-filter:blur(30px) saturate(175%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 10px 30px rgba(20,28,38,.07)!important}
+.bottom.reactTabs button.active{color:var(--scene-accent)!important}
+body[data-view] .bottom.reactTabs .tabSlidingIndicator{border-color:rgba(255,255,255,.28)!important;background:radial-gradient(120% 160% at 18% -55%,rgba(255,255,255,.34),transparent 60%),color-mix(in srgb,var(--scene-accent) 7%,rgba(255,255,255,.11))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 3px 10px rgba(20,40,70,.06)!important}
+.bottom.reactTabs .navTaskBadge{top:5px!important;min-width:16px!important;height:16px!important;padding:0 3px!important;font-size:8.5px!important}
+
+@media(max-width:430px){
+  #today .nightSectionIdentity h1{font-size:38px!important}
+  .updateBanner{grid-template-columns:38px minmax(0,1fr) auto!important;width:calc(100% - 16px)!important;min-height:70px!important;padding:9px!important;gap:8px!important}
+  .updateBannerIcon{width:38px!important;height:38px!important}
+  .updateBannerSummary small{display:none!important}
+  .updateBannerActions{gap:2px!important}
+  .updateBannerActions .updateLaterBtn{font-size:10px!important}
+  .updateBannerActions #applyUpdateBtn{min-width:72px!important;padding:0 9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #today[data-shift-phase] #personalNightCard>.personalHeroSurface::before{transform:none!important}
+  #today .nightDateShell .dateNav>button{transition:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  body.headerCompact[data-view="today"] #appHeader,#today .nightDateShell .dateNav>button,.updateBanner,.bottom.reactTabs{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:var(--scene-surface)!important}
+}
+@media(prefers-contrast:more){
+  #today .nightDateShell .dateNav>button,.updateBanner,.bottom.reactTabs{border-color:color-mix(in srgb,var(--scene-ink) 34%,transparent)!important}
+}
+
+
+/* 37.99 safety-preserving direct allocation link: present, but visually secondary. */
+#today #personalNightCard .personalContextAction{
+  min-height:40px!important;
+  padding:0 15px!important;
+  border-top:1px solid rgba(255,255,255,.075)!important;
+  background:transparent!important;
+  color:rgba(132,190,255,.90)!important;
+  font-size:10.5px!important;
+  font-weight:660!important;
+}
+#today #personalNightCard .personalContextAction:active{
+  background:rgba(10,132,255,.055)!important;
+}
+
+
+/* 37.99 mobile compact Night header must override the earlier phone masthead layout. */
+@media(max-width:640px){
+  body.headerCompact[data-view="today"] #today>#appHeader{
+    display:block!important;
+    padding-top:max(5px,env(safe-area-inset-top))!important;
+    padding-bottom:5px!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .hospitalStrip,
+  body.headerCompact[data-view="today"] #today #appHeader .headerChips{
+    display:none!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .head{
+    display:flex!important;
+    width:100%!important;
+    min-height:44px!important;
+    align-items:center!important;
+    gap:8px!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .headerIdentity{
+    display:block!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .headerBrand{
+    display:none!important;
+  }
+  body.headerCompact[data-view="today"] #today #appHeader .nightCompactContext{
+    display:grid!important;
+  }
+}

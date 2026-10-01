@@ -1405,7 +1405,8 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   await openShell(page);
   const chrome = page.locator('#reactScrollChrome .scrollGlassHeader');
   await expect(chrome).toHaveCount(1);
-  await expect(page.locator('#personalNightHeading')).toContainText("Tonight's assignment");
+  await expect(page.locator('#personalNightHeading')).toContainText('Your assignment');
+  await expect(page.locator('#nightCompactContext')).toContainText('Night');
 
   await page.evaluate(() => {
     const spacer = document.createElement('div');
@@ -1417,6 +1418,8 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
   await expect(chrome).toHaveAttribute('data-mode', 'off');
   await expect(chrome).toHaveCSS('display', 'none');
   await expect(page.locator('#reactScrollChrome .scrollGlassMaterial')).toHaveCount(0);
+  await expect(page.locator('body')).toHaveClass(/headerCompact/);
+  await expect(page.locator('#nightCompactContext')).toBeVisible();
   await expect(page.locator('#nightSummaryHeading')).toBeVisible();
   await expect(page.locator('#nightSummaryHeading')).toContainText('Tonight');
   const nightGroupStyle = await page.locator('#today .teamOverviewGroup').evaluate(el => {
