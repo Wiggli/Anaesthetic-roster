@@ -14723,3 +14723,804 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{border-color:rgba(255,255
     display:grid!important;
   }
 }
+
+
+/* 38.00 premium clinical utility system.
+   One visual language across Night, Changes, Breaks, Chat, Account and Admin.
+   Clinical data remains on solid surfaces; expressive translucency stays in chrome and navigation. */
+:root{
+  --premium-hero-start:#0b2f55;
+  --premium-hero-mid:#0e506d;
+  --premium-hero-end:#0f7a80;
+  --premium-hero-text:#f7fbff;
+  --premium-hero-muted:rgba(239,247,255,.78);
+  --premium-hero-line:rgba(255,255,255,.16);
+  --premium-glass:rgba(247,249,252,.56);
+  --premium-glass-dark:rgba(25,27,31,.60);
+  --premium-shadow:0 20px 54px rgba(20,36,56,.12);
+  --premium-radius:24px;
+}
+html[data-theme="dark"],body.dark{
+  --premium-hero-start:#0a2745;
+  --premium-hero-mid:#0b3f58;
+  --premium-hero-end:#0b636a;
+  --premium-shadow:0 22px 58px rgba(0,0,0,.30);
+}
+
+/* Primary screens have one strong identity rather than stacks of tiny labels. */
+#changes .primaryScreenHeader,
+#breaks .primaryScreenHeader,
+#chat .primaryScreenHeader{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  margin:0 auto 18px!important;
+  padding:calc(16px + env(safe-area-inset-top)) 18px 24px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:0 0 30px 30px!important;
+  background:
+    radial-gradient(90% 130% at 92% -15%,rgba(111,217,224,.28),transparent 48%),
+    radial-gradient(70% 95% at 18% 5%,rgba(85,147,224,.18),transparent 56%),
+    linear-gradient(138deg,var(--premium-hero-start),var(--premium-hero-mid) 58%,var(--premium-hero-end))!important;
+  box-shadow:var(--premium-shadow)!important;
+}
+#changes .primaryScreenHeader::after,
+#breaks .primaryScreenHeader::after,
+#chat .primaryScreenHeader::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:210px;
+  height:210px;
+  right:-92px;
+  bottom:-126px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:50%;
+  box-shadow:0 0 0 32px rgba(255,255,255,.025),0 0 0 68px rgba(255,255,255,.018);
+  pointer-events:none;
+}
+#changes .primaryInstitution,
+#breaks .primaryInstitution,
+#chat .primaryInstitution{
+  min-height:36px!important;
+  margin:0 0 14px!important;
+}
+#changes .primaryInstitutionBrand,
+#breaks .primaryInstitutionBrand,
+#chat .primaryInstitutionBrand{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:5px 9px!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.90)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.78)!important;
+}
+#changes .primaryInstitutionBrand img,
+#breaks .primaryInstitutionBrand img,
+#chat .primaryInstitutionBrand img{
+  width:110px!important;
+  height:auto!important;
+  max-height:25px!important;
+}
+#changes .primaryInstitutionBrand>span,
+#breaks .primaryInstitutionBrand>span,
+#chat .primaryInstitutionBrand>span{
+  color:#28386e!important;
+  font-size:7.5px!important;
+  font-weight:760!important;
+}
+#changes .primaryHeaderActions,
+#breaks .primaryHeaderActions,
+#chat .primaryHeaderActions{
+  gap:6px!important;
+}
+#changes .primaryHeaderAction,
+#breaks .primaryHeaderAction,
+#chat .primaryHeaderAction{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:white!important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
+  backdrop-filter:blur(18px) saturate(150%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16)!important;
+}
+#changes .screenEyebrow,
+#breaks .screenEyebrow,
+#chat .chatEyebrow{display:none!important}
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow,
+#chat .primaryScreenTitleRow{
+  align-items:flex-end!important;
+  padding:0!important;
+}
+#changes .primaryScreenHeader h1,
+#breaks .primaryScreenHeader h1,
+#chat .primaryScreenHeader h1{
+  color:var(--premium-hero-text)!important;
+  font-size:40px!important;
+  font-weight:790!important;
+  line-height:.98!important;
+  letter-spacing:-.052em!important;
+  text-shadow:0 1px 18px rgba(0,0,0,.10)!important;
+}
+#changes .primaryScreenHeader p,
+#breaks .primaryScreenHeader p,
+#chat .primaryScreenHeader p{
+  margin:9px 0 0!important;
+  color:var(--premium-hero-muted)!important;
+  font-size:15.5px!important;
+  font-weight:520!important;
+  line-height:1.35!important;
+}
+#changes .screenInfoButton,
+#breaks .screenInfoButton,
+#chat .chatHeaderCompose{
+  min-height:44px!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:white!important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
+  backdrop-filter:blur(18px) saturate(150%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15)!important;
+}
+#changes .screenInfoButton,
+#breaks .screenInfoButton{
+  width:44px!important;
+  height:44px!important;
+  font-size:17px!important;
+}
+#chat .chatHeaderCompose{
+  height:44px!important;
+  padding:0 14px!important;
+  gap:7px!important;
+  font-size:12.5px!important;
+  font-weight:720!important;
+}
+#chat .primaryConnectionLine{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:8px 12px!important;
+}
+#chat .chatConnectionState{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-height:24px!important;
+  padding:3px 8px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.08)!important;
+  color:rgba(255,255,255,.82)!important;
+  font-size:11px!important;
+  font-weight:650!important;
+}
+#chat .chatLiveDot{
+  order:initial!important;
+  width:7px!important;
+  height:7px!important;
+  background:#54d17a!important;
+  box-shadow:0 0 0 4px rgba(84,209,122,.12)!important;
+}
+
+/* Night joins the same branded family without competing with the assignment hero. */
+body:not(.headerCompact)[data-view="today"] #today>#appHeader{
+  position:relative!important;
+  overflow:hidden!important;
+  margin:0 auto 12px!important;
+  padding:calc(12px + env(safe-area-inset-top)) 14px 12px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:0 0 28px 28px!important;
+  background:
+    radial-gradient(85% 130% at 92% -20%,rgba(111,217,224,.22),transparent 50%),
+    linear-gradient(138deg,var(--premium-hero-start),var(--premium-hero-mid) 62%,var(--premium-hero-end))!important;
+  box-shadow:0 14px 36px rgba(20,36,56,.10)!important;
+}
+body:not(.headerCompact)[data-view="today"] #today>#appHeader .hospitalStrip{
+  padding:5px 8px!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.92)!important;
+}
+body:not(.headerCompact)[data-view="today"] #today>#appHeader .headActions button{
+  border:1px solid rgba(255,255,255,.18)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:white!important;
+}
+body:not(.headerCompact)[data-view="today"] #today>#appHeader .motto{display:none!important}
+
+/* The scroll state is now a floating contextual lens, not a slab that suddenly appears. */
+.scrollGlassHeader.scrollGlassMode-compact{
+  top:max(7px,env(safe-area-inset-top))!important;
+  left:50%!important;
+  width:min(calc(100vw - 18px),720px)!important;
+  height:62px!important;
+  min-height:62px!important;
+  transform:translate3d(-50%,calc((1 - var(--scroll-glass-progress,0))*-10px),0)!important;
+  border-radius:22px!important;
+  overflow:visible!important;
+}
+.scrollGlassMode-compact .scrollGlassMaterial{
+  inset:0!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:22px!important;
+  background:var(--premium-glass)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(178%) contrast(1.03)!important;
+  backdrop-filter:blur(30px) saturate(178%) contrast(1.03)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 10px 30px rgba(25,39,59,.11)!important;
+}
+body.dark .scrollGlassMode-compact .scrollGlassMaterial,
+html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
+  border-color:rgba(255,255,255,.10)!important;
+  background:var(--premium-glass-dark)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 32px rgba(0,0,0,.28)!important;
+}
+.scrollGlassMode-compact .scrollGlassStack{height:62px!important}
+.scrollGlassMode-compact .scrollGlassContent{
+  display:flex!important;
+  align-items:center!important;
+  gap:11px!important;
+  height:62px!important;
+  padding:0 16px!important;
+}
+.scrollGlassContextMark{
+  width:10px!important;
+  height:10px!important;
+  flex:0 0 10px!important;
+  border-radius:50%!important;
+  background:var(--scene-accent)!important;
+  box-shadow:0 0 0 5px color-mix(in srgb,var(--scene-accent) 12%,transparent)!important;
+}
+.scrollGlassContextMark-breaks{background:#8a62d1!important;box-shadow:0 0 0 5px rgba(138,98,209,.12)!important}
+.scrollGlassContextMark-chat{background:#0a84ff!important;box-shadow:0 0 0 5px rgba(10,132,255,.12)!important}
+.scrollGlassContextMark-roster{background:#67707d!important;box-shadow:0 0 0 5px rgba(103,112,125,.12)!important}
+.scrollGlassCompactCopy{
+  display:grid!important;
+  min-width:0!important;
+  gap:2px!important;
+}
+.scrollGlassCompactTitle{
+  color:var(--scene-ink)!important;
+  font-size:16.5px!important;
+  font-weight:760!important;
+  line-height:1.1!important;
+  letter-spacing:-.026em!important;
+}
+.scrollGlassCompactSubtitle{
+  overflow:hidden!important;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:590!important;
+  line-height:1.2!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.scrollGlassMode-compact::after{
+  display:none!important;
+}
+
+/* Selected-night controls become quiet instruments rather than form widgets. */
+#changes>.changesDatePanel,
+#breaks>.panel{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes>.changesDatePanel{
+  margin-bottom:16px!important;
+  padding:0!important;
+}
+#changes>.changesDatePanel>h2,
+#breaks>.panel>h2{
+  margin:0 2px 8px!important;
+  color:var(--scene-secondary)!important;
+  font-size:14px!important;
+  font-weight:690!important;
+}
+#changes>.changesDatePanel .dateNav,
+#breaks>.panel>.grid2 .dateNav{
+  min-height:56px!important;
+  border-radius:19px!important;
+  border:1px solid color-mix(in srgb,var(--scene-line) 88%,transparent)!important;
+  background:color-mix(in srgb,var(--scene-surface) 92%,transparent)!important;
+  box-shadow:0 7px 20px rgba(23,35,54,.045)!important;
+}
+#changes>.changesDatePanel .prettyDateButton strong,
+#breaks>.panel>.grid2 .prettyDateButton strong{font-size:16px!important}
+#changes>.changesDatePanel .prettyDateButton small,
+#breaks>.panel>.grid2 .prettyDateButton small{font-size:11px!important}
+
+/* Changes becomes a calm guided workflow. */
+#changes .changePanel{
+  margin-top:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes .ctop{
+  margin:0 2px 14px!important;
+  padding:0!important;
+}
+#changes .ctop h2{
+  margin:0!important;
+  font-size:23px!important;
+  font-weight:760!important;
+  letter-spacing:-.03em!important;
+}
+#changes .ctop .time{
+  margin-top:5px!important;
+  max-width:560px!important;
+  font-size:14px!important;
+  line-height:1.45!important;
+}
+#changes .changesWorkflowTabs{
+  margin-bottom:14px!important;
+  padding:5px!important;
+  border-radius:20px!important;
+  background:rgba(247,249,252,.46)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%)!important;
+  backdrop-filter:blur(18px) saturate(145%)!important;
+}
+#changes .changesWorkflowTabs button{
+  min-height:58px!important;
+  border-radius:16px!important;
+}
+#changes .changesWorkflowTabs button b{font-size:12.5px!important}
+#changes .changesWorkflowTabs button small{font-size:10px!important}
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .nightRoleOverrideStep,
+#changes .fixedAllocationBox{
+  overflow:hidden!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:20px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 8px 24px rgba(20,34,53,.045)!important;
+}
+#changes .staffingSection{
+  padding:16px!important;
+}
+#changes .stepHeader h3{
+  font-size:18px!important;
+  letter-spacing:-.02em!important;
+}
+
+/* Breaks becomes a visual schedule with the user's break as the focal point. */
+#breaks>.panel{
+  padding:0!important;
+}
+#breaks .personalBreakSummary{
+  margin:0 0 16px!important;
+  padding:18px!important;
+  border:1px solid color-mix(in srgb,var(--scene-accent) 16%,var(--scene-line))!important;
+  border-radius:24px!important;
+  background:
+    radial-gradient(100% 120% at 100% 0%,rgba(10,132,255,.10),transparent 50%),
+    linear-gradient(145deg,color-mix(in srgb,var(--scene-accent) 7%,var(--scene-surface)),var(--scene-surface))!important;
+  box-shadow:0 12px 32px rgba(20,44,76,.07)!important;
+}
+#breaks .personalBreakEyebrow{
+  font-size:12px!important;
+  font-weight:700!important;
+}
+#breaks .personalBreakMain h2{
+  margin-top:5px!important;
+  font-size:28px!important;
+  font-weight:780!important;
+  letter-spacing:-.04em!important;
+}
+#breaks .personalBreakMain p{
+  margin-top:5px!important;
+  font-size:14px!important;
+  line-height:1.4!important;
+}
+#breaks .personalBreakMark{
+  width:50px!important;
+  height:50px!important;
+  border-radius:17px!important;
+  font-size:19px!important;
+}
+#breaks .breakPlanTitle h2{
+  font-size:23px!important;
+}
+#breaks .breakScheduleSection,
+#breaks .breakScheduleSection + .breakScheduleSection{
+  border-radius:20px!important;
+  box-shadow:0 7px 22px rgba(20,34,53,.04)!important;
+}
+#breaks .breakScheduleHeader{
+  min-height:66px!important;
+  padding:12px 14px!important;
+}
+#breaks .breakScheduleHeader h3{font-size:17px!important}
+#breaks .breakScheduleHeader small{font-size:12px!important}
+#breaks .breakScheduleRows>.breakPerson{
+  min-height:60px!important;
+  padding:12px 14px!important;
+}
+#breaks .breakScheduleRows>.breakPerson strong{font-size:15px!important}
+
+/* Chat gets the largest readability lift and removes the loose empty-card feeling. */
+#chat .chatScreen{
+  min-height:0!important;
+}
+#chat .chatWorkspace{
+  margin-top:0!important;
+  padding-bottom:18px!important;
+}
+#chat .chatHome{
+  display:grid!important;
+  min-height:0!important;
+  align-content:start!important;
+  gap:0!important;
+}
+#chat .chatInboxSection{
+  overflow:hidden!important;
+  margin:0!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:24px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 12px 32px rgba(20,34,53,.055)!important;
+}
+#chat .chatInboxHeading{
+  min-height:74px!important;
+  padding:16px 18px 13px!important;
+  border-bottom:1px solid var(--scene-line)!important;
+}
+#chat .chatInboxHeading h2{
+  margin:0!important;
+  font-size:23px!important;
+  font-weight:770!important;
+  letter-spacing:-.032em!important;
+}
+#chat .chatInboxHeading small{
+  display:block!important;
+  margin-top:4px!important;
+  color:var(--scene-secondary)!important;
+  font-size:14px!important;
+  font-weight:530!important;
+}
+#chat .chatInboxTeamRow{
+  display:grid!important;
+  grid-template-columns:58px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:12px!important;
+  min-height:0!important;
+  padding:18px!important;
+  border-bottom:1px solid var(--scene-line)!important;
+  background:
+    radial-gradient(90% 120% at 0% 0%,rgba(10,132,255,.055),transparent 58%),
+    var(--scene-surface)!important;
+}
+#chat .chatInboxTeamRow:active{background:color-mix(in srgb,var(--scene-accent) 6%,var(--scene-surface))!important}
+#chat .chatTeamAvatar{
+  width:58px!important;
+  height:58px!important;
+  border-radius:18px!important;
+  background:color-mix(in srgb,var(--scene-accent) 10%,var(--scene-surface))!important;
+}
+#chat .chatTeamAvatar svg{width:30px!important;height:30px!important}
+#chat .chatInboxTeamCopy{
+  display:grid!important;
+  min-width:0!important;
+  gap:4px!important;
+}
+#chat .chatInboxTeamTop b{
+  font-size:20px!important;
+  font-weight:770!important;
+  letter-spacing:-.025em!important;
+}
+#chat .chatInboxTeamTop time{
+  color:var(--scene-secondary)!important;
+  font-size:11.5px!important;
+}
+#chat .chatTeamPurpose{
+  color:var(--scene-ink)!important;
+  font-size:14px!important;
+  font-weight:590!important;
+  line-height:1.35!important;
+}
+#chat .chatTeamMemberCount,
+#chat .chatInboxTeamPreview{
+  color:var(--scene-secondary)!important;
+  font-size:12.5px!important;
+  line-height:1.35!important;
+}
+#chat .chatTeamMemberCount{
+  margin-top:3px!important;
+  font-weight:660!important;
+}
+#chat .chatConversationBadge{
+  min-width:26px!important;
+  height:26px!important;
+  padding:0 7px!important;
+  font-size:11px!important;
+}
+#chat .chatInboxOpen{
+  grid-column:1/-1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  min-height:44px!important;
+  margin-top:8px!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--scene-accent) 9%,var(--scene-surface))!important;
+  color:var(--scene-accent)!important;
+  font-size:13px!important;
+  font-style:normal!important;
+  font-weight:740!important;
+}
+#chat .chatInboxOpen b{font-size:19px!important;font-weight:430!important}
+#chat .chatInboxSectionLabel{
+  min-height:64px!important;
+  padding:16px 18px 10px!important;
+  border-top:0!important;
+}
+#chat .chatInboxSectionLabel>span{
+  font-size:20px!important;
+  font-weight:760!important;
+  letter-spacing:-.026em!important;
+}
+#chat .chatInboxSectionLabel small{
+  font-size:12.5px!important;
+}
+#chat .reactConversationGroup{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#chat .chatInboxRow{
+  min-height:80px!important;
+  padding:13px 18px!important;
+}
+#chat .chatInboxRow strong{
+  font-size:18px!important;
+  font-weight:720!important;
+}
+#chat .chatInboxRow small{
+  margin-top:3px!important;
+  font-size:13.5px!important;
+}
+#chat .chatInboxRow .chatInboxMeta time{
+  font-size:11.5px!important;
+}
+#chat .chatInboxRow .chatInboxUnread{
+  min-width:25px!important;
+  height:25px!important;
+  padding:0 7px!important;
+  font-size:11px!important;
+}
+#chat .chatSafetyNotice{
+  margin:14px 0 0!important;
+  min-height:68px!important;
+  padding:12px 16px!important;
+  border:1px solid color-mix(in srgb,#c98224 28%,var(--scene-line))!important;
+  border-bottom-color:transparent!important;
+  border-radius:20px 20px 0 0!important;
+  background:color-mix(in srgb,#f4a340 6%,var(--scene-surface))!important;
+}
+#chat .chatSafetyNotice b{
+  font-size:15.5px!important;
+  font-weight:740!important;
+}
+#chat .chatSafetyNotice small{
+  margin-top:3px!important;
+  font-size:12.5px!important;
+  line-height:1.35!important;
+}
+#chat .chatNotificationDisclosure{
+  margin:0!important;
+  border:1px solid var(--scene-line)!important;
+  border-radius:0 0 20px 20px!important;
+  background:var(--scene-surface)!important;
+  box-shadow:0 10px 28px rgba(20,34,53,.04)!important;
+}
+#chat .chatNotificationDisclosure>summary{
+  min-height:68px!important;
+  padding:12px 16px!important;
+}
+#chat .chatNotificationDisclosure>summary b{
+  font-size:15.5px!important;
+  font-weight:740!important;
+}
+#chat .chatNotificationDisclosure>summary small{
+  margin-top:3px!important;
+  font-size:12.5px!important;
+}
+
+/* Account and Admin use the same hierarchy instead of feeling like separate products. */
+.accountSheetHeader{
+  padding:calc(14px + env(safe-area-inset-top)) 20px 16px!important;
+  border-bottom:0!important;
+  background:
+    radial-gradient(90% 130% at 92% -20%,rgba(111,217,224,.20),transparent 48%),
+    linear-gradient(138deg,var(--premium-hero-start),var(--premium-hero-mid) 60%,var(--premium-hero-end))!important;
+  color:white!important;
+}
+.accountSheetHeader h2{
+  color:white!important;
+  font-size:28px!important;
+  font-weight:780!important;
+}
+.accountSheetHeader button{
+  border:1px solid rgba(255,255,255,.18)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:white!important;
+}
+.accountSheetIntro{font-size:14px!important}
+.accountSheet .accountGroup,
+#profileExperience>.accountProfilePanel{
+  border-radius:22px!important;
+  box-shadow:0 8px 24px rgba(20,34,53,.045)!important;
+}
+.accountSheet .accountGroup>h3,
+.accountSheet .accountSectionHeading h3{font-size:18px!important}
+.accountGroupDescription,
+.accountSheet .accountSectionHeading p{font-size:13.5px!important}
+
+#admin .adminHeader{
+  overflow:hidden!important;
+  margin-bottom:12px!important;
+  padding:20px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:0 0 28px 28px!important;
+  background:
+    radial-gradient(90% 120% at 92% -20%,rgba(111,217,224,.22),transparent 50%),
+    linear-gradient(138deg,var(--premium-hero-start),var(--premium-hero-mid) 60%,var(--premium-hero-end))!important;
+  box-shadow:var(--premium-shadow)!important;
+}
+#admin .adminHeader h2{
+  color:white!important;
+  font-size:30px!important;
+  font-weight:780!important;
+  letter-spacing:-.035em!important;
+}
+#admin .adminHeader .time{
+  max-width:580px!important;
+  color:var(--premium-hero-muted)!important;
+  font-size:14px!important;
+}
+#admin .adminHeader #closeAdminBtn{
+  min-height:44px!important;
+  padding:0 14px!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:white!important;
+}
+#admin .adminPane>.panel{
+  border-radius:22px!important;
+  box-shadow:0 8px 24px rgba(20,34,53,.04)!important;
+}
+#admin .adminSectionIntro h2{font-size:20px!important}
+#admin .adminSectionIntro .time{font-size:13.5px!important}
+
+/* Full roster and shared overlays receive the same finishing details. */
+#roster .rosterPageHeader{
+  padding:16px 18px!important;
+  border-radius:0 0 24px 24px!important;
+  background:linear-gradient(138deg,var(--premium-hero-start),var(--premium-hero-mid) 64%,var(--premium-hero-end))!important;
+  color:white!important;
+}
+#roster .rosterPageHeader h2{font-size:28px!important;color:white!important}
+#roster .rosterPageHeader button{
+  border-color:rgba(255,255,255,.18)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:white!important;
+}
+.onboardingDialog,
+.releaseDialog,
+.updateDetailsSheet{
+  border-radius:28px!important;
+  box-shadow:0 26px 70px rgba(20,28,40,.20)!important;
+}
+.onboardingDialog h2,
+.releaseDialog h2,
+.updateDetailsSheet h2{
+  font-size:26px!important;
+  letter-spacing:-.035em!important;
+}
+
+/* Bottom navigation remains recognisable but feels less like a white slab. */
+.bottom.reactTabs{
+  width:min(calc(100vw - 18px),680px)!important;
+  min-height:68px!important;
+  padding:6px!important;
+  border:1px solid rgba(255,255,255,.38)!important;
+  border-radius:28px!important;
+  background:rgba(247,249,252,.30)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%)!important;
+  backdrop-filter:blur(32px) saturate(180%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.48),0 14px 38px rgba(22,34,50,.10)!important;
+}
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.10)!important;
+  background:rgba(28,30,34,.44)!important;
+}
+.bottom.reactTabs button{
+  min-height:56px!important;
+  border-radius:22px!important;
+  font-size:11.5px!important;
+  font-weight:650!important;
+}
+.bottom.reactTabs button.active{font-weight:760!important}
+body[data-view] .bottom.reactTabs .tabSlidingIndicator{
+  border-radius:22px!important;
+  background:color-mix(in srgb,var(--scene-accent) 8%,rgba(255,255,255,.16))!important;
+}
+.bottom.reactTabs .navTaskBadge{
+  min-width:16px!important;
+  height:16px!important;
+  font-size:8.5px!important;
+}
+
+@media(max-width:640px){
+  #changes .primaryScreenHeader,
+  #breaks .primaryScreenHeader,
+  #chat .primaryScreenHeader{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+  #changes .primaryScreenHeader h1,
+  #breaks .primaryScreenHeader h1,
+  #chat .primaryScreenHeader h1{font-size:38px!important}
+  #changes .primaryScreenHeader p,
+  #breaks .primaryScreenHeader p,
+  #chat .primaryScreenHeader p{font-size:14.5px!important}
+  #chat .chatHeaderCompose span{display:none!important}
+  #chat .chatHeaderCompose{
+    width:44px!important;
+    padding:0!important;
+    border-radius:50%!important;
+  }
+  #chat .chatInboxTeamTop{
+    align-items:flex-start!important;
+    gap:5px!important;
+  }
+  #chat .chatInboxTeamTop time{
+    padding-top:3px!important;
+    white-space:nowrap!important;
+  }
+}
+@media(max-width:390px){
+  #chat .chatInboxTeamRow{
+    grid-template-columns:52px minmax(0,1fr) auto!important;
+    padding:16px!important;
+  }
+  #chat .chatTeamAvatar{width:52px!important;height:52px!important}
+  #chat .chatInboxTeamTop b{font-size:18.5px!important}
+  #chat .chatTeamPurpose{font-size:13.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .scrollGlassHeader.scrollGlassMode-compact{transform:translate3d(-50%,0,0)!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  .bottom.reactTabs,
+  #changes .changesWorkflowTabs,
+  #changes .primaryHeaderAction,
+  #breaks .primaryHeaderAction,
+  #chat .primaryHeaderAction,
+  #chat .chatHeaderCompose{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  .bottom.reactTabs{background:var(--scene-surface)!important}
+}
+@media(prefers-contrast:more){
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  .bottom.reactTabs,
+  #chat .chatInboxSection,
+  #changes .staffingSection,
+  #breaks .breakScheduleSection{
+    border-color:color-mix(in srgb,var(--scene-ink) 36%,transparent)!important;
+  }
+}

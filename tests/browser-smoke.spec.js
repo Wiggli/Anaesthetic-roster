@@ -1453,8 +1453,9 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
     height: el.getBoundingClientRect().height,
     titleSize: parseFloat(getComputedStyle(el.querySelector('.scrollGlassCompactTitle')).fontSize)
   }));
-  expect(compactChromeMetrics.height).toBeGreaterThanOrEqual(56);
+  expect(compactChromeMetrics.height).toBeGreaterThanOrEqual(60);
   expect(compactChromeMetrics.titleSize).toBeGreaterThanOrEqual(16);
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactSubtitle')).toBeVisible();
   const compactMaterial = await page.locator('#reactScrollChrome .scrollGlassMaterial').evaluate(el => {
     const style = getComputedStyle(el);
     const rgba = style.backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
@@ -1468,8 +1469,8 @@ test('screen-specific scroll chrome stays out of Night and keeps compact surface
     };
   });
   expect(compactMaterial.backdrop).not.toBe('none');
-  expect(compactMaterial.alpha).toBeLessThanOrEqual(0.3);
-  expect(compactMaterial.radius).toBeLessThanOrEqual(1);
+  expect(compactMaterial.alpha).toBeLessThanOrEqual(0.75);
+  expect(compactMaterial.radius).toBeGreaterThanOrEqual(18);
   expect(compactMaterial.edgeBackdrop).not.toBe('none');
   expect(compactMaterial.edgeMask).not.toBe('none');
 
@@ -1527,6 +1528,9 @@ test('typed Chat overview renders private conversations and registered members',
   await expect(page.locator('#chatInboxHeading')).toHaveText('Team chat');
   await expect(page.locator('#chatTeamEntry')).toContainText('Anaesthetic Team');
   await expect(page.locator('#chatTeamEntry')).toContainText('Chat with everyone on tonight’s roster');
+  await expect(page.locator('#chat .chatInboxOpen')).toContainText('Open chat');
+  const chatType = await page.locator('#chatInboxHeading').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+  expect(chatType).toBeGreaterThanOrEqual(20);
   await captureReview(page, 'chat');
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');

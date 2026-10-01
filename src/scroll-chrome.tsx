@@ -18,6 +18,7 @@ type ChromeMode = 'off' | 'compact' | 'rail';
 type ChromeModel = {
   view: string;
   title: string;
+  subtitle?: string;
   mode: ChromeMode;
   rail?: ChromeRail;
 };
@@ -38,14 +39,31 @@ function readAdminRail(): ChromeRail | undefined {
   return { ariaLabel: 'Roster management sections', items };
 }
 
+function compactSubtitle(view: string) {
+  if (view === 'changes') {
+    const live = clean(document.getElementById('changesHeaderLive')?.textContent);
+    return live && live !== 'Up to date' ? live : 'Staffing and allocation';
+  }
+  if (view === 'breaks') {
+    const live = clean(document.getElementById('breakPlanLive')?.textContent);
+    return live ? `Rest plan · ${live}` : 'Rest plan';
+  }
+  if (view === 'chat') {
+    const unread = Number(clean(document.getElementById('chatUnreadBadge')?.textContent)) || 0;
+    return unread ? `${unread} unread` : 'Team and private messages';
+  }
+  if (view === 'roster') return 'Published roster';
+  return '';
+}
+
 function readModel(): ChromeModel {
   const view = document.body.getAttribute('data-view') || 'today';
   if (view === 'today') return { view, title: 'Night', mode: 'off' };
-  if (view === 'changes') return { view, title: 'Changes', mode: 'compact' };
-  if (view === 'breaks') return { view, title: 'Breaks', mode: 'compact' };
-  if (view === 'chat') return { view, title: 'Chat', mode: 'compact' };
+  if (view === 'changes') return { view, title: 'Changes', subtitle: compactSubtitle(view), mode: 'compact' };
+  if (view === 'breaks') return { view, title: 'Breaks', subtitle: compactSubtitle(view), mode: 'compact' };
+  if (view === 'chat') return { view, title: 'Chat', subtitle: compactSubtitle(view), mode: 'compact' };
   if (view === 'admin') return { view, title: 'Roster management', mode: 'rail', rail: readAdminRail() };
-  if (view === 'roster') return { view, title: 'Full roster', mode: 'compact' };
+  if (view === 'roster') return { view, title: 'Full roster', subtitle: compactSubtitle(view), mode: 'compact' };
   return { view, title: 'Night Roster', mode: 'off' };
 }
 
@@ -76,8 +94,8 @@ function rawScrollProgress(model: ChromeModel) {
     // The replacement rail starts forming only as the original rail reaches the top edge.
     return clamp((64 - rect.top) / 48);
   }
-  // Compact navigation forms continuously as the large page heading leaves the viewport.
-  return clamp((72 - rect.bottom) / 48);
+  // Compact navigation forms gradually as the large page heading leaves the viewport.
+  return clamp((78 - rect.bottom) / 86);
 }
 
 function activateAdminRailItem(key: string) {
@@ -92,7 +110,7 @@ function ScrollGlassChrome() {
   const frame = useRef<number | null>(null);
   const [model, setModel] = useState<ChromeModel>(() => readModel());
   const modelKey = useMemo(
-    () => model.view + ':' + model.mode + ':' + model.title + ':' +
+    () => model.view + ':' + model.mode + ':' + model.title + ':' + (model.subtitle || '') + ':' +
       (model.rail?.items.map(item => item.key + (item.active ? '*' : '')).join(',') || ''),
     [model]
   );
@@ -198,14 +216,16 @@ function ScrollGlassChrome() {
     {model.mode !== 'off' && <div className="scrollGlassMaterial" aria-hidden="true" />}
     <div className="scrollGlassStack">
       {model.mode === 'compact' && <div className="scrollGlassContent">
+        <span className={'scrollGlassContextMark scrollGlassContextMark-' + model.view} aria-hidden="true" />
         <motion.span
           key={modelKey}
-          className="scrollGlassCompactTitle"
-          initial={reducedMotion ? false : { opacity: 0, y: 2 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reducedMotion ? 0 : 0.14 }}
+          className="scrollGlassCompactCopy"
+          initial={reducedMotion ? false : { opacity: 0, y: 5, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 430, damping: 38, mass: 0.5 }}
         >
-          {model.title}
+          <strong className="scrollGlassCompactTitle">{model.title}</strong>
+          {model.subtitle && <small className="scrollGlassCompactSubtitle">{model.subtitle}</small>}
         </motion.span>
       </div>}
       {model.mode === 'rail' && model.rail && <LayoutGroup id="scroll-glass-rail-admin">

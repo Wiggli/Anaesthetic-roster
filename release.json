@@ -1,14 +1,15 @@
 {
-  "version": "37.99",
+  "version": "38.00",
   "date": "1 October 2026",
-  "title": "Give Night a quieter focus",
-  "summary": "Night now puts assignment, handover and the selected roster night ahead of surrounding chrome, with a calmer personal hero, a contextual compact header and lighter floating controls.",
+  "title": "Unify Night Roster into one premium interface",
+  "summary": "Night, Changes, Breaks, Chat, Account and roster management now share one calmer, more readable visual system with stronger hierarchy, richer glass chrome and fewer tiny labels.",
   "changes": [
-    "Night now opens with a leaner hospital header, one clear page title and a lighter date navigator, removing repeated labels while keeping the selected roster night obvious.",
-    "Your assignment hero is calmer and more compact while preserving the live handover rail, colleague, duty and break information, clock-change guidance and every existing roster calculation.",
-    "As Night scrolls, the hospital masthead now morphs into a compact glass header carrying your assignment and selected date instead of leaving an empty collapsed header.",
-    "The update prompt and bottom navigation are smaller, clearer and more genuinely translucent, with quieter secondary actions, a refined active state and reduced-transparency fallbacks.",
-    "During the active working night, the interface subtly increases emphasis on the assignment and handover instrument without changing staffing, allocation, break or PWA update behaviour."
+    "Changes, Breaks and Chat now use a shared premium clinical header with larger titles, useful subtitles and consistent app controls, while Night keeps its assignment-first hierarchy inside the same branded family.",
+    "The scrolling header across secondary screens is now a floating contextual glass lens with a title and live screen context, appearing gradually instead of snapping in as a flat top bar.",
+    "Chat has larger readable text, a richer Team Chat entry, clearer private-message rows, a proper Open chat action and grouped safety and notification controls so the screen no longer feels sparse or unfinished.",
+    "Changes is visually quieter and more guided, while Breaks gives the user’s own break stronger emphasis and makes the shared break schedule easier to scan without adding new clinical logic.",
+    "Account, roster management, the full roster, shared dialogs and bottom navigation now use the same spacing, typography, radius and glass rules, with dark mode, increased contrast, reduced motion and reduced transparency preserved.",
+    "No handover time is hard-coded by this redesign. Night and Breaks continue to use the existing Europe/Malta timing calculation, including the ordinary 03:30 handover and daylight-saving transition rules."
   ],
   "update_policy": "important"
 }
