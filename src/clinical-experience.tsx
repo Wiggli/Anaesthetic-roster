@@ -683,6 +683,10 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     animate={{ opacity: 1, y: 0, scale: 1 }}
     transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36, mass: 0.66 }}
   >
+    <div className="personalIdentity personalIdentityAssistive">
+      <span>{model.displayName}</span>
+      {model.jobTitle && <small>{model.jobTitle}</small>}
+    </div>
     <div className="personalAssignmentStage">
       <div className="personalHeroMeta">
         <span className="personalHeroEyebrow">{model.assignmentLabel}</span>
@@ -701,7 +705,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
 
       <motion.div
-        className="personalHeroStatus"
+        className="personalHeroStatus personalNextState"
         key={liveStatus + '-' + next.title}
         aria-live="polite"
         initial={reducedMotion ? false : { opacity: 0.7, y: 3 }}
@@ -710,9 +714,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       >
         <span className="personalHeroStatusMark" aria-hidden="true"><i /></span>
         <span className="personalHeroStatusCopy">
-          <small>{liveStatus || next.eyebrow}</small>
-          <strong>{next.title}</strong>
-          {next.detail && <span>{next.detail}</span>}
+          <small>{next.eyebrow}</small>
+          <strong>{liveStatus || next.title}</strong>
+          <span>{next.title}{next.detail ? ' · ' + next.detail : ''}</span>
         </span>
         {model.changed && <span className="personalNightChanged">Changed</span>}
       </motion.div>
