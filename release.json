@@ -1,13 +1,13 @@
 {
-  "version": "41.5",
+  "version": "41.6",
   "date": "2 October 2026",
-  "title": "Make Night easier to read",
-  "summary": "Night now prioritises the nurse’s role, live duty state and timing, while the centre Actions control and its sheet feel calmer, smaller and physically connected.",
+  "title": "Polish the app shell",
+  "summary": "Navigation, compact headers and page spacing now behave as one calmer interface, with clearer labels and more convincing translucent glass while keeping clinical content stable and readable.",
   "changes": [
-    "The personal Night hero is substantially shorter and now prioritises assignment, live duty state, handover timing, duty period and break, with a slim direct route to team allocation and profile detail moved behind progressive disclosure.",
-    "Tonight is calmer and less repetitive: the duplicate break shortcut and secondary quick-status strip are removed while the team plan, allocation and recent changes remain immediately available.",
-    "The centre Actions rudder is smaller and better integrated with the navigation, uses clearer labelling and attention counts, and rotates into a close state while its sheet is open.",
-    "The Actions sheet now grows from the centre navigation with restrained motion and presents staffing, review, messaging and sharing actions in a faster two-level hierarchy with reduced-motion fallbacks."
+    "The bottom Night, Changes, Breaks and Chat rudder has larger destination labels, a better integrated centre Actions control and a lighter glass material that lets moving content remain visible underneath.",
+    "Compact scroll headers now show useful screen context where available, use a more legible hierarchy and transition into a genuinely translucent navigation surface instead of an opaque strip.",
+    "The Changes workflow control now settles beneath the compact header when sticky, preventing competing chrome while keeping the three-step workflow immediately accessible.",
+    "Night and the other primary screens use tighter, more consistent vertical spacing so the first viewport carries more useful information without making cards or controls feel cramped."
   ],
   "update_policy": "normal"
 }
