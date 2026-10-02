@@ -19,7 +19,8 @@ for (const file of ['AGENTS.md', 'package.json', 'package-lock.json', 'tests', '
 assert.equal(manifest.id, './');
 assert.equal(manifest.start_url, './');
 assert.equal(manifest.scope, './');
-assert.match(html, new RegExp(`domain-logic\\.js\\?v=${version.replace('.', '\\.')}`));\nassert.match(html, new RegExp(`runtime-foundation\\.js\\?v=${version.replace('.', '\\.')}`));
+assert.match(html, new RegExp(`domain-logic\\.js\\?v=${version.replace('.', '\\.')}`));
+assert.match(html, new RegExp(`runtime-foundation\\.js\\?v=${version.replace('.', '\\.')}`));
 assert.match(html, new RegExp(`app-core\\.js\\?v=${version.replace('.', '\\.')}`));
 assert.match(html, /id="reactLaunchMotto"/);
 const moduleAsset = html.match(/src="\.\/(assets\/[^" ]+\.js)"/);
