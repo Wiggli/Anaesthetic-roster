@@ -7,6 +7,8 @@ const changesWorkflowExperience = fs.readFileSync(path.join(__dirname, '..', 'sr
 const changesConfirmationExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-confirmation.tsx'), 'utf8');
 const presentationCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'presentation.css'), 'utf8');
 const accountExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'account-experience.tsx'), 'utf8');
+const quickActionsExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'quick-actions.tsx'), 'utf8');
+const rudderCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'rudder-navigation.css'), 'utf8');
 
 const storage = new Map();
 const noopElement = () => ({
@@ -571,6 +573,14 @@ assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefing
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function prepareAdminInformationArchitecture\(\)[\s\S]*What do you need to manage\?[\s\S]*People & Access[\s\S]*Roster Management[\s\S]*System/, 'Admin must open from one four-area management hub');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /adminLegacyTabs/, 'the superseded five-tab administrator rail must be retired from the active interface');
 assert.match(ui, /function prepareAccountInformationArchitecture\(\)[\s\S]*Profile[\s\S]*Preferences[\s\S]*Security[\s\S]*App & Help/, 'Account must use progressive disclosure instead of one long settings sheet');
+assert.match(html, /id="quickActionsSheet"[\s\S]*data-quick-action="absence"[\s\S]*data-quick-action="overtime"[\s\S]*data-quick-action="review"/, 'Quick Actions must retain a usable HTML fallback for the core night actions');
+assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.showQuickActions/, 'the React navigation must expose one central Quick Actions rudder rather than a fifth destination');
+assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');
+assert.match(ui, /function showQuickActions\(\)[\s\S]*roster:quick-actions/, 'Quick Actions must build its context from the live selected night before opening');
+assert.match(ui, /function performQuickAction\(action\)[\s\S]*show\('changes'\)[\s\S]*setChangesStep/, 'staffing Quick Actions must route into the existing Changes workflow instead of creating a mutation shortcut');
+assert.match(quickActionsExperience, /Report an absence[\s\S]*Add overtime cover[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share Night Roster/, 'the typed Quick Actions sheet must keep the compact operational action set');
+assert.match(rudderCss, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/, 'rudder navigation must reserve one centre slot while keeping four page destinations');
+assert.match(rudderCss, /prefers-reduced-transparency:reduce[\s\S]*quickRudderDisc[\s\S]*quickActionsSheet/, 'the rudder and sheet must retain a solid reduced-transparency fallback');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(clinicalExperience, /item\.detail && <small[\s\S]*\{item\.detail\}/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
