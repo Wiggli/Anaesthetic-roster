@@ -1,6 +1,6 @@
-# Chat presentation boundary (37.90)
+# Chat presentation boundary (40.1)
 
-Chat uses an inbox-first presentation on phone and a two-pane inbox/thread presentation on wider screens. Anaesthetic Team is explicitly labelled as **Team chat**, with plain-language copy explaining that it reaches everyone on tonight’s roster. Private messaging is separately labelled **Private messages**, and the new-private-chat action always includes a visible text label so occasional users do not need to interpret an icon.
+Chat uses an inbox-first presentation on phone and a two-pane inbox/thread presentation on wider screens. Anaesthetic Team is explicitly labelled as **Team chat**, with plain-language copy explaining that it reaches everyone on tonight’s roster. Private messaging is separately labelled **Private messages**, and the new-private-chat action keeps a visible text label on phone and desktop so occasional users do not need to interpret an icon.
 
 ## Ownership and interaction
 
@@ -19,3 +19,10 @@ Chat remains for staff coordination only. Patient-identifiable and clinical info
 ## Verification
 
 Verify Node 22 regression tests, release consistency, production build and the mobile/desktop Playwright suite. Phone review must confirm that Chat initially makes Team chat obvious without relying on icons, opening Anaesthetic Team or a private conversation creates a dedicated thread above the persistent app tab bar, the single-surface composer stays clear of the tab bar and keyboard, unread markers remain legible, and light/dark modes preserve contrast.
+
+
+## 40.1 presentation standard
+
+The Chat screen uses the same restrained blue premium system as the rest of the application, with larger night-shift-readable message text, 44 px or larger primary touch targets, a dedicated full-canvas phone thread, a two-pane desktop workspace, and a single translucent composer surface. Private outgoing messages use the app blue with white text, while Team chat keeps a quieter grouped-message treatment so the group transcript remains easy to scan.
+
+Thread chrome and composers may use translucent material, but message content remains solid and high-contrast. The phone header must keep **New private chat** visibly labelled, the Team chat entry must make its audience obvious before opening it, and reduced-transparency, reduced-motion and increased-contrast preferences must remain supported.
