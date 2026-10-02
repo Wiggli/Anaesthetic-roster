@@ -13,7 +13,9 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 assert.match(migration, /create table if not exists public\.roster_audit_events[\s\S]*enable row level security/i,
   'durable audit storage must be RLS protected');
 assert.match(migration, /revoke all privileges on table public\.roster_audit_events from public,anon,authenticated/i,
-  'browser roles must not receive direct audit-table access');
+  'audit storage must begin from a deny-by-default privilege boundary');
+assert.match(migration, /grant select on table public\.roster_audit_events to authenticated[\s\S]*create policy "Admins can view roster audit events"[\s\S]*is_roster_admin/i,
+  'audit reads must be restricted to administrators by RLS');
 assert.match(migration, /before_value jsonb[\s\S]*after_value jsonb/,
   'audit events must preserve server-observed before and after values');
 assert.match(migration, /operation_id uuid[\s\S]*actor_user_id uuid[\s\S]*actor_display_name text/,
