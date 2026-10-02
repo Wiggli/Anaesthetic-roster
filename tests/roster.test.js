@@ -452,11 +452,14 @@ assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migratio
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');
 assert.match(workflow, /deploy:[\s\S]*needs: migrate/, 'deployment must depend on migration');
 assert.match(workflow, /actions\/upload-artifact@v4[\s\S]*name: pages-dist[\s\S]*deploy:[\s\S]*actions\/download-artifact@v4[\s\S]*name: pages-dist/, 'deployment must use the exact dist artifact that passed the required test job');
-assert.match(workflow, /github\.event\.pull_request\.number \|\| github\.run_id[\s\S]*cancel-in-progress: true/, 'superseded pull-request verification runs must be cancelled without cancelling main deployments');
+assert.match(workflow, /github\.event\.pull_request\.number \|\| github\.ref[\s\S]*cancel-in-progress: \$\{\{ github\.event_name == 'pull_request' \}\}/, 'superseded pull-request verification runs must be cancelled without cancelling main deployments');
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
 assert.match(workflow, /service-worker\.js[\s\S]*anaesthetic-night-roster-v\$\{cache_version\}/, 'post-deployment checks must verify the live service-worker cache version');
-assert.match(workflow, /test:[\s\S]*@playwright\/test@1\.55\.0[\s\S]*playwright test/, 'the required test job must run a real-browser smoke suite before production migration');
+assert.match(workflow, /browser-smoke:[\s\S]*@playwright\/test@1\.55\.0[\s\S]*verify:browser[\s\S]*browser-resilience:[\s\S]*verify:resilience/, 'browser verification must run in dedicated lanes before the required aggregate test gate');
+assert.match(workflow, /test:[\s\S]*needs: \[build, regression, browser-smoke, browser-resilience\]/, 'the required test status must aggregate build, deterministic and browser verification lanes');
+assert.match(workflow, /github\.event_name == 'pull_request'[\s\S]*--project=low-end-chromium[\s\S]*github\.event_name != 'pull_request'[\s\S]*chromium webkit/, 'pull requests must use Chromium resilience while release and scheduled runs retain WebKit coverage');
+assert.match(workflow, /schedule:[\s\S]*cron:/, 'the workflow must keep a scheduled full compatibility run');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'production migration must wait for deterministic and browser verification in the required test job');
 assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
