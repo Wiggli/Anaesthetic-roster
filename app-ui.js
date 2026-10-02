@@ -1944,8 +1944,13 @@ function updateOfflineControls(){
   updateStaffingActionAvailability();
 }
 
+function sharedTransportLive(){
+  if(realtimeSubscribed)return true;
+  return !!(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader())
+}
 function updateNetworkStatus(){
-  if(!navigator.onLine||forcedOfflineSession)setSharedSyncState('offline','');else if(currentUserProfile)setSharedSyncState(realtimeSubscribed?'live':'reconnecting',realtimeSubscribed?'':'Reconnecting live updates…');
+  var live=sharedTransportLive();
+  if(!navigator.onLine||forcedOfflineSession)setSharedSyncState('offline','');else if(currentUserProfile)setSharedSyncState(live?'live':'reconnecting',live?'':'Reconnecting live updates…');
   updateOfflineControls();
 }
 
