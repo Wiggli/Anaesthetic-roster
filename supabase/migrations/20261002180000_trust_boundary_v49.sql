@@ -249,6 +249,11 @@ begin
 end
 $$;
 
+drop trigger if exists bump_app_sync_state_v49 on public.app_compatibility;
+create trigger bump_app_sync_state_v49
+after insert or update or delete on public.app_compatibility
+for each statement execute function public.bump_app_sync_state_v33();
+
 alter table public.night_change_history
   add column if not exists actor_user_id uuid;
 alter table public.night_change_history
