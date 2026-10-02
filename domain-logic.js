@@ -91,6 +91,9 @@
       serverClock:v>=47,
       chatIdempotency:v>=47,
       monotonicChatRead:v>=47,
+      commandIdempotency:v>=48,
+      freshnessBarrier:v>=48,
+      serverPlanValidation:v>=48,
       atomicFinalise:v>=37,
       nightRoleOverrides:v>=36
     }
