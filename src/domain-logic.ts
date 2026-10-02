@@ -24,7 +24,7 @@
     return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())
   }
   function maltaParts(value: any){
-    var date=value instanceof Date?value:new Date(value==null?Date.now():value),out={};
+    var date=value instanceof Date?value:new Date(value==null?Date.now():value),out={} as any;
     MALTA_FORMATTER.formatToParts(date).forEach(function(part: any){
       if(part.type!=='literal')out[part.type]=Number(part.value)
     });
