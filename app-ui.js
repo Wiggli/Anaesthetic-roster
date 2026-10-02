@@ -490,14 +490,14 @@ function sharedWriteNotice(){
   return'An important Night Roster update is required before shared changes can be made. You can still view the roster.'
 }
 function renderWriteGuardState(){
-  var blocked=!!(currentUserProfile&&!forcedOfflineSession&&sharedWritesBlocked()),banner=byId('writeGuardBanner'),title=byId('writeGuardTitle'),detail=byId('writeGuardDetail');
+  var blocked=!!(currentUserProfile&&!forcedOfflineSession&&sharedWritesBlocked()),banner=byId('writeGuardBanner'),title=byId('writeGuardTitle'),detail=byId('writeGuardDetail'),updateTakingOver=!!(blocked&&compatibilityNeedsUpdate()&&updateRegistration&&updateRegistration.waiting);
   document.body.classList.toggle('sharedWriteBlocked',blocked);
-  if(banner)banner.classList.toggle('hidden',!blocked);
+  if(banner)banner.classList.toggle('hidden',!blocked||updateTakingOver);
   if(!blocked)return;
   var maintenance=appCompatibility&&appCompatibility.write_status==='maintenance';
   if(title)title.textContent=maintenance?'Shared editing paused':'Important update required';
   if(detail)detail.textContent=sharedWriteNotice();
-  if(compatibilityNeedsUpdate()&&updateRegistration&&navigator.onLine)updateRegistration.update().catch(function(){})
+  if(compatibilityNeedsUpdate()&&updateRegistration&&navigator.onLine&&!updateRegistration.waiting)updateRegistration.update().catch(function(){})
 }
 function setAppCompatibility(value){appCompatibility=normaliseAppCompatibility(value);renderWriteGuardState();updateOfflineControls()}
 async function refreshCompatibilityState(){
@@ -2110,8 +2110,8 @@ function verifyRuntimeHealth(){
 }
 
 function renderPendingUpdate(){
-  var meta=pendingUpdateMeta||fallbackUpdateMeta(),automatic=meta.update_policy==='automatic',incoming=waitingUpdateVersion||meta.version||'',state=waitingUpdateState||classifyWaitingUpdate(),version=incoming?'Version '+incoming+(meta.date?' · '+meta.date:''):'Update ready';
-  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerTitle=banner&&banner.querySelector('.updateBannerSummary b'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList');
+  var meta=pendingUpdateMeta||fallbackUpdateMeta(),serverRequired=compatibilityNeedsUpdate(),automatic=!serverRequired&&meta.update_policy==='automatic',incoming=waitingUpdateVersion||meta.version||'',state=waitingUpdateState||classifyWaitingUpdate(),version=incoming?'Version '+incoming+(meta.date?' · '+meta.date:''):'Update ready';
+  var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerTitle=banner&&banner.querySelector('.updateBannerSummary b'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList'),laterBanner=byId('laterUpdateBtn'),laterSheet=byId('laterUpdateSheetBtn');
   if(banner)banner.classList.toggle('automatic',automatic);
   if(state==='finish'){
     if(bannerVersion)bannerVersion.textContent=(incoming?'Version '+incoming:'This version')+' is already open';
@@ -2124,14 +2124,16 @@ function renderPendingUpdate(){
     if(bannerSmall)bannerSmall.textContent='The app is open, but updated components are still waiting.';
     if(sheetVersion)sheetVersion.textContent='Component refresh · '+(incoming||APP_VERSION);
   }else{
-    if(bannerVersion)bannerVersion.textContent=automatic?'Ready for next reopen · '+version:version;
-    if(bannerTitle)bannerTitle.textContent='Night Roster update ready';
-    if(bannerSmall)bannerSmall.textContent=automatic?'No action required. It will install safely when Night Roster is next reopened.':(meta.title||'Review what changed or update now.');
-    if(sheetVersion)sheetVersion.textContent=automatic?'Automatic update · '+version:version;
+    if(bannerVersion)bannerVersion.textContent=serverRequired?'Safety update · '+version:(automatic?'Ready for next reopen · '+version:version);
+    if(bannerTitle)bannerTitle.textContent=serverRequired?'Important Night Roster update required':'Night Roster update ready';
+    if(bannerSmall)bannerSmall.textContent=serverRequired?'Shared changes stay paused until this update is installed.':(automatic?'No action required. It will install safely when Night Roster is next reopened.':(meta.title||'Review what changed or update now.'));
+    if(sheetVersion)sheetVersion.textContent=serverRequired?'Required safety update · '+version:(automatic?'Automatic update · '+version:version);
   }
-  if(sheetTitle)sheetTitle.textContent=state==='new'?(meta.title||'Night Roster update'):'Finish installing '+(incoming||APP_VERSION);
-  if(sheetSummary)sheetSummary.textContent=state==='new'?(meta.summary||'Review what is changing, then update when convenient.'):'The visible app and its cached PWA shell are temporarily on different states. Updating once will activate the waiting service worker and reopen Night Roster in sync.';
-  if(safety){var copy=safety.querySelector('span');if(copy)copy.innerHTML=automatic?'<b>Your shared roster data stays intact.</b> Close and reopen Night Roster to take this update automatically, or update now.':'<b>Your shared roster data stays intact.</b> The app will reopen once after the waiting update is activated.'}
+  if(sheetTitle)sheetTitle.textContent=serverRequired&&state==='new'?'Update required before shared changes':state==='new'?(meta.title||'Night Roster update'):'Finish installing '+(incoming||APP_VERSION);
+  if(sheetSummary)sheetSummary.textContent=serverRequired&&state==='new'?'You can continue viewing the roster, but shared changes are disabled until this version is installed. Review what changed, then choose Update.':state==='new'?(meta.summary||'Review what is changing, then update when convenient.'):'The visible app and its cached PWA shell are temporarily on different states. Updating once will activate the waiting service worker and reopen Night Roster in sync.';
+  if(safety){var copy=safety.querySelector('span');if(copy)copy.innerHTML=serverRequired?'<b>Your shared roster data stays intact.</b> Viewing remains available while shared editing waits for the required update.':automatic?'<b>Your shared roster data stays intact.</b> Close and reopen Night Roster to take this update automatically, or update now.':'<b>Your shared roster data stays intact.</b> The app will reopen once after the waiting update is activated.'}
+  if(laterBanner)laterBanner.classList.toggle('hidden',serverRequired);
+  if(laterSheet)laterSheet.classList.toggle('hidden',serverRequired);
   if(list)list.innerHTML=meta.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('');
 }
 
@@ -2143,16 +2145,16 @@ async function loadPendingUpdateMeta(){
 }
 
 async function showUpdate(registration){
-  updateRegistration=registration;var waiting=registration&&registration.waiting;if(!waiting){clearUpdateNotice();renderDiagnostics();return}
+  updateRegistration=registration;var waiting=registration&&registration.waiting;if(!waiting){clearUpdateNotice();renderWriteGuardState();renderDiagnostics();return}
   pendingUpdateMeta=null;waitingUpdateVersion=cacheVersionNumber(await workerCacheName(waiting));await loadPendingUpdateMeta();waitingUpdateState=classifyWaitingUpdate();renderPendingUpdate();renderDiagnostics();
   sessionStorage.removeItem('anaes_update_later');
-  if(sessionStorage.getItem(waitingUpdateDeferralKey())==='1'&&!updateIsAutomatic())return;
-  var banner=byId('updateBanner');if(banner)banner.classList.remove('hidden');
+  if(sessionStorage.getItem(waitingUpdateDeferralKey())==='1'&&!updateIsAutomatic()&&!compatibilityNeedsUpdate()){renderWriteGuardState();return}
+  var banner=byId('updateBanner');if(banner)banner.classList.remove('hidden');renderWriteGuardState();
 }
 
-function openUpdateDetails(){var dialog=byId('updateDetails');if(!dialog||!dialog.showModal)return;renderPendingUpdate();byId('updateDetailsStatus').textContent=updateIsAutomatic()?'This update will install on a future reopen even if you do nothing.':waitingUpdateState==='new'?'':'Night Roster will reopen once to finish synchronising this version.';if(!dialog.open)dialog.showModal()}
+function openUpdateDetails(){var dialog=byId('updateDetails');if(!dialog||!dialog.showModal)return;renderPendingUpdate();byId('updateDetailsStatus').textContent=compatibilityNeedsUpdate()?'Shared roster viewing remains available, but shared changes require this update.':updateIsAutomatic()?'This update will install on a future reopen even if you do nothing.':waitingUpdateState==='new'?'':'Night Roster will reopen once to finish synchronising this version.';if(!dialog.open)dialog.showModal()}
 
-function dismissWaitingUpdate(){sessionStorage.setItem(waitingUpdateDeferralKey(),'1');clearUpdateNotice();toast(updateIsAutomatic()?'Update will install when Night Roster is reopened':'Update saved for later')}
+function dismissWaitingUpdate(){if(compatibilityNeedsUpdate()){toast('This safety update is required before shared changes can be made');renderPendingUpdate();return}sessionStorage.setItem(waitingUpdateDeferralKey(),'1');clearUpdateNotice();toast(updateIsAutomatic()?'Update will install when Night Roster is reopened':'Update saved for later')}
 
 function finishUpdateActivation(){
   if(updateActivationTimer){clearTimeout(updateActivationTimer);updateActivationTimer=null}
