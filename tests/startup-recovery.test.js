@@ -133,7 +133,7 @@ async function run() {
   let syncRevisions = [9, 9];
   const queryFor = table => {
     const query = {
-      select() { return query; }, eq() { return query; }, order() { return query; }, maybeSingle() { return query; },
+      select() { return query; }, eq() { return query; }, order() { return query; }, limit() { return query; }, maybeSingle() { return query; },
       then(resolve, reject) {
         const result = table === 'app_sync_state'
           ? { data: { id: 1, revision: syncRevisions.length > 1 ? syncRevisions.shift() : syncRevisions[0] }, error: null }
