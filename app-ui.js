@@ -1822,24 +1822,33 @@ function startSharedSyncMonitor(){
   if(sharedSyncTimer)return;
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler){
     sharedSyncTimer='runtime';
-    window.AnaestheticRuntime.scheduler.every('shared-revision',15000,function(){if(window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader())return;return checkSharedRevision()});
+    window.AnaestheticRuntime.scheduler.every('shared-revision',15000,function(){
+      if(window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader())return;
+      if(!realtimeSubscribed&&currentUserProfile&&navigator.onLine&&!forcedOfflineSession)subscribeToChanges();
+      return checkSharedRevision()
+    });
   }else sharedSyncTimer=setInterval(checkSharedRevision,15000)
 }
 
 function scheduleRealtimeReconnect(){
   if(realtimeReconnectTimer||forcedOfflineSession||!currentUserProfile||!navigator.onLine)return;
+  if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader())return;
   var delay=Math.min(30000,1000*Math.pow(2,realtimeRetryCount++));
   realtimeReconnectTimer=setTimeout(function(){realtimeReconnectTimer=null;subscribeToChanges()},delay);
 }
 
 function subscribeToChanges(){
+  if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader()){
+    realtimeSubscribed=false;if(changesChannel){supa.removeChannel(changesChannel);changesChannel=null}setSharedSyncState('live','');return;
+  }
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
   var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
-  changesChannel=supa.channel('roster-live-v37-1');
+  changesChannel=supa.channel('roster-live-v40');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
     }
+    if(table==='app_sync_state'&&payload.new&&window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:Number(payload.new.revision||0)});
     scheduleSharedReload(true);
   })});
   changesChannel.subscribe(function(status){if(generation!==realtimeGeneration)return;if(status==='SUBSCRIBED'){realtimeSubscribed=true;realtimeRetryCount=0;setSharedSyncState('live','');checkSharedRevision()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){realtimeSubscribed=false;setSharedSyncState('reconnecting','Reconnecting live updates…');recordAppDiagnostic('realtime','roster',status);scheduleRealtimeReconnect()}});
