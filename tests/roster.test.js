@@ -524,7 +524,7 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 49, 'the application must require the Trust Boundary schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 50, 'the application must require the Recovery and Longevity schema');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');
