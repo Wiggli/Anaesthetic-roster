@@ -4,7 +4,7 @@
   "title": "Make Night easier to read",
   "summary": "Night now prioritises the nurse’s role, live duty state and timing, while the centre Actions control and its sheet feel calmer, smaller and physically connected.",
   "changes": [
-    "The personal Night hero is substantially shorter and now prioritises assignment, live duty state, handover timing, duty period and break, with colleague and profile detail moved behind progressive disclosure.",
+    "The personal Night hero is substantially shorter and now prioritises assignment, live duty state, handover timing, duty period and break, with a slim direct route to team allocation and profile detail moved behind progressive disclosure.",
     "Tonight is calmer and less repetitive: the duplicate break shortcut and secondary quick-status strip are removed while the team plan, allocation and recent changes remain immediately available.",
     "The centre Actions rudder is smaller and better integrated with the navigation, uses clearer labelling and attention counts, and rotates into a close state while its sheet is open.",
     "The Actions sheet now grows from the centre navigation with restrained motion and presents staffing, review, messaging and sharing actions in a faster two-level hierarchy with reduced-motion fallbacks."
