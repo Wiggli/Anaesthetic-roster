@@ -175,9 +175,9 @@
     return groups
   }
 
-  function StateMachine(this: any,name: any,initial: any,transitions: any){
+  var StateMachine:any=function(this: any,name: any,initial: any,transitions: any){
     this.name=name;this.value=initial;this.transitions=transitions||{};this.listeners=new Set();
-  }
+  };
   StateMachine.prototype.can=function(next: any){
     if(next===this.value)return true;
     var allowed=this.transitions[this.value]||[];
