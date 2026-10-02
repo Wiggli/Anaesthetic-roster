@@ -209,7 +209,7 @@ end
 $$;
 
 create or replace function public.remove_night_absence_v48(
-  p_change_id bigint,
+  p_change_id uuid,
   p_allocation_key text,
   p_changed_by text,
   p_operation_id uuid,
@@ -249,7 +249,7 @@ end
 $$;
 
 create or replace function public.remove_night_overtime_v48(
-  p_overtime_id bigint,
+  p_overtime_id uuid,
   p_changed_by text,
   p_operation_id uuid,
   p_expected_sync_revision bigint
@@ -301,18 +301,25 @@ create or replace function public.finalise_night_plan_v48(
   p_operation_id uuid,
   p_expected_sync_revision bigint
 )
-returns void
+returns bigint
 language plpgsql
 security invoker
 set search_path=''
-as $$
+as $
+declare
+  v_revision bigint;
 begin
-  if not public.claim_roster_operation_v48(p_operation_id,'plan-finalise',p_roster_date,p_expected_sync_revision) then return; end if;
+  if not public.claim_roster_operation_v48(p_operation_id,'plan-finalise',p_roster_date,p_expected_sync_revision) then
+    select revision into v_revision from public.night_plan_status where roster_date=p_roster_date;
+    return coalesce(v_revision,p_expected_revision);
+  end if;
   perform public.assert_roster_fresh_v48(p_expected_sync_revision);
   perform public.validate_night_plan_v48(p_roster_date,coalesce(p_assignments,'{}'::jsonb));
-  perform public.finalise_night_plan_v26(p_roster_date,p_assignments,p_labour_first,p_labour_second,p_changed_by,p_expected_revision);
+  select public.finalise_night_plan_v26(p_roster_date,p_assignments,p_labour_first,p_labour_second,p_changed_by,p_expected_revision)
+  into v_revision;
+  return v_revision;
 end
-$$;
+$;
 
 create or replace function public.apply_night_role_override_v48(
   p_roster_date date,
@@ -336,18 +343,115 @@ begin
 end
 $$;
 
+create or replace function public.publish_roster_v48(
+  p_published_until date,
+  p_changed_by text,
+  p_operation_id uuid,
+  p_expected_sync_revision bigint
+)
+returns void
+language plpgsql
+security invoker
+set search_path=''
+as $
+declare
+  v_current date;
+begin
+  if auth.uid() is null or not public.is_roster_admin() then
+    raise exception 'PERMISSION_DENIED';
+  end if;
+  if p_published_until is null or mod((p_published_until-date '2026-06-30'),4)<>0 then
+    raise exception 'INVALID_ROSTER_DATE';
+  end if;
+  if not public.claim_roster_operation_v48(p_operation_id,'roster-publish',p_published_until,p_expected_sync_revision) then return; end if;
+  perform public.assert_roster_fresh_v48(p_expected_sync_revision);
+  select published_until into v_current from public.roster_settings where id=1 for update;
+  if v_current is null then raise exception 'ROSTER_SETTINGS_MISSING'; end if;
+  if p_published_until<v_current then raise exception 'PUBLISH_REGRESSION'; end if;
+  update public.roster_settings
+  set published_until=p_published_until,updated_by=p_changed_by,updated_at=now()
+  where id=1;
+end
+$;
+
+create or replace function public.upsert_rotation_version_v48(
+  p_effective_from date,
+  p_first1 text,
+  p_first2 text,
+  p_second1 text,
+  p_second2 text,
+  p_pager text,
+  p_reliever text,
+  p_seventh_anchor text,
+  p_seventh_cycle jsonb,
+  p_notes text,
+  p_changed_by text,
+  p_operation_id uuid,
+  p_expected_sync_revision bigint
+)
+returns void
+language plpgsql
+security invoker
+set search_path=''
+as $
+declare
+  v_names text[];
+begin
+  if auth.uid() is null or not public.is_roster_admin() then
+    raise exception 'PERMISSION_DENIED';
+  end if;
+  if p_effective_from is null or p_effective_from<date '2026-06-30'
+     or mod((p_effective_from-date '2026-06-30'),4)<>0 then
+    raise exception 'INVALID_ROSTER_DATE';
+  end if;
+
+  v_names:=array[p_first1,p_first2,p_second1,p_second2,p_pager,p_reliever];
+  if exists(select 1 from unnest(v_names) n where nullif(trim(n),'') is null)
+     or (select count(distinct lower(trim(n))) from unnest(v_names) n)<>6 then
+    raise exception 'INVALID_ROTATION';
+  end if;
+
+  if jsonb_typeof(p_seventh_cycle)<>'array'
+     or jsonb_array_length(p_seventh_cycle)<>7
+     or not (p_seventh_cycle ? 'OT Nurse') then
+    raise exception 'INVALID_SEVENTH_CYCLE';
+  end if;
+
+  if exists(select 1 from public.rotation_versions where effective_from=p_effective_from) then
+    raise exception 'ROTATION_VERSION_EXISTS';
+  end if;
+
+  if not public.claim_roster_operation_v48(p_operation_id,'rotation-version',p_effective_from,p_expected_sync_revision) then return; end if;
+  perform public.assert_roster_fresh_v48(p_expected_sync_revision);
+
+  insert into public.rotation_versions(
+    effective_from,first1,first2,second1,second2,pager,reliever,
+    seventh_anchor,seventh_cycle,notes,updated_by,updated_at
+  )
+  values(
+    p_effective_from,trim(p_first1),trim(p_first2),trim(p_second1),trim(p_second2),trim(p_pager),trim(p_reliever),
+    trim(p_seventh_anchor),p_seventh_cycle,coalesce(p_notes,''),p_changed_by,now()
+  );
+end
+$;
+
+revoke all on function public.publish_roster_v48(date,text,uuid,bigint) from public,anon;
+revoke all on function public.upsert_rotation_version_v48(date,text,text,text,text,text,text,text,jsonb,text,text,uuid,bigint) from public,anon;
+grant execute on function public.publish_roster_v48(date,text,uuid,bigint) to authenticated;
+grant execute on function public.upsert_rotation_version_v48(date,text,text,text,text,text,text,text,jsonb,text,text,uuid,bigint) to authenticated;
+
 revoke all on function public.record_night_absence_v48(date,text,text,text,uuid,bigint) from public,anon;
-revoke all on function public.remove_night_absence_v48(bigint,text,text,uuid,bigint) from public,anon;
+revoke all on function public.remove_night_absence_v48(uuid,text,text,uuid,bigint) from public,anon;
 revoke all on function public.add_night_overtime_v48(date,text,text,uuid,bigint) from public,anon;
-revoke all on function public.remove_night_overtime_v48(bigint,text,uuid,bigint) from public,anon;
+revoke all on function public.remove_night_overtime_v48(uuid,text,uuid,bigint) from public,anon;
 revoke all on function public.apply_staffing_allocations_v48(date,text,text,jsonb,text,text,uuid,bigint) from public,anon;
 revoke all on function public.finalise_night_plan_v48(date,jsonb,text,text,text,bigint,uuid,bigint) from public,anon;
 revoke all on function public.apply_night_role_override_v48(date,text,jsonb,text,text,text,uuid,bigint) from public,anon;
 
 grant execute on function public.record_night_absence_v48(date,text,text,text,uuid,bigint) to authenticated;
-grant execute on function public.remove_night_absence_v48(bigint,text,text,uuid,bigint) to authenticated;
+grant execute on function public.remove_night_absence_v48(uuid,text,text,uuid,bigint) to authenticated;
 grant execute on function public.add_night_overtime_v48(date,text,text,uuid,bigint) to authenticated;
-grant execute on function public.remove_night_overtime_v48(bigint,text,uuid,bigint) to authenticated;
+grant execute on function public.remove_night_overtime_v48(uuid,text,uuid,bigint) to authenticated;
 grant execute on function public.apply_staffing_allocations_v48(date,text,text,jsonb,text,text,uuid,bigint) to authenticated;
 grant execute on function public.finalise_night_plan_v48(date,jsonb,text,text,text,bigint,uuid,bigint) to authenticated;
 grant execute on function public.apply_night_role_override_v48(date,text,jsonb,text,text,text,uuid,bigint) to authenticated;
