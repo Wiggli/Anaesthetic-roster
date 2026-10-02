@@ -16699,3 +16699,511 @@ html[data-theme="dark"] #today .personalClockNow-new{
   #today .personalClockNow-old{background:color-mix(in srgb,var(--liquid-warning) 9%,var(--liquid-surface))}
   #today .personalClockNow-new{background:color-mix(in srgb,var(--liquid-success) 9%,var(--liquid-surface))}
 }
+
+
+/* 41.9 Night composition polish.
+   One spacing rhythm, one assignment hierarchy and one grouped Tonight surface. */
+#today{
+  --night-space-1:8px;
+  --night-space-2:12px;
+  --night-space-3:16px;
+  --night-space-4:24px;
+  --night-space-5:32px;
+}
+
+/* Calmer top chrome and tighter title/date relationship. */
+#today #appHeader{
+  margin-bottom:8px!important;
+  padding-top:calc(10px + env(safe-area-inset-top))!important;
+  padding-bottom:10px!important;
+}
+#today #appHeader .hospitalStrip{
+  min-height:28px!important;
+  gap:10px!important;
+}
+#today #appHeader .hospitalStrip img{
+  max-width:104px!important;
+  max-height:30px!important;
+  object-fit:contain!important;
+}
+#today #appHeader .hospitalStrip span{
+  font-size:9px!important;
+  letter-spacing:.07em!important;
+}
+#today #appHeader .headActions button{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+}
+#today .nightSectionIdentity{
+  margin:0 0 4px!important;
+  padding:0!important;
+}
+#today .nightSectionIdentity h1{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:clamp(38px,9.2vw,42px)!important;
+  font-weight:780!important;
+  line-height:1!important;
+  letter-spacing:-.052em!important;
+}
+#today>.nightOverviewPanel{
+  display:block!important;
+  margin:0!important;
+  padding:0 0 18px!important;
+}
+#today .nightDateShell{
+  margin:0 0 14px!important;
+  padding:0!important;
+}
+#today .nightDateShell .grid2{
+  display:block!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .staffingCount{display:none!important}
+#today .nightDateLabel{margin:0!important}
+#today .nightDateShell .dateNav{
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) 42px!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:48px!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .dateNav>button{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 88%,transparent)!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--liquid-glass-elevated) 60%,transparent)!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 10px rgba(14,24,34,.05)!important;
+  font-size:24px!important;
+}
+#today .nightDateShell .prettyDateButton{
+  min-height:46px!important;
+  display:grid!important;
+  place-content:center!important;
+  gap:2px!important;
+  padding:3px 8px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightDateShell .prettyDateButton strong{
+  color:var(--liquid-label)!important;
+  font-size:17px!important;
+  font-weight:760!important;
+  line-height:1.1!important;
+  letter-spacing:-.027em!important;
+}
+#today .nightDateShell .prettyDateButton small{
+  display:block!important;
+  margin:0!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:590!important;
+  line-height:1.2!important;
+}
+
+/* Your night is the only section heading. Assignment metadata becomes quiet badges only when needed. */
+#today .personalNight{
+  margin:0!important;
+  padding:0!important;
+}
+#today .personalNight>.sectionTitle{
+  margin:0 0 10px!important;
+  color:var(--liquid-label)!important;
+  font-size:20px!important;
+  font-weight:755!important;
+  line-height:1.12!important;
+  letter-spacing:-.027em!important;
+}
+#today #personalNightCard>.personalHeroCompact{
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 10%,var(--liquid-separator))!important;
+  border-radius:22px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:0 12px 30px rgba(12,22,30,.065),inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+body.dark #today #personalNightCard>.personalHeroCompact,
+html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
+  border-color:rgba(255,255,255,.075)!important;
+  background:color-mix(in srgb,var(--liquid-surface) 96%,#000 4%)!important;
+  box-shadow:0 15px 34px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+#today .personalHeroCompact .personalAssignmentStage{
+  padding:16px 16px 0!important;
+}
+#today .personalHeroMetaBadgesOnly{
+  min-height:0!important;
+  justify-content:flex-end!important;
+  padding:0 0 7px!important;
+}
+#today .personalHeroMetaBadgesOnly .personalHeroMetaBadges{
+  margin-left:auto!important;
+}
+#today .personalAssignmentHeroCompact{
+  min-height:60px!important;
+  grid-template-columns:48px minmax(0,1fr)!important;
+  gap:12px!important;
+  padding:0 2px 14px!important;
+}
+#today .personalAssignmentHeroCompact .personalRoleIcon{
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  border-radius:14px!important;
+  font-size:15px!important;
+}
+#today .personalAssignmentHeroCompact .personalRoleCopy b{
+  font-size:clamp(21px,5.5vw,24px)!important;
+  font-weight:780!important;
+  line-height:1.08!important;
+  letter-spacing:-.038em!important;
+  white-space:normal!important;
+}
+#today .personalAssignmentHeroCompact .personalRoleCopy>span{
+  margin-top:2px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:12.5px!important;
+  line-height:1.3!important;
+}
+
+/* Timeline keeps the rail prominent without consuming a full card of its own. */
+#today .personalHeroCompact .nightTimeline{
+  margin:0!important;
+  padding:12px 0 10px!important;
+  border:0!important;
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .personalHeroCompact .nightTimelineHead{
+  margin-bottom:8px!important;
+}
+#today .personalHeroCompact .nightTimelineHead small{
+  font-size:10px!important;
+  font-weight:690!important;
+}
+#today .personalHeroCompact .nightTimelineHead b{
+  margin-top:1px!important;
+  font-size:12.5px!important;
+  font-weight:740!important;
+}
+#today .personalHeroCompact .nightTimelineHead em{
+  font-size:10px!important;
+  font-weight:760!important;
+}
+#today .personalHeroCompact .nightTimelineTrackShell{
+  height:27px!important;
+  min-height:27px!important;
+  border-radius:9px!important;
+}
+#today .personalHeroCompact .nightTimelinePhaseLabels{
+  margin-top:5px!important;
+}
+#today .personalHeroCompact .nightTimelinePhaseLabels span,
+#today .personalHeroCompact .nightTimelineScale span{
+  font-size:9px!important;
+}
+#today .personalHeroCompact .nightTimelineScale{
+  min-height:19px!important;
+  margin-top:2px!important;
+}
+
+/* Duty, Break and Colleague share one readable baseline. */
+#today .personalHeroFactGrid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  margin:8px -16px 0!important;
+  border:0!important;
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-bottom:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact{
+  min-height:62px!important;
+  padding:9px 11px!important;
+  border:0!important;
+  border-right:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  background:transparent!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact:last-child{border-right:0!important}
+#today .personalHeroFactGrid>.personalHeroFact small{
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:720!important;
+  letter-spacing:.025em!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact b{
+  color:var(--liquid-label)!important;
+  font-size:12.5px!important;
+  font-weight:750!important;
+  line-height:1.2!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact span{
+  margin-top:1px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+  font-weight:610!important;
+  line-height:1.25!important;
+}
+#today .personalHeroMoreQuiet{
+  margin:0 -16px!important;
+  border:0!important;
+}
+#today .personalHeroMoreQuiet>summary{
+  min-height:38px!important;
+  padding:0 16px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:640!important;
+}
+#today .personalHeroMoreQuiet .personalHeroMoreGrid{
+  padding:0 16px 10px!important;
+}
+#today .personalHeroPrimaryAction{
+  min-height:48px!important;
+  margin:0 -16px!important;
+  padding:0 16px!important;
+  border:0!important;
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:12.5px!important;
+  font-weight:760!important;
+}
+
+/* Tonight is one grouped operational surface rather than several competing cards. */
+#today .teamOverviewGroup{
+  margin:24px 0 0!important;
+}
+#today .nightSummaryTitle,
+#today>.nightOverviewPanel>.nightSummaryTitle{
+  margin:0 0 10px!important;
+}
+#today .nightSummaryTitle .sectionTitle{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:21px!important;
+  font-weight:760!important;
+  line-height:1.12!important;
+  letter-spacing:-.03em!important;
+}
+#today .nightOverviewBoard{
+  overflow:hidden!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:20px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:0 8px 24px rgba(12,22,30,.045)!important;
+}
+body.dark #today .nightOverviewBoard,
+html[data-theme="dark"] #today .nightOverviewBoard{
+  border-color:rgba(255,255,255,.07)!important;
+  background:color-mix(in srgb,var(--liquid-surface) 98%,#000 2%)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.18)!important;
+}
+#today #nightStatusRow{
+  padding:0!important;
+}
+#today #nightStatusRow>.nightSignal{
+  padding:12px 14px 10px!important;
+}
+#today .nightContextLine{
+  min-height:28px!important;
+  margin:0 0 5px!important;
+  padding:0!important;
+}
+#today .nightContextLine>small{
+  font-size:10px!important;
+}
+#today .nightSignalPrimary{
+  min-height:72px!important;
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:11px!important;
+  padding:5px 0 4px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightSignalPrimary>.nightOverviewIcon{
+  width:36px!important;
+  height:36px!important;
+  flex-basis:36px!important;
+}
+#today .nightSignalLeadCopy{
+  display:grid!important;
+  min-width:0!important;
+  gap:1px!important;
+}
+#today .nightSignalLeadCopy>small{
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:650!important;
+}
+#today .nightSignalLeadCopy>strong{
+  color:var(--liquid-label)!important;
+  font-size:20px!important;
+  font-weight:780!important;
+  line-height:1.08!important;
+  letter-spacing:-.03em!important;
+}
+#today .nightSignalLeadCopy>span:not(.nightSignalState){
+  color:var(--liquid-secondary)!important;
+  font-size:11px!important;
+  line-height:1.3!important;
+}
+#today .nightSignalState{
+  display:inline-flex!important;
+  width:max-content!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+  margin-top:6px!important;
+  color:var(--liquid-success)!important;
+}
+#today .nightSignal.needsReview .nightSignalState{
+  color:var(--liquid-warning)!important;
+}
+#today .nightSignalState b{
+  font-size:11px!important;
+  font-weight:740!important;
+}
+#today .nightSignalGlyph{
+  font-size:13px!important;
+}
+#today #alerts:not(:empty){
+  padding:0 14px 10px!important;
+}
+#today .nightTeamDetails{
+  margin:0!important;
+  border:0!important;
+  border-top:1px solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightTeamDetails>summary{
+  min-height:58px!important;
+  padding:10px 14px!important;
+  border:0!important;
+  background:transparent!important;
+}
+#today .nightTeamDetails>summary .nightOverviewIcon{
+  width:34px!important;
+  height:34px!important;
+  flex-basis:34px!important;
+}
+#today .nightTeamDetails>summary strong{
+  color:var(--liquid-label)!important;
+  font-size:13.5px!important;
+  font-weight:740!important;
+}
+#today .nightTeamDetails>summary small{
+  margin-top:2px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+}
+#today .recentActivityPanel{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-top:1px solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .recentActivityPanel .nightOverviewRowHeading{
+  min-height:46px!important;
+  margin:0!important;
+  padding:10px 14px 5px!important;
+}
+#today .recentActivityPanel .nightOverviewRowHeading h2{
+  color:var(--liquid-label)!important;
+  font-size:13.5px!important;
+  font-weight:740!important;
+}
+#today .recentActivityPanel .nightOverviewRowHeading p{
+  display:none!important;
+}
+#today .recentActivityList{
+  padding:0 14px 10px!important;
+}
+#today .emptyRecentActivity{
+  min-height:50px!important;
+  padding:7px 0 8px!important;
+  border:0!important;
+  background:transparent!important;
+}
+#today .emptyRecentActivity b{
+  color:var(--liquid-label)!important;
+  font-size:12px!important;
+}
+#today .emptyRecentActivity small{
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  line-height:1.3!important;
+}
+#today #nightBreakShortcut{display:none!important}
+
+/* Clock-change cue keeps priority without breaking the normal-night rhythm. */
+#today .personalClockNow{
+  margin:0 0 10px!important;
+}
+#today .personalClockException{
+  margin:0 0 10px!important;
+}
+
+@media(max-width:390px){
+  #today .nightSectionIdentity h1{font-size:38px!important}
+  #today #appHeader .hospitalStrip img{max-width:98px!important}
+  #today .personalHeroCompact .personalAssignmentStage{padding-inline:14px!important}
+  #today .personalAssignmentHeroCompact{grid-template-columns:44px minmax(0,1fr)!important;gap:10px!important}
+  #today .personalAssignmentHeroCompact .personalRoleIcon{width:44px!important;height:44px!important;min-width:44px!important}
+  #today .personalHeroFactGrid{margin-inline:-14px!important}
+  #today .personalHeroFactGrid>.personalHeroFact{padding-inline:8px!important}
+  #today .personalHeroFactGrid>.personalHeroFact small{font-size:10px!important}
+  #today .personalHeroFactGrid>.personalHeroFact b{font-size:11.5px!important}
+  #today .personalHeroFactGrid>.personalHeroFact span{font-size:9.5px!important}
+  #today .personalHeroMoreQuiet,
+  #today .personalHeroPrimaryAction{margin-inline:-14px!important}
+}
+@media(max-width:350px){
+  #today .personalHeroFactGrid{
+    grid-template-columns:1fr!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact{
+    min-height:52px!important;
+    border-right:0!important;
+    border-bottom:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact:last-child{border-bottom:0!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  #today .nightDateShell .dateNav>button,
+  #today .nightOverviewBoard{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-surface)!important;
+  }
+}
