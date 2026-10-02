@@ -305,7 +305,7 @@ returns bigint
 language plpgsql
 security invoker
 set search_path=''
-as $
+as $$
 declare
   v_revision bigint;
 begin
@@ -319,7 +319,7 @@ begin
   into v_revision;
   return v_revision;
 end
-$;
+$$;
 
 create or replace function public.apply_night_role_override_v48(
   p_roster_date date,
@@ -353,7 +353,7 @@ returns void
 language plpgsql
 security invoker
 set search_path=''
-as $
+as $$
 declare
   v_current date;
 begin
@@ -372,7 +372,7 @@ begin
   set published_until=p_published_until,updated_by=p_changed_by,updated_at=now()
   where id=1;
 end
-$;
+$$;
 
 create or replace function public.upsert_rotation_version_v48(
   p_effective_from date,
@@ -393,7 +393,7 @@ returns void
 language plpgsql
 security invoker
 set search_path=''
-as $
+as $$
 declare
   v_names text[];
 begin
@@ -433,7 +433,7 @@ begin
     trim(p_seventh_anchor),p_seventh_cycle,coalesce(p_notes,''),p_changed_by,now()
   );
 end
-$;
+$$;
 
 revoke all on function public.publish_roster_v48(date,text,uuid,bigint) from public,anon;
 revoke all on function public.upsert_rotation_version_v48(date,text,text,text,text,text,text,text,jsonb,text,text,uuid,bigint) from public,anon;
