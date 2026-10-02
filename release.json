@@ -1,13 +1,13 @@
 {
-  "version": "41.8",
+  "version": "41.9",
   "date": "3 October 2026",
-  "title": "Make clock-change time unmistakable",
-  "summary": "Clock-change nights now show a prominent live OLD or NEW clock cue so a nurse waking during the repeated hour can immediately tell whether the displayed 02:xx is the first or second occurrence.",
+  "title": "Polish Night composition and spacing",
+  "summary": "Night now uses one deliberate spacing and typography system, a tighter assignment card, a grouped Tonight surface and a calmer five-column dock.",
   "changes": [
-    "Clock-change nights now show a large live current-time card marked OLD or NEW, with a clear NOW badge and plain-language confirmation of whether the clock change has already happened.",
-    "When clocks go back, the repeated 02:xx hour is labelled FIRST 02:xx before the change and SECOND 02:xx after it, so identical wall-clock times cannot be confused.",
-    "The compact live timeline label mirrors the same OLD clock and NEW clock wording while the existing equal-duty handover, repeated-hour timeline and staffing logic remain unchanged.",
-    "The wake-up cue includes dark-mode, reduced-motion and reduced-transparency treatment and is covered by browser regression tests for both occurrences of 02:15."
+    "The Night header and date selector are tightened so the page title, date and assignment sit on one consistent 8-point spacing rhythm.",
+    "The redundant assignment eyebrow is removed on normal nights, while the hero keeps the assignment, timeline, Duty, Break, Colleague, More details and one full-night action in a clearer hierarchy.",
+    "Tonight is regrouped into one operational surface containing team status, Team allocation and Changes tonight, with Plan ready attached to the team information instead of floating separately.",
+    "The bottom dock is reduced to a 64px balanced five-column glass bar with a smaller integrated Actions control, refined unread badge placement and safe content clearance."
   ],
   "update_policy": "normal"
 }
