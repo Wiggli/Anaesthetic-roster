@@ -54,6 +54,7 @@ export type ChangesExperience = {
   history: HistoryRecord[];
   historyTotal: number;
   historyExpanded: boolean;
+  historyHasMore: boolean;
   allocations: AllocationRow[];
   allocationMessage: string;
   forms: ChangesForms;
@@ -125,13 +126,15 @@ function History({ model }: { model: ChangesExperience }) {
           subtitle={[item.detail, item.meta].filter(Boolean).join(' · ')}
         />)
       : <EmptyState title="No staffing change history for this night" />}
-    {model.historyTotal > 15 && <div className="tw:p-2.5">
+    {(model.historyTotal > 15 || model.historyHasMore) && <div className="tw:p-2.5">
       <Pressable
         type="button"
         className="historyMore tw:min-h-10 tw:w-full tw:rounded-xl tw:bg-black/5 tw:px-3 tw:text-xs tw:font-bold tw:text-[var(--accent-strong)] tw:dark:bg-white/8"
         onClick={() => dispatchAction({ action: 'history' })}
       >
-        {model.historyExpanded ? 'Show recent changes' : `Show full history (${model.historyTotal})`}
+        {model.historyExpanded
+          ? (model.historyHasMore ? 'Load earlier changes' : 'Show recent changes')
+          : (model.historyHasMore ? 'Show history' : `Show full history (${model.historyTotal})`)}
       </Pressable>
     </div>}
   </Surface>;

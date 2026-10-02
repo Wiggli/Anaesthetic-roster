@@ -443,7 +443,8 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 22, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 23, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');
@@ -523,7 +524,7 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 49, 'the application must require the Trust Boundary schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 50, 'the application must require the Recovery and Longevity schema');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');

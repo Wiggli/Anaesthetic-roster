@@ -81,4 +81,21 @@ assert.equal(resumes,1,'simultaneous resume signals must collapse into one recon
 assert.equal(runtime.shadowCompare('same',{a:1},{a:1}),true);
 assert.equal(runtime.shadowCompare('different',{a:1},{a:2}),false);
 
-console.log('Reliability runtime state, storage, clock, reconciliation and conflict contracts passed.');
+const envelope=runtime.snapshots.packSync({saved_at:'2026-10-02T08:00:00.000Z',name:'André'},{schemaVersion:50,appVersion:'41.1',savedAt:'2026-10-02T08:00:00.000Z'});
+assert.ok(envelope,'a bounded snapshot must produce an integrity envelope');
+assert.equal(envelope.format,2);
+assert.equal(runtime.snapshots.unpackSync(envelope).name,'André');
+const tampered=JSON.parse(JSON.stringify(envelope));tampered.payload.name='Changed';
+assert.equal(runtime.snapshots.unpackSync(tampered),null,'tampered snapshot payloads must be rejected');
+
+assert.equal(runtime.recovery.start('41.1').safeMode,false);
+assert.equal(runtime.recovery.start('41.1').safeMode,false);
+assert.equal(runtime.recovery.start('41.1').safeMode,true,'the third unresolved launch in five minutes must enter safe mode');
+runtime.recovery.markReady();
+assert.equal(runtime.recovery.status().safeMode,false,'a completed launch must clear crash-loop safe mode');
+
+await runtime.latency.measure('test-operation',async()=>true);
+assert.equal(runtime.latency.summary()['test-operation'].count,1);
+assert.equal(runtime.latency.summary()['test-operation'].failed,0);
+
+console.log('Reliability runtime state, storage, recovery, snapshots, latency, clock, reconciliation and conflict contracts passed.');
