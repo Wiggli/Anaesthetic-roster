@@ -41,6 +41,8 @@ assert.match(html, /id="releaseNotesContent"/, 'working release-note content mus
 assert.ok(worker.includes(`anaesthetic-night-roster-v${version.replace('.', '-')}`));
 assert.match(worker, /ACTIVATE_UPDATE/);
 assert.match(worker, /GET_CACHE_VERSION/);
+assert.match(worker, new RegExp(`runtime-foundation\\.js\\?v=${version.replace('.', '\\\\.')}`), 'runtime foundation must be part of the offline app shell');
+assert.doesNotMatch(worker, /domain-logic\\.js[^\\n]*\\\\n[^\\n]*runtime-foundation/, 'service worker source must not contain a literal escaped newline in the app shell');
 assert.match(worker, /notificationclick/);
 assert.match(worker, /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary\(requestUrl\)/);
 assert.match(worker, /event\.request\.mode === "navigate"/);
