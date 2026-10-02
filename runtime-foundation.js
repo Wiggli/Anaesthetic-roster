@@ -175,9 +175,9 @@
     return groups
   }
 
-  function StateMachine(name,initial,transitions){
+  var StateMachine=function(name,initial,transitions){
     this.name=name;this.value=initial;this.transitions=transitions||{};this.listeners=new Set();
-  }
+  };
   StateMachine.prototype.can=function(next){
     if(next===this.value)return true;
     var allowed=this.transitions[this.value]||[];
@@ -234,7 +234,7 @@
         if(job.whenHidden||!global.document||document.visibilityState!=='hidden'){
           try{await Promise.resolve(job.fn())}catch(error){diagnostic('scheduler',name,'failed')}
         }
-        schedule();
+        schedule(undefined);
       },wait);
     }
     schedulerJobs.set(name,job);schedule(options.immediate?0:nextInterval());return()=>{job.active=false;schedulerCancel(name)};
@@ -281,7 +281,7 @@
           global.dispatchEvent(new CustomEvent('roster:peer-update',{detail:message.detail||{}}));
         }
       };
-      announce('hello');claimLeadership();
+      announce('hello',null);claimLeadership();
       leaderHeartbeat=setInterval(function(){if(claimLeadership())announce('leader',{id:TAB_ID})},5000);
     }catch(error){diagnostic('tabs','broadcast','unavailable')}
   }
@@ -335,7 +335,7 @@
   };
   function errorCode(error){
     var explicit=error&&((error.details&&error.details.code)||error.code);
-    if(explicit&&ERROR_CODES[explicit])return explicit;
+    if(explicit&&(ERROR_CODES)[explicit])return explicit;
     var raw=String(error&&error.message||'');
     var keys=Object.keys(ERROR_CODES);
     for(var i=0;i<keys.length;i++)if(raw.indexOf(keys[i])>=0)return keys[i];
@@ -380,7 +380,7 @@
     recovery:{start:recoveryStart,markReady:recoveryReady,status:recoveryStatus},
     snapshots:{format:SNAPSHOT_FORMAT,maxBytes:SNAPSHOT_MAX_BYTES,packSync:packSnapshot,unpackSync:unpackSnapshot,persist:persistSnapshot,load:loadSnapshot,remove:removeSnapshot},
     latency:{record:recordLatency,measure:measureLatency,summary:latencySummary},
-    errors:{code:errorCode,message:function(code){return ERROR_CODES[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
+    errors:{code:errorCode,message:function(code){return (ERROR_CODES)[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
     conflicts:{diff:diffObjects},
     lifecycle:{setResumeHandler:setResumeHandler,reconcile:reconcile},
     shadowCompare:shadowCompare,
