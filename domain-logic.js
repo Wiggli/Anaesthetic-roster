@@ -1,3 +1,4 @@
+/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
 /* Anaesthetic Night Roster domain foundation.
    Pure clock/freshness/capability helpers plus privacy-safe diagnostics.
    Loaded before the legacy shell so both legacy and React regions can share one source. */
