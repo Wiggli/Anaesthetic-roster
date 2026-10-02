@@ -477,7 +477,7 @@ assert.match(css, /@supports not \(\(-webkit-backdrop-filter:[\s\S]*\.bottom\{ba
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.bottom button\.active\{animation:none\}/, 'tab selection motion must respect reduced-motion preferences');
 assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v48/, 'absence Undo must use the versioned database function');
 assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v48/, 'overtime Undo must use the versioned database function');
-assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',15000/, 'active clients must check the shared revision through the central scheduler');
+assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',[\s\S]*realtimeSubscribed&&sharedSyncState==='live'\?60000:15000/, 'active clients must check the shared revision through the adaptive central scheduler');
 assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
 assert.match(ui, /lifecycle\.setResumeHandler\(reconcileApplication\)/, 'returning to an open app must use the centralized resume reconciliation path');
 assert.match(ui, /apply_night_role_override_v48/, 'night-only role mutations must use the guarded schema-48 RPC');
