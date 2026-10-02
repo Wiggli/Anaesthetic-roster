@@ -15,9 +15,9 @@ create table if not exists public.app_compatibility (
   updated_at timestamptz not null default now(),
   updated_by uuid,
   constraint app_compatibility_singleton check (id=1),
-  constraint app_compatibility_min_read_format check (minimum_read_version ~ '^[0-9]+(\\.[0-9]+)+$'),
-  constraint app_compatibility_min_write_format check (minimum_write_version ~ '^[0-9]+(\\.[0-9]+)+$'),
-  constraint app_compatibility_recommended_format check (recommended_version ~ '^[0-9]+(\\.[0-9]+)+$'),
+  constraint app_compatibility_min_read_format check (minimum_read_version ~ '^[0-9]+(\.[0-9]+)+$'),
+  constraint app_compatibility_min_write_format check (minimum_write_version ~ '^[0-9]+(\.[0-9]+)+$'),
+  constraint app_compatibility_recommended_format check (recommended_version ~ '^[0-9]+(\.[0-9]+)+$'),
   constraint app_compatibility_message_length check (char_length(maintenance_message) between 1 and 240)
 );
 
@@ -60,7 +60,7 @@ insert into public.app_access_signal(id,access_epoch,updated_at)
 values(1,0,now())
 on conflict (id) do nothing;
 
-do $
+do $$
 begin
   if not exists (
     select 1
@@ -72,7 +72,7 @@ begin
     alter publication supabase_realtime add table public.app_access_signal;
   end if;
 end
-$;
+$$;
 
 create or replace function public.app_version_at_least_v49(
   p_version text,
@@ -270,7 +270,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path='public'
-as $
+as $$
 begin
   update public.app_sync_state
   set revision=revision+1,
@@ -286,7 +286,7 @@ begin
 
   return null;
 end
-$;
+$$;
 
 drop trigger if exists bump_app_sync_state_v49 on public.app_compatibility;
 create trigger bump_app_sync_state_v49
