@@ -1,13 +1,13 @@
 {
-  "version": "41.4",
+  "version": "41.5",
   "date": "2 October 2026",
-  "title": "Make night actions easier to reach",
-  "summary": "A central Quick Actions rudder now keeps the four main destinations stable while putting common night-work actions one tap away.",
+  "title": "Make Night easier to read",
+  "summary": "Night now prioritises the nurse’s role, live duty state and timing, while the centre Actions control and its sheet feel calmer, smaller and physically connected.",
   "changes": [
-    "The bottom navigation now uses an integrated centre Quick button between Changes and Breaks while Night, Changes, Breaks and Chat remain the only page destinations.",
-    "Quick Actions opens a night-aware sheet for reporting an absence, adding overtime cover, reviewing outstanding changes, starting a private message and sharing the public Night Roster app.",
-    "Staffing shortcuts route into the existing guarded Changes workflow and respect offline or server-side write restrictions instead of creating new mutation paths.",
-    "The new rudder and sheet retain large touch targets, reduced-motion and reduced-transparency fallbacks, visible focus states and a restrained Liquid Glass treatment."
+    "The personal Night hero is substantially shorter and now prioritises assignment, live duty state, handover timing, duty period and break, with colleague and profile detail moved behind progressive disclosure.",
+    "Tonight is calmer and less repetitive: the duplicate break shortcut and secondary quick-status strip are removed while the team plan, allocation and recent changes remain immediately available.",
+    "The centre Actions rudder is smaller and better integrated with the navigation, uses clearer labelling and attention counts, and rotates into a close state while its sheet is open.",
+    "The Actions sheet now grows from the centre navigation with restrained motion and presents staffing, review, messaging and sharing actions in a faster two-level hierarchy with reduced-motion fallbacks."
   ],
   "update_policy": "normal"
 }
