@@ -12,6 +12,7 @@ declare global {
   interface Window {
     show?: (view: string) => void;
     openChatView?: () => void;
+    showQuickActions?: () => void;
     viewScrollPositions?: Record<string, number>;
   }
 }
@@ -376,6 +377,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const target = hitTarget instanceof Element ? hitTarget : event.target;
       if (!(target instanceof Element)) return;
       const inBar = !!target.closest('.bottom');
+      if (target.closest('[data-quick-rudder]')) return;
       if (inBar) setGlassTouch(touch.clientX, touch.clientY);
       const view = document.body.getAttribute('data-view') as Destination;
       if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
@@ -577,6 +579,15 @@ function Navigation({ badges }: { badges: Badges }) {
       aria-label="Staffing changes" aria-current={active === 'changes' ? 'page' : undefined}
       whileTap={reducedMotion ? undefined : { scale: 0.96 }} onClick={() => navigate('changes')}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11" /><path d="m13 4 3 3-3 3" /><path d="M19 17H8" /><path d="m11 14-3 3 3 3" /><circle cx="5" cy="17" r="1.5" /><circle cx="19" cy="7" r="1.5" /></svg><span>Changes</span>{badge('changesTaskBadge', badges.changes)}
+    </motion.button>
+    <motion.button type="button" className="quickRudder" data-quick-rudder aria-label="Quick actions"
+      whileTap={reducedMotion ? undefined : { scale: 0.965 }}
+      onClick={() => { navigationHaptic(); window.showQuickActions?.(); }}>
+      <span className="quickRudderDisc">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        <em id="quickActionAttention" className={'quickRudderAttention' + (badges.changes.hidden ? ' hidden' : '')} aria-hidden="true" />
+      </span>
+      <span className="quickRudderLabel">Quick</span>
     </motion.button>
     <motion.button type="button" data-v="breaks" className={active === 'breaks' ? 'active' : ''}
       aria-current={active === 'breaks' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
