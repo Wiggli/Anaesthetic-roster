@@ -1677,6 +1677,7 @@ function setSharedSyncState(state,message){
   sharedSyncState=state||'live';sharedSyncMessage=message||'';
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.state){
     var runtimeState=sharedSyncState==='reconnecting'?'reconnecting':sharedSyncState==='offline'?'offline':sharedSyncState==='stale'?'stale':sharedSyncState==='error'?'error':sharedSyncState==='access-lost'?'access-lost':sharedSyncState==='starting'?'starting':'live';
+    if(runtimeState==='starting'&&window.AnaestheticRuntime.state.sync.value!=='starting')runtimeState='reconnecting';
     window.AnaestheticRuntime.state.sync.set(runtimeState,{message:sharedSyncMessage});
   }
   setSync(state==='live'?'':state==='reconnecting'?'error':state,message||'');renderDiagnostics();
