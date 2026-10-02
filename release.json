@@ -1,14 +1,13 @@
 {
-  "version": "41.2",
+  "version": "41.3",
   "date": "2 October 2026",
-  "title": "Finish the modular runtime architecture",
-  "summary": "Night Roster now has one maintained modular UI source layout and a strictly checked TypeScript domain and reliability runtime while preserving stable installed-PWA asset URLs.",
+  "title": "Make Account and Administrator calmer",
+  "summary": "Account and administrator tools now open from simple task-focused hubs, with personal preferences, roster management and technical system detail revealed only when needed.",
   "changes": [
-    "The former app-ui.js source is split into foundation, clinical, synchronization and bootstrap modules, while the public app-ui.js remains a generated compatibility asset for installed PWAs.",
-    "Domain clock, freshness and capability logic plus the reliability runtime now live in strict TypeScript source and must typecheck before compatible browser JavaScript is generated.",
-    "Release tooling and architecture tests now reject stale generated assets or a return to the previous monolithic source layout.",
-    "Superseded one-off presentation boundary notes were removed after durable ownership and safety rules were consolidated into AGENTS.md.",
-    "The verified 138-night rotation, staffing and Labour Ward rules, Supabase trust boundary, audit schema, Chat transport and explicit ACTIVATE_UPDATE flow are unchanged."
+    "Account now opens to four clear destinations: Profile, Preferences, Security, and App & Help, instead of placing every setting and action in one long sheet.",
+    "Administrator now opens to Tonight, People & Access, Roster Management, and System, replacing the crowded five-tab control rail with a task-focused landing view.",
+    "Publishing and permanent team rotation are grouped behind Roster Management, while system health, recent admin activity, exports and diagnostics are grouped under System.",
+    "Technical health and audit detail stays collapsed until requested, while the existing roster, account, passkey, export and administrator actions continue to use their proven underlying logic."
   ],
   "update_policy": "normal"
 }
