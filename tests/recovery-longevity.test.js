@@ -46,7 +46,7 @@ assert.match(runtime, /latency:\{record:recordLatency,measure:measureLatency,sum
 assert.match(ui, /night_history_page_v50/, 'the Changes screen must use the paginated history feed on schema 50');
 assert.match(ui, /primeOfflineSnapshotFromIndexedDb/, 'startup must recover the newest valid atomic snapshot');
 assert.match(ui, /verifyAndRepairAppShell/, 'the client must verify and repair its active cached shell');
-assert.match(ui, /runtimeSafeMode/, 'crash-loop recovery must enter an explicit reduced-risk mode');
+assert.match(ui, /runtimeRecoveryStatus[\s\S]*safeMode/, 'crash-loop recovery must enter an explicit reduced-risk mode');
 assert.match(core, /app_health_canary_v50/, 'administrator health checks must exercise the server canary');
 assert.match(core, /admin_audit_timeline_v50/, 'administrator UI must read the immutable audit timeline');
 assert.match(html, /id="adminAuditTimeline"/, 'administrator overview must expose the audit timeline');
