@@ -1513,9 +1513,9 @@ function missingRpc(result){
 
 function rpcError(result,messageId){
   if(!result||!result.error)return false;
-  var message=(result.error.message||'').toLowerCase();
+  var message=(result.error.message||'').toLowerCase(),code=rosterErrorCode(result.error);
   setSync('error','Save failed');
-  var notice=result.atomicRequired?'The database must be upgraded before this staffing change can be saved safely. No partial record was written.':result.error.code==='42501'||message.indexOf('permission denied')>=0||message.indexOf('row-level security')>=0?'Your signed-in account does not currently have permission to save staffing changes.':message.indexOf('duplicate')>=0||result.error.code==='23505'?'That nurse is already recorded for this night.':'The staffing change could not be saved. Try again, or copy diagnostics for the administrator.';
+  var notice=result.atomicRequired?'The database must be upgraded before this staffing change can be saved safely. No partial record was written.':code==='ROSTER_REVISION_CONFLICT'||code==='STALE_CLIENT'?conflictNotice(result):code==='PERMISSION_DENIED'||result.error.code==='42501'||message.indexOf('permission denied')>=0||message.indexOf('row-level security')>=0?'Your signed-in account does not currently have permission to save staffing changes.':code==='PLAN_INCOMPLETE'?'The latest night is not complete enough to save safely. Review the outstanding decisions first.':code==='STAFF_NOT_EFFECTIVE'?'One of the selected nurses is no longer available for this night. The latest roster has been loaded for review.':message.indexOf('duplicate')>=0||result.error.code==='23505'?'That nurse is already recorded for this night.':'The staffing change could not be saved. Try again, or copy diagnostics for the administrator.';
   formMessage(messageId,notice,'error');toast(notice);
   return true;
 }
@@ -1643,7 +1643,7 @@ async function saveFinalAllocationsV2510(event){
     var expectedRevision=nightPlanStatuses[base.date]?Number(nightPlanStatuses[base.date].revision||0):0;
     var atomicResult=await runRosterMutation('plan:finalise:'+base.date+':'+expectedRevision,function(commandId,expectedSyncRevision){return supa.rpc('finalise_night_plan_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_assignments:chosenCount?chosen:{},p_labour_first:null,p_labour_second:null,p_changed_by:currentUserProfile.display_name,p_expected_revision:expectedRevision})},function(){var status=nightPlanStatuses[base.date],savedPlan=staffingPlan(baseForDate(base.date)),matches=Object.keys(chosen).every(function(key){return savedPlan.validAssignments.some(function(item){return item.allocation_key===key&&String(item.id)===String(chosen[key])})});return !!(status&&status.published_at&&Number(status.revision||0)>expectedRevision&&matches)});
     if(!missingRpc(atomicResult)){
-      if(atomicResult&&atomicResult.error&&(rosterErrorCode(atomicResult.error)==='ROSTER_REVISION_CONFLICT'||/changed on another device|revision conflict|ROSTER_REVISION_CONFLICT/i.test(atomicResult.error.message||''))){formMessage('allocationFormMessage','This night\'s plan changed on another device. The latest version has been loaded, so please review it and confirm again.','error');toast('A newer plan was loaded for review');await loadSharedData();return false}
+      if(atomicResult&&atomicResult.error&&(rosterErrorCode(atomicResult.error)==='ROSTER_REVISION_CONFLICT'||/changed on another device|revision conflict|ROSTER_REVISION_CONFLICT/i.test(atomicResult.error.message||''))){var conflictMessage=conflictNotice(atomicResult);formMessage('allocationFormMessage',conflictMessage,'error');toast('A newer plan was loaded for review');await loadSharedData();return false}
       if(rpcError(atomicResult,'allocationFormMessage'))return false;
     }else if(confirmationOnly){formMessage('allocationFormMessage','The final confirmation service is unavailable. Ask the administrator to run the V26 database upgrade.','error');toast('Plan confirmation is unavailable');return false
     }else if(chosenCount){
@@ -1703,7 +1703,27 @@ function commandKey(value){return String(value||'command').replace(/[^A-Za-z0-9_
 async function rosterErrorCode(error){return window.AnaestheticRuntime&&window.AnaestheticRuntime.errors?window.AnaestheticRuntime.errors.code(error):String(error&&error.message||error&&error.code||'UNKNOWN')}
 function mutationDateFromKey(key){var match=String(key||'').match(/(20\\d{2}-\\d{2}-\\d{2})/);return match&&match[1]||null}
 function conflictPlanSnapshot(date){try{var base=date&&baseForDate(date);if(!base)return null;var model=buildNightPlan(base);return{date:model.date,revision:model.revision,confirmed:model.confirmed,provisional:model.provisional,effective:model.effective,staffing:{count:model.staffing&&model.staffing.count,unresolved:model.staffing&&model.staffing.unresolved,assignments:model.staffing&&model.staffing.validAssignments},labourOrder:model.labourOrder}}catch(error){return null}}
-function conflictSummary(before,after){if(!window.AnaestheticRuntime||!window.AnaestheticRuntime.conflicts)return[];return window.AnaestheticRuntime.conflicts.diff(before||{},after||{}).slice(0,8)}
+function conflictSummary(before,after){
+  if(!before||!after)return[];
+  var changes=[],labels={first1:'First Part · position 1',first2:'First Part · position 2',second1:'Second Part · position 1',second2:'Second Part · position 2',pager:'Pager',reliever:'Reliever',seventh:'Seventh nurse',fullLW:'Labour Ward / Pager'};
+  Object.keys(labels).forEach(function(key){
+    var left=before.effective&&before.effective[key],right=after.effective&&after.effective[key];
+    if(JSON.stringify(left)!==JSON.stringify(right))changes.push({label:labels[key],before:left||'Unassigned',after:right||'Unassigned'})
+  });
+  var beforeCount=before.staffing&&Number(before.staffing.count),afterCount=after.staffing&&Number(after.staffing.count);
+  if(Number.isFinite(beforeCount)&&Number.isFinite(afterCount)&&beforeCount!==afterCount)changes.push({label:'Staffing',before:beforeCount+' nurses',after:afterCount+' nurses'});
+  var beforeTasks=before.staffing&&before.staffing.unresolved||[],afterTasks=after.staffing&&after.staffing.unresolved||[];
+  if(JSON.stringify(beforeTasks)!==JSON.stringify(afterTasks))changes.push({label:'Outstanding decisions',before:beforeTasks.length?beforeTasks.join(', '):'None',after:afterTasks.length?afterTasks.join(', '):'None'});
+  if(!!before.confirmed!==!!after.confirmed)changes.push({label:'Confirmation',before:before.confirmed?'Confirmed':'Not confirmed',after:after.confirmed?'Confirmed':'Not confirmed'});
+  if(JSON.stringify(before.labourOrder||null)!==JSON.stringify(after.labourOrder||null))changes.push({label:'Labour Ward order',before:before.labourOrder?'Changed':'Not set',after:after.labourOrder?'Changed':'Not set'});
+  return changes.slice(0,8)
+}
+function conflictNotice(result){
+  var changes=result&&Array.isArray(result.conflictChanges)?result.conflictChanges:[];
+  if(!changes.length)return'This night changed on another device. The latest version has been loaded, so review it before saving again.';
+  var detail=changes.slice(0,3).map(function(change){return change.label+': '+change.before+' → '+change.after}).join('; ');
+  return'This night changed on another device. '+detail+'. Review the latest version before saving again.'
+}
 async function ensureFreshBeforeMutation(){
   if(!rosterCapabilities().freshnessBarrier)return{ok:true,revision:Number(lastObservedSyncRevision||0)};
   if(!navigator.onLine||forcedOfflineSession)return{ok:false,error:{message:'STALE_CLIENT',code:'STALE_CLIENT'}};
