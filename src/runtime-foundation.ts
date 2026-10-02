@@ -9,11 +9,11 @@
   var STORAGE_PREFIX='anaes_';
   var LEADER_TTL=12000;
   var TAB_ID=(global.crypto&&global.crypto.randomUUID?global.crypto.randomUUID():'tab-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
-  var bc=null,leaderId='',leaderSeenAt=0,leaderHeartbeat=null;
-  var resumeHandler=null;
-  var resumeInFlight=null;
+  var bc=null as any,leaderId='',leaderSeenAt=0,leaderHeartbeat=null as any;
+  var resumeHandler=null as any;
+  var resumeInFlight=null as any;
   var schedulerJobs=new Map();
-  var clockSamples=[];
+  var clockSamples=[] as any[];
   var MAX_CLOCK_SAMPLES=5;
   var RECOVERY_KEY='launch_health_v1';
   var RECOVERY_WINDOW_MS=5*60*1000;
@@ -23,7 +23,7 @@
   var SNAPSHOT_MAX_BYTES=768*1024;
   var SNAPSHOT_DB='anaesthetic-roster-runtime';
   var SNAPSHOT_STORE='snapshots';
-  var latencySamples=[];
+  var latencySamples=[] as any[];
   var LATENCY_LIMIT=80;
 
   function diagnostic(category: any,operation: any,code: any){
@@ -91,12 +91,12 @@
   function openSnapshotDb(){
     return new Promise(function(resolve: any,reject: any){
       if(!global.indexedDB){resolve(null);return}
-      var request;
+      var request:any;
       try{request=global.indexedDB.open(SNAPSHOT_DB,1)}catch(error){reject(error);return}
       request.onupgradeneeded=function(){var db=request.result;if(!db.objectStoreNames.contains(SNAPSHOT_STORE))db.createObjectStore(SNAPSHOT_STORE,{keyPath:'key'})};
       request.onsuccess=function(){resolve(request.result)};
       request.onerror=function(){reject(request.error||new Error('IndexedDB unavailable'))};
-    })
+    }) as any
   }
   async function persistSnapshot(key: any,envelope: any){
     if(!envelope)return false;
@@ -169,13 +169,13 @@
     }
   }
   function latencySummary(){
-    var groups={};
+    var groups={} as any;
     latencySamples.forEach(function(item: any){var g=groups[item.name]||(groups[item.name]={count:0,total:0,max:0,failed:0});g.count++;g.total+=item.duration;g.max=Math.max(g.max,item.duration);if(!item.ok)g.failed++});
     Object.keys(groups).forEach(function(key: any){var g=groups[key];g.average=Math.round(g.total/Math.max(1,g.count));delete g.total});
     return groups
   }
 
-  function StateMachine(name: any,initial: any,transitions: any){
+  function StateMachine(this: any,name: any,initial: any,transitions: any){
     this.name=name;this.value=initial;this.transitions=transitions||{};this.listeners=new Set();
   }
   StateMachine.prototype.can=function(next: any){
@@ -221,7 +221,7 @@
   function schedulerEvery(name: any,interval: any,fn: any,options: any){
     schedulerCancel(name);
     options=options||{};
-    var job={name:name,interval:interval,fn:fn,whenHidden:!!options.whenHidden,timer:null,active:true};
+    var job={name:name,interval:interval,fn:fn,whenHidden:!!options.whenHidden,timer:null as any,active:true};
     function nextInterval(){
       var value=typeof job.interval==='function'?job.interval():job.interval;
       return Math.max(1000,Number(value)||1000)
@@ -234,7 +234,7 @@
         if(job.whenHidden||!global.document||document.visibilityState!=='hidden'){
           try{await Promise.resolve(job.fn())}catch(error){diagnostic('scheduler',name,'failed')}
         }
-        schedule();
+        schedule(undefined);
       },wait);
     }
     schedulerJobs.set(name,job);schedule(options.immediate?0:nextInterval());return()=>{job.active=false;schedulerCancel(name)};
@@ -281,7 +281,7 @@
           global.dispatchEvent(new CustomEvent('roster:peer-update',{detail:message.detail||{}}));
         }
       };
-      announce('hello');claimLeadership();
+      announce('hello',null);claimLeadership();
       leaderHeartbeat=setInterval(function(){if(claimLeadership())announce('leader',{id:TAB_ID})},5000);
     }catch(error){diagnostic('tabs','broadcast','unavailable')}
   }
@@ -308,7 +308,7 @@
 
   function diffObjects(before: any,after: any){
     before=before||{};after=after||{};
-    var keys=Array.from(new Set(Object.keys(before).concat(Object.keys(after)))).sort(),changes=[];
+    var keys=Array.from(new Set(Object.keys(before).concat(Object.keys(after)))).sort(),changes=[] as any[];
     keys.forEach(function(key: any){
       var left=before[key],right=after[key];
       if(JSON.stringify(left)!==JSON.stringify(right))changes.push({key:key,before:left,after:right});
@@ -335,7 +335,7 @@
   };
   function errorCode(error: any){
     var explicit=error&&((error.details&&error.details.code)||error.code);
-    if(explicit&&ERROR_CODES[explicit])return explicit;
+    if(explicit&&(ERROR_CODES as any)[explicit])return explicit;
     var raw=String(error&&error.message||'');
     var keys=Object.keys(ERROR_CODES);
     for(var i=0;i<keys.length;i++)if(raw.indexOf(keys[i])>=0)return keys[i];
@@ -380,7 +380,7 @@
     recovery:{start:recoveryStart,markReady:recoveryReady,status:recoveryStatus},
     snapshots:{format:SNAPSHOT_FORMAT,maxBytes:SNAPSHOT_MAX_BYTES,packSync:packSnapshot,unpackSync:unpackSnapshot,persist:persistSnapshot,load:loadSnapshot,remove:removeSnapshot},
     latency:{record:recordLatency,measure:measureLatency,summary:latencySummary},
-    errors:{code:errorCode,message:function(code: any){return ERROR_CODES[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
+    errors:{code:errorCode,message:function(code: any){return (ERROR_CODES as any)[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
     conflicts:{diff:diffObjects},
     lifecycle:{setResumeHandler:setResumeHandler,reconcile:reconcile},
     shadowCompare:shadowCompare,
