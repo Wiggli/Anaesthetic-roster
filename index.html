@@ -1302,6 +1302,39 @@
         <button id="applyUpdateSheetBtn" type="button" class="primary">Update now</button>
       </div>
     </dialog>
+    <dialog id="quickActionsSheet" class="quickActionsSheet" aria-labelledby="quickActionsTitle">
+      <div class="sheetGrabber" aria-hidden="true"></div>
+      <div class="quickActionsHead">
+        <div>
+          <span>Quick actions</span>
+          <h2 id="quickActionsTitle">What do you need to do?</h2>
+        </div>
+        <button type="button" id="closeQuickActionsSheet">Done</button>
+      </div>
+      <div id="quickActionsExperience">
+        <div class="quickActionsExperience quickActionsFallback">
+          <div class="quickActionsContext">
+            <span><b>Selected night</b><strong id="quickActionsFallbackContext">Opening night…</strong></span>
+            <span><b>Staffing</b><small id="quickActionsFallbackStaffing">Checking shared plan…</small></span>
+          </div>
+          <section class="quickActionGroup">
+            <div class="quickActionGroupHeading"><span>This night</span></div>
+            <div class="quickActionList">
+              <button type="button" id="quickAbsenceFallback" class="quickActionRow" data-quick-action="absence"><span class="quickActionCopy"><strong>Report an absence</strong><small>Record confirmed leave or sickness</small></span><span class="quickActionChevron">›</span></button>
+              <button type="button" id="quickOvertimeFallback" class="quickActionRow" data-quick-action="overtime"><span class="quickActionCopy"><strong>Add overtime cover</strong><small>Add a nurse covering this selected night</small></span><span class="quickActionChevron">›</span></button>
+              <button type="button" class="quickActionRow" data-quick-action="review"><span class="quickActionCopy"><strong>Review this night’s changes</strong><small>Open staffing, allocation and confirmation</small></span><span class="quickActionChevron">›</span></button>
+            </div>
+          </section>
+          <section class="quickActionGroup">
+            <div class="quickActionGroupHeading"><span>Communication</span></div>
+            <div class="quickActionList">
+              <button type="button" class="quickActionRow" data-quick-action="private-chat"><span class="quickActionCopy"><strong>New private message</strong><small>Message one roster colleague</small></span><span class="quickActionChevron">›</span></button>
+              <button type="button" class="quickActionRow" data-quick-action="share"><span class="quickActionCopy"><strong>Share Night Roster</strong><small>QR code, Messages, WhatsApp and more</small></span><span class="quickActionChevron">›</span></button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </dialog>
     <div id="reactScrollChrome" aria-live="off"></div>
     <nav class="bottom" aria-label="Main navigation">
       <div id="reactNavigation" class="tw:contents">
@@ -1316,6 +1349,10 @@
           <path d="M19 17H8"></path><path d="m11 14-3 3 3 3"></path>
           <circle cx="5" cy="17" r="1.5"></circle><circle cx="19" cy="7" r="1.5"></circle></svg
         ><span>Changes</span><em id="changesTaskBadge" class="navTaskBadge hidden">0</em></button
+      ><button type="button" class="quickRudder" data-quick-rudder aria-label="Quick actions">
+        <span class="quickRudderDisc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><em id="quickActionAttention" class="quickRudderAttention hidden" aria-hidden="true"></em></span>
+        <span class="quickRudderLabel">Quick</span>
+      </button
       ><button data-v="breaks">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z"></path>
