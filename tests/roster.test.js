@@ -269,6 +269,7 @@ const rlsPerformanceMigration = fs.readFileSync(path.join(__dirname, '..', 'supa
 const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924001000_access_request_approval.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 const logicFoundationMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
+const reliabilityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 const releaseHistorySnapshot = Array.from(context.RELEASE_HISTORY, entry => ({
   version: String(entry.version),
@@ -300,7 +301,7 @@ assert.ok(releaseMeta.changes.length >= 3, 'network release metadata must descri
 assert.equal(context.validUpdateMeta(releaseMeta), true, 'well-formed incoming release metadata must be accepted');
 assert.equal(context.validUpdateMeta({ version: '37.4', title: 'Incomplete', changes: [] }), false, 'empty incoming release notes must be rejected');
 assert.match(sw, new RegExp(`CACHE_NAME = 'anaesthetic-night-roster-v${context.APP_VERSION.replace('.', '-')}'`), 'service-worker cache must match APP_VERSION');
-for (const asset of ['styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
+for (const asset of ['styles.css', 'theme-bootstrap.js', 'domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest']) {
   assert.match(html, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} HTML query must match APP_VERSION`);
   assert.match(sw, new RegExp(`${asset.replace('.', '\\.') }\\?v=${context.APP_VERSION.replace('.', '\\.')}`), `${asset} app-shell query must match APP_VERSION`);
 }
@@ -419,7 +420,7 @@ assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|rende
 assert.match(workflow, /- name: Build public app files\n        run: npm run build/, 'Pages must build the reviewed dist artifact');
 const viteConfig = fs.readFileSync(path.join(__dirname, '..', 'vite.config.mts'), 'utf8');
 const requiredProductionAssets = [
-  'styles.css', 'theme-bootstrap.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest', 'release.json',
+  'styles.css', 'theme-bootstrap.js', 'domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest', 'release.json',
   'anaesthesia-header.jpg', 'mater-dei-logo.png', 'apple-touch-icon.png',
   'icon-192.png', 'icon-512.png'
 ];
@@ -441,7 +442,7 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 20, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 21, 'all deployed Supabase migrations must remain checked in under supabase/migrations');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');
@@ -474,16 +475,16 @@ assert.match(css, /\.bottom\{[\s\S]*backdrop-filter:saturate\(210%\) blur\(30px\
 assert.match(css, /#changes \.staffingSection[^{]*\{[^}]*background:var\(--ios-surface\)/, 'clinical staffing surfaces must remain solid');
 assert.match(css, /@supports not \(\(-webkit-backdrop-filter:[\s\S]*\.bottom\{background:#f8f8fa\}/, 'glass chrome must retain an opaque fallback');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.bottom button\.active\{animation:none\}/, 'tab selection motion must respect reduced-motion preferences');
-assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v25/, 'absence Undo must use the versioned database function');
-assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v25/, 'overtime Undo must use the versioned database function');
-assert.match(ui, /app_sync_state[\s\S]*setInterval\(checkSharedRevision,15000\)/, 'active clients must check the shared revision as a realtime fallback');
+assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v48/, 'absence Undo must use the versioned database function');
+assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v48/, 'overtime Undo must use the versioned database function');
+assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',15000/, 'active clients must check the shared revision through the central scheduler');
 assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
-assert.match(ui, /window\.addEventListener\('pageshow',function\(\)\{applyThemePreference\(\);resumeSharedSync\(\)\}\)/, 'returning to an open app must restore appearance and resume shared synchronization');
-assert.match(ui, /apply_night_role_override_v35/, 'night-only role mutations must use the atomic schema-35 RPC');
+assert.match(ui, /lifecycle\.setResumeHandler\(reconcileApplication\)/, 'returning to an open app must use the centralized resume reconciliation path');
+assert.match(ui, /apply_night_role_override_v48/, 'night-only role mutations must use the atomic schema-35 RPC');
 assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
 assert.doesNotMatch(ui, /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'staffing saves must never fall back to browser-side multi-step writes');
-assert.match(ui, /record_night_absence_v25[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
-assert.match(ui, /add_night_overtime_v25[\s\S]*atomicRequired/, 'overtime saves must require the atomic RPC');
+assert.match(ui, /record_night_absence_v48[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
+assert.match(ui, /add_night_overtime_v48[\s\S]*atomicRequired/, 'overtime saves must require the atomic RPC');
 assert.match(syncMigration, /create table if not exists public\.app_sync_state/, 'schema 33 must provide a shared revision signal');
 assert.match(syncMigration, /create or replace function public\.apply_night_role_override_v33[\s\S]*insert into public\.night_role_override_history/, 'schema 33 must save role overrides and audit history atomically');
 assert.match(syncMigration, /update public\.app_schema_version[\s\S]*version = 33/, 'schema 33 migration must update the schema marker');
@@ -491,11 +492,11 @@ assert.match(identityMigration, /add column if not exists roster_name text/, 'sc
 assert.match(identityMigration, /allowed_users_roster_name_unique/, 'one roster identity must not be bound to multiple accounts');
 assert.match(identityMigration, /user_role = 'admin'[\s\S]*set roster_name = v_roster_name/, 'only an active administrator may bind roster identities');
 assert.match(identityMigration, /update public\.app_schema_version[\s\S]*version = 34/, 'schema 34 migration must update the schema marker');
-assert.match(roleMigration, /create or replace function public\.apply_night_role_override_v35[\s\S]*insert into public\.night_role_override_history/, 'schema 35 must save custom role overrides and history atomically');
+assert.match(roleMigration, /create or replace function public\.apply_night_role_override_v48[\s\S]*insert into public\.night_role_override_history/, 'schema 35 must save custom role overrides and history atomically');
 assert.match(roleMigration, /jsonb_object_keys\(p_assignments\)/, 'schema 35 must count JSON keys with a supported PostgreSQL primitive');
 assert.doesNotMatch(roleMigration, /jsonb_object_length\(/, 'schema 35 must not call the unavailable JSONB object-length function');
 assert.match(roleMigration, /night_overtime[\s\S]*nurse_name/, 'schema 35 must validate overtime nurses as part of the effective five-person team');
-assert.match(roleMigration, /apply_night_role_override_v33[\s\S]*apply_night_role_override_v35/, 'schema 35 must repair older installed clients with a compatibility wrapper');
+assert.match(roleMigration, /apply_night_role_override_v33[\s\S]*apply_night_role_override_v48/, 'schema 35 must repair older installed clients with a compatibility wrapper');
 assert.match(roleMigration, /update public\.app_schema_version[\s\S]*version = 35/, 'schema 35 migration must update the schema marker');
 assert.match(constraintMigration, /drop constraint if exists night_role_overrides_valid[\s\S]*add constraint night_role_overrides_valid/, 'schema 36 must replace the incompatible table constraint forward-only');
 assert.match(constraintMigration, /when p_assignments ->> 'mode' = '5'[\s\S]*'fullLW'/, 'schema 36 must accept the reviewed five-role structure');
@@ -519,13 +520,19 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 47, 'the application must require the logic-foundation schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 48, 'the application must require the reliability-architecture schema');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');
 assert.match(logicFoundationMigration, /chat_messages_sender_client_message_uq/, 'schema 47 must deduplicate retried chat sends');
 assert.match(logicFoundationMigration, /chat_mark_read_v47[\s\S]*greatest\(/, 'schema 47 must make chat read cursors monotonic');
 assert.match(logicFoundationMigration, /update public\.app_schema_version[\s\S]*version=47/, 'schema 47 migration must advance the schema marker');
+assert.match(reliabilityMigration, /create table if not exists public\.roster_operation_log/, 'schema 48 must persist idempotent roster operation ids');
+assert.match(reliabilityMigration, /assert_roster_fresh_v48/, 'schema 48 must reject stale roster commands');
+assert.match(reliabilityMigration, /validate_night_plan_v48/, 'schema 48 must validate final plans on the server');
+assert.match(reliabilityMigration, /publish_roster_v48[\s\S]*PUBLISH_REGRESSION/, 'schema 48 must prevent publication rollback');
+assert.match(reliabilityMigration, /upsert_rotation_version_v48[\s\S]*ROTATION_VERSION_EXISTS/, 'schema 48 must protect effective-dated rotation history');
+assert.match(reliabilityMigration, /update public\.app_schema_version[\s\S]*version=48/, 'schema 48 migration must advance the schema marker');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
 assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
 assert.match(accessRequestMigration, /Users can request own access[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/, 'a pending user may only create a request for their own authenticated identity');
@@ -536,7 +543,7 @@ assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCa
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
 assert.match(ui, /requestStartupSnapshot\(\)[\s\S]*get_roster_startup_v37/, 'authorisation and shared data must use the protected single-request startup snapshot');
 assert.doesNotMatch(ui, /supa\.from\('allowed_users'\)\.select\('email,display_name,user_role,active'\)/, 'startup must not make a separate serial account request');
-assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return localStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice');
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return appStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice through the storage facade');
 assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity');
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.doesNotMatch(html, /adminQuickGrid|data-admin-open=/, 'Admin Overview must not repeat the primary management tabs as shortcut buttons');
