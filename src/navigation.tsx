@@ -591,7 +591,7 @@ function Navigation({ badges }: { badges: Badges }) {
       whileTap={reducedMotion ? undefined : { scale: 0.96 }} onClick={() => navigate('changes')}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11" /><path d="m13 4 3 3-3 3" /><path d="M19 17H8" /><path d="m11 14-3 3 3 3" /><circle cx="5" cy="17" r="1.5" /><circle cx="19" cy="7" r="1.5" /></svg><span>Changes</span>{badge('changesTaskBadge', badges.changes)}
     </motion.button>
-    <motion.button type="button" className={'quickRudder' + (quickOpen ? ' open' : '')} data-quick-rudder aria-label="Actions"
+    <motion.button type="button" className={'quickRudder' + (quickOpen ? ' open' : '')} data-quick-rudder aria-label="Quick actions"
       aria-haspopup="dialog" aria-expanded={quickOpen}
       whileTap={reducedMotion ? undefined : { scale: 0.94 }}
       onClick={() => { navigationHaptic(); window.showQuickActions?.(); }}>
