@@ -113,7 +113,12 @@
   }
   function schedulerStopAll(){Array.from(schedulerJobs.keys()).forEach(schedulerCancel)}
 
-  function updateLeader(id,at){leaderId=id||'';leaderSeenAt=Number(at||Date.now())}
+  function updateLeader(id,at){
+    var previous=leaderId;leaderId=id||'';leaderSeenAt=Number(at||Date.now());
+    if(previous!==leaderId&&global.dispatchEvent&&typeof global.CustomEvent==='function'){
+      try{global.dispatchEvent(new CustomEvent('roster:tab-leader',{detail:{leaderId:leaderId,isLeader:leaderId===TAB_ID,previousLeaderId:previous||''}}))}catch(error){}
+    }
+  }
   function announce(type,detail){
     if(!bc)return;
     try{bc.postMessage({type:type,tabId:TAB_ID,at:Date.now(),detail:detail||null})}catch(error){}
