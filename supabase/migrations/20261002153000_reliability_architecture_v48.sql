@@ -223,6 +223,14 @@ as $$
 declare v_date date;
 begin
   select roster_date into v_date from public.night_changes where id=p_change_id;
+  if v_date is null then
+    select roster_date into v_date
+    from public.roster_operation_log
+    where operation_id=p_operation_id
+      and user_id=auth.uid()
+      and operation_type='absence-remove';
+  end if;
+  if v_date is null then raise exception 'RECORD_NOT_FOUND'; end if;
   if not public.claim_roster_operation_v48(p_operation_id,'absence-remove',v_date,p_expected_sync_revision) then return; end if;
   perform public.assert_roster_fresh_v48(p_expected_sync_revision);
   perform public.remove_night_absence_v25(p_change_id,p_allocation_key,p_changed_by);
@@ -262,6 +270,14 @@ as $$
 declare v_date date;
 begin
   select roster_date into v_date from public.night_overtime where id=p_overtime_id;
+  if v_date is null then
+    select roster_date into v_date
+    from public.roster_operation_log
+    where operation_id=p_operation_id
+      and user_id=auth.uid()
+      and operation_type='overtime-remove';
+  end if;
+  if v_date is null then raise exception 'RECORD_NOT_FOUND'; end if;
   if not public.claim_roster_operation_v48(p_operation_id,'overtime-remove',v_date,p_expected_sync_revision) then return; end if;
   perform public.assert_roster_fresh_v48(p_expected_sync_revision);
   perform public.remove_night_overtime_v25(p_overtime_id,p_changed_by);
