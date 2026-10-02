@@ -39,6 +39,10 @@ var lastResumeRefresh=0;
 var sharedSyncTimer=null;
 var sharedSyncCheckInFlight=false;
 var lastObservedSyncRevision=null;
+var lastObservedAccessEpoch=null;
+var accessStatusCheckPromise=null;
+var accessLossInFlight=false;
+var appCompatibility={minimum_read_version:'37.0',minimum_write_version:'41.0',recommended_version:'41.0',maintenance_mode:false,maintenance_message:'Shared roster editing has been temporarily paused.',write_allowed:false,write_status:'update_required'};
 var editingAbsenceId=null;
 var realtimeGeneration=0;
 var realtimeReconnectTimer=null;
@@ -320,7 +324,7 @@ async function requestStartupSnapshot(){
   var controller=window.AbortController?new window.AbortController():null,timer=controller?setTimeout(function(){controller.abort()},startupSnapshotTimeoutMs):null;
   try{
     return await withTimeout((async function(){
-      var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',cache:'no-store',credentials:'omit',signal:controller?controller.signal:undefined});
+      var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v49',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({p_client_version:APP_VERSION}),cache:'no-store',credentials:'omit',signal:controller?controller.signal:undefined});
       var body=await response.text(),data=null;try{data=body?JSON.parse(body):null}catch(parseError){var invalidError=new Error('The shared roster returned unreadable information.');invalidError.code='INVALID_RESPONSE';throw invalidError}
       if(!response.ok){var requestError=new Error(data&&data.message||'The shared roster could not be loaded.');requestError.code=data&&data.code||String(response.status);requestError.status=response.status;throw requestError}
       return data;
@@ -343,7 +347,7 @@ async function requestStartupSnapshotXhr(){
     function finish(error,value){if(settled)return;settled=true;if(timer)clearTimeout(timer);xhr.onload=xhr.onerror=xhr.onabort=xhr.ontimeout=null;if(error)reject(error);else resolve(value)}
     function transportError(message,code,status){var error=new Error(message);error.code=code||'NETWORK_ERROR';if(status)error.status=status;return error}
     try{
-      xhr.open('POST',SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v37',true);
+      xhr.open('POST',SUPABASE_URL+'/rest/v1/rpc/get_roster_startup_v49',true);
       xhr.setRequestHeader('apikey',SUPABASE_KEY);xhr.setRequestHeader('Authorization','Bearer '+token);xhr.setRequestHeader('Content-Type','application/json');
       xhr.timeout=startupSnapshotTimeoutMs;
       xhr.onload=function(){
@@ -355,7 +359,7 @@ async function requestStartupSnapshotXhr(){
       xhr.onabort=function(){finish(transportError('The shared roster request was stopped.','TIMEOUT'))};
       xhr.ontimeout=function(){finish(transportError('The shared roster did not respond.','TIMEOUT'))};
       timer=setTimeout(function(){try{xhr.abort()}catch(error){}finish(transportError('The shared roster did not respond.','TIMEOUT'))},startupSnapshotTimeoutMs+500);
-      xhr.send('{}');
+      xhr.send(JSON.stringify({p_client_version:APP_VERSION}));
     }catch(error){finish(error)}
   })
 }
@@ -378,10 +382,10 @@ function startupQueryFailed(result){return !result||!!result.error}
 
 function preferCompatibilityStartup(){return /android/i.test(navigator.userAgent||'')}
 
-async function compatibilitySyncRevision(){
-  var result=await startupQuery(supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle(),'Roster revision did not respond.');
+async function compatibilitySyncState(){
+  var result=await startupQuery(supa.from('app_sync_state').select('revision,access_epoch,updated_at').eq('id',1).maybeSingle(),'Roster revision did not respond.');
   if(startupQueryFailed(result)||!result.data){var error=result&&result.error||new Error('Roster revision could not be checked.');error.code=error.code||'REVISION_UNAVAILABLE';throw error}
-  return Number(result.data.revision||0)
+  return{revision:Number(result.data.revision||0),accessEpoch:Number(result.data.access_epoch||0)}
 }
 
 async function requestCompatibilityStartup(){
@@ -393,7 +397,7 @@ async function requestCompatibilityStartup(){
   if(!profileResult.data||!profileResult.data.active){var accessError=new Error('This account is not authorised.');accessError.code='42501';throw accessError}
 
   for(var attempt=0;attempt<2;attempt++){
-    var startingRevision=await compatibilitySyncRevision();
+    var startingState=await compatibilitySyncState();
     sharedLoadFailureStage='staffing';setLaunchState('Preparing your night',attempt?'The roster changed while opening. Refreshing it once…':'Opening shared staffing through the compatibility route…');
     var changes=await startupQuery(supa.from('night_changes').select('*').order('updated_at',{ascending:true}),'Absence information did not respond.');
     var overtime=await startupQuery(supa.from('night_overtime').select('*').order('updated_at',{ascending:true}),'Overtime information did not respond.');
@@ -413,17 +417,20 @@ async function requestCompatibilityStartup(){
     sharedLoadFailureStage='support';
     var support=await startupQuery(Promise.all([
       supa.from('app_settings').select('*').eq('id',1).maybeSingle(),
-      supa.from('app_schema_version').select('*').eq('id',1).maybeSingle()
-    ]),'Roster support information did not respond.').catch(function(){return[{data:null},{data:null}]});
-    var endingRevision=await compatibilitySyncRevision();
-    if(startingRevision===endingRevision)return{
+      supa.from('app_schema_version').select('*').eq('id',1).maybeSingle(),
+      supa.rpc('get_app_compatibility_v49',{p_client_version:APP_VERSION})
+    ]),'Roster support information did not respond.').catch(function(){return[{data:null},{data:null},{data:null,error:{code:'COMPATIBILITY_UNAVAILABLE'}}]});
+    var endingState=await compatibilitySyncState();
+    if(startingState.revision===endingState.revision)return{
       profile:profileResult.data,
       night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
       roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
       night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
       app_settings:support[0]&&!support[0].error?support[0].data:null,
       schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):0,
-      sync_revision:endingRevision
+      compatibility:support[2]&&!support[2].error?support[2].data:null,
+      access_epoch:endingState.accessEpoch,
+      sync_revision:endingState.revision
     }
   }
   var changedError=new Error('The shared roster changed while it was opening. Try again.');changedError.code='REVISION_CHANGED';throw changedError
@@ -460,6 +467,79 @@ function syncPrimaryHeaderActions(){
 
 function prepareAuthorisedShell(profile){
   currentUserProfile=profile;byId('authGate').classList.add('hidden');document.body.classList.remove('authPending');var isAdmin=profile.user_role==='admin';byId('adminSettingsBtn').classList.toggle('hidden',!isAdmin);document.querySelector('.bottom').style.gridTemplateColumns='repeat(4,minmax(0,1fr))';byId('accountBtn').title=profile.display_name+' · Open account';byId('accountInitial').textContent=(profile.display_name||profile.email).charAt(0).toUpperCase();syncPrimaryHeaderActions()
+}
+
+function normaliseAppCompatibility(value){
+  var source=plainSnapshotRecord(value)?value:{},status=String(source.write_status||'update_required');
+  return{
+    minimum_read_version:String(source.minimum_read_version||'37.0'),
+    minimum_write_version:String(source.minimum_write_version||'41.0'),
+    recommended_version:String(source.recommended_version||'41.0'),
+    maintenance_mode:source.maintenance_mode===true,
+    maintenance_message:String(source.maintenance_message||'Shared roster editing has been temporarily paused.'),
+    write_allowed:source.write_allowed===true,
+    write_status:['allowed','maintenance','version_blocked','update_required','permission_denied'].indexOf(status)>=0?status:'update_required'
+  }
+}
+function compatibilityNeedsUpdate(){return appCompatibility&&(appCompatibility.write_status==='update_required'||appCompatibility.write_status==='version_blocked')}
+function sharedWritesBlocked(){return !appCompatibility||appCompatibility.write_allowed!==true}
+function sharedWriteNotice(){
+  if(!appCompatibility)return'An important Night Roster update is required before shared changes can be made. You can still view the roster.';
+  if(appCompatibility.write_status==='maintenance')return appCompatibility.maintenance_message||'Shared roster editing has been temporarily paused. You can still view the roster.';
+  if(appCompatibility.write_status==='permission_denied')return'Your signed-in account does not currently have permission to save shared roster changes.';
+  return'An important Night Roster update is required before shared changes can be made. You can still view the roster.'
+}
+function renderWriteGuardState(){
+  var blocked=!!(currentUserProfile&&!forcedOfflineSession&&sharedWritesBlocked()),banner=byId('writeGuardBanner'),title=byId('writeGuardTitle'),detail=byId('writeGuardDetail');
+  document.body.classList.toggle('sharedWriteBlocked',blocked);
+  if(banner)banner.classList.toggle('hidden',!blocked);
+  if(!blocked)return;
+  var maintenance=appCompatibility&&appCompatibility.write_status==='maintenance';
+  if(title)title.textContent=maintenance?'Shared editing paused':'Important update required';
+  if(detail)detail.textContent=sharedWriteNotice();
+  if(compatibilityNeedsUpdate()&&updateRegistration&&navigator.onLine)updateRegistration.update().catch(function(){})
+}
+function setAppCompatibility(value){appCompatibility=normaliseAppCompatibility(value);renderWriteGuardState();updateOfflineControls()}
+async function refreshCompatibilityState(){
+  if(!supa||!currentUser||!navigator.onLine)return appCompatibility;
+  try{var result=await supa.rpc('get_app_compatibility_v49',{p_client_version:APP_VERSION});if(!result.error&&result.data)setAppCompatibility(result.data)}catch(error){}
+  return appCompatibility
+}
+async function enterAccessLost(){
+  if(accessLossInFlight)return;accessLossInFlight=true;
+  recordAppDiagnostic('access','session','lost');realtimeGeneration++;startupAttempt++;forcedOfflineSession=false;
+  if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}
+  if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler)window.AnaestheticRuntime.scheduler.cancel('shared-revision');
+  sharedSyncTimer=null;realtimeSubscribed=false;
+  if(changesChannel){try{await supa.removeChannel(changesChannel)}catch(error){}changesChannel=null}
+  if(window.chatTeardownSession)window.chatTeardownSession();
+  clearPrivateDeviceData();
+  currentUserProfile=null;currentPrivateProfile=null;profileAvatarUrl='';currentAccessToken='';
+  nightChanges={};nightOvertime={};changeHistory={};overtimeHistory={};roleOverrideHistory={};fiveCoverChoices={};labourOrders={};nightPlanStatuses={};nightRoleOverrides={};
+  lastObservedSyncRevision=null;lastObservedAccessEpoch=null;
+  try{await supa.auth.signOut({scope:'local'})}catch(error){}
+  currentUser=null;setAuthMode('login');showAuth('Your Night Roster access has changed. Sign in again, or contact the roster administrator if you still need access.',true);
+}
+async function checkCurrentAccessStatus(expectedEpoch){
+  if(accessLossInFlight)return{active:false};
+  if(accessStatusCheckPromise)return accessStatusCheckPromise;
+  accessStatusCheckPromise=(async function(){
+    var result=await supa.rpc('my_access_status_v49');
+    if(result.error){recordAppDiagnostic('access','refresh',result.error.code||'failed');return{error:result.error}}
+    var status=result.data||{},epoch=Number(status.access_epoch||expectedEpoch||0);lastObservedAccessEpoch=epoch;
+    if(!status.active){await enterAccessLost();return{active:false}}
+    var previousRole=currentUserProfile&&currentUserProfile.user_role||'',nextRole=String(status.user_role||'member');
+    var nextProfile=Object.assign({},currentUserProfile||{},{active:true,display_name:status.display_name||currentUserProfile&&currentUserProfile.display_name||'Shift member',user_role:nextRole});
+    currentUserProfile=nextProfile;try{appStorage.setItem('anaes_cached_profile',JSON.stringify(nextProfile))}catch(error){}
+    prepareAuthorisedShell(nextProfile);
+    if(previousRole&&previousRole!==nextRole){
+      recordAppDiagnostic('access','role-change',previousRole+'-to-'+nextRole);
+      if(previousRole==='admin'&&nextRole!=='admin'&&document.body.getAttribute('data-view')==='admin')show('today');
+      if(nextRole==='admin'&&!forcedOfflineSession)withTimeout(loadAccounts(),6000,'Account list did not respond.').catch(function(){})
+    }
+    return{active:true,role:nextRole,accessEpoch:epoch}
+  })();
+  try{return await accessStatusCheckPromise}finally{accessStatusCheckPromise=null}
 }
 
 async function retryLaunchConnection(){
