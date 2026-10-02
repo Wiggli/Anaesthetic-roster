@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "project": "Anaesthetic Night Roster",
+  "currentRelease": "41.5",
+  "lastReleaseDate": "2 October 2026",
+  "databaseSchema": 50,
+  "sourceOfTruth": {
+    "branch": "main",
+    "releaseMetadata": "release.json",
+    "repositoryRules": "AGENTS.md",
+    "runtimeSources": [
+      "app-core.js",
+      "src/legacy-ui/foundation.js",
+      "src/legacy-ui/clinical.js",
+      "src/legacy-ui/sync.js",
+      "src/legacy-ui/bootstrap.js",
+      "src/domain-logic.ts",
+      "src/runtime-foundation.ts"
+    ],
+    "generatedArtifacts": [
+      "app-ui.js",
+      "domain-logic.js",
+      "runtime-foundation.js"
+    ]
+  },
+  "developerCommands": {
+    "context": "npm run context",
+    "fastVerify": "npm run verify:fast",
+    "fullVerify": "npm test",
+    "build": "npm run build",
+    "release": "npm run release"
+  },
+  "ci": {
+    "workflow": ".github/workflows/deploy-pages.yml",
+    "requiredCheck": "test",
+    "pullRequestBrowsers": [
+      "mobile-chromium",
+      "desktop-chromium",
+      "low-end-chromium"
+    ],
+    "productionBrowsers": [
+      "mobile-chromium",
+      "desktop-chromium",
+      "low-end-chromium",
+      "webkit-iphone"
+    ],
+    "cancelSupersededPullRequests": true,
+    "reuseTestedPagesArtifact": true,
+    "nightlyCompatibilityRun": true
+  },
+  "continuity": {
+    "readFirst": [
+      "AGENTS.md",
+      ".project-state.json",
+      "docs/CURRENT_STATE.md",
+      "docs/DEVELOPMENT_WORKFLOW.md"
+    ],
+    "updateStateWhen": [
+      "release version changes",
+      "database schema changes",
+      "source ownership changes",
+      "required verification commands change"
+    ]
+  },
+  "pendingWork": [],
+  "knownIssues": []
+}

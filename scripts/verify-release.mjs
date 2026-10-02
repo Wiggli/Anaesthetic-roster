@@ -72,6 +72,10 @@ const lock = JSON.parse(read('package-lock.json'));
 if (packageJson.version !== version) fail('package.json version does not match release.json.');
 if (lock.version !== version || lock.packages?.['']?.version !== version) fail('package-lock.json version does not match release.json.');
 
+const projectState = JSON.parse(read('.project-state.json'));
+if (projectState.currentRelease !== version) fail('.project-state.json currentRelease does not match release.json.');
+if (projectState.databaseSchema !== Number(core.match(/var EXPECTED_SCHEMA_VERSION = (\d+);/)?.[1])) fail('.project-state.json databaseSchema does not match EXPECTED_SCHEMA_VERSION.');
+
 for (const name of ['index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css', ...uiSources]) {
   const source = read(name);
   const refs = Array.from(source.matchAll(/\?v=(\d+(?:\.\d+)+)/g), match => match[1]);

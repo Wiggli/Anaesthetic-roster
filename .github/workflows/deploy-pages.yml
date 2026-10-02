@@ -6,18 +6,20 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -25,21 +27,63 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Verify release metadata and run regression tests
-        run: npm test
+      - name: Verify release metadata
+        run: npm run verify:release
       - name: Build public app files
         run: npm run build
       - run: npm run verify:build
       - name: Enforce built performance budgets
         run: node tests/performance-budget.test.js
-      - name: Install browser smoke runner
+      - name: Preserve the exact Pages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
+
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run deterministic regression suite
+        run: npm test
+
+  browser-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download the exact built app
+        uses: actions/download-artifact@v4
+        with:
+          name: pages-dist
+          path: dist
+      - name: Install pinned browser smoke runner
         run: npm install --no-save --no-package-lock @playwright/test@1.55.0
-      - name: Install Chromium and WebKit for browser resilience tests
-        run: npx playwright install --with-deps chromium webkit
-      - name: Run mobile and desktop browser smoke tests
-        run: npx playwright test --config=playwright.config.js
-      - name: Run WebKit, low-end and concurrency resilience tests
-        run: npx playwright test --config=playwright.resilience.config.js
+      - name: Restore Chromium cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.55.0-smoke-chromium
+      - name: Ensure Chromium system dependencies
+        run: npx playwright install-deps chromium
+      - name: Ensure Chromium browser
+        run: npx playwright install chromium
+      - name: Run mobile and desktop Chromium smoke tests
+        run: npm run verify:browser
       - name: Preserve presentation review captures
         if: always() && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
@@ -48,13 +92,79 @@ jobs:
           path: visual-review
           if-no-files-found: ignore
           retention-days: 3
-      - name: Preserve the exact tested Pages artifact
-        uses: actions/upload-artifact@v4
+
+  browser-resilience:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download the exact built app
+        uses: actions/download-artifact@v4
         with:
           name: pages-dist
           path: dist
-          if-no-files-found: error
-          retention-days: 1
+      - name: Install pinned resilience runner
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+      - name: Restore pull-request Chromium cache
+        if: github.event_name == 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.55.0-resilience-chromium
+      - name: Restore release browser cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.55.0-resilience-chromium-webkit
+      - name: Ensure pull-request Chromium dependencies
+        if: github.event_name == 'pull_request'
+        run: npx playwright install-deps chromium
+      - name: Ensure pull-request Chromium browser
+        if: github.event_name == 'pull_request'
+        run: npx playwright install chromium
+      - name: Run low-end Chromium resilience on pull requests
+        if: github.event_name == 'pull_request'
+        run: npm run verify:resilience -- --project=low-end-chromium
+      - name: Ensure Chromium and WebKit release dependencies
+        if: github.event_name != 'pull_request'
+        run: npx playwright install-deps chromium webkit
+      - name: Ensure Chromium and WebKit release browsers
+        if: github.event_name != 'pull_request'
+        run: npx playwright install chromium webkit
+      - name: Run full release resilience including WebKit
+        if: github.event_name != 'pull_request'
+        run: npm run verify:resilience
+
+  test:
+    if: always()
+    needs: [build, regression, browser-smoke, browser-resilience]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every verification lane
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          REGRESSION_RESULT: ${{ needs.regression.result }}
+          BROWSER_SMOKE_RESULT: ${{ needs.browser-smoke.result }}
+          BROWSER_RESILIENCE_RESULT: ${{ needs.browser-resilience.result }}
+        shell: bash
+        run: |
+          printf 'build=%s\nregression=%s\nbrowser-smoke=%s\nbrowser-resilience=%s\n' \
+            "$BUILD_RESULT" "$REGRESSION_RESULT" "$BROWSER_SMOKE_RESULT" "$BROWSER_RESILIENCE_RESULT"
+          if [ "$BUILD_RESULT" != "success" ] || \
+             [ "$REGRESSION_RESULT" != "success" ] || \
+             [ "$BROWSER_SMOKE_RESULT" != "success" ] || \
+             [ "$BROWSER_RESILIENCE_RESULT" != "success" ]; then
+            echo "::error::One or more verification lanes failed or were cancelled."
+            exit 1
+          fi
 
   migrate:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'

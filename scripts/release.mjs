@@ -131,6 +131,13 @@ if (!lock.packages || !lock.packages['']) fail('package-lock.json is missing the
 lock.packages[''].version = version;
 write('package-lock.json', JSON.stringify(lock, null, 2) + '\n');
 
+if (fs.existsSync(file('.project-state.json'))) {
+  const projectState = JSON.parse(read('.project-state.json'));
+  projectState.currentRelease = version;
+  projectState.lastReleaseDate = release.date;
+  write('.project-state.json', JSON.stringify(projectState, null, 2) + '\n');
+}
+
 const generated = spawnSync(process.execPath, [file('scripts/generate-runtime.mjs')], { cwd: root, stdio: 'inherit' });
 if (generated.status !== 0) process.exit(generated.status || 1);
 const verify = spawnSync(process.execPath, [file('scripts/verify-release.mjs')], { cwd: root, stdio: 'inherit' });
