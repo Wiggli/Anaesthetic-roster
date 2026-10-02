@@ -1,14 +1,14 @@
 {
-  "version": "41.2",
+  "version": "41.3",
   "date": "2 October 2026",
-  "title": "Finish the modular runtime architecture",
-  "summary": "Night Roster now has one maintained modular UI source layout and a strictly checked TypeScript domain and reliability runtime while preserving stable installed-PWA asset URLs.",
+  "title": "Simplify Account and Administrator",
+  "summary": "Account and administrator tools now reveal complexity only when it is needed, with calmer first-level choices and clearer grouping.",
   "changes": [
-    "The former app-ui.js source is split into foundation, clinical, synchronization and bootstrap modules, while the public app-ui.js remains a generated compatibility asset for installed PWAs.",
-    "Domain clock, freshness and capability logic plus the reliability runtime now live in strict TypeScript source and must typecheck before compatible browser JavaScript is generated.",
-    "Release tooling and architecture tests now reject stale generated assets or a return to the previous monolithic source layout.",
-    "Superseded one-off presentation boundary notes were removed after durable ownership and safety rules were consolidated into AGENTS.md.",
-    "The verified 138-night rotation, staffing and Labour Ward rules, Supabase trust boundary, audit schema, Chat transport and explicit ACTIVATE_UPDATE flow are unchanged."
+    "Account now opens as four clear destinations: Profile, Preferences, Security, and App & Help, with detailed controls collapsed until requested.",
+    "Administrator navigation is reduced to Tonight, People, Roster, and System so occasional administrators no longer face five equally weighted management areas.",
+    "Permanent team tools now sit beneath Roster management, while system health, recent administrator activity, exports, and backups live together under System.",
+    "The Tonight administrator screen keeps operational status visible and adds direct shortcuts to People & Access, Roster Management, and System.",
+    "All existing authentication, permissions, roster calculations, audit, backup, Chat, Supabase and explicit PWA update contracts remain unchanged."
   ],
   "update_policy": "normal"
 }
