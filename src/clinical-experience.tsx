@@ -466,7 +466,7 @@ function NightStatus({ model }: { model: NightSummary }) {
     const sync = () => {
       const badge = document.getElementById('chatUnreadBadge');
       setChatUnread(Number(badge?.textContent || 0) || 0);
-      const live = document.querySelector<HTMLElement>('#personalNightCard .personalLiveState span');
+      const live = document.querySelector<HTMLElement>('#personalNightCard .personalHeroStatusCopy small');
       if (live?.textContent) setLiveState(live.textContent);
     };
     sync();
