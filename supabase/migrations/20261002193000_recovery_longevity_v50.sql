@@ -46,6 +46,14 @@ create index if not exists roster_operation_log_created_idx
 
 alter table public.roster_audit_events enable row level security;
 revoke all privileges on table public.roster_audit_events from public,anon,authenticated;
+grant select on table public.roster_audit_events to authenticated;
+
+drop policy if exists "Admins can view roster audit events" on public.roster_audit_events;
+create policy "Admins can view roster audit events"
+on public.roster_audit_events
+for select
+to authenticated
+using ((select public.is_roster_admin()));
 
 create or replace function public.capture_roster_audit_v50()
 returns trigger
@@ -183,8 +191,6 @@ begin
 
   perform set_config('app.operation_id',p_operation_id::text,true);
   perform set_config('app.operation_type',left(trim(p_operation_type),80),true);
-  perform public.prune_roster_operation_log_v50();
-
   insert into public.roster_operation_log(
     operation_id,user_id,operation_type,roster_date,expected_sync_revision
   )
@@ -221,30 +227,25 @@ grant execute on function public.claim_roster_operation_v48(uuid,text,date,bigin
 -- does not mutate clinical roster state on its own.
 
 create or replace function public.prune_roster_operation_log_v50()
-returns bigint
+returns trigger
 language plpgsql
 security definer
 set search_path=''
 as $$
-declare
-  v_count bigint;
 begin
-  if auth.uid() is null or not public.is_shift_member() then
-    raise exception 'PERMISSION_DENIED';
-  end if;
-
   delete from public.roster_operation_log
   where created_at < now()-interval '90 days';
-
-  get diagnostics v_count=row_count;
-  return v_count;
+  return null;
 end
 $$;
 
 revoke all on function public.prune_roster_operation_log_v50()
   from public,anon,authenticated;
-grant execute on function public.prune_roster_operation_log_v50()
-  to authenticated;
+
+drop trigger if exists prune_roster_operation_log_v50 on public.roster_operation_log;
+create trigger prune_roster_operation_log_v50
+after insert on public.roster_operation_log
+for each statement execute function public.prune_roster_operation_log_v50();
 
 create or replace function public.night_history_page_v50(
   p_roster_date date,
@@ -255,9 +256,9 @@ create or replace function public.night_history_page_v50(
 returns jsonb
 language plpgsql
 stable
-security definer
+security invoker
 set search_path=''
-as $$
+as $
 declare
   v_limit integer:=greatest(1,least(coalesce(p_limit,50),100));
   v_items jsonb;
@@ -329,7 +330,7 @@ create or replace function public.admin_audit_timeline_v50(
 returns jsonb
 language plpgsql
 stable
-security definer
+security invoker
 set search_path=''
 as $$
 declare
@@ -445,7 +446,7 @@ create or replace function public.app_health_canary_v50()
 returns jsonb
 language sql
 stable
-security definer
+security invoker
 set search_path=''
 as $$
   select case
