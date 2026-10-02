@@ -380,6 +380,38 @@ test('signed-in React tabs retain badges and keyboard navigation', async ({ page
   await expect(page.locator('#changesTaskBadge')).toHaveText('3');
 });
 
+test('central Quick Actions rudder opens actions without becoming a fifth destination', async ({ page }) => {
+  await openShell(page);
+  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+  const rudder = page.locator('.bottom [data-quick-rudder]');
+  await expect(rudder).toBeVisible();
+  await expect(rudder).toHaveAttribute('aria-label', 'Quick actions');
+  const before = await page.locator('body').getAttribute('data-view');
+
+  await rudder.click();
+  await expect(page.locator('#quickActionsSheet')).toHaveAttribute('open', '');
+  await expect(page.locator('#quickActionsSheet')).toContainText('What do you need to do?');
+  await expect(page.locator('#quickActionsSheet')).toContainText('Report an absence');
+  await expect(page.locator('#quickActionsSheet')).toContainText('Add overtime cover');
+  await expect(page.locator('#quickActionsSheet')).toContainText('Review this night');
+  await expect(page.locator('#quickActionsSheet')).toContainText('New private message');
+  await expect(page.locator('#quickActionsSheet')).toContainText('Share Night Roster');
+  expect(await page.locator('body').getAttribute('data-view')).toBe(before);
+
+  const rudderBox = await rudder.boundingBox();
+  expect(rudderBox).not.toBeNull();
+  expect(rudderBox.height).toBeGreaterThanOrEqual(54);
+
+  await page.getByRole('button', { name: /Review this night|Review changes needing attention/ }).click();
+  await expect(page.locator('#quickActionsSheet')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#changes')).toBeVisible();
+
+  await page.locator('.bottom [data-quick-rudder]').click();
+  await page.getByRole('button', { name: 'Share Night Roster' }).click();
+  await expect(page.locator('#shareAppDialog')).toHaveAttribute('open', '');
+  await expect(page.locator('#shareAppDialog')).toContainText('Scan to get Night Roster');
+});
+
 test('bottom-tab taps move solid pages edge-to-edge without visual overlap', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'mobile transition regression');
   await openShell(page);
