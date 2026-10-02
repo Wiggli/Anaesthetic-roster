@@ -33,6 +33,7 @@ assert.match(ui,/anaes_compat_startup_count/,'compatibility fallback use must be
 assert.match(ui,/coordinator\.isLeader\(\)/,'roster realtime must be single-leader across local tabs');
 assert.match(ui,/roster:peer-revision/,'follower tabs must react to leader revision broadcasts');
 assert.match(ui,/roster:tab-leader[\s\S]*removeChannel\(changesChannel\)[\s\S]*subscribeToChanges\(\)/,'tabs that lose leadership must close roster realtime and new leaders must take ownership');
+assert.match(ui,/function sharedTransportLive\(\)[\s\S]*!window\.AnaestheticRuntime\.coordinator\.isLeader\(\)/,'a coordinated follower tab must be reported as live without owning a duplicate realtime socket');
 assert.doesNotMatch(ui,/offline mutation queue|pending offline mutation|flushOffline/i,'clinical writes must not be queued for later offline replay');
 
 for(const rpc of [
