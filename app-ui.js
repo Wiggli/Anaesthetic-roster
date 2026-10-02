@@ -85,6 +85,7 @@ var recentActivityItems=[];
 var recentActivityDate='';
 var runtimeRecoveryStatus={safeMode:false,attempts:0,safeModeUntil:0};
 var cacheRepairInFlight=null;
+var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
   {"version":"41.0","date":"2 October 2026","title":"Enforce the roster trust boundary","changes":["Shared roster writes now require a compatible 41.x client, while the server can pause shared editing or block a specific unsafe release without stopping roster viewing.","Older v25, v26, v35 and v48 mutation routes are no longer executable by signed-in browsers; current roster changes use the guarded v49 route.","Audit history now records the authenticated account UUID and resolves the readable actor name on the server instead of trusting a browser-supplied name.","Access and role changes now reach open and multi-tab PWAs; disabled accounts clear private saved roster and Chat state and sign out immediately."],"policy":"important"},
@@ -1937,7 +1938,7 @@ function runRosterMutation(key,execute,verify){
 }
 
 async function loadSharedData(options){
-  var background=!!(options&&options.background);
+  var background=!!(options&&options.background),loadStarted=window.performance&&performance.now?performance.now():Date.now();
   if(sharedLoadPromise){sharedReloadPending=true;sharedReloadPendingBackground=sharedReloadPendingBackground&&background;return sharedLoadPromise}
   if(!background)document.body.classList.add('dataRefreshing');
   sharedLoadPromise=(async function(){
@@ -1985,7 +1986,7 @@ async function loadSharedData(options){
       setSharedSyncState('error','Shared data unavailable');return false
     }
   })();
-  try{return await sharedLoadPromise}finally{if(!background)document.body.classList.remove('dataRefreshing');sharedLoadPromise=null;if(sharedReloadPending){var nextBackground=sharedReloadPendingBackground;sharedReloadPending=false;sharedReloadPendingBackground=true;setTimeout(function(){loadSharedData({background:nextBackground})},120)}}
+  try{return await sharedLoadPromise}finally{if(window.AnaestheticRuntime&&window.AnaestheticRuntime.latency)window.AnaestheticRuntime.latency.record('shared-load',(window.performance&&performance.now?performance.now():Date.now())-loadStarted,true);if(!background)document.body.classList.remove('dataRefreshing');sharedLoadPromise=null;if(sharedReloadPending){var nextBackground=sharedReloadPendingBackground;sharedReloadPending=false;sharedReloadPendingBackground=true;setTimeout(function(){loadSharedData({background:nextBackground})},120)}}
 }
 
 function scheduleSharedReload(background){clearTimeout(reloadTimer);reloadTimer=setTimeout(function(){loadSharedData({background:background!==false})},350)}
@@ -1995,10 +1996,10 @@ async function checkSharedRevision(options){
   if(sharedSyncCheckInFlight||forcedOfflineSession||!currentUserProfile||!navigator.onLine||document.visibilityState==='hidden')return{skipped:true};
   sharedSyncCheckInFlight=true;
   try{
-    var results=await Promise.all([
+    var revisionRequest=function(){return Promise.all([
       supa.from('app_sync_state').select('revision').eq('id',1).maybeSingle(),
       supa.from('app_access_signal').select('access_epoch').eq('id',1).maybeSingle()
-    ]);
+    ])},results=window.AnaestheticRuntime&&window.AnaestheticRuntime.latency?await window.AnaestheticRuntime.latency.measure('revision-check',revisionRequest):await revisionRequest();
     var result=results[0],accessResult=results[1],accessEpoch=accessResult&&!accessResult.error&&accessResult.data?Number(accessResult.data.access_epoch||0):null;
     if(accessEpoch!==null){
       if(lastObservedAccessEpoch===null)lastObservedAccessEpoch=accessEpoch;
@@ -2154,15 +2155,45 @@ function workerCacheName(worker){
     try{worker.postMessage({type:'GET_CACHE_VERSION'},[channel.port2])}catch(error){clearTimeout(timer);settled=true;resolve('')}
   });
 }
+
+function workerCacheHealth(worker,type){
+  if(!worker||typeof MessageChannel!=='function')return Promise.resolve(null);
+  return new Promise(function(resolve){
+    var settled=false,channel=new MessageChannel(),timer=setTimeout(function(){if(!settled){settled=true;resolve(null)}},2500);
+    channel.port1.onmessage=function(event){
+      if(settled)return;var data=event&&event.data||{};
+      if(data.type!=='CACHE_HEALTH')return;
+      settled=true;clearTimeout(timer);resolve(data)
+    };
+    try{worker.postMessage({type:type||'VERIFY_CACHE'},[channel.port2])}catch(error){clearTimeout(timer);settled=true;resolve(null)}
+  })
+}
+async function verifyAndRepairAppShell(force){
+  var worker=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!worker)return null;
+  if(!force&&Date.now()-lastCacheVerifyAt<15*60*1000)return null;
+  if(cacheRepairInFlight)return cacheRepairInFlight;
+  lastCacheVerifyAt=Date.now();
+  cacheRepairInFlight=(async function(){
+    var first=await workerCacheHealth(worker,'VERIFY_CACHE');
+    if(!first){recordAppDiagnostic('update','cache-health','unavailable');return null}
+    var missing=Array.isArray(first.missing)?first.missing:[];
+    if(!missing.length){recordAppDiagnostic('update','cache-health','healthy');return first}
+    recordAppDiagnostic('update','cache-health','repair-'+missing.length);
+    var repaired=await workerCacheHealth(worker,'REPAIR_CACHE');
+    if(!repaired||Array.isArray(repaired.missing)&&repaired.missing.length){recordAppDiagnostic('update','cache-health','repair-failed');return repaired}
+    recordAppDiagnostic('update','cache-health','repaired');return repaired
+  })();
+  try{return await cacheRepairInFlight}finally{cacheRepairInFlight=null}
+}
 async function refreshControllerCacheVersion(){
   var worker=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!worker)return'';
   var value=await workerCacheName(worker);if(value){serviceWorkerCacheVersion=value;renderDiagnostics()}return value;
 }
 function verifyRuntimeHealth(){
   var release=installedReleaseState(),expected='anaesthetic-night-roster-v'+APP_VERSION.replaceAll('.','-'),healthy=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version===APP_VERSION&&(!navigator.serviceWorker||!navigator.serviceWorker.controller||serviceWorkerCacheVersion==='Checking…'||serviceWorkerCacheVersion==='Not active'||serviceWorkerCacheVersion===expected);
-  if(!healthy){recordAppDiagnostic('update','runtime-health','mismatch');setSharedSyncState('error','App update needs attention');return false}
-  if(release.stale){recordAppDiagnostic('update','runtime-health','stale-cache');return false}
-  return true
+  if(!healthy){recordAppDiagnostic('update','runtime-health','mismatch');verifyAndRepairAppShell(true);setSharedSyncState('error','App update needs attention');return false}
+  if(release.stale){recordAppDiagnostic('update','runtime-health','stale-cache');verifyAndRepairAppShell(true);return false}
+  verifyAndRepairAppShell(false);return true
 }
 
 function renderPendingUpdate(){
@@ -2260,7 +2291,7 @@ function setupPWA(){
   if(navigator.serviceWorker&&typeof navigator.serviceWorker.addEventListener==='function'&&typeof navigator.serviceWorker.register==='function'){
     navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='CACHE_VERSION'){serviceWorkerCacheVersion=event.data.value||'Unknown';renderDiagnostics();verifyRuntimeHealth()}});navigator.serviceWorker.addEventListener('controllerchange',function(){finishUpdateActivation();refreshControllerCacheVersion().then(verifyRuntimeHealth);if(reloadForUpdate){reloadForUpdate=false;window.location.reload()}else renderDiagnostics()});
     var check=function(){if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader())return;if(updateRegistration&&navigator.onLine)updateRegistration.update().catch(function(){})};
-    window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await navigator.serviceWorker.ready;if(navigator.serviceWorker.controller){var activeCache=await refreshControllerCacheVersion();if(!activeCache)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_VERSION'});else verifyRuntimeHealth()}else{serviceWorkerCacheVersion='Not active';renderDiagnostics()}if(updateRegistration.waiting)await showUpdate(updateRegistration);if(!window.AnaestheticRuntime||!window.AnaestheticRuntime.coordinator||window.AnaestheticRuntime.coordinator.isLeader())await updateRegistration.update();if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler)window.AnaestheticRuntime.scheduler.every('pwa-update',900000,check);else setInterval(check,900000)}catch(e){serviceWorkerCacheVersion='Not active';renderDiagnostics()}});
+    window.addEventListener('load',async function(){try{updateRegistration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});updateRegistration.addEventListener('updatefound',function(){var worker=updateRegistration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(updateRegistration)})});await navigator.serviceWorker.ready;if(navigator.serviceWorker.controller){var activeCache=await refreshControllerCacheVersion();if(!activeCache)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_VERSION'});else verifyRuntimeHealth();await verifyAndRepairAppShell(!!(runtimeRecoveryStatus&&runtimeRecoveryStatus.safeMode))}else{serviceWorkerCacheVersion='Not active';renderDiagnostics()}if(updateRegistration.waiting)await showUpdate(updateRegistration);if(!window.AnaestheticRuntime||!window.AnaestheticRuntime.coordinator||window.AnaestheticRuntime.coordinator.isLeader())await updateRegistration.update();if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler)window.AnaestheticRuntime.scheduler.every('pwa-update',900000,check);else setInterval(check,900000)}catch(e){serviceWorkerCacheVersion='Not active';renderDiagnostics()}});
     window.addEventListener('focus',check);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()});
   }
   var closeInstall=byId('closeInstallGuide'),closeRelease=byId('closeReleaseNotes'),releaseDialog=byId('releaseNotes');if(closeInstall)closeInstall.onclick=function(){byId('installGuide').close()};if(closeRelease)closeRelease.onclick=function(){releaseDialog.close()};if(releaseDialog&&typeof releaseDialog.addEventListener==='function')releaseDialog.addEventListener('close',function(){if(releaseDialog.dataset.releaseMode==='current'||releaseDialog.dataset.releaseMode==='history')markCurrentReleaseSeen();releaseNotesQueued=false;showOnboardingIfNeeded()});showReleaseNotesIfNeeded();
