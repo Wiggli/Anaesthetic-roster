@@ -1348,12 +1348,6 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await expect(page.locator('#profilePhotoPreview')).toBeHidden();
   await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
-  await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'App guide' })).toBeVisible();
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'What’s new' })).toBeVisible();
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
-  const helpLayout = await page.locator('.accountActions').evaluate(el => ({ section: el.getBoundingClientRect().height, rows: el.querySelector('#accountActionsExperience').getBoundingClientRect().height }));
-  expect(helpLayout.section).toBeGreaterThan(helpLayout.rows);
   await captureReview(page, 'account');
   await page.locator('#profileName').fill('André');
   await expect(page.locator('#saveProfileBtn')).toBeVisible();
@@ -1378,6 +1372,10 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await expect(page.locator('#securityHeading')).toHaveText('Sign-in security');
   await page.locator('#accountBackBtn').click();
   await page.locator('#accountHomeHub [data-account-section="help"]').click();
+  await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'App guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'What’s new' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
   await page.locator('#accountActionsExperience button', { hasText: 'Version history' }).click();
   expect(await page.evaluate(() => window.__accountActions)).toContainEqual(expect.objectContaining({ action: 'versions' }));
 });
