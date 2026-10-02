@@ -2137,8 +2137,8 @@ async function backup(){
 
 function fallbackUpdateMeta(){return{version:'',date:'',title:'Night Roster update',summary:'The latest Night Roster improvements are ready to install.',changes:['Reliability, clarity and interface improvements are ready.'],update_policy:'important'}}
 
-function validUpdateMeta(value){return !!(value&&typeof value==='object'&&/^\d+(?:\.\d+)+$/.test(String(value.version||''))&&typeof value.title==='string'&&Array.isArray(value.changes)&&value.changes.length&&value.changes.every(function(item){return typeof item==='string'&&item.trim().length>0})&&(!value.update_policy||value.update_policy==='automatic'||value.update_policy==='important'))}
-function updateIsAutomatic(){return !!(pendingUpdateMeta&&pendingUpdateMeta.update_policy==='automatic')}
+function validUpdateMeta(value){return !!(value&&typeof value==='object'&&/^\d+(?:\.\d+)+$/.test(String(value.version||''))&&typeof value.title==='string'&&Array.isArray(value.changes)&&value.changes.length&&value.changes.every(function(item){return typeof item==='string'&&item.trim().length>0})&&(!value.update_policy||['automatic','quiet','normal','important'].indexOf(value.update_policy)>=0))}
+function updateIsAutomatic(){return !!(pendingUpdateMeta&&(pendingUpdateMeta.update_policy==='automatic'||pendingUpdateMeta.update_policy==='quiet'))}
 function cacheVersionNumber(value){var match=String(value||'').match(/anaesthetic-night-roster-v(\d+(?:-\d+)+)/);return match?match[1].replace(/-/g,'.'):''}
 function waitingUpdateDeferralKey(){return'anaes_update_later_'+(waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'unknown')}
 function clearUpdateNotice(){var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close()}
@@ -2198,7 +2198,7 @@ function verifyRuntimeHealth(){
 }
 
 function renderPendingUpdate(){
-  var meta=pendingUpdateMeta||fallbackUpdateMeta(),serverRequired=compatibilityNeedsUpdate(),automatic=!serverRequired&&meta.update_policy==='automatic',incoming=waitingUpdateVersion||meta.version||'',state=waitingUpdateState||classifyWaitingUpdate(),version=incoming?'Version '+incoming+(meta.date?' · '+meta.date:''):'Update ready';
+  var meta=pendingUpdateMeta||fallbackUpdateMeta(),serverRequired=compatibilityNeedsUpdate(),automatic=!serverRequired&&updateIsAutomatic(),incoming=waitingUpdateVersion||meta.version||'',state=waitingUpdateState||classifyWaitingUpdate(),version=incoming?'Version '+incoming+(meta.date?' · '+meta.date:''):'Update ready';
   var banner=byId('updateBanner'),bannerVersion=byId('updateBannerVersion'),bannerTitle=banner&&banner.querySelector('.updateBannerSummary b'),bannerSmall=banner&&banner.querySelector('.updateBannerSummary small'),sheetVersion=byId('updateDetailsVersion'),sheetTitle=byId('updateDetailsTitle'),sheetSummary=byId('updateDetailsSummary'),safety=byId('updateSafetyNote'),list=byId('updateChangesList'),laterBanner=byId('laterUpdateBtn'),laterSheet=byId('laterUpdateSheetBtn');
   if(banner)banner.classList.toggle('automatic',automatic);
   if(state==='finish'){
