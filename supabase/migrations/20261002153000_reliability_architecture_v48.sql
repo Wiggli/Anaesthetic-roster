@@ -139,6 +139,12 @@ declare
   v_distinct integer;
   v_found integer;
   v_names integer;
+  v_permanent_names text[];
+  v_active_names text[];
+  v_active_count integer;
+  v_role_assignments jsonb;
+  v_labour_first text;
+  v_labour_second text;
 begin
   if auth.uid() is null then
     raise exception 'PERMISSION_DENIED';
@@ -150,6 +156,49 @@ begin
     p_assignments='{}'::jsonb;
   end if;
   if jsonb_typeof(p_assignments)<>'object' then
+    raise exception 'PLAN_INCOMPLETE';
+  end if;
+
+  select array[first1,first2,second1,second2,pager,reliever]
+  into v_permanent_names
+  from public.rotation_versions
+  where effective_from<=p_roster_date
+  order by effective_from desc
+  limit 1;
+
+  if v_permanent_names is null then
+    raise exception 'PLAN_INCOMPLETE';
+  end if;
+
+  with candidate_names(name) as (
+    select trim(permanent_name)
+    from unnest(v_permanent_names) permanent(permanent_name)
+    where not exists (
+      select 1 from public.night_changes c
+      where c.roster_date=p_roster_date
+        and lower(trim(c.absent_name))=lower(trim(permanent_name))
+    )
+    union all
+    select trim(c.replacement_name)
+    from public.night_changes c
+    where c.roster_date=p_roster_date
+      and length(trim(coalesce(c.replacement_name,'')))>0
+    union all
+    select trim(o.nurse_name)
+    from public.night_overtime o
+    where o.roster_date=p_roster_date
+      and length(trim(coalesce(o.nurse_name,'')))>0
+  ), distinct_names as (
+    select min(name) as name
+    from candidate_names
+    where length(name)>0
+    group by lower(name)
+  )
+  select array_agg(name order by lower(name)),count(*)
+  into v_active_names,v_active_count
+  from distinct_names;
+
+  if coalesce(v_active_count,0)<5 then
     raise exception 'PLAN_INCOMPLETE';
   end if;
 
@@ -177,6 +226,56 @@ begin
       and o.id::text in (select value from jsonb_each_text(p_assignments));
 
     if v_found<>v_count or v_names<>v_count then
+      raise exception 'STAFF_NOT_EFFECTIVE';
+    end if;
+  end if;
+
+  select assignments into v_role_assignments
+  from public.night_role_overrides
+  where roster_date=p_roster_date;
+
+  if v_role_assignments is not null then
+    if exists (
+      select 1
+      from jsonb_each_text(v_role_assignments) assignment(key,value)
+      where key<>'mode'
+        and not exists (
+          select 1 from unnest(v_active_names) active(active_name)
+          where lower(trim(active_name))=lower(trim(value))
+        )
+    ) then
+      raise exception 'STAFF_NOT_EFFECTIVE';
+    end if;
+    if (
+      select count(distinct lower(trim(value)))
+      from jsonb_each_text(v_role_assignments)
+      where key<>'mode'
+    ) <> (
+      select count(*)
+      from jsonb_each_text(v_role_assignments)
+      where key<>'mode'
+    ) then
+      raise exception 'PLAN_INCOMPLETE';
+    end if;
+  end if;
+
+  select first_part_name,second_part_name
+  into v_labour_first,v_labour_second
+  from public.night_labour_order
+  where roster_date=p_roster_date;
+
+  if v_labour_first is not null or v_labour_second is not null then
+    if nullif(trim(v_labour_first),'') is null
+       or nullif(trim(v_labour_second),'') is null
+       or lower(trim(v_labour_first))=lower(trim(v_labour_second))
+       or not exists (
+         select 1 from unnest(v_active_names) active(active_name)
+         where lower(trim(active_name))=lower(trim(v_labour_first))
+       )
+       or not exists (
+         select 1 from unnest(v_active_names) active(active_name)
+         where lower(trim(active_name))=lower(trim(v_labour_second))
+       ) then
       raise exception 'STAFF_NOT_EFFECTIVE';
     end if;
   end if;
