@@ -1,7 +1,7 @@
 {
   "name": "anaesthetic-night-roster",
   "private": true,
-  "version": "41.4",
+  "version": "41.5",
   "scripts": {
     "release": "node scripts/release.mjs",
     "verify:release": "node --check scripts/release.mjs && node --check scripts/generate-runtime.mjs && node --check scripts/verify-release.mjs && node scripts/generate-runtime.mjs && node scripts/verify-release.mjs",
