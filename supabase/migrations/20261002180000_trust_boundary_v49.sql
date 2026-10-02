@@ -38,8 +38,41 @@ set minimum_write_version='41.0',
     recommended_version='41.0',
     updated_at=now();
 
-alter table public.app_sync_state
-  add column if not exists access_epoch bigint not null default 0;
+create table if not exists public.app_access_signal (
+  id integer primary key default 1,
+  access_epoch bigint not null default 0,
+  updated_at timestamptz not null default now(),
+  constraint app_access_signal_singleton check (id=1)
+);
+
+alter table public.app_access_signal enable row level security;
+revoke all privileges on table public.app_access_signal from public,anon,authenticated;
+grant select on table public.app_access_signal to authenticated;
+
+drop policy if exists "Authenticated sessions can view access epoch" on public.app_access_signal;
+create policy "Authenticated sessions can view access epoch"
+on public.app_access_signal
+for select
+to authenticated
+using ((select auth.uid()) is not null);
+
+insert into public.app_access_signal(id,access_epoch,updated_at)
+values(1,0,now())
+on conflict (id) do nothing;
+
+do $
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname='supabase_realtime'
+      and schemaname='public'
+      and tablename='app_access_signal'
+  ) then
+    alter publication supabase_realtime add table public.app_access_signal;
+  end if;
+end
+$;
 
 create or replace function public.app_version_at_least_v49(
   p_version text,
@@ -219,7 +252,7 @@ begin
   limit 1;
 
   select access_epoch into v_epoch
-  from public.app_sync_state
+  from public.app_access_signal
   where id=1;
 
   return jsonb_build_object(
@@ -237,17 +270,23 @@ returns trigger
 language plpgsql
 security definer
 set search_path='public'
-as $$
+as $
 begin
   update public.app_sync_state
   set revision=revision+1,
-      access_epoch=access_epoch+
-        case when tg_table_schema='public' and tg_table_name='allowed_users' then 1 else 0 end,
       updated_at=now()
   where id=1;
+
+  if tg_table_schema='public' and tg_table_name='allowed_users' then
+    update public.app_access_signal
+    set access_epoch=access_epoch+1,
+        updated_at=now()
+    where id=1;
+  end if;
+
   return null;
 end
-$$;
+$;
 
 drop trigger if exists bump_app_sync_state_v49 on public.app_compatibility;
 create trigger bump_app_sync_state_v49
@@ -296,7 +335,7 @@ begin
   v_snapshot:=public.get_roster_startup_v37();
 
   select access_epoch into v_epoch
-  from public.app_sync_state
+  from public.app_access_signal
   where id=1;
 
   return v_snapshot || jsonb_build_object(
