@@ -1,13 +1,13 @@
 {
-  "version": "41.6",
-  "date": "2 October 2026",
-  "title": "Polish the app shell",
-  "summary": "Navigation, compact headers and page spacing now behave as one calmer interface, with clearer labels and more convincing translucent glass while keeping clinical content stable and readable.",
+  "version": "41.7",
+  "date": "3 October 2026",
+  "title": "Rebuild the Night screen",
+  "summary": "Night now puts the nurse’s assignment, timeline and essential shift information first, while a rebuilt five-column dock keeps navigation balanced and dependable.",
   "changes": [
-    "The bottom Night, Changes, Breaks and Chat rudder has larger destination labels, a better integrated centre Actions control and a lighter glass material that lets moving content remain visible underneath.",
-    "Compact scroll headers now show useful screen context where available, use a more legible hierarchy and transition into a genuinely translucent navigation surface instead of an opaque strip.",
-    "The Changes workflow control now settles beneath the compact header when sticky, preventing competing chrome while keeping the three-step workflow immediately accessible.",
-    "Night and the other primary screens use tighter, more consistent vertical spacing so the first viewport carries more useful information without making cards or controls feel cramped."
+    "The Night assignment card is cleaner and more focused, with Duty, Break and Colleague details plus one full-night action instead of repeated handover information.",
+    "Normal nights show 03:30 only as the timeline division, while clock-change nights keep their special equal-duty handover, repeated-hour or skipped-hour explanation clearly visible.",
+    "Tonight, Team allocation and Changes tonight now use a tighter hierarchy, stronger dark-mode contrast and more consistent spacing so the screen is easier to scan during a shift.",
+    "The bottom navigation is rebuilt as a balanced five-column glass dock with an integrated Actions control, better badge placement, safe scroll clearance and reduced-motion and reduced-transparency fallbacks."
   ],
   "update_policy": "normal"
 }
