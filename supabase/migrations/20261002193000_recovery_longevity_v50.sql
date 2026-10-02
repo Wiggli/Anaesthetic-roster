@@ -258,7 +258,7 @@ language plpgsql
 stable
 security invoker
 set search_path=''
-as $
+as $$
 declare
   v_limit integer:=greatest(1,least(coalesce(p_limit,50),100));
   v_items jsonb;
