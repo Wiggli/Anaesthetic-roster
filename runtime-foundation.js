@@ -1,3 +1,4 @@
+/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
 /* Anaesthetic Night Roster 40.0 reliability runtime.
    Central lifecycle, state-machine, scheduling, storage and cross-tab coordination.
    This layer does not calculate clinical allocations. */
