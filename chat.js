@@ -630,6 +630,7 @@ function chatTeardownSession(){
   var client=chatClient();clearTimeout(chatState.reconnectTimer);clearTimeout(chatState.overviewRefreshTimer);if(client&&chatState.channel)client.removeChannel(chatState.channel);
   chatState.channel=null;chatState.startedFor=null;chatState.members=[];chatState.membersById={};chatState.directory=[];chatState.directoryByPerson={};chatState.conversations=[];chatState.latestByConversation={};chatState.unreadByConversation={};chatState.readStateByConversation={};chatState.teamMessages=[];chatState.messages=[];chatState.replyTargets={};chatState.teamReplyMessage=null;chatState.privateReplyMessage=null;chatState.overviewLoadedAt=0;chatState.activeConversationId=null;chatState.activeThreadKind=null;document.body.classList.remove('chatThreadMode');chatUpdateNavBadge();chatRenderReplyComposer('team');chatRenderReplyComposer('private');chatHideMentionMenu();
 }
+window.chatTeardownSession=chatTeardownSession;
 async function chatStartSession(){
   var user=chatUser(),profile=chatProfile(),client=chatClient();if(!user||!profile||!client||!chatOnline())return false;
   if(chatState.startedFor===user.id&&chatState.channel)return true;chatState.startedFor=user.id;

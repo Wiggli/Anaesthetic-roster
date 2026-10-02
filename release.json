@@ -1,13 +1,13 @@
 {
-  "version": "40.1",
+  "version": "41.0",
   "date": "2 October 2026",
-  "title": "Make Chat easier to read and use",
-  "summary": "Chat now has clearer hierarchy, larger message text, more dependable touch targets and a cleaner full-screen conversation experience while keeping the same secure delivery, unread and retention behaviour.",
+  "title": "Enforce the roster trust boundary",
+  "summary": "Shared roster changes now pass a server-enforced compatibility and identity boundary, while active sessions respond immediately to account and role changes.",
   "changes": [
-    "Chat messages, timestamps, thread titles and inbox rows now use a more readable night-shift type scale, with clearer unread and active-conversation states.",
-    "New private chat keeps a visible text label even on phones, and the Anaesthetic Team entry remains the dominant first action with a clearer Open chat affordance.",
-    "Phone conversations use a cleaner full-canvas thread with larger controls, while desktop keeps the inbox and conversation side by side.",
-    "The composer is now one polished translucent surface with a plain textarea and 44 px send control, and private outgoing messages use a clearer blue treatment without changing chat delivery logic."
+    "Shared roster writes now require a compatible 41.x client, while the server can pause shared editing or block a specific unsafe release without stopping roster viewing.",
+    "Older v25, v26, v35 and v48 mutation routes are no longer executable by signed-in browsers; current roster changes use the guarded v49 route.",
+    "Audit history now records the authenticated account UUID and resolves the readable actor name on the server instead of trusting a browser-supplied name.",
+    "Access and role changes now reach open and multi-tab PWAs; disabled accounts clear private saved roster and Chat state and sign out immediately."
   ],
   "update_policy": "important"
 }

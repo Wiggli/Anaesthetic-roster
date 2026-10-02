@@ -37,13 +37,13 @@ assert.match(ui,/function sharedTransportLive\(\)[\s\S]*!window\.AnaestheticRunt
 assert.doesNotMatch(ui,/offline mutation queue|pending offline mutation|flushOffline/i,'clinical writes must not be queued for later offline replay');
 
 for(const rpc of [
-  'record_night_absence_v48','remove_night_absence_v48','add_night_overtime_v48','remove_night_overtime_v48',
-  'apply_staffing_allocations_v48','finalise_night_plan_v48','apply_night_role_override_v48'
+  'record_night_absence_v49','remove_night_absence_v49','add_night_overtime_v49','remove_night_overtime_v49',
+  'apply_staffing_allocations_v49','finalise_night_plan_v49','apply_night_role_override_v49'
 ]) assert.match(ui,new RegExp(rpc),'browser must use '+rpc);
 
-assert.match(core,/publish_roster_v48/,'publication must use the idempotent server command');
-assert.match(core,/upsert_rotation_version_v48/,'permanent team changes must use the idempotent server command');
-assert.match(core,/EXPECTED_SCHEMA_VERSION = 48/,'schema 48 must be required');
+assert.match(core,/publish_roster_v49/,'publication must use the idempotent server command');
+assert.match(core,/upsert_rotation_version_v49/,'permanent team changes must use the idempotent server command');
+assert.match(core,/EXPECTED_SCHEMA_VERSION = 49/,'schema 49 Trust Boundary must be required');
 
 assert.match(migration,/create table if not exists public\.roster_operation_log/,'database must retain operation ids');
 assert.match(migration,/operation_id uuid primary key/,'operation ids must be unique');

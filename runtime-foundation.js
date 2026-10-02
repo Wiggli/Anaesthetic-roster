@@ -195,7 +195,10 @@
     INVALID_ROTATION:'The permanent rotation is invalid.',
     INVALID_SEVENTH_CYCLE:'The seventh-nurse cycle is invalid.',
     ROTATION_VERSION_EXISTS:'A permanent rotation version already exists for that night.',
-    PUBLISH_REGRESSION:'Publishing cannot shorten the existing roster.'
+    PUBLISH_REGRESSION:'Publishing cannot shorten the existing roster.',
+    CLIENT_UPDATE_REQUIRED:'An important Night Roster update is required before shared changes can be made.',
+    CLIENT_VERSION_BLOCKED:'This Night Roster version cannot make shared changes.',
+    APP_MAINTENANCE:'Shared roster editing has been temporarily paused.'
   };
   function errorCode(error){
     var explicit=error&&((error.details&&error.details.code)||error.code);
