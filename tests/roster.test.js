@@ -413,7 +413,9 @@ assert.match(ui, /visible=!!\(tasks\|\|confirmNeeded\)[\s\S]*host\.innerHTML=vis
 assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReason\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
 assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*assignmentLabel:nightCopy\.assignment[\s\S]*period:assignment\.period,breakLabel:assignment\.breakLabel/, 'Your night must pass date-aware assignment wording, time and break separately');
 assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
-assert.match(clinicalExperience, /model\.action === 'role'[\s\S]*View in night situation/, 'Your night must link directly to the matching team allocation');
+assert.match(clinicalExperience, /const openFullNight[\s\S]*nightTeamDetails[\s\S]*scrollIntoView[\s\S]*View full night situation/, 'Your night must keep one direct full-night action that opens the matching team allocation');
+assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*<small>Duty<\/small>[\s\S]*<small>Break<\/small>[\s\S]*scanContextLabel/, 'Your night must keep Duty, Break and Colleague as the three scan-first facts');
+assert.match(clinicalExperience, /personalClockException[\s\S]*Clock-change night · equal duty[\s\S]*model\.clockChange\.summary/, 'clock-change nights must keep their equal-duty exception prominent in the personal hero');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
 assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
 assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selected-night changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must describe the selected night rather than assuming today');
@@ -683,8 +685,8 @@ assert.match(clinicalExperience, /nightProgressRail/, 'Night must keep the non-c
 assert.match(clinicalExperience, /function NightTimeline[\s\S]*Clock back/, 'clock-change rail must expose the rollback event');
 assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change rail must distinguish the first and second 02:xx hour');
 assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
-assert.match(clinicalExperience, /function nextNightMessage[\s\S]*What matters next[\s\S]*Handover now[\s\S]*Duty block complete/, 'personal hero must adapt to the live stage of the night without a countdown');
-assert.match(clinicalExperience, /personalFactButtons[\s\S]*View in team allocation[\s\S]*Open Breaks/, 'hero facts must be directly actionable');
+assert.match(clinicalExperience, /function nightVisualPhase[\s\S]*'upcoming'[\s\S]*'handover'[\s\S]*'first'[\s\S]*'second'[\s\S]*'complete'[\s\S]*host\.dataset\.shiftPhase = nightVisualPhase/, 'personal Night must still track the live stage of the shift without restoring a countdown or a duplicate handover block');
+assert.match(clinicalExperience, /function PersonalNightCard[\s\S]*const openBreak[\s\S]*const openColleague[\s\S]*const openDutyTiming[\s\S]*personalHeroFactGrid[\s\S]*onClick=\{openDutyTiming\}[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}/, 'Duty, Break and Colleague hero facts must remain directly actionable');
 assert.match(clinicalExperience, /nightContextCapsule[\s\S]*contextLabel/, 'Night overview must expose a compact routine-or-exception context');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share Night Roster[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
@@ -697,9 +699,9 @@ assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
 assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
 assert.match(clinicalExperience, /nightTimelineSlimRail[\s\S]*nightTimelineFill[\s\S]*nightTimelinePhaseLabels/, 'Night must use the slim progress-rail composition rather than the chunky segmented panel');
-assert.match(presentationCss, /37\.97 Night hero refinement[\s\S]*\.nightTimelineSlimRail[\s\S]*height:20px[\s\S]*\.nightTimelineFill[\s\S]*linear-gradient/, 'the live Night rail must stay slim and visibly blue');
-assert.match(presentationCss, /\.personalNextStateIntegrated[\s\S]*background:transparent!important/, 'what-matters-next must remain integrated into the dark hero instead of becoming a pale nested card');
-assert.match(presentationCss, /#today #personalNightCard \.personalFactButtons[\s\S]*background:transparent!important/, 'hero facts must remain integrated with the dark hero');
+assert.match(presentationCss, /41\.7 Night screen overhaul[\s\S]*\.nightTimelineTrackShell[\s\S]*height:31px!important[\s\S]*\.nightTimelineNow/, 'the live Night rail must keep the compact 41.7 orientation treatment');
+assert.doesNotMatch(clinicalExperience, /personalNextStateIntegrated|nextNightMessage/, 'ordinary nights must not restore the old dedicated what-matters-next handover block');
+assert.match(presentationCss, /#today \.personalHeroFactGrid\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[\s\S]*#today \.personalHeroFactGrid>\.personalHeroFact[\s\S]*background:var\(--liquid-surface\)!important/, 'Duty, Break and Colleague must share one balanced integrated fact row');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');
