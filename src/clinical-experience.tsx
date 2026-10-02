@@ -203,14 +203,18 @@ function personalLiveStatus(model: PersonalNight, value = new Date()) {
   if (/absent/i.test(model.title)) return 'Not on duty tonight';
   if (model.pending || /pending/i.test(model.period)) return 'Allocation pending';
   if (model.dutyPart === 'first' && model.dutyStartUtc && model.handoverUtc) {
-    if (now < model.dutyStartUtc) return 'On duty next · starts 00:00';
-    return now < model.handoverUtc ? 'First Part active' : 'Duty block complete';
+    if (now < model.dutyStartUtc) return 'Starts at 00:00';
+    return now < model.handoverUtc ? 'On duty now · First Part' : 'Completed';
   }
   if (model.dutyPart === 'second' && model.handoverUtc && model.dutyEndUtc) {
-    if (now < model.handoverUtc) return 'Second Part later · starts ' + (model.handoverLabel || '03:30');
-    return now < model.dutyEndUtc ? 'Second Part active' : 'Duty block complete';
+    if (now < model.handoverUtc) return 'Starts at ' + (model.handoverLabel || '03:30');
+    return now < model.dutyEndUtc ? 'On duty now · Second Part' : 'Completed';
   }
-  if (model.period === '00:00–07:00') return 'Full-night cover active';
+  if (model.period === '00:00–07:00') {
+    if (model.dutyStartUtc && now < model.dutyStartUtc) return 'Starts at 00:00';
+    if (model.dutyEndUtc && now >= model.dutyEndUtc) return 'Completed';
+    return 'On duty now · Full night';
+  }
   if (/seventh/i.test(model.title)) return 'Supporting tonight’s team';
   return model.liveStatus;
 }
@@ -641,12 +645,14 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     host.dataset.shiftPhase = nightVisualPhase(model, new Date(now));
     return () => { delete host.dataset.shiftPhase; };
   }, [model.date, model.title, model.pending, model.dutyStartUtc, model.handoverUtc, model.dutyEndUtc, now]);
+
   const value = new Date(now);
   const tone = personalTone(model);
   const liveStatus = personalLiveStatus(model, value);
   const next = nextNightMessage(model, value);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
   const scanContext = model.context.replace(/^With\s+/i, '');
+
   const action = () => {
     if (model.action === 'choose') return openAccount();
     if (model.action === 'absence') return goToChanges('staffing');
@@ -672,70 +678,81 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   };
 
   return <motion.article
-    className={'personalHeroSurface personalRole-' + tone}
-    initial={reducedMotion ? false : { opacity: 0.94, y: 6, scale: 0.994 }}
+    className={'personalHeroSurface personalHeroCompact personalRole-' + tone}
+    initial={reducedMotion ? false : { opacity: 0.96, y: 5, scale: 0.996 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
-    transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 34, mass: 0.7 }}
+    transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36, mass: 0.66 }}
   >
-    <div className="personalIdentity">
-      <div className={'personalAvatar ' + (model.avatarUrl ? 'hasPhoto' : '')} aria-hidden="true">
-        {model.avatarUrl ? <img src={model.avatarUrl} alt="" /> : model.initial}
-      </div>
-      <div className="personalIdentityCopy">
-        <b>{model.displayName}</b>
-        {model.jobTitle && <small>{model.jobTitle}</small>}
-      </div>
-      <Pressable type="button" className="personalChangeBtn" onClick={openAccount} aria-label="Edit your personal Night view">Edit</Pressable>
-    </div>
-
     <div className="personalAssignmentStage">
-      <div className={'personalAssignmentHero personalRole-' + tone}>
+      <div className="personalHeroMeta">
+        <span className="personalHeroEyebrow">{model.assignmentLabel}</span>
+        <span className="personalHeroMetaBadges">
+          {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
+          {model.clockChange && <span className="personalClockBadge">Clock change</span>}
+        </span>
+      </div>
+
+      <div className={'personalAssignmentHero personalAssignmentHeroCompact personalRole-' + tone}>
         <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
         <span className="personalRoleCopy">
-          <small>{model.assignmentLabel}</small>
           <b>{model.title}</b>
           <span>{model.detail}</span>
         </span>
-        {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
-      </div>
-
-      <div className="personalLiveContext" aria-live="polite">
-        {liveStatus && <span className="personalLiveState"><i aria-hidden="true" /><b>{liveStatus}</b></span>}
-        {model.clockChange && <span className="personalClockBadge">Clock change</span>}
-        {model.changed && <span className="personalNightChanged">Changed tonight</span>}
       </div>
 
       <motion.div
-        className="personalNextState personalNextStateIntegrated"
-        key={next.eyebrow + '-' + next.title}
-        initial={reducedMotion ? false : { opacity: 0.6, y: 5 }}
+        className="personalHeroStatus"
+        key={liveStatus + '-' + next.title}
+        aria-live="polite"
+        initial={reducedMotion ? false : { opacity: 0.7, y: 3 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={reducedMotion ? { duration: 0 } : { duration: 0.22 }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.2 }}
       >
-        <span className="personalNextIndicator" aria-hidden="true"><i /></span>
-        <span className="personalNextCopy">
-          <small>{next.eyebrow}</small>
+        <span className="personalHeroStatusMark" aria-hidden="true"><i /></span>
+        <span className="personalHeroStatusCopy">
+          <small>{liveStatus || next.eyebrow}</small>
           <strong>{next.title}</strong>
-          <span>{next.detail}</span>
+          {next.detail && <span>{next.detail}</span>}
         </span>
+        {model.changed && <span className="personalNightChanged">Changed</span>}
       </motion.div>
 
       <NightTimeline model={model} value={value} />
 
-      <div className="personalFacts personalScan personalFactButtons" aria-label="Your night at a glance">
-        <Pressable type="button" className="personalFactButton personalFactContext" onClick={openColleague}>
-          <small>{scanContextLabel}</small><b>{scanContext || 'Pending'}</b><span>View in team allocation ›</span>
+      <div className="personalHeroFacts" aria-label="Your night at a glance">
+        <Pressable type="button" className="personalHeroFact" onClick={openDutyTiming}>
+          <small>On duty</small>
+          <b>{model.period || 'Pending'}</b>
+          <span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty' : 'Timeline'}</span>
         </Pressable>
-        <Pressable type="button" className="personalFactButton" onClick={openDutyTiming}>
-          <small>On duty</small><b>{model.period || 'Pending'}</b><span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty · Explain ›' : 'View timeline ›'}</span>
-        </Pressable>
-        <Pressable type="button" className="personalFactButton" onClick={openBreak}>
-          <small>Break</small><b>{model.breakLabel || 'Pending'}</b><span>Open Breaks ›</span>
+        <Pressable type="button" className="personalHeroFact" onClick={openBreak}>
+          <small>Break</small>
+          <b>{model.breakLabel || 'Pending'}</b>
+          <span>Open Breaks</span>
         </Pressable>
       </div>
 
-      <Pressable type="button" className="personalContextAction" onClick={action}>
-        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
+      {(scanContext || model.displayName) && <details className="personalHeroMore">
+        <summary>
+          <span>More about your night</span>
+          <i aria-hidden="true">›</i>
+        </summary>
+        <div className="personalHeroMoreGrid">
+          {scanContext && <Pressable type="button" className="personalHeroMoreItem" onClick={openColleague}>
+            <small>{scanContextLabel}</small>
+            <b>{scanContext}</b>
+            <span>View in team allocation ›</span>
+          </Pressable>}
+          <Pressable type="button" className="personalHeroMoreItem" onClick={openAccount}>
+            <small>Your profile</small>
+            <b>{model.displayName}</b>
+            <span>{model.jobTitle || 'Account settings'} ›</span>
+          </Pressable>
+        </div>
+      </details>}
+
+      <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={action}>
+        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View full night' : 'Choose your name'}
         <span aria-hidden="true">›</span>
       </Pressable>
     </div>
