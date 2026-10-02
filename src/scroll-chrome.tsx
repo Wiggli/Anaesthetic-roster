@@ -221,6 +221,7 @@ function ScrollGlassChrome() {
           transition={{ duration: reducedMotion ? 0 : 0.14 }}
         >
           <span>{model.title}</span>
+          {model.subtitle ? <small>{model.subtitle}</small> : null}
         </motion.span>
       </div>}
       {model.mode === 'rail' && model.rail && <LayoutGroup id="scroll-glass-rail-admin">
