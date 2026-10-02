@@ -52,6 +52,9 @@ assert.match(migration,/validate_night_plan_v48/,'final confirmation must have a
 assert.match(migration,/count\(distinct value\)/,'server validation must reject duplicate overtime assignments');
 assert.match(migration,/count\(distinct lower\(trim\(o\.nurse_name\)\)\)/,'server validation must reject duplicate overtime identities');
 assert.match(migration,/ROTATION_VERSION_EXISTS/,'permanent versions must not silently overwrite an existing effective date');
+assert.match(migration,/claim_roster_operation_v48\(p_operation_id,'rotation-version'[\s\S]*ROTATION_VERSION_EXISTS/,'a retried permanent rotation command must be recognized before duplicate-date rejection');
+assert.match(migration,/roster_operation_log[\s\S]*operation_type='absence-remove'[\s\S]*claim_roster_operation_v48\(p_operation_id,'absence-remove'/,'absence removal retries must recover their original night from the operation ledger');
+assert.match(migration,/roster_operation_log[\s\S]*operation_type='overtime-remove'[\s\S]*claim_roster_operation_v48\(p_operation_id,'overtime-remove'/,'overtime removal retries must recover their original night from the operation ledger');
 assert.match(migration,/PUBLISH_REGRESSION/,'publishing must not shorten the published roster');
 assert.match(migration,/mod\(\(p_published_until-date '2026-06-30'\),4\)/,'publication must stay on the verified four-day cadence');
 assert.match(migration,/p_change_id uuid/,'absence identifiers must match the live UUID schema');
