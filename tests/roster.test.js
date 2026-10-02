@@ -569,7 +569,8 @@ assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'),
 assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity');
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.doesNotMatch(html, /adminQuickGrid|data-admin-open=/, 'Admin Overview must not repeat the primary management tabs as shortcut buttons');
-assert.match(html, /data-admin-tab="overview"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="team"[\s\S]*data-admin-tab="access"[\s\S]*data-admin-tab="data"/, 'Admin must retain one clear set of management tabs');
+assert.match(html, /class="adminTabs adminPrimaryTabs"[\s\S]*data-admin-tab="overview"[\s\S]*data-admin-tab="access"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="data"/, 'Admin must expose the simplified Tonight, People, Roster and System primary navigation');
+assert.match(html, /class="adminSubnav"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="team"/, 'Permanent team management must remain available one level beneath Roster management');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(clinicalExperience, /item\.detail && <small[\s\S]*\{item\.detail\}/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
