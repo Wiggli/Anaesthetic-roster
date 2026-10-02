@@ -1,16 +1,13 @@
 {
-  "version": "40.0",
+  "version": "40.1",
   "date": "2 October 2026",
-  "title": "Make shared roster changes safer",
-  "summary": "Night Roster now coordinates app state, reconnects, multi-device edits and shared writes through one reliability architecture so stale screens, retries and duplicate actions are much harder to turn into roster errors.",
+  "title": "Make Chat easier to read and use",
+  "summary": "Chat now has clearer hierarchy, larger message text, more dependable touch targets and a cleaner full-screen conversation experience while keeping the same secure delivery, unread and retention behaviour.",
   "changes": [
-    "Every clinical roster change now carries a unique operation ID and the latest shared revision to the database, so double taps, retries and lost responses cannot quietly repeat the same action.",
-    "Before consequential changes are saved, the app checks that its shared roster revision is still current; if another device changed the night, the latest plan is loaded and the affected roles or staffing state are shown for review.",
-    "Final confirmation now has an additional server-side safety gate that rejects understaffed plans, stale role overrides, unavailable staff and invalid Labour Ward orders before the proven allocation and revision-locked finalisation logic runs.",
-    "App startup, resume, online recovery, Night rollover, freshness checks, Realtime recovery and update checks now run through a shared lifecycle and scheduler instead of competing timers and independent browser events.",
-    "Multiple tabs on the same device coordinate through a local leader so only one owns roster Realtime and routine update polling, while other tabs follow shared revision broadcasts and can take over automatically if the leader closes.",
-    "Clock checks now reject unreliable high-latency samples, device storage is routed through one compatibility facade, stable machine error codes replace wording-dependent decisions, and privacy-safe diagnostics record state, recovery and command events without roster identities.",
-    "New adversarial tests add generated staffing combinations, stale-client and retry contracts, lifecycle and clock checks, multi-tab coordination safeguards and continued protection for the verified 138-night rotation and explicit PWA update activation."
+    "Chat messages, timestamps, thread titles and inbox rows now use a more readable night-shift type scale, with clearer unread and active-conversation states.",
+    "New private chat keeps a visible text label even on phones, and the Anaesthetic Team entry remains the dominant first action with a clearer Open chat affordance.",
+    "Phone conversations use a cleaner full-canvas thread with larger controls, while desktop keeps the inbox and conversation side by side.",
+    "The composer is now one polished translucent surface with a plain textarea and 44 px send control, and private outgoing messages use a clearer blue treatment without changing chat delivery logic."
   ],
-  "update_policy": "important"
+  "update_policy": "normal"
 }
