@@ -148,6 +148,16 @@ window.addEventListener('roster:admin-accounts', (event: Event) => {
   import('./admin-experience').then(({ renderAdminAccountsExperience }) => renderAdminAccountsExperience((event as CustomEvent).detail));
 });
 
+let quickActionsRequest = 0;
+window.addEventListener('roster:quick-actions', (event: Event) => {
+  if (document.body.classList.contains('authPending')) return;
+  const model = (event as CustomEvent).detail;
+  const request = ++quickActionsRequest;
+  import('./quick-actions').then(({ renderQuickActions }) => {
+    if (request === quickActionsRequest) renderQuickActions(model);
+  }).catch(() => { /* The fallback action rows remain available. */ });
+});
+
 window.addEventListener('roster:chat-overview', (event: Event) => {
   import('./chat-experience').then(({ renderChatOverview }) => renderChatOverview((event as CustomEvent).detail));
 });
