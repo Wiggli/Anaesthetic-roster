@@ -532,12 +532,12 @@ begin
     raise exception 'INVALID_SEVENTH_CYCLE';
   end if;
 
+  if not public.claim_roster_operation_v48(p_operation_id,'rotation-version',p_effective_from,p_expected_sync_revision) then return; end if;
+  perform public.assert_roster_fresh_v48(p_expected_sync_revision);
+
   if exists(select 1 from public.rotation_versions where effective_from=p_effective_from) then
     raise exception 'ROTATION_VERSION_EXISTS';
   end if;
-
-  if not public.claim_roster_operation_v48(p_operation_id,'rotation-version',p_effective_from,p_expected_sync_revision) then return; end if;
-  perform public.assert_roster_fresh_v48(p_expected_sync_revision);
 
   insert into public.rotation_versions(
     effective_from,first1,first2,second1,second2,pager,reliever,
