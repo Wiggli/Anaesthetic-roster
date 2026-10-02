@@ -11,6 +11,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const mainCss = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+const presentationCss = fs.readFileSync(path.join(root, 'src', 'presentation.css'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
 const release = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf8'));
@@ -64,6 +65,11 @@ assert.match(chatCss, /\.chatTeamLine\{[\s\S]*grid-template-columns:auto auto mi
 assert.match(chatCss, /\.chatSafetyNotice\{[\s\S]*padding:8px 10px/, 'the safety notice must remain compact');
 assert.match(chatCss, /\.chatMemberChoice:disabled\{[\s\S]*opacity:1/, 'unregistered roster members must stay legible rather than looking broken');
 assert.match(chatCss, /body\.dark/, 'chat must include dark-mode styling');
+assert.match(presentationCss, /40\.1 Chat polish/, 'the current Chat polish layer must stay identifiable and reviewable');
+assert.match(presentationCss, /#chat \.chatHeaderCompose span\{display:inline!important/, 'New private chat must keep a visible text label on phone and desktop');
+assert.match(presentationCss, /#chat \.chatMessageText\{color:inherit!important;font-size:var\(--chat-readable\)!important/, 'message text must keep the readable night-shift type scale');
+assert.match(presentationCss, /#chat \.chatPrivateMessage\.own \.chatPrivateBubble\{[\s\S]*background:var\(--premium-blue\)!important/, 'private outgoing messages must remain visually distinct without changing delivery behaviour');
+assert.match(presentationCss, /#chat \.chatComposerGlass\{[\s\S]*border:1px solid[\s\S]*border-radius:26px/, 'the composer must remain a single polished surface rather than nested bordered controls');
 
 assert.match(chat, /var PRIVATE_PAGE_SIZE=40;/, 'private chat must page messages instead of loading full history');
 assert.match(chat, /var TEAM_PAGE_SIZE=30;/, 'team chat must load a bounded recent transcript');
