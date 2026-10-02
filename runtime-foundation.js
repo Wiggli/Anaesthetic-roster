@@ -180,12 +180,20 @@
     SCHEMA_TOO_OLD:'The shared roster needs a database update.',
     PERMISSION_DENIED:'Your account cannot perform this action.',
     OPERATION_REPLAYED:'This change was already saved.',
-    STALE_CLIENT:'The latest night must be loaded before saving.'
+    STALE_CLIENT:'The latest night must be loaded before saving.',
+    INVALID_ROSTER_DATE:'That date is not a valid roster night.',
+    INVALID_ROTATION:'The permanent rotation is invalid.',
+    INVALID_SEVENTH_CYCLE:'The seventh-nurse cycle is invalid.',
+    ROTATION_VERSION_EXISTS:'A permanent rotation version already exists for that night.',
+    PUBLISH_REGRESSION:'Publishing cannot shorten the existing roster.'
   };
   function errorCode(error){
     var explicit=error&&((error.details&&error.details.code)||error.code);
     if(explicit&&ERROR_CODES[explicit])return explicit;
-    var message=String(error&&error.message||'').toLowerCase();
+    var raw=String(error&&error.message||'');
+    var keys=Object.keys(ERROR_CODES);
+    for(var i=0;i<keys.length;i++)if(raw.indexOf(keys[i])>=0)return keys[i];
+    var message=raw.toLowerCase();
     if(message.indexOf('revision')>=0||message.indexOf('another device')>=0)return'ROSTER_REVISION_CONFLICT';
     if(message.indexOf('permission')>=0||message.indexOf('42501')>=0)return'PERMISSION_DENIED';
     return explicit||'UNKNOWN';
