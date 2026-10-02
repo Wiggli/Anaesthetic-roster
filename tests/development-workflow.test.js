@@ -53,7 +53,7 @@ assert.match(workflow, /actions\/cache@v4[\s\S]*~\/\.cache\/ms-playwright/,
 
 assert.match(development, /Fast inner loop[\s\S]*npm run verify:fast/,
   'the durable workflow guide must explain the fast path');
-assert.match(development, /no more than five routine status reads[\s\S]*20, 40, 60, 90 and 120 second/,
+assert.match(development, /20, 40, 60, 90 and 120 second[\s\S]*no more than five routine status reads/,
   'the durable workflow guide must bound CI polling');
 assert.match(development, /WebKit is intentionally not part of every pull-request iteration/,
   'the workflow guide must explain the browser split');
