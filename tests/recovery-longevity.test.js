@@ -30,6 +30,10 @@ assert.match(migration, /create or replace function public\.app_health_canary_v5
   'a non-mutating health canary must be available');
 assert.match(migration, /perform set_config\('app\.operation_id'/,
   'the operation id must flow into server-side audit triggers');
+assert.match(migration, /revoke all on function public\.claim_roster_operation_v48\(uuid,text,date,bigint\)[\s\S]*from public,anon,authenticated/i,
+  'the low-level idempotency claim helper must remain private to trusted server roles');
+assert.doesNotMatch(migration, /grant execute on function public\.claim_roster_operation_v48\(uuid,text,date,bigint\)\s+to authenticated/i,
+  'browser roles must not regain direct access to the idempotency claim helper');
 
 assert.match(runtime, /RECOVERY_THRESHOLD=3/, 'three failed launches must trigger crash-loop protection');
 assert.match(runtime, /SAFE_MODE_MS=15\*60\*1000/, 'safe mode must be time bounded');
