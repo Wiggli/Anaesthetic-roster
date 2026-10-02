@@ -1,19 +1,19 @@
-/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
+/* Anaesthetic Night Roster reliability runtime. TypeScript source of truth. Generated browser JavaScript is written by scripts/generate-runtime.mjs. */
 /* Anaesthetic Night Roster 40.0 reliability runtime.
    Central lifecycle, state-machine, scheduling, storage and cross-tab coordination.
    This layer does not calculate clinical allocations. */
-(function(global){
+(function(global: any){
   'use strict';
 
   var domain=global.AnaestheticDomain||null;
   var STORAGE_PREFIX='anaes_';
   var LEADER_TTL=12000;
   var TAB_ID=(global.crypto&&global.crypto.randomUUID?global.crypto.randomUUID():'tab-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
-  var bc=null,leaderId='',leaderSeenAt=0,leaderHeartbeat=null;
-  var resumeHandler=null;
-  var resumeInFlight=null;
+  var bc=null as any,leaderId='',leaderSeenAt=0,leaderHeartbeat=null as any;
+  var resumeHandler=null as any;
+  var resumeInFlight=null as any;
   var schedulerJobs=new Map();
-  var clockSamples=[];
+  var clockSamples=[] as any[];
   var MAX_CLOCK_SAMPLES=5;
   var RECOVERY_KEY='launch_health_v1';
   var RECOVERY_WINDOW_MS=5*60*1000;
@@ -23,48 +23,48 @@
   var SNAPSHOT_MAX_BYTES=768*1024;
   var SNAPSHOT_DB='anaesthetic-roster-runtime';
   var SNAPSHOT_STORE='snapshots';
-  var latencySamples=[];
+  var latencySamples=[] as any[];
   var LATENCY_LIMIT=80;
 
-  function diagnostic(category,operation,code){
+  function diagnostic(category: any,operation: any,code: any){
     if(domain&&domain.recordDiagnostic)return domain.recordDiagnostic(category,operation,code);
     return null;
   }
 
-  function safeJSON(value,fallback){
+  function safeJSON(value: any,fallback: any){
     try{return JSON.parse(value)}catch(error){return fallback}
   }
 
-  function storageKey(key){key=String(key||'');return key.indexOf(STORAGE_PREFIX)===0?key:STORAGE_PREFIX+key}
+  function storageKey(key: any){key=String(key||'');return key.indexOf(STORAGE_PREFIX)===0?key:STORAGE_PREFIX+key}
   var storage={
-    get:function(key,fallback){
+    get:function(key: any,fallback: any){
       try{var value=global.localStorage.getItem(storageKey(key));return value==null?fallback:value}catch(error){diagnostic('storage','read',key);return fallback}
     },
-    set:function(key,value){
+    set:function(key: any,value: any){
       try{global.localStorage.setItem(storageKey(key),String(value));return true}catch(error){diagnostic('storage','write',key);return false}
     },
-    remove:function(key){
+    remove:function(key: any){
       try{global.localStorage.removeItem(storageKey(key));return true}catch(error){diagnostic('storage','remove',key);return false}
     },
-    getItem:function(key){return this.get(key,null)},
-    setItem:function(key,value){return this.set(key,value)},
-    removeItem:function(key){return this.remove(key)},
-    getJSON:function(key,fallback){return safeJSON(this.get(key,null),fallback)},
-    setJSON:function(key,value){return this.set(key,JSON.stringify(value))}
+    getItem:function(key: any){return this.get(key,null)},
+    setItem:function(key: any,value: any){return this.set(key,value)},
+    removeItem:function(key: any){return this.remove(key)},
+    getJSON:function(key: any,fallback: any){return safeJSON(this.get(key,null),fallback)},
+    setJSON:function(key: any,value: any){return this.set(key,JSON.stringify(value))}
   };
 
 
-  function fnv1a(value){
+  function fnv1a(value: any){
     var text=String(value||''),hash=2166136261;
     for(var i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}
     return (hash>>>0).toString(16).padStart(8,'0')
   }
-  function byteLength(value){
+  function byteLength(value: any){
     var text=String(value||'');
     if(global.TextEncoder)try{return new TextEncoder().encode(text).length}catch(error){}
     return unescape(encodeURIComponent(text)).length
   }
-  function packSnapshot(payload,meta){
+  function packSnapshot(payload: any,meta: any){
     meta=meta||{};
     var body=JSON.stringify(payload==null?null:payload),bytes=byteLength(body);
     if(bytes>SNAPSHOT_MAX_BYTES){diagnostic('snapshot','pack','too-large');return null}
@@ -78,7 +78,7 @@
       payload:payload
     }
   }
-  function unpackSnapshot(envelope){
+  function unpackSnapshot(envelope: any){
     if(!envelope||typeof envelope!=='object'||Array.isArray(envelope))return null;
     if(Number(envelope.format)!==SNAPSHOT_FORMAT||!Object.prototype.hasOwnProperty.call(envelope,'payload'))return null;
     var body;
@@ -89,20 +89,20 @@
     return envelope.payload
   }
   function openSnapshotDb(){
-    return new Promise(function(resolve,reject){
+    return new Promise(function(resolve: any,reject: any){
       if(!global.indexedDB){resolve(null);return}
-      var request;
+      var request:any;
       try{request=global.indexedDB.open(SNAPSHOT_DB,1)}catch(error){reject(error);return}
       request.onupgradeneeded=function(){var db=request.result;if(!db.objectStoreNames.contains(SNAPSHOT_STORE))db.createObjectStore(SNAPSHOT_STORE,{keyPath:'key'})};
       request.onsuccess=function(){resolve(request.result)};
       request.onerror=function(){reject(request.error||new Error('IndexedDB unavailable'))};
-    })
+    }) as any
   }
-  async function persistSnapshot(key,envelope){
+  async function persistSnapshot(key: any,envelope: any){
     if(!envelope)return false;
     try{
       var db=await openSnapshotDb();if(!db)return false;
-      return await new Promise(function(resolve,reject){
+      return await new Promise(function(resolve: any,reject: any){
         var tx=db.transaction(SNAPSHOT_STORE,'readwrite');
         tx.objectStore(SNAPSHOT_STORE).put({key:String(key),envelope:envelope,updatedAt:Date.now()});
         tx.oncomplete=function(){db.close();resolve(true)};
@@ -111,20 +111,20 @@
       })
     }catch(error){diagnostic('snapshot','indexeddb-write','failed');return false}
   }
-  async function loadSnapshot(key){
+  async function loadSnapshot(key: any){
     try{
       var db=await openSnapshotDb();if(!db)return null;
-      return await new Promise(function(resolve,reject){
+      return await new Promise(function(resolve: any,reject: any){
         var tx=db.transaction(SNAPSHOT_STORE,'readonly'),request=tx.objectStore(SNAPSHOT_STORE).get(String(key));
         request.onsuccess=function(){var value=request.result;db.close();resolve(value&&value.envelope||null)};
         request.onerror=function(){var error=request.error;db.close();reject(error||new Error('Snapshot read failed'))};
       })
     }catch(error){diagnostic('snapshot','indexeddb-read','failed');return null}
   }
-  async function removeSnapshot(key){
+  async function removeSnapshot(key: any){
     try{
       var db=await openSnapshotDb();if(!db)return false;
-      return await new Promise(function(resolve,reject){
+      return await new Promise(function(resolve: any,reject: any){
         var tx=db.transaction(SNAPSHOT_STORE,'readwrite');
         tx.objectStore(SNAPSHOT_STORE).delete(String(key));
         tx.oncomplete=function(){db.close();resolve(true)};
@@ -133,10 +133,10 @@
     }catch(error){diagnostic('snapshot','indexeddb-remove','failed');return false}
   }
   function recoveryState(){return storage.getJSON(RECOVERY_KEY,{version:'',starts:[],readyAt:0,safeModeUntil:0})||{}}
-  function recoveryStart(version){
+  function recoveryStart(version: any){
     var now=Date.now(),state=recoveryState(),same=state.version===String(version||'');
     if(!same)state={version:String(version||''),starts:[],readyAt:0,safeModeUntil:0};
-    var starts=Array.isArray(state.starts)?state.starts.filter(function(at){return Number(at)>now-RECOVERY_WINDOW_MS}):[];
+    var starts=Array.isArray(state.starts)?state.starts.filter(function(at: any){return Number(at)>now-RECOVERY_WINDOW_MS}):[];
     starts.push(now);state.starts=starts;state.lastStartAt=now;
     if(starts.length>=RECOVERY_THRESHOLD){
       state.safeModeUntil=Math.max(Number(state.safeModeUntil||0),now+SAFE_MODE_MS);
@@ -153,11 +153,11 @@
     var state=recoveryState(),now=Date.now();
     return{safeMode:Number(state.safeModeUntil||0)>now,attempts:Array.isArray(state.starts)?state.starts.length:0,safeModeUntil:Number(state.safeModeUntil||0),lastStartAt:Number(state.lastStartAt||0),readyAt:Number(state.readyAt||0)}
   }
-  function recordLatency(name,duration,ok){
+  function recordLatency(name: any,duration: any,ok: any){
     var row={name:String(name||'request').slice(0,48),duration:Math.max(0,Math.round(Number(duration)||0)),ok:ok!==false,at:Date.now()};
     latencySamples.push(row);latencySamples=latencySamples.slice(-LATENCY_LIMIT);return row
   }
-  async function measureLatency(name,fn){
+  async function measureLatency(name: any,fn: any){
     var started=global.performance&&performance.now?performance.now():Date.now();
     try{
       var result=await Promise.resolve().then(fn);
@@ -169,21 +169,21 @@
     }
   }
   function latencySummary(){
-    var groups={};
-    latencySamples.forEach(function(item){var g=groups[item.name]||(groups[item.name]={count:0,total:0,max:0,failed:0});g.count++;g.total+=item.duration;g.max=Math.max(g.max,item.duration);if(!item.ok)g.failed++});
-    Object.keys(groups).forEach(function(key){var g=groups[key];g.average=Math.round(g.total/Math.max(1,g.count));delete g.total});
+    var groups={} as any;
+    latencySamples.forEach(function(item: any){var g=groups[item.name]||(groups[item.name]={count:0,total:0,max:0,failed:0});g.count++;g.total+=item.duration;g.max=Math.max(g.max,item.duration);if(!item.ok)g.failed++});
+    Object.keys(groups).forEach(function(key: any){var g=groups[key];g.average=Math.round(g.total/Math.max(1,g.count));delete g.total});
     return groups
   }
 
-  var StateMachine=function(name,initial,transitions){
+  var StateMachine:any=function(this: any,name: any,initial: any,transitions: any){
     this.name=name;this.value=initial;this.transitions=transitions||{};this.listeners=new Set();
   };
-  StateMachine.prototype.can=function(next){
+  StateMachine.prototype.can=function(next: any){
     if(next===this.value)return true;
     var allowed=this.transitions[this.value]||[];
     return allowed.indexOf(next)>=0;
   };
-  StateMachine.prototype.set=function(next,meta){
+  StateMachine.prototype.set=function(next: any,meta: any){
     if(!this.can(next)){
       diagnostic('state',this.name,'invalid-'+this.value+'-'+next);
       return false;
@@ -191,11 +191,11 @@
     var previous=this.value;this.value=next;
     if(previous!==next){
       diagnostic('state',this.name,previous+'-'+next);
-      this.listeners.forEach(function(listener){try{listener(next,previous,meta||null)}catch(error){}});
+      this.listeners.forEach(function(listener: any){try{listener(next,previous,meta||null)}catch(error){}});
     }
     return true;
   };
-  StateMachine.prototype.on=function(listener){this.listeners.add(listener);return()=>this.listeners.delete(listener)};
+  StateMachine.prototype.on=function(listener: any){this.listeners.add(listener);return()=>this.listeners.delete(listener)};
 
   var syncState=new StateMachine('sync','starting',{
     starting:['live','stale','reconnecting','offline','error','access-lost'],
@@ -212,21 +212,21 @@
     manual:['automatic-next','automatic-current']
   });
 
-  function schedulerCancel(name){
+  function schedulerCancel(name: any){
     var job=schedulerJobs.get(name);
     if(!job)return;
     if(job.timer)clearTimeout(job.timer);
     schedulerJobs.delete(name);
   }
-  function schedulerEvery(name,interval,fn,options){
+  function schedulerEvery(name: any,interval: any,fn: any,options: any){
     schedulerCancel(name);
     options=options||{};
-    var job={name:name,interval:interval,fn:fn,whenHidden:!!options.whenHidden,timer:null,active:true};
+    var job={name:name,interval:interval,fn:fn,whenHidden:!!options.whenHidden,timer:null as any,active:true};
     function nextInterval(){
       var value=typeof job.interval==='function'?job.interval():job.interval;
       return Math.max(1000,Number(value)||1000)
     }
-    function schedule(delay){
+    function schedule(delay: any){
       if(!job.active)return;
       var wait=delay==null?nextInterval():Math.max(0,Number(delay)||0);
       job.timer=setTimeout(async function(){
@@ -239,20 +239,20 @@
     }
     schedulerJobs.set(name,job);schedule(options.immediate?0:nextInterval());return()=>{job.active=false;schedulerCancel(name)};
   }
-  function schedulerRun(name){
+  function schedulerRun(name: any){
     var job=schedulerJobs.get(name);
     if(!job)return Promise.resolve(false);
     try{return Promise.resolve(job.fn()).then(function(){return true})}catch(error){diagnostic('scheduler',name,'failed');return Promise.resolve(false)}
   }
   function schedulerStopAll(){Array.from(schedulerJobs.keys()).forEach(schedulerCancel)}
 
-  function updateLeader(id,at){
+  function updateLeader(id: any,at: any){
     var previous=leaderId;leaderId=id||'';leaderSeenAt=Number(at||Date.now());
     if(previous!==leaderId&&global.dispatchEvent&&typeof global.CustomEvent==='function'){
       try{global.dispatchEvent(new CustomEvent('roster:tab-leader',{detail:{leaderId:leaderId,isLeader:leaderId===TAB_ID,previousLeaderId:previous||''}}))}catch(error){}
     }
   }
-  function announce(type,detail){
+  function announce(type: any,detail: any){
     if(!bc)return;
     try{bc.postMessage({type:type,tabId:TAB_ID,at:Date.now(),detail:detail||null})}catch(error){}
   }
@@ -267,7 +267,7 @@
     if(!('BroadcastChannel' in global))return;
     try{
       bc=new BroadcastChannel('anaesthetic-roster-runtime-v1');
-      bc.onmessage=function(event){
+      bc.onmessage=function(event: any){
         var message=event&&event.data||{};
         if(!message.tabId||message.tabId===TAB_ID)return;
         if(message.type==='hello'||message.type==='leader'){
@@ -287,7 +287,7 @@
   }
   function isLeader(){return !bc||claimLeadership()}
 
-  function addClockSample(serverIso,sentAt,receivedAt){
+  function addClockSample(serverIso: any,sentAt: any,receivedAt: any){
     var server=Date.parse(serverIso||''),sent=Number(sentAt),received=Number(receivedAt);
     if(!Number.isFinite(server)||!Number.isFinite(sent)||!Number.isFinite(received)||received<sent)return false;
     var rtt=received-sent;
@@ -295,7 +295,7 @@
     var midpoint=sent+rtt/2,offset=server-midpoint;
     if(Math.abs(offset)>24*60*60*1000){diagnostic('clock','sample','implausible');return false}
     clockSamples.push({rtt:rtt,offset:offset,serverIso:serverIso,sent:sent,received:received});
-    clockSamples=clockSamples.sort(function(a,b){return a.rtt-b.rtt}).slice(0,MAX_CLOCK_SAMPLES);
+    clockSamples=clockSamples.sort(function(a: any,b: any){return a.rtt-b.rtt}).slice(0,MAX_CLOCK_SAMPLES);
     var best=clockSamples[0];
     if(domain&&domain.setServerClock)domain.setServerClock(best.serverIso,best.sent,best.received);
     return true;
@@ -306,10 +306,10 @@
     return{level:best.rtt<=500?'high':best.rtt<=1500?'medium':'low',sampleCount:clockSamples.length,rtt:best.rtt,offsetMs:best.offset};
   }
 
-  function diffObjects(before,after){
+  function diffObjects(before: any,after: any){
     before=before||{};after=after||{};
-    var keys=Array.from(new Set(Object.keys(before).concat(Object.keys(after)))).sort(),changes=[];
-    keys.forEach(function(key){
+    var keys=Array.from(new Set(Object.keys(before).concat(Object.keys(after)))).sort(),changes=[] as any[];
+    keys.forEach(function(key: any){
       var left=before[key],right=after[key];
       if(JSON.stringify(left)!==JSON.stringify(right))changes.push({key:key,before:left,after:right});
     });
@@ -333,9 +333,9 @@
     CLIENT_VERSION_BLOCKED:'This Night Roster version cannot make shared changes.',
     APP_MAINTENANCE:'Shared roster editing has been temporarily paused.'
   };
-  function errorCode(error){
+  function errorCode(error: any){
     var explicit=error&&((error.details&&error.details.code)||error.code);
-    if(explicit&&(ERROR_CODES)[explicit])return explicit;
+    if(explicit&&(ERROR_CODES as any)[explicit])return explicit;
     var raw=String(error&&error.message||'');
     var keys=Object.keys(ERROR_CODES);
     for(var i=0;i<keys.length;i++)if(raw.indexOf(keys[i])>=0)return keys[i];
@@ -345,8 +345,8 @@
     return explicit||'UNKNOWN';
   }
 
-  function setResumeHandler(fn){resumeHandler=typeof fn==='function'?fn:null}
-  function reconcile(reason){
+  function setResumeHandler(fn: any){resumeHandler=typeof fn==='function'?fn:null}
+  function reconcile(reason: any){
     if(!resumeHandler)return Promise.resolve(false);
     if(resumeInFlight)return resumeInFlight;
     diagnostic('lifecycle','resume',reason||'unknown');
@@ -361,7 +361,7 @@
     if(global.document)document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')reconcile('visible')});
   }
 
-  function shadowCompare(label,legacyValue,nextValue){
+  function shadowCompare(label: any,legacyValue: any,nextValue: any){
     var same=JSON.stringify(legacyValue)===JSON.stringify(nextValue);
     if(!same)diagnostic('shadow',label,'mismatch');
     return same;
@@ -380,7 +380,7 @@
     recovery:{start:recoveryStart,markReady:recoveryReady,status:recoveryStatus},
     snapshots:{format:SNAPSHOT_FORMAT,maxBytes:SNAPSHOT_MAX_BYTES,packSync:packSnapshot,unpackSync:unpackSnapshot,persist:persistSnapshot,load:loadSnapshot,remove:removeSnapshot},
     latency:{record:recordLatency,measure:measureLatency,summary:latencySummary},
-    errors:{code:errorCode,message:function(code){return (ERROR_CODES)[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
+    errors:{code:errorCode,message:function(code: any){return (ERROR_CODES as any)[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
     conflicts:{diff:diffObjects},
     lifecycle:{setResumeHandler:setResumeHandler,reconcile:reconcile},
     shadowCompare:shadowCompare,

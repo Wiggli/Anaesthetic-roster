@@ -1,14 +1,14 @@
 {
-  "version": "41.1",
+  "version": "41.2",
   "date": "2 October 2026",
-  "title": "Make recovery and audit durable",
-  "summary": "Night Roster can recover from damaged local state, keeps bounded durable audit history, and now gates releases with wider browser and resilience testing.",
+  "title": "Finish the modular runtime architecture",
+  "summary": "Night Roster now has one maintained modular UI source layout and a strictly checked TypeScript domain and reliability runtime while preserving stable installed-PWA asset URLs.",
   "changes": [
-    "Repeated failed launches now enter a reduced-risk recovery mode, saved rosters use bounded integrity-checked atomic IndexedDB snapshots, and the active service worker can verify and repair missing cached shell files without bypassing explicit update approval.",
-    "Consequential shared roster writes now create immutable server-side audit events with operation IDs, authenticated actor identity and before/after values, with an administrator timeline for review.",
-    "Night history now uses bounded keyset pagination, operation idempotency records expire after 90 days, and new database invariant and non-mutating canary checks strengthen long-running health monitoring.",
-    "Critical roster requests now collect bounded privacy-safe latency measurements, with CI size budgets guarding against performance drift.",
-    "Release testing now includes WebKit/iPhone coverage, low-end CPU and network pressure, ambiguous retry idempotency, real two-page leadership, active-session revocation and a verified roster-data restore drill."
+    "The former app-ui.js source is split into foundation, clinical, synchronization and bootstrap modules, while the public app-ui.js remains a generated compatibility asset for installed PWAs.",
+    "Domain clock, freshness and capability logic plus the reliability runtime now live in strict TypeScript source and must typecheck before compatible browser JavaScript is generated.",
+    "Release tooling and architecture tests now reject stale generated assets or a return to the previous monolithic source layout.",
+    "Superseded one-off presentation boundary notes were removed after durable ownership and safety rules were consolidated into AGENTS.md.",
+    "The verified 138-night rotation, staffing and Labour Ward rules, Supabase trust boundary, audit schema, Chat transport and explicit ACTIVATE_UPDATE flow are unchanged."
   ],
   "update_policy": "normal"
 }

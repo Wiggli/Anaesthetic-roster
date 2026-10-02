@@ -1,0 +1,85 @@
+function accessRequestDisplayName(user){
+  var metadata=user&&user.user_metadata||{},name=String(metadata.full_name||metadata.name||'').trim();
+  if(name)return name.slice(0,100);
+  var email=String(user&&user.email||'').trim(),local=email.split('@')[0]||'New roster member';
+  return local.replace(/[._-]+/g,' ').replace(/\b\w/g,function(ch){return ch.toUpperCase()}).slice(0,100);
+}
+async function ensureAccessRequest(user){
+  if(!user||!user.id||!user.email)return{status:'error'};
+  var existing=await supa.from('access_requests').select('status').eq('user_id',user.id).maybeSingle();
+  if(!existing.error&&existing.data)return{status:existing.data.status};
+  if(existing.error&&existing.error.code!=='PGRST116')return{status:'error'};
+  var created=await supa.from('access_requests').insert({user_id:user.id,email:user.email.toLowerCase(),display_name:accessRequestDisplayName(user),status:'pending'});
+  if(created.error)return{status:'error'};
+  if(window.dispatchAccessRequestPush){try{await window.dispatchAccessRequestPush(user.id)}catch(error){}}
+  return{status:'pending',created:true};
+}
+
+async function authorizeUser(user,session){
+  if(!user)return showAuth();if(session)rememberAuthSession(session);var attempt=++startupAttempt;currentUser=user;setLaunchState('Preparing your night',navigator.onLine?'Checking your account and shared roster…':'Showing the last saved roster');
+  var sharedReady=await loadSharedData();if(attempt!==startupAttempt)return;
+  if(!sharedReady&&sharedLoadFailureStage==='access'){
+    var request=await ensureAccessRequest(user);
+    await supa.auth.signOut({scope:'local'});clearPrivateDeviceData();currentUser=null;currentUserProfile=null;
+    if(request.status==='pending')showAuth(request.created?'Your access request has been sent. A roster administrator needs to approve it before you can enter.':'Your access request is still waiting for administrator approval.');
+    else if(request.status==='rejected')showAuth('Your access request was not approved. Contact the roster administrator if you think this should be reviewed.',true);
+    else showAuth('This account is not approved for Night Roster yet. Try again later or contact the roster administrator.',true);
+    return
+  }
+  if(!sharedReady&&sharedLoadFailureStage==='session'){clearPrivateDeviceData();currentUser=null;currentAccessToken='';currentUserProfile=null;showAuth('Your saved sign-in has expired. Sign in again to open the shared roster.',true);return}
+  if(!sharedReady){var stage={session:'your saved sign-in',snapshot:'the protected roster',staffing:'shared staffing',allocations:'selected-night allocations',support:'roster support data'}[sharedLoadFailureStage]||'the shared roster',code=sharedLoadFailureCode?' (code '+sharedLoadFailureCode+')':'';showLaunchRecovery('The connection stopped while opening '+stage+code+'. Try again.');return}
+  accessLossInFlight=false;
+  var isAdmin=currentUserProfile&&currentUserProfile.user_role==='admin';
+  var profilePromise=Promise.resolve();if(!forcedOfflineSession)profilePromise=withTimeout(loadOwnProfile(),6000,'Profile details did not respond.').catch(function(){profileFeatureAvailable=false;currentPrivateProfile=null});
+  if(!forcedOfflineSession)subscribeToChanges();startSharedSyncMonitor();if(isAdmin&&!forcedOfflineSession)withTimeout(loadAccounts(),6000,'Account list did not respond.').catch(function(){});finishLaunch(true);
+  await profilePromise;if(attempt!==startupAttempt)return;showOnboardingIfNeeded();
+}
+
+function bind(){
+  initTheme();window.addEventListener('beforeunload',protectLocalChangesDraft);launchSlowTimer=setTimeout(function(){setLaunchState('Still connecting','Finishing the shared roster connection…')},12000);prepareChangesView();setupPWA();bindOnboarding();bindFeatureEducation();byId('launchRetryBtn').onclick=retryLaunchConnection;byId('launchOfflineBtn').onclick=useSavedRosterAtLaunch;
+  if(window.AnaestheticRuntime&&window.AnaestheticRuntime.lifecycle)window.AnaestheticRuntime.lifecycle.setResumeHandler(reconcileApplication);
+  window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()})}});
+  window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});
+  window.addEventListener('roster:peer-revision',function(event){var detail=event&&event.detail||{},revision=Number(detail.revision),accessEpoch=Number(detail.accessEpoch);if(Number.isFinite(accessEpoch)&&accessEpoch!==Number(lastObservedAccessEpoch||0)){checkCurrentAccessStatus(accessEpoch).then(function(access){if(access&&access.active&&Number.isFinite(revision)&&revision!==Number(lastObservedSyncRevision||0))scheduleSharedReload(true)});return}if(Number.isFinite(revision)&&revision!==Number(lastObservedSyncRevision||0))scheduleSharedReload(true)});
+  window.addEventListener('roster:tab-leader',function(event){
+    var isLeader=!!(event&&event.detail&&event.detail.isLeader);
+    if(!isLeader){
+      realtimeSubscribed=false;
+      if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}
+      if(changesChannel){supa.removeChannel(changesChannel);changesChannel=null}
+      setSharedSyncState(navigator.onLine?'live':'offline','');
+      recordAppDiagnostic('tabs','leadership','follower');
+      return
+    }
+    recordAppDiagnostic('tabs','leadership','leader');
+    if(currentUserProfile&&navigator.onLine&&!forcedOfflineSession)subscribeToChanges()
+  });
+  window.addEventListener('scroll',scheduleScrollChrome,{passive:true});
+  if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler){
+    window.AnaestheticRuntime.scheduler.every('automatic-night',60000,refreshAutomaticNightOnReturn,{immediate:true});
+    window.AnaestheticRuntime.scheduler.every('freshness-label',30000,function(){if(currentUserProfile)setSync(sharedSyncState==='live'?'':sharedSyncState,sharedSyncMessage)});
+  }else{
+    setInterval(refreshAutomaticNightOnReturn,60000);freshnessTimer=setInterval(function(){if(currentUserProfile)setSync(sharedSyncState==='live'?'':sharedSyncState,sharedSyncMessage)},30000)
+  }
+  updateScrollChrome();
+  window.addEventListener('roster:activity-open',function(event){var index=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(index)&&recentActivityItems[index])openActivityDetail(recentActivityItems[index],recentActivityDate)});
+  window.addEventListener('roster:clock-change-guide',function(){showClockChangeEducation(cur().date,true)});
+  window.addEventListener('roster:share-action',function(event){var action=event&&event.detail&&event.detail.action;if(action==='native')nativeShareNightRoster();else if(action==='copy')copyNightRosterLink();else if(action==='install'){var share=byId('shareAppDialog');if(share&&share.open)share.close();showInstallGuide(true)}});
+  window.addEventListener('roster:changes-action',function(event){var detail=event&&event.detail||{};if(detail.action==='record')showRecordActions(detail.kind,detail.id,detail.name);else if(detail.action==='allocation')setChangesStep('allocation',true);else if(detail.action==='history'){var date=cur().date;if(historyExpandedDates[date]&&historyPageState[date]&&historyPageState[date].has_more)loadMoreNightHistory(date);else{historyExpandedDates[date]=!historyExpandedDates[date];renderChanges(cur())}}else if(detail.action==='allocation-select'){var base=cur(),date=base.date;if(!allocationDrafts[date])allocationDrafts[date]={};allocationDrafts[date][detail.key]=detail.value;updateAllocationSaveControl(base);updateChangesWorkflow(base,staffingPlan(base));formMessage('allocationFormMessage','Selections ready to review.','')}else if(detail.action==='allocation-mounted')updateAllocationSaveControl(cur());else if(detail.action==='absence-save')saveNightChange();else if(detail.action==='overtime-save')saveOvertime();else if(detail.action==='absence-cancel')cancelAbsenceEdit();else if(detail.action==='role-select'){var roleBase=cur(),assignments=roleEditorAssignments(roleBase),chosen=detail.value,assignmentKeys=roleAssignmentKeys(assignments),source=assignmentKeys.find(function(candidate){return canonicalNurseName(assignments[candidate])===canonicalNurseName(chosen)}),previous=assignments[detail.key];if(source&&source!==detail.key)assignments[source]=previous;assignments[detail.key]=chosen;if(roleAssignmentsDiffer(assignments,currentRoleAssignments(roleBase)))nightRoleOverrideDrafts[roleBase.date]={assignments:assignments,reason:(nightRoleOverrideDrafts[roleBase.date]&&nightRoleOverrideDrafts[roleBase.date].reason)||''};else delete nightRoleOverrideDrafts[roleBase.date];renderChanges(roleBase)}else if(detail.action==='role-reason'){var reasonDraft=nightRoleOverrideDrafts[cur().date];if(reasonDraft){reasonDraft.reason=detail.value;nightRoleOverrideDrafts[cur().date]=reasonDraft}}else if(detail.action==='role-save')saveNightRoleOverride(cur());else if(detail.action==='role-reset')resetNightRoleOverride(cur());else if(detail.action==='staffing-input'){updateStaffingActionAvailability();markInvalid('absentName',false);markInvalid('overtimeName',false);formMessage('absenceFormMessage','');formMessage('overtimeFormMessage','')}else if(detail.action==='staffing-mounted')updateStaffingActionAvailability()});
+  window.addEventListener('roster:open-night',function(event){var next=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(next)&&R[next]){idx=next;show('today')}});
+  window.addEventListener('roster:account-action',function(event){var detail=event&&event.detail||{};if(detail.action==='theme')setThemePreference(detail.value);else if(detail.action==='passkey-remove')deletePasskey(detail.value);else if(detail.action==='profile-input')updateProfileSaveState();else if(detail.action==='profile-save')saveProfile();else if(detail.action==='profile-photo')chooseProfilePhoto(detail.value);else if(detail.action==='profile-photo-remove')removeProfilePhoto();else runAccountAction(detail.action)});
+  window.addEventListener('roster:admin-account-action',function(event){var detail=event&&event.detail||{};if(detail.action==='add')addAuthorisedAccount();else if(detail.action==='approve')approveAccessRequest(detail.value);else if(detail.action==='reject')rejectAccessRequest(detail.value);else if(detail.action==='toggle')toggleAuthorisedAccount(detail.value)});
+  byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authGoogleBtn').onclick=signInWithGoogle;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
+  byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=openOnboardingReplay;byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};byId('accountVersionHistoryBtn').onclick=function(){byId('accountSheet').close();renderReleaseNotes(true);byId('releaseNotes').showModal()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='overview';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};var healthRefresh=byId('refreshAdminHealthBtn');if(healthRefresh)healthRefresh.onclick=function(){if(typeof loadAdminHealth==='function')loadAdminHealth(true)};
+  var legacySaveChange=byId('saveChangeBtn'),legacyCancelAbsence=byId('cancelAbsenceEditBtn'),legacyAbsent=byId('absentName'),legacyAddOvertime=byId('addOvertimeBtn'),legacySaveAllocations=byId('saveAllocationsBtn'),legacyOvertime=byId('overtimeName'),legacyAddAccount=byId('addAccountBtn');if(legacySaveChange)legacySaveChange.onclick=saveNightChange;if(legacyCancelAbsence)legacyCancelAbsence.onclick=cancelAbsenceEdit;if(legacyAbsent)legacyAbsent.onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateStaffingActionAvailability()};if(legacyAddOvertime)legacyAddOvertime.onclick=saveOvertime;if(legacySaveAllocations)legacySaveAllocations.onclick=saveFinalAllocationsV2510;if(legacyOvertime){legacyOvertime.oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','');updateStaffingActionAvailability()};legacyOvertime.onkeydown=function(e){if(e.key==='Enter'&&!byId('addOvertimeBtn').disabled)saveOvertime()}}if(legacyAddAccount)legacyAddAccount.onclick=addAuthorisedAccount;
+  var themeButton=byId('themeBtn');if(themeButton)themeButton.onclick=toggleTheme;byId('datePick').onchange=selectByDate;byId('changesDatePick').onchange=function(){chooseDate('changesDatePick')};byId('breakDatePick').onchange=selectBreakDate;byId('teamEffectiveDate').onchange=selectTeamEffectiveDate;byId('extendDate').onchange=selectExtendDate;
+  byId('prevNightBtn').onclick=function(){changeNight(-1)};byId('nextNightBtn').onclick=function(){changeNight(1)};byId('changesPrevNightBtn').onclick=function(){changeNight(-1)};byId('changesNextNightBtn').onclick=function(){changeNight(1)};byId('breakPrevNightBtn').onclick=function(){changeNight(-1)};byId('breakNextNightBtn').onclick=function(){changeNight(1)};byId('teamPrevNightBtn').onclick=function(){changeNight(-1)};byId('teamNextNightBtn').onclick=function(){changeNight(1)};byId('extendPrevNightBtn').onclick=function(){changeExtendNight(-1)};byId('extendNextNightBtn').onclick=function(){changeExtendNight(1)};
+  byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
+  byId('previewExtendBtn').onclick=previewExtension;byId('extendBtn').onclick=extendRoster;byId('saveTeamVersionBtn').onclick=previewTeamChange;byId('exportBtn').onclick=exportCSV;byId('backupBtn').onclick=backup;
+  byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};if(byId('closeShareAppDialog'))byId('closeShareAppDialog').onclick=function(){byId('shareAppDialog').close()};byId('closeActivityDetailSheet').onclick=function(){byId('activityDetailSheet').close()};Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){b.onclick=function(){var view=b.getAttribute('data-v');show(view);if(view==='chat'&&typeof window.openChatView==='function')window.openChatView()}});updateOfflineControls();
+}
+
+bind();
+initApplication();
+
