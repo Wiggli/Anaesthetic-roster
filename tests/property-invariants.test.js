@@ -71,6 +71,7 @@ for(const date of sampleDates){
       }
 
       const effective=context.applyChanges(base);
+      if(plan.count<5)assert.equal(effective.fullLW,'','understaffed plans must not retain stale full-night Labour Ward cover');
       const active=context.activeNames(effective).map(name=>String(name).toLowerCase());
       assert.equal(new Set(active).size,active.length,'effective staff names must never duplicate');
 
