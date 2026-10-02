@@ -183,6 +183,7 @@ begin
 
   perform set_config('app.operation_id',p_operation_id::text,true);
   perform set_config('app.operation_type',left(trim(p_operation_type),80),true);
+  perform public.prune_roster_operation_log_v50();
 
   insert into public.roster_operation_log(
     operation_id,user_id,operation_type,roster_date,expected_sync_revision
@@ -228,7 +229,7 @@ as $$
 declare
   v_count bigint;
 begin
-  if auth.uid() is null or not public.is_roster_admin() then
+  if auth.uid() is null or not public.is_shift_member() then
     raise exception 'PERMISSION_DENIED';
   end if;
 
