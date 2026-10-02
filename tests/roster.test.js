@@ -527,8 +527,7 @@ assert.equal(context.EXPECTED_SCHEMA_VERSION, 49, 'the application must require 
 assert.doesNotMatch(trustBoundaryMigration, /(?:^|\n)(?:do|as) \$(?:\r?\n)/, 'schema 49 PL/pgSQL blocks must use complete dollar-quote delimiters');
 assert.doesNotMatch(trustBoundaryMigration, /(?:^|\n)\$;(?:\r?\n|$)/, 'schema 49 PL/pgSQL blocks must close complete dollar-quote delimiters');
 for (const column of ['minimum_read_version','minimum_write_version','recommended_version']) {
-  assert.ok(
-    trustBoundaryMigration.includes(\`${column} ~ '^[0-9]+(\\\\.[0-9]+)+
+  const versionCheck = column + " ~ '^[0-9]+(\\.[0-9]+)+
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');
@@ -692,8 +691,10 @@ assert.match(presentationCss, /#today #personalNightCard \.personalFactButtons[\
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');
-\`),
-    \`schema 49 must validate ${column} with a PostgreSQL regex that accepts dotted versions\`
+";
+  assert.ok(
+    trustBoundaryMigration.includes(versionCheck),
+    'schema 49 must validate ' + column + ' with a PostgreSQL regex that accepts dotted versions'
   );
 }
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
