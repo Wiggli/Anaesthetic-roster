@@ -14,6 +14,7 @@ assert.match(runtime,/StateMachine\('night','automatic-next'/,'night selection s
 assert.match(runtime,/BroadcastChannel\('anaesthetic-roster-runtime-v1'\)/,'tabs must coordinate locally');
 assert.match(runtime,/LEADER_TTL=12000/,'tab leadership must expire');
 assert.match(runtime,/schedulerEvery/,'recurring work must use a central scheduler');
+assert.match(runtime,/typeof job\.interval==='function'/,'scheduler cadence must support adaptive intervals');
 assert.match(runtime,/setResumeHandler/,'resume work must have one lifecycle entry point');
 assert.match(runtime,/rtt>4000/,'unreliable clock samples must be rejected');
 assert.match(runtime,/shadowCompare/,'shadow comparison infrastructure must exist');
@@ -24,6 +25,10 @@ assert.match(ui,/async function reconcileApplication\(reason\)[\s\S]*getSession[
 assert.match(ui,/ensureFreshBeforeMutation\(\)/,'mutations must perform a freshness barrier');
 assert.match(ui,/execute\(commandId,expectedSyncRevision\)/,'every guarded mutation must receive a stable operation id and expected revision');
 assert.match(ui,/verified-after-timeout/,'ambiguous responses must still be verified after refresh');
+assert.match(ui,/rosterCommandIds\[key\]/,'ambiguous roster retries must reuse their original command id');
+assert.match(ui,/realtimeSubscribed&&sharedSyncState==='live'\?60000:15000/,'revision polling must back off while realtime is healthy');
+assert.match(ui,/shadowNightPlanCheck/,'night plan shadow comparison must run before retiring legacy calculation paths');
+assert.match(ui,/anaes_compat_startup_count/,'compatibility fallback use must be measured before removal');
 assert.match(ui,/coordinator\.isLeader\(\)/,'roster realtime must be single-leader across local tabs');
 assert.match(ui,/roster:peer-revision/,'follower tabs must react to leader revision broadcasts');
 assert.doesNotMatch(ui,/offline mutation queue|pending offline mutation|flushOffline/i,'clinical writes must not be queued for later offline replay');
