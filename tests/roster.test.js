@@ -699,9 +699,9 @@ assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
 assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
 assert.match(clinicalExperience, /nightTimelineSlimRail[\s\S]*nightTimelineFill[\s\S]*nightTimelinePhaseLabels/, 'Night must use the slim progress-rail composition rather than the chunky segmented panel');
-assert.match(presentationCss, /37\.97 Night hero refinement[\s\S]*\.nightTimelineSlimRail[\s\S]*height:20px[\s\S]*\.nightTimelineFill[\s\S]*linear-gradient/, 'the live Night rail must stay slim and visibly blue');
-assert.match(presentationCss, /\.personalNextStateIntegrated[\s\S]*background:transparent!important/, 'what-matters-next must remain integrated into the dark hero instead of becoming a pale nested card');
-assert.match(presentationCss, /#today #personalNightCard \.personalFactButtons[\s\S]*background:transparent!important/, 'hero facts must remain integrated with the dark hero');
+assert.match(presentationCss, /41\.7 Night screen overhaul[\s\S]*\.nightTimelineTrackShell[\s\S]*height:31px!important[\s\S]*\.nightTimelineNow/, 'the live Night rail must keep the compact 41.7 orientation treatment');
+assert.doesNotMatch(clinicalExperience, /personalNextStateIntegrated|nextNightMessage/, 'ordinary nights must not restore the old dedicated what-matters-next handover block');
+assert.match(presentationCss, /#today \.personalHeroFactGrid\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[\s\S]*#today \.personalHeroFactGrid>\.personalHeroFact[\s\S]*background:var\(--liquid-surface\)!important/, 'Duty, Break and Colleague must share one balanced integrated fact row');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');
