@@ -5,7 +5,7 @@ module.exports = defineConfig({
   testMatch: /resilience-browser\.spec\.js/,
   timeout: 30000,
   retries: 0,
-  workers: 1,
+  workers: process.env.CI ? 2 : 1,
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure'
