@@ -538,8 +538,10 @@ assert.match(reliabilityMigration, /upsert_rotation_version_v48[\s\S]*ROTATION_V
 assert.match(reliabilityMigration, /update public\.app_schema_version[\s\S]*version=48/, 'schema 48 migration must advance the schema marker');
 assert.match(trustBoundaryMigration, /create table if not exists public\.app_compatibility[\s\S]*minimum_write_version text[\s\S]*blocked_write_versions text\[\]/, 'schema 49 must add a server-controlled compatibility contract and per-version write blocklist');
 assert.match(trustBoundaryMigration, /minimum_write_version='41\.0'[\s\S]*recommended_version='41\.0'/, 'schema 49 must require the Trust Boundary client for consequential writes');
-assert.match(trustBoundaryMigration, /alter table public\.app_sync_state[\s\S]*access_epoch bigint not null default 0/, 'schema 49 must add a privacy-safe access revision');
-assert.match(trustBoundaryMigration, /tg_table_name='allowed_users'[\s\S]*then 1 else 0/, 'access epoch must advance only when authorised-account state changes');
+assert.match(trustBoundaryMigration, /create table if not exists public\.app_access_signal[\s\S]*access_epoch bigint not null default 0/, 'schema 49 must isolate revocation into a privacy-safe access signal');
+assert.match(trustBoundaryMigration, /create policy "Authenticated sessions can view access epoch"[\s\S]*auth\.uid\(\)/, 'revoked but still authenticated sessions must remain able to observe the access epoch');
+assert.match(trustBoundaryMigration, /alter publication supabase_realtime add table public\.app_access_signal/, 'the access epoch must be delivered without publishing the allowed-users directory');
+assert.match(trustBoundaryMigration, /tg_table_name='allowed_users'[\s\S]*update public\.app_access_signal[\s\S]*access_epoch=access_epoch\+1/, 'access epoch must advance only when authorised-account state changes');
 assert.match(trustBoundaryMigration, /create trigger bump_app_sync_state_v49[\s\S]*on public\.app_compatibility/, 'compatibility switches must wake active clients through the existing realtime revision signal');
 assert.match(trustBoundaryMigration, /create or replace function public\.my_access_status_v49\(\)[\s\S]*auth\.uid\(\)[\s\S]*access_epoch/, 'schema 49 must expose only the signed-in account status plus the access epoch');
 assert.match(trustBoundaryMigration, /create or replace function public\.current_roster_actor_name_v49\(\)[\s\S]*allowed_users[\s\S]*auth\.jwt\(\)/, 'audit display identity must be resolved on the server from the authenticated account');
@@ -633,6 +635,7 @@ assert.match(ui, /CLIENT_UPDATE_REQUIRED[\s\S]*CLIENT_VERSION_BLOCKED[\s\S]*APP_
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'runtime-foundation.js'), 'utf8'), /CLIENT_UPDATE_REQUIRED:[\s\S]*CLIENT_VERSION_BLOCKED:[\s\S]*APP_MAINTENANCE:/, 'the shared runtime must preserve Trust Boundary server codes instead of collapsing them into generic errors');
 assert.match(ui, /my_access_status_v49[\s\S]*enterAccessLost[\s\S]*chatTeardownSession[\s\S]*signOut/, 'an active session must clear Chat and sign out when server access is revoked');
 assert.match(ui, /accessEpoch[\s\S]*roster:peer-revision[\s\S]*checkCurrentAccessStatus/, 'the access epoch must propagate to follower tabs instead of relying on the realtime leader only');
+assert.match(ui, /app_access_signal[\s\S]*access_epoch[\s\S]*checkCurrentAccessStatus/, 'revocation detection must use the authenticated-only access signal rather than weakening roster-sync RLS');
 assert.doesNotMatch(ui, /p_changed_by:currentUserProfile\.display_name/, 'v49 roster calls must never trust browser-provided audit names');
 assert.match(ui, /record_night_absence_v49[\s\S]*p_client_version:APP_VERSION/, 'v49 roster writes must send the running app version to the server guard');
 assert.match(html, /id="writeGuardBanner"[\s\S]*id="writeGuardTitle"[\s\S]*id="writeGuardDetail"/, 'read-only compatibility states must have a persistent user-facing explanation');
