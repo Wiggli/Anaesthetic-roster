@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '41.2';
+var APP_VERSION = '41.3';
 var EXPECTED_SCHEMA_VERSION = 50;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var appStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
@@ -28,7 +28,7 @@ var passwordRecoveryActive = false;
 var deferredInstallPrompt = null;
 var extensionRows=[];
 var pendingTeamVersion=null;
-var activeAdminTab='overview';
+var activeAdminTab='home';
 var adminHealthState=null;
 var adminHealthLoadedAt=0;
 var adminHealthLoading=false;
@@ -155,7 +155,7 @@ function updateAdminAttentionBadge(){
   if(pending)details.push(pending+' access request'+(pending===1?'':'s'));
   if(taskCount)details.push('selected-night action');
   if(publicationDue)details.push('roster publication');
-  button.setAttribute('aria-label',count?'Roster management · '+details.join(', '):'Roster management');
+  button.setAttribute('aria-label',count?'Administrator tools · '+details.join(', '):'Administrator tools');
   syncAppBadge();
 }
 function renderAdminHealth(){
@@ -236,11 +236,44 @@ async function loadAdminAudit(append,force){
   }finally{adminAuditLoading=false;renderAdminAudit()}
 }
 
+function prepareAdminInformationArchitecture(){
+  var admin=byId('admin');if(!admin||byId('adminHome'))return;
+  var header=admin.querySelector('.adminHeader'),headerTitle=header&&header.querySelector('h2'),headerText=header&&header.querySelector('.time');if(headerTitle)headerTitle.textContent='Administrator';if(headerText)headerText.textContent='People, roster management and system tools, kept separate from everyday Night Roster use.';
+  var tabs=admin.querySelector('.adminTabs');if(tabs)tabs.classList.add('adminLegacyTabs');
+  var home=document.createElement('div');home.id='adminHome';home.className='adminPane adminHome';home.innerHTML='<div class="adminHomeIntro"><span>Administrator tools</span><h2>What do you need to manage?</h2><p>Choose one area. Detailed controls stay out of the way until you open them.</p></div><div class="adminHubGrid"><button type="button" class="adminHubCard" data-admin-tab="overview"><span class="adminHubIcon" aria-hidden="true">☾</span><span><b>Tonight</b><small id="adminHomeTonightStatus">Operational status and selected-night attention</small></span><i aria-hidden="true">›</i></button><button type="button" class="adminHubCard" data-admin-tab="access"><span class="adminHubIcon" aria-hidden="true">◎</span><span><b>People & Access</b><small id="adminHomeAccessStatus">Authorised accounts and access requests</small></span><i aria-hidden="true">›</i></button><button type="button" class="adminHubCard" data-admin-tab="roster"><span class="adminHubIcon" aria-hidden="true">▦</span><span><b>Roster Management</b><small id="adminHomeRosterStatus">Publishing and permanent team rotation</small></span><i aria-hidden="true">›</i></button><button type="button" class="adminHubCard" data-admin-tab="data"><span class="adminHubIcon" aria-hidden="true">◉</span><span><b>System</b><small id="adminHomeSystemStatus">Health, recent admin activity and exports</small></span><i aria-hidden="true">›</i></button></div>';
+  var overview=byId('adminOverview');if(overview)admin.insertBefore(home,overview);
+
+  var roster=document.createElement('div');roster.id='adminRoster';roster.className='adminPane adminRoster hidden';roster.innerHTML='<div class="adminDetailNav"><button type="button" class="adminBackButton" data-admin-tab="home" aria-label="Back to Administrator">‹</button><div><span>Administrator</span><h2>Roster Management</h2></div></div><div class="adminChoiceList"><button type="button" class="adminChoiceRow" data-admin-tab="publish"><span class="adminChoiceIcon" aria-hidden="true">▣</span><span><b>Publish roster</b><small id="adminRosterPublishStatus">Extend how far colleagues can see the verified roster</small></span><i aria-hidden="true">›</i></button><button type="button" class="adminChoiceRow" data-admin-tab="team"><span class="adminChoiceIcon" aria-hidden="true">♟</span><span><b>Permanent team rotation</b><small>Replace a permanent team member from one rostered night onwards</small></span><i aria-hidden="true">›</i></button></div><p class="adminRareActionNote">These are infrequent roster-management actions. Single-night absences and overtime still belong under Changes.</p>';
+  var publish=byId('adminPublish');if(publish)admin.insertBefore(roster,publish);
+
+  var paneConfig=[['adminOverview','home','Tonight'],['adminPublish','roster','Publish roster'],['adminTeam','roster','Permanent team rotation'],['adminAccess','home','People & Access'],['adminData','home','System']];
+  paneConfig.forEach(function(config){var pane=byId(config[0]);if(!pane||pane.querySelector('.adminDetailNav'))return;var nav=document.createElement('div');nav.className='adminDetailNav';nav.innerHTML='<button type="button" class="adminBackButton" data-admin-tab="'+config[1]+'" aria-label="Back">‹</button><div><span>Administrator</span><h2>'+config[2]+'</h2></div>';pane.insertBefore(nav,pane.firstChild)});
+
+  var accessHeading=byId('adminAccess')&&byId('adminAccess').querySelector('.adminSectionIntro h2');if(accessHeading)accessHeading.textContent='People & Access';
+  var teamHeading=byId('adminTeam')&&byId('adminTeam').querySelector('.adminSectionIntro h2');if(teamHeading)teamHeading.textContent='Permanent team rotation';
+  var dataHeading=byId('adminData')&&byId('adminData').querySelector('.adminSectionIntro h2');if(dataHeading)dataHeading.textContent='Exports & backups';
+
+  var dataPanel=byId('adminData')&&byId('adminData').querySelector('.panel'),health=byId('adminHealthGrid')&&byId('adminHealthGrid').closest('.adminHealthPanel'),audit=byId('adminAuditTimeline')&&byId('adminAuditTimeline').closest('.adminHealthPanel');
+  if(dataPanel&&health){
+    var healthTitle=health.querySelector('h3');if(healthTitle)healthTitle.textContent='System health';var healthLabel=health.querySelector('.adminHealthHeader span');if(healthLabel)healthLabel.textContent='Status';
+    var grid=byId('adminHealthGrid');if(grid&&!grid.closest('details')){var healthDetails=document.createElement('details');healthDetails.className='adminSystemDisclosure';healthDetails.innerHTML='<summary><span>View health details</span><small>Database, notifications, audit and sync signals</small></summary>';grid.parentNode.insertBefore(healthDetails,grid);healthDetails.appendChild(grid)}
+    dataPanel.insertBefore(health,dataPanel.firstChild)
+  }
+  if(dataPanel&&audit){
+    var auditTitle=audit.querySelector('h3');if(auditTitle)auditTitle.textContent='Recent admin activity';var auditLabel=audit.querySelector('.adminHealthHeader span');if(auditLabel)auditLabel.textContent='History';
+    var timeline=byId('adminAuditTimeline');if(timeline&&!timeline.closest('details')){var auditDetails=document.createElement('details');auditDetails.className='adminSystemDisclosure';auditDetails.innerHTML='<summary><span>View recent shared changes</span><small>Who changed what, and when</small></summary>';timeline.parentNode.insertBefore(auditDetails,timeline);auditDetails.appendChild(timeline)}
+    var afterHealth=health&&health.nextSibling;dataPanel.insertBefore(audit,afterHealth)
+  }
+  if(dataPanel&&!byId('adminSystemSummary')){var summary=document.createElement('div');summary.id='adminSystemSummary';summary.className='adminSystemSummary';dataPanel.insertBefore(summary,dataPanel.firstChild)}
+  var diagnostics=byId('appDiagnostics')&&byId('appDiagnostics').closest('details');if(dataPanel&&diagnostics){var summaryNode=diagnostics.querySelector('summary');if(summaryNode)summaryNode.textContent='Technical diagnostics';dataPanel.appendChild(diagnostics)}
+}
+
 function renderAdmin(){
-  if(!currentUserProfile||currentUserProfile.user_role!=='admin')return;
+  if(!currentUserProfile||currentUserProfile.user_role!=='admin')return;prepareAdminInformationArchitecture();
   var r=cur(),plan=staffingPlan(r),tasks=workflowTaskDetails(r,plan),activity=staffingHistoryFor(r.date).slice(0,3),check=verifyReference(),lastVersion=rotationVersions[rotationVersions.length-1],start=addDays(rosterSettings.published_until,4),extend=byId('extendDate'),activeAccounts=authorisedAccounts.filter(function(a){return a.active}).length,pendingAccounts=authorisedAccounts.filter(function(a){return !a.active}).length,schemaHealthy=schemaVersion>=EXPECTED_SCHEMA_VERSION,release=typeof installedReleaseState==='function'?installedReleaseState():{stale:false};
   byId('rosterStatus').innerHTML='<div class="statusCard"><span class="time">Application</span><b class="'+(release.stale?'':'verified')+'">'+(release.stale?'Update required':'Healthy · '+esc(APP_VERSION))+'</b></div><div class="statusCard"><span class="time">Database</span><b class="'+(schemaHealthy?'verified':'')+'">'+(schemaHealthy?'Schema '+esc(schemaVersion)+' current':'Upgrade to schema '+esc(EXPECTED_SCHEMA_VERSION))+'</b></div><div class="statusCard"><span class="time">Published until</span><b>'+esc(fmt(rosterSettings.published_until))+'</b></div><div class="statusCard"><span class="time">Next unpublished</span><b>'+esc(fmt(start))+'</b></div><div class="statusCard"><span class="time">Active accounts</span><b>'+activeAccounts+'</b></div><div class="statusCard"><span class="time">Pending account actions</span><b>'+pendingAccounts+'</b></div>';
   byId('adminOverviewSummary').innerHTML='<div class="adminOperationalRow"><b>Selected night · '+esc(fmt(r.date))+'</b><span class="'+(tasks.length?'adminNeedsAction':'verified')+'">'+(tasks.length?esc(tasks[0])+(tasks.length>1?' · '+(tasks.length-1)+' more':''):'No unresolved operational tasks')+'</span></div><div class="adminOperationalRow"><b>Recent staffing and allocation activity</b>'+(activity.length?activity.map(function(item){return'<span>'+esc(item.title)+' · '+esc(shortTime(item.changed_at))+'</span>'}).join(''):'<span>No recorded activity for the selected night.</span>')+'</div><div class="adminOperationalRow"><b>Shared data</b><span>'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?shortTime(lastSuccessfulSyncAt):'not yet')+'</span></div><div class="time">Original rotation '+(check.mismatches?'requires review':'verified')+' · '+R.length+' published nights.</div>';
+  var homeTonight=byId('adminHomeTonightStatus'),homeAccess=byId('adminHomeAccessStatus'),homeRoster=byId('adminHomeRosterStatus'),homeSystem=byId('adminHomeSystemStatus'),rosterPublish=byId('adminRosterPublishStatus'),systemSummary=byId('adminSystemSummary');if(homeTonight)homeTonight.textContent=tasks.length?tasks.length+' selected-night item'+(tasks.length===1?'':'s')+' need attention':'No unresolved selected-night tasks';if(homeAccess)homeAccess.textContent=accessRequests.length?accessRequests.length+' access request'+(accessRequests.length===1?'':'s')+' waiting':activeAccounts+' authorised account'+(activeAccounts===1?'':'s');if(homeRoster)homeRoster.textContent='Published until '+fmt(rosterSettings.published_until);if(rosterPublish)rosterPublish.textContent='Currently visible until '+fmt(rosterSettings.published_until);var healthy=!release.stale&&schemaHealthy&&navigator.onLine;if(homeSystem)homeSystem.textContent=healthy?'Everything working normally':release.stale?'App update required':!schemaHealthy?'Database update required':'Offline on this device';if(systemSummary)systemSummary.innerHTML='<b>'+(healthy?'Everything is working normally':'System needs attention')+'</b><span>'+(healthy?'Health details are available below if you need them.':homeSystem.textContent)+'</span>';
   byId('publishCurrentSummary').innerHTML='<b>Currently visible until '+esc(fmt(rosterSettings.published_until))+'</b><div class="time">The next extension will begin on '+esc(fmt(start))+'. Nothing already published will be removed or recalculated.</div>';
   extend.min=start;if(!extend.value||extend.value<start)extend.value=snapRosterDate(addMonths(rosterSettings.published_until,6));updateExtensionSummary();var selectedVersion=versionForDate(r.date),leaving=[selectedVersion.first1,selectedVersion.first2,selectedVersion.second1,selectedVersion.second2,selectedVersion.pager,selectedVersion.reliever];if(document.activeElement!==byId('replaceStaffName'))byId('replaceStaffName').innerHTML=selectOptions(leaving,byId('replaceStaffName').value||leaving[0]);if(document.activeElement!==byId('teamEffectiveDate'))byId('teamEffectiveDate').value=r.date;byId('teamEffectiveDate').min=R[0].date;byId('teamEffectiveDate').max=R[R.length-1].date;byId('teamEffectiveSummary').innerHTML='<b>Permanent change will begin on '+esc(fmt(r.date))+'.</b><div class="time">The selected night and every later roster will use the new nurse, while all earlier nights remain unchanged.</div>';byId('currentTeamSummary').innerHTML='<b>Latest permanent team</b><div class="currentTeam">'+[lastVersion.first1,lastVersion.first2,lastVersion.second1,lastVersion.second2,lastVersion.pager,lastVersion.reliever].map(function(n){return '<span>'+esc(n)+'</span>'}).join('')+'</div>';byId('teamPrevNightBtn').disabled=idx<=0;byId('teamNextNightBtn').disabled=idx>=R.length-1;byId('extendPrevNightBtn').disabled=extend.value<=start;byId('rotationVersionList').innerHTML=rotationVersions.map(function(v,i){return '<div class="historyItem"><b>'+(i===0?'Original verified rotation':'Effective from '+esc(fmt(v.effective_from)))+'</b><div class="changeMeta">'+esc(v.notes||(i===0?'Original six-nurse team':'Permanent team change'))+'</div>'+(i?'<div class="changeMeta">Earlier roster nights were preserved.</div>':'')+'</div>'}).join('');switchAdminTab(activeAdminTab,false);renderAccounts();renderDiagnostics();renderAdminHealth();renderAdminAudit();updateAdminAttentionBadge();loadAdminHealth(false);loadAdminAudit(false,false)
 }

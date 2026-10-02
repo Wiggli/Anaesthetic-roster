@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V41.2 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V41.3 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -88,6 +88,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"41.3","date":"2 October 2026","title":"Make Account and Administrator calmer","changes":["Account now opens to four clear destinations: Profile, Preferences, Security, and App & Help, instead of placing every setting and action in one long sheet.","Administrator now opens to Tonight, People & Access, Roster Management, and System, replacing the crowded five-tab control rail with a task-focused landing view.","Publishing and permanent team rotation are grouped behind Roster Management, while system health, recent admin activity, exports and diagnostics are grouped under System.","Technical health and audit detail stays collapsed until requested, while the existing roster, account, passkey, export and administrator actions continue to use their proven underlying logic."],"policy":"normal"},
   {"version":"41.2","date":"2 October 2026","title":"Finish the modular runtime architecture","changes":["The former app-ui.js source is split into foundation, clinical, synchronization and bootstrap modules, while the public app-ui.js remains a generated compatibility asset for installed PWAs.","Domain clock, freshness and capability logic plus the reliability runtime now live in strict TypeScript source and must typecheck before compatible browser JavaScript is generated.","Release tooling and architecture tests now reject stale generated assets or a return to the previous monolithic source layout.","Superseded one-off presentation boundary notes were removed after durable ownership and safety rules were consolidated into AGENTS.md.","The verified 138-night rotation, staffing and Labour Ward rules, Supabase trust boundary, audit schema, Chat transport and explicit ACTIVATE_UPDATE flow are unchanged."],"policy":"normal"},
   {"version":"41.1","date":"2 October 2026","title":"Make recovery and audit durable","changes":["Repeated failed launches now enter a reduced-risk recovery mode, saved rosters use bounded integrity-checked atomic IndexedDB snapshots, and the active service worker can verify and repair missing cached shell files without bypassing explicit update approval.","Consequential shared roster writes now create immutable server-side audit events with operation IDs, authenticated actor identity and before/after values, with an administrator timeline for review.","Night history now uses bounded keyset pagination, operation idempotency records expire after 90 days, and new database invariant and non-mutating canary checks strengthen long-running health monitoring.","Critical roster requests now collect bounded privacy-safe latency measurements, with CI size budgets guarding against performance drift.","Release testing now includes WebKit/iPhone coverage, low-end CPU and network pressure, ambiguous retry idempotency, real two-page leadership, active-session revocation and a verified roster-data restore drill."],"policy":"normal"},
   {"version":"41.0","date":"2 October 2026","title":"Enforce the roster trust boundary","changes":["Shared roster writes now require a compatible 41.x client, while the server can pause shared editing or block a specific unsafe release without stopping roster viewing.","Older v25, v26, v35 and v48 mutation routes are no longer executable by signed-in browsers; current roster changes use the guarded v49 route.","Audit history now records the authenticated account UUID and resolves the readable actor name on the server instead of trusting a browser-supplied name.","Access and role changes now reach open and multi-tab PWAs; disabled accounts clear private saved roster and Chat state and sign out immediately."],"policy":"important"},
@@ -630,7 +631,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=41.2" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=41.3" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -683,15 +684,43 @@ function profileDraftSignature(){return JSON.stringify([(byId('profileName')&&by
 
 function updateProfileSaveState(){var button=byId('saveProfileBtn');if(!button)return;var changed=!!pendingProfilePhoto||profileDraftSignature()!==profileSavedSignature;button.classList.toggle('hidden',!changed);if(changed&&byId('profileMessage').classList.contains('success')&&!pendingProfilePhoto)showProfileMessage('')}
 
+function prepareAccountInformationArchitecture(){
+  var dialog=byId('accountSheet'),scroll=dialog&&dialog.querySelector('.accountSheetScroll'),header=dialog&&dialog.querySelector('.accountSheetHeader');
+  if(!dialog||!scroll||!header)return;
+  var intro=scroll.querySelector('.accountSheetIntro');if(intro)intro.classList.add('hidden');
+  var profile=byId('profileExperience'),appearance=byId('appearanceExperience'),actions=byId('accountActionsExperience'),passkeys=byId('passkeyList');
+  var panes={profile:profile,preferences:appearance&&appearance.closest('.accountGroup'),help:actions&&actions.closest('.accountGroup'),security:passkeys&&passkeys.closest('.accountGroup')};
+  Object.keys(panes).forEach(function(key){var pane=panes[key];if(pane){pane.classList.add('accountDetailPane','hidden');pane.setAttribute('data-account-pane',key)}});
+  var home=byId('accountHomeHub');
+  if(!home){
+    home=document.createElement('section');home.id='accountHomeHub';home.className='accountHomeHub';
+    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Profile</b><small>Your name, photo and roster highlight</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button></div>';
+    scroll.insertBefore(home,scroll.firstChild);
+    var signOut=byId('accountSignOutBtn'),version=byId('accountVersion');if(signOut)home.appendChild(signOut);if(version)home.appendChild(version);
+    Array.prototype.forEach.call(home.querySelectorAll('[data-account-section]'),function(button){button.onclick=function(){showAccountSection(button.getAttribute('data-account-section'))}});
+  }
+  if(!byId('accountBackBtn')){
+    var back=document.createElement('button');back.type='button';back.id='accountBackBtn';back.className='accountBackBtn hidden';back.setAttribute('aria-label','Back to Account');back.textContent='‹';back.onclick=function(){showAccountSection('home')};header.insertBefore(back,header.firstChild)
+  }
+}
+function showAccountSection(section){
+  prepareAccountInformationArchitecture();var home=byId('accountHomeHub'),back=byId('accountBackBtn'),title=byId('accountSheetTitle'),eyebrow=byId('accountSheetEyebrow')||document.querySelector('#accountSheet .accountSheetHeader>div>span');
+  var labels={profile:'Profile',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
+  if(home)home.classList.toggle('hidden',!!target);Array.prototype.forEach.call(document.querySelectorAll('#accountSheet [data-account-pane]'),function(pane){pane.classList.toggle('hidden',pane!==target)});
+  if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'Account';if(eyebrow)eyebrow.textContent=target?'Account':'Profile & preferences';
+  var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0
+}
+
 function populateAccountSheet(){
+  prepareAccountInformationArchitecture();
   var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName();
   profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'']);
-  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');
+  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar');if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=(name||currentUserProfile.display_name||currentUserProfile.email||'?').charAt(0).toUpperCase();
   showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.',messageType:profileFeatureAvailable?'':'error',changed:false}}}));
 }
 
-async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
+async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();showAccountSection('home');if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
 
 async function runAccountAction(action){
   if(action==='theme')return;

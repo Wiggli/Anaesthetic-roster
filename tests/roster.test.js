@@ -568,8 +568,9 @@ assert.doesNotMatch(ui, /supa\.from\('allowed_users'\)\.select\('email,display_n
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return appStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice through the storage facade');
 assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity');
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
-assert.doesNotMatch(html, /adminQuickGrid|data-admin-open=/, 'Admin Overview must not repeat the primary management tabs as shortcut buttons');
-assert.match(html, /data-admin-tab="overview"[\s\S]*data-admin-tab="publish"[\s\S]*data-admin-tab="team"[\s\S]*data-admin-tab="access"[\s\S]*data-admin-tab="data"/, 'Admin must retain one clear set of management tabs');
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function prepareAdminInformationArchitecture\(\)[\s\S]*What do you need to manage\?[\s\S]*People & Access[\s\S]*Roster Management[\s\S]*System/, 'Admin must open from one four-area management hub');
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /adminLegacyTabs/, 'the superseded five-tab administrator rail must be retired from the active interface');
+assert.match(ui, /function prepareAccountInformationArchitecture\(\)[\s\S]*Profile[\s\S]*Preferences[\s\S]*Security[\s\S]*App & Help/, 'Account must use progressive disclosure instead of one long settings sheet');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(clinicalExperience, /item\.detail && <small[\s\S]*\{item\.detail\}/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');

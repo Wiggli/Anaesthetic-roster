@@ -1329,31 +1329,33 @@ test('typed account controls preserve appearance and app actions', async ({ page
       options: [{ value: 'Nurse One', label: 'Nurse One' }], initial: 'A', photoUrl: '', featureAvailable: true, pendingPhoto: false, changed: false
     } } }));
     window.dispatchEvent(new CustomEvent('roster:passkeys', { detail: { message: '', items: [{ id: 'passkey-1', label: 'Night Roster on iPhone' }] } }));
+    window.prepareAccountInformationArchitecture();
+    window.showAccountSection('home');
     document.getElementById('accountSheet').showModal();
   });
 
-  await expect(page.locator('#appearanceExperience')).toContainText('Automatic');
-  await expect(page.locator('#accountSheetTitle')).toHaveText('Account & settings');
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Account');
+  await expect(page.locator('#accountHomeHub')).toContainText('Profile');
+  await expect(page.locator('#accountHomeHub')).toContainText('Preferences');
+  await expect(page.locator('#accountHomeHub')).toContainText('Security');
+  await expect(page.locator('#accountHomeHub')).toContainText('App & Help');
+  await expect(page.locator('#profileExperience')).toBeHidden();
+  await page.locator('#accountHomeHub [data-account-section="profile"]').click();
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Profile');
   await expect(page.locator('#accountSheet')).toContainText('Shared roster actions use this approved identity.');
   await expect(page.locator('#profileExperience')).toContainText('Personal details');
   await expect(page.locator('#profileName')).toHaveValue('Andre');
   await expect(page.locator('#profilePhotoPreview')).toBeHidden();
   await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
-  await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'App guide' })).toBeVisible();
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'What’s new' })).toBeVisible();
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
-  const helpLayout = await page.locator('.accountActions').evaluate(el => ({ section: el.getBoundingClientRect().height, rows: el.querySelector('#accountActionsExperience').getBoundingClientRect().height }));
-  expect(helpLayout.section).toBeGreaterThan(helpLayout.rows);
-  await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
   await captureReview(page, 'account');
-  await expect(page.locator('#securityHeading')).toHaveText('Sign-in security');
   await page.locator('#profileName').fill('André');
   await expect(page.locator('#saveProfileBtn')).toBeVisible();
   const bounds = await page.locator('#accountSheet').boundingBox();
   expect(bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
   if (page.viewportSize().width >= 760) expect(bounds.y).toBeGreaterThan(30);
+  await page.locator('#accountBackBtn').click();
+  await page.locator('#accountHomeHub [data-account-section="preferences"]').click();
   const appearanceSurface = page.locator('#appearanceExperience > div');
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
   const lightAppearanceBackground = await appearanceSurface.evaluate(el => getComputedStyle(el).backgroundColor);
@@ -1364,6 +1366,16 @@ test('typed account controls preserve appearance and app actions', async ({ page
   expect(darkAppearanceBackground).not.toBe(lightAppearanceBackground);
   const actions = await page.evaluate(() => window.__accountActions);
   expect(actions).toContainEqual(expect.objectContaining({ action: 'theme', value: 'dark' }));
+  await page.locator('#accountBackBtn').click();
+  await page.locator('#accountHomeHub [data-account-section="security"]').click();
+  await expect(page.locator('#passkeyList')).toContainText('Night Roster on iPhone');
+  await expect(page.locator('#securityHeading')).toHaveText('Sign-in security');
+  await page.locator('#accountBackBtn').click();
+  await page.locator('#accountHomeHub [data-account-section="help"]').click();
+  await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'App guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'What’s new' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
   await page.locator('#accountActionsExperience button', { hasText: 'Version history' }).click();
   expect(await page.evaluate(() => window.__accountActions)).toContainEqual(expect.objectContaining({ action: 'versions' }));
 });
@@ -1382,16 +1394,21 @@ test('typed administrator accounts separate pending access and support fast filt
     } }));
     document.getElementById('today').classList.add('hidden');
     document.getElementById('admin').classList.remove('hidden');
-    window.switchAdminTab('access', false);
+    window.switchAdminTab('home', false);
   });
 
+  await expect(page.locator('#adminHome')).toContainText('Tonight');
+  await expect(page.locator('#adminHome')).toContainText('People & Access');
+  await expect(page.locator('#adminHome')).toContainText('Roster Management');
+  await expect(page.locator('#adminHome')).toContainText('System');
+  await page.locator('#adminHome [data-admin-tab="access"]').click();
   await expect(page.locator('#adminAccountsExperience')).toContainText('Pending access');
   await captureReview(page, 'administrator');
   await expect(page.locator('#adminAccountsExperience')).toContainText('Current account');
   await expect(page.locator('#accountName')).toHaveAttribute('placeholder', 'Nurse name');
   await expect(page.locator('#adminAccountsExperience button', { hasText: 'Deactivate' }).first()).toBeDisabled();
-  await page.locator('[data-admin-tab="access"]').click();
-  await expect(page.locator('[data-admin-tab="access"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#adminAccess')).toBeVisible();
+  await expect(page.locator('#adminAccess .adminDetailNav')).toContainText('People & Access');
   if (test.info().project.name === 'mobile-chromium') {
     const row = page.locator('#adminAccountsExperience .adminAccountRow').first();
     const bounds = await row.evaluate(element => {
@@ -1716,5 +1733,5 @@ test('scroll chrome uses the same quiet glossy title bar in Changes and Admin', 
   await expect(chrome).toHaveAttribute('data-mode', 'compact');
   await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Roster management');
   await expect(page.locator('#reactScrollChrome .scrollGlassRail-admin')).toHaveCount(0);
-  await expect(page.locator('#admin .adminTabs')).toHaveCSS('position', 'relative');
+  await expect(page.locator('#admin .adminTabs')).toBeHidden();
 });
