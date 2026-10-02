@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const file = name => path.join(root, name);
@@ -18,47 +17,28 @@ const uiSources = [
   'src/legacy-ui/bootstrap.js'
 ];
 
-function transpileClassic(name) {
-  const source = read(name);
-  const result = ts.transpileModule(source, {
-    fileName: name,
-    compilerOptions: {
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.None,
-      removeComments: false,
-      newLine: ts.NewLineKind.LineFeed
-    },
-    reportDiagnostics: true
-  });
-  const errors = (result.diagnostics || []).filter(item => item.category === ts.DiagnosticCategory.Error);
-  if (errors.length) {
-    const message = ts.formatDiagnosticsWithColorAndContext(errors, {
-      getCanonicalFileName: value => value,
-      getCurrentDirectory: () => root,
-      getNewLine: () => '\n'
-    });
-    throw new Error(message);
-  }
-  return result.outputText;
+function classicFromTypedSource(name) {
+  return read(name)
+    .replace(/^\/\* .*? TypeScript source of truth\. Generated browser JavaScript is written by scripts\/generate-runtime\.mjs\. \*\/\n/, '')
+    .replace(/([A-Za-z_$][A-Za-z0-9_$]*)\s*:\s*any(?=\s*[,)=])/g, '$1');
 }
 
 const generatedHeader = '/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */\n';
-write('domain-logic.js', generatedHeader + transpileClassic('src/domain-logic.ts'));
-write('runtime-foundation.js', generatedHeader + transpileClassic('src/runtime-foundation.ts'));
-write('app-ui.js', generatedHeader + uiSources.map(read).join('\n'));
+const expected = {
+  'domain-logic.js': generatedHeader + classicFromTypedSource('src/domain-logic.ts'),
+  'runtime-foundation.js': generatedHeader + classicFromTypedSource('src/runtime-foundation.ts'),
+  'app-ui.js': generatedHeader + uiSources.map(read).join('\n')
+};
 
 if (process.argv.includes('--check')) {
-  const expected = {
-    'domain-logic.js': generatedHeader + transpileClassic('src/domain-logic.ts'),
-    'runtime-foundation.js': generatedHeader + transpileClassic('src/runtime-foundation.ts'),
-    'app-ui.js': generatedHeader + uiSources.map(read).join('\n')
-  };
   for (const [name, value] of Object.entries(expected)) {
-    if (read(name) !== value) {
+    if (!fs.existsSync(file(name)) || read(name) !== value) {
       console.error(name + ' is stale. Run npm run generate:runtime and commit the generated compatibility artifact.');
       process.exitCode = 1;
     }
   }
   if (process.exitCode) process.exit(process.exitCode);
+} else {
+  for (const [name, value] of Object.entries(expected)) write(name, value);
 }
 console.log('Runtime compatibility artifacts are aligned with modular source.');
