@@ -17,10 +17,13 @@ assert.match(ui, /function buildNightPlan\(/, 'Night, Changes and Breaks must sh
 assert.match(ui, /renderChanges\(base,canonical\);renderRoster\(\);renderBreaks\(canonical\)/, 'render paths must receive the same selected-night model');
 assert.match(ui, /function runRosterMutation\(/, 'shared clinical writes must use a single guarded mutation path');
 assert.match(ui, /rosterCommandInFlight\[key\]/, 'duplicate in-flight commands must be collapsed');
+assert.match(ui, /var rosterCommandInFlight=\{\};var rosterCommandIds=\{\};/, 'ambiguous retries must retain operation ids by command key');
+assert.match(ui, /var commandId=rosterCommandIds\[key\]\|\|/, 'retrying the same ambiguous roster command must reuse its original operation id');
 assert.match(ui, /verified-after-timeout/, 'ambiguous roster timeouts must be verified against refreshed shared state');
 assert.match(ui, /incomingRevision<lastObservedSyncRevision/, 'an older shared snapshot must never replace newer state');
 assert.match(ui, /sharedSyncState='starting'/, 'shared synchronization must have named state');
 assert.match(ui, /noteCompatibilityStartup\(/, 'legacy startup fallbacks must be observable before retirement');
+assert.match(ui, /anaes_compat_startup_count/, 'compatibility fallback usage must persist locally so retirement can be evidence-based');
 assert.match(ui, /syncServerClock\(/, 'server time must be used as an online clock sanity check');
 assert.match(core, /function rosterCapabilities\(/, 'database capabilities must be centralized');
 assert.match(core, /EXPECTED_SCHEMA_VERSION = 48/, 'reliability architecture requires schema 48');
@@ -38,6 +41,7 @@ assert.match(ui, /p_expected_revision:expectedRevision/, 'night finalisation mus
 assert.match(ui, /changed on another device\|revision conflict/, 'stale multi-device finalisation must require review');
 assert.match(sw, /ACTIVATE_UPDATE/, 'updates must still require explicit activation');
 assert.match(ui, /verifyRuntimeHealth\(/, 'post-update runtime versions must be checked');
+assert.match(ui, /shadowNightPlanCheck\(canonical\)/, 'canonical night plans must be shadow-checked against the legacy calculation path during migration');
 
 assert.match(reliabilityMigration, /roster_operation_log[\s\S]*operation_id uuid primary key/, 'roster commands must be database-idempotent');
 assert.match(reliabilityMigration, /assert_roster_fresh_v48/, 'shared writes must reject stale revisions');
