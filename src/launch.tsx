@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { motion, useReducedMotion } from 'motion/react';
 import './tailwind.css';
+import { onRosterEvent } from './contracts';
 
 function LaunchMotto() {
   const reducedMotion = useReducedMotion();
@@ -56,9 +57,9 @@ if (scrollChrome) {
 }
 
 let screenInfoRequest = 0;
-window.addEventListener('roster:screeninfo', (event: Event) => {
+onRosterEvent('roster:screeninfo', (detail) => {
   if (document.body.classList.contains('authPending')) return;
-  const items = (event as CustomEvent<{ items: [string, string][] }>).detail.items;
+  const items = detail.items;
   const request = ++screenInfoRequest;
   import('./screen-info').then(({ renderScreenInfo }) => {
     if (request === screenInfoRequest) renderScreenInfo(items);
@@ -166,12 +167,8 @@ window.addEventListener('roster:chat-status', (event: Event) => {
 });
 
 let releaseNotesRequest = 0;
-window.addEventListener('roster:releasenotes', (event: Event) => {
+onRosterEvent('roster:releasenotes', (detail) => {
   if (document.body.classList.contains('authPending')) return;
-  const detail = (event as CustomEvent<{
-    entries: { version: string; date: string; title: string; changes: string[] }[];
-    showHistory: boolean;
-  }>).detail;
   const request = ++releaseNotesRequest;
   import('./release-notes').then(({ renderReleaseNotes }) => {
     if (request === releaseNotesRequest) renderReleaseNotes(detail.entries, detail.showHistory);

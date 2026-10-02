@@ -20,6 +20,7 @@ const refineMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations'
 const maturityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924111500_chat_maturity.sql'), 'utf8');
 const operationalMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924201500_operational_alerts_chat_retention.sql'), 'utf8');
 const chatPolicyFixMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
+const logicFoundationMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
 
 new vm.Script(chat, { filename: 'chat.js' });
 
@@ -121,7 +122,12 @@ assert.match(maturityMigration, /add column if not exists deleted_at timestamptz
 assert.match(maturityMigration, /Senders can delete recent own messages[\s\S]*interval '10 minutes'/, 'message deletion must be constrained by RLS and time');
 assert.match(maturityMigration, /create or replace function public\.chat_overview_v2\(\)[\s\S]*security invoker/, 'chat overview must preserve caller RLS');
 assert.match(maturityMigration, /supabase_realtime add table public\.chat_directory/, 'directory changes must be published for realtime availability');
-assert.match(chat, /CHAT_MESSAGE_FIELDS='[^']*reply_to_message_id/, 'message reads must include reply metadata');
+assert.match(chat, /CHAT_MESSAGE_FIELDS='[^']*reply_to_message_id[^']*client_message_id/, 'message reads must include reply and idempotency metadata');
+assert.match(chat, /chat_send_message_v47/, 'new chat sends must use the idempotent schema-47 send function when available');
+assert.match(chat, /chatRetryFailed\(message,kind\)[\s\S]*message\.client_message_id/, 'Retry must reuse the original client message id');
+assert.match(chat, /chat_mark_read_v47/, 'read state must use the monotonic schema-47 function when available');
+assert.match(logicFoundationMigration, /chat_messages_sender_client_message_uq[\s\S]*sender_id,client_message_id/, 'chat send idempotency must be enforced server-side');
+assert.match(logicFoundationMigration, /chat_mark_read_v47[\s\S]*greatest\(/, 'read state must never move backwards across devices');
 assert.match(chat, /function chatReplyPreviewNode\(/, 'replies must render a compact quoted source preview');
 assert.match(chat, /reply_to_message_id=Number\(replyId\)/, 'reply sends must persist the selected source message');
 assert.match(chat, /function chatRenderMentionMenu\(/, 'Team chat must provide roster-based mention autocomplete');

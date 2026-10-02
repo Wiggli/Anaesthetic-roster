@@ -199,10 +199,10 @@ assert.equal(context.planIsProvisional(base), true);
 for (const fn of ['renderBreaks']) {
   const start = source['app-ui.js'].indexOf(`function ${fn}`);
   const next = source['app-ui.js'].indexOf('\nfunction ', start + 10);
-  assert.match(source['app-ui.js'].slice(start, next < 0 ? undefined : next), /effective\(|applyChanges\(|allocationPreview\(/, `${fn} must derive from the effective plan`);
+  assert.match(source['app-ui.js'].slice(start, next < 0 ? undefined : next), /buildNightPlan\(|model\.effective|effective\(|applyChanges\(|allocationPreview\(/, `${fn} must derive from the effective plan`);
 }
 assert.match(source['app-ui.js'], /function renderPersonalNight\(base,r\)[\s\S]*personalAllocation\(base,r/);
-assert.match(source['app-ui.js'], /function renderChanges\(base\)[\s\S]*staffingPlan\(base\)[\s\S]*updateChangesWorkflow\(base,plan\)/);
+assert.match(source['app-ui.js'], /function renderChanges\(base,nightPlan\)[\s\S]*canonical\.staffing[\s\S]*updateChangesWorkflow\(base,plan\)/);
 
 // Offline mutations are blocked, conflict revisions are sent atomically, and Supabase bypasses cache storage.
 context.navigator.onLine = false;
