@@ -1506,9 +1506,9 @@ function renderChanges(base,nightPlan){
 }
 
 function updateStaffingActionAvailability(){
-  var absence=byId('saveChangeBtn'),absenceName=byId('absentName'),overtime=byId('addOvertimeBtn'),overtimeName=byId('overtimeName'),blocked=!navigator.onLine||forcedOfflineSession||sharedWritesBlocked();
-  if(absence)absence.disabled=blocked||!absenceName||!absenceName.value;
-  if(overtime)overtime.disabled=blocked||!overtimeName||!normaliseNurseName(overtimeName.value);
+  var absence=byId('saveChangeBtn'),absenceName=byId('absentName'),overtime=byId('addOvertimeBtn'),overtimeName=byId('overtimeName'),offline=!navigator.onLine||forcedOfflineSession,writeBlocked=sharedWritesBlocked();
+  if(absence)absence.disabled=offline||!absenceName||!absenceName.value||writeBlocked;
+  if(overtime)overtime.disabled=offline||!overtimeName||!normaliseNurseName(overtimeName.value)||writeBlocked;
 }
 
 function editNightChange(id){
