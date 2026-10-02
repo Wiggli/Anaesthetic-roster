@@ -10,6 +10,8 @@ const state = JSON.parse(read('.project-state.json'));
 const workflow = read('.github/workflows/deploy-pages.yml');
 const development = read('docs/DEVELOPMENT_WORKFLOW.md');
 const current = read('docs/CURRENT_STATE.md');
+const smokeConfig = read('playwright.config.js');
+const resilienceConfig = read('playwright.resilience.config.js');
 
 assert.equal(state.currentRelease, release.version, 'machine-readable project state must follow release.json');
 assert.equal(state.databaseSchema, 50, 'project continuity state must expose the current expected database schema');
@@ -59,5 +61,9 @@ assert.match(development, /WebKit is intentionally not part of every pull-reques
   'the workflow guide must explain the browser split');
 assert.match(current, /fast inner loop and a separate release gate/,
   'current-state continuity must record the optimised development model');
+assert.match(smokeConfig, /workers:\s*process\.env\.CI \? 2 : 1/,
+  'mobile and desktop Chromium smoke projects should run in parallel on CI');
+assert.match(resilienceConfig, /workers:\s*process\.env\.CI \? 2 : 1/,
+  'full release resilience browsers should run in parallel on CI while local runs remain conservative');
 
 console.log('Optimised development workflow, continuity state and CI guardrails passed.');
