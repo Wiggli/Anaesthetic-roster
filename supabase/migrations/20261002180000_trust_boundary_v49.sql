@@ -609,6 +609,7 @@ revoke all on function public.remove_night_overtime_v25(uuid,text) from public,a
 revoke all on function public.apply_staffing_allocations_v25(date,text,text,jsonb,text,text) from public,anon,authenticated;
 revoke all on function public.finalise_night_plan_v26(date,jsonb,text,text,text,bigint) from public,anon,authenticated;
 revoke all on function public.apply_night_role_override_v35(date,text,jsonb,text,text,text) from public,anon,authenticated;
+revoke all on function public.apply_night_role_override_v33(date,text,jsonb,text,text,text) from public,anon,authenticated;
 revoke all on function public.set_roster_identity_v34(text,text) from public,anon,authenticated;
 
 revoke all on function public.record_night_absence_v48(date,text,text,text,uuid,bigint) from public,anon,authenticated;
@@ -620,6 +621,9 @@ revoke all on function public.finalise_night_plan_v48(date,jsonb,text,text,text,
 revoke all on function public.apply_night_role_override_v48(date,text,jsonb,text,text,text,uuid,bigint) from public,anon,authenticated;
 revoke all on function public.publish_roster_v48(date,text,uuid,bigint) from public,anon,authenticated;
 revoke all on function public.upsert_rotation_version_v48(date,text,text,text,text,text,text,text,jsonb,text,text,uuid,bigint) from public,anon,authenticated;
+revoke all on function public.claim_roster_operation_v48(uuid,text,date,bigint) from public,anon,authenticated;
+revoke all on function public.assert_roster_fresh_v48(bigint) from public,anon,authenticated;
+revoke all on function public.validate_night_plan_v48(date,jsonb) from public,anon,authenticated;
 
 update public.app_schema_version
 set version=49,updated_at=now()

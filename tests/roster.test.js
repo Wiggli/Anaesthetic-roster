@@ -550,8 +550,11 @@ for (const rpc of ['record_night_absence_v49','remove_night_absence_v49','add_ni
   assert.match(trustBoundaryMigration, new RegExp(`create or replace function public\\.${rpc}[\\s\\S]*assert_app_write_compatible_v49\\(p_client_version\\)`), `${rpc} must enforce server compatibility before changing the shared roster`);
 }
 assert.doesNotMatch(trustBoundaryMigration, /create or replace function public\.[a-z_]+_v49\([^$]*p_changed_by/, 'public v49 mutation signatures must not accept browser-supplied audit identity');
-for (const legacy of ['record_night_absence_v25','remove_night_absence_v25','add_night_overtime_v25','remove_night_overtime_v25','apply_staffing_allocations_v25','finalise_night_plan_v26','apply_night_role_override_v35','record_night_absence_v48','remove_night_absence_v48','add_night_overtime_v48','remove_night_overtime_v48','apply_staffing_allocations_v48','finalise_night_plan_v48','apply_night_role_override_v48','publish_roster_v48','upsert_rotation_version_v48']) {
+for (const legacy of ['record_night_absence_v25','remove_night_absence_v25','add_night_overtime_v25','remove_night_overtime_v25','apply_staffing_allocations_v25','finalise_night_plan_v26','apply_night_role_override_v35','apply_night_role_override_v33','record_night_absence_v48','remove_night_absence_v48','add_night_overtime_v48','remove_night_overtime_v48','apply_staffing_allocations_v48','finalise_night_plan_v48','apply_night_role_override_v48','publish_roster_v48','upsert_rotation_version_v48']) {
   assert.match(trustBoundaryMigration, new RegExp(`revoke all on function public\\.${legacy}[\\s\\S]{0,260}from public,anon,authenticated`), `legacy mutation route ${legacy} must no longer be executable by authenticated clients`);
+}
+for (const helper of ['claim_roster_operation_v48','assert_roster_fresh_v48','validate_night_plan_v48']) {
+  assert.match(trustBoundaryMigration, new RegExp(\`revoke all on function public\\\\.${helper}[\\\\s\\\\S]{0,220}from public,anon,authenticated\`), \`schema 48 helper ${helper} must be implementation-only behind the v49 boundary\`);
 }
 assert.match(trustBoundaryMigration, /update public\.app_schema_version[\s\S]*version=49/, 'schema 49 migration must advance the schema marker');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
