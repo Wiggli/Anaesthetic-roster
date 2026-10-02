@@ -530,7 +530,7 @@ async function enterAccessLost(){
   sharedSyncTimer=null;realtimeSubscribed=false;
   if(changesChannel){try{await supa.removeChannel(changesChannel)}catch(error){}changesChannel=null}
   if(window.chatTeardownSession)window.chatTeardownSession();
-  clearPrivateDeviceData();
+  await clearPrivateDeviceData();
   currentUserProfile=null;currentPrivateProfile=null;profileAvatarUrl='';currentAccessToken='';
   nightChanges={};nightOvertime={};changeHistory={};overtimeHistory={};roleOverrideHistory={};fiveCoverChoices={};labourOrders={};nightPlanStatuses={};nightRoleOverrides={};
   lastObservedSyncRevision=null;lastObservedAccessEpoch=null;
