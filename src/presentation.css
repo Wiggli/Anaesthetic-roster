@@ -16247,3 +16247,20 @@ body.dark .writeGuardBanner{background:color-mix(in srgb,var(--liquid-glass-elev
   white-space:nowrap!important;
   border:0!important;
 }
+
+
+/* 41.5d Preserve the integrated next-state contract with the compact 41.5 composition. */
+#today #personalNightCard .personalHeroStatus.personalNextStateIntegrated{
+  display:grid!important;
+  grid-template-columns:17px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:9px!important;
+  margin:0 2px!important;
+  padding:10px 0 11px!important;
+  border:0!important;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--liquid-label)!important;
+}
