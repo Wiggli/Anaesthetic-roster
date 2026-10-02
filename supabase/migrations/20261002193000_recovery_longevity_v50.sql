@@ -219,12 +219,10 @@ end
 $$;
 
 revoke all on function public.claim_roster_operation_v48(uuid,text,date,bigint)
-  from public,anon;
-grant execute on function public.claim_roster_operation_v48(uuid,text,date,bigint)
-  to authenticated;
+  from public,anon,authenticated;
 
--- v49 wrappers call this helper internally. It only claims an idempotency key and
--- does not mutate clinical roster state on its own.
+-- v49 wrappers call this helper internally under their server-side execution
+-- context. Keep the low-level idempotency writer private to trusted server roles.
 
 create or replace function public.prune_roster_operation_log_v50()
 returns trigger
