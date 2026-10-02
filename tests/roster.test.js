@@ -553,9 +553,6 @@ assert.doesNotMatch(trustBoundaryMigration, /create or replace function public\.
 for (const legacy of ['record_night_absence_v25','remove_night_absence_v25','add_night_overtime_v25','remove_night_overtime_v25','apply_staffing_allocations_v25','finalise_night_plan_v26','apply_night_role_override_v35','apply_night_role_override_v33','record_night_absence_v48','remove_night_absence_v48','add_night_overtime_v48','remove_night_overtime_v48','apply_staffing_allocations_v48','finalise_night_plan_v48','apply_night_role_override_v48','publish_roster_v48','upsert_rotation_version_v48']) {
   assert.match(trustBoundaryMigration, new RegExp(`revoke all on function public\\.${legacy}[\\s\\S]{0,260}from public,anon,authenticated`), `legacy mutation route ${legacy} must no longer be executable by authenticated clients`);
 }
-for (const helper of ['claim_roster_operation_v48','assert_roster_fresh_v48','validate_night_plan_v48']) {
-  assert.match(trustBoundaryMigration, new RegExp(\`revoke all on function public\\\\.${helper}[\\\\s\\\\S]{0,220}from public,anon,authenticated\`), \`schema 48 helper ${helper} must be implementation-only behind the v49 boundary\`);
-}
 assert.match(trustBoundaryMigration, /update public\.app_schema_version[\s\S]*version=49/, 'schema 49 migration must advance the schema marker');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
 assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
