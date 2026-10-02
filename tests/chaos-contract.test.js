@@ -43,7 +43,7 @@ for(const rpc of [
 
 assert.match(core,/publish_roster_v49/,'publication must use the idempotent server command');
 assert.match(core,/upsert_rotation_version_v49/,'permanent team changes must use the idempotent server command');
-assert.match(core,/EXPECTED_SCHEMA_VERSION = 49/,'schema 49 Trust Boundary must be required');
+assert.match(core,/EXPECTED_SCHEMA_VERSION = 50/,'schema 50 Recovery and Longevity safeguards must be required');
 
 assert.match(migration,/create table if not exists public\.roster_operation_log/,'database must retain operation ids');
 assert.match(migration,/operation_id uuid primary key/,'operation ids must be unique');
