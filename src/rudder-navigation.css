@@ -1,196 +1,259 @@
-/* 41.4 Rudder navigation and Quick Actions.
-   One centre action hub, four stable destinations. Clinical content stays opaque. */
+/* 41.7 balanced five-column glass dock and Quick Actions.
+   Night, Changes, Actions, Breaks and Chat share one visual baseline. */
 
-:root{--rudder-size:56px;--rudder-rise:11px;--rudder-nav-height:70px}
+:root{
+  --rudder-nav-height:70px;
+  --rudder-action-size:42px;
+  --rudder-dock-surface:rgba(248,250,252,.30);
+  --rudder-dock-surface-dark:rgba(25,27,31,.56);
+}
 
 .bottom.reactTabs{
-  width:min(calc(100vw - 14px),500px)!important;
-  min-height:64px!important;
-  height:64px!important;
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:max(6px,env(safe-area-inset-bottom))!important;
+  z-index:60!important;
+  width:min(calc(100vw - 12px),500px)!important;
+  height:68px!important;
+  min-height:68px!important;
+  display:grid!important;
   grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  align-items:center!important;
   gap:2px!important;
-  padding:4px 5px!important;
+  margin:0!important;
+  padding:5px!important;
   overflow:visible!important;
-  border-radius:27px!important;
+  transform:translateX(-50%)!important;
+  border:1px solid rgba(255,255,255,.36)!important;
+  border-radius:25px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.035) 55%,transparent),
+    var(--rudder-dock-surface)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.58),
+    0 15px 42px rgba(22,34,46,.14)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(178%) contrast(1.015)!important;
+  backdrop-filter:blur(32px) saturate(178%) contrast(1.015)!important;
+  isolation:isolate;
 }
-.bottom.reactTabs>button[data-v]{
-  min-width:0!important;
-  height:54px!important;
-  min-height:54px!important;
-  padding-inline:1px!important;
-  border-radius:19px!important;
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.10)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.012) 60%,transparent),
+    var(--rudder-dock-surface-dark)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.095),0 17px 46px rgba(0,0,0,.34)!important;
 }
-.bottom.reactTabs>button[data-v] svg{width:20px!important;height:20px!important}
-.bottom.reactTabs>button[data-v]>span{font-size:9.5px!important;white-space:nowrap}
+
+.bottom.reactTabs .tabTouchGlow{
+  position:absolute;
+  inset:3px;
+  z-index:-1;
+  border-radius:22px;
+  pointer-events:none;
+  opacity:.42;
+}
+.bottom.reactTabs .tabSlidingIndicator{
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 10%,rgba(255,255,255,.34));
+  border-radius:16px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.065)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 44%,var(--liquid-accent) 5%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 4px 13px rgba(25,38,50,.07)!important;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:rgba(255,255,255,.07)!important;
+  background:rgba(255,255,255,.075)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 5px 14px rgba(0,0,0,.20)!important;
+}
+
+.bottom.reactTabs>button[data-v],
 .bottom.reactTabs .quickRudder{
   position:relative;
-  z-index:6;
-  align-self:start;
-  width:100%;
-  min-width:0;
-  height:74px;
-  min-height:74px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
-  gap:2px;
-  margin:0;
-  padding:0;
+  z-index:1;
+  width:100%!important;
+  min-width:0!important;
+  height:56px!important;
+  min-height:56px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:center!important;
+  gap:3px!important;
+  margin:0!important;
+  padding:3px 1px!important;
+  transform:none!important;
+  overflow:visible!important;
   border:0!important;
+  border-radius:16px!important;
   background:transparent!important;
-  color:var(--liquid-label)!important;
+  color:var(--liquid-secondary)!important;
   box-shadow:none!important;
-  transform:translateY(calc(-1 * var(--rudder-rise)));
-  overflow:visible;
+  font:inherit;
+}
+.bottom.reactTabs>button[data-v].active{
+  color:var(--liquid-accent-strong)!important;
+}
+.bottom.reactTabs>button[data-v] svg{
+  width:21px!important;
+  height:21px!important;
+  margin:0!important;
+  flex:none;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.bottom.reactTabs>button[data-v]>span,
+.bottom.reactTabs .quickRudderLabel{
+  display:block!important;
+  max-width:100%;
+  overflow:hidden;
+  color:inherit!important;
+  font-size:10px!important;
+  font-weight:690!important;
+  line-height:1!important;
+  letter-spacing:-.015em!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.bottom.reactTabs>button[data-v]:focus-visible,
+.bottom.reactTabs .quickRudder:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--liquid-accent) 34%,transparent)!important;
+  outline-offset:1px!important;
+}
+
+.bottom.reactTabs .quickRudder{
+  color:var(--liquid-accent-strong)!important;
 }
 .bottom.reactTabs .quickRudderDisc{
   position:relative;
   display:grid;
-  width:var(--rudder-size);
-  height:var(--rudder-size);
-  flex:0 0 var(--rudder-size);
+  width:var(--rudder-action-size)!important;
+  height:var(--rudder-action-size)!important;
+  flex:0 0 var(--rudder-action-size)!important;
   place-items:center;
-  border:1px solid color-mix(in srgb,#fff 70%,var(--liquid-accent));
-  border-radius:50%;
-  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.04) 44%,transparent),var(--liquid-accent);
-  color:#fff;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(0,0,0,.08),0 8px 22px color-mix(in srgb,var(--liquid-accent) 28%,transparent),0 2px 7px rgba(0,0,0,.12);
-  -webkit-backdrop-filter:blur(18px) saturate(145%);
-  backdrop-filter:blur(18px) saturate(145%);
+  border:1px solid color-mix(in srgb,#fff 58%,var(--liquid-accent))!important;
+  border-radius:14px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.035) 55%,transparent),
+    var(--liquid-accent)!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -1px 0 rgba(0,0,0,.07),
+    0 5px 14px color-mix(in srgb,var(--liquid-accent) 20%,transparent)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(138%);
+  backdrop-filter:blur(12px) saturate(138%);
+  transition:transform .2s cubic-bezier(.2,.82,.2,1),box-shadow .2s ease;
 }
-.bottom.reactTabs .quickRudderDisc::before{content:"";position:absolute;inset:3px;border-radius:inherit;background:radial-gradient(circle at 32% 18%,rgba(255,255,255,.28),transparent 42%);pointer-events:none}
-.bottom.reactTabs .quickRudderDisc svg{position:relative;z-index:1;width:24px!important;height:24px!important;margin:0!important;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}
-.bottom.reactTabs .quickRudderLabel{color:var(--liquid-secondary);font-size:9px;font-weight:680;line-height:1;letter-spacing:-.01em}
-.bottom.reactTabs .quickRudderAttention{position:absolute;z-index:3;top:0;right:1px;width:11px;height:11px;border:2px solid var(--liquid-surface);border-radius:50%;background:var(--liquid-warning);box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.bottom.reactTabs .quickRudderAttention.hidden{display:none}
-.bottom.reactTabs .quickRudder:focus-visible{outline:3px solid color-mix(in srgb,var(--liquid-accent) 35%,transparent);outline-offset:3px}
-.bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:translateY(1px) scale(.97)}
-body[data-view] main{padding-bottom:calc(var(--rudder-nav-height) + 40px + env(safe-area-inset-bottom))!important}
-
-.quickActionsSheet{
-  width:min(560px,calc(100vw - 12px));
-  max-width:none;
-  max-height:min(82dvh,720px);
-  margin:0;
-  padding:0;
-  overflow:hidden;
-  border:1px solid var(--liquid-glass-border);
-  border-radius:28px 28px 22px 22px;
-  background:color-mix(in srgb,var(--liquid-glass-elevated) 94%,transparent);
-  color:var(--liquid-label);
-  box-shadow:0 24px 70px rgba(0,0,0,.24),inset 0 1px 0 var(--liquid-glass-edge);
-  -webkit-backdrop-filter:blur(28px) saturate(155%);
-  backdrop-filter:blur(28px) saturate(155%);
-}
-.quickActionsSheet[open]{position:fixed;inset:auto auto max(7px,env(safe-area-inset-bottom)) 50%;display:grid;transform:translateX(-50%)}
-.quickActionsSheet::backdrop{background:rgba(8,12,18,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
-.quickActionsSheet .sheetGrabber{margin-top:8px}
-.quickActionsHead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:8px 18px 12px}
-.quickActionsHead>div{min-width:0}
-.quickActionsHead span{display:block;color:var(--liquid-accent);font-size:10px;font-weight:760;letter-spacing:.06em;text-transform:uppercase}
-.quickActionsHead h2{margin:3px 0 0;font-size:24px;font-weight:760;letter-spacing:-.035em}
-.quickActionsHead button{min-width:48px;min-height:44px;padding:0 10px;border:0;border-radius:13px;background:transparent;color:var(--liquid-accent);box-shadow:none;font-size:14px;font-weight:720}
-#quickActionsExperience{min-height:0;overflow:auto;padding:0 14px calc(14px + env(safe-area-inset-bottom));overscroll-behavior:contain}
-.quickActionsExperience{display:grid;gap:14px}
-.quickActionsContext{display:grid;grid-template-columns:1fr 1fr;gap:1px;overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:16px;background:var(--liquid-separator)}
-.quickActionsContext>span{display:grid;gap:3px;padding:11px 13px;background:var(--liquid-surface)}
-.quickActionsContext b{color:var(--liquid-secondary);font-size:10px;font-weight:680}
-.quickActionsContext strong{font-size:14px;letter-spacing:-.02em}
-.quickActionsContext small{color:var(--liquid-secondary);font-size:10.5px}
-.quickActionGroup{display:grid;gap:7px}
-.quickActionGroupHeading{display:flex;align-items:end;justify-content:space-between;gap:10px;padding:0 4px}
-.quickActionGroupHeading>span{color:var(--liquid-secondary);font-size:11px;font-weight:740;letter-spacing:.035em;text-transform:uppercase}
-.quickActionGroupHeading>small{max-width:62%;color:var(--liquid-tertiary);font-size:10px;line-height:1.3;text-align:right}
-.quickActionList{overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:18px;background:var(--liquid-surface)}
-.quickActionRow{width:100%;min-height:68px;display:flex;align-items:center;gap:12px;padding:10px 13px;border:0!important;border-bottom:var(--liquid-hairline) solid var(--liquid-separator)!important;border-radius:0!important;background:transparent!important;color:var(--liquid-label)!important;box-shadow:none!important;text-align:left}
-.quickActionRow:last-child{border-bottom:0!important}
-.quickActionRow:disabled{cursor:not-allowed;opacity:.58!important}
-.quickActionIcon{display:grid;width:39px;height:39px;flex:0 0 39px;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--liquid-accent) 10%,transparent);color:var(--liquid-accent)}
-.quickActionIcon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.quickActionCopy{min-width:0;display:grid;gap:2px;flex:1}
-.quickActionCopy strong{font-size:14.5px;font-weight:700;letter-spacing:-.018em}
-.quickActionCopy small{color:var(--liquid-secondary);font-size:11px;line-height:1.35}
-.quickActionBadge{flex:none}
-.quickActionChevron{flex:none;color:var(--liquid-tertiary);font-size:23px;font-weight:300}
-.quickActionsPrivacy{margin:0;padding:0 4px 2px;color:var(--liquid-tertiary);font-size:10.5px;line-height:1.4;text-align:center}
-
-@media(max-width:390px){
-  :root{--rudder-size:54px;--rudder-rise:10px}
-  .bottom.reactTabs{width:calc(100vw - 10px)!important;padding-inline:3px!important}
-  .bottom.reactTabs>button[data-v]>span{font-size:9px!important}
-  .quickActionsHead{padding-inline:16px}
-  #quickActionsExperience{padding-inline:10px}
-  .quickActionsContext>span{padding-inline:11px}
-}
-@media(min-width:760px){.quickActionsSheet[open]{bottom:18px;border-radius:28px}}
-@media(prefers-reduced-motion:reduce){.bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:none}}
-@media(prefers-reduced-transparency:reduce){
-  .bottom.reactTabs .quickRudderDisc{background:var(--liquid-accent);-webkit-backdrop-filter:none;backdrop-filter:none}
-  .quickActionsSheet{background:var(--liquid-surface);-webkit-backdrop-filter:none;backdrop-filter:none}
-  .quickActionsSheet::backdrop{-webkit-backdrop-filter:none;backdrop-filter:none}
-}
-@media(prefers-contrast:more){.bottom.reactTabs .quickRudderDisc{border:2px solid #fff}.quickActionList,.quickActionsContext{border-width:1px}}
-
-
-/* 41.5 focused rudder and action-sheet refinement.
-   The centre control belongs to the navigation, while the sheet grows from its origin. */
-:root{--rudder-size:54px;--rudder-rise:8px;--rudder-nav-height:70px}
-
-.bottom.reactTabs .quickRudder{
-  transform:translateY(calc(-1 * var(--rudder-rise)));
-  gap:1px;
-}
-.bottom.reactTabs .quickRudderDisc{
-  transition:transform .24s cubic-bezier(.2,.82,.2,1),box-shadow .24s ease,filter .24s ease;
+.bottom.reactTabs .quickRudderDisc::before{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:12px;
+  background:radial-gradient(circle at 30% 16%,rgba(255,255,255,.22),transparent 42%);
+  pointer-events:none;
 }
 .bottom.reactTabs .quickRudderDisc svg{
+  position:relative;
+  z-index:1;
+  width:20px!important;
+  height:20px!important;
+  margin:0!important;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
   transform-origin:50% 50%;
-  transition:transform .28s cubic-bezier(.2,.86,.2,1);
+  transition:transform .23s cubic-bezier(.2,.86,.2,1);
 }
-.bottom.reactTabs .quickRudder.open .quickRudderDisc{
-  transform:scale(.96);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.46),inset 0 -1px 0 rgba(0,0,0,.08),0 5px 16px color-mix(in srgb,var(--liquid-accent) 24%,transparent),0 2px 6px rgba(0,0,0,.12);
-  filter:saturate(1.04);
-}
-.bottom.reactTabs .quickRudder.open .quickRudderDisc svg{transform:rotate(45deg) scale(.94)}
 .bottom.reactTabs .quickRudderLabel{
-  font-size:9.5px;
-  font-weight:700;
-  letter-spacing:-.015em;
+  color:var(--liquid-secondary)!important;
 }
+.bottom.reactTabs .quickRudder.open .quickRudderDisc{transform:scale(.95)}
+.bottom.reactTabs .quickRudder.open .quickRudderDisc svg{transform:rotate(45deg)}
+.bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:scale(.94)}
+
+.bottom.reactTabs .navTaskBadge,
 .bottom.reactTabs .quickRudderAttention{
-  top:-2px;
-  right:-3px;
+  position:absolute;
+  z-index:5;
   display:grid;
-  width:auto;
   min-width:18px;
   height:18px;
-  padding:0 4px;
   place-items:center;
-  border:2px solid var(--liquid-surface);
+  padding:0 4px;
+  border:2px solid color-mix(in srgb,var(--liquid-surface) 88%,transparent);
   border-radius:10px;
+  background:#d13b48;
   color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.22);
   font-size:9px;
   font-style:normal;
   font-weight:800;
   line-height:1;
+  pointer-events:none;
 }
-.bottom.reactTabs .quickRudderAttention:empty{width:11px;min-width:11px;height:11px;padding:0;top:0;right:1px}
+.bottom.reactTabs .navTaskBadge{
+  top:2px!important;
+  left:calc(50% + 7px)!important;
+}
+.bottom.reactTabs .quickRudderAttention{
+  top:-4px!important;
+  right:-5px!important;
+  background:var(--liquid-warning,#d98213);
+}
+.bottom.reactTabs .navTaskBadge.hidden,
+.bottom.reactTabs .quickRudderAttention.hidden{display:none!important}
+.bottom.reactTabs .quickRudderAttention:empty{
+  width:10px;
+  min-width:10px;
+  height:10px;
+  padding:0;
+  top:-1px!important;
+  right:-1px!important;
+}
 
+body[data-view] main{
+  padding-bottom:calc(var(--rudder-nav-height) + 32px + env(safe-area-inset-bottom))!important;
+}
+
+/* Quick Actions stays visually connected to the dock without becoming a second navigation layer. */
 .quickActionsSheet{
-  max-height:min(70dvh,610px);
+  width:min(540px,calc(100vw - 12px))!important;
+  max-width:none!important;
+  max-height:min(68dvh,590px)!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
   opacity:0;
-  transform:translateX(-50%) translateY(18px) scale(.965);
-  transform-origin:50% calc(100% + 10px);
-  transition:
-    opacity .22s ease,
-    transform .3s cubic-bezier(.2,.86,.2,1),
-    display .3s allow-discrete,
-    overlay .3s allow-discrete;
+  transform:translateX(-50%) translateY(12px) scale(.975);
+  transform-origin:50% calc(100% + 12px);
+  border:1px solid var(--liquid-glass-border)!important;
+  border-radius:25px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.02) 48%,transparent),
+    color-mix(in srgb,var(--liquid-glass-elevated) 80%,transparent)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.46),0 22px 60px rgba(0,0,0,.22)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(172%)!important;
+  backdrop-filter:blur(32px) saturate(172%)!important;
+  transition:opacity .2s ease,transform .26s cubic-bezier(.2,.86,.2,1),display .26s allow-discrete,overlay .26s allow-discrete;
   transition-behavior:allow-discrete;
 }
 .quickActionsSheet[open]{
+  position:fixed;
+  inset:auto auto calc(var(--rudder-nav-height) + 12px + env(safe-area-inset-bottom)) 50%;
+  display:grid;
   opacity:1;
   transform:translateX(-50%) translateY(0) scale(1);
 }
@@ -198,278 +261,220 @@ body[data-view] main{padding-bottom:calc(var(--rudder-nav-height) + 40px + env(s
   background:rgba(8,12,18,0);
   -webkit-backdrop-filter:blur(0);
   backdrop-filter:blur(0);
-  transition:background .24s ease,-webkit-backdrop-filter .24s ease,backdrop-filter .24s ease,display .3s allow-discrete,overlay .3s allow-discrete;
+  transition:background .2s ease,-webkit-backdrop-filter .2s ease,backdrop-filter .2s ease,display .26s allow-discrete,overlay .26s allow-discrete;
   transition-behavior:allow-discrete;
 }
 .quickActionsSheet[open]::backdrop{
-  background:rgba(8,12,18,.26);
+  background:rgba(8,12,18,.24);
   -webkit-backdrop-filter:blur(2px);
   backdrop-filter:blur(2px);
 }
+body.dark .quickActionsSheet,
+html[data-theme="dark"] .quickActionsSheet{
+  border-color:rgba(255,255,255,.09)!important;
+  background:rgba(28,30,34,.80)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 24px 64px rgba(0,0,0,.40)!important;
+}
 @starting-style{
-  .quickActionsSheet[open]{opacity:0;transform:translateX(-50%) translateY(18px) scale(.965)}
+  .quickActionsSheet[open]{opacity:0;transform:translateX(-50%) translateY(12px) scale(.975)}
   .quickActionsSheet[open]::backdrop{background:rgba(8,12,18,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}
 }
 
 .quickActionsSheet .sheetGrabber{margin-top:7px}
-.quickActionsHead{align-items:center;padding:7px 17px 10px}
-.quickActionsHead span{font-size:9.5px;letter-spacing:.055em}
-.quickActionsHead h2{margin-top:2px;font-size:21px;letter-spacing:-.032em}
-.quickActionsHead button{min-width:44px;min-height:42px;font-size:13px}
-#quickActionsExperience{padding:0 12px calc(12px + env(safe-area-inset-bottom))}
-
-.quickActionsFocused{gap:11px}
-.quickActionsContextBar{
+.quickActionsHead{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:14px;
-  min-height:58px;
+  padding:7px 16px 9px!important;
+}
+.quickActionsHead>div{min-width:0}
+.quickActionsHead span{
+  display:block;
+  color:var(--liquid-accent-strong);
+  font-size:9.5px;
+  font-weight:760;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.quickActionsHead h2{
+  margin:2px 0 0;
+  font-size:21px!important;
+  font-weight:760;
+  letter-spacing:-.032em;
+}
+.quickActionsHead button{
+  min-width:44px;
+  min-height:42px;
+  padding:0 9px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--liquid-accent-strong);
+  box-shadow:none;
+  font-size:13px;
+  font-weight:720;
+}
+#quickActionsExperience{
+  min-height:0;
+  overflow:auto;
+  padding:0 12px calc(12px + env(safe-area-inset-bottom));
+  overscroll-behavior:contain;
+}
+.quickActionsExperience{display:grid;gap:10px}
+.quickActionsFocused{gap:10px!important}
+
+.quickActionsContextBar,
+.quickActionsContext{
+  display:flex;
+  min-height:56px;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
   padding:10px 12px;
+  overflow:hidden;
   border:var(--liquid-hairline) solid var(--liquid-separator);
-  border-radius:16px;
+  border-radius:15px;
   background:color-mix(in srgb,var(--liquid-surface) 95%,transparent);
 }
-.quickActionsContextBar>span{display:grid;gap:2px;min-width:0}
+.quickActionsContext{display:grid;grid-template-columns:1fr 1fr;padding:0;gap:1px;background:var(--liquid-separator)}
+.quickActionsContext>span{display:grid;gap:2px;padding:10px 12px;background:var(--liquid-surface)}
+.quickActionsContextBar>span{display:grid;min-width:0;gap:2px}
 .quickContextNight{flex:none}
 .quickContextPlan{flex:1;text-align:right}
-.quickActionsContextBar small{color:var(--liquid-secondary);font-size:10.5px;line-height:1.25}
-.quickActionsContextBar strong{font-size:13.5px;letter-spacing:-.02em}
-.quickActionsContextBar b{font-size:12px;font-weight:760}
+.quickActionsContextBar small,.quickActionsContext small{color:var(--liquid-secondary);font-size:10px;line-height:1.25}
+.quickActionsContextBar strong,.quickActionsContext strong{font-size:13px;letter-spacing:-.02em}
+.quickActionsContextBar b,.quickActionsContext b{color:var(--liquid-secondary);font-size:11.5px;font-weight:750}
 .quickContextPlan small{white-space:normal}
 
-.quickPrimaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.quickPrimaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .quickPrimaryAction{
-  min-height:94px!important;
+  min-height:88px!important;
   display:flex!important;
   flex-direction:column!important;
   align-items:flex-start!important;
   justify-content:space-between!important;
-  gap:10px!important;
-  padding:13px!important;
+  gap:9px!important;
+  padding:11px!important;
   border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-accent) 14%,var(--liquid-separator))!important;
-  border-radius:17px!important;
-  background:
-    linear-gradient(155deg,color-mix(in srgb,var(--liquid-accent) 7%,transparent),transparent 62%),
-    var(--liquid-surface)!important;
+  border-radius:16px!important;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--liquid-accent) 6%,transparent),transparent 62%),var(--liquid-surface)!important;
   color:var(--liquid-label)!important;
-  box-shadow:0 7px 18px rgba(12,22,30,.045)!important;
-  text-align:left;
+  box-shadow:none!important;
+  text-align:left!important;
 }
-.quickPrimaryAction:disabled{opacity:.54!important}
+.quickPrimaryAction:disabled{opacity:.56!important}
 .quickPrimaryIcon,.quickCompactIcon,.quickReviewIcon{
   display:grid;
   place-items:center;
   background:color-mix(in srgb,var(--liquid-accent) 10%,transparent);
-  color:var(--liquid-accent);
+  color:var(--liquid-accent-strong);
 }
-.quickPrimaryIcon{width:34px;height:34px;border-radius:11px}
-.quickPrimaryIcon svg,.quickCompactIcon svg,.quickReviewIcon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.quickPrimaryIcon{width:33px;height:33px;border-radius:10px}
+.quickPrimaryIcon svg,.quickCompactIcon svg,.quickReviewIcon svg{
+  width:18px;
+  height:18px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
 .quickPrimaryCopy{display:grid;gap:2px}
-.quickPrimaryCopy strong{font-size:14px;font-weight:740;letter-spacing:-.02em}
-.quickPrimaryCopy small{color:var(--liquid-secondary);font-size:10.5px;line-height:1.25}
+.quickPrimaryCopy strong{font-size:13.5px;font-weight:740;letter-spacing:-.02em}
+.quickPrimaryCopy small{color:var(--liquid-secondary);font-size:10px;line-height:1.25}
 
 .quickReviewAction{
   width:100%;
-  min-height:68px!important;
+  min-height:65px!important;
   display:flex!important;
   align-items:center!important;
-  gap:11px!important;
-  padding:10px 12px!important;
+  gap:10px!important;
+  padding:9px 11px!important;
   border:var(--liquid-hairline) solid var(--liquid-separator)!important;
-  border-radius:17px!important;
+  border-radius:16px!important;
   background:var(--liquid-surface)!important;
   color:var(--liquid-label)!important;
   box-shadow:none!important;
-  text-align:left;
+  text-align:left!important;
 }
-.quickReviewIcon{width:38px;height:38px;flex:0 0 38px;border-radius:12px}
-.quickReviewCopy{min-width:0;display:grid;gap:1px;flex:1}
-.quickReviewCopy small{color:var(--liquid-secondary);font-size:9.5px;font-weight:720;text-transform:uppercase;letter-spacing:.045em}
-.quickReviewCopy strong{font-size:14.5px;font-weight:740;letter-spacing:-.02em}
-.quickReviewCopy span{color:var(--liquid-secondary);font-size:10.5px;line-height:1.3}
+.quickReviewIcon{width:36px;height:36px;flex:0 0 36px;border-radius:11px}
+.quickReviewCopy{display:grid;min-width:0;flex:1;gap:1px}
+.quickReviewCopy small{color:var(--liquid-secondary);font-size:9px;font-weight:720;text-transform:uppercase;letter-spacing:.045em}
+.quickReviewCopy strong{font-size:14px;font-weight:740;letter-spacing:-.02em}
+.quickReviewCopy span{color:var(--liquid-secondary);font-size:10px;line-height:1.3}
 .quickReviewBadge{flex:none}
+.quickActionChevron{flex:none;color:var(--liquid-tertiary);font-size:22px;font-weight:300}
 
-.quickCommunicationGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.quickCommunicationGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .quickCompactAction{
-  min-height:58px!important;
+  min-height:57px!important;
   display:flex!important;
   align-items:center!important;
-  gap:10px!important;
-  padding:9px 10px!important;
+  gap:9px!important;
+  padding:8px 9px!important;
   border:var(--liquid-hairline) solid var(--liquid-separator)!important;
-  border-radius:16px!important;
+  border-radius:15px!important;
   background:color-mix(in srgb,var(--liquid-surface) 96%,transparent)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+.quickCompactIcon{width:31px;height:31px;flex:0 0 31px;border-radius:10px}
+.quickCompactAction>span:last-child{display:grid;min-width:0;gap:1px}
+.quickCompactAction strong{font-size:12.5px;font-weight:720;letter-spacing:-.015em}
+.quickCompactAction small{overflow:hidden;color:var(--liquid-secondary);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.quickActionsPrivacy{margin:0;padding:0 4px 1px;color:var(--liquid-tertiary);font-size:9.5px;line-height:1.35;text-align:center}
+
+/* Static fallback if the React chunk is unavailable. */
+.quickActionGroup{display:grid;gap:6px}
+.quickActionGroupHeading{padding:0 4px}
+.quickActionGroupHeading>span{color:var(--liquid-secondary);font-size:10px;font-weight:740;letter-spacing:.04em;text-transform:uppercase}
+.quickActionList{overflow:hidden;border:var(--liquid-hairline) solid var(--liquid-separator);border-radius:16px;background:var(--liquid-surface)}
+.quickActionRow{
+  width:100%;
+  min-height:61px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 11px;
+  border:0!important;
+  border-bottom:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
   color:var(--liquid-label)!important;
   box-shadow:none!important;
   text-align:left;
 }
-.quickCompactIcon{width:32px;height:32px;flex:0 0 32px;border-radius:10px}
-.quickCompactAction>span:last-child{min-width:0;display:grid;gap:1px}
-.quickCompactAction strong{font-size:12.5px;font-weight:720;letter-spacing:-.015em}
-.quickCompactAction small{color:var(--liquid-secondary);font-size:9.5px;white-space:nowrap}
-.quickActionsPrivacy{font-size:9.5px;padding-bottom:0}
+.quickActionRow:last-child{border-bottom:0!important}
+.quickActionCopy{display:grid;min-width:0;flex:1;gap:2px}
+.quickActionCopy strong{font-size:13.5px;font-weight:720}
+.quickActionCopy small{color:var(--liquid-secondary);font-size:10px;line-height:1.3}
 
 @media(max-width:390px){
-  :root{--rudder-size:52px;--rudder-rise:7px}
-  .quickActionsSheet{max-height:min(74dvh,600px)}
-  .quickPrimaryAction{min-height:88px!important;padding:11px!important}
-  .quickActionsContextBar{gap:9px;padding-inline:10px}
-  .quickCommunicationGrid{gap:7px}
-}
-@media(prefers-reduced-motion:reduce){
-  .quickActionsSheet,.quickActionsSheet::backdrop,.bottom.reactTabs .quickRudderDisc,.bottom.reactTabs .quickRudderDisc svg{transition:none!important}
-  .quickActionsSheet[open]{transform:translateX(-50%)}
-  .bottom.reactTabs .quickRudder.open .quickRudderDisc svg{transform:rotate(45deg)}
-}
-
-/* 41.6 rudder balance: clearer labels, lower visual centre of gravity and stronger true-glass continuity. */
-:root{
-  --rudder-size:52px;
-  --rudder-rise:6px;
-  --rudder-nav-height:72px;
-}
-.bottom.reactTabs{
-  width:min(calc(100vw - 12px),500px)!important;
-  min-height:66px!important;
-  height:66px!important;
-  padding:4px 5px!important;
-  border:1px solid rgba(255,255,255,.32)!important;
-  border-radius:26px!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.025) 52%,transparent),
-    rgba(248,250,252,.18)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 16px 42px rgba(25,37,49,.095)!important;
-  -webkit-backdrop-filter:blur(34px) saturate(182%)!important;
-  backdrop-filter:blur(34px) saturate(182%)!important;
-}
-body.dark .bottom.reactTabs,
-html[data-theme="dark"] .bottom.reactTabs{
-  border-color:rgba(255,255,255,.085)!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.01) 56%,transparent),
-    rgba(22,24,28,.30)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.075),0 18px 46px rgba(0,0,0,.28)!important;
-}
-.bottom.reactTabs>button[data-v]{
-  height:54px!important;
-  min-height:54px!important;
-  gap:3px!important;
-  padding:4px 1px!important;
-  border-radius:18px!important;
-}
-.bottom.reactTabs>button[data-v] svg{
-  width:21.5px!important;
-  height:21.5px!important;
-}
-.bottom.reactTabs>button[data-v]>span{
-  font-size:10.5px!important;
-  font-weight:670!important;
-  line-height:1!important;
-  letter-spacing:-.012em!important;
-}
-.bottom.reactTabs .tabSlidingIndicator{
-  border-radius:18px!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.055)),
-    color-mix(in srgb,var(--liquid-glass-elevated) 42%,var(--liquid-accent) 5%)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 5px 15px rgba(27,38,50,.065)!important;
-}
-body.dark .bottom.reactTabs .tabSlidingIndicator,
-html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
-  background:color-mix(in srgb,rgba(255,255,255,.075) 72%,var(--liquid-accent) 8%)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.095),0 6px 17px rgba(0,0,0,.22)!important;
-}
-
-.bottom.reactTabs .quickRudder{
-  height:70px!important;
-  min-height:70px!important;
-  gap:1px!important;
-  transform:translateY(calc(-1 * var(--rudder-rise)))!important;
-}
-.bottom.reactTabs .quickRudderDisc{
-  width:var(--rudder-size)!important;
-  height:var(--rudder-size)!important;
-  flex-basis:var(--rudder-size)!important;
-  border-color:color-mix(in srgb,#fff 64%,var(--liquid-accent))!important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.46),
-    inset 0 -1px 0 rgba(0,0,0,.07),
-    0 7px 18px color-mix(in srgb,var(--liquid-accent) 22%,transparent),
-    0 2px 6px rgba(0,0,0,.10)!important;
-}
-.bottom.reactTabs .quickRudderDisc svg{
-  width:22px!important;
-  height:22px!important;
-}
-.bottom.reactTabs .quickRudderLabel{
-  font-size:10.5px!important;
-  font-weight:710!important;
-  line-height:1!important;
-}
-.bottom.reactTabs .quickRudder.open .quickRudderDisc{
-  transform:scale(.955)!important;
-}
-
-/* The sheet should feel attached to the rudder, not like a separate modal card. */
-.quickActionsSheet{
-  width:min(540px,calc(100vw - 10px))!important;
-  max-height:min(68dvh,590px)!important;
-  border-radius:26px 26px 21px 21px!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.02) 46%,transparent),
-    color-mix(in srgb,var(--liquid-glass-elevated) 76%,transparent)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 24px 64px rgba(0,0,0,.22)!important;
-  -webkit-backdrop-filter:blur(34px) saturate(175%)!important;
-  backdrop-filter:blur(34px) saturate(175%)!important;
-}
-body.dark .quickActionsSheet,
-html[data-theme="dark"] .quickActionsSheet{
-  background:rgba(28,30,34,.72)!important;
-  border-color:rgba(255,255,255,.09)!important;
-}
-.quickActionsHead{
-  padding:7px 16px 9px!important;
-}
-.quickActionsHead h2{
-  font-size:22px!important;
-  font-weight:760!important;
-}
-.quickActionsFocused{
-  gap:10px!important;
-}
-.quickActionsContextBar{
-  min-height:56px!important;
-}
-.quickPrimaryAction{
-  min-height:90px!important;
-}
-.quickPrimaryCopy strong{
-  font-size:14px!important;
-}
-.quickCompactAction{
-  min-height:60px!important;
-}
-.quickCompactAction strong{
-  font-size:13px!important;
-}
-.quickActionsPrivacy{
-  margin-top:1px!important;
-  font-size:10px!important;
-}
-@media(max-width:390px){
-  :root{--rudder-size:50px;--rudder-rise:5px}
+  :root{--rudder-action-size:40px}
   .bottom.reactTabs{
     width:calc(100vw - 8px)!important;
+    gap:1px!important;
     padding-inline:3px!important;
   }
   .bottom.reactTabs>button[data-v]>span,
-  .bottom.reactTabs .quickRudderLabel{
-    font-size:10px!important;
-  }
-  .quickActionsSheet{
-    max-height:min(72dvh,580px)!important;
-  }
+  .bottom.reactTabs .quickRudderLabel{font-size:9.5px!important}
+  .quickActionsSheet{max-height:min(72dvh,580px)!important}
+  .quickPrimaryAction{min-height:84px!important;padding:10px!important}
+  .quickActionsContextBar{gap:8px;padding-inline:10px}
+  .quickCommunicationGrid{gap:7px}
+}
+@media(min-width:760px){
+  .quickActionsSheet[open]{bottom:calc(var(--rudder-nav-height) + 20px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){
+  .bottom.reactTabs .quickRudderDisc,
+  .bottom.reactTabs .quickRudderDisc svg,
+  .quickActionsSheet,
+  .quickActionsSheet::backdrop{transition:none!important}
+  .bottom.reactTabs .quickRudder.open .quickRudderDisc svg{transform:rotate(45deg)}
+  .quickActionsSheet[open]{transform:translateX(-50%)!important}
 }
 @media(prefers-reduced-transparency:reduce){
   .bottom.reactTabs,
@@ -478,4 +483,15 @@ html[data-theme="dark"] .quickActionsSheet{
     backdrop-filter:none!important;
     background:var(--liquid-surface)!important;
   }
+  .bottom.reactTabs .quickRudderDisc{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-accent)!important;
+  }
+  .quickActionsSheet::backdrop{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media(prefers-contrast:more){
+  .bottom.reactTabs{border-width:2px!important}
+  .bottom.reactTabs .quickRudderDisc{border:2px solid #fff!important}
+  .quickActionList,.quickActionsContextBar,.quickReviewAction,.quickPrimaryAction,.quickCompactAction{border-width:1px!important}
 }
