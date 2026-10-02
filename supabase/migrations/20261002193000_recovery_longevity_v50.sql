@@ -505,6 +505,10 @@ $$;
 revoke all on function public.admin_app_health() from public,anon;
 grant execute on function public.admin_app_health() to authenticated;
 
+update public.app_compatibility
+set recommended_version='41.1',updated_at=now()
+where id=1;
+
 update public.app_schema_version
 set version=50,updated_at=now()
 where id=1;
