@@ -75,7 +75,7 @@ for(const date of sampleDates){
       assert.equal(new Set(active).size,active.length,'effective staff names must never duplicate');
 
       for(const absentName of absent){
-        assert.equal(active.includes(String(absentName).toLowerCase()),false,'an absent permanent nurse must not remain active');
+        assert.equal(active.includes(String(absentName).toLowerCase()),false,'absent nurse remained active on '+date+', mask '+mask+', OT '+overtimeCount+', absent '+absentName+', active '+JSON.stringify(active)+', unresolved '+JSON.stringify(plan.unresolved));
       }
     }
   }
