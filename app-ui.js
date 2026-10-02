@@ -1,3 +1,4 @@
+/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
 /* Anaesthetic Night Roster V41.1 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
@@ -872,6 +873,7 @@ function enhanceDatePicker(id){
   input.parentNode.insertBefore(host,input);host.appendChild(button);host.appendChild(input);input.classList.add('nativeDatePicker');updatePrettyDate(input);
   button.onclick=function(){try{if(input.showPicker)input.showPicker();else input.click()}catch(error){input.focus();input.click()}};
 }
+
 
 function prepareChangesView(){
   if(changesViewPrepared)return;
@@ -1822,6 +1824,7 @@ async function loadNightHistory(date,renderAfter,append){
 function ensureNightHistory(date){if(!historyLoadedDates[date])loadNightHistory(date,true,false)}
 function loadMoreNightHistory(date){if(historyPageState[date]&&historyPageState[date].has_more)return loadNightHistory(date,true,true)}
 
+
 function setSharedSyncState(state,message){
   sharedSyncState=state||'live';sharedSyncMessage=message||'';
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.state){
@@ -2300,6 +2303,7 @@ function setupPWA(){
   applyStandaloneUi();showSharedWelcomeIfRequested();
 }
 
+
 function accessRequestDisplayName(user){
   var metadata=user&&user.user_metadata||{},name=String(metadata.full_name||metadata.name||'').trim();
   if(name)return name.slice(0,100);
@@ -2384,3 +2388,4 @@ function bind(){
 
 bind();
 initApplication();
+
