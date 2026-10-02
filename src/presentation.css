@@ -15668,3 +15668,174 @@ body.viewTransitioning .scrollGlassHeader{
     border-bottom-color:color-mix(in srgb,var(--premium-ink) 34%,transparent)!important;
   }
 }
+
+
+/* 40.1 Chat polish: make messaging calmer, clearer and easier to use at night.
+   Presentation only. Chat transport, unread state, retention and roster logic are unchanged. */
+#chat{
+  --chat-readable:15px;
+  --chat-readable-mobile:15.5px;
+  --chat-meta:10.5px;
+  --chat-glass:color-mix(in srgb,var(--premium-card) 82%,transparent);
+}
+#chat .chatHeaderCompose{
+  width:auto!important;
+  min-width:146px!important;
+  height:44px!important;
+  min-height:44px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  padding:0 14px!important;
+  border-radius:15px!important;
+  border:1px solid var(--premium-line)!important;
+  background:var(--chat-glass)!important;
+  color:var(--premium-blue)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
+  backdrop-filter:blur(18px) saturate(150%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.48),0 6px 18px rgba(27,44,64,.06)!important;
+  font-size:12.5px!important;
+  font-weight:720!important;
+  white-space:nowrap!important;
+}
+#chat .chatHeaderCompose span{display:inline!important;font-size:12.5px!important;font-weight:720!important}
+#chat .chatHeaderCompose svg{width:18px!important;height:18px!important}
+#chat .chatInboxSection{border-radius:24px!important}
+#chat .chatInboxHeading{min-height:72px!important;padding:16px 18px!important}
+#chat .chatInboxHeading h2{font-size:21px!important}
+#chat .chatInboxHeading small{font-size:13px!important}
+#chat .chatInboxTeamRow{min-height:118px!important;padding:18px!important;gap:8px 14px!important}
+#chat .chatInboxTeamTop b{font-size:19px!important}
+#chat .chatTeamPurpose{font-size:14px!important;line-height:1.35!important}
+#chat .chatTeamMemberCount,#chat .chatInboxTeamPreview{font-size:12.5px!important;line-height:1.35!important}
+#chat .chatInboxOpen{
+  min-height:46px!important;
+  border:1px solid color-mix(in srgb,var(--premium-blue) 13%,transparent)!important;
+  background:color-mix(in srgb,var(--premium-blue) 8%,var(--premium-card))!important;
+  font-size:13.5px!important;
+}
+#chat .chatConversationList .chatInboxRow{min-height:78px!important;padding:13px 18px!important}
+#chat .chatConversationList .chatInboxRow [data-ui-title],#chat .chatConversationList .chatInboxRow strong{font-size:16px!important;line-height:1.2!important}
+#chat .chatConversationList .chatInboxRow small{font-size:13px!important;line-height:1.35!important}
+#chat .chatInboxRow.hasUnread{background:color-mix(in srgb,var(--premium-blue) 5%,var(--premium-card))!important}
+#chat .chatInboxRow.active{box-shadow:inset 3px 0 var(--premium-blue)!important}
+#chat .chatThread{border-radius:24px!important;border-color:var(--premium-line)!important;background:var(--premium-card)!important}
+#chat .chatThreadHeader{
+  min-height:68px!important;
+  grid-template-columns:44px 44px minmax(0,1fr)!important;
+  gap:10px!important;
+  padding:9px 14px!important;
+  border-bottom:1px solid color-mix(in srgb,var(--premium-line) 88%,transparent)!important;
+  background:radial-gradient(130% 180% at 14% -70%,rgba(255,255,255,.42),transparent 52%),color-mix(in srgb,var(--premium-card) 72%,transparent)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(170%)!important;
+  backdrop-filter:blur(30px) saturate(170%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42)!important;
+}
+#chat .chatBackBtn{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+#chat .chatThreadAvatar{width:44px!important;height:44px!important;min-width:44px!important;border-radius:14px!important;font-size:13px!important}
+#chat .chatThreadHeading h2{font-size:17px!important;font-weight:760!important}
+#chat .chatThreadHeading span{margin-top:3px!important;font-size:11.5px!important}
+#chat .chatThreadSafety{min-height:34px!important;padding:7px 12px!important;background:color-mix(in srgb,var(--premium-muted) 4%,transparent)!important}
+#chat .chatThreadSafety span,#chat .chatThreadSafety small{font-size:10.5px!important;line-height:1.25!important}
+#chat .chatTeamMessages,#chat .chatMessages{padding:16px 16px 104px!important;scroll-padding-bottom:116px!important}
+#chat .chatMessageSequence{gap:2px!important}
+#chat .chatTeamMessage.groupStart,#chat .chatPrivateMessage.groupStart{margin-top:9px!important}
+#chat .chatTeamSender,#chat .chatPrivateSender{margin:0 10px 4px!important;font-size:11px!important;font-weight:650!important}
+#chat .chatTeamBubble,#chat .chatPrivateBubble{
+  max-width:min(84%,540px)!important;
+  padding:9px 12px 10px!important;
+  border-radius:18px 18px 18px 7px!important;
+  border-color:color-mix(in srgb,var(--premium-line) 76%,transparent)!important;
+  box-shadow:0 1px 2px rgba(16,24,40,.025)!important;
+}
+#chat .chatTeamMessage.own .chatTeamBubble{
+  border-color:color-mix(in srgb,var(--premium-blue) 16%,transparent)!important;
+  border-radius:18px 18px 7px 18px!important;
+  background:color-mix(in srgb,var(--premium-blue) 10%,var(--premium-card))!important;
+}
+#chat .chatPrivateMessage.own .chatPrivateBubble{
+  border-color:transparent!important;
+  border-radius:18px 18px 7px 18px!important;
+  background:var(--premium-blue)!important;
+  color:#fff!important;
+  box-shadow:0 4px 14px rgba(8,120,238,.16)!important;
+}
+#chat .chatMessageText{color:inherit!important;font-size:var(--chat-readable)!important;line-height:1.46!important;letter-spacing:-.008em!important}
+#chat .chatPrivateMessage.own .chatMessageText{color:#fff!important}
+#chat .chatReplyInline{margin-bottom:8px!important;padding:7px 9px!important}
+#chat .chatReplyInline b{font-size:10px!important}
+#chat .chatReplyInline small{font-size:10.5px!important}
+#chat .chatPrivateMessage.own .chatReplyInline{border-left-color:rgba(255,255,255,.78)!important;background:rgba(255,255,255,.12)!important}
+#chat .chatPrivateMessage.own .chatReplyInline b,#chat .chatPrivateMessage.own .chatReplyInline small{color:rgba(255,255,255,.94)!important}
+#chat .chatTeamMessageMeta,#chat .chatPrivateMeta{min-height:20px!important;margin:3px 8px 0!important;font-size:var(--chat-meta)!important}
+#chat .chatInlineAction{width:30px!important;height:28px!important;min-width:30px!important;min-height:28px!important;border-radius:10px!important;font-size:12px!important;opacity:.72!important}
+#chat .chatDateSeparator{margin:17px 0 12px!important;font-size:10.5px!important;font-weight:680!important}
+#chat .chatUnreadMarker b{font-size:10.5px!important}
+#chat .chatLoadOlder{min-height:38px!important;margin-top:10px!important;padding:0 14px!important;font-size:11px!important}
+#chat .chatNewMessagesBtn{right:16px!important;bottom:96px!important;min-height:40px!important;padding:8px 13px!important;border-radius:999px!important;font-size:11px!important;font-weight:740!important}
+#chat .chatTeamComposerWrap,#chat .chatComposerWrap{
+  padding:10px 12px calc(11px + env(safe-area-inset-bottom))!important;
+  border-top:1px solid color-mix(in srgb,var(--premium-line) 86%,transparent)!important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--premium-card) 58%,transparent),color-mix(in srgb,var(--premium-card) 88%,transparent))!important;
+  -webkit-backdrop-filter:blur(30px) saturate(165%)!important;
+  backdrop-filter:blur(30px) saturate(165%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 -14px 30px rgba(18,31,45,.05)!important;
+}
+#chat .chatComposerGlass{
+  min-height:52px!important;
+  gap:6px!important;
+  padding:4px 5px 4px 10px!important;
+  border:1px solid color-mix(in srgb,var(--premium-line) 92%,transparent)!important;
+  border-radius:26px!important;
+  background:color-mix(in srgb,var(--premium-card) 76%,transparent)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%)!important;
+  backdrop-filter:blur(18px) saturate(145%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.46),0 3px 12px rgba(28,36,48,.035)!important;
+}
+#chat .chatComposerGlass textarea{min-height:42px!important;padding:10px 8px!important;font-size:15px!important;line-height:1.4!important}
+#chat .chatComposerGlass .chatSendBtn{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;flex:0 0 44px!important}
+#chat .chatComposerStatus{min-height:14px!important;margin:5px 10px 0!important;font-size:10px!important}
+.chatPickerExperience{gap:10px!important;padding:16px!important}
+.chatPickerSearch input{min-height:50px!important;font-size:16px!important}
+.chatPickerCount{font-size:12.5px!important}
+.chatPickerRow{min-height:76px!important}
+#chat .chatSafetyNotice,#chat .chatNotificationDisclosure{border-radius:18px!important}
+#chat .chatSafetyNotice{min-height:64px!important;padding:12px 16px!important}
+#chat .chatNotificationDisclosure summary{min-height:64px!important;padding:12px 16px!important}
+#chat .chatSafetyNotice b,#chat .chatNotificationDisclosure summary b{font-size:14.5px!important}
+#chat .chatSafetyNotice small,#chat .chatNotificationDisclosure summary small{font-size:12px!important}
+body.dark #chat .chatPrivateMessage.own .chatPrivateBubble,html[data-theme="dark"] #chat .chatPrivateMessage.own .chatPrivateBubble{background:#0a84ff!important}
+body.dark #chat .chatComposerGlass,html[data-theme="dark"] #chat .chatComposerGlass{background:rgba(36,38,42,.70)!important;border-color:rgba(255,255,255,.10)!important}
+@media(max-width:640px){
+  #chat .chatTitleRow{align-items:center!important;gap:10px!important}
+  #chat .primaryScreenHeader h1{font-size:34px!important}
+  #chat .chatHeaderCompose{width:auto!important;min-width:132px!important;height:44px!important;padding:0 12px!important;border-radius:14px!important}
+  #chat .chatHeaderCompose span{display:inline!important;font-size:11.5px!important}
+  #chat .chatInboxHeading{min-height:68px!important;padding:15px 16px!important}
+  #chat .chatInboxTeamRow{grid-template-columns:52px minmax(0,1fr) auto!important;min-height:112px!important;padding:16px!important;gap:7px 12px!important}
+  #chat .chatTeamAvatar{width:52px!important;height:52px!important;min-width:52px!important}
+  #chat .chatInboxOpen{grid-column:1/-1!important;margin-top:9px!important}
+  #chat .chatConversationList .chatInboxRow{min-height:76px!important;padding:12px 16px!important}
+  #chat.chat-thread-open .chatThreadHeader{min-height:calc(64px + env(safe-area-inset-top))!important;padding:calc(9px + env(safe-area-inset-top)) 10px 9px!important}
+  #chat.chat-thread-open .chatTeamMessages,#chat.chat-thread-open .chatMessages{padding:14px 12px 108px!important}
+  #chat .chatTeamBubble,#chat .chatPrivateBubble{max-width:89%!important}
+  #chat .chatMessageText{font-size:var(--chat-readable-mobile)!important}
+  #chat .chatComposerGlass textarea{font-size:16px!important}
+}
+@media(max-width:370px){
+  #chat .primaryScreenHeader h1{font-size:31px!important}
+  #chat .chatHeaderCompose{min-width:120px!important;padding-inline:10px!important}
+  #chat .chatHeaderCompose span{font-size:10.5px!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  #chat .chatHeaderCompose,#chat .chatThreadHeader,#chat .chatTeamComposerWrap,#chat .chatComposerWrap,#chat .chatComposerGlass{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--premium-card)!important;
+  }
+}
+@media(prefers-contrast:more){
+  #chat .chatTeamBubble,#chat .chatPrivateBubble,#chat .chatComposerGlass,#chat .chatThread{border-color:color-mix(in srgb,var(--premium-ink) 34%,transparent)!important}
+  #chat .chatPrivateMessage.own .chatPrivateBubble{border-color:var(--premium-blue)!important}
+}
