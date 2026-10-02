@@ -384,9 +384,14 @@ function startupQueryFailed(result){return !result||!!result.error}
 function preferCompatibilityStartup(){return /android/i.test(navigator.userAgent||'')}
 
 async function compatibilitySyncState(){
-  var result=await startupQuery(supa.from('app_sync_state').select('revision,access_epoch,updated_at').eq('id',1).maybeSingle(),'Roster revision did not respond.');
-  if(startupQueryFailed(result)||!result.data){var error=result&&result.error||new Error('Roster revision could not be checked.');error.code=error.code||'REVISION_UNAVAILABLE';throw error}
-  return{revision:Number(result.data.revision||0),accessEpoch:Number(result.data.access_epoch||0)}
+  var results=await startupQuery(Promise.all([
+    supa.from('app_sync_state').select('revision,updated_at').eq('id',1).maybeSingle(),
+    supa.from('app_access_signal').select('access_epoch,updated_at').eq('id',1).maybeSingle()
+  ]),'Roster state did not respond.');
+  var syncResult=results[0],accessResult=results[1];
+  if(startupQueryFailed(syncResult)||!syncResult.data){var error=syncResult&&syncResult.error||new Error('Roster revision could not be checked.');error.code=error.code||'REVISION_UNAVAILABLE';throw error}
+  if(startupQueryFailed(accessResult)||!accessResult.data){var accessError=accessResult&&accessResult.error||new Error('Access revision could not be checked.');accessError.code=accessError.code||'ACCESS_REVISION_UNAVAILABLE';throw accessError}
+  return{revision:Number(syncResult.data.revision||0),accessEpoch:Number(accessResult.data.access_epoch||0)}
 }
 
 async function requestCompatibilityStartup(){
@@ -1949,18 +1954,24 @@ async function checkSharedRevision(options){
   if(sharedSyncCheckInFlight||forcedOfflineSession||!currentUserProfile||!navigator.onLine||document.visibilityState==='hidden')return{skipped:true};
   sharedSyncCheckInFlight=true;
   try{
-    var result=await supa.from('app_sync_state').select('revision,access_epoch').eq('id',1).maybeSingle();
-    if(result.error||!result.data){if(Date.now()-new Date(lastSuccessfulSyncAt||0).getTime()>30000)scheduleSharedReload(true);return{error:result.error||new Error('Revision unavailable')} }
-    var revision=Number(result.data.revision||0),accessEpoch=Number(result.data.access_epoch||0);
-    if(lastObservedAccessEpoch===null)lastObservedAccessEpoch=accessEpoch;
-    if(accessEpoch!==Number(lastObservedAccessEpoch||0)){
-      var access=await checkCurrentAccessStatus(accessEpoch);
-      if(access&&!access.active)return{changed:true,accessLost:true,revision:revision,accessEpoch:accessEpoch}
+    var results=await Promise.all([
+      supa.from('app_sync_state').select('revision').eq('id',1).maybeSingle(),
+      supa.from('app_access_signal').select('access_epoch').eq('id',1).maybeSingle()
+    ]);
+    var result=results[0],accessResult=results[1],accessEpoch=accessResult&&!accessResult.error&&accessResult.data?Number(accessResult.data.access_epoch||0):null;
+    if(accessEpoch!==null){
+      if(lastObservedAccessEpoch===null)lastObservedAccessEpoch=accessEpoch;
+      if(accessEpoch!==Number(lastObservedAccessEpoch||0)){
+        var access=await checkCurrentAccessStatus(accessEpoch);
+        if(access&&!access.active)return{changed:true,accessLost:true,revision:Number(lastObservedSyncRevision||0),accessEpoch:accessEpoch}
+      }
     }
+    if(result.error||!result.data){if(Date.now()-new Date(lastSuccessfulSyncAt||0).getTime()>30000)scheduleSharedReload(true);return{error:result.error||new Error('Revision unavailable'),accessEpoch:accessEpoch}}
+    var revision=Number(result.data.revision||0);
     if(lastObservedSyncRevision===null){lastObservedSyncRevision=revision;return{changed:false,revision:revision,accessEpoch:accessEpoch}}
     if(revision!==Number(lastObservedSyncRevision)){
       if(options.reloadNow)await loadSharedData({background:true});else scheduleSharedReload(true);
-      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:revision,accessEpoch:accessEpoch});
+      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:revision,accessEpoch:accessEpoch===null?Number(lastObservedAccessEpoch||0):accessEpoch});
       return{changed:true,revision:revision,accessEpoch:accessEpoch};
     }
     return{changed:false,revision:revision,accessEpoch:accessEpoch};
@@ -1993,19 +2004,22 @@ function subscribeToChanges(){
     realtimeSubscribed=false;if(changesChannel){supa.removeChannel(changesChannel);changesChannel=null}setSharedSyncState('live','');return;
   }
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
-  var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
+  var tables=['app_sync_state','app_access_signal','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
   changesChannel=supa.channel('roster-live-v41');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
     }
-    if(table==='app_sync_state'&&payload.new){
-      var revision=Number(payload.new.revision||0),accessEpoch=Number(payload.new.access_epoch||0);
-      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:revision,accessEpoch:accessEpoch});
+    if(table==='app_access_signal'&&payload.new){
+      var accessEpoch=Number(payload.new.access_epoch||0);
+      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:Number(lastObservedSyncRevision||0),accessEpoch:accessEpoch});
       if(accessEpoch!==Number(lastObservedAccessEpoch||0)){
         checkCurrentAccessStatus(accessEpoch).then(function(access){if(access&&access.active)scheduleSharedReload(true)});
-        return
       }
+      return
+    }
+    if(table==='app_sync_state'&&payload.new&&window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator){
+      window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:Number(payload.new.revision||0),accessEpoch:Number(lastObservedAccessEpoch||0)});
     }
     scheduleSharedReload(true);
   })});
