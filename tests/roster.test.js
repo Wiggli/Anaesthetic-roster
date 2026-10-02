@@ -617,7 +617,7 @@ assert.match(ui, /Authorization:'Bearer '\+token/, 'the direct startup request m
 assert.match(ui, /setTimeout\(function\(\)\{controller\.abort\(\)\},startupSnapshotTimeoutMs\)/, 'the direct startup request must still ask the browser to abort');
 assert.match(ui, /withTimeout\([\s\S]*startupSnapshotTimeoutMs\+500,'The shared roster snapshot did not settle\.'/,
   'the direct startup request must have an application-level deadline independent of browser abort completion');
-assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v49[\s\S]*p_client_version:APP_VERSION[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs/,
+assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v49[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs[\s\S]*xhr\.send\(JSON\.stringify\(\{p_client_version:APP_VERSION\}\)\)/,
   'installed Android startup must use an independent bounded request for the protected snapshot');
 assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupWithSessionRecovery\(requestStartupSnapshotXhr\)/,
   'Android must use the independent protected snapshot transport before compatibility reads');
