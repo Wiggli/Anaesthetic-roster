@@ -1,3 +1,76 @@
+export type RosterRevision = number & { readonly __brand: 'RosterRevision' };
+export type SyncState = 'starting' | 'live' | 'stale' | 'reconnecting' | 'offline' | 'error' | 'access-lost';
+export type NightSelectionState = 'automatic-next' | 'automatic-current' | 'manual';
+export type RosterRoleKey = 'first1' | 'first2' | 'second1' | 'second2' | 'pager' | 'reliever' | 'seventh' | 'fullLW';
+
+export type NightContext = {
+  index: number;
+  automaticDate: string | null;
+  selectedDate: string | null;
+  selectedIsAutomatic: boolean;
+  isCurrent: boolean;
+  calendarDate: string;
+  operationalDate: string;
+  phase: 'evening' | 'first' | 'second' | 'complete' | 'next' | 'selected';
+  nowMs: number;
+  selectionMode: 'automatic' | 'manual';
+};
+
+export type EffectiveNight = Partial<Record<RosterRoleKey, string>> & {
+  date?: string;
+  mode?: string;
+};
+
+export type StaffingAssignment = {
+  id: string;
+  nurse_name?: string;
+  allocation_key?: RosterRoleKey | null;
+};
+
+export type StaffingPlan = {
+  count: number;
+  unresolved: RosterRoleKey[];
+  validAssignments: StaffingAssignment[];
+  requiresCoverageChoice?: boolean;
+  requiresSeventhDecision?: boolean;
+  coreComplete?: boolean;
+};
+
+export type NightPlan = {
+  date: string;
+  base: Record<string, unknown>;
+  effective: EffectiveNight;
+  staffing: StaffingPlan;
+  provisional: boolean;
+  labourOrder: Record<string, unknown> | null;
+  labourPending: boolean;
+  tasks: string[];
+  revision: RosterRevision;
+  confirmed: boolean;
+};
+
+export type MutationErrorCode =
+  | 'ROSTER_REVISION_CONFLICT'
+  | 'PLAN_INCOMPLETE'
+  | 'STAFF_NOT_EFFECTIVE'
+  | 'SCHEMA_TOO_OLD'
+  | 'PERMISSION_DENIED'
+  | 'OPERATION_REPLAYED'
+  | 'STALE_CLIENT'
+  | 'INVALID_ROSTER_DATE'
+  | 'INVALID_ROTATION'
+  | 'INVALID_SEVENTH_CYCLE'
+  | 'ROTATION_VERSION_EXISTS'
+  | 'PUBLISH_REGRESSION'
+  | 'UNKNOWN';
+
+export type MutationResult<T = unknown> = {
+  data: T | null;
+  error: { code?: string; message?: string } | null;
+  recovered?: boolean;
+  conflictChanges?: Array<{ label: string; before: unknown; after: unknown }>;
+};
+
 export type RosterEventMap = {
   'roster:viewchange': { view: string };
   'roster:night': Record<string, unknown>;
