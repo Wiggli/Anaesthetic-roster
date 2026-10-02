@@ -1,0 +1,455 @@
+/* Account + Administrator calm-hierarchy pass, 41.3.
+   Keeps personal settings and administrator tools deliberately separate. */
+
+.accountSheet.accountHubSheet,
+.accountSheet{
+  --settings-row-height:68px;
+}
+#accountSheet .accountSheetHeader{
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 52px;
+  align-items:center;
+  gap:8px;
+}
+#accountSheet .accountSheetHeader>div{min-width:0}
+#accountSheet .accountSheetHeader>div>span{
+  display:block;
+  color:var(--liquid-secondary);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.065em;
+  text-transform:uppercase;
+}
+#accountSheet .accountSheetHeader h2{
+  margin:1px 0 0;
+  overflow:hidden;
+  color:var(--liquid-label);
+  font-size:20px;
+  font-weight:730;
+  letter-spacing:-.025em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#accountSheet .accountBackBtn{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:var(--liquid-accent-strong);
+  font-size:32px;
+  font-weight:300;
+  line-height:1;
+  box-shadow:none;
+}
+#accountSheet .accountBackBtn.hidden{visibility:hidden;display:grid!important;pointer-events:none}
+#accountSheet .accountHomeHub{
+  display:grid;
+  gap:18px;
+  padding:4px 0 8px;
+}
+#accountSheet .accountHomeIdentity{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  padding:4px 4px 2px;
+}
+#accountSheet .accountHomeAvatar{
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--liquid-accent) 13%,var(--liquid-surface));
+  color:var(--liquid-accent-strong);
+  font-size:22px;
+  font-weight:760;
+  box-shadow:inset 0 0 0 var(--liquid-hairline) color-mix(in srgb,var(--liquid-accent) 18%,var(--liquid-separator));
+}
+#accountSheet .accountHomeIdentity h3{
+  margin:0;
+  color:var(--liquid-label);
+  font-size:21px;
+  font-weight:735;
+  letter-spacing:-.03em;
+}
+#accountSheet .accountHomeIdentity p{
+  margin:2px 0 0;
+  color:var(--liquid-secondary);
+  font-size:13px;
+}
+#accountSheet .accountHomeIdentity small{
+  display:block;
+  max-width:260px;
+  margin-top:2px;
+  overflow:hidden;
+  color:var(--liquid-tertiary);
+  font-size:11px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#accountSheet .accountHubList{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:18px;
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#accountSheet .accountHubRow{
+  width:100%;
+  min-height:var(--settings-row-height);
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) 18px;
+  align-items:center;
+  gap:11px;
+  margin:0;
+  padding:11px 13px;
+  border:0;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:0;
+  background:transparent;
+  color:var(--liquid-label);
+  box-shadow:none;
+  text-align:left;
+}
+#accountSheet .accountHubRow:first-child{border-top:0}
+#accountSheet .accountHubRow:active{background:color-mix(in srgb,var(--liquid-accent) 7%,transparent)}
+#accountSheet .accountHubRow>span:nth-child(2){min-width:0}
+#accountSheet .accountHubRow b{
+  display:block;
+  font-size:14px;
+  font-weight:690;
+}
+#accountSheet .accountHubRow small{
+  display:block;
+  margin-top:2px;
+  overflow:hidden;
+  color:var(--liquid-secondary);
+  font-size:11px;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#accountSheet .accountHubRow i{
+  color:var(--liquid-tertiary);
+  font-size:22px;
+  font-style:normal;
+  font-weight:300;
+}
+#accountSheet .accountHubIcon{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:color-mix(in srgb,var(--liquid-accent) 9%,var(--liquid-surface-muted));
+  color:var(--liquid-accent-strong);
+  font-size:14px;
+  font-weight:760;
+}
+#accountSheet .accountSignOut{
+  margin-top:0;
+  min-height:48px;
+  border:0!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,#d84a55 8%,var(--liquid-surface))!important;
+  color:#b72f3b!important;
+  box-shadow:none!important;
+}
+#accountSheet .accountVersion{
+  margin:0;
+  color:var(--liquid-tertiary);
+  font-size:10.5px;
+  text-align:center;
+}
+#accountSheet .accountDetailPane{
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+#accountSheet .accountDetailPane.accountGroup{
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+#accountSheet .accountDetailPane.accountGroup>h3{
+  margin:0 2px 5px;
+  color:var(--liquid-label);
+  font-size:19px;
+}
+#accountSheet .accountDetailPane.accountGroup>.accountGroupDescription{
+  margin:0 2px 12px;
+}
+#accountSheet .securityGroup.accountDetailPane .accountSectionHeading{
+  margin:0 2px 12px;
+}
+#accountSheet .accountActions.accountDetailPane #accountActionsExperience>div,
+#accountSheet .accountActions.accountDetailPane #accountActionsExperience>ul{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:18px;
+  background:var(--liquid-surface);
+}
+#accountSheet .accountProfilePanel{
+  margin:0;
+}
+
+#admin .adminLegacyTabs{display:none!important}
+#admin>.adminHeader{
+  margin:0 0 14px;
+  padding:12px 2px 4px;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+#admin>.adminHeader .ctop{align-items:flex-start}
+#admin>.adminHeader h2{
+  color:var(--liquid-label);
+  font-size:28px;
+  font-weight:745;
+  letter-spacing:-.045em;
+}
+#admin>.adminHeader .time{
+  max-width:460px;
+  color:var(--liquid-secondary);
+  font-size:12px;
+  line-height:1.45;
+}
+#admin .adminHome{
+  display:grid;
+  gap:16px;
+}
+#admin .adminHome.hidden{display:none}
+#admin .adminHomeIntro{
+  padding:4px 2px 2px;
+}
+#admin .adminHomeIntro>span{
+  color:var(--liquid-accent-strong);
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+#admin .adminHomeIntro h2{
+  margin:4px 0 4px;
+  color:var(--liquid-label);
+  font-size:22px;
+  font-weight:735;
+  letter-spacing:-.035em;
+}
+#admin .adminHomeIntro p{
+  margin:0;
+  color:var(--liquid-secondary);
+  font-size:12px;
+  line-height:1.45;
+}
+#admin .adminHubGrid{
+  display:grid;
+  gap:10px;
+}
+#admin .adminHubCard{
+  min-height:78px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 18px;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  margin:0;
+  padding:13px 14px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:18px;
+  background:var(--liquid-surface);
+  color:var(--liquid-label);
+  box-shadow:var(--liquid-shadow-content);
+  text-align:left;
+}
+#admin .adminHubCard:active{transform:scale(.993);background:color-mix(in srgb,var(--liquid-accent) 5%,var(--liquid-surface))}
+#admin .adminHubCard>span:nth-child(2){min-width:0}
+#admin .adminHubCard b{
+  display:block;
+  font-size:15px;
+  font-weight:710;
+  letter-spacing:-.015em;
+}
+#admin .adminHubCard small{
+  display:block;
+  margin-top:3px;
+  color:var(--liquid-secondary);
+  font-size:11px;
+  line-height:1.4;
+}
+#admin .adminHubCard i{
+  color:var(--liquid-tertiary);
+  font-size:23px;
+  font-style:normal;
+  font-weight:300;
+}
+#admin .adminHubIcon,
+#admin .adminChoiceIcon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--liquid-accent) 9%,var(--liquid-surface-muted));
+  color:var(--liquid-accent-strong);
+  font-size:15px;
+  font-weight:740;
+}
+#admin .adminDetailNav{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0 0 12px;
+  padding:0 2px;
+}
+#admin .adminBackButton{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:32px;
+  font-weight:300;
+  line-height:1;
+}
+#admin .adminDetailNav span{
+  display:block;
+  color:var(--liquid-secondary);
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+#admin .adminDetailNav h2{
+  margin:1px 0 0;
+  color:var(--liquid-label);
+  font-size:20px;
+  font-weight:725;
+  letter-spacing:-.025em;
+}
+#admin .adminDetailPanel{
+  margin:0;
+  padding:14px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:18px;
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#admin .adminChoiceList{
+  overflow:hidden;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:18px;
+  background:var(--liquid-surface);
+  box-shadow:var(--liquid-shadow-content);
+}
+#admin .adminChoiceRow{
+  width:100%;
+  min-height:78px;
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 18px;
+  align-items:center;
+  gap:12px;
+  margin:0;
+  padding:13px 14px;
+  border:0;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:0;
+  background:transparent;
+  color:var(--liquid-label);
+  box-shadow:none;
+  text-align:left;
+}
+#admin .adminChoiceRow:first-child{border-top:0}
+#admin .adminChoiceRow b{display:block;font-size:14px;font-weight:700}
+#admin .adminChoiceRow small{display:block;margin-top:3px;color:var(--liquid-secondary);font-size:11px;line-height:1.4}
+#admin .adminChoiceRow i{color:var(--liquid-tertiary);font-size:22px;font-style:normal}
+#admin .adminRareActionNote{
+  margin:12px 3px 0;
+  color:var(--liquid-secondary);
+  font-size:11px;
+  line-height:1.45;
+}
+#admin #adminData>.panel{
+  display:grid;
+  gap:12px;
+}
+#admin .adminSystemSummary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 13px;
+  border:var(--liquid-hairline) solid color-mix(in srgb,var(--liquid-success) 26%,var(--liquid-separator));
+  border-radius:15px;
+  background:color-mix(in srgb,var(--liquid-success) 6%,var(--liquid-surface));
+}
+#admin .adminSystemSummary b{color:var(--liquid-label);font-size:13px}
+#admin .adminSystemSummary span{color:var(--liquid-secondary);font-size:10.5px;text-align:right}
+#admin .adminHealthPanel{
+  margin:0!important;
+  padding:13px!important;
+  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
+  border-radius:16px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+}
+#admin .adminSystemDisclosure{
+  margin-top:9px;
+  border-top:var(--liquid-hairline) solid var(--liquid-separator);
+}
+#admin .adminSystemDisclosure>summary{
+  min-height:52px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:1px;
+  cursor:pointer;
+  list-style:none;
+  color:var(--liquid-label);
+}
+#admin .adminSystemDisclosure>summary::-webkit-details-marker{display:none}
+#admin .adminSystemDisclosure>summary>span{font-size:12px;font-weight:680}
+#admin .adminSystemDisclosure>summary>small{color:var(--liquid-secondary);font-size:10.5px}
+#admin .adminSystemDisclosure[open]>summary{border-bottom:var(--liquid-hairline) solid var(--liquid-separator)}
+#admin .adminSystemDisclosure #adminHealthGrid,
+#admin .adminSystemDisclosure #adminAuditTimeline{margin-top:10px}
+#admin #adminTeam details:has(#appDiagnostics){display:none!important}
+#admin #adminData details:has(#appDiagnostics){display:block!important}
+
+@media (min-width:760px){
+  #accountSheet .accountHubList{max-width:560px;margin-inline:auto;width:100%}
+  #accountSheet .accountHomeIdentity{max-width:560px;margin-inline:auto;width:100%}
+  #accountSheet .accountHomeHub>.accountSignOut,
+  #accountSheet .accountHomeHub>.accountVersion{max-width:560px;margin-inline:auto;width:100%}
+  #admin .adminHubGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #admin .adminHubCard{min-height:104px}
+  #admin .adminChoiceList{max-width:720px}
+}
+@media (prefers-reduced-motion:reduce){
+  #admin .adminHubCard:active{transform:none}
+}
+@media (prefers-contrast:more){
+  #accountSheet .accountHubList,
+  #admin .adminHubCard,
+  #admin .adminChoiceList,
+  #admin .adminDetailPanel{border-width:1px}
+}
