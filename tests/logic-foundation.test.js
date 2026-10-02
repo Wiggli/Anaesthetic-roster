@@ -66,7 +66,7 @@ assert.equal(offline.state,'offline');
 assert.equal(domain.capabilities(46).chatIdempotency,false);
 assert.equal(domain.capabilities(47).chatIdempotency,true);
 assert.equal(domain.capabilities(47).monotonicChatRead,true);
-assert.equal(domain.capabilities(47).serverClock,true);
+assert.equal(domain.capabilities(47).serverClock,true);\nassert.equal(domain.capabilities(48).commandIdempotency,true);\nassert.equal(domain.capabilities(48).freshnessBarrier,true);\nassert.equal(domain.capabilities(48).serverPlanValidation,true);
 
 const sent=Date.now()-40,received=Date.now();
 const desiredOffset=120000;
