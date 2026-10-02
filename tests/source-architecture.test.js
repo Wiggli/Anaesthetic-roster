@@ -20,7 +20,9 @@ for (const source of uiSources) {
   assert.ok(bytes < 220 * 1024, source + ' must stay below 220 KiB so the UI cannot collapse back into one monolith');
 }
 assert.match(read('src/legacy-ui/foundation.js'), /function prepareChangesView\(/,
-  'foundation must stop at shell preparation rather than owning clinical calculation');
+  'foundation must own shell preparation');
+assert.doesNotMatch(read('src/legacy-ui/foundation.js'), /function buildNightPlan\(/,
+  'foundation must not own canonical clinical plan calculation');
 assert.match(read('src/legacy-ui/clinical.js'), /function buildNightPlan\(/,
   'clinical source must own the canonical NightPlan adapter');
 assert.match(read('src/legacy-ui/sync.js'), /function reconcileApplication\(/,
