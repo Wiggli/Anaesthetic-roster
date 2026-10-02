@@ -11,6 +11,12 @@ const write = (name, value) => {
   const current = fs.readFileSync(target, 'utf8');
   if (current !== value) fs.writeFileSync(target, value);
 };
+const uiSources = [
+  'src/legacy-ui/foundation.js',
+  'src/legacy-ui/clinical.js',
+  'src/legacy-ui/sync.js',
+  'src/legacy-ui/bootstrap.js'
+];
 
 function fail(message) {
   console.error(`Release sync failed: ${message}`);
@@ -31,7 +37,7 @@ function compareVersions(a, b) {
 function releaseHistory(source) {
   const marker = 'var RELEASE_HISTORY=';
   const markerIndex = source.indexOf(marker);
-  if (markerIndex < 0) fail('app-ui.js is missing RELEASE_HISTORY.');
+  if (markerIndex < 0) fail('src/legacy-ui/foundation.js is missing RELEASE_HISTORY.');
   const start = source.indexOf('[', markerIndex + marker.length);
   let depth = 0;
   let quote = '';
@@ -74,8 +80,8 @@ if (!/var APP_VERSION = '[^']+';/.test(core)) fail('app-core.js is missing APP_V
 core = core.replace(/var APP_VERSION = '[^']+';/, `var APP_VERSION = '${version}';`);
 write('app-core.js', core);
 
-let ui = read('app-ui.js');
-const parsedHistory = releaseHistory(ui);
+let foundation = read(uiSources[0]);
+const parsedHistory = releaseHistory(foundation);
 const latest = parsedHistory.entries[0];
 if (!latest) fail('RELEASE_HISTORY is empty.');
 if (latest.version !== version) {
@@ -89,14 +95,18 @@ if (latest.version !== version) {
     changes: release.changes,
     policy: ['quiet', 'normal', 'important'].includes(release.update_policy) ? release.update_policy : 'normal'
   });
-  ui = ui.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + ui.slice(parsedHistory.start + 1);
+  foundation = foundation.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + foundation.slice(parsedHistory.start + 1);
 } else if (latest.title !== release.title) {
   fail('release.json title does not match the existing newest release-history entry. Bump the version instead of rewriting released history.');
 }
-ui = ui.replace(/\/\* Anaesthetic Night Roster V\d+(?:\.\d+)+ interface, staffing, allocation and PWA features\. \*\//,
+foundation = foundation.replace(/\/\* Anaesthetic Night Roster V\d+(?:\.\d+)+ interface, staffing, allocation and PWA features\. \*\//,
   `/* Anaesthetic Night Roster V${version} interface, staffing, allocation and PWA features. */`);
-ui = ui.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`);
-write('app-ui.js', ui);
+write(uiSources[0], foundation);
+
+for (const name of uiSources) {
+  const source = read(name);
+  write(name, source.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`));
+}
 
 for (const name of ['index.html', 'manifest.webmanifest', 'styles.css']) {
   const source = read(name);
@@ -121,6 +131,8 @@ if (!lock.packages || !lock.packages['']) fail('package-lock.json is missing the
 lock.packages[''].version = version;
 write('package-lock.json', JSON.stringify(lock, null, 2) + '\n');
 
+const generated = spawnSync(process.execPath, [file('scripts/generate-runtime.mjs')], { cwd: root, stdio: 'inherit' });
+if (generated.status !== 0) process.exit(generated.status || 1);
 const verify = spawnSync(process.execPath, [file('scripts/verify-release.mjs')], { cwd: root, stdio: 'inherit' });
 if (verify.status !== 0) process.exit(verify.status || 1);
-console.log(`Release ${version} references are synchronised. Commit release.json and the generated reference updates together.`);
+console.log(`Release ${version} references are synchronised. Commit release.json, modular source and generated compatibility artifacts together.`);
