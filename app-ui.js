@@ -736,7 +736,7 @@ function diagnosticsText(){
   var backupAt=appStorage.getItem('anaes_last_backup_at'),release=installedReleaseState(),clock=window.AnaestheticDomain&&window.AnaestheticDomain.clockState?window.AnaestheticDomain.clockState():{source:'device',offsetMs:0},caps=rosterCapabilities(),events=window.AnaestheticDomain&&window.AnaestheticDomain.readDiagnostics?window.AnaestheticDomain.readDiagnostics().slice(-10):[],lines=['Running app version: '+APP_VERSION,'Latest release-history version: '+release.latest,'Service-worker cache: '+release.cache,'Installed release: '+(release.stale?'stale cache detected':release.waiting?'update waiting for approval':'current'),'Expected database schema: '+EXPECTED_SCHEMA_VERSION,'Actual database schema: '+(schemaVersion||'legacy'),'Capabilities: server clock '+(caps.serverClock?'yes':'no')+' · chat idempotency '+(caps.chatIdempotency?'yes':'no')+' · monotonic reads '+(caps.monotonicChatRead?'yes':'no'),'Clock source: '+clock.source+' · offset '+Math.round(Number(clock.offsetMs||0))+' ms','Connection state: '+sharedSyncState,'Last successful refresh: '+(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet'),'Startup compatibility fallback uses this session: '+compatibilityStartupUseCount+(compatibilityStartupLastUsed?' · last '+compatibilityStartupLastUsed:''),'Last roster-data export: '+(backupAt?new Date(backupAt).toLocaleString('en-GB'):'not recorded on this device'),'Published roster until: '+(rosterSettings.published_until||'unknown'),'Calculated nights: '+R.length,'Current account: '+(currentUserProfile?'signed in as '+currentUserProfile.user_role:'not signed in')];if(events.length){lines.push('Recent local diagnostics:');events.forEach(function(item){lines.push(item.at+' · '+item.category+' · '+item.operation+' · '+item.code)})}return lines.join('\n');
 }
 
-function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var backupAt=appStorage.getItem('anaes_last_backup_at'),schemaState=schemaVersion>=EXPECTED_SCHEMA_VERSION?'Current':'Upgrade required',release=installedReleaseState();el.innerHTML='<div class="diagnosticGrid"><div class="historyItem"><b>Application versions</b><div class="changeMeta">Running '+esc(APP_VERSION)+' · Release history '+esc(release.latest)+'</div></div><div class="historyItem"><b>Service-worker cache</b><div class="changeMeta">'+esc(release.cache)+' · '+esc(release.stale?'Stale cached release detected':release.waiting?'Update awaiting approval':'Current')+'</div></div><div class="historyItem"><b>Database schema</b><div class="changeMeta">Expected '+esc(EXPECTED_SCHEMA_VERSION)+' · Actual '+esc(schemaVersion||'legacy')+' · '+esc(schemaState)+'</div></div><div class="historyItem"><b>Shared-data connection</b><div class="changeMeta">'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet')+'</div></div><div class="historyItem"><b>Last roster-data export</b><div class="changeMeta">'+esc(backupAt?new Date(backupAt).toLocaleString('en-GB'):'Not recorded')+'</div></div></div>'+(release.waiting?'<button type="button" class="primary wide" id="diagnosticUpdateBtn">Update now</button>':'')+'<button type="button" class="soft wide" id="copyDiagnosticsBtn">Copy diagnostic report</button>';var button=byId('copyDiagnosticsBtn');if(button)button.onclick=async function(){try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnostic report copied')}catch(error){toast('Diagnostic report could not be copied')}};var update=byId('diagnosticUpdateBtn');if(update)update.onclick=applyWaitingUpdate}
+function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var backupAt=appStorage.getItem('anaes_last_backup_at'),schemaState=schemaVersion>=EXPECTED_SCHEMA_VERSION?'Current':'Upgrade required',release=installedReleaseState(),compatCount=Number(appStorage.getItem('anaes_compat_startup_count')||0),compatLast=appStorage.getItem('anaes_compat_startup_last_at'),clockConfidence=window.AnaestheticRuntime&&window.AnaestheticRuntime.clock?window.AnaestheticRuntime.clock.confidence():null;el.innerHTML='<div class="diagnosticGrid"><div class="historyItem"><b>Application versions</b><div class="changeMeta">Running '+esc(APP_VERSION)+' · Release history '+esc(release.latest)+'</div></div><div class="historyItem"><b>Service-worker cache</b><div class="changeMeta">'+esc(release.cache)+' · '+esc(release.stale?'Stale cached release detected':release.waiting?'Update awaiting approval':'Current')+'</div></div><div class="historyItem"><b>Database schema</b><div class="changeMeta">Expected '+esc(EXPECTED_SCHEMA_VERSION)+' · Actual '+esc(schemaVersion||'legacy')+' · '+esc(schemaState)+'</div></div><div class="historyItem"><b>Shared-data connection</b><div class="changeMeta">'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet')+'</div></div><div class="historyItem"><b>Clock confidence</b><div class="changeMeta">'+esc(clockConfidence?clockConfidence.level+' · '+clockConfidence.sampleCount+' accepted sample'+(clockConfidence.sampleCount===1?'':'s'):'Device clock')+'</div></div><div class="historyItem"><b>Compatibility startup</b><div class="changeMeta">'+esc(compatCount?compatCount+' fallback use'+(compatCount===1?'':'s')+' · Last '+(compatLast?new Date(compatLast).toLocaleString('en-GB'):'this session'):'No fallback use recorded on this device')+'</div></div><div class="historyItem"><b>Last roster-data export</b><div class="changeMeta">'+esc(backupAt?new Date(backupAt).toLocaleString('en-GB'):'Not recorded')+'</div></div></div>'+(release.waiting?'<button type="button" class="primary wide" id="diagnosticUpdateBtn">Update now</button>':'')+'<button type="button" class="soft wide" id="copyDiagnosticsBtn">Copy diagnostic report</button>';var button=byId('copyDiagnosticsBtn');if(button)button.onclick=async function(){try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnostic report copied')}catch(error){toast('Diagnostic report could not be copied')}};var update=byId('diagnosticUpdateBtn');if(update)update.onclick=applyWaitingUpdate}
 
 function prettyDateMarkup(date){
   if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
@@ -844,6 +844,20 @@ function refreshAutomaticNightOnReturn(){
   if(document.visibilityState!=='visible'||!initialNightChosen||nightSelectionMode!=='automatic'||!R.length)return;
   var context=resolveNightContext(),nextDate=R[context.index].date;if(window.AnaestheticRuntime&&window.AnaestheticRuntime.state)window.AnaestheticRuntime.state.night.set(context.isCurrent?'automatic-current':'automatic-next');
   if(nextDate!==automaticSelectedDate){idx=context.index;automaticSelectedDate=nextDate;appStorage.setItem('anaes_selected_date',nextDate);render();toast(context.isCurrent?'Roster moved to the current night':'Roster moved to the next available night')}
+}
+
+var shadowPlanSignatures={};
+function shadowNightPlanCheck(plan){
+  if(!window.AnaestheticRuntime||!plan||!plan.base)return true;
+  var signature=plan.date+':'+String(lastObservedSyncRevision==null?'none':lastObservedSyncRevision);
+  if(shadowPlanSignatures[signature])return true;
+  shadowPlanSignatures[signature]=true;
+  var legacyEffective=applyChanges(plan.base),legacyStaffing=staffingPlan(plan.base);
+  var canonicalAssignments=(plan.staffing&&plan.staffing.validAssignments||[]).map(function(item){return[String(item.id),item.allocation_key||'']}).sort();
+  var legacyAssignments=(legacyStaffing&&legacyStaffing.validAssignments||[]).map(function(item){return[String(item.id),item.allocation_key||'']}).sort();
+  var left={effective:plan.effective,count:plan.staffing&&plan.staffing.count,unresolved:plan.staffing&&plan.staffing.unresolved,assignments:canonicalAssignments};
+  var right={effective:legacyEffective,count:legacyStaffing&&legacyStaffing.count,unresolved:legacyStaffing&&legacyStaffing.unresolved,assignments:legacyAssignments};
+  return window.AnaestheticRuntime.shadowCompare('night-plan',left,right)
 }
 
 var lastChangesWorkflowModel=null;
@@ -1231,6 +1245,7 @@ function notifyRosterUpdate(type,date){if(window.dispatchRosterPush)window.dispa
 function render(){
   if(!R.length||!currentUserProfile)return;
   var canonical=buildNightPlan(cur()),base=canonical.base,plan=canonical.staffing,r=canonical.effective,e=effective(r),count=plan.count,dutyTiming=canonical.timing;
+  shadowNightPlanCheck(canonical);
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.state){var runtimeNightContext=resolveNightContext(null,base.date);window.AnaestheticRuntime.state.night.set(nightSelectionMode==='manual'?'manual':runtimeNightContext.isCurrent?'automatic-current':'automatic-next')}
   ensureAutomaticLabourOrder(base,r);
   var labourPending=r.mode!=='5'&&!planIsProvisional(base)&&!labourOrderFor(r);
@@ -1699,7 +1714,12 @@ async function syncServerClock(force){
   finally{serverClockSyncInFlight=false}
 }
 function noteCompatibilityStartup(path){
-  compatibilityStartupUseCount++;compatibilityStartupLastUsed=path;recordAppDiagnostic('compatibility','startup',path)
+  compatibilityStartupUseCount++;compatibilityStartupLastUsed=path;
+  var previous=Number(appStorage.getItem('anaes_compat_startup_count')||0);
+  appStorage.setItem('anaes_compat_startup_count',String(previous+1));
+  appStorage.setItem('anaes_compat_startup_last',String(path||'unknown'));
+  appStorage.setItem('anaes_compat_startup_last_at',new Date().toISOString());
+  recordAppDiagnostic('compatibility','startup',path)
 }
 function commandKey(value){return String(value||'command').replace(/[^A-Za-z0-9_.:-]/g,'').slice(0,120)}
 async function rosterErrorCode(error){return window.AnaestheticRuntime&&window.AnaestheticRuntime.errors?window.AnaestheticRuntime.errors.code(error):String(error&&error.message||error&&error.code||'UNKNOWN')}
