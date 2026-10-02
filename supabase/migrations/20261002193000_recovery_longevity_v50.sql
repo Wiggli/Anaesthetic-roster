@@ -110,7 +110,7 @@ begin
   end if;
   return new;
 end
-$;
+$$;
 
 revoke all on function public.capture_roster_audit_v50() from public,anon,authenticated;
 
