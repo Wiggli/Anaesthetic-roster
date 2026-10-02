@@ -7,7 +7,7 @@ const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
 const domain = fs.readFileSync(path.join(root, 'domain-logic.js'), 'utf8');
-const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');\nconst reliabilityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 
 assert.match(ui, /var nightSelectionMode='automatic'/, 'automatic and manual night selection must be explicit state');
@@ -22,7 +22,7 @@ assert.match(ui, /sharedSyncState='starting'/, 'shared synchronization must have
 assert.match(ui, /noteCompatibilityStartup\(/, 'legacy startup fallbacks must be observable before retirement');
 assert.match(ui, /syncServerClock\(/, 'server time must be used as an online clock sanity check');
 assert.match(core, /function rosterCapabilities\(/, 'database capabilities must be centralized');
-assert.match(core, /EXPECTED_SCHEMA_VERSION = 47/, 'logic foundation requires schema 47');
+assert.match(core, /EXPECTED_SCHEMA_VERSION = 48/, 'reliability architecture requires schema 48');
 assert.match(domain, /snapshotIsExpired/, 'offline data must have an explicit retention bound');
 assert.match(domain, /DIAG_LIMIT=30/, 'local diagnostics must be bounded');
 assert.doesNotMatch(domain, /email|nurse|message body|roster_date/i, 'diagnostic foundation must not encode roster or identity fields');
@@ -39,3 +39,4 @@ assert.match(sw, /ACTIVATE_UPDATE/, 'updates must still require explicit activat
 assert.match(ui, /verifyRuntimeHealth\(/, 'post-update runtime versions must be checked');
 
 console.log('Multi-device, mutation retry, idempotency and update-health contracts passed.');
+\nassert.match(reliabilityMigration, /roster_operation_log[\\s\\S]*operation_id uuid primary key/, 'roster commands must be database-idempotent');\nassert.match(reliabilityMigration, /assert_roster_fresh_v48/, 'shared writes must reject stale revisions');\n
