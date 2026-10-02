@@ -16575,3 +16575,127 @@ html[data-theme="dark"] #changes .changesWorkflowTabs{
     background:var(--scene-surface)!important;
   }
 }
+
+
+/* 41.8 clock-change wake-up clarity.
+   When the clock repeats or jumps, the current usable clock state must be obvious at a glance. */
+#today .personalClockNow{
+  width:100%;
+  min-height:78px;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:0 0 8px;
+  padding:10px 11px;
+  border:1px solid var(--liquid-separator);
+  border-radius:16px;
+  background:var(--liquid-surface);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+}
+#today .personalClockNow-old{
+  border-color:color-mix(in srgb,var(--liquid-warning) 35%,var(--liquid-separator));
+  background:color-mix(in srgb,var(--liquid-warning) 8%,var(--liquid-surface));
+}
+#today .personalClockNow-new{
+  border-color:color-mix(in srgb,var(--liquid-success) 34%,var(--liquid-separator));
+  background:color-mix(in srgb,var(--liquid-success) 8%,var(--liquid-surface));
+}
+#today .personalClockNowFlag{
+  display:grid;
+  width:44px;
+  height:44px;
+  place-items:center;
+  border-radius:13px;
+  background:color-mix(in srgb,var(--liquid-label) 7%,transparent);
+  color:var(--liquid-label);
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.045em;
+}
+#today .personalClockNow-old .personalClockNowFlag{
+  background:color-mix(in srgb,var(--liquid-warning) 16%,transparent);
+  color:color-mix(in srgb,var(--liquid-warning) 88%,var(--liquid-label));
+}
+#today .personalClockNow-new .personalClockNowFlag{
+  background:color-mix(in srgb,var(--liquid-success) 16%,transparent);
+  color:color-mix(in srgb,var(--liquid-success) 88%,var(--liquid-label));
+}
+#today .personalClockNowCopy{
+  min-width:0;
+  display:grid;
+  gap:1px;
+}
+#today .personalClockNowCopy small{
+  color:var(--liquid-secondary);
+  font-size:9px;
+  font-weight:820;
+  line-height:1.2;
+  letter-spacing:.045em;
+}
+#today .personalClockNowCopy strong{
+  color:var(--liquid-label);
+  font-size:27px;
+  font-weight:820;
+  line-height:1;
+  letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;
+}
+#today .personalClockNowCopy span{
+  margin-top:3px;
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  font-weight:620;
+  line-height:1.32;
+}
+#today .personalClockNowBadge{
+  align-self:start;
+  margin-top:1px;
+  padding:4px 6px;
+  border-radius:999px;
+  background:var(--liquid-label);
+  color:var(--liquid-surface);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.055em;
+}
+#today .personalClockNow-old .personalClockNowBadge{
+  background:var(--liquid-warning);
+  color:#fff;
+}
+#today .personalClockNow-new .personalClockNowBadge{
+  background:var(--liquid-success);
+  color:#fff;
+}
+#today .personalClockNow + .personalClockException{
+  margin-top:0!important;
+}
+#today .nightTimeline.hasClockChange .nightTimelineHead em{
+  max-width:68%!important;
+  font-weight:820!important;
+}
+body.dark #today .personalClockNow-old,
+html[data-theme="dark"] #today .personalClockNow-old{
+  background:color-mix(in srgb,var(--liquid-warning) 12%,var(--liquid-surface));
+}
+body.dark #today .personalClockNow-new,
+html[data-theme="dark"] #today .personalClockNow-new{
+  background:color-mix(in srgb,var(--liquid-success) 12%,var(--liquid-surface));
+}
+@media(max-width:390px){
+  #today .personalClockNow{
+    grid-template-columns:40px minmax(0,1fr) auto;
+    gap:8px;
+    padding:9px;
+  }
+  #today .personalClockNowFlag{width:40px;height:40px;border-radius:12px}
+  #today .personalClockNowCopy strong{font-size:25px}
+  #today .personalClockNowCopy span{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  #today .personalClockNow{transition:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  #today .personalClockNow-old{background:color-mix(in srgb,var(--liquid-warning) 9%,var(--liquid-surface))}
+  #today .personalClockNow-new{background:color-mix(in srgb,var(--liquid-success) 9%,var(--liquid-surface))}
+}
