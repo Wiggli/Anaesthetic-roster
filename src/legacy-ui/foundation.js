@@ -683,15 +683,43 @@ function profileDraftSignature(){return JSON.stringify([(byId('profileName')&&by
 
 function updateProfileSaveState(){var button=byId('saveProfileBtn');if(!button)return;var changed=!!pendingProfilePhoto||profileDraftSignature()!==profileSavedSignature;button.classList.toggle('hidden',!changed);if(changed&&byId('profileMessage').classList.contains('success')&&!pendingProfilePhoto)showProfileMessage('')}
 
+function prepareAccountInformationArchitecture(){
+  var dialog=byId('accountSheet'),scroll=dialog&&dialog.querySelector('.accountSheetScroll'),header=dialog&&dialog.querySelector('.accountSheetHeader');
+  if(!dialog||!scroll||!header)return;
+  var intro=scroll.querySelector('.accountSheetIntro');if(intro)intro.classList.add('hidden');
+  var profile=byId('profileExperience'),appearance=byId('appearanceExperience'),actions=byId('accountActionsExperience'),passkeys=byId('passkeyList');
+  var panes={profile:profile,preferences:appearance&&appearance.closest('.accountGroup'),help:actions&&actions.closest('.accountGroup'),security:passkeys&&passkeys.closest('.accountGroup')};
+  Object.keys(panes).forEach(function(key){var pane=panes[key];if(pane){pane.classList.add('accountDetailPane','hidden');pane.setAttribute('data-account-pane',key)}});
+  var home=byId('accountHomeHub');
+  if(!home){
+    home=document.createElement('section');home.id='accountHomeHub';home.className='accountHomeHub';
+    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Profile</b><small>Your name, photo and roster highlight</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button></div>';
+    scroll.insertBefore(home,scroll.firstChild);
+    var signOut=byId('accountSignOutBtn'),version=byId('accountVersion');if(signOut)home.appendChild(signOut);if(version)home.appendChild(version);
+    Array.prototype.forEach.call(home.querySelectorAll('[data-account-section]'),function(button){button.onclick=function(){showAccountSection(button.getAttribute('data-account-section'))}});
+  }
+  if(!byId('accountBackBtn')){
+    var back=document.createElement('button');back.type='button';back.id='accountBackBtn';back.className='accountBackBtn hidden';back.setAttribute('aria-label','Back to Account');back.textContent='‹';back.onclick=function(){showAccountSection('home')};header.insertBefore(back,header.firstChild)
+  }
+}
+function showAccountSection(section){
+  prepareAccountInformationArchitecture();var home=byId('accountHomeHub'),back=byId('accountBackBtn'),title=byId('accountSheetTitle'),eyebrow=byId('accountSheetEyebrow')||document.querySelector('#accountSheet .accountSheetHeader>div>span');
+  var labels={profile:'Profile',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
+  if(home)home.classList.toggle('hidden',!!target);Array.prototype.forEach.call(document.querySelectorAll('#accountSheet [data-account-pane]'),function(pane){pane.classList.toggle('hidden',pane!==target)});
+  if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'Account';if(eyebrow)eyebrow.textContent=target?'Account':'Profile & preferences';
+  var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0
+}
+
 function populateAccountSheet(){
+  prepareAccountInformationArchitecture();
   var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName();
   profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'']);
-  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');
+  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar');if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=(name||currentUserProfile.display_name||currentUserProfile.email||'?').charAt(0).toUpperCase();
   showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.',messageType:profileFeatureAvailable?'':'error',changed:false}}}));
 }
 
-async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
+async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();showAccountSection('home');if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
 
 async function runAccountAction(action){
   if(action==='theme')return;
