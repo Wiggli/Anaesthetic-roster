@@ -81,14 +81,14 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
       <PrimaryAction
         action="absence"
         icon="absence"
-        title="Report absence"
+        title="Report an absence"
         detail={blocked ? editReason : 'Leave or sickness'}
         disabled={blocked}
       />
       <PrimaryAction
         action="overtime"
         icon="overtime"
-        title="Add overtime"
+        title="Add overtime cover"
         detail={blocked ? editReason : 'Cover this night'}
         disabled={blocked}
       />
@@ -106,8 +106,8 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
     </Pressable>
 
     <div className="quickCommunicationGrid" aria-label="Communication">
-      <CompactAction action="private-chat" icon="chat" title="Message" detail="One colleague" />
-      <CompactAction action="share" icon="share" title="Share roster" detail="QR or apps" />
+      <CompactAction action="private-chat" icon="chat" title="New private message" detail="One colleague" />
+      <CompactAction action="share" icon="share" title="Share Night Roster" detail="QR or apps" />
     </div>
 
     <p className="quickActionsPrivacy">Account and roster data stay private.</p>
