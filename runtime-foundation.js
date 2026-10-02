@@ -88,18 +88,23 @@
   function schedulerEvery(name,interval,fn,options){
     schedulerCancel(name);
     options=options||{};
-    var job={name:name,interval:Math.max(1000,Number(interval)||1000),fn:fn,whenHidden:!!options.whenHidden,timer:null,active:true};
+    var job={name:name,interval:interval,fn:fn,whenHidden:!!options.whenHidden,timer:null,active:true};
+    function nextInterval(){
+      var value=typeof job.interval==='function'?job.interval():job.interval;
+      return Math.max(1000,Number(value)||1000)
+    }
     function schedule(delay){
       if(!job.active)return;
+      var wait=delay==null?nextInterval():Math.max(0,Number(delay)||0);
       job.timer=setTimeout(async function(){
         if(!job.active)return;
         if(job.whenHidden||!global.document||document.visibilityState!=='hidden'){
           try{await Promise.resolve(job.fn())}catch(error){diagnostic('scheduler',name,'failed')}
         }
-        schedule(job.interval);
-      },delay==null?job.interval:delay);
+        schedule();
+      },wait);
     }
-    schedulerJobs.set(name,job);schedule(options.immediate?0:job.interval);return()=>{job.active=false;schedulerCancel(name)};
+    schedulerJobs.set(name,job);schedule(options.immediate?0:nextInterval());return()=>{job.active=false;schedulerCancel(name)};
   }
   function schedulerRun(name){
     var job=schedulerJobs.get(name);
