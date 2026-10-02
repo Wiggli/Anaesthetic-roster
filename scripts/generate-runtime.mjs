@@ -20,7 +20,9 @@ const uiSources = [
 function classicFromTypedSource(name) {
   return read(name)
     .replace(/^\/\* .*? TypeScript source of truth\. Generated browser JavaScript is written by scripts\/generate-runtime\.mjs\. \*\/\n/, '')
-    .replace(/([A-Za-z_$][A-Za-z0-9_$]*)\s*:\s*any(?=\s*[,)=])/g, '$1');
+    .replace(/function(\s+[A-Za-z_$][A-Za-z0-9_$]*)?\(this\s*:\s*any,\s*/g, (_, namePart = '') => 'function' + namePart + '(')
+    .replace(/([A-Za-z_$][A-Za-z0-9_$]*)\s*:\s*any(?=\s*[,)=;])/g, '$1')
+    .replace(/\s+as\s+any(?:\[\])?/g, '');
 }
 
 const generatedHeader = '/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */\n';
