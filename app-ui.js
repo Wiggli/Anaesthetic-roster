@@ -2257,6 +2257,7 @@ async function authorizeUser(user,session){
   }
   if(!sharedReady&&sharedLoadFailureStage==='session'){clearPrivateDeviceData();currentUser=null;currentAccessToken='';currentUserProfile=null;showAuth('Your saved sign-in has expired. Sign in again to open the shared roster.',true);return}
   if(!sharedReady){var stage={session:'your saved sign-in',snapshot:'the protected roster',staffing:'shared staffing',allocations:'selected-night allocations',support:'roster support data'}[sharedLoadFailureStage]||'the shared roster',code=sharedLoadFailureCode?' (code '+sharedLoadFailureCode+')':'';showLaunchRecovery('The connection stopped while opening '+stage+code+'. Try again.');return}
+  accessLossInFlight=false;
   var isAdmin=currentUserProfile&&currentUserProfile.user_role==='admin';
   var profilePromise=Promise.resolve();if(!forcedOfflineSession)profilePromise=withTimeout(loadOwnProfile(),6000,'Profile details did not respond.').catch(function(){profileFeatureAvailable=false;currentPrivateProfile=null});
   if(!forcedOfflineSession)subscribeToChanges();startSharedSyncMonitor();if(isAdmin&&!forcedOfflineSession)withTimeout(loadAccounts(),6000,'Account list did not respond.').catch(function(){});finishLaunch(true);
