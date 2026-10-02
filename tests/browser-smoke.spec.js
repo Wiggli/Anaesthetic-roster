@@ -34,6 +34,52 @@ async function openShell(page) {
   });
 }
 
+function clockBackPersonalModel() {
+  const transitionUtc = Date.parse('2026-10-25T01:00:00Z');
+  return {
+    date: '2026-10-24',
+    displayName: 'André Bartolo',
+    jobTitle: 'Senior Staff Nurse',
+    avatarUrl: '',
+    initial: 'A',
+    assignmentLabel: 'Selected night’s assignment',
+    title: 'First Part theatre',
+    detail: 'Position 1',
+    period: '00:00–03:00 after clock change',
+    breakLabel: 'Second break',
+    contextLabel: 'Working with',
+    context: 'With James Galea',
+    changedLabel: '',
+    changed: false,
+    action: 'role',
+    pending: false,
+    pendingOther: '',
+    liveStatus: 'Night selected',
+    dutyPart: 'first',
+    dutyStartUtc: Date.parse('2026-10-24T22:00:00Z'),
+    handoverUtc: Date.parse('2026-10-25T02:00:00Z'),
+    dutyEndUtc: Date.parse('2026-10-25T06:00:00Z'),
+    handoverLabel: '03:00 after clock change',
+    transitionUtc,
+    clockChange: {
+      direction: 'back',
+      title: 'Clock change night',
+      transitionLabel: 'Clocks move back one hour',
+      handover: '03:00',
+      handoverDisplay: '03:00 after clock change',
+      firstPeriod: '00:00–03:00 after clock change',
+      secondPeriod: '03:00–07:00',
+      partHours: 4,
+      partHoursLabel: '4h',
+      totalHours: 8,
+      totalHoursLabel: '8h',
+      summary: 'Equal duty',
+      date: '2026-10-24',
+      transitionUtc
+    }
+  };
+}
+
 async function realTouchSwipe(page, from, to, midpoint) {
   const session = await page.context().newCDPSession(page);
   await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from.x, y: from.y, id: 1 }] });
@@ -120,6 +166,43 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
   await expect(page.locator('#onboardingDialog')).toContainText('4h');
   await page.waitForTimeout(450);
   await captureReview(page, 'clock-change-onboarding');
+});
+
+test('clock-back wake-up cue marks the first repeated 02:xx as OLD clock time', async ({ page }) => {
+  await openShell(page);
+  const model = clockBackPersonalModel();
+  const fixedNow = Date.parse('2026-10-25T00:15:00Z');
+  await page.evaluate(({ model, fixedNow }) => {
+    Date.now = () => fixedNow;
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: model }));
+  }, { model, fixedNow });
+
+  const cue = page.locator('#personalNightCard .personalClockNow');
+  await expect(cue).toHaveClass(/personalClockNow-old/);
+  await expect(cue.locator('.personalClockNowFlag')).toHaveText('OLD');
+  await expect(cue.locator('.personalClockNowCopy')).toContainText('CURRENT TIME · FIRST 02:xx');
+  await expect(cue.locator('.personalClockNowCopy strong')).toHaveText('02:15');
+  await expect(cue).toContainText('Clocks have not gone back yet');
+  await expect(page.locator('#personalNightCard .nightTimelineHead em')).toContainText('FIRST 02:15 · OLD clock');
+});
+
+test('clock-back wake-up cue marks the second repeated 02:xx as NEW clock time', async ({ page }) => {
+  await openShell(page);
+  const model = clockBackPersonalModel();
+  const fixedNow = Date.parse('2026-10-25T01:15:00Z');
+  await page.evaluate(({ model, fixedNow }) => {
+    Date.now = () => fixedNow;
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: model }));
+  }, { model, fixedNow });
+
+  const cue = page.locator('#personalNightCard .personalClockNow');
+  await expect(cue).toHaveClass(/personalClockNow-new/);
+  await expect(cue.locator('.personalClockNowFlag')).toHaveText('NEW');
+  await expect(cue.locator('.personalClockNowCopy')).toContainText('CURRENT TIME · SECOND 02:xx');
+  await expect(cue.locator('.personalClockNowCopy strong')).toHaveText('02:15');
+  await expect(cue).toContainText('Clocks have already gone back');
+  await expect(cue).toContainText('new 02:xx hour now');
+  await expect(page.locator('#personalNightCard .nightTimelineHead em')).toContainText('SECOND 02:15 · NEW clock');
 });
 
 test('Night hero exposes the richer rail and Share Night Roster stays scan-first', async ({ page }) => {

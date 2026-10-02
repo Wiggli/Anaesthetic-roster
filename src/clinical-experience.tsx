@@ -190,10 +190,45 @@ function liveClockLabel(model: PersonalNight, value: Date) {
   const time = clockText(value);
   if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return '';
   if (model.clockChange?.direction === 'back' && clock.hour === 2 && model.transitionUtc) {
-    return (value.getTime() < model.transitionUtc ? 'First ' : 'Second ') + time + ' · ' + clockChangePhase(model, value);
+    return (value.getTime() < model.transitionUtc ? 'FIRST ' : 'SECOND ') + time + (value.getTime() < model.transitionUtc ? ' · OLD clock' : ' · NEW clock');
   }
-  if (model.clockChange) return time + ' · ' + clockChangePhase(model, value);
+  if (model.clockChange && model.transitionUtc) {
+    return time + (value.getTime() < model.transitionUtc ? ' · OLD clock' : ' · NEW clock');
+  }
   return time;
+}
+
+function clockChangeNowCue(model: PersonalNight, value: Date) {
+  if (!model.clockChange || !model.transitionUtc) return null;
+  const clock = maltaClock(value);
+  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return null;
+
+  const time = clockText(value);
+  const after = value.getTime() >= model.transitionUtc;
+  if (model.clockChange.direction === 'back') {
+    const repeatedHour = clock.hour === 2;
+    return {
+      phase: after ? 'new' : 'old',
+      flag: after ? 'NEW' : 'OLD',
+      eyebrow: repeatedHour
+        ? (after ? 'CURRENT TIME · SECOND 02:xx' : 'CURRENT TIME · FIRST 02:xx')
+        : 'CURRENT TIME',
+      time,
+      detail: after
+        ? (repeatedHour ? 'Clocks have already gone back. This is the new 02:xx hour now.' : 'Clocks have already gone back. New clock time is in use.')
+        : (repeatedHour ? 'Clocks have not gone back yet. This is the first 02:xx hour.' : 'Clocks have not changed yet. Old clock time is still in use.')
+    };
+  }
+
+  return {
+    phase: after ? 'new' : 'old',
+    flag: after ? 'NEW' : 'OLD',
+    eyebrow: 'CURRENT TIME',
+    time,
+    detail: after
+      ? 'Clocks have moved forward. New clock time is in use.'
+      : 'Clocks have not moved forward yet. Old clock time is still in use.'
+  };
 }
 
 function nightVisualPhase(model: PersonalNight, value = new Date()) {
@@ -594,6 +629,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   }, [model.date, model.title, model.pending, model.dutyStartUtc, model.handoverUtc, model.dutyEndUtc, now]);
 
   const value = new Date(now);
+  const clockNowCue = clockChangeNowCue(model, value);
   const tone = personalTone(model);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
   const scanContext = model.context.replace(/^With\s+/i, '');
@@ -663,6 +699,21 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
           <span>{model.detail}</span>
         </span>
       </div>
+
+      {clockNowCue && <div
+        className={'personalClockNow personalClockNow-' + clockNowCue.phase}
+        role="status"
+        aria-live="polite"
+        aria-label={clockNowCue.eyebrow + '. ' + clockNowCue.time + '. ' + clockNowCue.detail}
+      >
+        <span className="personalClockNowFlag">{clockNowCue.flag}</span>
+        <span className="personalClockNowCopy">
+          <small>{clockNowCue.eyebrow}</small>
+          <strong>{clockNowCue.time}</strong>
+          <span>{clockNowCue.detail}</span>
+        </span>
+        <span className="personalClockNowBadge">NOW</span>
+      </div>}
 
       {model.clockChange && <Pressable type="button" className="personalClockException" onClick={openClockGuide}>
         <span className="personalClockExceptionIcon" aria-hidden="true">{model.clockChange.direction === 'back' ? '↶' : '↗'}</span>
