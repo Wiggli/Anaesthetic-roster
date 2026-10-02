@@ -9,7 +9,7 @@ const worker = read('service-worker.js');
 const manifest = JSON.parse(read('manifest.webmanifest'));
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'release.json'), 'utf8')).version;
 
-for (const file of ['domain-logic.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'styles.css', 'chat.css',
+for (const file of ['domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'styles.css', 'chat.css',
   'theme-bootstrap.js', 'release.json', 'icon-192.png', 'icon-512.png', 'mater-dei-logo.png']) {
   assert.ok(fs.existsSync(path.join(dist, file)), `${file} must ship with the build`);
 }
@@ -19,7 +19,7 @@ for (const file of ['AGENTS.md', 'package.json', 'package-lock.json', 'tests', '
 assert.equal(manifest.id, './');
 assert.equal(manifest.start_url, './');
 assert.equal(manifest.scope, './');
-assert.match(html, new RegExp(`domain-logic\\.js\\?v=${version.replace('.', '\\.')}`));
+assert.match(html, new RegExp(`domain-logic\\.js\\?v=${version.replace('.', '\\.')}`));\nassert.match(html, new RegExp(`runtime-foundation\\.js\\?v=${version.replace('.', '\\.')}`));
 assert.match(html, new RegExp(`app-core\\.js\\?v=${version.replace('.', '\\.')}`));
 assert.match(html, /id="reactLaunchMotto"/);
 const moduleAsset = html.match(/src="\.\/(assets\/[^" ]+\.js)"/);
