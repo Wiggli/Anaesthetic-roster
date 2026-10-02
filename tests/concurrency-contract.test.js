@@ -7,7 +7,8 @@ const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const core = fs.readFileSync(path.join(root, 'app-core.js'), 'utf8');
 const chat = fs.readFileSync(path.join(root, 'chat.js'), 'utf8');
 const domain = fs.readFileSync(path.join(root, 'domain-logic.js'), 'utf8');
-const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');\nconst reliabilityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
+const reliabilityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
 
 assert.match(ui, /var nightSelectionMode='automatic'/, 'automatic and manual night selection must be explicit state');
@@ -39,4 +40,5 @@ assert.match(sw, /ACTIVATE_UPDATE/, 'updates must still require explicit activat
 assert.match(ui, /verifyRuntimeHealth\(/, 'post-update runtime versions must be checked');
 
 console.log('Multi-device, mutation retry, idempotency and update-health contracts passed.');
-\nassert.match(reliabilityMigration, /roster_operation_log[\\s\\S]*operation_id uuid primary key/, 'roster commands must be database-idempotent');\nassert.match(reliabilityMigration, /assert_roster_fresh_v48/, 'shared writes must reject stale revisions');\n
+assert.match(reliabilityMigration, /roster_operation_log[\s\S]*operation_id uuid primary key/, 'roster commands must be database-idempotent');
+assert.match(reliabilityMigration, /assert_roster_fresh_v48/, 'shared writes must reject stale revisions');
