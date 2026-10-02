@@ -43,12 +43,13 @@ async function run() {
   };
   const response = await context.requestStartupSnapshot();
   assert.equal(response.profile.active, true, 'the direct startup response must be returned');
-  assert.equal(sent.url, `${context.SUPABASE_URL}/rest/v1/rpc/get_roster_startup_v37`);
+  assert.equal(sent.url, `${context.SUPABASE_URL}/rest/v1/rpc/get_roster_startup_v49`);
   assert.equal(sent.options.method, 'POST');
   assert.equal(sent.options.headers.Authorization, 'Bearer signed-in-test-token');
   assert.equal(sent.options.headers.apikey, context.SUPABASE_KEY);
   assert.equal(sent.options.cache, 'no-store');
   assert.equal(sent.options.credentials, 'omit');
+  assert.equal(sent.options.body, JSON.stringify({ p_client_version: context.APP_VERSION }), 'protected startup must identify the running client version');
 
   let xhrSent;
   let xhrPayload = { profile: { active: true } };
@@ -66,10 +67,10 @@ async function run() {
   const xhrResponse = await context.requestStartupSnapshotXhr();
   assert.equal(xhrResponse.profile.active, true, 'the independent Android transport must return the protected snapshot');
   assert.equal(xhrSent.method, 'POST');
-  assert.equal(xhrSent.url, `${context.SUPABASE_URL}/rest/v1/rpc/get_roster_startup_v37`);
+  assert.equal(xhrSent.url, `${context.SUPABASE_URL}/rest/v1/rpc/get_roster_startup_v49`);
   assert.equal(xhrSent.headers.Authorization, 'Bearer signed-in-test-token');
   assert.equal(xhrSent.headers.apikey, context.SUPABASE_KEY);
-  assert.equal(xhrSent.body, '{}');
+  assert.equal(xhrSent.body, JSON.stringify({ p_client_version: context.APP_VERSION }), 'Android startup must identify the running client version');
 
   const recoveredHeaders = [];
   let recoveredAttempts = 0;
@@ -126,7 +127,8 @@ async function run() {
     night_labour_order: { data: [], error: null }, night_plan_status: { data: [], error: null }, night_role_overrides: { data: [], error: null },
     night_change_history: { data: [], error: null }, night_overtime_history: { data: [], error: null }, night_role_override_history: { data: [], error: null },
     app_settings: { data: { id: 1, email_recipients: [] }, error: null }, app_schema_version: { data: { id: 1, version: 37 }, error: null },
-    app_sync_state: { data: { id: 1, revision: 9 }, error: null }
+    app_sync_state: { data: { id: 1, revision: 9 }, error: null },
+    app_access_signal: { data: { id: 1, access_epoch: 4 }, error: null }
   };
   let syncRevisions = [9, 9];
   const queryFor = table => {
@@ -142,7 +144,14 @@ async function run() {
     return query;
   };
   context.currentUser = { email: 'andre@example.test' };
-  context.supa = { from: queryFor };
+  context.supa = {
+    from: queryFor,
+    rpc: async (name, args) => {
+      assert.equal(name, 'get_app_compatibility_v49');
+      assert.equal(args.p_client_version, context.APP_VERSION);
+      return { data: { minimum_read_version: '37.0', minimum_write_version: '41.0', recommended_version: '41.0', maintenance_mode: false, maintenance_message: 'Shared roster editing has been temporarily paused.', write_allowed: true, write_status: 'allowed' }, error: null };
+    }
+  };
   context.startupFallbackTimeoutMs = 50;
   assert.equal(context.preferCompatibilityStartup(), false);
   context.navigator.userAgent = 'Mozilla/5.0 (Linux; Android 16; SM-S928B)';
@@ -153,6 +162,8 @@ async function run() {
   assert.equal(fallback.roster_settings.published_until, '2027-12-30');
   assert.equal(fallback.schema_version, 37);
   assert.equal(fallback.sync_revision, 9);
+  assert.equal(fallback.access_epoch, 4, 'compatibility startup must include the privacy-safe access revision');
+  assert.equal(fallback.compatibility.write_allowed, true, 'compatibility startup must carry the server write contract');
 
   syncRevisions = [9, 10, 10, 10];
   const refreshedFallback = await context.requestCompatibilityStartup();
@@ -170,7 +181,8 @@ async function run() {
     night_changes: [], night_overtime: [], night_five_cover: [],
     roster_settings: context.rosterSettings, rotation_versions: context.rotationVersions,
     night_labour_order: [], night_plan_status: [], night_role_overrides: [],
-    app_settings: tableData.app_settings.data, schema_version: 37, sync_revision: 10
+    app_settings: tableData.app_settings.data, schema_version: 37, sync_revision: 10, access_epoch: 4,
+    compatibility: { minimum_read_version: '37.0', minimum_write_version: '41.0', recommended_version: '41.0', maintenance_mode: false, maintenance_message: 'Shared roster editing has been temporarily paused.', write_allowed: true, write_status: 'allowed' }
   };
   assert.equal(await context.loadSharedData(), true, 'an Android signed-in startup must open through the independent protected snapshot request');
   assert.equal(context.currentUserProfile.email, 'andre@example.test');
