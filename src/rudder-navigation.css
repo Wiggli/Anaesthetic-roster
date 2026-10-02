@@ -495,3 +495,118 @@ html[data-theme="dark"] .quickActionsSheet{
   .bottom.reactTabs .quickRudderDisc{border:2px solid #fff!important}
   .quickActionList,.quickActionsContextBar,.quickReviewAction,.quickPrimaryAction,.quickCompactAction{border-width:1px!important}
 }
+
+
+/* 41.9 integrated dock polish.
+   Five equal destinations, with Actions differentiated but no longer behaving like a floating FAB. */
+:root{
+  --rudder-nav-height:64px;
+  --rudder-action-size:36px;
+}
+.bottom.reactTabs{
+  width:min(calc(100vw - 12px),500px)!important;
+  height:64px!important;
+  min-height:64px!important;
+  gap:1px!important;
+  padding:5px 6px!important;
+  border-radius:23px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.025) 58%,transparent),
+    rgba(248,250,252,.20)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 12px 34px rgba(22,34,46,.11)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(170%) contrast(1.01)!important;
+  backdrop-filter:blur(30px) saturate(170%) contrast(1.01)!important;
+}
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.075)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.008) 62%,transparent),
+    rgba(24,26,30,.38)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 38px rgba(0,0,0,.27)!important;
+}
+.bottom.reactTabs button[data-v],
+.bottom.reactTabs .quickRudder{
+  height:52px!important;
+  min-height:52px!important;
+  gap:2px!important;
+  padding:3px 1px!important;
+  border-radius:16px!important;
+}
+.bottom.reactTabs button[data-v] svg{
+  width:20px!important;
+  height:20px!important;
+}
+.bottom.reactTabs button[data-v]>span,
+.bottom.reactTabs .quickRudderLabel{
+  font-size:9.75px!important;
+  font-weight:690!important;
+  line-height:1!important;
+}
+.bottom.reactTabs .quickRudder{
+  transform:none!important;
+}
+.bottom.reactTabs .quickRudderDisc{
+  width:36px!important;
+  height:36px!important;
+  flex-basis:36px!important;
+  border-radius:12px!important;
+  border:1px solid color-mix(in srgb,#fff 42%,var(--liquid-accent))!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.025)),
+    color-mix(in srgb,var(--liquid-accent) 88%,#0b5cd6 12%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.30),0 3px 10px color-mix(in srgb,var(--liquid-accent) 14%,transparent)!important;
+}
+.bottom.reactTabs .quickRudderDisc::before{
+  display:none!important;
+}
+.bottom.reactTabs .quickRudderDisc svg{
+  width:18px!important;
+  height:18px!important;
+}
+.bottom.reactTabs .quickRudder.open .quickRudderDisc,
+.bottom.reactTabs .quickRudder:active .quickRudderDisc{
+  transform:scale(.96)!important;
+}
+.bottom.reactTabs .navTaskBadge{
+  top:4px!important;
+  left:calc(50% + 5px)!important;
+  min-width:17px!important;
+  height:17px!important;
+  padding:0 4px!important;
+  font-size:8.5px!important;
+}
+.bottom.reactTabs .quickRudderAttention{
+  top:-3px!important;
+  right:-4px!important;
+}
+body[data-view] main{
+  padding-bottom:calc(var(--rudder-nav-height) + 26px + env(safe-area-inset-bottom))!important;
+}
+@media(max-width:390px){
+  :root{--rudder-action-size:34px}
+  .bottom.reactTabs{
+    width:calc(100vw - 8px)!important;
+    padding-inline:4px!important;
+  }
+  .bottom.reactTabs .quickRudderDisc{
+    width:34px!important;
+    height:34px!important;
+    flex-basis:34px!important;
+  }
+  .bottom.reactTabs button[data-v]>span,
+  .bottom.reactTabs .quickRudderLabel{font-size:9.25px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .bottom.reactTabs .quickRudderDisc,
+  .bottom.reactTabs .quickRudderDisc svg{transition:none!important}
+  .bottom.reactTabs .quickRudder.open .quickRudderDisc,
+  .bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:none!important}
+}
+@media(prefers-reduced-transparency:reduce){
+  .bottom.reactTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-surface)!important;
+  }
+}
