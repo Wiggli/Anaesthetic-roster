@@ -480,7 +480,7 @@ assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v48/, '
 assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',15000/, 'active clients must check the shared revision through the central scheduler');
 assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
 assert.match(ui, /lifecycle\.setResumeHandler\(reconcileApplication\)/, 'returning to an open app must use the centralized resume reconciliation path');
-assert.match(ui, /apply_night_role_override_v48/, 'night-only role mutations must use the atomic schema-35 RPC');
+assert.match(ui, /apply_night_role_override_v48/, 'night-only role mutations must use the guarded schema-48 RPC');
 assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
 assert.doesNotMatch(ui, /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'staffing saves must never fall back to browser-side multi-step writes');
 assert.match(ui, /record_night_absence_v48[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
@@ -492,11 +492,11 @@ assert.match(identityMigration, /add column if not exists roster_name text/, 'sc
 assert.match(identityMigration, /allowed_users_roster_name_unique/, 'one roster identity must not be bound to multiple accounts');
 assert.match(identityMigration, /user_role = 'admin'[\s\S]*set roster_name = v_roster_name/, 'only an active administrator may bind roster identities');
 assert.match(identityMigration, /update public\.app_schema_version[\s\S]*version = 34/, 'schema 34 migration must update the schema marker');
-assert.match(roleMigration, /create or replace function public\.apply_night_role_override_v48[\s\S]*insert into public\.night_role_override_history/, 'schema 35 must save custom role overrides and history atomically');
+assert.match(roleMigration, /create or replace function public\.apply_night_role_override_v35[\s\S]*insert into public\.night_role_override_history/, 'schema 35 must save custom role overrides and history atomically');
 assert.match(roleMigration, /jsonb_object_keys\(p_assignments\)/, 'schema 35 must count JSON keys with a supported PostgreSQL primitive');
 assert.doesNotMatch(roleMigration, /jsonb_object_length\(/, 'schema 35 must not call the unavailable JSONB object-length function');
 assert.match(roleMigration, /night_overtime[\s\S]*nurse_name/, 'schema 35 must validate overtime nurses as part of the effective five-person team');
-assert.match(roleMigration, /apply_night_role_override_v33[\s\S]*apply_night_role_override_v48/, 'schema 35 must repair older installed clients with a compatibility wrapper');
+assert.match(roleMigration, /apply_night_role_override_v33[\s\S]*apply_night_role_override_v35/, 'schema 35 must repair older installed clients with a compatibility wrapper');
 assert.match(roleMigration, /update public\.app_schema_version[\s\S]*version = 35/, 'schema 35 migration must update the schema marker');
 assert.match(constraintMigration, /drop constraint if exists night_role_overrides_valid[\s\S]*add constraint night_role_overrides_valid/, 'schema 36 must replace the incompatible table constraint forward-only');
 assert.match(constraintMigration, /when p_assignments ->> 'mode' = '5'[\s\S]*'fullLW'/, 'schema 36 must accept the reviewed five-role structure');
