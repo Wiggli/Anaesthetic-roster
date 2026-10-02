@@ -24,16 +24,20 @@
     try{return JSON.parse(value)}catch(error){return fallback}
   }
 
+  function storageKey(key){key=String(key||'');return key.indexOf(STORAGE_PREFIX)===0?key:STORAGE_PREFIX+key}
   var storage={
     get:function(key,fallback){
-      try{var value=global.localStorage.getItem(STORAGE_PREFIX+key);return value==null?fallback:value}catch(error){diagnostic('storage','read',key);return fallback}
+      try{var value=global.localStorage.getItem(storageKey(key));return value==null?fallback:value}catch(error){diagnostic('storage','read',key);return fallback}
     },
     set:function(key,value){
-      try{global.localStorage.setItem(STORAGE_PREFIX+key,String(value));return true}catch(error){diagnostic('storage','write',key);return false}
+      try{global.localStorage.setItem(storageKey(key),String(value));return true}catch(error){diagnostic('storage','write',key);return false}
     },
     remove:function(key){
-      try{global.localStorage.removeItem(STORAGE_PREFIX+key);return true}catch(error){diagnostic('storage','remove',key);return false}
+      try{global.localStorage.removeItem(storageKey(key));return true}catch(error){diagnostic('storage','remove',key);return false}
     },
+    getItem:function(key){return this.get(key,null)},
+    setItem:function(key,value){return this.set(key,value)},
+    removeItem:function(key){return this.remove(key)},
     getJSON:function(key,fallback){return safeJSON(this.get(key,null),fallback)},
     setJSON:function(key,value){return this.set(key,JSON.stringify(value))}
   };
