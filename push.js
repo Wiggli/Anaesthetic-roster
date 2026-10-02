@@ -1,4 +1,5 @@
 (function(){
+var pushStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
 'use strict';
 
 var VAPID_PUBLIC_KEY='BFF3dFdZyd_b_NTfoilYbHZKlfBctyp1Cgm4U4lKTLvyrLNWQZE6_2L2q2GCCXw13QOyq2sf9al2vuf674pQUq0';
@@ -40,11 +41,11 @@ function pushSetBusy(busy){
 }
 function pushPromptKey(){return'anaes_push_prompt_v37_25'}
 function pushValueSeenKey(){return'anaes_push_value_seen_v37_94'}
-function pushValueSeen(){try{return!!localStorage.getItem(pushValueSeenKey())}catch(error){return false}}
-function pushMarkValueSeen(){try{localStorage.setItem(pushValueSeenKey(),'1')}catch(error){}}
+function pushValueSeen(){try{return!!pushStorage.getItem(pushValueSeenKey())}catch(error){return false}}
+function pushMarkValueSeen(){try{pushStorage.setItem(pushValueSeenKey(),'1')}catch(error){}}
 function pushPromptDialog(){return pushEl('pushPromptDialog')}
-function pushMarkPromptSeen(){try{localStorage.setItem(pushPromptKey(),'1')}catch(error){}}
-function pushPromptSeen(){try{return!!localStorage.getItem(pushPromptKey())}catch(error){return false}}
+function pushMarkPromptSeen(){try{pushStorage.setItem(pushPromptKey(),'1')}catch(error){}}
+function pushPromptSeen(){try{return!!pushStorage.getItem(pushPromptKey())}catch(error){return false}}
 function pushClosePrompt(){var dialog=pushPromptDialog();if(dialog&&dialog.open)dialog.close()}
 function pushDismissPrompt(){pushMarkPromptSeen();pushClosePrompt()}
 function pushEnableFromPrompt(){pushMarkPromptSeen();pushClosePrompt();pushEnable()}
