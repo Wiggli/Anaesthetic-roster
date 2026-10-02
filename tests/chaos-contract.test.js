@@ -13,6 +13,7 @@ assert.match(runtime,/StateMachine\('sync','starting'/,'sync state must be expli
 assert.match(runtime,/StateMachine\('night','automatic-next'/,'night selection state must be explicit');
 assert.match(runtime,/BroadcastChannel\('anaesthetic-roster-runtime-v1'\)/,'tabs must coordinate locally');
 assert.match(runtime,/LEADER_TTL=12000/,'tab leadership must expire');
+assert.match(runtime,/roster:tab-leader/,'leadership changes must be broadcast locally so duplicate realtime owners can stand down');
 assert.match(runtime,/schedulerEvery/,'recurring work must use a central scheduler');
 assert.match(runtime,/typeof job\.interval==='function'/,'scheduler cadence must support adaptive intervals');
 assert.match(runtime,/setResumeHandler/,'resume work must have one lifecycle entry point');
@@ -31,6 +32,7 @@ assert.match(ui,/shadowNightPlanCheck/,'night plan shadow comparison must run be
 assert.match(ui,/anaes_compat_startup_count/,'compatibility fallback use must be measured before removal');
 assert.match(ui,/coordinator\.isLeader\(\)/,'roster realtime must be single-leader across local tabs');
 assert.match(ui,/roster:peer-revision/,'follower tabs must react to leader revision broadcasts');
+assert.match(ui,/roster:tab-leader[\s\S]*removeChannel\(changesChannel\)[\s\S]*subscribeToChanges\(\)/,'tabs that lose leadership must close roster realtime and new leaders must take ownership');
 assert.doesNotMatch(ui,/offline mutation queue|pending offline mutation|flushOffline/i,'clinical writes must not be queued for later offline replay');
 
 for(const rpc of [
