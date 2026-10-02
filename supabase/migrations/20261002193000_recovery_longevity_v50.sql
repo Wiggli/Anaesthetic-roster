@@ -97,9 +97,12 @@ begin
     coalesce(v_actor,'System'),v_before,v_after
   );
 
-  return coalesce(new,old);
+  if tg_op='DELETE' then
+    return old;
+  end if;
+  return new;
 end
-$$;
+$;
 
 revoke all on function public.capture_roster_audit_v50() from public,anon,authenticated;
 
@@ -209,9 +212,12 @@ end
 $$;
 
 revoke all on function public.claim_roster_operation_v48(uuid,text,date,bigint)
-  from public,anon,authenticated;
+  from public,anon;
+grant execute on function public.claim_roster_operation_v48(uuid,text,date,bigint)
+  to authenticated;
 
--- v49 wrappers call this helper internally, so browser roles must not regain it.
+-- v49 wrappers call this helper internally. It only claims an idempotency key and
+-- does not mutate clinical roster state on its own.
 
 create or replace function public.prune_roster_operation_log_v50()
 returns bigint
