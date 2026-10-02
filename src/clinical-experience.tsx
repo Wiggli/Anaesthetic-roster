@@ -718,7 +718,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
           <strong>{liveStatus || next.title}</strong>
           <span>{next.title}{next.detail ? ' · ' + next.detail : ''}</span>
         </span>
-        {model.changed && <span className="personalNightChanged">Changed</span>}
+        {model.changed && <span className="personalNightChanged">Changed tonight</span>}
       </motion.div>
 
       <NightTimeline model={model} value={value} />
