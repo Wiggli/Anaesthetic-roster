@@ -752,7 +752,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </details>}
 
       <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={action}>
-        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View full night' : 'Choose your name'}
+        {model.action === 'absence' ? 'Review absence' : model.action === 'role' ? 'View in night situation' : 'Choose your name'}
         <span aria-hidden="true">›</span>
       </Pressable>
     </div>
