@@ -39,6 +39,7 @@ assert.match(ui, /changed on another device\|revision conflict/, 'stale multi-de
 assert.match(sw, /ACTIVATE_UPDATE/, 'updates must still require explicit activation');
 assert.match(ui, /verifyRuntimeHealth\(/, 'post-update runtime versions must be checked');
 
-console.log('Multi-device, mutation retry, idempotency and update-health contracts passed.');
 assert.match(reliabilityMigration, /roster_operation_log[\s\S]*operation_id uuid primary key/, 'roster commands must be database-idempotent');
 assert.match(reliabilityMigration, /assert_roster_fresh_v48/, 'shared writes must reject stale revisions');
+
+console.log('Multi-device, mutation retry, idempotency and update-health contracts passed.');
