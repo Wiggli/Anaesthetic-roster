@@ -270,6 +270,7 @@ const accessRequestMigration = fs.readFileSync(path.join(__dirname, '..', 'supab
 const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 const logicFoundationMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
 const reliabilityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
+const trustBoundaryMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002180000_trust_boundary_v49.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 const releaseHistorySnapshot = Array.from(context.RELEASE_HISTORY, entry => ({
   version: String(entry.version),
@@ -462,6 +463,8 @@ assert.match(ui, /function waitingUpdateDeferralKey\(\)[\s\S]*anaes_update_later
 assert.match(ui, /async function showUpdate\(registration\)[\s\S]*workerCacheName\(waiting\)[\s\S]*await loadPendingUpdateMeta\(\)[\s\S]*sessionStorage\.getItem\(waitingUpdateDeferralKey\(\)\)[\s\S]*!updateIsAutomatic\(\)/, 'update discovery must identify the waiting worker version, load its policy and apply only version-scoped deferral');
 assert.match(ui, /function classifyWaitingUpdate\(\)[\s\S]*return'new'[\s\S]*return'refresh'[\s\S]*return'finish'/, 'waiting updates must distinguish a newer release from a same-version component refresh and a partially installed current release');
 assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*ACTIVATE_UPDATE[\s\S]*setTimeout\(async function\(\)[\s\S]*updateRegistration\.waiting[\s\S]*window\.location\.reload\(\)/, 'explicit update activation must retain ACTIVATE_UPDATE and recover if controllerchange is missed');
+assert.match(ui, /serverRequired=compatibilityNeedsUpdate\(\)[\s\S]*laterBanner\.classList\.toggle\('hidden',serverRequired\)[\s\S]*laterSheet\.classList\.toggle\('hidden',serverRequired\)/, 'a server-required safety update must remove deferral without auto-activating the waiting worker');
+assert.match(ui, /function dismissWaitingUpdate\(\)[\s\S]*compatibilityNeedsUpdate\(\)[\s\S]*required before shared changes/, 'required safety updates must not be dismissible as ordinary optional releases');
 assert.match(ui, /controllerchange'[\s\S]*finishUpdateActivation\(\)[\s\S]*refreshControllerCacheVersion\(\)[\s\S]*reloadForUpdate[\s\S]*window\.location\.reload\(\)/, 'controller changes must clear stale update UI and reload exactly when an accepted update is completing');
 assert.match(sw, /GET_CACHE_VERSION'[\s\S]*event\.ports[\s\S]*postMessage\(payload\)[\s\S]*event\.source/, 'waiting and active service workers must both be able to report their cache version through MessageChannel or the controlling client');
 assert.doesNotMatch(ui, /function showUpdate\(registration\)[^}]*showModal/, 'finding an update must never open a modal automatically');
@@ -480,11 +483,11 @@ assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v48/, '
 assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',[\s\S]*realtimeSubscribed&&sharedSyncState==='live'\?60000:15000/, 'active clients must check the shared revision through the adaptive central scheduler');
 assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
 assert.match(ui, /lifecycle\.setResumeHandler\(reconcileApplication\)/, 'returning to an open app must use the centralized resume reconciliation path');
-assert.match(ui, /apply_night_role_override_v48/, 'night-only role mutations must use the guarded schema-48 RPC');
+assert.match(ui, /apply_night_role_override_v49/, 'night-only role mutations must use the guarded schema-48 RPC');
 assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
 assert.doesNotMatch(ui, /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'staffing saves must never fall back to browser-side multi-step writes');
-assert.match(ui, /record_night_absence_v48[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
-assert.match(ui, /add_night_overtime_v48[\s\S]*atomicRequired/, 'overtime saves must require the atomic RPC');
+assert.match(ui, /record_night_absence_v49[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
+assert.match(ui, /add_night_overtime_v49[\s\S]*atomicRequired/, 'overtime saves must require the atomic RPC');
 assert.match(syncMigration, /create table if not exists public\.app_sync_state/, 'schema 33 must provide a shared revision signal');
 assert.match(syncMigration, /create or replace function public\.apply_night_role_override_v33[\s\S]*insert into public\.night_role_override_history/, 'schema 33 must save role overrides and audit history atomically');
 assert.match(syncMigration, /update public\.app_schema_version[\s\S]*version = 33/, 'schema 33 migration must update the schema marker');
@@ -520,7 +523,7 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 48, 'the application must require the reliability-architecture schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 49, 'the application must require the Trust Boundary schema');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');
@@ -533,6 +536,22 @@ assert.match(reliabilityMigration, /validate_night_plan_v48/, 'schema 48 must va
 assert.match(reliabilityMigration, /publish_roster_v48[\s\S]*PUBLISH_REGRESSION/, 'schema 48 must prevent publication rollback');
 assert.match(reliabilityMigration, /upsert_rotation_version_v48[\s\S]*ROTATION_VERSION_EXISTS/, 'schema 48 must protect effective-dated rotation history');
 assert.match(reliabilityMigration, /update public\.app_schema_version[\s\S]*version=48/, 'schema 48 migration must advance the schema marker');
+assert.match(trustBoundaryMigration, /create table if not exists public\.app_compatibility[\s\S]*minimum_write_version text[\s\S]*blocked_write_versions text\[\]/, 'schema 49 must add a server-controlled compatibility contract and per-version write blocklist');
+assert.match(trustBoundaryMigration, /minimum_write_version='41\.0'[\s\S]*recommended_version='41\.0'/, 'schema 49 must require the Trust Boundary client for consequential writes');
+assert.match(trustBoundaryMigration, /alter table public\.app_sync_state[\s\S]*access_epoch bigint not null default 0/, 'schema 49 must add a privacy-safe access revision');
+assert.match(trustBoundaryMigration, /tg_table_name='allowed_users'[\s\S]*then 1 else 0/, 'access epoch must advance only when authorised-account state changes');
+assert.match(trustBoundaryMigration, /create trigger bump_app_sync_state_v49[\s\S]*on public\.app_compatibility/, 'compatibility switches must wake active clients through the existing realtime revision signal');
+assert.match(trustBoundaryMigration, /create or replace function public\.my_access_status_v49\(\)[\s\S]*auth\.uid\(\)[\s\S]*access_epoch/, 'schema 49 must expose only the signed-in account status plus the access epoch');
+assert.match(trustBoundaryMigration, /create or replace function public\.current_roster_actor_name_v49\(\)[\s\S]*allowed_users[\s\S]*auth\.jwt\(\)/, 'audit display identity must be resolved on the server from the authenticated account');
+for (const table of ['night_change_history','night_overtime_history','night_role_override_history']) assert.match(trustBoundaryMigration, new RegExp(`alter table public\\.${table}[\\s\\S]*actor_user_id uuid`), `schema 49 must give ${table} an immutable authenticated actor id`);
+for (const rpc of ['record_night_absence_v49','remove_night_absence_v49','add_night_overtime_v49','remove_night_overtime_v49','apply_staffing_allocations_v49','finalise_night_plan_v49','apply_night_role_override_v49','publish_roster_v49','upsert_rotation_version_v49']) {
+  assert.match(trustBoundaryMigration, new RegExp(`create or replace function public\\.${rpc}[\\s\\S]*assert_app_write_compatible_v49\\(p_client_version\\)`), `${rpc} must enforce server compatibility before changing the shared roster`);
+}
+assert.doesNotMatch(trustBoundaryMigration, /create or replace function public\.[a-z_]+_v49\([^$]*p_changed_by/, 'public v49 mutation signatures must not accept browser-supplied audit identity');
+for (const legacy of ['record_night_absence_v25','remove_night_absence_v25','add_night_overtime_v25','remove_night_overtime_v25','apply_staffing_allocations_v25','finalise_night_plan_v26','apply_night_role_override_v35','record_night_absence_v48','remove_night_absence_v48','add_night_overtime_v48','remove_night_overtime_v48','apply_staffing_allocations_v48','finalise_night_plan_v48','apply_night_role_override_v48','publish_roster_v48','upsert_rotation_version_v48']) {
+  assert.match(trustBoundaryMigration, new RegExp(`revoke all on function public\\.${legacy}[\\s\\S]{0,260}from public,anon,authenticated`), `legacy mutation route ${legacy} must no longer be executable by authenticated clients`);
+}
+assert.match(trustBoundaryMigration, /update public\.app_schema_version[\s\S]*version=49/, 'schema 49 migration must advance the schema marker');
 assert.match(accessRequestMigration, /create table if not exists public\.access_requests/, 'schema 43 must add a dedicated access request table');
 assert.match(accessRequestMigration, /alter table public\.access_requests enable row level security/, 'access requests must use RLS');
 assert.match(accessRequestMigration, /Users can request own access[\s\S]*auth\.uid\(\)[\s\S]*auth\.jwt\(\)/, 'a pending user may only create a request for their own authenticated identity');
@@ -541,7 +560,7 @@ assert.match(accessRequestMigration, /grant update \(status, reviewed_at, review
 assert.match(accessRequestMigration, /version = greatest\(version, 43\)/, 'schema 43 migration must update the schema marker');
 assert.doesNotMatch(html, /personalSchedulePanel|personalScheduleList|exportMyCalendarBtn|My upcoming nights/, 'Night must not include the removed upcoming-nights section');
 assert.doesNotMatch(ui, /boundRosterName|setRosterIdentity|personalUpcomingNights|renderPersonalSchedule|exportMyCalendar/, 'the app must not use account-to-roster binding or personal calendar features');
-assert.match(ui, /requestStartupSnapshot\(\)[\s\S]*get_roster_startup_v37/, 'authorisation and shared data must use the protected single-request startup snapshot');
+assert.match(ui, /requestStartupSnapshot\(\)[\s\S]*get_roster_startup_v49[\s\S]*p_client_version:APP_VERSION/, 'authorisation and shared data must use the compatibility-aware protected startup snapshot');
 assert.doesNotMatch(ui, /supa\.from\('allowed_users'\)\.select\('email,display_name,user_role,active'\)/, 'startup must not make a separate serial account request');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function myName\(\)\{return appStorage\.getItem\('anaes_my_name'\)/, 'roster highlighting must remain a private device choice through the storage facade');
 assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity');
@@ -591,12 +610,12 @@ assert.match(ui, /Finishing the shared roster connection…/, 'slow launch state
 assert.match(ui, /Showing the last saved roster/, 'offline launch state must identify saved roster data');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function withTimeout\(promise,ms,message\)/, 'startup network work must have a bounded timeout helper');
 assert.match(html, /id="launchRecovery"[\s\S]*launchRetryBtn[\s\S]*launchOfflineBtn/, 'a delayed startup must offer retry and saved-roster recovery actions');
-assert.match(ui, /fetch\(SUPABASE_URL\+'\/rest\/v1\/rpc\/get_roster_startup_v37'/, 'startup must send the protected snapshot request directly instead of waiting on the stalled client wrapper');
+assert.match(ui, /fetch\(SUPABASE_URL\+'\/rest\/v1\/rpc\/get_roster_startup_v49'[\s\S]*p_client_version:APP_VERSION/, 'startup must send the compatibility-aware protected snapshot request directly instead of waiting on the stalled client wrapper');
 assert.match(ui, /Authorization:'Bearer '\+token/, 'the direct startup request must use the signed-in token');
 assert.match(ui, /setTimeout\(function\(\)\{controller\.abort\(\)\},startupSnapshotTimeoutMs\)/, 'the direct startup request must still ask the browser to abort');
 assert.match(ui, /withTimeout\([\s\S]*startupSnapshotTimeoutMs\+500,'The shared roster snapshot did not settle\.'/,
   'the direct startup request must have an application-level deadline independent of browser abort completion');
-assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v37[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs/,
+assert.match(ui, /async function requestStartupSnapshotXhr\(\)[\s\S]*new window\.XMLHttpRequest\(\)[\s\S]*get_roster_startup_v49[\s\S]*p_client_version:APP_VERSION[\s\S]*xhr\.timeout=startupSnapshotTimeoutMs/,
   'installed Android startup must use an independent bounded request for the protected snapshot');
 assert.match(ui, /if\(preferCompatibilityStartup\(\)\)[\s\S]*snapshot=await requestStartupWithSessionRecovery\(requestStartupSnapshotXhr\)/,
   'Android must use the independent protected snapshot transport before compatibility reads');
@@ -609,6 +628,14 @@ assert.doesNotMatch(ui, /launchSlowTimer=setTimeout\([\s\S]{0,240}showLaunchReco
 assert.doesNotMatch(ui, /await withTimeout\(loadNightHistory/, 'recent activity history must never block the core roster from opening');
 assert.match(ui, /renderRecentActivity\(date\);renderChanges\(cur\(\)\)/, 'recent activity must refresh when its non-blocking history request completes');
 assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recovery must keep all writes read-only until reconnection');
+assert.match(ui, /function sharedWritesBlocked\(\)[\s\S]*write_allowed!==true/, 'client controls must fail closed when the server compatibility contract blocks shared writes');
+assert.match(ui, /CLIENT_UPDATE_REQUIRED[\s\S]*CLIENT_VERSION_BLOCKED[\s\S]*APP_MAINTENANCE/, 'roster errors must distinguish required updates, blocked releases and emergency maintenance');
+assert.match(ui, /my_access_status_v49[\s\S]*enterAccessLost[\s\S]*chatTeardownSession[\s\S]*signOut/, 'an active session must clear Chat and sign out when server access is revoked');
+assert.match(ui, /accessEpoch[\s\S]*roster:peer-revision[\s\S]*checkCurrentAccessStatus/, 'the access epoch must propagate to follower tabs instead of relying on the realtime leader only');
+assert.doesNotMatch(ui, /p_changed_by:currentUserProfile\.display_name/, 'v49 roster calls must never trust browser-provided audit names');
+assert.match(ui, /record_night_absence_v49[\s\S]*p_client_version:APP_VERSION/, 'v49 roster writes must send the running app version to the server guard');
+assert.match(html, /id="writeGuardBanner"[\s\S]*id="writeGuardTitle"[\s\S]*id="writeGuardDetail"/, 'read-only compatibility states must have a persistent user-facing explanation');
+assert.match(presentationCss, /\/\* 41\.0 Trust Boundary write guard\. \*\/[\s\S]*\.writeGuardBanner/, 'the Trust Boundary notice must use the shared presentation system');
 assert.match(ui, /forcedOfflineSession=true;if\(cached&&restoreOfflineSnapshot\(\)\)\{updateOfflineControls\(\);return true\}/, 'saved-roster fallback must require the cached authorised account and disable writes before rendering');
 assert.match(ui, /function readOfflineSnapshot\(\)[\s\S]*snapshotRowsByDate\(raw\.nightChanges\)[\s\S]*snapshotRecordsByDate\(raw\.nightRoleOverrides\)/, 'saved-roster recovery must validate and repair partial local data before rendering');
 const retrySource = ui.slice(ui.indexOf('async function retryLaunchConnection'), ui.indexOf('\nfunction useSavedRosterAtLaunch'));
