@@ -33,7 +33,7 @@ var sharedSyncState='starting';
 var sharedSyncMessage='Opening shared roster';
 var compatibilityStartupUseCount=0;
 var compatibilityStartupLastUsed='';
-var rosterCommandInFlight={};
+var rosterCommandInFlight={};var rosterCommandIds={};
 var freshnessTimer=null;
 var lastResumeRefresh=0;
 var sharedSyncTimer=null;
@@ -1741,12 +1741,18 @@ async function ensureFreshBeforeMutation(){
 }
 function runRosterMutation(key,execute,verify){
   key=commandKey(key);if(rosterCommandInFlight[key])return rosterCommandInFlight[key];
-  var commandId=window.AnaestheticDomain&&window.AnaestheticDomain.commandId?window.AnaestheticDomain.commandId():'command-'+Date.now(),date=mutationDateFromKey(key),beforePlan=conflictPlanSnapshot(date);
+  var commandId=rosterCommandIds[key]||(window.AnaestheticDomain&&window.AnaestheticDomain.commandId?window.AnaestheticDomain.commandId():'command-'+Date.now()),date=mutationDateFromKey(key),beforePlan=conflictPlanSnapshot(date);
+  rosterCommandIds[key]=commandId;
   recordAppDiagnostic('mutation',key,'start');
   var work=(async function(){
+    var ambiguous=false;
     try{
       var freshness=await ensureFreshBeforeMutation();
-      if(!freshness.ok){var staleResult={data:null,error:freshness.error,conflictChanges:conflictSummary(beforePlan,conflictPlanSnapshot(date))};recordAppDiagnostic('mutation',key,'stale-client');return staleResult}
+      if(!freshness.ok){
+        delete rosterCommandIds[key];
+        var staleResult={data:null,error:freshness.error,conflictChanges:conflictSummary(beforePlan,conflictPlanSnapshot(date))};
+        recordAppDiagnostic('mutation',key,'stale-client');return staleResult
+      }
       var expectedSyncRevision=Number(freshness.revision);
       var result=await timedRequest(execute(commandId,expectedSyncRevision));
       if(result&&result.error){
@@ -1754,14 +1760,25 @@ function runRosterMutation(key,execute,verify){
         if(code==='ROSTER_REVISION_CONFLICT'||String(result.error.message||'').indexOf('ROSTER_REVISION_CONFLICT')>=0){
           await loadSharedData({background:true});result.conflictChanges=conflictSummary(beforePlan,conflictPlanSnapshot(date));recordAppDiagnostic('mutation',key,'revision-conflict');
         }
+        delete rosterCommandIds[key];
         return result
       }
+      delete rosterCommandIds[key];
       recordAppDiagnostic('mutation',key,'committed');return result
     }catch(error){
-      recordAppDiagnostic('mutation',key,error&&error.code||((error&&error.message==='timeout')?'timeout':'error'));
+      ambiguous=error&&error.message==='timeout'||error&&error.name==='AbortError'||error&&error.code==='TIMEOUT';
+      recordAppDiagnostic('mutation',key,error&&error.code||(ambiguous?'timeout':'error'));
       if(typeof verify==='function'){
-        try{await loadSharedData({background:true});if(await Promise.resolve(verify())){recordAppDiagnostic('mutation',key,'verified-after-timeout');return{data:{verified:true,command_id:commandId},error:null,recovered:true}}}catch(refreshError){recordAppDiagnostic('mutation',key,'verify-failed')}
+        try{
+          await loadSharedData({background:true});
+          if(await Promise.resolve(verify())){
+            delete rosterCommandIds[key];
+            recordAppDiagnostic('mutation',key,'verified-after-timeout');
+            return{data:{verified:true,command_id:commandId},error:null,recovered:true}
+          }
+        }catch(refreshError){recordAppDiagnostic('mutation',key,'verify-failed')}
       }
+      if(!ambiguous)delete rosterCommandIds[key];
       throw error
     }finally{delete rosterCommandInFlight[key]}
   })();
@@ -1844,7 +1861,9 @@ function startSharedSyncMonitor(){
   if(sharedSyncTimer)return;
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler){
     sharedSyncTimer='runtime';
-    window.AnaestheticRuntime.scheduler.every('shared-revision',15000,function(){
+    window.AnaestheticRuntime.scheduler.every('shared-revision',function(){
+      return realtimeSubscribed&&sharedSyncState==='live'?60000:15000
+    },function(){
       if(window.AnaestheticRuntime.coordinator&&!window.AnaestheticRuntime.coordinator.isLeader())return;
       if(!realtimeSubscribed&&currentUserProfile&&navigator.onLine&&!forcedOfflineSession)subscribeToChanges();
       return checkSharedRevision()
