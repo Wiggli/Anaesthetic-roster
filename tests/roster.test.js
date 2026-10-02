@@ -633,7 +633,8 @@ assert.match(ui, /forcedOfflineSession[\s\S]*requireOnline/, 'saved-roster recov
 assert.match(ui, /function sharedWritesBlocked\(\)[\s\S]*write_allowed!==true/, 'client controls must fail closed when the server compatibility contract blocks shared writes');
 assert.match(ui, /CLIENT_UPDATE_REQUIRED[\s\S]*CLIENT_VERSION_BLOCKED[\s\S]*APP_MAINTENANCE/, 'roster errors must distinguish required updates, blocked releases and emergency maintenance');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'runtime-foundation.js'), 'utf8'), /CLIENT_UPDATE_REQUIRED:[\s\S]*CLIENT_VERSION_BLOCKED:[\s\S]*APP_MAINTENANCE:/, 'the shared runtime must preserve Trust Boundary server codes instead of collapsing them into generic errors');
-assert.match(ui, /my_access_status_v49[\s\S]*enterAccessLost[\s\S]*chatTeardownSession[\s\S]*signOut/, 'an active session must clear Chat and sign out when server access is revoked');
+assert.match(ui, /function enterAccessLost\(\)[\s\S]*chatTeardownSession[\s\S]*signOut/, 'access loss must clear Chat state and end the local authenticated session');
+assert.match(ui, /function checkCurrentAccessStatus[\s\S]*my_access_status_v49[\s\S]*enterAccessLost/, 'an active session must enter Access Lost when the server reports that its account is no longer active');
 assert.match(ui, /accessEpoch[\s\S]*roster:peer-revision[\s\S]*checkCurrentAccessStatus/, 'the access epoch must propagate to follower tabs instead of relying on the realtime leader only');
 assert.match(ui, /app_access_signal[\s\S]*access_epoch[\s\S]*checkCurrentAccessStatus/, 'revocation detection must use the authenticated-only access signal rather than weakening roster-sync RLS');
 assert.doesNotMatch(ui, /p_changed_by:currentUserProfile\.display_name/, 'v49 roster calls must never trust browser-provided audit names');
