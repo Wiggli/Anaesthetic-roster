@@ -1,5 +1,5 @@
 /* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
-/* Anaesthetic Night Roster V41.3 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V41.4 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -89,6 +89,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"41.4","date":"2 October 2026","title":"Make night actions easier to reach","changes":["The bottom navigation now uses an integrated centre Quick button between Changes and Breaks while Night, Changes, Breaks and Chat remain the only page destinations.","Quick Actions opens a night-aware sheet for reporting an absence, adding overtime cover, reviewing outstanding changes, starting a private message and sharing the public Night Roster app.","Staffing shortcuts route into the existing guarded Changes workflow and respect offline or server-side write restrictions instead of creating new mutation paths.","The new rudder and sheet retain large touch targets, reduced-motion and reduced-transparency fallbacks, visible focus states and a restrained Liquid Glass treatment."],"policy":"normal"},
   {"version":"41.3","date":"2 October 2026","title":"Make Account and Administrator calmer","changes":["Account now opens to four clear destinations: Profile, Preferences, Security, and App & Help, instead of placing every setting and action in one long sheet.","Administrator now opens to Tonight, People & Access, Roster Management, and System, replacing the crowded five-tab control rail with a task-focused landing view.","Publishing and permanent team rotation are grouped behind Roster Management, while system health, recent admin activity, exports and diagnostics are grouped under System.","Technical health and audit detail stays collapsed until requested, while the existing roster, account, passkey, export and administrator actions continue to use their proven underlying logic."],"policy":"normal"},
   {"version":"41.2","date":"2 October 2026","title":"Finish the modular runtime architecture","changes":["The former app-ui.js source is split into foundation, clinical, synchronization and bootstrap modules, while the public app-ui.js remains a generated compatibility asset for installed PWAs.","Domain clock, freshness and capability logic plus the reliability runtime now live in strict TypeScript source and must typecheck before compatible browser JavaScript is generated.","Release tooling and architecture tests now reject stale generated assets or a return to the previous monolithic source layout.","Superseded one-off presentation boundary notes were removed after durable ownership and safety rules were consolidated into AGENTS.md.","The verified 138-night rotation, staffing and Labour Ward rules, Supabase trust boundary, audit schema, Chat transport and explicit ACTIVATE_UPDATE flow are unchanged."],"policy":"normal"},
   {"version":"41.1","date":"2 October 2026","title":"Make recovery and audit durable","changes":["Repeated failed launches now enter a reduced-risk recovery mode, saved rosters use bounded integrity-checked atomic IndexedDB snapshots, and the active service worker can verify and repair missing cached shell files without bypassing explicit update approval.","Consequential shared roster writes now create immutable server-side audit events with operation IDs, authenticated actor identity and before/after values, with an administrator timeline for review.","Night history now uses bounded keyset pagination, operation idempotency records expire after 90 days, and new database invariant and non-mutating canary checks strengthen long-running health monitoring.","Critical roster requests now collect bounded privacy-safe latency measurements, with CI size budgets guarding against performance drift.","Release testing now includes WebKit/iPhone coverage, low-end CPU and network pressure, ambiguous retry idempotency, real two-page leadership, active-session revocation and a verified roster-data restore drill."],"policy":"normal"},
@@ -632,7 +633,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=41.3" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=41.4" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -971,6 +972,44 @@ function selectedNightCopy(date,value){
   return{label:'Selected night',assignment:'Selected night’s assignment',changed:'Changed for this night'};
 }
 
+function quickActionsModel(){
+  var base=cur(),plan=staffingPlan(base),tasks=workflowTaskDetails(base,plan),copy=selectedNightCopy(base.date),count=Number(plan.count||0),blocked=sharedWritesBlocked(),offline=!navigator.onLine||forcedOfflineSession,canEdit=!blocked&&!offline,planLabel='';
+  if(count<5)planLabel='Cover required before the plan can be finalised';
+  else if(tasks.length)planLabel=tasks.length+' decision'+(tasks.length===1?'':'s')+' still to resolve';
+  else if(count===6)planLabel='Standard plan ready';
+  else planLabel='Plan ready';
+  return{contextLabel:copy.label,dateLabel:fmt(base.date),staffingLabel:count+' nurse'+(count===1?'':'s'),planLabel:planLabel,attentionCount:tasks.length,canEdit:canEdit,editReason:offline?'Reconnect to edit the shared roster.':blocked?sharedWriteNotice():''};
+}
+function renderQuickActionsFallback(model){
+  var context=byId('quickActionsFallbackContext'),staffing=byId('quickActionsFallbackStaffing');if(context)context.textContent=model.contextLabel+' · '+model.dateLabel;if(staffing)staffing.textContent=model.staffingLabel+' · '+model.planLabel;
+  ['quickAbsenceFallback','quickOvertimeFallback'].forEach(function(id){var button=byId(id);if(button){button.disabled=!model.canEdit;button.setAttribute('aria-disabled',model.canEdit?'false':'true')}});
+  var attention=byId('quickActionAttention');if(attention)attention.classList.toggle('hidden',!model.attentionCount);
+}
+function showQuickActions(){
+  var dialog=byId('quickActionsSheet');if(!dialog||document.body.classList.contains('authPending'))return;var model=quickActionsModel();renderQuickActionsFallback(model);
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:quick-actions',{detail:model}));
+  if(dialog.showModal&&!dialog.open)dialog.showModal();
+}
+function quickActionScroll(selector){
+  window.setTimeout(function(){var target=document.querySelector(selector);if(target&&target.scrollIntoView)target.scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})},80);
+}
+function performQuickAction(action){
+  var dialog=byId('quickActionsSheet');if(dialog&&dialog.open)dialog.close();
+  if(action==='absence'||action==='overtime'||action==='review'){
+    show('changes');
+    var step=action==='review'?smartChangesStep(cur()):'staffing';setChangesStep(step,false);
+    quickActionScroll(action==='absence'?'.absenceSection':action==='overtime'?'.overtimeSection':'#changes .changePanel');
+    return;
+  }
+  if(action==='private-chat'){
+    show('chat');if(typeof window.openChatView==='function')window.openChatView();
+    window.setTimeout(function(){var button=byId('chatNewPrivateBtn');if(button)button.click()},120);return;
+  }
+  if(action==='share'){showShareApp();return}
+}
+window.showQuickActions=showQuickActions;
+window.performQuickAction=performQuickAction;
+
 function updateSmartNightButtons(){
   var state=automaticNightState();
   ['smartNightBtn','changesSmartNightBtn'].forEach(function(id){
@@ -1106,7 +1145,7 @@ function updateChangesWorkflow(base,plan){
   state.innerHTML=tasks?'<b>'+esc(taskInstruction)+'</b><span>'+(tasks>1?esc((tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.')):'Select the nurse, then review the changes.')+'</span>':confirmNeeded?'<b>Ready to review</b><span>Check the selected night’s changes before sharing them with everyone.</span>':published&&published.published_at&&hasManualPlan?'<b>Changes shared</b><span>Updated by '+esc(published.published_by||'a shift member')+' at '+esc(shortTime(published.published_at))+'.</span>':'';
   state.classList.toggle('hidden',!tasks&&!confirmNeeded&&!hasManualPlan);
   state.classList.toggle('complete',!confirmNeeded);state.classList.toggle('ready',!tasks&&confirmNeeded);
-  var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);
+  var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.toggle('hidden',!badgeCount);
   var allocationAction=byId('continueToAllocationBtn');allocationAction.textContent=tasks?'Resolve allocations':'View or adjust roles';allocationAction.classList.toggle('quietAction',!tasks&&!confirmNeeded);
   var changesPanel=document.querySelector('#changes .changePanel');if(changesPanel)changesPanel.classList.toggle('planShared',shared);
   var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent='Review changes';var confirmReason=byId('continueToConfirmReason');if(confirmReason){confirmReason.textContent=tasks?'Complete the allocation above before reviewing changes.':'';confirmReason.classList.toggle('hidden',!tasks)}
@@ -2405,6 +2444,7 @@ function bind(){
   window.addEventListener('roster:open-night',function(event){var next=Number(event&&event.detail&&event.detail.index);if(Number.isInteger(next)&&R[next]){idx=next;show('today')}});
   window.addEventListener('roster:account-action',function(event){var detail=event&&event.detail||{};if(detail.action==='theme')setThemePreference(detail.value);else if(detail.action==='passkey-remove')deletePasskey(detail.value);else if(detail.action==='profile-input')updateProfileSaveState();else if(detail.action==='profile-save')saveProfile();else if(detail.action==='profile-photo')chooseProfilePhoto(detail.value);else if(detail.action==='profile-photo-remove')removeProfilePhoto();else runAccountAction(detail.action)});
   window.addEventListener('roster:admin-account-action',function(event){var detail=event&&event.detail||{};if(detail.action==='add')addAuthorisedAccount();else if(detail.action==='approve')approveAccessRequest(detail.value);else if(detail.action==='reject')rejectAccessRequest(detail.value);else if(detail.action==='toggle')toggleAuthorisedAccount(detail.value)});
+  window.addEventListener('roster:quick-action',function(event){var action=event&&event.detail&&event.detail.action;if(action)performQuickAction(action)});
   byId('loginTab').onclick=function(){setAuthMode('login')};byId('signupTab').onclick=function(){setAuthMode('signup')};byId('authSubmitBtn').onclick=submitAuth;byId('authGoogleBtn').onclick=signInWithGoogle;byId('authPasskeyBtn').onclick=signInWithPasskey;byId('authPasskeyBtn').classList.toggle('hidden',!passkeySupported());byId('forgotPasswordBtn').onclick=requestPasswordReset;byId('cancelRecoveryBtn').onclick=function(){setAuthMode('login')};byId('authPassword').onkeydown=function(e){if(e.key==='Enter')submitAuth()};byId('authPasswordConfirm').onkeydown=function(e){if(e.key==='Enter')submitAuth()};
   byId('accountBtn').onclick=showAccountSheet;byId('closeAccountSheet').onclick=function(){byId('accountSheet').close()};byId('accountSignOutBtn').onclick=function(){byId('accountSheet').close();signOutUser()};byId('addPasskeyBtn').onclick=addPasskey;byId('accountOnboardingBtn').onclick=openOnboardingReplay;byId('accountInstallBtn').onclick=async function(){byId('accountSheet').close();if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;byId('installBtn').classList.add('hidden')}else showInstallGuide()};byId('accountVersionHistoryBtn').onclick=function(){byId('accountSheet').close();renderReleaseNotes(true);byId('releaseNotes').showModal()};Array.prototype.forEach.call(document.querySelectorAll('[data-theme-choice]'),function(button){button.onclick=function(){setThemePreference(button.getAttribute('data-theme-choice'))}});byId('adminSettingsBtn').onclick=function(){activeAdminTab='home';show('admin')};byId('closeAdminBtn').onclick=function(){show('today')};var healthRefresh=byId('refreshAdminHealthBtn');if(healthRefresh)healthRefresh.onclick=function(){if(typeof loadAdminHealth==='function')loadAdminHealth(true)};
   var legacySaveChange=byId('saveChangeBtn'),legacyCancelAbsence=byId('cancelAbsenceEditBtn'),legacyAbsent=byId('absentName'),legacyAddOvertime=byId('addOvertimeBtn'),legacySaveAllocations=byId('saveAllocationsBtn'),legacyOvertime=byId('overtimeName'),legacyAddAccount=byId('addAccountBtn');if(legacySaveChange)legacySaveChange.onclick=saveNightChange;if(legacyCancelAbsence)legacyCancelAbsence.onclick=cancelAbsenceEdit;if(legacyAbsent)legacyAbsent.onchange=function(){markInvalid('absentName',false);formMessage('absenceFormMessage','');updateStaffingActionAvailability()};if(legacyAddOvertime)legacyAddOvertime.onclick=saveOvertime;if(legacySaveAllocations)legacySaveAllocations.onclick=saveFinalAllocationsV2510;if(legacyOvertime){legacyOvertime.oninput=function(){markInvalid('overtimeName',false);formMessage('overtimeFormMessage','');updateStaffingActionAvailability()};legacyOvertime.onkeydown=function(e){if(e.key==='Enter'&&!byId('addOvertimeBtn').disabled)saveOvertime()}}if(legacyAddAccount)legacyAddAccount.onclick=addAuthorisedAccount;
@@ -2413,7 +2453,7 @@ function bind(){
   byId('myNamePick').onchange=changeMyName;byId('search').oninput=renderRoster;byId('filter').onchange=renderRoster;
   Array.prototype.forEach.call(document.querySelectorAll('[data-admin-tab]'),function(b){b.onclick=function(){switchAdminTab(b.getAttribute('data-admin-tab'))}});Array.prototype.forEach.call(document.querySelectorAll('[data-extend-months]'),function(b){b.onclick=function(){setExtendRange(Number(b.getAttribute('data-extend-months')))}});
   byId('previewExtendBtn').onclick=previewExtension;byId('extendBtn').onclick=extendRoster;byId('saveTeamVersionBtn').onclick=previewTeamChange;byId('exportBtn').onclick=exportCSV;byId('backupBtn').onclick=backup;
-  byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};if(byId('closeShareAppDialog'))byId('closeShareAppDialog').onclick=function(){byId('shareAppDialog').close()};byId('closeActivityDetailSheet').onclick=function(){byId('activityDetailSheet').close()};Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){b.onclick=function(){var view=b.getAttribute('data-v');show(view);if(view==='chat'&&typeof window.openChatView==='function')window.openChatView()}});updateOfflineControls();
+  byId('closeScreenInfoSheet').onclick=function(){byId('screenInfoSheet').close()};if(byId('closeShareAppDialog'))byId('closeShareAppDialog').onclick=function(){byId('shareAppDialog').close()};byId('closeActivityDetailSheet').onclick=function(){byId('activityDetailSheet').close()};var quickClose=byId('closeQuickActionsSheet');if(quickClose)quickClose.onclick=function(){var dialog=byId('quickActionsSheet');if(dialog&&dialog.open)dialog.close()};Array.prototype.forEach.call(document.querySelectorAll('[data-quick-action]'),function(button){button.onclick=function(){performQuickAction(button.getAttribute('data-quick-action'))}});Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){if(b.hasAttribute('data-quick-rudder')){b.onclick=showQuickActions;return}b.onclick=function(){var view=b.getAttribute('data-v');if(!view)return;show(view);if(view==='chat'&&typeof window.openChatView==='function')window.openChatView()}});updateOfflineControls();
 }
 
 bind();

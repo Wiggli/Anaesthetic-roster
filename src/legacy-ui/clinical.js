@@ -64,6 +64,44 @@ function selectedNightCopy(date,value){
   return{label:'Selected night',assignment:'Selected night’s assignment',changed:'Changed for this night'};
 }
 
+function quickActionsModel(){
+  var base=cur(),plan=staffingPlan(base),tasks=workflowTaskDetails(base,plan),copy=selectedNightCopy(base.date),count=Number(plan.count||0),blocked=sharedWritesBlocked(),offline=!navigator.onLine||forcedOfflineSession,canEdit=!blocked&&!offline,planLabel='';
+  if(count<5)planLabel='Cover required before the plan can be finalised';
+  else if(tasks.length)planLabel=tasks.length+' decision'+(tasks.length===1?'':'s')+' still to resolve';
+  else if(count===6)planLabel='Standard plan ready';
+  else planLabel='Plan ready';
+  return{contextLabel:copy.label,dateLabel:fmt(base.date),staffingLabel:count+' nurse'+(count===1?'':'s'),planLabel:planLabel,attentionCount:tasks.length,canEdit:canEdit,editReason:offline?'Reconnect to edit the shared roster.':blocked?sharedWriteNotice():''};
+}
+function renderQuickActionsFallback(model){
+  var context=byId('quickActionsFallbackContext'),staffing=byId('quickActionsFallbackStaffing');if(context)context.textContent=model.contextLabel+' · '+model.dateLabel;if(staffing)staffing.textContent=model.staffingLabel+' · '+model.planLabel;
+  ['quickAbsenceFallback','quickOvertimeFallback'].forEach(function(id){var button=byId(id);if(button){button.disabled=!model.canEdit;button.setAttribute('aria-disabled',model.canEdit?'false':'true')}});
+  var attention=byId('quickActionAttention');if(attention)attention.classList.toggle('hidden',!model.attentionCount);
+}
+function showQuickActions(){
+  var dialog=byId('quickActionsSheet');if(!dialog||document.body.classList.contains('authPending'))return;var model=quickActionsModel();renderQuickActionsFallback(model);
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:quick-actions',{detail:model}));
+  if(dialog.showModal&&!dialog.open)dialog.showModal();
+}
+function quickActionScroll(selector){
+  window.setTimeout(function(){var target=document.querySelector(selector);if(target&&target.scrollIntoView)target.scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})},80);
+}
+function performQuickAction(action){
+  var dialog=byId('quickActionsSheet');if(dialog&&dialog.open)dialog.close();
+  if(action==='absence'||action==='overtime'||action==='review'){
+    show('changes');
+    var step=action==='review'?smartChangesStep(cur()):'staffing';setChangesStep(step,false);
+    quickActionScroll(action==='absence'?'.absenceSection':action==='overtime'?'.overtimeSection':'#changes .changePanel');
+    return;
+  }
+  if(action==='private-chat'){
+    show('chat');if(typeof window.openChatView==='function')window.openChatView();
+    window.setTimeout(function(){var button=byId('chatNewPrivateBtn');if(button)button.click()},120);return;
+  }
+  if(action==='share'){showShareApp();return}
+}
+window.showQuickActions=showQuickActions;
+window.performQuickAction=performQuickAction;
+
 function updateSmartNightButtons(){
   var state=automaticNightState();
   ['smartNightBtn','changesSmartNightBtn'].forEach(function(id){
@@ -199,7 +237,7 @@ function updateChangesWorkflow(base,plan){
   state.innerHTML=tasks?'<b>'+esc(taskInstruction)+'</b><span>'+(tasks>1?esc((tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.')):'Select the nurse, then review the changes.')+'</span>':confirmNeeded?'<b>Ready to review</b><span>Check the selected night’s changes before sharing them with everyone.</span>':published&&published.published_at&&hasManualPlan?'<b>Changes shared</b><span>Updated by '+esc(published.published_by||'a shift member')+' at '+esc(shortTime(published.published_at))+'.</span>':'';
   state.classList.toggle('hidden',!tasks&&!confirmNeeded&&!hasManualPlan);
   state.classList.toggle('complete',!confirmNeeded);state.classList.toggle('ready',!tasks&&confirmNeeded);
-  var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);
+  var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.toggle('hidden',!badgeCount);
   var allocationAction=byId('continueToAllocationBtn');allocationAction.textContent=tasks?'Resolve allocations':'View or adjust roles';allocationAction.classList.toggle('quietAction',!tasks&&!confirmNeeded);
   var changesPanel=document.querySelector('#changes .changePanel');if(changesPanel)changesPanel.classList.toggle('planShared',shared);
   var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent='Review changes';var confirmReason=byId('continueToConfirmReason');if(confirmReason){confirmReason.textContent=tasks?'Complete the allocation above before reviewing changes.':'';confirmReason.classList.toggle('hidden',!tasks)}
