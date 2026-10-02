@@ -9,5 +9,5 @@
     "Phone conversations use a cleaner full-canvas thread with larger controls, while desktop keeps the inbox and conversation side by side.",
     "The composer is now one polished translucent surface with a plain textarea and 44 px send control, and private outgoing messages use a clearer blue treatment without changing chat delivery logic."
   ],
-  "update_policy": "normal"
+  "update_policy": "important"
 }
