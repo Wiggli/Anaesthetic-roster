@@ -441,7 +441,7 @@ function readOfflineSnapshot(){
     var raw=JSON.parse(appStorage.getItem('anaes_offline_snapshot')||'null');if(!plainSnapshotRecord(raw)||!Array.isArray(raw.rotationVersions)||!raw.rotationVersions.length||!plainSnapshotRecord(raw.rosterSettings))return null;if(window.AnaestheticDomain&&window.AnaestheticDomain.snapshotIsExpired&&window.AnaestheticDomain.snapshotIsExpired(raw.saved_at,604800000,appNowMs())){appStorage.removeItem('anaes_offline_snapshot');recordAppDiagnostic('offline','snapshot','expired');return null}
     var versions=raw.rotationVersions.filter(function(version){return plainSnapshotRecord(version)&&/^\d{4}-\d{2}-\d{2}$/.test(version.effective_from||'')&&['first1','first2','second1','second2','pager','reliever'].every(function(key){return typeof version[key]==='string'&&version[key].trim()})}).map(function(version){var copy=Object.assign({},version);copy.seventh_cycle=Array.isArray(version.seventh_cycle)&&version.seventh_cycle.length?version.seventh_cycle.filter(function(name){return typeof name==='string'&&name.trim()}):ORIGINAL_SEVENTH.slice();return copy});
     if(!versions.length||!/^\d{4}-\d{2}-\d{2}$/.test(raw.rosterSettings.published_until||''))return null;
-    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0}
+    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0,accessEpoch:Number(raw.accessEpoch||0)||0,compatibility:normaliseAppCompatibility(raw.compatibility)}
   }catch(error){return null}
 }
 
@@ -574,14 +574,14 @@ function rememberOnboardingProfile(){var name=byId('onboardingProfileName'),titl
 function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;var account=byId('accountSheet');if(account&&account.open)account.close();onboardingChatIntro=false;onboardingFeatureKey='';onboardingGuideMenu=true;onboardingReplay=true;onboardingDirection=1;onboardingStep=0;renderOnboarding();if(!dialog.open)dialog.showModal()}
 
 function saveOfflineSnapshot(){
-  try{appStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0)}))}catch(error){recordAppDiagnostic('offline','snapshot-save','failed')}
+  try{appStorage.setItem('anaes_offline_snapshot',JSON.stringify({saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0),accessEpoch:Number(lastObservedAccessEpoch||0),compatibility:appCompatibility}))}catch(error){recordAppDiagnostic('offline','snapshot-save','failed')}
 }
 
 
 function restoreOfflineSnapshot(){
   try{
     var snapshot=readOfflineSnapshot();if(!snapshot)return false;
-    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
+    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastObservedAccessEpoch=Number(snapshot.accessEpoch||0);setAppCompatibility(snapshot.compatibility);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
   }catch(error){console.error('Saved roster could not be restored',error);return false}
 }
 
@@ -1416,16 +1416,16 @@ async function saveNightRoleOverride(base){
   if(!requireOnline())return;var draft=nightRoleOverrideDrafts[base.date],reason=normaliseNurseName(draft&&draft.reason||'');
   if(!draft||!validRoleAssignmentsForNight(base,draft.assignments)||!roleAssignmentsDiffer(draft.assignments,currentRoleAssignments(base))){toast('Change a role before saving');return}if(!reason){toast('Add a short reason for the night-only change');var field=byId('nightRoleReason');if(field)field.focus();return}
   var previous=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,button=byId('saveNightRolesBtn');if(button){button.disabled=true;button.textContent='Saving…'}setSync('saving','Saving night-only roles');
-  var expectedAssignments=JSON.parse(JSON.stringify(draft.assignments)),result=await runRosterMutation('roles:save:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_action:'save',p_assignments:expectedAssignments,p_override_reason:reason,p_history_reason:reason,p_changed_by:currentUserProfile.display_name})},function(){var stored=nightRoleOverrides[base.date]&&nightRoleOverrides[base.date].assignments;return !!(stored&&JSON.stringify(stored)===JSON.stringify(expectedAssignments))});
+  var expectedAssignments=JSON.parse(JSON.stringify(draft.assignments)),result=await runRosterMutation('roles:save:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_action:'save',p_assignments:expectedAssignments,p_override_reason:reason,p_history_reason:reason,p_changed_by:currentUserProfile.display_name})},function(){var stored=nightRoleOverrides[base.date]&&nightRoleOverrides[base.date].assignments;return !!(stored&&JSON.stringify(stored)===JSON.stringify(expectedAssignments))});
   if(missingRpc(result)){setSync('error','Database update required');toast('Seven-nurse night-only changes require the current database update. Nothing was changed.');if(button){button.disabled=false;button.textContent='Save night-only change'}return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Saved for this night only. The permanent rotation is unchanged.',{label:'Undo',run:function(){return undoNightRoleChange(base.date,previous)}});
 }
 
 async function resetNightRoleOverride(base){
-  if(!requireOnline()||!confirm('Restore the rostered roles for this night?'))return;setSync('saving','Restoring rostered roles');var stored=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,result=await runRosterMutation('roles:reset:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_action:'reset',p_assignments:null,p_override_reason:null,p_history_reason:'Restored rostered roles',p_changed_by:currentUserProfile.display_name})},function(){return !nightRoleOverrides[base.date]});if(missingRpc(result)){setSync('error','Database update required');toast('This action requires database schema 36. Nothing was changed.');return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Rostered roles restored',{label:'Undo',run:function(){return undoNightRoleChange(base.date,stored)}});
+  if(!requireOnline()||!confirm('Restore the rostered roles for this night?'))return;setSync('saving','Restoring rostered roles');var stored=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,result=await runRosterMutation('roles:reset:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_action:'reset',p_assignments:null,p_override_reason:null,p_history_reason:'Restored rostered roles',p_changed_by:currentUserProfile.display_name})},function(){return !nightRoleOverrides[base.date]});if(missingRpc(result)){setSync('error','Database update required');toast('This action requires database schema 36. Nothing was changed.');return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Rostered roles restored',{label:'Undo',run:function(){return undoNightRoleChange(base.date,stored)}});
 }
 
 async function undoNightRoleChange(date,previous){
-  if(!requireOnline())return;setSync('saving','Undoing role change');var expected=previous&&previous.assignments?JSON.parse(JSON.stringify(previous.assignments)):null,result=await runRosterMutation('roles:undo:'+date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:date,p_action:previous?'save':'reset',p_assignments:expected,p_override_reason:previous&&previous.reason||'Previous night-only arrangement',p_history_reason:'Undid the latest role change',p_changed_by:currentUserProfile.display_name})},function(){var current=nightRoleOverrides[date]&&nightRoleOverrides[date].assignments;return expected?!!(current&&JSON.stringify(current)===JSON.stringify(expected)):!current});if(missingRpc(result)){setSync('error','Database update required');toast('Undo requires database schema 36. Nothing was changed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('roles',date);toast('Role change undone')
+  if(!requireOnline())return;setSync('saving','Undoing role change');var expected=previous&&previous.assignments?JSON.parse(JSON.stringify(previous.assignments)):null,result=await runRosterMutation('roles:undo:'+date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:date,p_action:previous?'save':'reset',p_assignments:expected,p_override_reason:previous&&previous.reason||'Previous night-only arrangement',p_history_reason:'Undid the latest role change',p_changed_by:currentUserProfile.display_name})},function(){var current=nightRoleOverrides[date]&&nightRoleOverrides[date].assignments;return expected?!!(current&&JSON.stringify(current)===JSON.stringify(expected)):!current});if(missingRpc(result)){setSync('error','Database update required');toast('Undo requires database schema 36. Nothing was changed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('roles',date);toast('Role change undone')
 }
 
 function updateConfirmationControls(confirmNeeded,tasks){
@@ -1500,9 +1500,9 @@ function renderChanges(base,nightPlan){
 }
 
 function updateStaffingActionAvailability(){
-  var absence=byId('saveChangeBtn'),absenceName=byId('absentName'),overtime=byId('addOvertimeBtn'),overtimeName=byId('overtimeName'),offline=!navigator.onLine||forcedOfflineSession;
-  if(absence)absence.disabled=offline||!absenceName||!absenceName.value;
-  if(overtime)overtime.disabled=offline||!overtimeName||!normaliseNurseName(overtimeName.value);
+  var absence=byId('saveChangeBtn'),absenceName=byId('absentName'),overtime=byId('addOvertimeBtn'),overtimeName=byId('overtimeName'),blocked=!navigator.onLine||forcedOfflineSession||sharedWritesBlocked();
+  if(absence)absence.disabled=blocked||!absenceName||!absenceName.value;
+  if(overtime)overtime.disabled=blocked||!overtimeName||!normaliseNurseName(overtimeName.value);
 }
 
 function editNightChange(id){
@@ -1573,8 +1573,9 @@ function renderRoster(){
 }
 
 function requireOnline(){
-  if(navigator.onLine&&!forcedOfflineSession)return true;
-  setSync('offline','Offline • saved information');toast('The shared roster is unavailable. Your entries remain on screen and can be saved after the connection returns.');return false;
+  if(!navigator.onLine||forcedOfflineSession){setSync('offline','Offline • saved information');toast('The shared roster is unavailable. Your entries remain on screen and can be saved after the connection returns.');return false}
+  if(sharedWritesBlocked()){setSync('error',compatibilityNeedsUpdate()?'Update required':'Editing paused');toast(sharedWriteNotice());renderWriteGuardState();return false}
+  return true;
 }
 
 function formMessage(id,message,state){
@@ -1612,7 +1613,9 @@ function rpcError(result,messageId){
   if(!result||!result.error)return false;
   var message=(result.error.message||'').toLowerCase(),code=rosterErrorCode(result.error);
   setSync('error','Save failed');
-  var notice=result.atomicRequired?'The database must be upgraded before this staffing change can be saved safely. No partial record was written.':code==='ROSTER_REVISION_CONFLICT'||code==='STALE_CLIENT'?conflictNotice(result):code==='PERMISSION_DENIED'||result.error.code==='42501'||message.indexOf('permission denied')>=0||message.indexOf('row-level security')>=0?'Your signed-in account does not currently have permission to save staffing changes.':code==='PLAN_INCOMPLETE'?'The latest night is not complete enough to save safely. Review the outstanding decisions first.':code==='STAFF_NOT_EFFECTIVE'?'One of the selected nurses is no longer available for this night. The latest roster has been loaded for review.':message.indexOf('duplicate')>=0||result.error.code==='23505'?'That nurse is already recorded for this night.':'The staffing change could not be saved. Try again, or copy diagnostics for the administrator.';
+  var compatibilityError=code==='CLIENT_UPDATE_REQUIRED'||code==='CLIENT_VERSION_BLOCKED'||code==='APP_MAINTENANCE';
+  var notice=result.atomicRequired?'The database must be upgraded before this staffing change can be saved safely. No partial record was written.':code==='ROSTER_REVISION_CONFLICT'||code==='STALE_CLIENT'?conflictNotice(result):code==='CLIENT_UPDATE_REQUIRED'||code==='CLIENT_VERSION_BLOCKED'?'An important Night Roster update is required before shared changes can be made. You can still view the roster.':code==='APP_MAINTENANCE'?'Shared roster editing has been temporarily paused. You can still view the roster.':code==='PERMISSION_DENIED'||result.error.code==='42501'||message.indexOf('permission denied')>=0||message.indexOf('row-level security')>=0?'Your signed-in account does not currently have permission to save staffing changes.':code==='PLAN_INCOMPLETE'?'The latest night is not complete enough to save safely. Review the outstanding decisions first.':code==='STAFF_NOT_EFFECTIVE'?'One of the selected nurses is no longer available for this night. The latest roster has been loaded for review.':message.indexOf('duplicate')>=0||result.error.code==='23505'?'That nurse is already recorded for this night.':'The staffing change could not be saved. Try again, or copy diagnostics for the administrator.';
+  if(compatibilityError)refreshCompatibilityState();
   formMessage(messageId,notice,'error');toast(notice);
   return true;
 }
@@ -1624,7 +1627,7 @@ async function saveNightChange(){
   markInvalid('absentName',false);formMessage('absenceFormMessage','Saving '+absent+'…','');
   setSync('saving','Saving absence');byId('saveChangeBtn').disabled=true;byId('saveChangeBtn').textContent='Saving…';
   try{
-    var result=await runRosterMutation('absence:add:'+base.date+':'+canonicalNurseName(absent),function(commandId,expectedSyncRevision){return supa.rpc('record_night_absence_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_absent_name:absent,p_reason:reason,p_changed_by:currentUserProfile.display_name})},function(){return changesFor(base.date).some(function(entry){return sameNurse(entry.absent_name,absent)})});
+    var result=await runRosterMutation('absence:add:'+base.date+':'+canonicalNurseName(absent),function(commandId,expectedSyncRevision){return supa.rpc('record_night_absence_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_absent_name:absent,p_reason:reason,p_changed_by:currentUserProfile.display_name})},function(){return changesFor(base.date).some(function(entry){return sameNurse(entry.absent_name,absent)})});
     if(missingRpc(result))result={error:result.error,atomicRequired:true};
     if(rpcError(result,'absenceFormMessage'))return;
     byId('absentName').value='';editingAbsenceId=null;byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage',absent+' saved as absent.','success');
@@ -1640,13 +1643,13 @@ function recordAlreadyRemoved(result){
   return message.indexOf('no longer exists')>=0||message.indexOf('not found')>=0;
 }
 
-async function undoAddedAbsence(date,name){var item=(nightChanges[date]||[]).find(function(entry){return sameNurse(entry.absent_name,name)});if(!item){toast('That absence has already changed');return}setSync('saving','Undoing absence');var base=baseForDate(date),result=await runRosterMutation('absence:undo-add:'+date+':'+item.id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_absence_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_change_id:item.id,p_allocation_key:allocationKeyForName(base,item.absent_name),p_changed_by:currentUserProfile.display_name})},function(){return !changesFor(date).some(function(entry){return String(entry.id)===String(item.id)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The absence was not changed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Absence undone')}
+async function undoAddedAbsence(date,name){var item=(nightChanges[date]||[]).find(function(entry){return sameNurse(entry.absent_name,name)});if(!item){toast('That absence has already changed');return}setSync('saving','Undoing absence');var base=baseForDate(date),result=await runRosterMutation('absence:undo-add:'+date+':'+item.id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_absence_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_change_id:item.id,p_allocation_key:allocationKeyForName(base,item.absent_name),p_changed_by:currentUserProfile.display_name})},function(){return !changesFor(date).some(function(entry){return String(entry.id)===String(item.id)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The absence was not changed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Absence undone')}
 
-async function undoRemovedAbsence(date,item){setSync('saving','Restoring absence');var result=await runRosterMutation('absence:undo-remove:'+date+':'+canonicalNurseName(item.absent_name),function(commandId,expectedSyncRevision){return supa.rpc('record_night_absence_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:date,p_absent_name:item.absent_name,p_reason:item.reason||'Leave',p_changed_by:currentUserProfile.display_name})},function(){return changesFor(date).some(function(entry){return sameNurse(entry.absent_name,item.absent_name)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The absence remains removed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Absence restored')}
+async function undoRemovedAbsence(date,item){setSync('saving','Restoring absence');var result=await runRosterMutation('absence:undo-remove:'+date+':'+canonicalNurseName(item.absent_name),function(commandId,expectedSyncRevision){return supa.rpc('record_night_absence_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:date,p_absent_name:item.absent_name,p_reason:item.reason||'Leave',p_changed_by:currentUserProfile.display_name})},function(){return changesFor(date).some(function(entry){return sameNurse(entry.absent_name,item.absent_name)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The absence remains removed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Absence restored')}
 
-async function undoAddedOvertime(date,name){var item=(nightOvertime[date]||[]).find(function(entry){return sameNurse(entry.nurse_name,name)});if(!item){toast('That overtime entry has already changed');return}setSync('saving','Undoing overtime');var result=await runRosterMutation('overtime:undo-add:'+date+':'+item.id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_overtime_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_overtime_id:item.id,p_changed_by:currentUserProfile.display_name})},function(){return !overtimeFor(date).some(function(entry){return String(entry.id)===String(item.id)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The overtime record was not changed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Overtime addition undone')}
+async function undoAddedOvertime(date,name){var item=(nightOvertime[date]||[]).find(function(entry){return sameNurse(entry.nurse_name,name)});if(!item){toast('That overtime entry has already changed');return}setSync('saving','Undoing overtime');var result=await runRosterMutation('overtime:undo-add:'+date+':'+item.id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_overtime_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_overtime_id:item.id,p_changed_by:currentUserProfile.display_name})},function(){return !overtimeFor(date).some(function(entry){return String(entry.id)===String(item.id)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The overtime record was not changed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Overtime addition undone')}
 
-async function undoRemovedOvertime(date,item){setSync('saving','Restoring overtime nurse');var result=await runRosterMutation('overtime:undo-remove:'+date+':'+canonicalNurseName(item.nurse_name),function(commandId,expectedSyncRevision){return supa.rpc('add_night_overtime_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:date,p_nurse_name:item.nurse_name,p_changed_by:currentUserProfile.display_name})},function(){return overtimeFor(date).some(function(entry){return sameNurse(entry.nurse_name,item.nurse_name)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The overtime record remains removed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Overtime nurse restored')}
+async function undoRemovedOvertime(date,item){setSync('saving','Restoring overtime nurse');var result=await runRosterMutation('overtime:undo-remove:'+date+':'+canonicalNurseName(item.nurse_name),function(commandId,expectedSyncRevision){return supa.rpc('add_night_overtime_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:date,p_nurse_name:item.nurse_name,p_changed_by:currentUserProfile.display_name})},function(){return overtimeFor(date).some(function(entry){return sameNurse(entry.nurse_name,item.nurse_name)})});if(missingRpc(result)){setSync('error','Undo unavailable');toast('Undo requires the current database version. The overtime record remains removed.');return}if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('staffing',date);toast('Overtime nurse restored')}
 
 async function removeNightChange(id,button){
   if(!requireOnline())return;
@@ -1656,7 +1659,7 @@ async function removeNightChange(id,button){
   pendingRemovals[id]=true;if(button){button.disabled=true;button.textContent='Removing…'}setSync('saving','Removing absence');
   try{
     var allocationKey=allocationKeyForName(base,item.absent_name);
-    var result=await runRosterMutation('absence:remove:'+base.date+':'+id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_absence_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name})},function(){return !changesFor(base.date).some(function(entry){return String(entry.id)===String(id)})});
+    var result=await runRosterMutation('absence:remove:'+base.date+':'+id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_absence_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_change_id:id,p_allocation_key:allocationKey,p_changed_by:currentUserProfile.display_name})},function(){return !changesFor(base.date).some(function(entry){return String(entry.id)===String(id)})});
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
     await loadSharedData();if(!recordAlreadyRemoved(result))notifyRosterUpdate('staffing',base.date);if(recordAlreadyRemoved(result))toast('Absence was already removed and the list has been refreshed');else toast('Absence removed',{label:'Undo',run:function(){return undoRemovedAbsence(base.date,item)}});
   }catch(error){setSync('error','Remove failed');failedAction('The absence could not be removed.',function(){return removeNightChange(id,button)});}
@@ -1674,7 +1677,7 @@ async function saveOvertime(){
   markInvalid('overtimeName',false);formMessage('overtimeFormMessage','Adding '+name+'…','');
   setSync('saving','Adding overtime nurse');byId('addOvertimeBtn').disabled=true;byId('addOvertimeBtn').textContent='Adding…';
   try{
-    var result=await runRosterMutation('overtime:add:'+base.date+':'+canonicalNurseName(name),function(commandId,expectedSyncRevision){return supa.rpc('add_night_overtime_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_nurse_name:name,p_changed_by:currentUserProfile.display_name})},function(){return overtimeFor(base.date).some(function(entry){return sameNurse(entry.nurse_name,name)})});
+    var result=await runRosterMutation('overtime:add:'+base.date+':'+canonicalNurseName(name),function(commandId,expectedSyncRevision){return supa.rpc('add_night_overtime_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_nurse_name:name,p_changed_by:currentUserProfile.display_name})},function(){return overtimeFor(base.date).some(function(entry){return sameNurse(entry.nurse_name,name)})});
     if(missingRpc(result))result={error:result.error,atomicRequired:true};
     if(rpcError(result,'overtimeFormMessage'))return;
     byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');
@@ -1691,7 +1694,7 @@ async function removeOvertime(id,button){
   if(!entry||!confirm('Remove '+entry.nurse_name+' from this night\'s overtime list?'))return;
   pendingRemovals[id]=true;if(button){button.disabled=true;button.textContent='Removing…'}setSync('saving','Removing overtime nurse');
   try{
-    var result=await runRosterMutation('overtime:remove:'+base.date+':'+id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_overtime_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_overtime_id:id,p_changed_by:currentUserProfile.display_name})},function(){return !overtimeFor(base.date).some(function(entry){return String(entry.id)===String(id)})});
+    var result=await runRosterMutation('overtime:remove:'+base.date+':'+id,function(commandId,expectedSyncRevision){return supa.rpc('remove_night_overtime_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_overtime_id:id,p_changed_by:currentUserProfile.display_name})},function(){return !overtimeFor(base.date).some(function(entry){return String(entry.id)===String(id)})});
     if(result&&result.error&&!recordAlreadyRemoved(result)){rpcError(result);return}
     await loadSharedData();if(!recordAlreadyRemoved(result))notifyRosterUpdate('staffing',base.date);if(recordAlreadyRemoved(result))toast(entry.nurse_name+' was already removed and the list has been refreshed');else toast(entry.nurse_name+' removed from overtime',{label:'Undo',run:function(){return undoRemovedOvertime(base.date,entry)}});
   }catch(error){setSync('error','Remove failed');failedAction('The overtime nurse could not be removed.',function(){return removeOvertime(id,button)});}
@@ -1703,7 +1706,7 @@ async function saveFiveCover(){
   var base=cur(),plan=staffingPlan(base),pick=byId('fiveCoverPick'),key=pick&&pick.value;
   if(!key||plan.coverageChoices.indexOf(key)<0){toast('Choose the allocation the reliever will cover');return}
   setSync('saving','Saving reliever allocation');
-  var result=await runRosterMutation('five-cover:'+base.date+':'+key,function(commandId,expectedSyncRevision){return supa.rpc('apply_staffing_allocations_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_action:'reliever',p_coverage_key:key,p_assignments:null,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever})},function(){var stored=fiveCoverFor(base.date);return !!(stored&&stored.coverage_key===key)});
+  var result=await runRosterMutation('five-cover:'+base.date+':'+key,function(commandId,expectedSyncRevision){return supa.rpc('apply_staffing_allocations_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_action:'reliever',p_coverage_key:key,p_assignments:null,p_reliever_name:base.reliever})},function(){var stored=fiveCoverFor(base.date);return !!(stored&&stored.coverage_key===key)});
   if(rpcError(result))return;await loadSharedData();notifyRosterUpdate('allocation',base.date);toast(base.reliever+' saved before the overtime allocations');
 }
 
@@ -1738,13 +1741,13 @@ async function saveFinalAllocationsV2510(event){
     if(!chosenCount&&!confirmationOnly){formMessage('allocationFormMessage','Complete the remaining allocation decisions before confirming the plan.','error');toast('The plan is not ready to confirm');return false}
     allocationSaveInFlight=true;setSync('saving','Saving this night\'s allocations');button.disabled=true;button.textContent='Saving…';formMessage('allocationFormMessage','Saving '+chosenCount+' allocation'+(chosenCount===1?'':'s')+'…','');
     var expectedRevision=nightPlanStatuses[base.date]?Number(nightPlanStatuses[base.date].revision||0):0;
-    var atomicResult=await runRosterMutation('plan:finalise:'+base.date+':'+expectedRevision,function(commandId,expectedSyncRevision){return supa.rpc('finalise_night_plan_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_assignments:chosenCount?chosen:{},p_labour_first:null,p_labour_second:null,p_changed_by:currentUserProfile.display_name,p_expected_revision:expectedRevision})},function(){var status=nightPlanStatuses[base.date],savedPlan=staffingPlan(baseForDate(base.date)),matches=Object.keys(chosen).every(function(key){return savedPlan.validAssignments.some(function(item){return item.allocation_key===key&&String(item.id)===String(chosen[key])})});return !!(status&&status.published_at&&Number(status.revision||0)>expectedRevision&&matches)});
+    var atomicResult=await runRosterMutation('plan:finalise:'+base.date+':'+expectedRevision,function(commandId,expectedSyncRevision){return supa.rpc('finalise_night_plan_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_assignments:chosenCount?chosen:{},p_labour_first:null,p_labour_second:null,p_expected_revision:expectedRevision})},function(){var status=nightPlanStatuses[base.date],savedPlan=staffingPlan(baseForDate(base.date)),matches=Object.keys(chosen).every(function(key){return savedPlan.validAssignments.some(function(item){return item.allocation_key===key&&String(item.id)===String(chosen[key])})});return !!(status&&status.published_at&&Number(status.revision||0)>expectedRevision&&matches)});
     if(!missingRpc(atomicResult)){
       if(atomicResult&&atomicResult.error&&(rosterErrorCode(atomicResult.error)==='ROSTER_REVISION_CONFLICT'||/changed on another device|revision conflict|ROSTER_REVISION_CONFLICT/i.test(atomicResult.error.message||''))){var conflictMessage=conflictNotice(atomicResult);formMessage('allocationFormMessage',conflictMessage,'error');toast('A newer plan was loaded for review');await loadSharedData();return false}
       if(rpcError(atomicResult,'allocationFormMessage'))return false;
     }else if(confirmationOnly){formMessage('allocationFormMessage','The final confirmation service is unavailable. Ask the administrator to run the V26 database upgrade.','error');toast('Plan confirmation is unavailable');return false
     }else if(chosenCount){
-      var result=await runRosterMutation('plan:legacy-allocations:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_staffing_allocations_v48',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_roster_date:base.date,p_action:'allocations',p_coverage_key:null,p_assignments:chosen,p_changed_by:currentUserProfile.display_name,p_reliever_name:base.reliever})},function(){var savedPlan=staffingPlan(baseForDate(base.date));return Object.keys(chosen).every(function(key){return savedPlan.validAssignments.some(function(item){return item.allocation_key===key&&String(item.id)===String(chosen[key])})})});
+      var result=await runRosterMutation('plan:legacy-allocations:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_staffing_allocations_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_action:'allocations',p_coverage_key:null,p_assignments:chosen,p_reliever_name:base.reliever})},function(){var savedPlan=staffingPlan(baseForDate(base.date));return Object.keys(chosen).every(function(key){return savedPlan.validAssignments.some(function(item){return item.allocation_key===key&&String(item.id)===String(chosen[key])})})});
       if(missingRpc(result)){formMessage('allocationFormMessage','The allocation service is unavailable. Ask the administrator to apply database schema 35. Nothing was changed.','error');toast('Allocation service requires a database update');return false}
       if(rpcError(result,'allocationFormMessage'))return false;
       var check=await timedRequest(readStoredAllocations(base.date,chosen));
@@ -1803,7 +1806,7 @@ function noteCompatibilityStartup(path){
   recordAppDiagnostic('compatibility','startup',path)
 }
 function commandKey(value){return String(value||'command').replace(/[^A-Za-z0-9_.:-]/g,'').slice(0,120)}
-async function rosterErrorCode(error){return window.AnaestheticRuntime&&window.AnaestheticRuntime.errors?window.AnaestheticRuntime.errors.code(error):String(error&&error.message||error&&error.code||'UNKNOWN')}
+function rosterErrorCode(error){return window.AnaestheticRuntime&&window.AnaestheticRuntime.errors?window.AnaestheticRuntime.errors.code(error):String(error&&error.message||error&&error.code||'UNKNOWN')}
 function mutationDateFromKey(key){var match=String(key||'').match(/(20\\d{2}-\\d{2}-\\d{2})/);return match&&match[1]||null}
 function conflictPlanSnapshot(date){try{var base=date&&baseForDate(date);if(!base)return null;var model=buildNightPlan(base);return{date:model.date,revision:model.revision,confirmed:model.confirmed,provisional:model.provisional,effective:model.effective,staffing:{count:model.staffing&&model.staffing.count,unresolved:model.staffing&&model.staffing.unresolved,assignments:model.staffing&&model.staffing.validAssignments},labourOrder:model.labourOrder}}catch(error){return null}}
 function conflictSummary(before,after){
@@ -1917,9 +1920,9 @@ async function loadSharedData(options){
       nightPlanStatuses=rowsIndexedByDate(snapshot.night_plan_status);
       nightRoleOverrideAvailable=true;nightRoleOverrides=rowsIndexedByDate(snapshot.night_role_overrides);
       if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings}
-      schemaVersion=Number(snapshot.schema_version||0);var incomingRevision=Number(snapshot.sync_revision||0);
+      schemaVersion=Number(snapshot.schema_version||0);setAppCompatibility(snapshot.compatibility);var incomingRevision=Number(snapshot.sync_revision||0),incomingAccessEpoch=Number(snapshot.access_epoch||0);
       if(lastObservedSyncRevision!==null&&incomingRevision<lastObservedSyncRevision){var staleError=new Error('An older roster snapshot was rejected.');staleError.code='STALE_SNAPSHOT';throw staleError}
-      lastObservedSyncRevision=incomingRevision;if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:incomingRevision});await syncServerClock(false);
+      lastObservedSyncRevision=incomingRevision;lastObservedAccessEpoch=incomingAccessEpoch;if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:incomingRevision,accessEpoch:incomingAccessEpoch});await syncServerClock(false);
       rebuildCalculatedRoster();
       if(!initialNightChosen){nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx].date;initialNightChosen=true}
       else if(nightSelectionMode==='automatic'){idx=startingIndex(appNow());automaticSelectedDate=R[idx].date}
@@ -1945,16 +1948,21 @@ async function checkSharedRevision(options){
   if(sharedSyncCheckInFlight||forcedOfflineSession||!currentUserProfile||!navigator.onLine||document.visibilityState==='hidden')return{skipped:true};
   sharedSyncCheckInFlight=true;
   try{
-    var result=await supa.from('app_sync_state').select('revision').eq('id',1).maybeSingle();
+    var result=await supa.from('app_sync_state').select('revision,access_epoch').eq('id',1).maybeSingle();
     if(result.error||!result.data){if(Date.now()-new Date(lastSuccessfulSyncAt||0).getTime()>30000)scheduleSharedReload(true);return{error:result.error||new Error('Revision unavailable')} }
-    var revision=Number(result.data.revision||0);
-    if(lastObservedSyncRevision===null){lastObservedSyncRevision=revision;return{changed:false,revision:revision}}
+    var revision=Number(result.data.revision||0),accessEpoch=Number(result.data.access_epoch||0);
+    if(lastObservedAccessEpoch===null)lastObservedAccessEpoch=accessEpoch;
+    if(accessEpoch!==Number(lastObservedAccessEpoch||0)){
+      var access=await checkCurrentAccessStatus(accessEpoch);
+      if(access&&!access.active)return{changed:true,accessLost:true,revision:revision,accessEpoch:accessEpoch}
+    }
+    if(lastObservedSyncRevision===null){lastObservedSyncRevision=revision;return{changed:false,revision:revision,accessEpoch:accessEpoch}}
     if(revision!==Number(lastObservedSyncRevision)){
       if(options.reloadNow)await loadSharedData({background:true});else scheduleSharedReload(true);
-      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:revision});
-      return{changed:true,revision:revision};
+      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:revision,accessEpoch:accessEpoch});
+      return{changed:true,revision:revision,accessEpoch:accessEpoch};
     }
-    return{changed:false,revision:revision};
+    return{changed:false,revision:revision,accessEpoch:accessEpoch};
   }finally{sharedSyncCheckInFlight=false}
 }
 
@@ -1985,12 +1993,19 @@ function subscribeToChanges(){
   }
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
   var tables=['app_sync_state','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
-  changesChannel=supa.channel('roster-live-v40');
+  changesChannel=supa.channel('roster-live-v41');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
       var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
     }
-    if(table==='app_sync_state'&&payload.new&&window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:Number(payload.new.revision||0)});
+    if(table==='app_sync_state'&&payload.new){
+      var revision=Number(payload.new.revision||0),accessEpoch=Number(payload.new.access_epoch||0);
+      if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:revision,accessEpoch:accessEpoch});
+      if(accessEpoch!==Number(lastObservedAccessEpoch||0)){
+        checkCurrentAccessStatus(accessEpoch).then(function(access){if(access&&access.active)scheduleSharedReload(true)});
+        return
+      }
+    }
     scheduleSharedReload(true);
   })});
   changesChannel.subscribe(function(status){if(generation!==realtimeGeneration)return;if(status==='SUBSCRIBED'){realtimeSubscribed=true;realtimeRetryCount=0;setSharedSyncState('live','');checkSharedRevision()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){realtimeSubscribed=false;setSharedSyncState('reconnecting','Reconnecting live updates…');recordAppDiagnostic('realtime','roster',status);scheduleRealtimeReconnect()}});
@@ -2018,11 +2033,12 @@ async function reconcileApplication(reason){
 }
 
 function updateOfflineControls(){
-  var offline=!navigator.onLine||forcedOfflineSession,ids=['saveAllocationsBtn','saveNightRolesBtn','resetNightRolesBtn','saveTeamVersionBtn','previewExtendBtn','extendBtn','addAccountBtn'];
-  ids.forEach(function(id){var el=byId(id);if(el)el.disabled=offline||el.dataset.workflowBlocked==='true'});
-  var cover=byId('saveFiveCoverBtn');if(cover)cover.disabled=offline;
-  var labour=byId('saveLabourOrderBtn');if(labour)labour.disabled=offline;
-  updateStaffingActionAvailability();
+  var offline=!navigator.onLine||forcedOfflineSession,writeBlocked=sharedWritesBlocked(),ids=['saveAllocationsBtn','saveNightRolesBtn','resetNightRolesBtn','saveTeamVersionBtn','previewExtendBtn','extendBtn'];
+  ids.forEach(function(id){var el=byId(id);if(el)el.disabled=offline||writeBlocked||el.dataset.workflowBlocked==='true'});
+  var addAccount=byId('addAccountBtn');if(addAccount)addAccount.disabled=offline;
+  var cover=byId('saveFiveCoverBtn');if(cover)cover.disabled=offline||writeBlocked;
+  var labour=byId('saveLabourOrderBtn');if(labour)labour.disabled=offline||writeBlocked;
+  renderWriteGuardState();updateStaffingActionAvailability();
 }
 
 function sharedTransportLive(){
@@ -2235,7 +2251,7 @@ function bind(){
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.lifecycle)window.AnaestheticRuntime.lifecycle.setResumeHandler(reconcileApplication);
   window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()})}});
   window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});
-  window.addEventListener('roster:peer-revision',function(event){var revision=Number(event&&event.detail&&event.detail.revision);if(Number.isFinite(revision)&&revision!==Number(lastObservedSyncRevision||0))scheduleSharedReload(true)});
+  window.addEventListener('roster:peer-revision',function(event){var detail=event&&event.detail||{},revision=Number(detail.revision),accessEpoch=Number(detail.accessEpoch);if(Number.isFinite(accessEpoch)&&accessEpoch!==Number(lastObservedAccessEpoch||0)){checkCurrentAccessStatus(accessEpoch).then(function(access){if(access&&access.active&&Number.isFinite(revision)&&revision!==Number(lastObservedSyncRevision||0))scheduleSharedReload(true)});return}if(Number.isFinite(revision)&&revision!==Number(lastObservedSyncRevision||0))scheduleSharedReload(true)});
   window.addEventListener('roster:tab-leader',function(event){
     var isLeader=!!(event&&event.detail&&event.detail.isLeader);
     if(!isLeader){
