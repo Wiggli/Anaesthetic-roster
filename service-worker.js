@@ -4,7 +4,7 @@ const APP_SHELL = [
   './index.html',
   './styles.css?v=39.0',
   './theme-bootstrap.js?v=39.0',
-  './domain-logic.js?v=39.0',
+  './domain-logic.js?v=39.0',\n  './runtime-foundation.js?v=39.0',
   './app-core.js?v=39.0',
   './app-ui.js?v=39.0',
   './manifest.webmanifest?v=39.0',
