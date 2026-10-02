@@ -196,29 +196,6 @@ function liveClockLabel(model: PersonalNight, value: Date) {
   return time;
 }
 
-function personalLiveStatus(model: PersonalNight, value = new Date()) {
-  const clock = maltaClock(value);
-  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return model.liveStatus;
-  const now = value.getTime();
-  if (/absent/i.test(model.title)) return 'Not on duty tonight';
-  if (model.pending || /pending/i.test(model.period)) return 'Allocation pending';
-  if (model.dutyPart === 'first' && model.dutyStartUtc && model.handoverUtc) {
-    if (now < model.dutyStartUtc) return 'Starts at 00:00';
-    return now < model.handoverUtc ? 'On duty now · First Part' : 'Completed';
-  }
-  if (model.dutyPart === 'second' && model.handoverUtc && model.dutyEndUtc) {
-    if (now < model.handoverUtc) return 'Starts at ' + (model.handoverLabel || '03:30');
-    return now < model.dutyEndUtc ? 'On duty now · Second Part' : 'Completed';
-  }
-  if (model.period === '00:00–07:00') {
-    if (model.dutyStartUtc && now < model.dutyStartUtc) return 'Starts at 00:00';
-    if (model.dutyEndUtc && now >= model.dutyEndUtc) return 'Completed';
-    return 'On duty now · Full night';
-  }
-  if (/seventh/i.test(model.title)) return 'Supporting tonight’s team';
-  return model.liveStatus;
-}
-
 function nightVisualPhase(model: PersonalNight, value = new Date()) {
   const clock = maltaClock(value);
   const operationalDate = clock.hour < 7
@@ -233,34 +210,6 @@ function nightVisualPhase(model: PersonalNight, value = new Date()) {
   if (model.handoverUtc && model.dutyEndUtc && now >= model.handoverUtc && now < model.dutyEndUtc) return 'second';
   if (model.dutyEndUtc && now >= model.dutyEndUtc) return 'complete';
   return 'selected';
-}
-
-function nextNightMessage(model: PersonalNight, value: Date) {
-  if (model.pending) return { eyebrow: 'What matters next', title: 'Allocation still pending', detail: 'Open Changes to complete the shared plan.' };
-  if (/absent/i.test(model.title)) return { eyebrow: 'Tonight', title: 'No duty block', detail: 'You are recorded as not working this night.' };
-  if (!model.dutyStartUtc || !model.handoverUtc || !model.dutyEndUtc) return { eyebrow: 'Your night', title: model.period || 'Selected night', detail: model.breakLabel || '' };
-  const clock = maltaClock(value);
-  const liveNight = clock.date === model.date && (clock.hour < 7 || clock.hour >= 19);
-  if (!liveNight) return { eyebrow: 'Handover', title: model.handoverLabel || '03:30', detail: (model.period || '') + ' · ' + (model.breakLabel || '') };
-  const now = value.getTime();
-  const handover = model.handoverUtc;
-  if (now < model.dutyStartUtc) {
-    if (model.dutyPart === 'first') return { eyebrow: 'What matters next', title: 'First Part starts at 00:00', detail: 'Handover at ' + (model.handoverLabel || '03:30') + ' · ' + model.breakLabel };
-    if (model.dutyPart === 'second') return { eyebrow: 'What matters next', title: 'Take over at ' + (model.handoverLabel || '03:30'), detail: (model.period || '') + ' · ' + model.breakLabel };
-    return { eyebrow: 'What matters next', title: 'Night duty starts at 00:00', detail: model.period || '' };
-  }
-  if (Math.abs(now - handover) <= 120000) return { eyebrow: 'Handover now', title: 'Second Part starts', detail: 'Equal-duty handover · ' + (model.handoverLabel || '03:30') };
-  if (now < handover) {
-    if (model.dutyPart === 'first') return { eyebrow: 'Now', title: 'First Part active', detail: 'Handover at ' + (model.handoverLabel || '03:30') + ' · ' + model.breakLabel };
-    if (model.dutyPart === 'second') return { eyebrow: 'What matters next', title: 'Take over at ' + (model.handoverLabel || '03:30'), detail: model.breakLabel };
-    return { eyebrow: 'Now', title: 'First Part active', detail: 'Handover at ' + (model.handoverLabel || '03:30') };
-  }
-  if (now < model.dutyEndUtc) {
-    if (model.dutyPart === 'first') return { eyebrow: 'Your duty', title: 'Duty block complete', detail: model.breakLabel };
-    if (model.dutyPart === 'second') return { eyebrow: 'Now', title: 'Second Part active', detail: 'Until 07:00 · ' + model.breakLabel };
-    return { eyebrow: 'Now', title: 'Second Part active', detail: 'Night continues until 07:00' };
-  }
-  return { eyebrow: 'Your duty', title: 'Night block complete', detail: model.breakLabel };
 }
 
 function goToChanges(target: 'staffing' | 'allocation') {
