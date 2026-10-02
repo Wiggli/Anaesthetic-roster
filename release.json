@@ -1,13 +1,14 @@
 {
-  "version": "41.0",
+  "version": "41.1",
   "date": "2 October 2026",
-  "title": "Enforce the roster trust boundary",
-  "summary": "Shared roster changes now pass a server-enforced compatibility and identity boundary, while active sessions respond immediately to account and role changes.",
+  "title": "Make recovery and audit durable",
+  "summary": "Night Roster can recover from damaged local state, keeps bounded durable audit history, and now gates releases with wider browser and resilience testing.",
   "changes": [
-    "Shared roster writes now require a compatible 41.x client, while the server can pause shared editing or block a specific unsafe release without stopping roster viewing.",
-    "Older v25, v26, v35 and v48 mutation routes are no longer executable by signed-in browsers; current roster changes use the guarded v49 route.",
-    "Audit history now records the authenticated account UUID and resolves the readable actor name on the server instead of trusting a browser-supplied name.",
-    "Access and role changes now reach open and multi-tab PWAs; disabled accounts clear private saved roster and Chat state and sign out immediately."
+    "Repeated failed launches now enter a reduced-risk recovery mode, saved rosters use bounded integrity-checked atomic IndexedDB snapshots, and the active service worker can verify and repair missing cached shell files without bypassing explicit update approval.",
+    "Consequential shared roster writes now create immutable server-side audit events with operation IDs, authenticated actor identity and before/after values, with an administrator timeline for review.",
+    "Night history now uses bounded keyset pagination, operation idempotency records expire after 90 days, and new database invariant and non-mutating canary checks strengthen long-running health monitoring.",
+    "Critical roster requests now collect bounded privacy-safe latency measurements, with CI size budgets guarding against performance drift.",
+    "Release testing now includes WebKit/iPhone coverage, low-end CPU and network pressure, ambiguous retry idempotency, real two-page leadership, active-session revocation and a verified roster-data restore drill."
   ],
-  "update_policy": "important"
+  "update_policy": "normal"
 }
