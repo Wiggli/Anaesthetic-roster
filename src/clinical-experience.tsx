@@ -719,30 +719,31 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
 
       <NightTimeline model={model} value={value} />
 
-      <div className="personalHeroFacts" aria-label="Your night at a glance">
-        <Pressable type="button" className="personalHeroFact" onClick={openDutyTiming}>
-          <small>On duty</small>
-          <b>{model.period || 'Pending'}</b>
-          <span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty' : 'Timeline'}</span>
+      <div className="personalHeroFacts personalFacts personalFactButtons" aria-label="Your night at a glance">
+        <Pressable type="button" className="personalHeroTeamLink personalFactButton personalFactContext" onClick={openColleague}>
+          <span><small>{scanContextLabel}</small><b>{scanContext || 'Team allocation'}</b></span>
+          <span>View in team allocation ›</span>
         </Pressable>
-        <Pressable type="button" className="personalHeroFact" onClick={openBreak}>
-          <small>Break</small>
-          <b>{model.breakLabel || 'Pending'}</b>
-          <span>Open Breaks</span>
-        </Pressable>
+        <div className="personalHeroFactPair">
+          <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openDutyTiming}>
+            <small>On duty</small>
+            <b>{model.period || 'Pending'}</b>
+            <span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual duty' : 'Timeline'}</span>
+          </Pressable>
+          <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openBreak}>
+            <small>Break</small>
+            <b>{model.breakLabel || 'Pending'}</b>
+            <span>Open Breaks</span>
+          </Pressable>
+        </div>
       </div>
 
-      {(scanContext || model.displayName) && <details className="personalHeroMore">
+      {model.displayName && <details className="personalHeroMore">
         <summary>
-          <span>More about your night</span>
+          <span>Profile for this view</span>
           <i aria-hidden="true">›</i>
         </summary>
-        <div className="personalHeroMoreGrid">
-          {scanContext && <Pressable type="button" className="personalHeroMoreItem" onClick={openColleague}>
-            <small>{scanContextLabel}</small>
-            <b>{scanContext}</b>
-            <span>View in team allocation ›</span>
-          </Pressable>}
+        <div className="personalHeroMoreGrid personalHeroProfileGrid">
           <Pressable type="button" className="personalHeroMoreItem" onClick={openAccount}>
             <small>Your profile</small>
             <b>{model.displayName}</b>
