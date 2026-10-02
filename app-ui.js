@@ -1088,13 +1088,13 @@ function applyChanges(r){
     if(plan.count===5&&plan.coverageKey)applyFiveVacancy(copy,plan.coverageKey);
     copy.mode=String(Math.max(5,Math.min(7,plan.count)));
     copy.staffingAdjusted=true;copy.pendingAllocations=plan.unresolved.slice();copy.additionalStaff=additionalNurses(plan).map(function(o){return o.nurse_name});
-    if(plan.count<5)copy.understaffedCount=plan.count;
+    if(plan.count<5){copy.understaffedCount=plan.count;copy.fullLW=''}
     return copy;
   }
   if(plan.count===5&&plan.coverageKey){applyFiveVacancy(copy,plan.coverageKey);copy.staffingAdjusted=true;copy.pendingAllocations=[];return copy}
   if(plan.unresolved.length>1){
     plan.unresolved.forEach(function(key){copy[key]='Uncovered • additional cover required'});
-    copy.mode='5';copy.staffingAdjusted=true;copy.understaffedCount=plan.count;copy.pendingAllocations=plan.unresolved.slice();
+    copy.mode='5';copy.staffingAdjusted=true;copy.understaffedCount=plan.count;copy.fullLW='';copy.pendingAllocations=plan.unresolved.slice();
   }
   return copy;
 }
