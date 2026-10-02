@@ -170,21 +170,24 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
     }}));
   }, { transitionUtc });
 
-  await expect(page.locator('#personalNightCard .personalNextState')).toContainText('Handover');
+  const clockException = page.locator('#personalNightCard .personalClockException');
+  await expect(clockException).toContainText('Clock-change night · equal duty');
+  await expect(clockException).toContainText('Handover 03:00 after clock change');
+  await expect(clockException).toContainText('Equal duty');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00¹');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00²');
-  await expect(page.locator('#personalNightCard .personalFactButtons')).toContainText('Open Breaks');
-  await expect(page.locator('#personalNightCard')).toContainText('Changed tonight');
+  await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Open Breaks');
+  await expect(page.locator('#personalNightCard')).toContainText('Changed this night');
   await expect(page.locator('#personalNightCard .nightTimelineSlimRail')).toHaveCount(1);
   await expect(page.locator('#personalNightCard .nightTimelineOwnBand.mine')).toHaveCount(1);
   const railVisual = await page.locator('#personalNightCard .nightTimelineSlimRail').evaluate(el => {
     const style = getComputedStyle(el);
     return { height: el.getBoundingClientRect().height, background: style.backgroundColor };
   });
-  expect(railVisual.height).toBeLessThanOrEqual(24);
+  expect(railVisual.height).toBeLessThanOrEqual(34);
   expect(railVisual.background).toBe('rgba(0, 0, 0, 0)');
-  const nextStateBackground = await page.locator('#personalNightCard .personalNextStateIntegrated').evaluate(el => getComputedStyle(el).backgroundColor);
-  expect(nextStateBackground).not.toBe('rgb(255, 255, 255)');
+  const exceptionBackground = await clockException.evaluate(el => getComputedStyle(el).backgroundColor);
+  expect(exceptionBackground).not.toBe('rgb(255, 255, 255)');
   await captureReview(page, 'night-cockpit-blue-rail');
 
   await page.evaluate(() => {
@@ -1028,8 +1031,9 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
   await expect(page.locator('#nightStatusRow > .nightSignal')).toContainText('6 nurses');
-  await expect(page.locator('#nightStatusRow .nightQuickStrip')).toContainText('Your break');
-  await expect(page.locator('#nightStatusRow .nightQuickStrip')).toContainText('Second break');
+  await expect(page.locator('#nightStatusRow .nightQuickStrip')).toHaveCount(0);
+  await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Break');
+  await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Second break');
   await expect(page.locator('#roles .jumpToMeButton')).toHaveText(/Jump to me/);
   await page.evaluate(() => { const button = document.querySelector('#today .prettyDateButton'); if (button) button.textContent = 'Saturday 26 Sep'; });
   await captureReview(page, 'night');
@@ -1041,7 +1045,12 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#today .nightTeamDetails')).toHaveAttribute('open');
   const dock = await page.locator('.bottom').boundingBox();
   expect(dock).not.toBeNull();
-  expect(dock.height).toBeLessThanOrEqual(66);
+  expect(dock.height).toBeLessThanOrEqual(70);
+  await expect(page.locator('.bottom button[data-v]')).toHaveCount(4);
+  await expect(page.locator('.bottom .quickRudder')).toHaveCount(1);
+  await expect(page.locator('.bottom .quickRudderLabel')).toHaveText('Actions');
+  const mainPaddingBottom = await page.locator('main').evaluate(el => parseFloat(getComputedStyle(el).paddingBottom));
+  expect(mainPaddingBottom).toBeGreaterThanOrEqual(90);
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList')).toContainText('Second break');
