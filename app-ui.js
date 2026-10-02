@@ -2150,6 +2150,19 @@ function bind(){
   window.addEventListener('online',function(){updateNetworkStatus();if(forcedOfflineSession){loadSharedData({background:true}).then(function(ready){if(ready&&!forcedOfflineSession){subscribeToChanges();startSharedSyncMonitor()}else updateOfflineControls()})}});
   window.addEventListener('offline',function(){realtimeSubscribed=false;updateNetworkStatus()});
   window.addEventListener('roster:peer-revision',function(event){var revision=Number(event&&event.detail&&event.detail.revision);if(Number.isFinite(revision)&&revision!==Number(lastObservedSyncRevision||0))scheduleSharedReload(true)});
+  window.addEventListener('roster:tab-leader',function(event){
+    var isLeader=!!(event&&event.detail&&event.detail.isLeader);
+    if(!isLeader){
+      realtimeSubscribed=false;
+      if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}
+      if(changesChannel){supa.removeChannel(changesChannel);changesChannel=null}
+      setSharedSyncState(navigator.onLine?'live':'offline','');
+      recordAppDiagnostic('tabs','leadership','follower');
+      return
+    }
+    recordAppDiagnostic('tabs','leadership','leader');
+    if(currentUserProfile&&navigator.onLine&&!forcedOfflineSession)subscribeToChanges()
+  });
   window.addEventListener('scroll',scheduleScrollChrome,{passive:true});
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.scheduler){
     window.AnaestheticRuntime.scheduler.every('automatic-night',60000,refreshAutomaticNightOnReturn,{immediate:true});
