@@ -39,6 +39,10 @@ assert.match(runtime, /RECOVERY_THRESHOLD=3/, 'three failed launches must trigge
 assert.match(runtime, /SAFE_MODE_MS=15\*60\*1000/, 'safe mode must be time bounded');
 assert.match(runtime, /SNAPSHOT_MAX_BYTES=768\*1024/, 'offline snapshots must have a hard size ceiling');
 assert.match(runtime, /indexedDB\.open\(SNAPSHOT_DB,1\)/, 'durable snapshots must use IndexedDB');
+assert.match(runtime, /async function removeSnapshot\(key\)/, 'durable private snapshots must expose an awaited IndexedDB removal path');
+assert.match(core, /function clearPrivateDeviceData\(\)[\s\S]*return snapshotRemoval/, 'private-device cleanup must return durable snapshot removal completion');
+assert.match(core, /await clearPrivateDeviceData\(\);await supa\.auth\.signOut/, 'manual sign-out must finish private snapshot deletion before ending the local session');
+assert.match(ui, /async function enterAccessLost\(\)[\s\S]*await clearPrivateDeviceData\(\)/, 'access revocation must finish private snapshot deletion before sign-out');
 assert.match(runtime, /hash:'fnv1a-'/, 'snapshot envelopes must carry an integrity hash');
 assert.match(runtime, /latency:\{record:recordLatency,measure:measureLatency,summary:latencySummary\}/,
   'critical-path latency must have one bounded runtime tracker');
