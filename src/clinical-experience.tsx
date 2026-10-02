@@ -705,7 +705,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>
 
       <motion.div
-        className="personalHeroStatus personalNextState"
+        className="personalHeroStatus personalNextState personalNextStateIntegrated"
         key={liveStatus + '-' + next.title}
         aria-live="polite"
         initial={reducedMotion ? false : { opacity: 0.7, y: 3 }}
