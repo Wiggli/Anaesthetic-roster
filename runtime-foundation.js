@@ -14,6 +14,16 @@
   var schedulerJobs=new Map();
   var clockSamples=[];
   var MAX_CLOCK_SAMPLES=5;
+  var RECOVERY_KEY='launch_health_v1';
+  var RECOVERY_WINDOW_MS=5*60*1000;
+  var RECOVERY_THRESHOLD=3;
+  var SAFE_MODE_MS=15*60*1000;
+  var SNAPSHOT_FORMAT=2;
+  var SNAPSHOT_MAX_BYTES=768*1024;
+  var SNAPSHOT_DB='anaesthetic-roster-runtime';
+  var SNAPSHOT_STORE='snapshots';
+  var latencySamples=[];
+  var LATENCY_LIMIT=80;
 
   function diagnostic(category,operation,code){
     if(domain&&domain.recordDiagnostic)return domain.recordDiagnostic(category,operation,code);
@@ -41,6 +51,128 @@
     getJSON:function(key,fallback){return safeJSON(this.get(key,null),fallback)},
     setJSON:function(key,value){return this.set(key,JSON.stringify(value))}
   };
+
+
+  function fnv1a(value){
+    var text=String(value||''),hash=2166136261;
+    for(var i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}
+    return (hash>>>0).toString(16).padStart(8,'0')
+  }
+  function byteLength(value){
+    var text=String(value||'');
+    if(global.TextEncoder)try{return new TextEncoder().encode(text).length}catch(error){}
+    return unescape(encodeURIComponent(text)).length
+  }
+  function packSnapshot(payload,meta){
+    meta=meta||{};
+    var body=JSON.stringify(payload==null?null:payload),bytes=byteLength(body);
+    if(bytes>SNAPSHOT_MAX_BYTES){diagnostic('snapshot','pack','too-large');return null}
+    return{
+      format:SNAPSHOT_FORMAT,
+      schema:Number(meta.schemaVersion||0),
+      app_version:String(meta.appVersion||''),
+      saved_at:String(meta.savedAt||new Date().toISOString()),
+      bytes:bytes,
+      hash:'fnv1a-'+fnv1a(body),
+      payload:payload
+    }
+  }
+  function unpackSnapshot(envelope){
+    if(!envelope||typeof envelope!=='object'||Array.isArray(envelope))return null;
+    if(Number(envelope.format)!==SNAPSHOT_FORMAT||!Object.prototype.hasOwnProperty.call(envelope,'payload'))return null;
+    var body;
+    try{body=JSON.stringify(envelope.payload)}catch(error){return null}
+    var bytes=byteLength(body);
+    if(bytes>SNAPSHOT_MAX_BYTES||Number(envelope.bytes)!==bytes)return null;
+    if(String(envelope.hash||'')!=='fnv1a-'+fnv1a(body))return null;
+    return envelope.payload
+  }
+  function openSnapshotDb(){
+    return new Promise(function(resolve,reject){
+      if(!global.indexedDB){resolve(null);return}
+      var request;
+      try{request=global.indexedDB.open(SNAPSHOT_DB,1)}catch(error){reject(error);return}
+      request.onupgradeneeded=function(){var db=request.result;if(!db.objectStoreNames.contains(SNAPSHOT_STORE))db.createObjectStore(SNAPSHOT_STORE,{keyPath:'key'})};
+      request.onsuccess=function(){resolve(request.result)};
+      request.onerror=function(){reject(request.error||new Error('IndexedDB unavailable'))};
+    })
+  }
+  async function persistSnapshot(key,envelope){
+    if(!envelope)return false;
+    try{
+      var db=await openSnapshotDb();if(!db)return false;
+      return await new Promise(function(resolve,reject){
+        var tx=db.transaction(SNAPSHOT_STORE,'readwrite');
+        tx.objectStore(SNAPSHOT_STORE).put({key:String(key),envelope:envelope,updatedAt:Date.now()});
+        tx.oncomplete=function(){db.close();resolve(true)};
+        tx.onerror=function(){var error=tx.error;db.close();reject(error||new Error('Snapshot write failed'))};
+        tx.onabort=function(){var error=tx.error;db.close();reject(error||new Error('Snapshot write aborted'))};
+      })
+    }catch(error){diagnostic('snapshot','indexeddb-write','failed');return false}
+  }
+  async function loadSnapshot(key){
+    try{
+      var db=await openSnapshotDb();if(!db)return null;
+      return await new Promise(function(resolve,reject){
+        var tx=db.transaction(SNAPSHOT_STORE,'readonly'),request=tx.objectStore(SNAPSHOT_STORE).get(String(key));
+        request.onsuccess=function(){var value=request.result;db.close();resolve(value&&value.envelope||null)};
+        request.onerror=function(){var error=request.error;db.close();reject(error||new Error('Snapshot read failed'))};
+      })
+    }catch(error){diagnostic('snapshot','indexeddb-read','failed');return null}
+  }
+  async function removeSnapshot(key){
+    try{
+      var db=await openSnapshotDb();if(!db)return false;
+      return await new Promise(function(resolve,reject){
+        var tx=db.transaction(SNAPSHOT_STORE,'readwrite');
+        tx.objectStore(SNAPSHOT_STORE).delete(String(key));
+        tx.oncomplete=function(){db.close();resolve(true)};
+        tx.onerror=function(){var error=tx.error;db.close();reject(error||new Error('Snapshot delete failed'))};
+      })
+    }catch(error){diagnostic('snapshot','indexeddb-remove','failed');return false}
+  }
+  function recoveryState(){return storage.getJSON(RECOVERY_KEY,{version:'',starts:[],readyAt:0,safeModeUntil:0})||{}}
+  function recoveryStart(version){
+    var now=Date.now(),state=recoveryState(),same=state.version===String(version||'');
+    if(!same)state={version:String(version||''),starts:[],readyAt:0,safeModeUntil:0};
+    var starts=Array.isArray(state.starts)?state.starts.filter(function(at){return Number(at)>now-RECOVERY_WINDOW_MS}):[];
+    starts.push(now);state.starts=starts;state.lastStartAt=now;
+    if(starts.length>=RECOVERY_THRESHOLD){
+      state.safeModeUntil=Math.max(Number(state.safeModeUntil||0),now+SAFE_MODE_MS);
+      diagnostic('recovery','launch','safe-mode')
+    }
+    storage.setJSON(RECOVERY_KEY,state);
+    return{safeMode:Number(state.safeModeUntil||0)>now,attempts:starts.length,safeModeUntil:Number(state.safeModeUntil||0)}
+  }
+  function recoveryReady(){
+    var state=recoveryState();state.readyAt=Date.now();state.starts=[];state.safeModeUntil=0;storage.setJSON(RECOVERY_KEY,state);
+    return state
+  }
+  function recoveryStatus(){
+    var state=recoveryState(),now=Date.now();
+    return{safeMode:Number(state.safeModeUntil||0)>now,attempts:Array.isArray(state.starts)?state.starts.length:0,safeModeUntil:Number(state.safeModeUntil||0),lastStartAt:Number(state.lastStartAt||0),readyAt:Number(state.readyAt||0)}
+  }
+  function recordLatency(name,duration,ok){
+    var row={name:String(name||'request').slice(0,48),duration:Math.max(0,Math.round(Number(duration)||0)),ok:ok!==false,at:Date.now()};
+    latencySamples.push(row);latencySamples=latencySamples.slice(-LATENCY_LIMIT);return row
+  }
+  async function measureLatency(name,fn){
+    var started=global.performance&&performance.now?performance.now():Date.now();
+    try{
+      var result=await Promise.resolve().then(fn);
+      recordLatency(name,(global.performance&&performance.now?performance.now():Date.now())-started,true);
+      return result
+    }catch(error){
+      recordLatency(name,(global.performance&&performance.now?performance.now():Date.now())-started,false);
+      throw error
+    }
+  }
+  function latencySummary(){
+    var groups={};
+    latencySamples.forEach(function(item){var g=groups[item.name]||(groups[item.name]={count:0,total:0,max:0,failed:0});g.count++;g.total+=item.duration;g.max=Math.max(g.max,item.duration);if(!item.ok)g.failed++});
+    Object.keys(groups).forEach(function(key){var g=groups[key];g.average=Math.round(g.total/Math.max(1,g.count));delete g.total});
+    return groups
+  }
 
   function StateMachine(name,initial,transitions){
     this.name=name;this.value=initial;this.transitions=transitions||{};this.listeners=new Set();
@@ -244,6 +376,9 @@
     scheduler:{every:schedulerEvery,cancel:schedulerCancel,run:schedulerRun,stopAll:schedulerStopAll},
     coordinator:{isLeader:isLeader,announce:announce},
     clock:{addSample:addClockSample,confidence:clockConfidence},
+    recovery:{start:recoveryStart,markReady:recoveryReady,status:recoveryStatus},
+    snapshots:{format:SNAPSHOT_FORMAT,maxBytes:SNAPSHOT_MAX_BYTES,packSync:packSnapshot,unpackSync:unpackSnapshot,persist:persistSnapshot,load:loadSnapshot,remove:removeSnapshot},
+    latency:{record:recordLatency,measure:measureLatency,summary:latencySummary},
     errors:{code:errorCode,message:function(code){return ERROR_CODES[code]||'The shared roster could not complete that action.'},known:ERROR_CODES},
     conflicts:{diff:diffObjects},
     lifecycle:{setResumeHandler:setResumeHandler,reconcile:reconcile},
