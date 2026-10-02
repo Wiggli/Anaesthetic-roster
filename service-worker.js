@@ -27,6 +27,31 @@ function isSupabaseLibrary(requestUrl) {
     requestUrl.pathname === '/npm/@supabase/supabase-js@2.105.0';
 }
 
+async function cacheHealth() {
+  const cache = await caches.open(CACHE_NAME);
+  const shell = APP_SHELL.concat(BUILD_SHELL);
+  const checks = await Promise.all(shell.map(async url => ({
+    url,
+    present: Boolean(await cache.match(url))
+  })));
+  return checks.filter(item => !item.present).map(item => item.url);
+}
+
+async function repairCache() {
+  const missing = await cacheHealth();
+  if (!missing.length) return [];
+  const cache = await caches.open(CACHE_NAME);
+  const failed = [];
+  for (const url of missing) {
+    try {
+      await cache.add(url);
+    } catch (error) {
+      failed.push(url);
+    }
+  }
+  return failed;
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL.concat(BUILD_SHELL))));
 });
@@ -45,6 +70,15 @@ self.addEventListener('message', event => {
     const payload = { type: 'CACHE_VERSION', value: CACHE_NAME };
     if (event.ports && event.ports[0]) event.ports[0].postMessage(payload);
     else if (event.source) event.source.postMessage(payload);
+  }
+  if (event.data && (event.data.type === 'VERIFY_CACHE' || event.data.type === 'REPAIR_CACHE')) {
+    const repair = event.data.type === 'REPAIR_CACHE';
+    const work = (repair ? repairCache() : cacheHealth()).then(missing => {
+      const payload = { type: 'CACHE_HEALTH', value: CACHE_NAME, missing, repaired: repair };
+      if (event.ports && event.ports[0]) event.ports[0].postMessage(payload);
+      else if (event.source) event.source.postMessage(payload);
+    });
+    if (event.waitUntil) event.waitUntil(work);
   }
 });
 
