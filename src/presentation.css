@@ -16274,8 +16274,8 @@ body.dark .writeGuardBanner{background:color-mix(in srgb,var(--liquid-glass-elev
 
 /* Compact scroll chrome now reads like a real navigation surface while preserving the content underneath it. */
 .scrollGlassHeader.scrollGlassMode-compact{
-  height:calc(60px + env(safe-area-inset-top))!important;
-  min-height:calc(60px + env(safe-area-inset-top))!important;
+  height:calc(58px + env(safe-area-inset-top))!important;
+  min-height:calc(58px + env(safe-area-inset-top))!important;
 }
 .scrollGlassMode-compact .scrollGlassMaterial{
   border-bottom:1px solid color-mix(in srgb,var(--scene-line) 62%,transparent)!important;
@@ -16305,7 +16305,7 @@ html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
 .scrollGlassMode-compact .scrollGlassContent{
   display:flex!important;
   width:min(100%,980px)!important;
-  height:60px!important;
+  height:58px!important;
   align-items:center!important;
   justify-content:center!important;
   padding:0 max(20px,env(safe-area-inset-left))!important;
