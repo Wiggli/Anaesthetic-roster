@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // Explicitly ship only the old public shell and its assets. Source, tests,
 // migrations and local credentials are never copied into the Pages artifact.
 const publicFiles = [
-  'styles.css', 'chat.css', 'theme-bootstrap.js', 'domain-logic.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js',
+  'styles.css', 'chat.css', 'theme-bootstrap.js', 'domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js',
   'manifest.webmanifest', 'release.json', 'anaesthesia-header.jpg',
   'mater-dei-logo.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'
 ];

@@ -1,15 +1,16 @@
 {
-  "version": "39.0",
+  "version": "40.0",
   "date": "2 October 2026",
-  "title": "Harden the roster logic foundation",
-  "summary": "Night timing, shared-plan state, sync recovery, chat delivery and diagnostics now run through centralized reliability contracts so different screens and devices cannot quietly disagree.",
+  "title": "Make shared roster changes safer",
+  "summary": "Night Roster now coordinates app state, reconnects, multi-device edits and shared writes through one reliability architecture so stale screens, retries and duplicate actions are much harder to turn into roster errors.",
   "changes": [
-    "Night now uses one Malta-time context for automatic versus manual selection, current and next night labels, live duty phase and the 07:00 boundary, with an authenticated server-clock sanity check when online.",
-    "Night, Changes and Breaks now share one selected-night plan model, while shared synchronization has explicit starting, live, reconnecting, offline and stale-data states and rejects older snapshots arriving after newer ones.",
-    "Shared roster mutations now use one guarded command path that collapses duplicate in-flight actions and verifies the refreshed server outcome after an ambiguous timeout while preserving existing atomic RPCs and revision-conflict protection.",
-    "Chat retries now carry a stable client message ID with database-enforced idempotency, and read cursors can only move forward across tabs and devices.",
-    "Saved offline roster data now expires after seven days, diagnostics use a bounded privacy-safe local event ring, schema capabilities are centralized, compatibility startup fallbacks are observable, and post-update runtime versions are checked for consistency.",
-    "Typed internal event contracts and new invariant tests cover all 138 published rotation nights at the 19:00 and 07:00 boundaries, plus multi-device, retry, stale-snapshot and update-health contracts."
+    "Every clinical roster change now carries a unique operation ID and the latest shared revision to the database, so double taps, retries and lost responses cannot quietly repeat the same action.",
+    "Before consequential changes are saved, the app checks that its shared roster revision is still current; if another device changed the night, the latest plan is loaded and the affected roles or staffing state are shown for review.",
+    "Final confirmation now has an additional server-side safety gate that rejects understaffed plans, stale role overrides, unavailable staff and invalid Labour Ward orders before the proven allocation and revision-locked finalisation logic runs.",
+    "App startup, resume, online recovery, Night rollover, freshness checks, Realtime recovery and update checks now run through a shared lifecycle and scheduler instead of competing timers and independent browser events.",
+    "Multiple tabs on the same device coordinate through a local leader so only one owns roster Realtime and routine update polling, while other tabs follow shared revision broadcasts and can take over automatically if the leader closes.",
+    "Clock checks now reject unreliable high-latency samples, device storage is routed through one compatibility facade, stable machine error codes replace wording-dependent decisions, and privacy-safe diagnostics record state, recovery and command events without roster identities.",
+    "New adversarial tests add generated staffing combinations, stale-client and retry contracts, lifecycle and clock checks, multi-tab coordination safeguards and continued protection for the verified 138-night rotation and explicit PWA update activation."
   ],
   "update_policy": "important"
 }

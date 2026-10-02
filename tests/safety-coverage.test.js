@@ -8,7 +8,7 @@ const source = Object.fromEntries(['app-core.js', 'app-ui.js', 'index.html', 'ma
   .map(file => [file, fs.readFileSync(path.join(root, file), 'utf8')]));
 assert.match(source['app-ui.js'], /FIVE_NIGHT_ROLE_KEYS=\['first1','first2','second1','second2','fullLW'\]/, 'custom five-nurse plans must expose four theatre roles and one full-night role');
 assert.match(source['app-ui.js'], /function validRoleAssignmentsForNight[\s\S]*sameNightNameSet\(working,assigned\)/, 'custom role saves must match the effective nurses for that night');
-assert.match(source['app-ui.js'], /apply_night_role_override_v35/, 'night-only role changes must use the schema-35 atomic RPC');
+assert.match(source['app-ui.js'], /apply_night_role_override_v48/, 'night-only role changes must use the schema-48 guarded RPC');
 
 const storage = new Map();
 const element = () => ({

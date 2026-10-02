@@ -115,7 +115,7 @@ for (const key of ['anaes_offline_snapshot', 'anaes_cached_profile', 'anaes_rece
 assert.equal(storage.get('anaes_theme'), 'dark', 'logout must preserve the non-sensitive appearance preference');
 assert.equal(storage.get('anaes_selected_date'), '2026-09-23', 'logout must preserve the non-sensitive navigation preference');
 
-const deployableFiles = ['index.html', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'service-worker.js', 'theme-bootstrap.js', 'manifest.webmanifest'];
+const deployableFiles = ['index.html', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'service-worker.js', 'theme-bootstrap.js', 'manifest.webmanifest'];
 const deployable = deployableFiles.map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
 assert.doesNotMatch(deployable, /sb_secret_[A-Za-z0-9_-]+|service_role\s*[:=]\s*["'][A-Za-z0-9._-]+|postgres(?:ql)?:\/\//i,
   'deployed files must not contain a secret Supabase key or database connection string');
