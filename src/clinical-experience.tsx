@@ -462,10 +462,10 @@ function NightStatus({ model }: { model: NightSummary }) {
         <small>Team tonight</small>
         <strong>{model.nurseCount} nurses</strong>
         <span>{absenceLabel} · {overtimeLabel}</span>
-      </span>
-      <span className="nightSignalState">
-        <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
-        <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
+        <span className="nightSignalState">
+          <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
+          <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
+        </span>
       </span>
     </div>
     {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
@@ -684,13 +684,12 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     </div>
 
     <div className="personalAssignmentStage">
-      <div className="personalHeroMeta">
-        <span className="personalHeroEyebrow">{model.assignmentLabel}</span>
+      {(model.changedLabel || model.clockChange) && <div className="personalHeroMeta personalHeroMetaBadgesOnly">
         <span className="personalHeroMetaBadges">
           {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
           {model.clockChange && <span className="personalClockBadge">Clock change</span>}
         </span>
-      </div>
+      </div>}
 
       <div className={'personalAssignmentHero personalAssignmentHeroCompact personalRole-' + tone}>
         <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
@@ -747,7 +746,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
 
       {model.displayName && <details className="personalHeroMore personalHeroMoreQuiet">
         <summary>
-          <span>More</span>
+          <span>More details</span>
           <i aria-hidden="true">›</i>
         </summary>
         <div className="personalHeroMoreGrid personalHeroProfileGrid">

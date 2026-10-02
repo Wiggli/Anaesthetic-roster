@@ -1100,7 +1100,10 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
     }}));
   });
 
-  await expect(page.locator('#personalNightCard')).toContainText('Tonight’s assignment');
+  await expect(page.locator('#personalNightCard')).not.toContainText('Tonight’s assignment');
+  await expect(page.locator('#personalNightHeading')).toHaveText('Your night');
+  await expect(page.locator('#personalNightCard .personalHeroEyebrow')).toHaveCount(0);
+  await expect(page.locator('#personalNightCard .personalHeroMoreQuiet summary')).toContainText('More details');
   const nightOrder = await page.evaluate(() => {
     const hero = document.getElementById('personalNight');
     const date = document.querySelector('#today .nightDateShell');
@@ -1117,6 +1120,19 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#nightStatusRow .nightQuickStrip')).toHaveCount(0);
   await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Break');
   await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Second break');
+  await expect(page.locator('#today .nightOverviewBoard')).toContainText('Team allocation');
+  await expect(page.locator('#today .nightOverviewBoard')).toContainText('Changes tonight');
+  const nightSurfaces = await page.evaluate(() => {
+    const hero = document.querySelector('#personalNightCard > article');
+    const board = document.querySelector('#today .nightOverviewBoard');
+    if (!hero || !board) return null;
+    const h = hero.getBoundingClientRect();
+    const b = board.getBoundingClientRect();
+    return { leftDelta: Math.abs(h.left - b.left), widthDelta: Math.abs(h.width - b.width) };
+  });
+  expect(nightSurfaces).not.toBeNull();
+  expect(nightSurfaces.leftDelta).toBeLessThanOrEqual(2);
+  expect(nightSurfaces.widthDelta).toBeLessThanOrEqual(2);
   await expect(page.locator('#roles .jumpToMeButton')).toHaveText(/Jump to me/);
   await page.evaluate(() => { const button = document.querySelector('#today .prettyDateButton'); if (button) button.textContent = 'Saturday 26 Sep'; });
   await captureReview(page, 'night');
@@ -1127,8 +1143,12 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await page.locator('#today .nightTeamDetails summary').click();
   await expect(page.locator('#today .nightTeamDetails')).toHaveAttribute('open');
   const dock = await page.locator('.bottom').boundingBox();
+  const actionDisc = await page.locator('.bottom .quickRudderDisc').boundingBox();
   expect(dock).not.toBeNull();
-  expect(dock.height).toBeLessThanOrEqual(70);
+  expect(dock.height).toBeLessThanOrEqual(66);
+  expect(actionDisc).not.toBeNull();
+  expect(actionDisc.width).toBeLessThanOrEqual(38);
+  expect(actionDisc.height).toBeLessThanOrEqual(38);
   await expect(page.locator('.bottom button[data-v]')).toHaveCount(4);
   await expect(page.locator('.bottom .quickRudder')).toHaveCount(1);
   await expect(page.locator('.bottom .quickRudderLabel')).toHaveText('Actions');
