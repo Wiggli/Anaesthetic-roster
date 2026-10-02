@@ -16264,3 +16264,192 @@ body.dark .writeGuardBanner{background:color-mix(in srgb,var(--liquid-glass-elev
   box-shadow:none!important;
   color:var(--liquid-label)!important;
 }
+
+/* 41.6 shell polish: one calmer rhythm, clearer compact chrome and genuinely translucent controls. */
+:root{
+  --shell-glass-light:rgba(248,250,252,.17);
+  --shell-glass-dark:rgba(20,22,26,.27);
+  --shell-glass-rim:rgba(255,255,255,.34);
+}
+
+/* Compact scroll chrome now reads like a real navigation surface while preserving the content underneath it. */
+.scrollGlassHeader.scrollGlassMode-compact{
+  height:calc(60px + env(safe-area-inset-top))!important;
+  min-height:calc(60px + env(safe-area-inset-top))!important;
+}
+.scrollGlassMode-compact .scrollGlassMaterial{
+  border-bottom:1px solid color-mix(in srgb,var(--scene-line) 62%,transparent)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.035) 52%,transparent),
+    var(--shell-glass-light)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.48),
+    0 8px 26px rgba(24,34,46,.055)!important;
+  -webkit-backdrop-filter:
+    blur(var(--chrome-glass-blur,30px))
+    saturate(var(--chrome-glass-saturate,176%))
+    contrast(var(--chrome-glass-contrast,1.018))!important;
+  backdrop-filter:
+    blur(var(--chrome-glass-blur,30px))
+    saturate(var(--chrome-glass-saturate,176%))
+    contrast(var(--chrome-glass-contrast,1.018))!important;
+}
+body.dark .scrollGlassMode-compact .scrollGlassMaterial,
+html[data-theme="dark"] .scrollGlassMode-compact .scrollGlassMaterial{
+  border-bottom-color:rgba(255,255,255,.065)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012) 58%,transparent),
+    var(--shell-glass-dark)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.20)!important;
+}
+.scrollGlassMode-compact .scrollGlassContent{
+  display:flex!important;
+  width:min(100%,980px)!important;
+  height:60px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0 max(20px,env(safe-area-inset-left))!important;
+}
+.scrollGlassCompactTitle{
+  display:grid!important;
+  max-width:min(78vw,520px)!important;
+  min-width:0!important;
+  gap:2px!important;
+  text-align:center!important;
+}
+.scrollGlassCompactTitle>span{
+  overflow:hidden;
+  color:var(--scene-ink)!important;
+  font-size:16.5px!important;
+  font-weight:750!important;
+  line-height:1.08!important;
+  letter-spacing:-.027em!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassCompactTitle>small{
+  overflow:hidden;
+  color:var(--scene-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:600!important;
+  line-height:1.15!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.scrollGlassMode-compact::after{
+  height:18px!important;
+  opacity:calc(var(--scroll-glass-edge-opacity,0) * .48)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(118%)!important;
+  backdrop-filter:blur(8px) saturate(118%)!important;
+}
+
+/* Keep the three-step Changes rail below compact chrome instead of competing with it. */
+#changes .changesWorkflowTabs{
+  top:calc(env(safe-area-inset-top) + 64px)!important;
+  margin-bottom:12px!important;
+  border-color:color-mix(in srgb,var(--scene-line) 62%,transparent)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.02)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 52%,transparent)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(170%)!important;
+  backdrop-filter:blur(28px) saturate(170%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 8px 24px rgba(24,34,46,.055)!important;
+}
+body.dark #changes .changesWorkflowTabs,
+html[data-theme="dark"] #changes .changesWorkflowTabs{
+  background:rgba(28,30,34,.34)!important;
+  border-color:rgba(255,255,255,.07)!important;
+}
+#changes .changesWorkflowTabs button b{
+  font-size:11.5px!important;
+  font-weight:700!important;
+}
+
+/* Primary pages share the same vertical cadence. */
+#changes .primaryScreenHeader,
+#breaks .primaryScreenHeader,
+#chat .primaryScreenHeader{
+  margin-bottom:10px!important;
+  padding-bottom:10px!important;
+}
+#changes .primaryScreenHeader p,
+#breaks .primaryScreenHeader p,
+#chat .primaryScreenHeader p{
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+#changes>.changesDatePanel,
+#breaks>.panel>.grid2{
+  margin-top:0!important;
+  border-radius:19px!important;
+}
+#chatHome{
+  gap:14px!important;
+}
+
+/* Night keeps the 41.5 information hierarchy, with less dead space between its key moments. */
+#today>.nightOverviewPanel{
+  padding-top:6px!important;
+}
+#today .nightDateShell{
+  margin-bottom:0!important;
+  padding:6px 0 10px!important;
+}
+#today .personalNight>.sectionTitle{
+  margin:4px 1px 8px!important;
+  font-size:16px!important;
+}
+#today #personalNightCard>.personalHeroCompact{
+  border-radius:22px!important;
+  box-shadow:0 12px 34px rgba(12,22,30,.065),inset 0 1px 0 rgba(255,255,255,.30)!important;
+}
+#today .personalHeroCompact .personalAssignmentStage{
+  padding-top:12px!important;
+}
+#today .personalHeroStatus{
+  padding-top:9px!important;
+  padding-bottom:10px!important;
+}
+#today .personalHeroCompact .nightTimeline{
+  padding:9px 10px 8px!important;
+}
+#today .personalHeroFacts.personalFacts.personalFactButtons{
+  margin-top:8px!important;
+}
+#today .personalHeroMore{
+  margin-top:7px!important;
+}
+#today .nightSummaryTitle{
+  margin-top:14px!important;
+}
+#today .nightTeamDetails,
+#today .recentActivityPanel{
+  margin-top:8px!important;
+}
+
+/* Subtle pressed-state consistency across the primary app without adding decorative motion. */
+#changes button:not(:disabled):active,
+#breaks button:not(:disabled):active,
+#chat button:not(:disabled):active,
+#today button:not(:disabled):active{
+  filter:brightness(.985);
+}
+@media(max-width:390px){
+  .scrollGlassCompactTitle>span{font-size:16px!important}
+  .scrollGlassCompactTitle>small{font-size:10px!important}
+  #changes .changesWorkflowTabs{top:calc(env(safe-area-inset-top) + 62px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #changes button:active,
+  #breaks button:active,
+  #chat button:active,
+  #today button:active{filter:none}
+}
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  #changes .changesWorkflowTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--scene-surface)!important;
+  }
+}
