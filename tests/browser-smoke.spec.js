@@ -27,7 +27,7 @@ async function openShell(page) {
     const main = document.querySelector('main');
     const bottom = document.querySelector('.bottom');
     if (launch) launch.style.display = 'none';
-    if (auth) auth.style.display = 'none';
+    if (auth) auth.classList.add('hidden');
     if (header) header.style.display = 'block';
     if (main) main.style.display = 'block';
     if (bottom) bottom.style.display = 'grid';
@@ -639,7 +639,7 @@ test('navigation stays usable if the lazy React chunk fails', async ({ page }) =
   await page.evaluate(() => {
     document.body.classList.remove('authPending');
     document.getElementById('launchScreen').style.display = 'none';
-    document.getElementById('authGate').style.display = 'none';
+    document.getElementById('authGate').classList.add('hidden');
     document.querySelector('.bottom').style.display = 'grid';
   });
   await page.locator('.bottom button[data-v="breaks"]').click();
@@ -711,7 +711,7 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
     const launch = document.getElementById('launchScreen');
     const auth = document.getElementById('authGate');
     if (launch) launch.style.display = 'none';
-    if (auth) auth.style.display = 'none';
+    if (auth) auth.classList.add('hidden');
     window.onboardingChatIntro = true;
     window.onboardingStep = 0;
     window.onboardingDirection = 1;
