@@ -102,6 +102,8 @@ html[data-theme="dark"] .bottom.reactTabs{
 }
 
 .bottom.reactTabs .navIconWrap{
+  overflow:visible!important;
+  max-width:none!important;
   border-radius:12px!important;
   background:transparent!important;
 }
