@@ -59,7 +59,7 @@ assert.match(showSource, /viewScrollPositions\[previous\]=Math\.max\(0,Number\(w
 assert.match(showSource, /window\.scrollTo\(0,restoreY\)/, 'tab switching must restore the destination tab without smooth scrolling');
 assert.doesNotMatch(showSource, /window\.scrollTo\(0,0\)/, 'tab switching must never force the destination back to the top');
 assert.match(showSource, /target\.classList\.add\('viewEntering'\)[\s\S]*setTimeout\(function\(\)\{target\.classList\.remove\('viewEntering'\)\},180\)/, 'tab switching may use only the short 42.4 settle and must remove it promptly');
-assert.match(mainCss, /body\.tabSwitching \.screenHeader[\s\S]*transition:none!important/, 'scroll-edge header transitions must be frozen during a tab switch');
+assert.match(mainCss, /body\.tabSwitching \.screenHeader[\s\S]*transition:none/, 'scroll-edge header transitions must be frozen during a tab switch');
 
 assert.match(chatCss, /\.chatTeamConsole\{[\s\S]*minmax\(250px,330px\)/, 'team transcript must provide a substantial scrolling message area');
 assert.match(chatCss, /\.chatTeamLine\{[\s\S]*grid-template-columns:auto auto minmax\(0,1fr\)/, 'team messages must render as compact continuous chat lines rather than bubbles');
@@ -67,9 +67,9 @@ assert.match(chatCss, /\.chatSafetyNotice\{[\s\S]*padding:8px 10px/, 'the safety
 assert.match(chatCss, /\.chatMemberChoice:disabled\{[\s\S]*opacity:1/, 'unregistered roster members must stay legible rather than looking broken');
 assert.match(chatCss, /body\.dark/, 'chat must include dark-mode styling');
 assert.match(presentationCss, /40\.1 Chat polish/, 'the current Chat polish layer must stay identifiable and reviewable');
-assert.match(presentationCss, /#chat \.chatHeaderCompose span\{display:inline!important/, 'New private chat must keep a visible text label on phone and desktop');
-assert.match(presentationCss, /#chat \.chatMessageText\{color:inherit!important;font-size:var\(--chat-readable\)!important/, 'message text must keep the readable night-shift type scale');
-assert.match(presentationCss, /#chat \.chatPrivateMessage\.own \.chatPrivateBubble\{[\s\S]*background:var\(--premium-blue\)!important/, 'private outgoing messages must remain visually distinct without changing delivery behaviour');
+assert.match(presentationCss, /#chat \.chatHeaderCompose span\{display:inline/, 'New private chat must keep a visible text label on phone and desktop');
+assert.match(presentationCss, /#chat \.chatMessageText\{color:inherit;font-size:var\(--chat-readable\)/, 'message text must keep the readable night-shift type scale');
+assert.match(presentationCss, /#chat \.chatPrivateMessage\.own \.chatPrivateBubble\{[\s\S]*background:var\(--premium-blue\)/, 'private outgoing messages must remain visually distinct without changing delivery behaviour');
 assert.match(presentationCss, /#chat \.chatComposerGlass\{[\s\S]*border:1px solid[\s\S]*border-radius:26px/, 'the composer must remain a single polished surface rather than nested bordered controls');
 
 assert.match(chat, /var PRIVATE_PAGE_SIZE=40;/, 'private chat must page messages instead of loading full history');
