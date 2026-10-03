@@ -237,11 +237,11 @@ assert.doesNotMatch(source['app-ui.js'], /function (?:copyBriefing|copyBreaks|em
 const finalAppleCss = source['styles.css'].slice(source['styles.css'].lastIndexOf('/* V36.3:'));
 assert.match(finalAppleCss, /flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px/, 'header actions must remain fixed 44px circles in a constrained flex row');
 assert.match(finalAppleCss, /max-width:44px;max-height:44px;aspect-ratio:1[\s\S]*border-radius:50%/, 'header actions must not distort into ovals');
-assert.match(finalAppleCss, /body\.dark #changes input[\s\S]*background:#2c2c2e!important[\s\S]*color:#f5f5f7!important/, 'dark Changes fields must override legacy white surfaces');
-assert.match(finalAppleCss, /body\.dark input::placeholder[\s\S]*color:#aeaeb2!important[\s\S]*opacity:1/, 'dark placeholders must remain visible');
+assert.match(finalAppleCss, /body\.dark #changes input[\s\S]*background:#2c2c2e[\s\S]*color:#f5f5f7/, 'dark Changes fields must override legacy white surfaces');
+assert.match(finalAppleCss, /body\.dark input::placeholder[\s\S]*color:#aeaeb2[\s\S]*opacity:1/, 'dark placeholders must remain visible');
 assert.match(finalAppleCss, /body\.dark \.bottom button:not\(\.active\)\{color:#c7c7cc\}/, 'inactive dark navigation labels must remain readable');
 assert.match(finalAppleCss, /body\.dark #changes \.changesWorkflowTabs button\{color:#d1d1d6/, 'dark workflow labels must remain readable');
-assert.match(finalAppleCss, /body\.dark #changes \.changeItem[\s\S]*background:var\(--apple-surface\)!important/, 'saved staffing records must stay on solid dark surfaces');
+assert.match(finalAppleCss, /body\.dark #changes \.changeItem[\s\S]*background:var\(--apple-surface\)/, 'saved staffing records must stay on solid dark surfaces');
 const relativeLuminance = hex => {
   const channels = hex.match(/[a-f\d]{2}/gi).map(channel => parseInt(channel, 16) / 255)
     .map(channel => channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);

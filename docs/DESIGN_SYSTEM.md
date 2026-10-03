@@ -21,3 +21,16 @@ Touch targets, safe-area padding, light/dark parity, visible focus, semantic lab
 ## Review
 
 A perceptible interface change should be inspected at representative phone and desktop sizes. Pull-request Chromium smoke covers routine polish; production and scheduled compatibility verification adds WebKit for Safari-sensitive behaviour.
+
+
+## Cascade ownership
+
+The production cascade has explicit ownership boundaries so older compatibility CSS cannot unexpectedly win against current UI work.
+
+- `styles.css` is the compatibility base and lives inside `@layer legacy-base`. It may provide defaults for unmigrated markup, but it must not contain `!important`.
+- `chat.css` is the complete Chat fallback and lives inside `@layer legacy-chat`. Shared current presentation may override overlapping Chat chrome.
+- Historical presentation generations before the 42.4 foundation live inside `@layer presentation-history` without `!important`.
+- The 42.4-and-newer presentation foundation remains unlayered and is the shared current product authority.
+- `account-admin-polish.css` owns account and administrator refinements, while `rudder-navigation.css` owns primary dock geometry. New work should modify the owning stylesheet rather than adding a competing override elsewhere.
+
+When a visual defect appears, first identify the owning stylesheet and remove or demote the competing rule. Do not fix cascade conflicts by adding another higher-specificity selector or another `!important`.
