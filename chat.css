@@ -1,3 +1,5 @@
+/* Complete Chat fallback styling. Shared current presentation remains the authority for overlapping controls. */
+@layer legacy-chat {
 /* Isolated Anaesthetic Team chat UI. Uses the roster's Apple-inspired design tokens. */
 body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 #chat{max-width:760px;margin-inline:auto;padding-bottom:8px}
@@ -130,7 +132,7 @@ body.dark .chatTeamComposer textarea{background:var(--ios-bg,var(--apple-bg,#0c0
 @media(min-width:760px){
   .chatWorkspace{grid-template-columns:minmax(320px,390px) minmax(0,1fr);gap:12px}
   .chatConversationPane{display:block}
-  .chatThread.hidden{display:grid!important}
+  .chatThread.hidden{display:grid}
   .chatThread.hidden .chatMessages:before{content:'Open a private chat';margin:auto;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px}
   #chat.chat-thread-open .chatHome{display:grid}
   .chatBackBtn{display:none}
@@ -139,7 +141,7 @@ body.dark .chatTeamComposer textarea{background:var(--ios-bg,var(--apple-bg,#0c0
 @media(max-width:420px){
   #chat{padding-inline:0}.chatScreen{gap:10px}.chatScreenHeader{padding-inline:16px}.chatTeamConsole{grid-template-rows:auto auto minmax(235px,300px) auto}.chatTeamLine{font-size:11px}.chatTeamLineName{font-size:10.5px}.chatPrivateHeader{align-items:flex-end}
 }
-@media(prefers-reduced-motion:reduce){.chatConversationItem,.chatNewPrivateBtn,.chatSendBtn{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.chatConversationItem,.chatNewPrivateBtn,.chatSendBtn{transition:none}}
 
 
 .chatNotificationCard{overflow:hidden;border:1px solid var(--ios-separator,var(--apple-separator,#d1d1d6));border-radius:16px;background:var(--ios-surface,var(--apple-surface,#fff));box-shadow:0 4px 16px rgba(0,0,0,.04)}
@@ -247,7 +249,7 @@ body.dark .chatRetryBtn{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,
   .pushMuteActions{display:grid;grid-template-columns:1fr 1fr}.adminHealthGrid{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){
-  .chatNewMessagesBtn,.chatMessageActionSheet[open]{scroll-behavior:auto;transition:none!important}
+  .chatNewMessagesBtn,.chatMessageActionSheet[open]{scroll-behavior:auto;transition:none}
 }
 
 @media(max-width:759px){
@@ -278,4 +280,6 @@ body.dark .chatRetryBtn{background:color-mix(in srgb,var(--ios-red,#ff3b30) 12%,
 .chatRetentionNote{display:block;margin-top:3px;color:var(--ios-tertiary,var(--apple-tertiary,#8e8e93))}
 body.dark .chatComposerReply,body.dark .chatMentionMenu{background:var(--ios-fill,var(--apple-fill,#26262a))}
 body.dark .chatMentionChoice:hover,body.dark .chatMentionChoice:focus-visible{background:color-mix(in srgb,#fff 8%,transparent)}
-.chatCharacterWarning{color:var(--warning,#d98213)!important}
+.chatCharacterWarning{color:var(--warning,#d98213)}
+
+}
