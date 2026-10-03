@@ -1,13 +1,12 @@
 {
-  "version": "42.2",
+  "version": "42.3",
   "date": "3 October 2026",
-  "title": "Correct Night colour and dock geometry",
-  "summary": "Night now owns a deliberate high-contrast dark palette while the five-tab dock uses identical icon stages, icon-anchored badges and a quieter Liquid Glass treatment.",
+  "title": "Fix dock notification badge clipping",
+  "summary": "Unread badges now sit cleanly on their icon stages without being clipped or shifted by legacy Chat navigation styles.",
   "changes": [
-    "The Night hero now uses a self-contained dark colour system with bright assignment text, muted supporting copy, subtle role colour and a dark translucent Duty, Break and Colleague surface instead of mixed light-theme tokens.",
-    "Timeline, More details, full-night action and clock-change cues now inherit the same hero palette, preserving OLD/NEW clock clarity while improving contrast and visual hierarchy.",
-    "Night date controls and the Tonight card are refined with quieter neutral surfaces and more restrained shadows so blue and green are reserved for interaction and status.",
-    "The five bottom destinations now use matching fixed icon stages; Changes and Chat badges are anchored to their icons, Actions uses the same vertical geometry, and the active lens/dock glass are lighter and more Apple-like without obscuring labels."
+    "Chat and Changes unread badges now remain fully visible because the shared icon stage explicitly allows the badge to extend beyond the icon box.",
+    "The legacy Chat badge offset is limited to the non-React fallback navigation, preventing it from interfering with the current five-column dock.",
+    "Badge margins and positioning are normalised in the consolidated dock layer so active and inactive tabs use the same stable geometry."
   ],
-  "update_policy": "normal"
+  "update_policy": "quiet"
 }

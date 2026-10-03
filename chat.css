@@ -114,8 +114,8 @@ body[data-view="chat"] main{background:var(--ios-bg,var(--apple-bg,#f2f2f7))}
 .chatMemberChoice.awaiting .chatMemberAvatar{background:var(--ios-fill,var(--apple-fill,#f2f2f7));color:var(--ios-secondary,var(--apple-secondary,#6e6e73))}
 .chatMemberPickerEmpty{padding:24px;color:var(--ios-secondary,var(--apple-secondary,#6e6e73));font-size:12px;text-align:center}
 
-.bottom button[data-v="chat"]{position:relative}
-.bottom button[data-v="chat"] .navTaskBadge{position:absolute;top:4px;left:50%;margin-left:9px}
+.bottom:not(.reactTabs) button[data-v="chat"]{position:relative}
+.bottom:not(.reactTabs) button[data-v="chat"] .navTaskBadge{position:absolute;top:4px;left:50%;margin-left:9px}
 
 /* Dark mode */
 body.dark .chatTeamConsoleHeader{background:linear-gradient(145deg,color-mix(in srgb,var(--ios-accent,var(--apple-accent,#0a8f89)) 14%,var(--ios-surface,#161618)),var(--ios-surface,var(--apple-surface,#161618)) 68%)}

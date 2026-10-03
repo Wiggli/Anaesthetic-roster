@@ -56,6 +56,7 @@ for (const obsolete of [
 const presentation = read('src/presentation.css');
 const rudderNavigation = read('src/rudder-navigation.css');
 const navigation = read('src/navigation.tsx');
+const chatCss = read('chat.css');
 assert.equal(exists('src/ui-foundation.css'), false,
   'shared presentation must stay consolidated in presentation.css rather than reintroducing a second ui-foundation layer');
 assert.equal((presentation.match(/42\.2 unified presentation foundation/g) || []).length, 1,
@@ -70,6 +71,14 @@ assert.equal((navigation.match(/className="navIconWrap"/g) || []).length, 4,
   'Night, Changes, Breaks and Chat must share the same fixed icon stage');
 assert.match(rudderNavigation, /\.navIconWrap \.navTaskBadge\{/,
   'navigation badges must be anchored to the icon stage rather than the whole tab');
+assert.match(rudderNavigation, /\.bottom\.reactTabs \.navIconWrap\{[\s\S]*?overflow:visible!important;/,
+  'the icon stage must allow unread badges to extend without clipping');
+assert.match(rudderNavigation, /\.navIconWrap \.navTaskBadge\{[\s\S]*?margin:0!important;/,
+  'React navigation badges must neutralise legacy badge margins');
+assert.match(chatCss, /\.bottom:not\(\.reactTabs\) button\[data-v="chat"\] \.navTaskBadge/,
+  'legacy Chat badge positioning must be scoped to the non-React fallback dock');
+assert.doesNotMatch(chatCss, /\.bottom button\[data-v="chat"\] \.navTaskBadge/,
+  'legacy Chat badge positioning must not leak into the React dock');
 assert.doesNotMatch(rudderNavigation, /42\.0 dock finishing pass/,
   'superseded dock finishing overrides must stay removed');
 
