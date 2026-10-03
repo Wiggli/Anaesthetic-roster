@@ -4,7 +4,7 @@
 :root{
   --rudder-nav-height:64px;
   --rudder-action-size:36px;
-  --rudder-dock-surface:rgba(246,249,253,.46);
+  --rudder-dock-surface:rgba(246,249,253,.36);
   --rudder-dock-surface-dark:rgba(24,28,34,.58);
 }
 
