@@ -305,13 +305,16 @@ test('Changes save feedback presents a conflict and recovery without changing th
   await expect(feedback).toContainText('confirmed for everyone');
 });
 
-test('Changes feedback retains its plain live message if the optional chunk fails', async ({ page }) => {
-  await page.route('**/assets/changes-feedback-*.js', route => route.abort());
-  await openShell(page);
-  await page.evaluate(() => window.formMessage('allocationFormMessage',
-    'Reconnect to the internet, then press Confirm and share again.', 'error'));
-  await expect(page.locator('#allocationFormMessage')).toHaveText('Reconnect to the internet, then press Confirm and share again.');
-  await expect(page.locator('#allocationFormMessage')).not.toHaveAttribute('data-react-ready', 'true');
+test.describe('Changes feedback load failure', () => {
+  test.use({ serviceWorkers: 'block' });
+  test('retains its plain live message if the optional chunk fails', async ({ page }) => {
+    await page.route('**/assets/changes-feedback-*.js', route => route.abort());
+    await openShell(page);
+    await page.evaluate(() => window.formMessage('allocationFormMessage',
+      'Reconnect to the internet, then press Confirm and share again.', 'error'));
+    await expect(page.locator('#allocationFormMessage')).toHaveText('Reconnect to the internet, then press Confirm and share again.');
+    await expect(page.locator('#allocationFormMessage')).not.toHaveAttribute('data-react-ready', 'true');
+  });
 });
 
 test('completed Changes plan keeps confirmation controls hidden after allocation remount', async ({ page }) => {
@@ -1358,9 +1361,11 @@ test('typed Changes records render live staffing and expose stable actions', asy
   await page.locator('#absenceFormExperience .staffingAddButton').click();
   await expect(page.locator('#absenceFormExperience #absentName')).toContainText('Nurse One');
   await page.locator('#absenceFormExperience .staffingSheetClose').click();
+  await expect(page.locator('#absenceFormExperience .staffingSheet')).toHaveCount(0);
   await page.locator('#overtimeFormExperience .staffingAddButton').click();
   await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
   await page.locator('#overtimeFormExperience .staffingSheetClose').click();
+  await expect(page.locator('#overtimeFormExperience .staffingSheet')).toHaveCount(0);
   await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
   await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
   await expect(page.locator('#overtimeList > .changesRecordGroup > .overtimeItem')).toHaveCount(1);
