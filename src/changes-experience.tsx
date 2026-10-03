@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, FieldShell, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
@@ -259,36 +259,32 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
         aria-expanded={open}
       >{records.length ? 'Add another' : 'Add'}</Pressable>
     </div>
-    <AnimatePresence>
-      {open && <>
-        <motion.button
-          type="button"
-          className="staffingSheetBackdrop"
-          aria-label={`Close ${title}`}
-          onClick={close}
-          initial={reduced ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        />
-        <motion.section
-          className="staffingSheet"
-          role="dialog"
-          aria-modal="true"
-          aria-label={title}
-          initial={reduced ? false : { opacity: 0, y: 44 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 36 }}
-          transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 440, damping: 40, mass: 0.7 }}
-        >
-          <div className="staffingSheetHandle" aria-hidden="true" />
-          <div className="staffingSheetHeader">
-            <div><small>Staffing change</small><h3>{title}</h3></div>
-            <Pressable type="button" className="staffingSheetClose" onClick={close} aria-label={`Close ${title}`}>×</Pressable>
-          </div>
-          <div className="staffingSheetBody">{form}</div>
-        </motion.section>
-      </>}
-    </AnimatePresence>
+    {open && <>
+      <motion.button
+        type="button"
+        className="staffingSheetBackdrop"
+        aria-label={`Close ${title}`}
+        onClick={close}
+        initial={reduced ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+      />
+      <motion.section
+        className="staffingSheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        initial={reduced ? false : { opacity: 0, y: 44 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 440, damping: 40, mass: 0.7 }}
+      >
+        <div className="staffingSheetHandle" aria-hidden="true" />
+        <div className="staffingSheetHeader">
+          <div><small>Staffing change</small><h3>{title}</h3></div>
+          <Pressable type="button" className="staffingSheetClose" onClick={close} aria-label={`Close ${title}`}>×</Pressable>
+        </div>
+        <div className="staffingSheetBody">{form}</div>
+      </motion.section>
+    </>}
   </div>;
 }
 function RoleOverrideEditor({ model }: { model: RoleOverride }) {
