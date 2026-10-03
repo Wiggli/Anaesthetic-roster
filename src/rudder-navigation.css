@@ -575,6 +575,8 @@ html[data-theme="dark"] .bottom.reactTabs{
 .bottom.reactTabs .navIconWrap{
   border-radius:12px!important;
   background:transparent!important;
+  overflow:visible!important;
+  max-width:none!important;
 }
 .bottom.reactTabs button[data-v] .navIconWrap svg{
   width:20px!important;
@@ -644,11 +646,14 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   top:-3px!important;
   right:-7px!important;
   left:auto!important;
-  min-width:17px!important;
-  height:17px!important;
+  margin:0!important;
+  min-width:18px!important;
+  height:18px!important;
   padding:0 4px!important;
   border-width:2px!important;
-  font-size:8.5px!important;
+  box-sizing:border-box!important;
+  font-size:9px!important;
+  transform:none!important;
 }
 .bottom.reactTabs .quickRudderAttention{
   top:-3px!important;
