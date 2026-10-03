@@ -737,7 +737,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
           <b>{model.breakLabel || 'Pending'}</b>
           <span>Open Breaks</span>
         </Pressable>
-        <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openColleague}>
+        <Pressable type="button" className="personalHeroFact personalFactButton personalFactContext" onClick={openColleague}>
           <small>{scanContextLabel || 'Colleague'}</small>
           <b>{scanContext || 'Team'}</b>
           <span>Team allocation</span>
