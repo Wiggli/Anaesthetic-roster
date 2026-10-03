@@ -57,6 +57,13 @@ main>.view{
   padding:0!important;
 }
 
+/* Night's brand elements are direct children, so keep them together and reserve
+   the right edge for Settings / Account instead of spreading the label underneath them. */
+#today #appHeader .hospitalStrip{
+  justify-content:flex-start!important;
+  padding-right:96px!important;
+}
+
 .primaryInstitutionBrand{
   min-width:0;
   display:flex!important;
