@@ -338,7 +338,7 @@ assert.ok(navigation.includes('const hit = document.elementFromPoint(touch.clien
 assert.ok(navigation.includes("const blocked = 'button,a,input,select,textarea,summary,[role=\"button\"],[contenteditable=\"true\"]';"), 'interactive controls must keep ownership of their gestures');
 assert.ok(navigation.includes("if (ax > ay * 1.22) first.axis = 'horizontal';"), 'page swipes must require clear horizontal intent before claiming the gesture');
 assert.ok(navigation.includes("else if (ay > ax * 1.12) first.axis = 'vertical';"), 'clearly vertical movement must yield promptly to normal page scrolling');
-assert.ok(navigation.includes("if (event.cancelable) event.preventDefault();"), 'claimed horizontal navigation must prevent the browser from stealing the gesture');
+assert.ok(navigation.includes("if (axis === 'horizontal' && event.cancelable) event.preventDefault();"), 'claimed horizontal navigation must prevent the browser from stealing the gesture');
 assert.ok(navigation.includes("document.addEventListener('touchmove', onMove, { passive: false });"), 'the authoritative touchmove listener must be able to claim horizontal navigation');
 assert.ok(navigation.includes("const velocity = distance / elapsed;"), 'swipe completion must account for gesture velocity as well as distance');
 assert.ok(navigation.includes("const next = destinations[index - Math.sign(dx)];"), 'content swipes must resolve to the adjacent destination only after the gesture is committed');
