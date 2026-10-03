@@ -1500,14 +1500,16 @@ body[data-view] main{
 /* Navigation stages views as a physical horizontal track. Keep the Night masthead
    inside the staged page bounds rather than letting historical bleed rules escape it. */
 main.viewSwipeStage>.view.swipeCurrent>#appHeader,
-main.viewSwipeStage>.view.swipePreview>#appHeader{
+main.viewSwipeStage>.view.swipePreview>#appHeader,
+#today.swipeCurrent>#appHeader,
+#today.swipePreview>#appHeader{
   position:relative!important;
   left:auto!important;
   right:auto!important;
-  width:calc(100% + 24px)!important;
+  width:100%!important;
   max-width:none!important;
-  margin-left:-12px!important;
-  margin-right:-12px!important;
+  margin-left:0!important;
+  margin-right:0!important;
   box-sizing:border-box!important;
   transform:none!important;
 }
