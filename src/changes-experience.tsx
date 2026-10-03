@@ -280,7 +280,13 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
         <div className="staffingSheetHandle" aria-hidden="true" />
         <div className="staffingSheetHeader">
           <div><small>Staffing change</small><h3>{title}</h3></div>
-          <Pressable type="button" className="staffingSheetClose" onClick={close} aria-label={`Close ${title}`}>×</Pressable>
+          <button
+            type="button"
+            className="staffingSheetClose"
+            onPointerDown={close}
+            onClick={close}
+            aria-label={`Close ${title}`}
+          >×</button>
         </div>
         <div className="staffingSheetBody">{form}</div>
       </motion.section>
