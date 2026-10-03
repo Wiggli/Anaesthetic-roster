@@ -198,7 +198,7 @@ function Navigation({ badges }: { badges: Badges }) {
       const elapsed = Math.max(1, performance.now() - first.at);
       const distance = Math.abs(dx);
       const velocity = distance / elapsed;
-      const enoughDistance = distance >= Math.min(92, Math.max(58, window.innerWidth * 0.18));
+      const enoughDistance = distance >= Math.min(82, Math.max(52, window.innerWidth * 0.16));
       const quickFlick = distance >= 34 && velocity >= 0.52;
       if ((!enoughDistance && !quickFlick) || Math.abs(dx) <= Math.abs(dy) * 1.08) return;
 
