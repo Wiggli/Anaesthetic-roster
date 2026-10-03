@@ -501,382 +501,120 @@ test('central Quick Actions rudder opens actions without becoming a fifth destin
   await expect(page.locator('#shareAppDialog')).toContainText('Scan to get Night Roster');
 });
 
-test('bottom-tab taps move solid pages edge-to-edge without visual overlap', async ({ page, isMobile }) => {
+test('bottom-tab taps change views without staging full application pages', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'mobile transition regression');
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('today'));
-  const nightBefore = await page.locator('#today').boundingBox();
 
   await page.locator('.bottom button[data-v="changes"]').click();
-  await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
-  await expect(page.locator('body')).toHaveClass(/viewTransitioning/);
-  const transitionChromeOpacity = await page.locator('#reactScrollChrome .scrollGlassHeader').evaluate(el => Number(getComputedStyle(el).opacity));
-  expect(transitionChromeOpacity).toBe(0);
-  await expect(page.locator('main')).not.toHaveClass(/viewMorphing/);
-  await expect(page.locator('#today')).toHaveClass(/swipeCurrent/);
-  await expect(page.locator('#changes')).toHaveClass(/swipePreview/);
-
-  await page.waitForTimeout(120);
-  const trackState = await page.evaluate(() => {
-    const current = document.getElementById('today');
-    const incoming = document.getElementById('changes');
-    const currentRect = current.getBoundingClientRect();
-    const incomingRect = incoming.getBoundingClientRect();
-    return {
-      currentX: currentRect.x,
-      currentWidth: currentRect.width,
-      incomingX: incomingRect.x,
-      currentOpacity: Number(getComputedStyle(current).opacity),
-      incomingOpacity: Number(getComputedStyle(incoming).opacity),
-      currentBackground: getComputedStyle(current).backgroundColor,
-      incomingBackground: getComputedStyle(incoming).backgroundColor,
-      currentTransform: getComputedStyle(current).transform,
-      incomingTransform: getComputedStyle(incoming).transform
-    };
-  });
-  expect(trackState.currentX).toBeLessThan(nightBefore.x - 20);
-  expect(Math.abs((trackState.currentX + trackState.currentWidth) - trackState.incomingX)).toBeLessThanOrEqual(2);
-  expect(trackState.currentOpacity).toBe(1);
-  expect(trackState.incomingOpacity).toBe(1);
-  expect(trackState.currentBackground).not.toBe('rgba(0, 0, 0, 0)');
-  expect(trackState.incomingBackground).not.toBe('rgba(0, 0, 0, 0)');
-  expect(trackState.currentTransform).not.toBe('none');
-  expect(trackState.incomingTransform).not.toBe('none');
-
   await expect(page.locator('#changes')).toBeVisible();
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
-  await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
   await expect(page.locator('#today')).toHaveClass(/hidden/);
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
+  await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
+  await expect(page.locator('#changes')).toHaveClass(/viewEntering/);
+
   const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
   expect(Math.abs(activeIndicator.x - changesTab.x)).toBeLessThan(4);
+
+  await page.waitForTimeout(220);
+  await expect(page.locator('#changes')).not.toHaveClass(/viewEntering/);
 });
 
-test('page swipes start reliably from container padding and survive an initial diagonal wobble', async ({ page, isMobile }) => {
+test('page swipes decide the destination without dragging heavy screens behind the finger', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
   await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
-  await page.evaluate(() => window.show('chat'));
-  await expect(page.locator('#chat')).toBeVisible();
+  await page.evaluate(() => window.show('today'));
 
-  await page.evaluate(() => {
-    const list = document.getElementById('chatConversationList');
-    list.innerHTML = '';
-    list.style.minHeight = '120px';
-  });
-  await page.locator('#chatConversationList').evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
-  const listBox = await page.locator('#chatConversationList').boundingBox();
-  const from = { x: listBox.x + listBox.width / 2, y: listBox.y + Math.min(60, listBox.height / 2) };
-  await realTouchPath(page, [
-    from,
-    { x: from.x + 10, y: from.y + 11 },
-    { x: from.x + 55, y: from.y + 14 },
-    { x: from.x + 115, y: from.y + 16 },
-    { x: Math.min(360, from.x + 175), y: from.y + 18 }
-  ]);
-  await expect(page.locator('#breaks')).toBeVisible();
-
-  await page.evaluate(() => window.show('changes'));
-  await expect(page.locator('#changes')).toBeVisible();
-  const verticalStart = { x: 190, y: 360 };
-  await realTouchPath(page, [
-    verticalStart,
-    { x: verticalStart.x + 4, y: verticalStart.y + 9 },
-    { x: verticalStart.x + 7, y: verticalStart.y + 32 },
-    { x: verticalStart.x + 8, y: verticalStart.y + 90 }
-  ]);
-  await expect(page.locator('#changes')).toBeVisible();
-});
-
-test('horizontal navigation starts directly on a focusable Chat message row', async ({ page, isMobile }) => {
-  test.skip(!isMobile, 'real phone gesture regression');
-  await openShell(page);
-  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
-  await page.evaluate(() => window.show('chat'));
-  await expect(page.locator('#chat')).toBeVisible();
-
-  await page.evaluate(() => {
-    const chat = document.getElementById('chat');
-    const thread = document.getElementById('chatTeamThread');
-    chat.classList.add('chat-thread-open', 'chat-team-open');
-    document.body.classList.add('chatThreadMode');
-    thread.classList.remove('hidden');
-    window.dispatchEvent(new CustomEvent('roster:chat-messages', { detail: {
-      kind: 'team', bottomOffset: 0, items: [{
-        id: 'swipe-message-1', sender: 'Michael Galea', createdAt: new Date().toISOString(), time: '20:14',
-        body: 'Can anyone swap first part?', own: false, failed: false, deleted: false, mentioned: false,
-        dateLabel: '', unreadBefore: false, replySender: '', replyBody: ''
-      }]
-    } }));
-  });
-
-  const message = page.locator('#chatTeamMessages .chatTeamMessage').first();
-  await expect(message).toBeVisible();
-  await message.scrollIntoViewIfNeeded();
-  const box = await message.boundingBox();
-  expect(box).not.toBeNull();
-  const from = { x: box.x + Math.min(box.width * 0.42, 155), y: box.y + Math.min(box.height / 2, 24) };
-  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.chatTeamMessage')?.getAttribute('aria-label'), from))
-    .toContain('Message from Michael Galea');
-
-  await realTouchPath(page, [
-    from,
-    { x: from.x + 12, y: from.y + 8 },
-    { x: from.x + 58, y: from.y + 10 },
-    { x: from.x + 118, y: from.y + 11 },
-    { x: Math.min((page.viewportSize()?.width || 390) - 32, from.x + 178), y: from.y + 12 }
-  ]);
-  await expect(page.locator('#breaks')).toBeVisible();
-});
-
-test('a new swipe interrupts an unfinished settle instead of being ignored', async ({ page, isMobile }) => {
-  test.skip(!isMobile, 'real phone gesture regression');
-  await openShell(page);
-  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
-  await page.evaluate(() => window.show('changes'));
   const safe = await page.evaluate(() => {
-    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
-    for (let y = 220; y < Math.min(window.innerHeight - 120, 680); y += 14) {
-      for (const x of [105, 200, 290]) {
+    const blocked = 'button,a,input,select,textarea,summary,[role="button"],[contenteditable="true"]';
+    for (let y = 220; y < Math.min(window.innerHeight - 120, 620); y += 14) {
+      for (const x of [90, 160, 235, 300]) {
         const target = document.elementFromPoint(x, y);
-        if (target?.closest('#changes') && !target.closest(blocked)) return { x, y };
+        if (target?.closest('#today') && !target.closest(blocked)) return { x, y };
       }
     }
     return null;
   });
   expect(safe).not.toBeNull();
 
-  await realTouchSwipe(page, safe, { x: safe.x + 20, y: safe.y + 3 });
-  await expect(page.locator('main')).toHaveClass(/viewSwipeSettling/);
+  const before = await page.locator('#today').boundingBox();
+  let during;
+  await realTouchSwipe(page, safe, { x: Math.max(24, safe.x - 190), y: safe.y + 10 }, async () => {
+    during = await page.locator('#today').boundingBox();
+    await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
+  });
+  expect(Math.abs(during.x - before.x)).toBeLessThanOrEqual(1);
+  await expect(page.locator('#changes')).toBeVisible();
 
-  await realTouchSwipe(page, safe, { x: Math.min(340, safe.x + 185), y: safe.y + 10 });
-  await expect(page.locator('#today')).toBeVisible();
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeSettling/);
-
-  await page.evaluate(() => window.show('changes'));
-  await realTouchSwipe(page, safe, { x: Math.min(340, safe.x + 185), y: safe.y + 10 });
-  await expect(page.locator('main')).toHaveClass(/viewSwipeSettling/);
-  await page.evaluate(() => window.show('chat'));
-  await expect(page.locator('#chat')).toBeVisible();
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
-  await page.waitForTimeout(220);
-  await expect(page.locator('#chat')).toBeVisible();
+  const verticalStart = { x: 190, y: 360 };
+  await realTouchPath(page, [
+    verticalStart,
+    { x: verticalStart.x + 4, y: verticalStart.y + 12 },
+    { x: verticalStart.x + 7, y: verticalStart.y + 48 },
+    { x: verticalStart.x + 8, y: verticalStart.y + 104 }
+  ]);
+  await expect(page.locator('#changes')).toBeVisible();
 });
 
-test('page track stays covered across saved scroll positions and Night carries its own header', async ({ page, isMobile }) => {
-  test.skip(!isMobile, 'mobile transition regression');
+test('interactive controls keep horizontal gestures for themselves', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
-  await expect(page.locator('#today > #appHeader')).toHaveCount(1);
-  await expect(page.locator('#today .nightSectionIdentity')).toContainText('Night');
-  await expect(page.locator('[data-shell-account]')).toHaveCount(3);
-  await expect(page.locator('#changes .primaryInstitutionBrand img')).toHaveCount(1);
-  await expect(page.locator('#breaks .primaryInstitutionBrand img')).toHaveCount(1);
-  await expect(page.locator('#chat .primaryInstitutionBrand img')).toHaveCount(1);
+  await page.evaluate(() => window.show('changes'));
+  const workflowButton = page.locator('#changes [data-changes-step]').first();
+  await workflowButton.scrollIntoViewIfNeeded();
+  const box = await workflowButton.boundingBox();
+  expect(box).not.toBeNull();
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await realTouchSwipe(page, point, { x: Math.min((page.viewportSize()?.width || 390) - 20, point.x + 150), y: point.y + 4 });
+  await expect(page.locator('#changes')).toBeVisible();
+});
 
-  await page.locator('.bottom button[data-v="breaks"]').click();
-  await expect(page.locator('#breaks')).toBeVisible();
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+test('saved vertical positions survive lightweight tab changes', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile scroll-position regression');
+  await openShell(page);
+  await page.evaluate(() => window.show('breaks'));
   await page.evaluate(() => {
     const spacer = document.createElement('div');
-    spacer.id = 'swipeScrollRegressionSpacer';
-    spacer.style.height = '900px';
+    spacer.id = 'lightweightScrollRegressionSpacer';
+    spacer.style.height = '1100px';
     document.getElementById('breaks').appendChild(spacer);
     window.scrollTo(0, 520);
-    window.viewScrollPositions.changes = 0;
   });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(250);
 
   await page.locator('.bottom button[data-v="changes"]').click();
-  await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
-  await page.waitForTimeout(120);
-  const coverageDiagnostic = await page.evaluate(() => {
-    const y = Math.min(220, window.innerHeight - 140);
-    const main = document.querySelector('main');
-    const current = main?.querySelector(':scope > .view.swipeCurrent');
-    const preview = main?.querySelector(':scope > .view.swipePreview');
-    const compactRect = element => {
-      if (!element) return null;
-      const rect = element.getBoundingClientRect();
-      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
-    };
-    const currentRect = compactRect(current);
-    const previewRect = compactRect(preview);
-    const visualRects = [currentRect, previewRect].filter(Boolean);
-    const points = [2, window.innerWidth / 2, window.innerWidth - 2].map(x => ({
-      x,
-      covered: visualRects.some(rect =>
-        x >= rect.x - 1 &&
-        x <= rect.right + 1 &&
-        y >= rect.y - 1 &&
-        y <= rect.bottom + 1
-      )
-    }));
-    return {
-      scrollY: window.scrollY,
-      innerWidth: window.innerWidth,
-      innerHeight: window.innerHeight,
-      bodyView: document.body.getAttribute('data-view'),
-      main: compactRect(main),
-      current: currentRect,
-      preview: previewRect,
-      mainOverflow: main ? getComputedStyle(main).overflow : null,
-      points
-    };
-  });
-  expect(
-    coverageDiagnostic.points.map(point => point.covered),
-    JSON.stringify(coverageDiagnostic)
-  ).toEqual([true, true, true]);
   await expect(page.locator('#changes')).toBeVisible();
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
+  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
 
-  await page.locator('.bottom button[data-v="today"]').click();
-  await expect(page.locator('#today')).toHaveClass(/swipePreview/);
-  await page.waitForTimeout(120);
-  const headerTrack = await page.evaluate(() => {
-    const today = document.getElementById('today').getBoundingClientRect();
-    const header = document.getElementById('appHeader').getBoundingClientRect();
-    return { todayX: today.x, todayWidth: today.width, headerX: header.x, headerWidth: header.width };
-  });
-  expect(Math.abs(headerTrack.headerX - headerTrack.todayX)).toBeLessThanOrEqual(1);
-  expect(Math.abs(headerTrack.headerWidth - headerTrack.todayWidth)).toBeLessThanOrEqual(1);
-  await expect(page.locator('#today')).toBeVisible();
+  await page.locator('.bottom button[data-v="breaks"]').click();
+  await expect(page.locator('#breaks')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(250);
 });
 
-test('continuous tab drag and direction-locked page swipes work across Night and Chat', async ({ page, isMobile }) => {
+test('dragging across the dock chooses a destination only when the gesture ends', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
-  await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
   await page.evaluate(() => window.show('today'));
-
-  const safeStart = { x: 290, y: 400 };
-  const initialIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
-  const initialPage = await page.locator('#today').boundingBox();
-  let draggedIndicator;
-  let draggedCurrent;
-  let draggedPreview;
-  await realTouchSwipe(page, safeStart, { x: 105, y: 448 }, async () => {
-    draggedIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
-    draggedCurrent = await page.locator('#today').boundingBox();
-    draggedPreview = await page.locator('#changes').boundingBox();
-    await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
-  });
-  expect(draggedCurrent.x).toBeLessThan(initialPage.x - 45);
-  expect(draggedPreview.x).toBeGreaterThan(initialPage.x + 70);
-  expect(Math.abs((draggedCurrent.x + draggedCurrent.width) - draggedPreview.x)).toBeLessThanOrEqual(2);
-  expect(draggedIndicator.x).toBeGreaterThan(initialIndicator.x + 10);
-  await expect(page.locator('#changes')).toBeVisible();
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
-
-  const settledChanges = await page.locator('.tabSlidingIndicator').boundingBox();
-  await realTouchSwipe(page, { x: 270, y: 400 }, { x: 242, y: 407 });
-  await expect(page.locator('#changes')).toBeVisible();
-  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - settledChanges.x))
-    .toBeLessThan(3);
-
-  await realTouchSwipe(page, { x: 290, y: 400 }, { x: 274, y: 220 });
-  await expect(page.locator('#changes')).toBeVisible();
-
-  const workflowButton = page.locator('#changes [data-changes-step]').first();
-  await workflowButton.evaluate(el => el.scrollIntoView({ block: 'center', inline: 'center' }));
-  await expect(workflowButton).toBeVisible();
-  await expect.poll(async () => workflowButton.evaluate(el => {
-    const rect = el.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    return Boolean(document.elementFromPoint(x, y)?.closest('[data-changes-step]'));
-  })).toBe(true);
-  const workflow = await workflowButton.boundingBox();
-  const workflowPoint = { x: workflow.x + workflow.width / 2, y: workflow.y + workflow.height / 2 };
-  await realTouchSwipe(page, workflowPoint, { x: workflowPoint.x + 150, y: workflowPoint.y });
-  await expect(page.locator('#changes')).toBeVisible();
-
-  await page.evaluate(() => {
-    window.scrollTo(0, 0);
-    window.show('chat');
-  });
-  await expect(page.locator('#chat')).toBeVisible();
-  const chatSwipeStart = await page.evaluate(() => {
-    const blocked = 'button,a,input,select,textarea,[role="button"],[contenteditable="true"]';
-    for (let y = 80; y < Math.min(window.innerHeight - 120, 520); y += 14) {
-      for (const x of [80, 105, 135, 165]) {
-        const target = document.elementFromPoint(x, y);
-        if (target?.closest('#chat') && !target.closest(blocked)) return { x, y };
-      }
-    }
-    return null;
-  });
-  expect(chatSwipeStart).not.toBeNull();
-  const viewportWidth = page.viewportSize()?.width || 390;
-  const chatSwipeEndX = Math.min(viewportWidth - 32, chatSwipeStart.x + 190);
-  expect(chatSwipeEndX - chatSwipeStart.x).toBeGreaterThan(52);
-  await realTouchSwipe(page, chatSwipeStart, { x: chatSwipeEndX, y: chatSwipeStart.y + 18 }, async () => {
-    await expect(page.locator('main')).toHaveClass(/viewSwipeStage/);
-    await expect(page.locator('#breaks')).toHaveClass(/swipePreview/);
-    const chatDuring = await page.locator('#chat').boundingBox();
-    const breaksDuring = await page.locator('#breaks').boundingBox();
-    expect(Math.abs((breaksDuring.x + breaksDuring.width) - chatDuring.x)).toBeLessThanOrEqual(2);
-  });
-  await expect(page.locator('#breaks')).toBeVisible();
-
-  await page.evaluate(() => window.show('today'));
-  await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage/);
   const bar = await page.locator('.bottom').boundingBox();
   const nightTab = await page.locator('.bottom button[data-v="today"]').boundingBox();
   const chatTab = await page.locator('.bottom button[data-v="chat"]').boundingBox();
-  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - nightTab.x))
-    .toBeLessThan(4);
-  const barStart = { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 };
-  const barEnd = { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 };
-  let longDragIndicator;
-  let touchEnergy;
-  await realTouchSwipe(page, barStart, barEnd, async () => {
-    longDragIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
-    touchEnergy = await page.locator('.bottom').evaluate(el => ({
-      energized: el.hasAttribute('data-glass-touching'),
-      x: el.style.getPropertyValue('--glass-touch-x'),
-      y: el.style.getPropertyValue('--glass-touch-y'),
-      glow: Boolean(el.querySelector('.tabTouchGlow'))
-    }));
-  });
-  expect(longDragIndicator.x).toBeGreaterThan(nightTab.x + nightTab.width);
-  expect(touchEnergy.energized).toBe(true);
-  expect(touchEnergy.glow).toBe(true);
-  expect(touchEnergy.x).toMatch(/px$/);
-  expect(touchEnergy.y).toMatch(/px$/);
-  await expect(page.locator('.bottom')).not.toHaveAttribute('data-glass-touching');
-  await expect(page.locator('#chat')).toBeVisible();
-  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x))
-    .toBeLessThan(4);
+  const indicatorBefore = await page.locator('.tabSlidingIndicator').boundingBox();
 
-  const stableGlass = await page.locator('.bottom').evaluate(el => {
-    const style = getComputedStyle(el);
-    return {
-      background: style.backgroundColor,
-      backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none'
-    };
-  });
-  expect(stableGlass.background).not.toBe('transparent');
-  expect(stableGlass.background).not.toBe('rgba(0, 0, 0, 0)');
-  expect(stableGlass.backdrop).not.toBe('none');
-  const lensBackdrop = await page.locator('.tabSlidingIndicator').evaluate(el => {
-    const style = getComputedStyle(el);
-    return style.backdropFilter || style.webkitBackdropFilter || 'none';
-  });
-  expect(lensBackdrop).toBe('none');
-
-  const barAfterChat = await page.locator('.bottom').boundingBox();
   await realTouchSwipe(page,
-    { x: chatTab.x + chatTab.width / 2, y: barAfterChat.y + barAfterChat.height / 2 },
-    { x: nightTab.x + nightTab.width / 2, y: barAfterChat.y + barAfterChat.height / 2 });
-  await expect(page.locator('#today')).toBeVisible();
+    { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 },
+    { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 },
+    async () => {
+      const indicatorDuring = await page.locator('.tabSlidingIndicator').boundingBox();
+      expect(Math.abs(indicatorDuring.x - indicatorBefore.x)).toBeLessThan(4);
+      await expect(page.locator('#today')).toBeVisible();
+    });
 
-  await page.evaluate(() => window.show('changes'));
-  await page.evaluate(() => window.openScreenInfo('changes'));
-  await expect(page.locator('#screenInfoSheet')).toBeVisible();
-  await realTouchSwipe(page, { x: 290, y: 350 }, { x: 100, y: 350 });
-  await expect(page.locator('#changes')).toBeVisible();
+  await expect(page.locator('#chat')).toBeVisible();
+  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x)).toBeLessThan(4);
+  await expect(page.locator('.bottom')).not.toHaveAttribute('data-glass-touching');
 });
 
 test('reduced motion keeps the selected lens aligned without a spring', async ({ page }) => {
@@ -1106,7 +844,8 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#personalNightCard')).not.toContainText('Tonight’s assignment');
   await expect(page.locator('#personalNightHeading')).toHaveText('Your night');
   await expect(page.locator('#personalNightCard .personalHeroEyebrow')).toHaveCount(0);
-  await expect(page.locator('#personalNightCard .personalHeroMoreQuiet summary')).toContainText('More details');
+  await expect(page.locator('#personalNightCard .personalHeroMoreQuiet')).toHaveCount(0);
+  await expect(page.locator('#personalNightCard')).not.toContainText('Personalise this view');
   const nightOrder = await page.evaluate(() => {
     const hero = document.getElementById('personalNight');
     const date = document.querySelector('#today .nightDateShell');
@@ -1167,6 +906,13 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakList .breakPersonYou')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
+  const breakDateButtons = await page.locator('#breaks .rosterDateControl > button').evaluateAll(buttons => buttons.map(button => {
+    const rect = button.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  }));
+  expect(breakDateButtons.every(item => item.width >= 43 && item.height >= 43)).toBe(true);
+  const breakSummaryTargets = await page.locator('#breakSummaryRow .breakSummaryItem').evaluateAll(items => items.map(item => item.getBoundingClientRect().height));
+  expect(breakSummaryTargets.every(height => height >= 60)).toBe(true);
   await expect(page.locator('#breakNotesTitle')).toContainText('Labour Ward / Pager');
   await expect(page.locator('#breaks .breakNotesHeading')).toContainText('Additional coverage');
   const breakBoardStyle = await page.locator('#breakList .breakScheduleBoard').evaluate(el => {
@@ -1250,10 +996,13 @@ test('Night hero keeps assignment facts readable across Android phone widths', a
     expect(geometry.detailInside).toBe(true);
     expect(geometry.factsInside).toBe(true);
     expect(geometry.factWhiteSpace.every(value => value === 'normal')).toBe(true);
-    if (width <= 430 && width > 360) expect(geometry.factTops[2]).toBeGreaterThan(geometry.factTops[0]);
+    if (width > 360) {
+      expect(geometry.factTops[0]).toBe(geometry.factTops[1]);
+      expect(geometry.factTops[1]).toBe(geometry.factTops[2]);
+    }
     if (width === 360) {
-      expect(geometry.factTops[1]).toBeGreaterThan(geometry.factTops[0]);
-      expect(geometry.factTops[2]).toBeGreaterThan(geometry.factTops[1]);
+      expect(geometry.factTops[0]).toBe(geometry.factTops[1]);
+      expect(geometry.factTops[2]).toBeGreaterThan(geometry.factTops[0]);
     }
   }
 });
