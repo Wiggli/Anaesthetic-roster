@@ -1,13 +1,13 @@
 {
-  "version": "41.9",
+  "version": "42.0",
   "date": "3 October 2026",
-  "title": "Polish Night composition and spacing",
-  "summary": "Night now uses one deliberate spacing and typography system, a tighter assignment card, a grouped Tonight surface and a calmer five-column dock.",
+  "title": "Rebuild the UI foundation",
+  "summary": "Night now scales cleanly across real phone widths while shared screen headers, roster-date controls and dock geometry use one consistent presentation system.",
   "changes": [
-    "The Night header and date selector are tightened so the page title, date and assignment sit on one consistent 8-point spacing rhythm.",
-    "The redundant assignment eyebrow is removed on normal nights, while the hero keeps the assignment, timeline, Duty, Break, Colleague, More details and one full-night action in a clearer hierarchy.",
-    "Tonight is regrouped into one operational surface containing team status, Team allocation and Changes tonight, with Plan ready attached to the team information instead of floating separately.",
-    "The bottom dock is reduced to a 64px balanced five-column glass bar with a smaller integrated Actions control, refined unread badge placement and safe content clearance."
+    "The Night assignment hero no longer clips longer Duty, Break, colleague or assignment text, with safe internal gutters and responsive layouts validated at 412, 390, 384 and 360 pixel phone widths.",
+    "Duty, Break and Colleague now use a two-plus-one arrangement on typical phones and a single-column fallback on very narrow screens, while the live 00:00–07:00 timeline wraps safely without changing clock-change or handover logic.",
+    "Changes, Breaks, Chat and Full roster now share the same screen-header and roster-date presentation hooks, giving titles, controls, spacing and typography a consistent hierarchy across the app.",
+    "The five-column glass dock receives a quieter active lens and safer unread-badge placement, while the grouped Tonight surface and all existing roster, Supabase, authentication and daylight-saving behaviour remain unchanged."
   ],
   "update_policy": "normal"
 }

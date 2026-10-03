@@ -16701,7 +16701,7 @@ html[data-theme="dark"] #today .personalClockNow-new{
 }
 
 
-/* 41.9 Night composition polish.
+/* 42.0 Night composition and responsive foundation.
    One spacing rhythm, one assignment hierarchy and one grouped Tonight surface. */
 #today{
   --night-space-1:8px;
@@ -16834,7 +16834,7 @@ html[data-theme="dark"] #today .personalClockNow-new{
   letter-spacing:-.027em!important;
 }
 #today #personalNightCard>.personalHeroCompact{
-  overflow:hidden!important;
+  overflow:visible!important;
   border:1px solid color-mix(in srgb,var(--liquid-accent) 10%,var(--liquid-separator))!important;
   border-radius:22px!important;
   background:var(--liquid-surface)!important;
@@ -16847,7 +16847,8 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
   box-shadow:0 15px 34px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.045)!important;
 }
 #today .personalHeroCompact .personalAssignmentStage{
-  padding:16px 16px 0!important;
+  min-width:0!important;
+  padding:14px!important;
 }
 #today .personalHeroMetaBadgesOnly{
   min-height:0!important;
@@ -16929,12 +16930,12 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
 /* Duty, Break and Colleague share one readable baseline. */
 #today .personalHeroFactGrid{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  margin:8px -16px 0!important;
-  border:0!important;
-  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
-  border-bottom:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
-  border-radius:0!important;
-  background:transparent!important;
+  gap:0!important;
+  margin:10px 0 0!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 84%,transparent)!important;
+  border-radius:15px!important;
+  background:color-mix(in srgb,var(--liquid-surface-muted) 74%,transparent)!important;
 }
 #today .personalHeroFactGrid>.personalHeroFact{
   min-height:62px!important;
@@ -16964,27 +16965,29 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
   line-height:1.25!important;
 }
 #today .personalHeroMoreQuiet{
-  margin:0 -16px!important;
-  border:0!important;
+  margin:10px 0 0!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 76%,transparent)!important;
+  border-radius:14px!important;
 }
 #today .personalHeroMoreQuiet>summary{
-  min-height:38px!important;
-  padding:0 16px!important;
+  min-height:42px!important;
+  padding:0 12px!important;
   color:var(--liquid-secondary)!important;
   font-size:10.5px!important;
   font-weight:640!important;
 }
 #today .personalHeroMoreQuiet .personalHeroMoreGrid{
-  padding:0 16px 10px!important;
+  padding:0 12px 10px!important;
 }
 #today .personalHeroPrimaryAction{
   min-height:48px!important;
-  margin:0 -16px!important;
-  padding:0 16px!important;
-  border:0!important;
-  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
-  border-radius:0!important;
-  background:transparent!important;
+  width:100%!important;
+  margin:10px 0 0!important;
+  padding:0 12px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 16%,var(--liquid-separator))!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 6%,transparent)!important;
   color:var(--liquid-accent-strong)!important;
   box-shadow:none!important;
   font-size:12.5px!important;
@@ -17205,5 +17208,275 @@ html[data-theme="dark"] #today .nightOverviewBoard{
     -webkit-backdrop-filter:none!important;
     backdrop-filter:none!important;
     background:var(--liquid-surface)!important;
+  }
+}
+
+
+/* 42.0 authoritative responsive safeguards.
+   These rules own phone-width wrapping and shared primary-screen composition. */
+#today .personalAssignmentHeroCompact,
+#today .personalAssignmentHeroCompact .personalRoleCopy,
+#today .personalHeroFactGrid,
+#today .personalHeroFactGrid>.personalHeroFact,
+#today .personalClockNowCopy,
+#today .nightTimeline,
+#today .nightTimelineHead{
+  min-width:0!important;
+}
+#today .personalAssignmentHeroCompact .personalRoleCopy b,
+#today .personalAssignmentHeroCompact .personalRoleCopy>span,
+#today .personalHeroFactGrid>.personalHeroFact b,
+#today .personalHeroFactGrid>.personalHeroFact span,
+#today .personalClockNowCopy span{
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact{
+  min-height:68px!important;
+  align-content:center!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact b{
+  font-size:13px!important;
+  line-height:1.24!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact span{
+  font-size:10.5px!important;
+  line-height:1.28!important;
+}
+#today .personalHeroCompact .nightTimeline{
+  min-width:0!important;
+  padding:10px 0 9px!important;
+}
+#today .personalHeroCompact .nightTimelineHead{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  column-gap:8px!important;
+  row-gap:2px!important;
+  align-items:end!important;
+}
+#today .personalHeroCompact .nightTimelineHead>span{
+  min-width:0!important;
+}
+#today .personalHeroCompact .nightTimelineHead em{
+  max-width:min(44vw,164px)!important;
+  overflow-wrap:anywhere!important;
+  text-align:right!important;
+  white-space:normal!important;
+  line-height:1.2!important;
+}
+#today .personalHeroCompact .nightTimelineScale{
+  margin-inline:1px!important;
+}
+#today .personalHeroCompact .nightTimelineScale span{
+  white-space:nowrap!important;
+}
+#today .personalHeroFactGrid,
+#today .personalHeroMoreQuiet,
+#today .personalHeroPrimaryAction{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+#today .personalClockNow{
+  position:relative!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+#today .personalClockNowCopy{
+  padding-right:2px!important;
+}
+#today .personalClockNowBadge{
+  flex:none!important;
+}
+
+.appScreenHeader{
+  --screen-header-title:clamp(34px,8.2vw,40px);
+  --screen-header-section:clamp(20px,5vw,22px);
+  margin:0 0 14px!important;
+}
+.appScreenHeader .primaryInstitution{
+  min-height:44px!important;
+  margin-bottom:10px!important;
+}
+.appScreenHeader .primaryScreenTitleRow{
+  min-width:0!important;
+  gap:12px!important;
+}
+.appScreenHeader .primaryScreenTitleRow>div{
+  min-width:0!important;
+}
+.appScreenHeader .primaryScreenTitleRow h1,
+.appScreenHeaderRoster h2{
+  margin:0!important;
+  font-size:var(--screen-header-title)!important;
+  font-weight:780!important;
+  line-height:1!important;
+  letter-spacing:-.05em!important;
+}
+.appScreenHeader .primaryScreenTitleRow p{
+  margin-top:5px!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+}
+.appScreenHeader .screenEyebrow,
+.appScreenHeader .chatEyebrow{
+  font-size:10.5px!important;
+  font-weight:720!important;
+  letter-spacing:.035em!important;
+}
+.rosterDateControl{
+  min-width:0!important;
+}
+.rosterDateControl input,
+.rosterDateControl .prettyDateButton{
+  min-width:0!important;
+}
+#changes .rosterDateControl,
+#breaks .rosterDateControl{
+  grid-template-columns:42px minmax(0,1fr) 42px!important;
+  gap:8px!important;
+}
+#changes .rosterDateControl>button,
+#breaks .rosterDateControl>button{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+}
+#changes .panel,
+#breaks .panel{
+  border-radius:20px!important;
+}
+#chat .chatScreenHeader{
+  margin-bottom:12px!important;
+}
+#chat .chatTitleRow{
+  align-items:flex-end!important;
+}
+#chat .primaryConnectionLine{
+  flex-wrap:wrap!important;
+  row-gap:2px!important;
+}
+#chat .chatHeaderCompose{
+  flex:0 0 auto!important;
+}
+
+@media(max-width:430px){
+  #today .personalHeroFactGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact:nth-child(2){
+    border-right:0!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact:nth-child(3){
+    grid-column:1/-1!important;
+    min-height:58px!important;
+    border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+    border-right:0!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact b{
+    font-size:13px!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact span{
+    font-size:10px!important;
+  }
+  .appScreenHeader .primaryScreenTitleRow h1,
+  .appScreenHeaderRoster h2{
+    font-size:36px!important;
+  }
+}
+@media(max-width:412px){
+  #today .personalHeroCompact .personalAssignmentStage{padding:13px!important}
+  #today .personalAssignmentHeroCompact{
+    grid-template-columns:44px minmax(0,1fr)!important;
+    gap:10px!important;
+    padding-inline:0!important;
+  }
+  #today .personalAssignmentHeroCompact .personalRoleCopy b{
+    font-size:21px!important;
+  }
+  #today .personalHeroCompact .nightTimelineHead em{
+    max-width:146px!important;
+  }
+}
+@media(max-width:390px){
+  #today .personalHeroCompact .personalAssignmentStage{padding:12px!important}
+  #today .personalClockNow{
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:8px!important;
+    padding:10px!important;
+  }
+  #today .personalClockNowBadge{
+    position:absolute!important;
+    top:9px!important;
+    right:9px!important;
+  }
+  #today .personalClockNowCopy{
+    padding-right:42px!important;
+  }
+  #today .personalHeroCompact .nightTimelineHead{
+    grid-template-columns:1fr!important;
+  }
+  #today .personalHeroCompact .nightTimelineHead em{
+    max-width:none!important;
+    text-align:left!important;
+  }
+  #chat .chatHeaderCompose span{display:none!important}
+}
+@media(max-width:384px){
+  #today .personalNight>.sectionTitle,
+  #today .nightSummaryTitle .sectionTitle{
+    font-size:20px!important;
+  }
+  #today .personalAssignmentHeroCompact .personalRoleCopy b{
+    font-size:20px!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact{
+    padding-inline:9px!important;
+  }
+}
+@media(max-width:360px){
+  #today .personalHeroCompact .personalAssignmentStage{padding:11px!important}
+  #today .personalAssignmentHeroCompact{
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:9px!important;
+  }
+  #today .personalAssignmentHeroCompact .personalRoleIcon{
+    width:40px!important;
+    height:40px!important;
+    min-width:40px!important;
+  }
+  #today .personalHeroFactGrid{
+    grid-template-columns:1fr!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact,
+  #today .personalHeroFactGrid>.personalHeroFact:nth-child(2),
+  #today .personalHeroFactGrid>.personalHeroFact:nth-child(3){
+    grid-column:1!important;
+    min-height:54px!important;
+    border-right:0!important;
+    border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  }
+  #today .personalHeroFactGrid>.personalHeroFact:first-child{
+    border-top:0!important;
+  }
+  .appScreenHeader .primaryScreenTitleRow h1,
+  .appScreenHeaderRoster h2{
+    font-size:34px!important;
+  }
+}
+@media(max-width:430px) and (min-resolution:1dppx){
+  #today .personalHeroCompact,
+  #today .nightOverviewBoard,
+  .appScreenHeader{
+    max-width:100%!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #today .personalHeroCompact *,
+  .appScreenHeader *{
+    scroll-behavior:auto!important;
   }
 }
