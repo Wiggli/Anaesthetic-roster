@@ -1036,11 +1036,11 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
   await captureReview(page, 'changes-shared');
 });
 
-test('unresolved seventh-nurse decision still names recorded overtime', async ({ page }) => {
+test('unresolved seventh-nurse decision still names recorded overtime without clipping it', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.dispatchEvent(new CustomEvent('roster:night', { detail: {
-      nurseCount: 7, absenceCount: 0, overtimeCount: 1, overtimeNames: ['Dani Ilieva'],
+      nurseCount: 8, absenceCount: 0, overtimeCount: 2, overtimeNames: ['Dani Ilieva', 'Alexandra Constantinou'],
       taskCount: 1, decisionTasks: 1, confirmNeeded: true,
       alert: 'Seven-nurse arrangement: decide whether Yentl moves from Labour Ward / Pager into the seventh position.',
       firstTask: 'Choose whether Yentl moves to the seventh position', labourPending: false,
@@ -1048,8 +1048,15 @@ test('unresolved seventh-nurse decision still names recorded overtime', async ({
     }}));
   });
   await expect(page.locator('#nightStatusRow')).toContainText('Review needed');
-  await expect(page.locator('#nightStatusRow')).toContainText('1 overtime');
-  await expect(page.locator('#nightStatusRow')).toContainText('Overtime: Dani Ilieva');
+  await expect(page.locator('#nightStatusRow')).toContainText('2 overtime');
+  const names = page.locator('#nightStatusRow .nightSignalStaffingNames');
+  await expect(names).toContainText('Overtime: Dani Ilieva, Alexandra Constantinou');
+  const geometry = await names.evaluate(element => {
+    const style = getComputedStyle(element);
+    return { whiteSpace: style.whiteSpace, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
+  });
+  expect(geometry.whiteSpace).toBe('normal');
+  expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth + 1);
 });
 
 test('administrator attention badge stays fully visible inside the settings control', async ({ page }) => {
