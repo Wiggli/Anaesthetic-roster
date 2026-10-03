@@ -1,13 +1,13 @@
 {
-  "version": "42.7",
+  "version": "42.8",
   "date": "3 October 2026",
-  "title": "Keep recorded staffing visible while decisions are pending",
-  "summary": "Recorded overtime now stays explicit on Tonight while seven-nurse allocation decisions are unresolved, and the administrator attention badge is no longer clipped by the settings control.",
+  "title": "Show every recorded overtime nurse",
+  "summary": "Tonight now keeps the complete recorded overtime list readable on narrow phones while seven-nurse decisions are still pending.",
   "changes": [
-    "Tonight now names recorded overtime nurses as well as showing the overtime count, including while a seven-nurse decision is still pending.",
-    "Seven-nurse decision state remains provisional until the allocation is resolved, but it no longer obscures who has already been recorded as overtime cover.",
-    "The administrator settings attention badge is repositioned so the circular header control no longer clips it into a red crescent.",
-    "Browser coverage now protects both pending seven-nurse overtime visibility and the administrator badge geometry."
+    "Recorded overtime names on Tonight now wrap naturally instead of being truncated on narrow phones.",
+    "Multiple overtime nurses remain fully readable while a seven-nurse role decision is unresolved.",
+    "The 42.7 staffing visibility and administrator attention badge fixes remain unchanged.",
+    "Browser coverage now verifies that long and multiple overtime names do not overflow or disappear."
   ],
   "update_policy": "quiet"
 }
