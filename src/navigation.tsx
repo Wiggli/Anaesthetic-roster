@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 
@@ -13,7 +13,6 @@ declare global {
     show?: (view: string) => void;
     openChatView?: () => void;
     showQuickActions?: () => void;
-    viewScrollPositions?: Record<string, number>;
   }
 }
 
@@ -32,71 +31,75 @@ function badgeFrom(id: string): Badge {
 
 function Navigation({ badges }: { badges: Badges }) {
   const reducedMotion = useReducedMotion();
-  const [active, setActive] = useState(document.body.getAttribute('data-view') || 'today');
-  const [quickOpen, setQuickOpen] = useState(false);
   const indicatorX = useMotionValue(0);
-  const indicatorScaleX = useMotionValue(1);
-  const indicatorScaleY = useMotionValue(1);
+  const indicatorRef = useRef<HTMLSpanElement | null>(null);
   const positions = useRef<number[]>([]);
-  const transitionToRef = useRef<((view: Destination) => void) | null>(null);
-  const [indicatorSize, setIndicatorSize] = useState({ top: 0, width: 0, height: 0 });
-
-  useEffect(() => {
-    const dialog = document.getElementById('quickActionsSheet');
-    if (!dialog) return;
-    const sync = () => setQuickOpen(dialog.hasAttribute('open'));
-    const observer = new MutationObserver(sync);
-    observer.observe(dialog, { attributes: true, attributeFilter: ['open'] });
-    sync();
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const bar = document.querySelector<HTMLElement>('.bottom');
-    if (!bar) return;
-    let animation: ReturnType<typeof animate> | undefined;
-    let pageAnimation: ReturnType<typeof animate> | undefined;
-    const moveTo = (view: string) => {
+    const indicator = indicatorRef.current;
+    if (!bar || !indicator) return;
+
+    let indicatorAnimation: ReturnType<typeof animate> | undefined;
+    let clickSuppressed = false;
+    let clickTimer: number | undefined;
+
+    const currentView = () => {
+      const value = document.body.getAttribute('data-view') as Destination;
+      return destinations.includes(value) ? value : 'today';
+    };
+
+    const moveTo = (view: string, immediate = false) => {
       const left = positions.current[destinations.indexOf(view as Destination)];
       if (left === undefined) return;
-      animation?.stop();
-      indicatorScaleX.set(reducedMotion ? 1 : 1.052);
-      indicatorScaleY.set(reducedMotion ? 1 : 0.975);
-      if (reducedMotion) {
+      indicatorAnimation?.stop();
+      if (reducedMotion || immediate) {
         indicatorX.set(left);
-        indicatorScaleY.set(1);
-      } else animation = animate(indicatorX, left, {
+        return;
+      }
+      indicatorAnimation = animate(indicatorX, left, {
         type: 'spring',
-        stiffness: 460,
-        damping: 42,
-        mass: 0.68,
-        onComplete: () => {
-          animate(indicatorScaleX, 1, { type: 'spring', stiffness: 520, damping: 45 });
-          animate(indicatorScaleY, 1, { type: 'spring', stiffness: 520, damping: 45 });
-        }
+        stiffness: 560,
+        damping: 46,
+        mass: 0.54
       });
     };
+
     const measure = () => {
       const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
       if (buttons.some(button => !button)) return;
       const barRect = bar.getBoundingClientRect();
       const rects = buttons.map(button => button!.getBoundingClientRect());
       positions.current = rects.map(rect => rect.left - barRect.left);
-      setIndicatorSize({ top: rects[0].top - barRect.top, width: rects[0].width, height: rects[0].height });
-      animation?.stop();
-      indicatorX.set(positions.current[destinations.indexOf(document.body.getAttribute('data-view') as Destination)] ?? positions.current[0]);
+      indicator.style.top = `${rects[0].top - barRect.top}px`;
+      indicator.style.width = `${rects[0].width}px`;
+      indicator.style.height = `${rects[0].height}px`;
+      moveTo(currentView(), true);
     };
-    const observer = new ResizeObserver(measure);
-    observer.observe(bar);
-    bar.classList.add('reactTabs', 'liquidTabBar');
-    measure();
+
+    const navigate = (view: Destination) => {
+      if (view === currentView()) return;
+      navigationHaptic();
+      window.show?.(view);
+      if (view === 'chat') window.openChatView?.();
+    };
+
     const sync = (event: Event) => {
-      const view = (event as CustomEvent<{ view: string }>).detail.view;
-      const finishingCommittedTransition = committingTarget === view;
-      if (document.querySelector('main.viewSwipeStage') && !finishingCommittedTransition) clearContentDrag();
-      setActive(view);
-      if (!finishingCommittedTransition) moveTo(view);
+      const view = (event as CustomEvent<{ view?: string }>).detail?.view || currentView();
+      moveTo(view);
     };
+
+    const quickDialog = document.getElementById('quickActionsSheet');
+    const quickButton = bar.querySelector<HTMLElement>('[data-quick-rudder]');
+    const syncQuick = () => {
+      const open = Boolean(quickDialog?.hasAttribute('open'));
+      quickButton?.classList.toggle('open', open);
+      quickButton?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    const quickObserver = quickDialog ? new MutationObserver(syncQuick) : undefined;
+    if (quickDialog) quickObserver?.observe(quickDialog, { attributes: true, attributeFilter: ['open'] });
+    syncQuick();
+
     type SwipeAxis = 'pending' | 'horizontal' | 'vertical';
     type SwipeStart = {
       id: number;
@@ -105,277 +108,19 @@ function Navigation({ badges }: { badges: Badges }) {
       at: number;
       view: Destination;
       bar: boolean;
-      barOrigin: number;
       axis: SwipeAxis;
-      offset: number;
-      preview?: Destination;
     };
+
     let start: SwipeStart | null = null;
-    let suppressClick = false;
-    let clickTimer: number | undefined;
-    let settleTimer: number | undefined;
-
-    const setGlassTouch = (clientX: number, clientY: number) => {
-      const rect = bar.getBoundingClientRect();
-      const x = clamp(clientX - rect.left, 0, rect.width);
-      const y = clamp(clientY - rect.top, 0, rect.height);
-      bar.style.setProperty('--glass-touch-x', x.toFixed(1) + 'px');
-      bar.style.setProperty('--glass-touch-y', y.toFixed(1) + 'px');
-      bar.setAttribute('data-glass-touching', 'true');
-    };
-    const releaseGlassTouch = () => {
-      bar.removeAttribute('data-glass-touching');
-    };
-    let settleTarget: Destination | null = null;
-    let committingTarget: Destination | null = null;
-    const blockedContentSelector = 'input,select,textarea,[contenteditable="true"]';
-
-    const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
-    const nearestPositionIndex = (value: number) => {
-      let best = 0;
-      let distance = Number.POSITIVE_INFINITY;
-      positions.current.forEach((position, index) => {
-        const nextDistance = Math.abs(position - value);
-        if (nextDistance < distance) {
-          best = index;
-          distance = nextDistance;
-        }
-      });
-      return best;
-    };
-
-    const clearContentDrag = () => {
-      window.clearTimeout(settleTimer);
-      settleTimer = undefined;
-      pageAnimation?.stop();
-      pageAnimation = undefined;
-      settleTarget = null;
-      const main = document.querySelector<HTMLElement>('main');
-      const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
-      const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
-      current?.classList.remove('swipeCurrent');
-      if (current) {
-        current.style.removeProperty('transform');
-        current.style.removeProperty('position');
-        current.style.removeProperty('top');
-        current.style.removeProperty('left');
-        current.style.removeProperty('width');
-        current.style.removeProperty('margin');
-      }
-      if (preview) {
-        preview.classList.remove('swipePreview');
-        preview.style.removeProperty('transform');
-        preview.style.removeProperty('position');
-        preview.style.removeProperty('top');
-        preview.style.removeProperty('left');
-        preview.style.removeProperty('width');
-        preview.style.removeProperty('margin');
-        preview.removeAttribute('aria-hidden');
-        preview.removeAttribute('inert');
-      }
-      main?.classList.remove('viewSwipeStage', 'viewSwipeSettling');
-      document.body.classList.remove('viewTransitioning');
-      if (main) main.style.removeProperty('min-height');
-    };
-
-    const finishContentSettle = (immediate = false) => {
-      const target = settleTarget;
-      if (!target) {
-        clearContentDrag();
-        return;
-      }
-      window.clearTimeout(settleTimer);
-      settleTimer = undefined;
-      settleTarget = null;
-      committingTarget = target;
-      window.show?.(target);
-      if (target === 'chat') window.openChatView?.();
-      const complete = () => {
-        clearContentDrag();
-        committingTarget = null;
-      };
-      if (immediate || reducedMotion) complete();
-      else requestAnimationFrame(() => requestAnimationFrame(complete));
-    };
-
-    const savedScrollFor = (view: Destination) =>
-      Math.max(0, Number(window.viewScrollPositions?.[view] || 0));
-
-    const pinPageTrack = (
-      main: HTMLElement,
-      current: HTMLElement,
-      preview: HTMLElement,
-      target: Destination
-    ) => {
-      const currentRect = current.getBoundingClientRect();
-      const width = Math.max(1, currentRect.width);
-      const currentScroll = Math.max(0, Number(window.scrollY || 0));
-      const targetScroll = savedScrollFor(target);
-      const preservedMainHeight = Math.max(1, main.getBoundingClientRect().height);
-
-      main.style.minHeight = `${Math.ceil(preservedMainHeight)}px`;
-      document.body.classList.add('viewTransitioning');
-      main.classList.add('viewSwipeStage');
-      current.classList.add('swipeCurrent');
-      preview.classList.add('swipePreview');
-      preview.setAttribute('aria-hidden', 'true');
-      preview.setAttribute('inert', '');
-
-      current.style.position = 'fixed';
-      current.style.left = `${currentRect.left}px`;
-      current.style.top = `${currentRect.top}px`;
-      current.style.width = `${width}px`;
-      current.style.margin = '0';
-
-      preview.style.position = 'fixed';
-      preview.style.left = `${currentRect.left}px`;
-      preview.style.top = `${currentRect.top + currentScroll - targetScroll}px`;
-      preview.style.width = `${width}px`;
-      preview.style.margin = '0';
-      preview.style.removeProperty('transform');
-
-      return width;
-    };
-
-    const setPageTrackOffset = (current: HTMLElement, preview: HTMLElement, offset: number, direction: number, width: number) => {
-      current.style.transform = `translate3d(${offset}px,0,0)`;
-      preview.style.transform = `translate3d(${offset + direction * width}px,0,0)`;
-    };
-
-    const animatePageTrack = (
-      current: HTMLElement,
-      preview: HTMLElement,
-      from: number,
-      to: number,
-      direction: number,
-      width: number,
-      complete: () => void
-    ) => {
-      pageAnimation?.stop();
-      setPageTrackOffset(current, preview, from, direction, width);
-      pageAnimation = animate(from, to, {
-        type: 'spring',
-        stiffness: 390,
-        damping: 38,
-        mass: 0.74,
-        restSpeed: 0.5,
-        restDelta: 0.5,
-        onUpdate: value => setPageTrackOffset(current, preview, value, direction, width),
-        onComplete: () => {
-          pageAnimation = undefined;
-          complete();
-        }
-      });
-    };
-
-    const stageContentDrag = (first: SwipeStart, dx: number) => {
-      const index = destinations.indexOf(first.view);
-      const step = -Math.sign(dx);
-      const next = destinations[index + step];
-      if (!step || !next) {
-        if (first.preview) clearContentDrag();
-        first.preview = undefined;
-        return undefined;
-      }
-      const main = document.querySelector<HTMLElement>('main');
-      const current = document.getElementById(first.view);
-      const preview = document.getElementById(next);
-      if (!main || !(current instanceof HTMLElement) || !(preview instanceof HTMLElement)) return undefined;
-      const changingPreview = first.preview !== next;
-      if (first.preview && changingPreview) clearContentDrag();
-      const direction = destinations.indexOf(next) - index;
-      const newlyStaged = !preview.classList.contains('swipePreview');
-      const width = changingPreview || newlyStaged
-        ? pinPageTrack(main, current, preview, next)
-        : Math.max(1, current.getBoundingClientRect().width);
-      const offset = clamp(dx, -width, width);
-      setPageTrackOffset(current, preview, offset, direction, width);
-      first.offset = offset;
-      first.preview = next;
-      return next;
-    };
-
-    const returnContentDrag = (first: SwipeStart) => {
-      moveTo(first.view);
-      const main = document.querySelector<HTMLElement>('main');
-      const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
-      const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
-      if (reducedMotion || !main || !current || !preview || !first.preview) {
-        clearContentDrag();
-        return;
-      }
-      const direction = destinations.indexOf(first.preview) - destinations.indexOf(first.view);
-      const width = Math.max(1, current.getBoundingClientRect().width);
-      main.classList.add('viewSwipeSettling');
-      animatePageTrack(current, preview, first.offset, 0, direction, width, clearContentDrag);
-    };
-
-    const commitContentDrag = (first: SwipeStart, next: Destination) => {
-      moveTo(next);
-      const main = document.querySelector<HTMLElement>('main');
-      const current = main?.querySelector<HTMLElement>(':scope > .view.swipeCurrent');
-      const preview = main?.querySelector<HTMLElement>(':scope > .view.swipePreview');
-      if (reducedMotion || !main || !current || !preview || first.preview !== next) {
-        clearContentDrag();
-        window.show?.(next);
-        if (next === 'chat') window.openChatView?.();
-        return;
-      }
-      const direction = destinations.indexOf(next) - destinations.indexOf(first.view);
-      const width = Math.max(1, current.getBoundingClientRect().width);
-      main.classList.add('viewSwipeSettling');
-      settleTarget = next;
-      animatePageTrack(current, preview, first.offset, -direction * width, direction, width, () => finishContentSettle());
-    };
-
-    const animateViewChange = (target: Destination) => {
-      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);
-      const from = document.body.getAttribute('data-view') as Destination;
-      if (!destinations.includes(from) || from === target) {
-        moveTo(target);
-        if (from !== target) {
-          window.show?.(target);
-          if (target === 'chat') window.openChatView?.();
-        }
-        return;
-      }
-      if (reducedMotion) {
-        clearContentDrag();
-        window.show?.(target);
-        if (target === 'chat') window.openChatView?.();
-        return;
-      }
-      const main = document.querySelector<HTMLElement>('main');
-      const current = document.getElementById(from);
-      const preview = document.getElementById(target);
-      if (!main || !(current instanceof HTMLElement) || !(preview instanceof HTMLElement)) {
-        window.show?.(target);
-        if (target === 'chat') window.openChatView?.();
-        return;
-      }
-      clearContentDrag();
-      const direction = Math.sign(destinations.indexOf(target) - destinations.indexOf(from)) || 1;
-      const width = pinPageTrack(main, current, preview, target);
-      setPageTrackOffset(current, preview, 0, direction, width);
-      settleTarget = target;
-      moveTo(target);
-      main.classList.add('viewSwipeSettling');
-      animatePageTrack(current, preview, 0, -direction * width, direction, width, () => finishContentSettle());
-    };
-    transitionToRef.current = animateViewChange;
+    const blocked = 'button,a,input,select,textarea,summary,[role="button"],[contenteditable="true"]';
 
     const lockAxis = (first: SwipeStart, dx: number, dy: number) => {
       if (first.axis !== 'pending') return first.axis;
       const ax = Math.abs(dx);
       const ay = Math.abs(dy);
-      if (Math.max(ax, ay) < 8) return first.axis;
-      if (first.bar) {
-        if (ax >= ay * 0.72) first.axis = 'horizontal';
-        else if (ay >= 14 && ay > ax * 1.35) first.axis = 'vertical';
-      } else {
-        if (ax >= 10 && ax >= ay * 1.16) first.axis = 'horizontal';
-        else if (ay >= 12 && ay >= ax * 1.12) first.axis = 'vertical';
-      }
+      if (Math.max(ax, ay) < 10) return first.axis;
+      if (ax > ay * 1.22) first.axis = 'horizontal';
+      else if (ay > ax * 1.12) first.axis = 'vertical';
       return first.axis;
     };
 
@@ -383,219 +128,148 @@ function Navigation({ badges }: { badges: Badges }) {
       start = null;
       if (event.touches.length !== 1 || document.body.classList.contains('authPending') || document.querySelector('dialog[open]')) return;
       const touch = event.touches[0];
-      if (settleTarget || document.querySelector('main.viewSwipeSettling')) finishContentSettle(true);
-      const hitTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-      const target = hitTarget instanceof Element ? hitTarget : event.target;
+      const hit = document.elementFromPoint(touch.clientX, touch.clientY);
+      const target = hit instanceof Element ? hit : event.target;
       if (!(target instanceof Element)) return;
-      const inBar = !!target.closest('.bottom');
+
+      const inBar = Boolean(target.closest('.bottom'));
       if (target.closest('[data-quick-rudder]')) return;
-      if (inBar) setGlassTouch(touch.clientX, touch.clientY);
-      const view = document.body.getAttribute('data-view') as Destination;
-      if (!destinations.includes(view) || (!inBar && !target.closest('main .view'))) return;
-      if (!inBar && target.closest(blockedContentSelector)) return;
+      if (!inBar && (!target.closest('main .view') || target.closest(blocked))) return;
       if (!inBar && window.getSelection()?.type === 'Range') return;
-            animation?.stop();
-      pageAnimation?.stop();
-      pageAnimation = undefined;
-      clearContentDrag();
-      const viewIndex = destinations.indexOf(view);
-      const barOrigin = positions.current[viewIndex] ?? indicatorX.get();
+
       start = {
         id: touch.identifier,
         x: touch.clientX,
         y: touch.clientY,
         at: performance.now(),
-        view,
+        view: currentView(),
         bar: inBar,
-        barOrigin,
-        axis: 'pending',
-        offset: 0
+        axis: 'pending'
       };
     };
 
     const onMove = (event: TouchEvent) => {
-      if (!start || reducedMotion) return;
+      if (!start) return;
       const touch = Array.from(event.touches).find(item => item.identifier === start!.id);
       if (!touch) return;
-      const dx = touch.clientX - start.x;
-      const dy = touch.clientY - start.y;
-      const axis = lockAxis(start, dx, dy);
+      const axis = lockAxis(start, touch.clientX - start.x, touch.clientY - start.y);
       if (axis === 'vertical') {
-        if (!start.bar) start = null;
-        else moveTo(start.view);
+        start = null;
         return;
       }
-      if (axis !== 'horizontal') return;
-      if (event.cancelable) event.preventDefault();
+      if (axis === 'horizontal' && event.cancelable) event.preventDefault();
+    };
 
-      const index = destinations.indexOf(start.view);
-      const origin = positions.current[index];
-      if (start.bar) {
-        setGlassTouch(touch.clientX, touch.clientY);
-        const firstPosition = positions.current[0];
-        const lastPosition = positions.current[positions.current.length - 1];
-        if (firstPosition !== undefined && lastPosition !== undefined)
-          indicatorX.set(clamp(start.barOrigin + dx, firstPosition, lastPosition));
-        const flex = Math.min(0.075, Math.abs(dx) / Math.max(1, window.innerWidth) * 0.18);
-        indicatorScaleX.set(1 + flex);
-        indicatorScaleY.set(1 - flex * 0.52);
-        return;
-      }
-
-      const next = stageContentDrag(start, dx);
-      if (!next || origin === undefined) {
-        moveTo(start.view);
-        return;
-      }
-      const neighbor = positions.current[destinations.indexOf(next)];
-      const current = document.getElementById(start.view);
-      const width = current instanceof HTMLElement ? Math.max(1, current.getBoundingClientRect().width) : Math.max(1, window.innerWidth);
-      if (neighbor !== undefined) {
-        const progress = Math.min(1, Math.abs(dx) / width);
-        indicatorX.set(origin + (neighbor - origin) * progress);
-        const flex = Math.sin(progress * Math.PI) * 0.065;
-        indicatorScaleX.set(1 + flex);
-        indicatorScaleY.set(1 - flex * 0.45);
-      }
+    const suppressNextClick = (ms: number) => {
+      clickSuppressed = true;
+      window.clearTimeout(clickTimer);
+      clickTimer = window.setTimeout(() => { clickSuppressed = false; }, ms);
     };
 
     const onEnd = (event: TouchEvent) => {
       const first = start;
       start = null;
       if (!first) return;
-      if (first.bar) releaseGlassTouch();
-      if (document.body.getAttribute('data-view') !== first.view || document.querySelector('dialog[open]')) {
-        clearContentDrag();
-        moveTo(document.body.getAttribute('data-view') || first.view);
-        return;
-      }
       const touch = Array.from(event.changedTouches).find(item => item.identifier === first.id);
-      if (!touch) {
-        if (first.bar) moveTo(first.view); else returnContentDrag(first);
-        return;
-      }
+      if (!touch) return;
+
       const dx = touch.clientX - first.x;
       const dy = touch.clientY - first.y;
       const axis = lockAxis(first, dx, dy);
+      if (axis !== 'horizontal') return;
 
       if (first.bar) {
-        const firstPosition = positions.current[0];
-        const lastPosition = positions.current[positions.current.length - 1];
-        const draggedPosition = firstPosition !== undefined && lastPosition !== undefined
-          ? clamp(first.barOrigin + dx, firstPosition, lastPosition)
-          : first.barOrigin;
-        const targetIndex = axis === 'horizontal' ? nearestPositionIndex(reducedMotion ? draggedPosition : indicatorX.get()) : destinations.indexOf(first.view);
-        const target = destinations[targetIndex] || first.view;
-        if (target === first.view) {
-          moveTo(first.view);
-          return;
+        if (Math.abs(dx) < 18) return;
+        const candidates = destinations.map(view => {
+          const button = bar.querySelector<HTMLElement>(`button[data-v="${view}"]`);
+          const rect = button?.getBoundingClientRect();
+          return { view, center: rect ? rect.left + rect.width / 2 : Number.POSITIVE_INFINITY };
+        });
+        const target = candidates.reduce((best, item) =>
+          Math.abs(item.center - touch.clientX) < Math.abs(best.center - touch.clientX) ? item : best
+        ).view;
+        if (target !== first.view) {
+          suppressNextClick(240);
+          navigate(target);
         }
-        navigationHaptic();
-        suppressClick = true;
-        window.clearTimeout(clickTimer);
-        clickTimer = window.setTimeout(() => { suppressClick = false; }, 320);
-        animateViewChange(target);
         return;
       }
 
-      if (axis !== 'horizontal') {
-        returnContentDrag(first);
-        return;
-      }
-      const step = -Math.sign(dx);
-      const next = destinations[destinations.indexOf(first.view) + step];
       const elapsed = Math.max(1, performance.now() - first.at);
       const distance = Math.abs(dx);
       const velocity = distance / elapsed;
-      const current = document.getElementById(first.view);
-      const width = current instanceof HTMLElement ? Math.max(1, current.getBoundingClientRect().width) : Math.max(1, window.innerWidth);
-      const quickFlick = distance >= 24 && velocity >= 0.55;
-      const slowThreshold = Math.min(108, Math.max(58, width * 0.24));
-      if ((!quickFlick && distance < slowThreshold) || !next) {
-        returnContentDrag(first);
-        return;
-      }
-      navigationHaptic();
-      suppressClick = true;
-      window.clearTimeout(clickTimer);
-      clickTimer = window.setTimeout(() => { suppressClick = false; }, 220);
-      commitContentDrag(first, next);
+      const enoughDistance = distance >= Math.min(82, Math.max(52, window.innerWidth * 0.16));
+      const quickFlick = distance >= 34 && velocity >= 0.52;
+      if ((!enoughDistance && !quickFlick) || Math.abs(dx) <= Math.abs(dy) * 1.08) return;
+
+      const index = destinations.indexOf(first.view);
+      const next = destinations[index - Math.sign(dx)];
+      if (!next) return;
+      suppressNextClick(220);
+      navigate(next);
     };
 
-    const onClick = (event: MouseEvent) => {
-      if (!suppressClick) return;
+    const onCancel = () => { start = null; };
+    const onClickCapture = (event: MouseEvent) => {
+      if (!clickSuppressed) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      suppressClick = false;
+      clickSuppressed = false;
     };
 
-    const onCancel = () => {
-      const first = start;
-      start = null;
-      if (!first) return;
-      if (first.bar) {
-        releaseGlassTouch();
-        moveTo(first.view);
-      } else returnContentDrag(first);
-    };
+    const resizeObserver = new ResizeObserver(measure);
+    bar.classList.add('reactTabs', 'liquidTabBar');
+    resizeObserver.observe(bar);
+    measure();
+
     window.addEventListener('roster:viewchange', sync);
     document.addEventListener('touchstart', onStart, { passive: true });
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend', onEnd, { passive: true });
     document.addEventListener('touchcancel', onCancel, { passive: true });
-    document.addEventListener('click', onClick, true);
+    document.addEventListener('click', onClickCapture, true);
+
     return () => {
+      indicatorAnimation?.stop();
+      resizeObserver.disconnect();
+      quickObserver?.disconnect();
+      window.clearTimeout(clickTimer);
       window.removeEventListener('roster:viewchange', sync);
       document.removeEventListener('touchstart', onStart);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onEnd);
       document.removeEventListener('touchcancel', onCancel);
-      document.removeEventListener('click', onClick, true);
-      window.clearTimeout(clickTimer);
-      transitionToRef.current = null;
-      clearContentDrag();
-      observer.disconnect();
-      animation?.stop();
-      releaseGlassTouch();
-      bar.style.removeProperty('--glass-touch-x');
-      bar.style.removeProperty('--glass-touch-y');
+      document.removeEventListener('click', onClickCapture, true);
       bar.classList.remove('reactTabs', 'liquidTabBar');
     };
-  }, [indicatorX, indicatorScaleX, indicatorScaleY, reducedMotion]);
+  }, [indicatorX, reducedMotion]);
 
-  function navigate(view: Destination) {
-    if (view !== active) navigationHaptic();
-    const transition = transitionToRef.current;
-    if (transition) transition(view);
-    else {
-      window.show?.(view);
-      if (view === 'chat') window.openChatView?.();
-    }
-  }
+  const navigate = (view: Destination) => {
+    if (document.body.getAttribute('data-view') !== view) navigationHaptic();
+    window.show?.(view);
+    if (view === 'chat') window.openChatView?.();
+  };
 
   function badge(id: string, initial: Badge) {
     return <em id={id} className={'navTaskBadge' + (initial.hidden ? ' hidden' : '')}>{initial.text}</em>;
   }
 
   return <div className="tw:contents" data-react-navigation="ready">
-    <span className="tabTouchGlow" aria-hidden="true" />
-    <motion.span className="tabSlidingIndicator" aria-hidden="true"
-      style={{ x: indicatorX, scaleX: indicatorScaleX, scaleY: indicatorScaleY, top: indicatorSize.top, width: indicatorSize.width, height: indicatorSize.height }} />
-    <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}
-      aria-current={active === 'today' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
-      onClick={() => navigate('today')}>
+    <motion.span ref={indicatorRef} className="tabSlidingIndicator" aria-hidden="true" style={{ x: indicatorX }} />
+    <motion.button type="button" data-v="today" className={document.body.getAttribute('data-view') === 'today' ? 'active' : ''}
+      aria-current={document.body.getAttribute('data-view') === 'today' ? 'page' : undefined}
+      whileTap={reducedMotion ? undefined : { scale: 0.97 }} onClick={() => navigate('today')}>
       <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z" /><path d="M15.5 7.5h5M18 5v5" /></svg></span>
       <span>Night</span>
     </motion.button>
-    <motion.button type="button" data-v="changes" className={active === 'changes' ? 'active' : ''}
-      aria-label="Staffing changes" aria-current={active === 'changes' ? 'page' : undefined}
-      whileTap={reducedMotion ? undefined : { scale: 0.96 }} onClick={() => navigate('changes')}>
+    <motion.button type="button" data-v="changes" className={document.body.getAttribute('data-view') === 'changes' ? 'active' : ''}
+      aria-label="Staffing changes" aria-current={document.body.getAttribute('data-view') === 'changes' ? 'page' : undefined}
+      whileTap={reducedMotion ? undefined : { scale: 0.97 }} onClick={() => navigate('changes')}>
       <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11" /><path d="m13 4 3 3-3 3" /><path d="M19 17H8" /><path d="m11 14-3 3 3 3" /><circle cx="5" cy="17" r="1.5" /><circle cx="19" cy="7" r="1.5" /></svg>{badge('changesTaskBadge', badges.changes)}</span>
       <span>Changes</span>
     </motion.button>
-    <motion.button type="button" className={'quickRudder' + (quickOpen ? ' open' : '')} data-quick-rudder aria-label="Quick actions"
-      aria-haspopup="dialog" aria-expanded={quickOpen}
-      whileTap={reducedMotion ? undefined : { scale: 0.94 }}
+    <motion.button type="button" className="quickRudder" data-quick-rudder aria-label="Quick actions" aria-haspopup="dialog" aria-expanded="false"
+      whileTap={reducedMotion ? undefined : { scale: 0.97 }}
       onClick={() => { navigationHaptic(); window.showQuickActions?.(); }}>
       <span className="quickRudderDisc">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -605,15 +279,15 @@ function Navigation({ badges }: { badges: Badges }) {
       </span>
       <span className="quickRudderLabel">Actions</span>
     </motion.button>
-    <motion.button type="button" data-v="breaks" className={active === 'breaks' ? 'active' : ''}
-      aria-current={active === 'breaks' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
-      onClick={() => navigate('breaks')}>
+    <motion.button type="button" data-v="breaks" className={document.body.getAttribute('data-view') === 'breaks' ? 'active' : ''}
+      aria-current={document.body.getAttribute('data-view') === 'breaks' ? 'page' : undefined}
+      whileTap={reducedMotion ? undefined : { scale: 0.97 }} onClick={() => navigate('breaks')}>
       <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2" /></svg></span>
       <span>Breaks</span>
     </motion.button>
-    <motion.button type="button" data-v="chat" className={active === 'chat' ? 'active' : ''}
-      aria-label="Team chat" aria-current={active === 'chat' ? 'page' : undefined}
-      whileTap={reducedMotion ? undefined : { scale: 0.96 }} onClick={() => navigate('chat')}>
+    <motion.button type="button" data-v="chat" className={document.body.getAttribute('data-view') === 'chat' ? 'active' : ''}
+      aria-label="Team chat" aria-current={document.body.getAttribute('data-view') === 'chat' ? 'page' : undefined}
+      whileTap={reducedMotion ? undefined : { scale: 0.97 }} onClick={() => navigate('chat')}>
       <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 3v-14Z" /><path d="M8 10h8M8 13h5" /></svg>{badge('chatUnreadBadge', badges.chat)}</span>
       <span>Chat</span>
     </motion.button>

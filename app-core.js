@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '42.3';
+var APP_VERSION = '42.4';
 var EXPECTED_SCHEMA_VERSION = 50;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var appStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
@@ -339,6 +339,7 @@ function show(v){
   if(switching)document.body.classList.add('tabSwitching');
   Array.prototype.forEach.call(document.querySelectorAll('.view'),function(x){x.classList.add('hidden');x.classList.remove('viewEntering')});
   target.classList.remove('hidden');
+  if(switching&&!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches))target.classList.add('viewEntering');
   document.body.setAttribute('data-view',v);
   Array.prototype.forEach.call(document.querySelectorAll('.bottom button'),function(b){var active=b.getAttribute('data-v')===v;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   render();
@@ -348,6 +349,7 @@ function show(v){
     window.scrollTo(0,restoreY);
     document.body.classList.toggle('uiScrolled',restoreY>18);
     requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.remove('tabSwitching')})});
+    setTimeout(function(){target.classList.remove('viewEntering')},180);
   }
 }
 function previewExtension(){var until=byId('extendDate').value,start=addDays(rosterSettings.published_until,4);clearExtensionPreview();if(!until||until<start){byId('extensionCheck').innerHTML='<div class="alert warn">Choose a date on or after '+esc(fmt(start))+'.</div>';return}var snapped=snapRosterDate(until);if(snapped!==until){until=snapped;byId('extendDate').value=until;updateExtensionSummary()}var date=start,safety=0;while(date<=until&&safety<5000){extensionRows.push(calculateNight(date));date=addDays(date,4);safety++}if(!extensionRows.length){byId('extensionCheck').innerHTML='<div class="alert warn">No rostered night falls within this period.</div>';return}var invalid=extensionRows.some(function(r){return new Set([r.first1,r.first2,r.second1,r.second2,r.pager,r.reliever]).size!==6}),check=verifyReference(),finalNight=extensionRows[extensionRows.length-1].date;byId('extensionCheck').innerHTML='<div class="alert '+(invalid||check.mismatches?'warn':'')+'">'+(invalid||check.mismatches?'Verification failed, so nothing can be published.':'Verified successfully. '+extensionRows.length+' new roster night'+(extensionRows.length===1?' is':'s are')+' ready through '+esc(fmt(finalNight))+'.')+'</div>';byId('extensionPreview').innerHTML=extensionRows.map(function(r){return '<div class="previewRow"><b>'+esc(fmt(r.date))+'</b><span>First: '+esc(professionalName(r.first1))+' + '+esc(professionalName(r.first2))+'<br>Second: '+esc(professionalName(r.second1))+' + '+esc(professionalName(r.second2))+'<br>Pager: '+esc(professionalName(r.pager))+' • Reliever: '+esc(professionalName(r.reliever))+' • 7th: '+esc(professionalName(r.seventh))+'</span></div>'}).join('');byId('extensionPreview').classList.remove('hidden');if(!invalid&&!check.mismatches){byId('extendBtn').textContent='Publish through '+fmt(finalNight);byId('extendBtn').classList.remove('hidden')}}

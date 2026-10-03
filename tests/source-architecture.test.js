@@ -59,16 +59,22 @@ const navigation = read('src/navigation.tsx');
 const chatCss = read('chat.css');
 assert.equal(exists('src/ui-foundation.css'), false,
   'shared presentation must stay consolidated in presentation.css rather than reintroducing a second ui-foundation layer');
-assert.equal((presentation.match(/42\.2 unified presentation foundation/g) || []).length, 1,
-  'presentation.css must have exactly one final 42.2 UI foundation');
+assert.equal((presentation.match(/42\.4 unified presentation foundation/g) || []).length, 1,
+  'presentation.css must have exactly one final 42.4 UI foundation');
 assert.doesNotMatch(presentation, /personalHeroFactGrid\{margin-inline:-14px!important\}/,
   'Night facts must not return to the clipping-prone negative-margin layout');
 assert.doesNotMatch(presentation, /personalHeroPrimaryAction\{margin-inline:-14px!important\}/,
   'Night actions must remain inside the hero safe area');
-assert.equal((rudderNavigation.match(/42\.2 consolidated dock foundation/g) || []).length, 1,
-  'rudder navigation must have one final 42.2 consolidated dock foundation');
+assert.equal((rudderNavigation.match(/42\.4 primary navigation/g) || []).length, 1,
+  'rudder navigation must have one final 42.4 dock foundation');
 assert.equal((navigation.match(/className="navIconWrap"/g) || []).length, 4,
   'Night, Changes, Breaks and Chat must share the same fixed icon stage');
+assert.doesNotMatch(navigation, /viewSwipeStage|swipePreview|swipeCurrent|setPageTrackOffset|pinPageTrack/,
+  'primary navigation must not physically drag or stage full application screens');
+assert.doesNotMatch(presentation, /viewSwipeStage|swipePreview|swipeCurrent/,
+  'presentation.css must not retain the superseded full-page swipe track');
+assert.doesNotMatch(read('src/clinical-experience.tsx'), /Personalise this view/,
+  'Night must not duplicate Account and Settings inside the personal hero');
 assert.match(rudderNavigation, /\.navIconWrap \.navTaskBadge\{/,
   'navigation badges must be anchored to the icon stage rather than the whole tab');
 assert.match(rudderNavigation, /\.bottom\.reactTabs \.navIconWrap\{[\s\S]*?overflow:visible!important;/,
