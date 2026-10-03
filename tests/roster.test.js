@@ -468,7 +468,7 @@ assert.match(sw, /requestUrl\.pathname\.endsWith\('\/release\.json'\)[\s\S]*fetc
 assert.match(css, /\.updateBannerSummary[^{]*\{[^}]*min-height:44px/, 'the update notice details target must meet the minimum touch size');
 assert.match(css, /body:not\(\[data-view="today"\]\) \.updateBanner\{display:none\}/, 'the passive update notice must stay out of Changes and Breaks workflows');
 assert.match(css, /\.updateSheetActions button\{[^}]*min-height:50px/, 'update-sheet decisions must have comfortable touch targets');
-assert.match(css, /@media\(prefers-reduced-motion:reduce\)[^{]*\{[^}]*\.updateBanner:not\(\.hidden\),\.updateSheet\[open\]\{animation:none!important\}/, 'the update experience must respect reduced-motion preferences');
+assert.match(css, /@media\(prefers-reduced-motion:reduce\)[^{]*\{[^}]*\.updateBanner:not\(\.hidden\),\.updateSheet\[open\]\{animation:none\}/, 'the update experience must respect reduced-motion preferences');
 assert.match(css, /\.bottom\{[\s\S]*backdrop-filter:saturate\(210%\) blur\(30px\)/, 'primary navigation must retain the reviewed glass material');
 assert.match(css, /#changes \.staffingSection[^{]*\{[^}]*background:var\(--ios-surface\)/, 'clinical staffing surfaces must remain solid');
 assert.match(css, /@supports not \(\(-webkit-backdrop-filter:[\s\S]*\.bottom\{background:#f8f8fa\}/, 'glass chrome must retain an opaque fallback');
@@ -592,7 +592,7 @@ assert.match(css, /data-date-direction="next"[\s\S]*appleDateNext 280ms/, 'date 
 assert.match(css, /body\.uiScrolled\[data-view="changes"\][\s\S]*changesScreenHeader/, 'Changes and Breaks headers must gain compact scroll-edge hierarchy');
 assert.match(css, /\.formMessage\.success:not\(:empty\)::before\{content:'✓'/, 'successful saves must provide a non-colour confirmation symbol');
 assert.match(ui, /function showButtonConfirmation\(button,restoredLabel\)[\s\S]*button\.textContent='✓ Saved'/, 'successful primary actions must acknowledge completion in place');
-assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.view\.viewEntering[\s\S]*animation:none!important/, 'new motion must retain a reduced-motion fallback');
+assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.view\.viewEntering[\s\S]*animation:none/, 'new motion must retain a reduced-motion fallback');
 const luminance = hex => {
   const channels = hex.match(/[0-9a-f]{2}/gi).map(value => parseInt(value, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
   return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
@@ -686,7 +686,7 @@ assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
 assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
 assert.match(clinicalExperience, /nightTimelineSlimRail[\s\S]*nightTimelineFill[\s\S]*nightTimelinePhaseLabels/, 'Night must use the slim progress-rail composition rather than the chunky segmented panel');
-assert.match(presentationCss, /41\.7 Night screen overhaul[\s\S]*\.nightTimelineTrackShell[\s\S]*height:31px!important[\s\S]*\.nightTimelineNow/, 'the live Night rail must keep the compact 41.7 orientation treatment');
+assert.match(presentationCss, /41\.7 Night screen overhaul[\s\S]*\.nightTimelineTrackShell[\s\S]*height:31px[\s\S]*\.nightTimelineNow/, 'the live Night rail must keep the compact 41.7 orientation treatment');
 assert.doesNotMatch(clinicalExperience, /personalNextStateIntegrated|nextNightMessage/, 'ordinary nights must not restore the old dedicated what-matters-next handover block');
 assert.match(presentationCss, /#today \.personalHeroFactGrid\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[\s\S]*#today \.personalHeroFactGrid>\.personalHeroFact[\s\S]*background:var\(--liquid-surface\)!important/, 'Duty, Break and Colleague must share one balanced integrated fact row');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
