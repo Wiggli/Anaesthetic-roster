@@ -1036,6 +1036,49 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
   await captureReview(page, 'changes-shared');
 });
 
+test('unresolved seventh-nurse decision still names recorded overtime', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 7, absenceCount: 0, overtimeCount: 1, overtimeNames: ['Dani Ilieva'],
+      taskCount: 1, decisionTasks: 1, confirmNeeded: true,
+      alert: 'Seven-nurse arrangement: decide whether Yentl moves from Labour Ward / Pager into the seventh position.',
+      firstTask: 'Choose whether Yentl moves to the seventh position', labourPending: false,
+      roles: [], extras: [], contextLabel: 'Provisional'
+    }}));
+  });
+  await expect(page.locator('#nightStatusRow')).toContainText('Review needed');
+  await expect(page.locator('#nightStatusRow')).toContainText('1 overtime');
+  await expect(page.locator('#nightStatusRow')).toContainText('Overtime: Dani Ilieva');
+});
+
+test('administrator attention badge stays fully visible inside the settings control', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    const button = document.getElementById('adminSettingsBtn');
+    button.classList.remove('hidden');
+    let badge = document.getElementById('adminAttentionBadge');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.id = 'adminAttentionBadge';
+      badge.className = 'adminAttentionBadge';
+      badge.textContent = '1';
+      button.appendChild(badge);
+    } else {
+      badge.classList.remove('hidden');
+      badge.textContent = '1';
+    }
+  });
+  const geometry = await page.evaluate(() => {
+    const button = document.getElementById('adminSettingsBtn').getBoundingClientRect();
+    const badge = document.getElementById('adminAttentionBadge').getBoundingClientRect();
+    return { button: { left: button.left, top: button.top, right: button.right, bottom: button.bottom }, badge: { left: badge.left, top: badge.top, right: badge.right, bottom: badge.bottom } };
+  });
+  expect(geometry.badge.top).toBeGreaterThanOrEqual(geometry.button.top);
+  expect(geometry.badge.right).toBeLessThanOrEqual(geometry.button.right);
+  await expect(page.locator('#adminAttentionBadge')).toBeVisible();
+});
+
 test('confirmed seven-nurse context stays Plan ready instead of forcing review', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
