@@ -22,13 +22,8 @@
   --ui-dock-height:64px;
 }
 
-main{
-  padding-inline:var(--ui-page-gutter)!important;
-}
-main>.view{
-  width:min(100%,720px);
-  margin-inline:auto;
-}
+/* Preserve the established full-width page track. Individual content surfaces own
+   their visual gutters so horizontal swipe geometry remains physically adjacent. */
 
 /* -------------------------------------------------------------------------- */
 /* Shared screen header                                                       */
@@ -365,6 +360,7 @@ main>.view{
 /* -------------------------------------------------------------------------- */
 
 #today>.nightOverviewPanel{
+  display:block!important;
   width:100%!important;
   margin:0!important;
   padding:0 0 18px!important;
@@ -682,6 +678,57 @@ main>.view{
   color:var(--liquid-surface)!important;
   font-size:8px!important;
   font-weight:850!important;
+}
+
+#today .personalClockException{
+  width:100%!important;
+  min-height:62px!important;
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin:0 0 10px!important;
+  padding:10px 11px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 28%,var(--liquid-separator))!important;
+  border-radius:15px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 9%,var(--liquid-surface))!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+#today .personalClockExceptionIcon{
+  display:grid!important;
+  width:36px!important;
+  height:36px!important;
+  place-items:center!important;
+  border-radius:11px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 14%,transparent)!important;
+  color:var(--liquid-accent-strong)!important;
+  font-size:18px!important;
+}
+#today .personalClockExceptionCopy{
+  min-width:0!important;
+  display:grid!important;
+  gap:1px!important;
+}
+#today .personalClockExceptionCopy small{
+  color:var(--liquid-accent-strong)!important;
+  font-size:9.5px!important;
+  font-weight:760!important;
+}
+#today .personalClockExceptionCopy strong{
+  color:var(--liquid-label)!important;
+  font-size:12px!important;
+  font-weight:760!important;
+}
+#today .personalClockExceptionCopy span{
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+}
+#today .personalClockException>i{
+  color:var(--liquid-accent-strong)!important;
+  font-size:18px!important;
+  font-style:normal!important;
 }
 
 /* Tonight is one operational object. */
@@ -1137,9 +1184,16 @@ main>.view{
   font-size:11px!important;
 }
 #chat .chatInboxTeamRow{
-  min-height:132px!important;
+  position:relative!important;
+  min-height:118px!important;
+  display:grid!important;
+  grid-template-columns:48px minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"avatar copy unread" "avatar copy open"!important;
+  align-items:center!important;
+  gap:6px 10px!important;
   margin:0!important;
-  padding:14px 16px!important;
+  padding:12px 14px!important;
   border:0!important;
   border-bottom:1px solid var(--liquid-separator)!important;
   border-radius:0!important;
@@ -1147,9 +1201,20 @@ main>.view{
   box-shadow:none!important;
 }
 #chat .chatTeamAvatar{
+  grid-area:avatar!important;
   width:48px!important;
   height:48px!important;
   border-radius:15px!important;
+}
+#chat .chatInboxTeamCopy{
+  grid-area:copy!important;
+  min-width:0!important;
+  align-self:center!important;
+}
+#chat .chatConversationBadge{
+  grid-area:unread!important;
+  align-self:start!important;
+  justify-self:end!important;
 }
 #chat .chatInboxTeamTop b{
   font-size:15px!important;
@@ -1165,7 +1230,10 @@ main>.view{
   font-size:11px!important;
 }
 #chat .chatInboxOpen{
-  min-height:34px!important;
+  grid-area:open!important;
+  align-self:end!important;
+  justify-self:end!important;
+  min-height:32px!important;
   padding:0 10px!important;
   border-radius:12px!important;
   font-size:10.5px!important;
@@ -1283,13 +1351,25 @@ main>.view{
   grid-template-columns:minmax(0,1fr) 44px!important;
   gap:8px!important;
 }
-#chat .chatComposer textarea{
-  min-height:44px!important;
-  padding:11px 14px!important;
+#chat .chatComposerGlass{
+  min-height:48px!important;
+  padding:3px 4px 3px 9px!important;
   border:1px solid var(--liquid-separator)!important;
-  border-radius:20px!important;
-  background:var(--liquid-surface)!important;
+  border-radius:24px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 90%,transparent)!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%)!important;
+  backdrop-filter:blur(18px) saturate(145%)!important;
+}
+#chat .chatComposer textarea{
+  min-height:40px!important;
+  padding:9px 6px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:transparent!important;
   color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  outline:0!important;
   font-size:14px!important;
 }
 #chat .chatSendBtn{
@@ -1319,8 +1399,8 @@ main>.view{
   border:1px solid rgba(255,255,255,.12)!important;
   border-radius:23px!important;
   background:
-    linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 58%,transparent),
-    color-mix(in srgb,var(--liquid-glass-clear) 78%,transparent)!important;
+    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.015) 58%,transparent),
+    rgba(248,250,252,.28)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 34px rgba(22,34,46,.10)!important;
   -webkit-backdrop-filter:blur(30px) saturate(170%)!important;
   backdrop-filter:blur(30px) saturate(170%)!important;
@@ -1394,8 +1474,27 @@ main>.view{
   right:-4px!important;
 }
 
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.075)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.006) 62%,transparent),
+    rgba(22,24,28,.30)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 14px 38px rgba(0,0,0,.26)!important;
+}
+
 body[data-view] main{
   padding-bottom:calc(var(--ui-dock-height) + 30px + env(safe-area-inset-bottom))!important;
+}
+
+/* Navigation stages views as a physical horizontal track. Keep the Night masthead
+   inside the staged page bounds rather than letting historical bleed rules escape it. */
+main.viewSwipeStage>.view.swipeCurrent>#appHeader,
+main.viewSwipeStage>.view.swipePreview>#appHeader{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
 }
 
 /* -------------------------------------------------------------------------- */
