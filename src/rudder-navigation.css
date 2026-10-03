@@ -610,3 +610,33 @@ body[data-view] main{
     background:var(--liquid-surface)!important;
   }
 }
+
+
+/* 42.0 dock finishing pass: lighter selection lens and safer badge insets. */
+.bottom.reactTabs .tabSlidingIndicator{
+  border-color:color-mix(in srgb,var(--liquid-accent) 7%,rgba(255,255,255,.30))!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.045)),
+    color-mix(in srgb,var(--liquid-glass-elevated) 50%,var(--liquid-accent) 3%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.46),0 3px 10px rgba(25,38,50,.055)!important;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:rgba(255,255,255,.055)!important;
+  background:rgba(255,255,255,.058)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 4px 12px rgba(0,0,0,.17)!important;
+}
+.bottom.reactTabs .navTaskBadge{
+  top:5px!important;
+  left:calc(50% + 2px)!important;
+}
+.bottom.reactTabs button[data-v="chat"] .navTaskBadge{
+  left:calc(50% + 1px)!important;
+}
+.bottom.reactTabs .quickRudderAttention{
+  top:-1px!important;
+  right:-2px!important;
+}
+@media(max-width:390px){
+  .bottom.reactTabs .navTaskBadge{left:calc(50% + 1px)!important}
+}
