@@ -1,13 +1,14 @@
 {
-  "version": "41.9",
+  "version": "42.0",
   "date": "3 October 2026",
-  "title": "Polish Night composition and spacing",
-  "summary": "Night now uses one deliberate spacing and typography system, a tighter assignment card, a grouped Tonight surface and a calmer five-column dock.",
+  "title": "Unify the app UI foundation",
+  "summary": "Night clipping is fixed structurally and Night, Changes, Breaks, Chat and the bottom dock now share one authoritative responsive presentation foundation.",
   "changes": [
-    "The Night header and date selector are tightened so the page title, date and assignment sit on one consistent 8-point spacing rhythm.",
-    "The redundant assignment eyebrow is removed on normal nights, while the hero keeps the assignment, timeline, Duty, Break, Colleague, More details and one full-night action in a clearer hierarchy.",
-    "Tonight is regrouped into one operational surface containing team status, Team allocation and Changes tonight, with Plan ready attached to the team information instead of floating separately.",
-    "The bottom dock is reduced to a 64px balanced five-column glass bar with a smaller integrated Actions control, refined unread badge placement and safe content clearance."
+    "Night no longer uses negative-margin fact rows: Duty, Break and Colleague stay inside the hero safe area, wrap instead of clipping, and adapt to a two-plus-one layout on narrow phones.",
+    "Night, Changes, Breaks and Chat now share one screen-header, typography and roster-date-control system, with larger readable supporting text and consistent spacing.",
+    "Changes, Breaks and Chat are tightened into calmer grouped surfaces so empty states, break groups, team chat, safety information and conversation chrome use less space while remaining accessible.",
+    "The five-column glass dock is standardised with a smaller integrated Actions control, calmer active treatment, safer badge placement and consistent bottom clearance.",
+    "Superseded 41.7 to 41.9 Night presentation overrides and the old 41.9 dock override were removed; the new ui-foundation.css is imported last as the single shared composition layer."
   ],
   "update_policy": "normal"
 }
