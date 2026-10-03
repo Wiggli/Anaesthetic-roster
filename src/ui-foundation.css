@@ -24,6 +24,9 @@
 
 /* Preserve the established full-width page track. Individual content surfaces own
    their visual gutters so horizontal swipe geometry remains physically adjacent. */
+main>.view{
+  box-sizing:border-box!important;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Shared screen header                                                       */
@@ -459,7 +462,7 @@
 }
 #today .personalAssignmentHeroCompact .personalRoleCopy b{
   overflow:visible!important;
-  color:var(--liquid-label)!important;
+  color:#f5f5f7!important;
   font-size:clamp(21px,5.7vw,24px)!important;
   font-weight:790!important;
   line-height:1.08!important;
@@ -469,7 +472,7 @@
   overflow-wrap:anywhere!important;
 }
 #today .personalAssignmentHeroCompact .personalRoleCopy>span{
-  color:var(--liquid-secondary)!important;
+  color:#b8b8bd!important;
   font-size:12.5px!important;
   line-height:1.3!important;
 }
@@ -584,10 +587,24 @@
 }
 #today .personalHeroMoreQuiet>summary{
   min-height:40px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
   padding:0 2px!important;
-  color:var(--liquid-secondary)!important;
+  color:#a8a8ad!important;
+  cursor:pointer!important;
+  list-style:none!important;
   font-size:11px!important;
   font-weight:650!important;
+}
+#today .personalHeroMoreQuiet>summary::-webkit-details-marker{display:none!important}
+#today .personalHeroMoreQuiet>summary::marker{content:""!important}
+#today .personalHeroMoreQuiet>summary i{
+  margin-left:auto!important;
+  color:#a8a8ad!important;
+  font-size:17px!important;
+  font-style:normal!important;
 }
 #today .personalHeroMoreQuiet .personalHeroMoreGrid{
   padding:0 0 8px!important;
@@ -885,6 +902,35 @@
 #changes>.changesDatePanel{
   margin:16px 0 22px!important;
 }
+#changes>.changesDatePanel .grid2{
+  grid-template-columns:minmax(0,1fr) 98px!important;
+  align-items:stretch!important;
+  gap:8px!important;
+}
+#changes>.changesDatePanel .staffingCount{
+  min-height:50px!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:1px!important;
+  padding:6px 10px!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:15px!important;
+  background:var(--liquid-surface)!important;
+}
+#changes>.changesDatePanel .staffingCount span{
+  font-size:9px!important;
+  font-weight:700!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+#changes>.changesDatePanel .staffingCount strong{
+  font-size:15px!important;
+  font-weight:770!important;
+}
+#breaks>.panel>.grid2>.staffingCount{
+  display:none!important;
+}
 #changes>.changePanel{
   padding:0!important;
   border:0!important;
@@ -1125,8 +1171,6 @@
 /* -------------------------------------------------------------------------- */
 
 #chat{
-  width:100%!important;
-  max-width:720px!important;
   padding:0 0 8px!important;
 }
 #chat .chatScreen{
@@ -1185,7 +1229,7 @@
 }
 #chat .chatInboxTeamRow{
   position:relative!important;
-  min-height:118px!important;
+  min-height:108px!important;
   display:grid!important;
   grid-template-columns:48px minmax(0,1fr) auto!important;
   grid-template-rows:auto auto!important;
@@ -1337,15 +1381,9 @@
 }
 #chat .chatComposerWrap,
 #chat .chatTeamComposerWrap{
-  position:sticky!important;
-  bottom:calc(var(--ui-dock-height) + 18px + env(safe-area-inset-bottom))!important;
-  z-index:8!important;
-  margin:0 -4px!important;
-  padding:9px 4px!important;
-  border-top:1px solid var(--liquid-separator)!important;
-  background:color-mix(in srgb,var(--liquid-bg) 90%,transparent)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(140%)!important;
-  backdrop-filter:blur(18px) saturate(140%)!important;
+  position:static!important;
+  bottom:auto!important;
+  z-index:auto!important;
 }
 /* The React chatComposerGlass remains the single visual control. The foundation
    only positions its wrapper, avoiding a second textarea border or nested surface. */
@@ -1463,10 +1501,15 @@ body[data-view] main{
    inside the staged page bounds rather than letting historical bleed rules escape it. */
 main.viewSwipeStage>.view.swipeCurrent>#appHeader,
 main.viewSwipeStage>.view.swipePreview>#appHeader{
-  width:100%!important;
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  width:calc(100% + 24px)!important;
   max-width:none!important;
-  margin-left:0!important;
-  margin-right:0!important;
+  margin-left:-12px!important;
+  margin-right:-12px!important;
+  box-sizing:border-box!important;
+  transform:none!important;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1474,6 +1517,10 @@ main.viewSwipeStage>.view.swipePreview>#appHeader{
 /* -------------------------------------------------------------------------- */
 
 @media(max-width:390px){
+  .primaryInstitutionBrand>span,
+  #today #appHeader .hospitalStrip>span{
+    display:none!important;
+  }
   :root{
     --ui-page-gutter:14px;
     --ui-title-size:38px;
