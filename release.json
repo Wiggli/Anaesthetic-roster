@@ -1,13 +1,13 @@
 {
-  "version": "42.6",
+  "version": "42.7",
   "date": "3 October 2026",
-  "title": "Restore reliable signed-in visibility",
-  "summary": "Successful sign-ins now stay on the roster because the shared hidden-state utility once again overrides visible component display rules after the 42.5 cascade refactor.",
+  "title": "Keep recorded staffing visible while decisions are pending",
+  "summary": "Recorded overtime now stays explicit on Tonight while seven-nurse allocation decisions are unresolved, and the administrator attention badge is no longer clipped by the settings control.",
   "changes": [
-    "Restores the authoritative hidden-state utility outside the legacy cascade so authenticated screens can reliably hide the sign-in gate and other inactive interface surfaces.",
-    "Fixes the 42.5 regression where Google and password authentication succeeded but the sign-in screen could remain visible over the authenticated roster.",
-    "Browser smoke setup now uses the production hidden class instead of forcing inline display styles, so this visibility regression is caught in future UI changes.",
-    "Architecture coverage now protects the hidden-state contract while preserving the lower-priority legacy CSS ownership introduced in 42.5."
+    "Tonight now names recorded overtime nurses as well as showing the overtime count, including while a seven-nurse decision is still pending.",
+    "Seven-nurse decision state remains provisional until the allocation is resolved, but it no longer obscures who has already been recorded as overtime cover.",
+    "The administrator settings attention badge is repositioned so the circular header control no longer clips it into a red crescent.",
+    "Browser coverage now protects both pending seven-nurse overtime visibility and the administrator badge geometry."
   ],
   "update_policy": "quiet"
 }

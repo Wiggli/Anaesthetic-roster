@@ -17886,3 +17886,22 @@ html[data-theme="dark"] #today .nightOverviewBoard{
    This is a semantic state utility, not a cascade workaround: when the app marks
    a surface hidden, no component display rule may make it visible again. */
 .hidden{display:none!important}
+
+
+/* 42.7 recorded overtime visibility and unclipped administrator attention. */
+#today .nightSignalStaffingNames{
+  display:block;
+  margin-top:2px;
+  overflow:hidden;
+  color:var(--scene-secondary);
+  font-size:11px;
+  font-weight:630;
+  line-height:1.25;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#appHeader .adminAttentionBadge{
+  top:2px;
+  right:2px;
+  z-index:3;
+}

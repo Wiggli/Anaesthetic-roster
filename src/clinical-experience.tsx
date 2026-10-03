@@ -52,6 +52,7 @@ type NightSummary = {
   nurseCount: number;
   absenceCount: number;
   overtimeCount: number;
+  overtimeNames?: string[];
   taskCount: number;
   decisionTasks: number;
   confirmNeeded: boolean;
@@ -446,6 +447,7 @@ function NightStatus({ model }: { model: NightSummary }) {
   const provisional = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
   const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
   const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
+  const overtimeNames = (model.overtimeNames || []).filter(Boolean);
 
   return <section className={'nightSignal ' + (provisional ? 'needsReview' : '')} aria-label="Tonight at a glance">
     <div className="nightContextLine">
@@ -462,6 +464,7 @@ function NightStatus({ model }: { model: NightSummary }) {
         <small>Team tonight</small>
         <strong>{model.nurseCount} nurses</strong>
         <span>{absenceLabel} · {overtimeLabel}</span>
+        {overtimeNames.length > 0 && <span className="nightSignalStaffingNames">Overtime: {overtimeNames.join(', ')}</span>}
         <span className="nightSignalState">
           <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
           <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
