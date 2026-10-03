@@ -17273,6 +17273,12 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 #today .personalHeroCompact .nightTimelineScale span{
   white-space:nowrap!important;
 }
+#today .personalHeroFactGrid,
+#today .personalHeroMoreQuiet,
+#today .personalHeroPrimaryAction{
+  margin-left:0!important;
+  margin-right:0!important;
+}
 #today .personalClockNow{
   position:relative!important;
   min-width:0!important;
