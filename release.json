@@ -1,13 +1,13 @@
 {
-  "version": "42.4",
+  "version": "42.5",
   "date": "3 October 2026",
-  "title": "Make Night calmer and navigation smoother",
-  "summary": "Night is more focused, primary-screen switching is lighter, date controls share one touch geometry and the centre Actions control now belongs visually to the dock.",
+  "title": "Stabilise the app-wide visual cascade",
+  "summary": "Current interface styling now has explicit ownership, while older compatibility CSS remains available without being able to override the modern Night Roster design unexpectedly.",
   "changes": [
-    "Night removes the duplicate Personalise this view settings row and keeps the hero focused on assignment, live timing, break, colleague context and one full-night action, while preserving the OLD/NEW clock-change wake-up cues and equal-duty handover logic.",
-    "Primary-screen swipes no longer drag and animate two full application pages behind the finger; gestures now decide the destination and use a short compositor-only settle while each tab keeps its own saved scroll position.",
-    "Night, Changes and Breaks now share a 44 px date-control baseline, and the Breaks summary actions use proper touch-target sizing instead of undersized calendar-adjacent controls.",
-    "The five-column dock has one authoritative geometry, with a quieter translucent Actions control, matching label and icon rhythm, a transform-only active lens and the existing corrected unread-badge anchoring."
+    "Historical base styling is moved into a low-priority legacy layer so old high-specificity rules can no longer unexpectedly override the current interface across Night, Changes, Breaks, Chat, sheets and administration.",
+    "Presentation generations before the 42.4 foundation remain available as compatibility styling but are demoted to a historical cascade layer and stripped of obsolete priority flags.",
+    "Chat keeps its complete fallback styling in a lower-priority feature layer, allowing the current shared presentation system to own overlapping controls consistently.",
+    "Repository architecture tests now guard CSS ownership so future polish cannot silently reintroduce the same legacy-versus-current cascade conflicts."
   ],
   "update_policy": "normal"
 }
