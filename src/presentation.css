@@ -17880,3 +17880,9 @@ html[data-theme="dark"] #today .nightOverviewBoard{
     scroll-behavior:auto!important;
   }
 }
+
+
+/* 42.6 authoritative visibility state.
+   This is a semantic state utility, not a cascade workaround: when the app marks
+   a surface hidden, no component display rule may make it visible again. */
+.hidden{display:none!important}
