@@ -6,6 +6,7 @@ const clinicalExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'cl
 const changesWorkflowExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-workflow.tsx'), 'utf8');
 const changesConfirmationExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-confirmation.tsx'), 'utf8');
 const presentationCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'presentation.css'), 'utf8');
+const uiFoundationCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-foundation.css'), 'utf8');
 const accountExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'account-experience.tsx'), 'utf8');
 const quickActionsExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'quick-actions.tsx'), 'utf8');
 const rudderCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'rudder-navigation.css'), 'utf8');
@@ -699,9 +700,10 @@ assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
 assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
 assert.match(clinicalExperience, /nightTimelineSlimRail[\s\S]*nightTimelineFill[\s\S]*nightTimelinePhaseLabels/, 'Night must use the slim progress-rail composition rather than the chunky segmented panel');
-assert.match(presentationCss, /41\.7 Night screen overhaul[\s\S]*\.nightTimelineTrackShell[\s\S]*height:31px!important[\s\S]*\.nightTimelineNow/, 'the live Night rail must keep the compact 41.7 orientation treatment');
+assert.match(uiFoundationCss, /#today \.personalHeroCompact \.nightTimelineTrackShell\{[\s\S]*height:25px!important[\s\S]*min-height:25px!important/, 'the live Night rail must keep a compact orientation treatment in the authoritative UI foundation');
 assert.doesNotMatch(clinicalExperience, /personalNextStateIntegrated|nextNightMessage/, 'ordinary nights must not restore the old dedicated what-matters-next handover block');
-assert.match(presentationCss, /#today \.personalHeroFactGrid\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[\s\S]*#today \.personalHeroFactGrid>\.personalHeroFact[\s\S]*background:var\(--liquid-surface\)!important/, 'Duty, Break and Colleague must share one balanced integrated fact row');
+assert.match(uiFoundationCss, /#today \.personalHeroFactGrid\{[\s\S]*grid-template-columns:minmax\(0,\.9fr\) minmax\(0,\.9fr\) minmax\(0,1\.2fr\)!important[\s\S]*margin:10px 0 0!important[\s\S]*overflow:visible!important/, 'Duty, Break and Colleague must stay inside the hero safe area without negative-margin clipping');
+assert.match(uiFoundationCss, /@media\(max-width:370px\)[\s\S]*\.personalHeroFactGrid\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important[\s\S]*personalFactContext[\s\S]*grid-column:1 \/ -1!important/, 'Night facts must adapt to a two-plus-one layout on narrow phones rather than clipping text');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');
