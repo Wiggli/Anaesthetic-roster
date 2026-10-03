@@ -40,6 +40,15 @@ for (const source of ['src/domain-logic.ts', 'src/runtime-foundation.ts']) {
 for (const generated of ['domain-logic.js', 'runtime-foundation.js']) {
   assert.ok(read(generated).startsWith(header), generated + ' must remain generated for stable installed-PWA URLs');
 }
+const tailwindEntry = read('src/tailwind.css');
+assert.ok(exists('src/ui-foundation.css'), 'shared product UI foundation must remain a checked-in source file');
+assert.ok(tailwindEntry.indexOf('@import "./ui-foundation.css";') > tailwindEntry.indexOf('@import "./rudder-navigation.css";'),
+  'ui-foundation.css must load after the legacy presentation and rudder layers so it remains the authoritative shared composition layer');
+assert.doesNotMatch(read('src/presentation.css'), /41\.9 Night composition polish/,
+  'superseded Night override stacks must not be reintroduced into presentation.css');
+assert.doesNotMatch(read('src/rudder-navigation.css'), /41\.9 integrated dock polish/,
+  'superseded dock override stacks must not be reintroduced into rudder-navigation.css');
+
 for (const obsolete of [
   'ACCOUNT_SETTINGS_BOUNDARY.md',
   'CHANGES_CONFIRMATION_BOUNDARY.md',
