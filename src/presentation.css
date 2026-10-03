@@ -17454,7 +17454,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   border-radius:16px!important;
   background:var(--liquid-surface)!important;
 }
-#breaks .breakSummaryItem{
+#breaks #breakSummaryRow>.breakSummaryItem{
+  height:64px!important;
   min-height:64px!important;
   display:flex!important;
   flex-direction:column!important;
@@ -17467,16 +17468,16 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   background:transparent!important;
   text-align:center!important;
 }
-#breaks .breakSummaryItem b{
+#breaks #breakSummaryRow>.breakSummaryItem b{
   font-size:13px!important;
   font-weight:770!important;
   line-height:1.15!important;
 }
-#breaks .breakSummaryItem small{
+#breaks #breakSummaryRow>.breakSummaryItem small{
   font-size:9.5px!important;
   line-height:1.2!important;
 }
-#breaks .breakSummaryItem:first-child{
+#breaks #breakSummaryRow>.breakSummaryItem:first-child{
   border-left:0!important;
 }
 #breaks .breakPlanTitle{
