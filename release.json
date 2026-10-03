@@ -1,13 +1,13 @@
 {
-  "version": "42.0",
+  "version": "42.1",
   "date": "3 October 2026",
-  "title": "Rebuild the UI foundation",
-  "summary": "Night now scales cleanly across real phone widths while shared screen headers, roster-date controls and dock geometry use one consistent presentation system.",
+  "title": "Unify the presentation foundation",
+  "summary": "The final 42.0 Night work is consolidated with the strongest grouped-surface ideas from the superseded alternative, removing conflicting overrides without changing roster logic.",
   "changes": [
-    "The Night assignment hero no longer clips longer Duty, Break, colleague or assignment text, with safe internal gutters and responsive layouts validated at 412, 390, 384 and 360 pixel phone widths.",
-    "Duty, Break and Colleague now use a two-plus-one arrangement on typical phones and a single-column fallback on very narrow screens, while the live 00:00–07:00 timeline wraps safely without changing clock-change or handover logic.",
-    "Changes, Breaks, Chat and Full roster now share the same screen-header and roster-date presentation hooks, giving titles, controls, spacing and typography a consistent hierarchy across the app.",
-    "The five-column glass dock receives a quieter active lens and safer unread-badge placement, while the grouped Tonight surface and all existing roster, Supabase, authentication and daylight-saving behaviour remain unchanged."
+    "Changes now uses a calmer grouped workflow with tighter date, staffing, step, empty-state and history surfaces while keeping the existing save and validation logic unchanged.",
+    "Breaks now presents the personal break, summary, schedule and coverage information as clearer grouped surfaces with less competing chrome.",
+    "Chat now uses denser inbox, safety, thread and composer spacing so more conversation fits on screen without changing delivery, retention, unread or notification behaviour.",
+    "The Night and five-column dock CSS are consolidated: clipping-prone negative margins and superseded finishing overrides are removed, while the validated 360 to 412 pixel Night layout and OLD/NEW clock-change behaviour remain authoritative."
   ],
   "update_policy": "normal"
 }

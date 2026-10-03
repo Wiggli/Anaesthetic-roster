@@ -16701,8 +16701,8 @@ html[data-theme="dark"] #today .personalClockNow-new{
 }
 
 
-/* 42.0 Night composition and responsive foundation.
-   One spacing rhythm, one assignment hierarchy and one grouped Tonight surface. */
+/* 42.1 unified presentation foundation.
+   Keeps the validated Night layout and gives Changes, Breaks and Chat the same calmer grouped composition. */
 #today{
   --night-space-1:8px;
   --night-space-2:12px;
@@ -17180,27 +17180,6 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 @media(max-width:390px){
   #today .nightSectionIdentity h1{font-size:38px!important}
   #today #appHeader .hospitalStrip img{max-width:98px!important}
-  #today .personalHeroCompact .personalAssignmentStage{padding-inline:14px!important}
-  #today .personalAssignmentHeroCompact{grid-template-columns:44px minmax(0,1fr)!important;gap:10px!important}
-  #today .personalAssignmentHeroCompact .personalRoleIcon{width:44px!important;height:44px!important;min-width:44px!important}
-  #today .personalHeroFactGrid{margin-inline:-14px!important}
-  #today .personalHeroFactGrid>.personalHeroFact{padding-inline:8px!important}
-  #today .personalHeroFactGrid>.personalHeroFact small{font-size:10px!important}
-  #today .personalHeroFactGrid>.personalHeroFact b{font-size:11.5px!important}
-  #today .personalHeroFactGrid>.personalHeroFact span{font-size:9.5px!important}
-  #today .personalHeroMoreQuiet,
-  #today .personalHeroPrimaryAction{margin-inline:-14px!important}
-}
-@media(max-width:350px){
-  #today .personalHeroFactGrid{
-    grid-template-columns:1fr!important;
-  }
-  #today .personalHeroFactGrid>.personalHeroFact{
-    min-height:52px!important;
-    border-right:0!important;
-    border-bottom:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
-  }
-  #today .personalHeroFactGrid>.personalHeroFact:last-child{border-bottom:0!important}
 }
 @media(prefers-reduced-transparency:reduce){
   #today .nightDateShell .dateNav>button,
@@ -17212,8 +17191,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 
 
-/* 42.0 authoritative responsive safeguards.
-   These rules own phone-width wrapping and shared primary-screen composition. */
+/* Shared responsive safeguards and cross-screen composition.
+   This is the only final authority for phone-width wrapping and shared primary-screen layout. */
 #today .personalAssignmentHeroCompact,
 #today .personalAssignmentHeroCompact .personalRoleCopy,
 #today .personalHeroFactGrid,
@@ -17362,6 +17341,500 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 #chat .chatHeaderCompose{
   flex:0 0 auto!important;
 }
+
+
+
+/* Adopted from the superseded #161 direction: calmer grouped operational surfaces.
+   Header, Night and dock geometry remain owned by the final #162 implementation. */
+/* -------------------------------------------------------------------------- */
+/* Changes                                                                    */
+/* -------------------------------------------------------------------------- */
+
+#changes{
+  padding-top:0!important;
+}
+#changes>.changesDatePanel{
+  margin:16px 0 22px!important;
+}
+#changes>.changesDatePanel .grid2{
+  grid-template-columns:minmax(0,1fr) 98px!important;
+  align-items:stretch!important;
+  gap:8px!important;
+}
+#changes>.changesDatePanel .staffingCount{
+  min-height:50px!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:1px!important;
+  padding:6px 10px!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:15px!important;
+  background:var(--liquid-surface)!important;
+}
+#changes>.changesDatePanel .staffingCount span{
+  font-size:9px!important;
+  font-weight:700!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+#changes>.changesDatePanel .staffingCount strong{
+  font-size:15px!important;
+  font-weight:770!important;
+}
+#breaks>.panel>.grid2>.staffingCount{
+  display:none!important;
+}
+#changes>.changePanel{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes>.changePanel>.ctop{
+  align-items:flex-start!important;
+  margin:0 0 14px!important;
+  padding:0!important;
+}
+#changes>.changePanel>.ctop h2{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:var(--ui-section-size)!important;
+  font-weight:760!important;
+  letter-spacing:-.03em!important;
+}
+#changes>.changePanel>.ctop .time{
+  max-width:36ch!important;
+  margin-top:4px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11.5px!important;
+  line-height:1.35!important;
+}
+#changes .liveStatus{
+  margin-top:3px!important;
+  font-size:10.5px!important;
+}
+
+#changes .changesWorkflowTabs{
+  position:relative!important;
+  top:auto!important;
+  min-height:56px!important;
+  margin:0 0 18px!important;
+  padding:4px!important;
+  border-radius:18px!important;
+}
+#changes .changesWorkflowTabs button{
+  min-height:48px!important;
+  gap:5px!important;
+  padding:5px 4px!important;
+}
+#changes .changesWorkflowTabs button b{
+  font-size:12px!important;
+}
+#changes .changesWorkflowTabs button>span{
+  width:20px!important;
+  height:20px!important;
+  font-size:9.5px!important;
+}
+
+#changes .staffingSection{
+  margin:0!important;
+}
+#changes .staffingSection+.staffingSection{
+  border-top:1px solid var(--liquid-separator)!important;
+}
+#changes .stepHeader{
+  min-height:48px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin:0!important;
+  padding:10px 14px 6px!important;
+}
+#changes .stepHeader>span{
+  width:24px!important;
+  height:24px!important;
+  flex:0 0 24px!important;
+}
+#changes .stepHeader h3{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:16px!important;
+  font-weight:750!important;
+}
+#changes #changesStaffingPane{
+  overflow:hidden!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:20px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#changes #absenceFormExperience>div,
+#changes #overtimeFormExperience>div{
+  min-height:72px!important;
+  margin:0!important;
+  padding:6px 14px 12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#changes #changeList:empty,
+#changes #overtimeList:empty{
+  display:none!important;
+}
+#changes .continueWorkflowBtn{
+  margin:0!important;
+  border-radius:0 0 18px 18px!important;
+}
+#changes .historyBox{
+  margin:16px 0 0!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 72%,transparent)!important;
+  border-radius:16px!important;
+  background:transparent!important;
+}
+#changes .historyBox>summary{
+  min-height:48px!important;
+  padding:0 14px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11px!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Breaks                                                                     */
+/* -------------------------------------------------------------------------- */
+
+#breaks>.panel{
+  margin:14px 0 0!important;
+}
+#breakPersonalSummary{
+  margin:0 0 16px!important;
+}
+#breaks .personalBreakSummary{
+  min-height:100px!important;
+  margin:0!important;
+  padding:14px 16px!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:20px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#breaks .personalBreakEyebrow{
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+  font-weight:660!important;
+}
+#breaks .personalBreakMain{
+  margin-top:5px!important;
+}
+#breaks .personalBreakMain h2{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:24px!important;
+  font-weight:790!important;
+  line-height:1.05!important;
+  letter-spacing:-.04em!important;
+}
+#breaks .personalBreakMain p{
+  margin:6px 0 0!important;
+  color:var(--liquid-secondary)!important;
+  font-size:12px!important;
+}
+#breaks .personalBreakMark{
+  width:48px!important;
+  height:48px!important;
+  border-radius:15px!important;
+  font-size:18px!important;
+}
+
+#breaks .breakSummaryRow{
+  margin:12px 0 18px!important;
+  overflow:hidden!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:16px!important;
+  background:var(--liquid-surface)!important;
+}
+#breaks .breakSummaryItem{
+  min-height:54px!important;
+  padding:8px 10px!important;
+  border:0!important;
+  border-left:1px solid var(--liquid-separator)!important;
+  background:transparent!important;
+}
+#breaks .breakSummaryItem:first-child{
+  border-left:0!important;
+}
+#breaks .breakPlanTitle{
+  margin:0 0 10px!important;
+}
+#breaks .breakPlanTitle h2{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:var(--ui-section-size)!important;
+  font-weight:760!important;
+  letter-spacing:-.03em!important;
+}
+#breaks .breakPlanTools{
+  margin:0 0 10px!important;
+}
+#breaks .breakScheduleBoard{
+  overflow:hidden!important;
+  gap:0!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:20px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#breaks .breakScheduleSection{
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#breaks .breakScheduleSection+.breakScheduleSection{
+  border-top:1px solid var(--liquid-separator)!important;
+}
+#breaks .breakScheduleHeader{
+  min-height:60px!important;
+  padding:10px 14px!important;
+}
+#breaks .breakScheduleRows{
+  border-top:1px solid var(--liquid-separator)!important;
+}
+#breaks .breakPerson{
+  min-height:58px!important;
+  padding:10px 15px!important;
+}
+#breaks .breakNotesBlock{
+  margin-top:24px!important;
+}
+#breaks .breakNotesBoard{
+  overflow:hidden!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:16px!important;
+  background:var(--liquid-surface)!important;
+}
+#breaks .coverageRow{
+  min-height:60px!important;
+  padding:10px 14px!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Chat                                                                       */
+/* -------------------------------------------------------------------------- */
+
+#chat{
+  padding:0 0 8px!important;
+}
+#chat .chatScreen{
+  gap:14px!important;
+  min-height:calc(100dvh - 150px)!important;
+}
+
+#chat .chatTitleRow{
+  align-items:flex-end!important;
+}
+#chat .chatHeaderCompose{
+  min-height:42px!important;
+  padding:0 12px!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:14px!important;
+  background:var(--liquid-surface-muted)!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  font-weight:730!important;
+}
+
+#chat .chatHome{
+  gap:12px!important;
+}
+#chat .chatInboxSection{
+  overflow:hidden!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:20px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:var(--liquid-shadow-content)!important;
+}
+#chat .chatInboxHeading{
+  min-height:68px!important;
+  margin:0!important;
+  padding:14px 16px!important;
+  border-bottom:1px solid var(--liquid-separator)!important;
+}
+#chat .chatInboxHeading h2{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:20px!important;
+  font-weight:770!important;
+  letter-spacing:-.03em!important;
+}
+#chat .chatInboxHeading small{
+  margin-top:3px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11px!important;
+}
+#chat .chatInboxTeamRow{
+  position:relative!important;
+  min-height:108px!important;
+  display:grid!important;
+  grid-template-columns:48px minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"avatar copy unread" "avatar copy open"!important;
+  align-items:center!important;
+  gap:6px 10px!important;
+  margin:0!important;
+  padding:12px 14px!important;
+  border:0!important;
+  border-bottom:1px solid var(--liquid-separator)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamAvatar{
+  grid-area:avatar!important;
+  width:48px!important;
+  height:48px!important;
+  border-radius:15px!important;
+}
+#chat .chatInboxTeamCopy{
+  grid-area:copy!important;
+  min-width:0!important;
+  align-self:center!important;
+}
+#chat .chatConversationBadge{
+  grid-area:unread!important;
+  align-self:start!important;
+  justify-self:end!important;
+}
+#chat .chatInboxTeamTop b{
+  font-size:15px!important;
+  font-weight:760!important;
+}
+#chat .chatTeamPurpose{
+  margin-top:4px!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+#chat .chatTeamMemberCount,
+#chat .chatInboxTeamPreview{
+  font-size:11px!important;
+}
+#chat .chatInboxOpen{
+  grid-area:open!important;
+  align-self:end!important;
+  justify-self:end!important;
+  min-height:32px!important;
+  padding:0 10px!important;
+  border-radius:12px!important;
+  font-size:10.5px!important;
+}
+
+#chat .chatInboxSectionLabel{
+  min-height:48px!important;
+  padding:10px 16px!important;
+}
+#chat .chatConversationList{
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatConversationItem{
+  min-height:72px!important;
+  padding:10px 16px!important;
+}
+#chat .chatSafetyNotice{
+  min-height:64px!important;
+  margin:0!important;
+  padding:10px 14px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 22%,var(--liquid-separator))!important;
+  border-radius:16px!important;
+  background:color-mix(in srgb,var(--liquid-warning) 6%,var(--liquid-surface))!important;
+  box-shadow:none!important;
+}
+#chat .chatSafetyNotice svg{
+  width:22px!important;
+  height:22px!important;
+}
+#chat .chatSafetyNotice b{
+  font-size:12px!important;
+}
+#chat .chatSafetyNotice small{
+  margin-top:2px!important;
+  font-size:10.5px!important;
+  line-height:1.3!important;
+}
+
+#chat .chatNotificationDisclosure{
+  margin:0!important;
+}
+#chat .chatNotificationDisclosure>summary{
+  min-height:58px!important;
+  padding:10px 14px!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:16px!important;
+  background:var(--liquid-surface)!important;
+}
+
+/* Conversation view: more transcript, less chrome. */
+#chat .chatConversationPane{
+  min-width:0!important;
+}
+#chat .chatThread{
+  min-height:calc(100dvh - 190px)!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatThreadHeader{
+  min-height:64px!important;
+  padding:8px 4px!important;
+  border-bottom:1px solid var(--liquid-separator)!important;
+  background:color-mix(in srgb,var(--liquid-bg) 92%,transparent)!important;
+}
+#chat .chatBackBtn{
+  width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  background:transparent!important;
+}
+#chat .chatThreadHeading h2{
+  font-size:16px!important;
+}
+#chat .chatThreadHeading span{
+  font-size:11px!important;
+}
+#chat .chatMessages,
+#chat .chatTeamMessages{
+  gap:7px!important;
+  padding:12px 4px 18px!important;
+  background:transparent!important;
+}
+#chat .chatBubble{
+  max-width:min(84%,560px)!important;
+  padding:9px 12px 10px!important;
+  border-radius:17px 17px 17px 6px!important;
+}
+#chat .chatMessageRow.own .chatBubble{
+  border-radius:17px 17px 6px 17px!important;
+}
+#chat .chatMessageBody{
+  font-size:14px!important;
+  line-height:1.38!important;
+}
+#chat .chatComposerWrap,
+#chat .chatTeamComposerWrap{
+  position:static!important;
+  bottom:auto!important;
+  z-index:auto!important;
+}
+/* The React chatComposerGlass remains the single visual control. The foundation
+   only positions its wrapper, avoiding a second textarea border or nested surface. */
 
 @media(max-width:430px){
   #today .personalHeroFactGrid{
