@@ -4291,82 +4291,6 @@ html[data-theme="dark"] #today .personalAssignmentStage{
 }
 
 
-/* 37.73 DOM-contract correction: keep identity as a direct child while the whole assignment still reads as one surface. */
-#today #personalNightCard>.personalHeroSurface{
-  overflow:hidden!important;
-  border-radius:24px!important;
-  background:var(--night-hero)!important;
-  color:var(--night-hero-text)!important;
-  box-shadow:0 12px 30px rgba(0,0,0,.12)!important;
-}
-body.dark #today #personalNightCard>.personalHeroSurface,
-html[data-theme="dark"] #today #personalNightCard>.personalHeroSurface{
-  background:#202022!important;
-  box-shadow:0 14px 34px rgba(0,0,0,.24)!important;
-}
-#today #personalNightCard>.personalHeroSurface>.personalIdentity{
-  display:flex!important;
-  align-items:center!important;
-  gap:10px!important;
-  min-height:48px!important;
-  margin:0!important;
-  padding:12px 16px 2px!important;
-  border:0!important;
-  color:var(--night-hero-text)!important;
-}
-#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalAvatar{
-  width:32px!important;
-  height:32px!important;
-  flex:0 0 32px!important;
-  border-radius:50%!important;
-  background:rgba(255,255,255,.10)!important;
-  color:var(--night-hero-text)!important;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)!important;
-  font-size:11px!important;
-}
-#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy{
-  display:flex!important;
-  min-width:0!important;
-  flex:1!important;
-  align-items:baseline!important;
-  gap:6px!important;
-}
-#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy b{
-  color:var(--night-hero-text)!important;
-  font-size:12px!important;
-  font-weight:720!important;
-}
-#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalIdentityCopy small{
-  color:var(--night-hero-muted)!important;
-  font-size:10px!important;
-}
-#today #personalNightCard>.personalHeroSurface>.personalIdentity .personalChangeBtn{
-  min-width:44px!important;
-  min-height:36px!important;
-  padding:0 4px!important;
-  border:0!important;
-  background:transparent!important;
-  color:var(--night-accent)!important;
-  font-size:11.5px!important;
-  font-weight:700!important;
-}
-#today .personalAssignmentStage,
-#today #personalNightCard>article>div.personalAssignmentStage:nth-child(2){
-  overflow:visible!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-@media(max-width:390px){
-  #today #personalNightCard>.personalHeroSurface>.personalIdentity{
-    padding-inline:14px!important;
-  }
-}
-
-
 /* 37.73 mobile density refinement after screenshot review.
    Keep the hierarchy, but make the first screen operationally useful at a glance. */
 #today .nightDateContext{
@@ -16701,8 +16625,8 @@ html[data-theme="dark"] #today .personalClockNow-new{
 }
 
 
-/* 42.1 unified presentation foundation.
-   Keeps the validated Night layout and gives Changes, Breaks and Chat the same calmer grouped composition. */
+/* 42.2 unified presentation foundation.
+   One Night colour system, one phone-width layout authority and one calm cross-screen composition. */
 #today{
   --night-space-1:8px;
   --night-space-2:12px;
@@ -16833,18 +16757,73 @@ html[data-theme="dark"] #today .personalClockNow-new{
   line-height:1.12!important;
   letter-spacing:-.027em!important;
 }
+#today .nightDateShell{padding:6px 0 14px!important}
+#today .nightDateShell .dateNav{
+  grid-template-columns:44px minmax(0,1fr) 44px!important;
+  gap:10px!important;
+}
+#today .nightDateShell .dateNav>button{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 74%,transparent)!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--liquid-surface) 78%,transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 6px 18px rgba(25,43,70,.055)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%)!important;
+  backdrop-filter:blur(18px) saturate(145%)!important;
+  font-size:20px!important;
+}
+
 #today #personalNightCard>.personalHeroCompact{
+  --night-card-bg:#0b1119;
+  --night-card-bg-deep:#070c13;
+  --night-card-text:#f7f9fc;
+  --night-card-secondary:#b4bfce;
+  --night-card-tertiary:#8794a6;
+  --night-card-accent:#4b96ff;
+  --night-card-accent-strong:#70aaff;
+  --night-card-line:rgba(202,220,245,.105);
+  --night-card-surface:rgba(255,255,255,.066);
+  --night-card-surface-strong:rgba(255,255,255,.09);
+  position:relative!important;
   overflow:visible!important;
-  border:1px solid color-mix(in srgb,var(--liquid-accent) 10%,var(--liquid-separator))!important;
+  border:1px solid rgba(127,158,202,.24)!important;
   border-radius:22px!important;
-  background:var(--liquid-surface)!important;
-  box-shadow:0 12px 30px rgba(12,22,30,.065),inset 0 1px 0 rgba(255,255,255,.24)!important;
+  background:
+    radial-gradient(130% 88% at 8% -12%,rgba(69,145,255,.18),transparent 43%),
+    linear-gradient(180deg,var(--night-card-bg),var(--night-card-bg-deep))!important;
+  color:var(--night-card-text)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.11),
+    0 18px 42px rgba(13,24,40,.18)!important;
 }
 body.dark #today #personalNightCard>.personalHeroCompact,
 html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
-  border-color:rgba(255,255,255,.075)!important;
-  background:color-mix(in srgb,var(--liquid-surface) 96%,#000 4%)!important;
-  box-shadow:0 15px 34px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.045)!important;
+  --night-card-bg:#111720;
+  --night-card-bg-deep:#0b1017;
+  border-color:rgba(158,184,220,.16)!important;
+  background:
+    radial-gradient(130% 88% at 8% -12%,rgba(70,146,255,.15),transparent 43%),
+    linear-gradient(180deg,var(--night-card-bg),var(--night-card-bg-deep))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.075),
+    0 18px 44px rgba(0,0,0,.30)!important;
+}
+#today #personalNightCard>.personalHeroCompact::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:1px 14px auto;
+  height:1px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),transparent);
+  pointer-events:none;
+}
+#today #personalNightCard>.personalHeroCompact>.personalAssignmentStage{
+  position:relative;
+  z-index:1;
 }
 #today .personalHeroCompact .personalAssignmentStage{
   min-width:0!important;
@@ -16868,29 +16847,38 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
   width:48px!important;
   height:48px!important;
   min-width:48px!important;
+  border:1px solid color-mix(in srgb,var(--personal-role,var(--night-card-accent)) 34%,rgba(255,255,255,.14))!important;
   border-radius:14px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.025)),
+    color-mix(in srgb,var(--personal-role,var(--night-card-accent)) 18%,transparent)!important;
+  color:color-mix(in srgb,var(--personal-role,var(--night-card-accent)) 68%,#fff 32%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 8px 20px rgba(0,0,0,.12)!important;
   font-size:15px!important;
 }
 #today .personalAssignmentHeroCompact .personalRoleCopy b{
+  color:var(--night-card-text)!important;
   font-size:clamp(21px,5.5vw,24px)!important;
   font-weight:780!important;
   line-height:1.08!important;
   letter-spacing:-.038em!important;
   white-space:normal!important;
+  text-shadow:0 1px 12px rgba(0,0,0,.12);
 }
 #today .personalAssignmentHeroCompact .personalRoleCopy>span{
   margin-top:2px!important;
-  color:var(--liquid-secondary)!important;
+  color:var(--night-card-secondary)!important;
   font-size:12.5px!important;
   line-height:1.3!important;
 }
 
 /* Timeline keeps the rail prominent without consuming a full card of its own. */
 #today .personalHeroCompact .nightTimeline{
+  min-width:0!important;
   margin:0!important;
-  padding:12px 0 10px!important;
+  padding:11px 0 9px!important;
   border:0!important;
-  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-top:1px solid var(--night-card-line)!important;
   border-radius:0!important;
   background:transparent!important;
 }
@@ -16898,23 +16886,52 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
   margin-bottom:8px!important;
 }
 #today .personalHeroCompact .nightTimelineHead small{
+  color:var(--night-card-secondary)!important;
   font-size:10px!important;
   font-weight:690!important;
 }
 #today .personalHeroCompact .nightTimelineHead b{
   margin-top:1px!important;
+  color:var(--night-card-text)!important;
   font-size:12.5px!important;
   font-weight:740!important;
 }
 #today .personalHeroCompact .nightTimelineHead em{
+  color:var(--night-card-accent-strong)!important;
   font-size:10px!important;
   font-weight:760!important;
 }
 #today .personalHeroCompact .nightTimelineTrackShell{
   height:27px!important;
   min-height:27px!important;
+  overflow:visible!important;
   border-radius:9px!important;
+  background:rgba(255,255,255,.055)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.055)!important;
 }
+#today .personalHeroCompact .nightTimelineSegment.first{background:rgba(255,255,255,.025)!important}
+#today .personalHeroCompact .nightTimelineSegment.second{background:rgba(64,137,238,.055)!important}
+#today .personalHeroCompact .nightTimelineSegment.mine{
+  background:linear-gradient(180deg,rgba(64,137,238,.25),rgba(64,137,238,.13))!important;
+  box-shadow:inset 0 0 0 1px rgba(91,159,255,.20)!important;
+}
+#today .personalHeroCompact .nightTimelineSegment i{color:var(--night-card-secondary)!important}
+#today .personalHeroCompact .nightTimelineSegment.mine i{color:var(--night-card-accent-strong)!important}
+#today .personalHeroCompact .nightTimelinePhaseLabels{color:var(--night-card-secondary)!important}
+#today .personalHeroCompact .nightTimelinePhaseLabels>.mine{color:var(--night-card-accent-strong)!important}
+#today .personalHeroCompact .nightTimelineScale>span{color:var(--night-card-tertiary)!important}
+#today .personalHeroCompact .nightTimelineScale .handoverScale{color:var(--night-card-text)!important}
+#today .personalHeroCompact .nightTimelineHandover{background:rgba(255,255,255,.34)!important}
+#today .personalHeroCompact .nightTimelineHandover>i{
+  border-color:var(--night-card-bg)!important;
+  background:#fff!important;
+}
+#today .personalHeroCompact .nightTimelineNow{
+  border-color:var(--night-card-bg)!important;
+  background:var(--night-card-accent)!important;
+  box-shadow:0 0 0 4px rgba(75,150,255,.15),0 0 16px rgba(75,150,255,.30)!important;
+}
+
 #today .personalHeroCompact .nightTimelinePhaseLabels{
   margin-top:5px!important;
 }
@@ -16933,66 +16950,96 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
   gap:0!important;
   margin:10px 0 0!important;
   overflow:hidden!important;
-  border:1px solid color-mix(in srgb,var(--liquid-separator) 84%,transparent)!important;
+  border:1px solid rgba(255,255,255,.075)!important;
   border-radius:15px!important;
-  background:color-mix(in srgb,var(--liquid-surface-muted) 74%,transparent)!important;
+  background:var(--night-card-surface)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
 }
 #today .personalHeroFactGrid>.personalHeroFact{
-  min-height:62px!important;
+  min-height:68px!important;
+  align-content:center!important;
   padding:9px 11px!important;
   border:0!important;
-  border-right:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-right:1px solid rgba(255,255,255,.07)!important;
   background:transparent!important;
+  color:var(--night-card-text)!important;
 }
 #today .personalHeroFactGrid>.personalHeroFact:last-child{border-right:0!important}
 #today .personalHeroFactGrid>.personalHeroFact small{
-  color:var(--liquid-secondary)!important;
+  color:var(--night-card-tertiary)!important;
   font-size:10.5px!important;
   font-weight:720!important;
   letter-spacing:.025em!important;
 }
 #today .personalHeroFactGrid>.personalHeroFact b{
-  color:var(--liquid-label)!important;
-  font-size:12.5px!important;
+  color:var(--night-card-text)!important;
+  font-size:13px!important;
   font-weight:750!important;
-  line-height:1.2!important;
+  line-height:1.24!important;
 }
 #today .personalHeroFactGrid>.personalHeroFact span{
   margin-top:1px!important;
-  color:var(--liquid-secondary)!important;
-  font-size:10px!important;
+  color:var(--night-card-secondary)!important;
+  font-size:10.5px!important;
   font-weight:610!important;
-  line-height:1.25!important;
+  line-height:1.28!important;
 }
 #today .personalHeroMoreQuiet{
   margin:10px 0 0!important;
   overflow:hidden!important;
-  border:1px solid color-mix(in srgb,var(--liquid-separator) 76%,transparent)!important;
+  border:1px solid rgba(255,255,255,.065)!important;
   border-radius:14px!important;
+  background:rgba(255,255,255,.022)!important;
 }
 #today .personalHeroMoreQuiet>summary{
   min-height:42px!important;
   padding:0 12px!important;
-  color:var(--liquid-secondary)!important;
+  color:var(--night-card-secondary)!important;
   font-size:10.5px!important;
   font-weight:640!important;
 }
 #today .personalHeroMoreQuiet .personalHeroMoreGrid{
   padding:0 12px 10px!important;
 }
+#today .personalHeroCompact .personalHeroMoreItem{
+  border-color:rgba(255,255,255,.065)!important;
+  background:rgba(255,255,255,.045)!important;
+  color:var(--night-card-text)!important;
+}
+#today .personalHeroCompact .personalHeroMoreItem small{color:var(--night-card-tertiary)!important}
+#today .personalHeroCompact .personalHeroMoreItem b{color:var(--night-card-text)!important}
+#today .personalHeroCompact .personalHeroMoreItem span{color:var(--night-card-accent-strong)!important}
+
 #today .personalHeroPrimaryAction{
   min-height:48px!important;
   width:100%!important;
   margin:10px 0 0!important;
   padding:0 12px!important;
-  border:1px solid color-mix(in srgb,var(--liquid-accent) 16%,var(--liquid-separator))!important;
+  border:1px solid rgba(75,150,255,.18)!important;
   border-radius:14px!important;
-  background:color-mix(in srgb,var(--liquid-accent) 6%,transparent)!important;
-  color:var(--liquid-accent-strong)!important;
-  box-shadow:none!important;
+  background:linear-gradient(180deg,rgba(75,150,255,.10),rgba(75,150,255,.055))!important;
+  color:#dceaff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045)!important;
   font-size:12.5px!important;
   font-weight:760!important;
 }
+#today .personalHeroCompact .personalClockNow,
+#today .personalHeroCompact .personalClockException{
+  border-color:rgba(86,157,255,.20)!important;
+  background:rgba(70,137,230,.08)!important;
+  color:var(--night-card-text)!important;
+}
+#today .personalHeroCompact .personalClockNowCopy small,
+#today .personalHeroCompact .personalClockExceptionCopy small{color:var(--night-card-accent-strong)!important}
+#today .personalHeroCompact .personalClockNowCopy strong,
+#today .personalHeroCompact .personalClockExceptionCopy strong{color:var(--night-card-text)!important}
+#today .personalHeroCompact .personalClockNowCopy span,
+#today .personalHeroCompact .personalClockExceptionCopy span{color:var(--night-card-secondary)!important}
+#today .personalHeroCompact .personalClockExceptionIcon{
+  background:rgba(75,150,255,.12)!important;
+  color:var(--night-card-accent-strong)!important;
+}
+
 
 /* Tonight is one grouped operational surface rather than several competing cards. */
 #today .teamOverviewGroup{
@@ -17012,10 +17059,10 @@ html[data-theme="dark"] #today #personalNightCard>.personalHeroCompact{
 }
 #today .nightOverviewBoard{
   overflow:hidden!important;
-  border:1px solid var(--liquid-separator)!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 76%,transparent)!important;
   border-radius:20px!important;
-  background:var(--liquid-surface)!important;
-  box-shadow:0 8px 24px rgba(12,22,30,.045)!important;
+  background:color-mix(in srgb,var(--liquid-surface) 97%,var(--liquid-bg) 3%)!important;
+  box-shadow:0 10px 28px rgba(18,34,58,.055)!important;
 }
 body.dark #today .nightOverviewBoard,
 html[data-theme="dark"] #today .nightOverviewBoard{
@@ -17187,6 +17234,9 @@ html[data-theme="dark"] #today .nightOverviewBoard{
     -webkit-backdrop-filter:none!important;
     backdrop-filter:none!important;
     background:var(--liquid-surface)!important;
+  }
+  #today #personalNightCard>.personalHeroCompact{
+    background:linear-gradient(180deg,#10161f,#090e15)!important;
   }
 }
 
