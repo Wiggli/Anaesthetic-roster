@@ -88,4 +88,22 @@ assert.doesNotMatch(chatCss, /\.bottom button\[data-v="chat"\] \.navTaskBadge/,
 assert.doesNotMatch(rudderNavigation, /42\.0 dock finishing pass/,
   'superseded dock finishing overrides must stay removed');
 
+
+const legacyBaseCss = read('styles.css');
+const legacyChatCss = read('chat.css');
+assert.match(legacyBaseCss, /^\/\* Compatibility base\.[\s\S]*?\*\/\n@layer legacy-base \{/,
+  'legacy base CSS must remain in a lower-priority cascade layer');
+assert.equal((legacyBaseCss.match(/!important/g) || []).length, 0,
+  'legacy base CSS must not use !important to beat the current product presentation');
+assert.match(legacyChatCss, /^\/\* Complete Chat fallback styling\.[\s\S]*?\*\/\n@layer legacy-chat \{/,
+  'Chat fallback CSS must remain in a lower-priority cascade layer');
+assert.equal((legacyChatCss.match(/!important/g) || []).length, 0,
+  'legacy Chat fallback CSS must not use !important to beat the current shared presentation');
+assert.match(presentation, /^@layer presentation-history \{/,
+  'pre-42.4 presentation generations must remain demoted to presentation-history');
+const currentPresentationMarker = presentation.indexOf('/* 42.4 unified presentation foundation.');
+assert.ok(currentPresentationMarker > 0, 'current 42.4 presentation foundation must remain present');
+const historicalPresentation = presentation.slice(0, currentPresentationMarker);
+assert.equal((historicalPresentation.match(/!important/g) || []).length, 0,
+  'historical presentation CSS must not retain priority flags that can defeat current styling');
 console.log('Modular UI ownership and TypeScript runtime source architecture passed.');
