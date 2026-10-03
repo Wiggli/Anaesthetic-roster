@@ -283,7 +283,6 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
           <button
             type="button"
             className="staffingSheetClose"
-            onPointerDown={close}
             onClick={close}
             aria-label={`Close ${title}`}
           >×</button>
