@@ -584,12 +584,14 @@ function Navigation({ badges }: { badges: Badges }) {
     <motion.button type="button" data-v="today" className={active === 'today' ? 'active' : ''}
       aria-current={active === 'today' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
       onClick={() => navigate('today')}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z" /><path d="M15.5 7.5h5M18 5v5" /></svg><span>Night</span>
+      <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z" /><path d="M15.5 7.5h5M18 5v5" /></svg></span>
+      <span>Night</span>
     </motion.button>
     <motion.button type="button" data-v="changes" className={active === 'changes' ? 'active' : ''}
       aria-label="Staffing changes" aria-current={active === 'changes' ? 'page' : undefined}
       whileTap={reducedMotion ? undefined : { scale: 0.96 }} onClick={() => navigate('changes')}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11" /><path d="m13 4 3 3-3 3" /><path d="M19 17H8" /><path d="m11 14-3 3 3 3" /><circle cx="5" cy="17" r="1.5" /><circle cx="19" cy="7" r="1.5" /></svg><span>Changes</span>{badge('changesTaskBadge', badges.changes)}
+      <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11" /><path d="m13 4 3 3-3 3" /><path d="M19 17H8" /><path d="m11 14-3 3 3 3" /><circle cx="5" cy="17" r="1.5" /><circle cx="19" cy="7" r="1.5" /></svg>{badge('changesTaskBadge', badges.changes)}</span>
+      <span>Changes</span>
     </motion.button>
     <motion.button type="button" className={'quickRudder' + (quickOpen ? ' open' : '')} data-quick-rudder aria-label="Quick actions"
       aria-haspopup="dialog" aria-expanded={quickOpen}
@@ -606,12 +608,14 @@ function Navigation({ badges }: { badges: Badges }) {
     <motion.button type="button" data-v="breaks" className={active === 'breaks' ? 'active' : ''}
       aria-current={active === 'breaks' ? 'page' : undefined} whileTap={reducedMotion ? undefined : { scale: 0.96 }}
       onClick={() => navigate('breaks')}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2" /></svg><span>Breaks</span>
+      <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2" /></svg></span>
+      <span>Breaks</span>
     </motion.button>
     <motion.button type="button" data-v="chat" className={active === 'chat' ? 'active' : ''}
       aria-label="Team chat" aria-current={active === 'chat' ? 'page' : undefined}
       whileTap={reducedMotion ? undefined : { scale: 0.96 }} onClick={() => navigate('chat')}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 3v-14Z" /><path d="M8 10h8M8 13h5" /></svg><span>Chat</span>{badge('chatUnreadBadge', badges.chat)}
+      <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 3v-14Z" /><path d="M8 10h8M8 13h5" /></svg>{badge('chatUnreadBadge', badges.chat)}</span>
+      <span>Chat</span>
     </motion.button>
   </div>;
 }
