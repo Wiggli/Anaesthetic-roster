@@ -684,10 +684,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     </div>
 
     <div className="personalAssignmentStage">
-      {(model.changedLabel || model.clockChange) && <div className="personalHeroMeta personalHeroMetaBadgesOnly">
+      {model.changedLabel && <div className="personalHeroMeta personalHeroMetaBadgesOnly">
         <span className="personalHeroMetaBadges">
-          {model.changedLabel && <span className="personalChangedBadge">{model.changedLabel}</span>}
-          {model.clockChange && <span className="personalClockBadge">Clock change</span>}
+          <span className="personalChangedBadge">{model.changedLabel}</span>
         </span>
       </div>}
 
@@ -744,22 +743,8 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </Pressable>
       </div>
 
-      {model.displayName && <details className="personalHeroMore personalHeroMoreQuiet">
-        <summary>
-          <span>More details</span>
-          <i aria-hidden="true">›</i>
-        </summary>
-        <div className="personalHeroMoreGrid personalHeroProfileGrid">
-          <Pressable type="button" className="personalHeroMoreItem" onClick={openAccount}>
-            <small>Personalise this view</small>
-            <b>{model.displayName}</b>
-            <span>{model.jobTitle || 'Account settings'} ›</span>
-          </Pressable>
-        </div>
-      </details>}
-
       <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openFullNight}>
-        {model.action === 'choose' ? 'Choose your name' : 'View full night situation'}
+        {model.action === 'choose' ? 'Choose your name' : 'View full night'}
         <span aria-hidden="true">›</span>
       </Pressable>
     </div>
