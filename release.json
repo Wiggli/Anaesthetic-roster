@@ -1,13 +1,13 @@
 {
-  "version": "42.5",
+  "version": "42.6",
   "date": "3 October 2026",
-  "title": "Stabilise the app-wide visual cascade",
-  "summary": "Current interface styling now has explicit ownership, while older compatibility CSS remains available without being able to override the modern Night Roster design unexpectedly.",
+  "title": "Restore reliable signed-in visibility",
+  "summary": "Successful sign-ins now stay on the roster because the shared hidden-state utility once again overrides visible component display rules after the 42.5 cascade refactor.",
   "changes": [
-    "Historical base styling is moved into a low-priority legacy layer so old high-specificity rules can no longer unexpectedly override the current interface across Night, Changes, Breaks, Chat, sheets and administration.",
-    "Presentation generations before the 42.4 foundation remain available as compatibility styling but are demoted to a historical cascade layer and stripped of obsolete priority flags.",
-    "Chat keeps its complete fallback styling in a lower-priority feature layer, allowing the current shared presentation system to own overlapping controls consistently.",
-    "Repository architecture tests now guard CSS ownership so future polish cannot silently reintroduce the same legacy-versus-current cascade conflicts."
+    "Restores the authoritative hidden-state utility outside the legacy cascade so authenticated screens can reliably hide the sign-in gate and other inactive interface surfaces.",
+    "Fixes the 42.5 regression where Google and password authentication succeeded but the sign-in screen could remain visible over the authenticated roster.",
+    "Browser smoke setup now uses the production hidden class instead of forcing inline display styles, so this visibility regression is caught in future UI changes.",
+    "Architecture coverage now protects the hidden-state contract while preserving the lower-priority legacy CSS ownership introduced in 42.5."
   ],
-  "update_policy": "normal"
+  "update_policy": "quiet"
 }
