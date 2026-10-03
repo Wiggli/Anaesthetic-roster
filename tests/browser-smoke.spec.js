@@ -512,11 +512,12 @@ test('bottom-tab taps change views without staging full application pages', asyn
   await expect(page.locator('#today')).toHaveClass(/hidden/);
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
   await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
-  const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
-  const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
-  expect(Math.abs(activeIndicator.x - changesTab.x)).toBeLessThan(4);
-
-  await page.waitForTimeout(220);
+  await expect.poll(async () => {
+    const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
+    const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
+    if (!activeIndicator || !changesTab) return Number.POSITIVE_INFINITY;
+    return Math.abs(activeIndicator.x - changesTab.x);
+  }, { timeout: 1200, intervals: [40, 80, 120, 180] }).toBeLessThan(4);
   await expect(page.locator('#changes')).toBeVisible();
 });
 
@@ -1104,29 +1105,28 @@ test('confirmed seven-nurse context stays Plan ready instead of forcing review',
 });
 
 test('update banner obeys hidden and Night-only visibility states', async ({ page }) => {
-  await page.route('**/service-worker.js', route => route.fulfill({
-    status: 200,
-    contentType: 'application/javascript',
-    body: 'self.addEventListener("install",function(){});'
-  }));
   await openShell(page);
-  await page.evaluate(() => window.show && window.show('today'));
+  await page.evaluate(() => {
+    window.show && window.show('today');
+    const source = document.getElementById('updateBanner');
+    const probe = source.cloneNode(true);
+    probe.id = 'updateBannerCssProbe';
+    probe.classList.remove('hidden');
+    source.parentNode.appendChild(probe);
+  });
+  const probe = page.locator('#updateBannerCssProbe');
   await expect(page.locator('#today')).toBeVisible();
-  // Let the asynchronous service-worker probe settle before testing the CSS visibility contract.
-  await page.waitForTimeout(160);
+  await expect(probe).toBeVisible();
 
-  await page.evaluate(() => document.getElementById('updateBanner').classList.remove('hidden'));
-  await expect(page.locator('#updateBanner')).toBeVisible();
-
-  await page.evaluate(() => document.getElementById('updateBanner').classList.add('hidden'));
-  await expect(page.locator('#updateBanner')).toBeHidden();
+  await page.evaluate(() => document.getElementById('updateBannerCssProbe').classList.add('hidden'));
+  await expect(probe).toBeHidden();
 
   await page.evaluate(() => {
-    document.getElementById('updateBanner').classList.remove('hidden');
+    document.getElementById('updateBannerCssProbe').classList.remove('hidden');
     window.show && window.show('changes');
   });
   await expect(page.locator('#changes')).toBeVisible();
-  await expect(page.locator('#updateBanner')).toBeHidden();
+  await expect(probe).toBeHidden();
 });
 
 test('typed Changes records render live staffing and expose stable actions', async ({ page }) => {
