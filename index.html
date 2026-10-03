@@ -301,7 +301,7 @@
             <div class="grid2">
               <label class="nightDateLabel">
                 <span class="nightDateContext">Selected night</span>
-                <div class="dateNav">
+                <div class="dateNav rosterDateControl">
                   <button type="button" id="prevNightBtn" aria-label="Previous roster night">‹</button>
                   <input id="datePick" type="date" aria-label="Choose a date to open that night or the next rostered night" />
                   <button type="button" id="nextNightBtn" aria-label="Next roster night">›</button>
@@ -372,7 +372,7 @@
         </div>
       </section>
       <section id="changes" class="view hidden">
-        <div class="primaryScreenHeader changesScreenHeader">
+        <div class="primaryScreenHeader appScreenHeader changesScreenHeader">
           <div class="primaryInstitution">
             <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=41.9" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
             <div class="primaryHeaderActions" aria-label="App controls">
@@ -397,7 +397,7 @@
         <div class="panel changesDatePanel">
           <h2>Selected night</h2>
           <div class="grid2">
-            <label>Night<div class="dateNav"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current or next night</button></label>
+            <label>Night<div class="dateNav rosterDateControl"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current or next night</button></label>
             <div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div>
           </div>
         </div>
@@ -475,7 +475,7 @@
         </div>
       </section>
       <section id="roster" class="view hidden">
-        <div class="rosterPageHeader"><h2>Full roster</h2><button type="button" class="mini" id="closeRosterBtn">Back to Night</button></div>
+        <div class="rosterPageHeader appScreenHeader appScreenHeaderRoster"><h2>Full roster</h2><button type="button" class="mini" id="closeRosterBtn">Back to Night</button></div>
         <div class="toolbar">
           <input
             id="search"
@@ -492,7 +492,7 @@
         <div id="cards" class="cards"></div>
       </section>
       <section id="breaks" class="view hidden">
-        <div class="primaryScreenHeader breaksScreenHeader">
+        <div class="primaryScreenHeader appScreenHeader breaksScreenHeader">
           <div class="primaryInstitution">
             <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=41.9" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
             <div class="primaryHeaderActions" aria-label="App controls">
@@ -520,7 +520,7 @@
           <div class="grid2">
             <label
               >Night
-              <div class="dateNav">
+              <div class="dateNav rosterDateControl">
                 <button
                   type="button"
                   id="breakPrevNightBtn"
@@ -554,7 +554,7 @@
       </section>
       <section id="chat" class="view hidden" aria-labelledby="chatTitle">
         <div class="chatScreen">
-          <div class="primaryScreenHeader chatScreenHeader">
+          <div class="primaryScreenHeader appScreenHeader chatScreenHeader">
             <div class="primaryInstitution">
               <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=41.9" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
               <div class="primaryHeaderActions" aria-label="App controls">
@@ -852,7 +852,7 @@
             <div id="publishCurrentSummary" class="notice adminSummary"></div>
             <label
               >Publish roster until
-              <div class="dateNav">
+              <div class="dateNav rosterDateControl">
                 <button
                   type="button"
                   id="extendPrevNightBtn"
@@ -907,7 +907,7 @@
             <div id="currentTeamSummary" class="notice adminSummary"></div>
             <label
               >Effective roster night
-              <div class="dateNav">
+              <div class="dateNav rosterDateControl">
                 <button
                   type="button"
                   id="teamPrevNightBtn"
