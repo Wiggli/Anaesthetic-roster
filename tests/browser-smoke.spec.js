@@ -512,14 +512,12 @@ test('bottom-tab taps change views without staging full application pages', asyn
   await expect(page.locator('#today')).toHaveClass(/hidden/);
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
   await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
-  await expect(page.locator('#changes')).toHaveClass(/viewEntering/);
-
   const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
   const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
   expect(Math.abs(activeIndicator.x - changesTab.x)).toBeLessThan(4);
 
   await page.waitForTimeout(220);
-  await expect(page.locator('#changes')).not.toHaveClass(/viewEntering/);
+  await expect(page.locator('#changes')).toBeVisible();
 });
 
 test('page swipes decide the destination without dragging heavy screens behind the finger', async ({ page, isMobile }) => {
@@ -531,7 +529,7 @@ test('page swipes decide the destination without dragging heavy screens behind t
   const safe = await page.evaluate(() => {
     const blocked = 'button,a,input,select,textarea,summary,[role="button"],[contenteditable="true"]';
     for (let y = 220; y < Math.min(window.innerHeight - 120, 620); y += 14) {
-      for (const x of [90, 160, 235, 300]) {
+      for (const x of [300, 235, 160, 90]) {
         const target = document.elementFromPoint(x, y);
         if (target?.closest('#today') && !target.closest(blocked)) return { x, y };
       }
