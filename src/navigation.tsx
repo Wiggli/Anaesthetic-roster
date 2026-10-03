@@ -91,7 +91,11 @@ function Navigation({ badges }: { badges: Badges }) {
 
     const quickDialog = document.getElementById('quickActionsSheet');
     const quickButton = bar.querySelector<HTMLElement>('[data-quick-rudder]');
-    const syncQuick = () => quickButton?.classList.toggle('open', Boolean(quickDialog?.hasAttribute('open')));
+    const syncQuick = () => {
+      const open = Boolean(quickDialog?.hasAttribute('open'));
+      quickButton?.classList.toggle('open', open);
+      quickButton?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
     const quickObserver = quickDialog ? new MutationObserver(syncQuick) : undefined;
     if (quickDialog) quickObserver?.observe(quickDialog, { attributes: true, attributeFilter: ['open'] });
     syncQuick();
@@ -264,7 +268,7 @@ function Navigation({ badges }: { badges: Badges }) {
       <span className="navIconWrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11" /><path d="m13 4 3 3-3 3" /><path d="M19 17H8" /><path d="m11 14-3 3 3 3" /><circle cx="5" cy="17" r="1.5" /><circle cx="19" cy="7" r="1.5" /></svg>{badge('changesTaskBadge', badges.changes)}</span>
       <span>Changes</span>
     </motion.button>
-    <motion.button type="button" className="quickRudder" data-quick-rudder aria-label="Quick actions" aria-haspopup="dialog"
+    <motion.button type="button" className="quickRudder" data-quick-rudder aria-label="Quick actions" aria-haspopup="dialog" aria-expanded="false"
       whileTap={reducedMotion ? undefined : { scale: 0.97 }}
       onClick={() => { navigationHaptic(); window.showQuickActions?.(); }}>
       <span className="quickRudderDisc">
