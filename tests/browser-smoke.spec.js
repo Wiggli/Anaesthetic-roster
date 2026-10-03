@@ -1188,6 +1188,103 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
+test('42.0 phone foundation keeps Night facts inside the hero and adapts at 360px', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 900 });
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      date: '2026-10-04',
+      displayName: 'André Bartolo',
+      jobTitle: 'Senior Staff Nurse',
+      avatarUrl: '',
+      initial: 'A',
+      assignmentLabel: 'Next night’s assignment',
+      title: 'Second Part theatre',
+      detail: 'Position 1',
+      period: '03:30–07:00',
+      breakLabel: 'First break',
+      contextLabel: 'Working with',
+      context: 'With Michael Debono Very Long Display Name',
+      changedLabel: '',
+      changed: false,
+      action: 'role',
+      pending: false,
+      pendingOther: '',
+      liveStatus: 'Night selected',
+      dutyPart: 'second',
+      dutyStartUtc: Date.parse('2026-10-03T22:00:00Z'),
+      handoverUtc: Date.parse('2026-10-04T01:30:00Z'),
+      dutyEndUtc: Date.parse('2026-10-04T05:00:00Z'),
+      handoverLabel: '03:30',
+      clockChange: null
+    }}));
+  });
+
+  const geometry = await page.evaluate(() => {
+    const stage = document.querySelector('#personalNightCard .personalAssignmentStage');
+    const grid = document.querySelector('#personalNightCard .personalHeroFactGrid');
+    const cells = Array.from(document.querySelectorAll('#personalNightCard .personalHeroFactGrid > .personalHeroFact'));
+    if (!stage || !grid || cells.length !== 3) return null;
+    const stageBox = stage.getBoundingClientRect();
+    const gridBox = grid.getBoundingClientRect();
+    const boxes = cells.map(cell => {
+      const box = cell.getBoundingClientRect();
+      return {
+        left: box.left,
+        right: box.right,
+        top: box.top,
+        scrollWidth: cell.scrollWidth,
+        clientWidth: cell.clientWidth
+      };
+    });
+    return {
+      stageLeft: stageBox.left,
+      stageRight: stageBox.right,
+      gridLeft: gridBox.left,
+      gridRight: gridBox.right,
+      gridScrollWidth: grid.scrollWidth,
+      gridClientWidth: grid.clientWidth,
+      boxes
+    };
+  });
+
+  expect(geometry).not.toBeNull();
+  expect(geometry.gridLeft).toBeGreaterThanOrEqual(geometry.stageLeft - 1);
+  expect(geometry.gridRight).toBeLessThanOrEqual(geometry.stageRight + 1);
+  expect(geometry.gridScrollWidth).toBeLessThanOrEqual(geometry.gridClientWidth + 1);
+  for (const box of geometry.boxes) expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
+  expect(geometry.boxes[2].top).toBeGreaterThan(geometry.boxes[0].top);
+  await expect(page.locator('#personalNightCard .personalFactContext')).toContainText('Michael Debono Very Long Display Name');
+});
+
+test('42.0 shared shell aligns primary headers and roster-date controls', async ({ page }) => {
+  await openShell(page);
+  const collect = async (view, headerSelector, dateSelector) => {
+    await page.evaluate(target => window.show && window.show(target), view);
+    const header = page.locator(headerSelector);
+    await expect(header).toBeVisible();
+    const titleSize = await header.locator('h1').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+    const dateHeight = dateSelector
+      ? await page.locator(dateSelector).evaluate(el => el.getBoundingClientRect().height)
+      : 0;
+    return { titleSize, dateHeight };
+  };
+
+  const changes = await collect('changes', '#changes .primaryScreenHeader', '#changes .dateNav');
+  const breaks = await collect('breaks', '#breaks .primaryScreenHeader', '#breaks .dateNav');
+  const chat = await collect('chat', '#chat .primaryScreenHeader', null);
+
+  expect(Math.abs(changes.titleSize - breaks.titleSize)).toBeLessThanOrEqual(1);
+  expect(Math.abs(changes.titleSize - chat.titleSize)).toBeLessThanOrEqual(1);
+  expect(changes.dateHeight).toBeGreaterThanOrEqual(49);
+  expect(changes.dateHeight).toBeLessThanOrEqual(52);
+  expect(Math.abs(changes.dateHeight - breaks.dateHeight)).toBeLessThanOrEqual(1);
+
+  await expect(page.locator('#chat .chatSafetyNotice')).toContainText('Staff coordination only');
+  const teamRowHeight = await page.locator('#chat .chatInboxTeamRow').evaluate(el => el.getBoundingClientRect().height);
+  expect(teamRowHeight).toBeLessThanOrEqual(160);
+});
+
 test('shared Changes workflow becomes a calm completed state', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
