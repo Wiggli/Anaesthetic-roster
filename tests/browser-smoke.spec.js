@@ -1220,6 +1220,9 @@ test('42.0 phone foundation keeps Night facts inside the hero and adapts at 360p
     }}));
   });
 
+  await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toBeVisible();
+  await expect(page.locator('#personalNightCard .personalFactContext')).toContainText('Michael Debono Very Long Display Name');
+
   const geometry = await page.evaluate(() => {
     const stage = document.querySelector('#personalNightCard .personalAssignmentStage');
     const grid = document.querySelector('#personalNightCard .personalHeroFactGrid');
@@ -1254,7 +1257,6 @@ test('42.0 phone foundation keeps Night facts inside the hero and adapts at 360p
   expect(geometry.gridScrollWidth).toBeLessThanOrEqual(geometry.gridClientWidth + 1);
   for (const box of geometry.boxes) expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
   expect(geometry.boxes[2].top).toBeGreaterThan(geometry.boxes[0].top);
-  await expect(page.locator('#personalNightCard .personalFactContext')).toContainText('Michael Debono Very Long Display Name');
 });
 
 test('42.0 shared shell aligns primary headers and roster-date controls', async ({ page }) => {
