@@ -1,11 +1,11 @@
-/* 41.7 balanced five-column glass dock and Quick Actions.
-   Night, Changes, Actions, Breaks and Chat share one visual baseline. */
+/* 42.4 primary navigation.
+   One five-column dock, one geometry baseline and no full-page drag choreography. */
 
 :root{
-  --rudder-nav-height:70px;
-  --rudder-action-size:42px;
-  --rudder-dock-surface:rgba(248,250,252,.30);
-  --rudder-dock-surface-dark:rgba(25,27,31,.56);
+  --rudder-nav-height:64px;
+  --rudder-action-size:36px;
+  --rudder-dock-surface:rgba(246,249,253,.46);
+  --rudder-dock-surface-dark:rgba(24,28,34,.58);
 }
 
 .bottom.reactTabs{
@@ -15,173 +15,187 @@
   bottom:max(6px,env(safe-area-inset-bottom))!important;
   z-index:60!important;
   width:min(calc(100vw - 12px),500px)!important;
-  height:68px!important;
-  min-height:68px!important;
+  height:64px!important;
+  min-height:64px!important;
   display:grid!important;
   grid-template-columns:repeat(5,minmax(0,1fr))!important;
   align-items:center!important;
   gap:2px!important;
   margin:0!important;
-  padding:5px!important;
+  padding:5px 6px!important;
   overflow:visible!important;
   transform:translateX(-50%)!important;
-  border:1px solid rgba(255,255,255,.36)!important;
-  border-radius:25px!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  border-radius:23px!important;
   background:
-    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.035) 55%,transparent),
+    linear-gradient(180deg,rgba(255,255,255,.44),rgba(255,255,255,.10) 58%,rgba(255,255,255,.035)),
     var(--rudder-dock-surface)!important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.58),
-    0 15px 42px rgba(22,34,46,.14)!important;
-  -webkit-backdrop-filter:blur(32px) saturate(178%) contrast(1.015)!important;
-  backdrop-filter:blur(32px) saturate(178%) contrast(1.015)!important;
+    inset 0 1px 0 rgba(255,255,255,.72),
+    0 12px 30px rgba(24,42,68,.10)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(155%)!important;
+  backdrop-filter:blur(24px) saturate(155%)!important;
   isolation:isolate;
-}
-body.dark .bottom.reactTabs,
-html[data-theme="dark"] .bottom.reactTabs{
-  border-color:rgba(255,255,255,.10)!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.012) 60%,transparent),
-    var(--rudder-dock-surface-dark)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.095),0 17px 46px rgba(0,0,0,.34)!important;
+  touch-action:manipulation!important;
+  overscroll-behavior:none;
 }
 
-.bottom.reactTabs .tabTouchGlow{
-  position:absolute;
-  inset:3px;
-  z-index:-1;
-  border-radius:22px;
-  pointer-events:none;
-  opacity:.42;
-}
-.bottom.reactTabs .tabSlidingIndicator{
+.bottom.reactTabs::before{
+  content:"";
   position:absolute;
   z-index:0;
+  left:14px;
+  right:14px;
+  top:1px;
+  height:1px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.76),transparent);
   pointer-events:none;
-  border:1px solid color-mix(in srgb,var(--liquid-accent) 10%,rgba(255,255,255,.34));
-  border-radius:16px!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.065)),
-    color-mix(in srgb,var(--liquid-glass-elevated) 44%,var(--liquid-accent) 5%)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 4px 13px rgba(25,38,50,.07)!important;
 }
-body.dark .bottom.reactTabs .tabSlidingIndicator,
-html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
-  border-color:rgba(255,255,255,.07)!important;
-  background:rgba(255,255,255,.075)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 5px 14px rgba(0,0,0,.20)!important;
+
+body.dark .bottom.reactTabs,
+html[data-theme="dark"] .bottom.reactTabs{
+  border-color:rgba(255,255,255,.085)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.018) 58%,transparent),
+    var(--rudder-dock-surface-dark)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.085),0 14px 34px rgba(0,0,0,.30)!important;
 }
 
 .bottom.reactTabs button[data-v],
 .bottom.reactTabs .quickRudder{
-  position:relative;
-  z-index:1;
+  position:relative!important;
+  z-index:1!important;
   width:100%!important;
   min-width:0!important;
-  height:56px!important;
-  min-height:56px!important;
+  height:54px!important;
+  min-height:54px!important;
+  max-height:54px!important;
   display:flex!important;
   flex-direction:column!important;
   align-items:center!important;
   justify-content:center!important;
-  align-self:center!important;
-  gap:3px!important;
+  gap:2px!important;
   margin:0!important;
-  padding:3px 1px!important;
-  transform:none!important;
+  padding:2px 1px!important;
   overflow:visible!important;
   border:0!important;
   border-radius:16px!important;
   background:transparent!important;
-  color:var(--liquid-secondary)!important;
   box-shadow:none!important;
+  color:var(--liquid-secondary)!important;
   font:inherit;
+  transform:none!important;
 }
-.bottom.reactTabs button[data-v].active{
-  color:var(--liquid-accent-strong)!important;
+
+.bottom.reactTabs .navIconWrap,
+.bottom.reactTabs .quickRudderDisc{
+  position:relative!important;
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  flex:0 0 36px!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:visible!important;
+  max-width:none!important;
 }
-.bottom.reactTabs button[data-v] svg{
-  width:21px!important;
-  height:21px!important;
+
+.bottom.reactTabs .navIconWrap{
+  border-radius:12px!important;
+  background:transparent!important;
+}
+
+.bottom.reactTabs button[data-v] .navIconWrap svg,
+.bottom.reactTabs .quickRudderDisc svg{
+  width:20px!important;
+  height:20px!important;
   margin:0!important;
-  flex:none;
   fill:none;
   stroke:currentColor;
   stroke-width:1.9;
   stroke-linecap:round;
   stroke-linejoin:round;
 }
-.bottom.reactTabs button[data-v]>span,
+
+.bottom.reactTabs button[data-v]>span:last-child,
 .bottom.reactTabs .quickRudderLabel{
+  min-height:10px!important;
   display:block!important;
   max-width:100%;
+  margin:0!important;
+  padding:0!important;
   overflow:hidden;
   color:inherit!important;
-  font-size:10px!important;
+  font-size:9.75px!important;
   font-weight:690!important;
-  line-height:1!important;
-  letter-spacing:-.015em!important;
+  line-height:10px!important;
+  letter-spacing:-.012em!important;
+  text-align:center!important;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+
+.bottom.reactTabs button[data-v].active{
+  color:var(--liquid-accent-strong)!important;
+}
+
 .bottom.reactTabs button[data-v]:focus-visible,
 .bottom.reactTabs .quickRudder:focus-visible{
-  outline:3px solid color-mix(in srgb,var(--liquid-accent) 34%,transparent)!important;
+  outline:3px solid color-mix(in srgb,var(--liquid-accent) 30%,transparent)!important;
   outline-offset:1px!important;
 }
 
+/* Actions is a peer of the four destinations, not a separate bright tile. */
 .bottom.reactTabs .quickRudder{
-  color:var(--liquid-accent-strong)!important;
-}
-.bottom.reactTabs .quickRudderDisc{
-  position:relative;
-  display:grid;
-  width:var(--rudder-action-size)!important;
-  height:var(--rudder-action-size)!important;
-  flex:0 0 var(--rudder-action-size)!important;
-  place-items:center;
-  border:1px solid color-mix(in srgb,#fff 58%,var(--liquid-accent))!important;
-  border-radius:14px!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.035) 55%,transparent),
-    var(--liquid-accent)!important;
-  color:#fff!important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.42),
-    inset 0 -1px 0 rgba(0,0,0,.07),
-    0 5px 14px color-mix(in srgb,var(--liquid-accent) 20%,transparent)!important;
-  -webkit-backdrop-filter:blur(12px) saturate(138%);
-  backdrop-filter:blur(12px) saturate(138%);
-  transition:transform .2s cubic-bezier(.2,.82,.2,1),box-shadow .2s ease;
-}
-.bottom.reactTabs .quickRudderDisc::before{
-  content:"";
-  position:absolute;
-  inset:2px;
-  border-radius:12px;
-  background:radial-gradient(circle at 30% 16%,rgba(255,255,255,.22),transparent 42%);
-  pointer-events:none;
-}
-.bottom.reactTabs .quickRudderDisc svg{
-  position:relative;
-  z-index:1;
-  width:20px!important;
-  height:20px!important;
-  margin:0!important;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-  transform-origin:50% 50%;
-  transition:transform .23s cubic-bezier(.2,.86,.2,1);
-}
-.bottom.reactTabs .quickRudderLabel{
   color:var(--liquid-secondary)!important;
 }
-.bottom.reactTabs .quickRudder.open .quickRudderDisc{transform:scale(.95)}
+.bottom.reactTabs .quickRudderDisc{
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 24%,rgba(255,255,255,.58))!important;
+  border-radius:12px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.10)),
+    color-mix(in srgb,var(--liquid-accent) 14%,rgba(235,244,255,.48))!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.72),
+    0 4px 12px rgba(46,104,182,.08)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(135%);
+  backdrop-filter:blur(10px) saturate(135%);
+  transition:transform .18s cubic-bezier(.2,.82,.2,1),background-color .18s ease,border-color .18s ease;
+}
+body.dark .bottom.reactTabs .quickRudderDisc,
+html[data-theme="dark"] .bottom.reactTabs .quickRudderDisc{
+  border-color:rgba(106,167,255,.20)!important;
+  background:rgba(74,137,226,.12)!important;
+  color:#86b7ff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 4px 12px rgba(0,0,0,.16)!important;
+}
+.bottom.reactTabs .quickRudderDisc::before{display:none!important}
+.bottom.reactTabs .quickRudder.open .quickRudderDisc{transform:scale(.96)!important}
 .bottom.reactTabs .quickRudder.open .quickRudderDisc svg{transform:rotate(45deg)}
-.bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:scale(.94)}
+.bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:scale(.95)!important}
+
+/* The active lens is intentionally cheap to animate: transform only, no live blur. */
+.bottom.reactTabs .tabSlidingIndicator{
+  position:absolute;
+  left:0;
+  z-index:0;
+  pointer-events:none;
+  border:1px solid rgba(67,133,222,.10)!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(232,244,255,.72),rgba(217,236,255,.38))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.64),0 4px 12px rgba(31,76,132,.05)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  will-change:transform;
+}
+body.dark .bottom.reactTabs .tabSlidingIndicator,
+html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
+  border-color:rgba(92,158,255,.08)!important;
+  background:rgba(76,145,244,.085)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 4px 12px rgba(0,0,0,.15)!important;
+}
 
 .bottom.reactTabs .navTaskBadge,
 .bottom.reactTabs .quickRudderAttention{
@@ -196,19 +210,23 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   border-radius:10px;
   background:#d13b48;
   color:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.22);
+  box-shadow:0 2px 6px rgba(0,0,0,.20);
+  box-sizing:border-box;
   font-size:9px;
   font-style:normal;
   font-weight:800;
   line-height:1;
   pointer-events:none;
 }
-.bottom.reactTabs .navTaskBadge{
-  top:2px!important;
-  left:calc(50% + 7px)!important;
+.bottom.reactTabs .navIconWrap .navTaskBadge{
+  top:-3px!important;
+  right:-6px!important;
+  left:auto!important;
+  margin:0!important;
+  transform:none!important;
 }
 .bottom.reactTabs .quickRudderAttention{
-  top:-4px!important;
+  top:-3px!important;
   right:-5px!important;
   background:var(--liquid-warning,#d98213);
 }
@@ -219,12 +237,55 @@ html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
   min-width:10px;
   height:10px;
   padding:0;
-  top:-1px!important;
-  right:-1px!important;
+  top:0!important;
+  right:0!important;
 }
 
 body[data-view] main{
-  padding-bottom:calc(var(--rudder-nav-height) + 32px + env(safe-area-inset-bottom))!important;
+  padding-bottom:calc(var(--rudder-nav-height) + 26px + env(safe-area-inset-bottom))!important;
+}
+
+@media(max-width:390px){
+  .bottom.reactTabs{
+    width:calc(100vw - 8px)!important;
+    gap:1px!important;
+    padding-inline:4px!important;
+  }
+  .bottom.reactTabs .navIconWrap,
+  .bottom.reactTabs .quickRudderDisc{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    flex-basis:34px!important;
+  }
+  .bottom.reactTabs button[data-v]>span:last-child,
+  .bottom.reactTabs .quickRudderLabel{font-size:9.25px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .bottom.reactTabs .quickRudderDisc,
+  .bottom.reactTabs .quickRudderDisc svg{transition:none!important}
+  .bottom.reactTabs .quickRudder.open .quickRudderDisc,
+  .bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:none!important}
+  .bottom.reactTabs .quickRudder.open .quickRudderDisc svg{transform:rotate(45deg)}
+}
+
+@media(prefers-reduced-transparency:reduce){
+  .bottom.reactTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-surface)!important;
+  }
+  .bottom.reactTabs .quickRudderDisc{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:color-mix(in srgb,var(--liquid-accent) 14%,var(--liquid-surface))!important;
+  }
+}
+
+@media(prefers-contrast:more){
+  .bottom.reactTabs{border-width:2px!important}
+  .bottom.reactTabs .quickRudderDisc{border-width:2px!important}
 }
 
 /* Quick Actions stays visually connected to the dock without becoming a second navigation layer. */
@@ -452,7 +513,7 @@ html[data-theme="dark"] .quickActionsSheet{
 .quickActionCopy small{color:var(--liquid-secondary);font-size:10px;line-height:1.3}
 
 @media(max-width:390px){
-  :root{--rudder-action-size:40px}
+  :root{--rudder-action-size:36px}
   .bottom.reactTabs{
     width:calc(100vw - 8px)!important;
     gap:1px!important;
@@ -486,7 +547,7 @@ html[data-theme="dark"] .quickActionsSheet{
   .bottom.reactTabs .quickRudderDisc{
     -webkit-backdrop-filter:none!important;
     backdrop-filter:none!important;
-    background:var(--liquid-accent)!important;
+    background:color-mix(in srgb,var(--liquid-accent) 14%,var(--liquid-surface))!important;
   }
   .quickActionsSheet::backdrop{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 }
@@ -494,201 +555,4 @@ html[data-theme="dark"] .quickActionsSheet{
   .bottom.reactTabs{border-width:2px!important}
   .bottom.reactTabs .quickRudderDisc{border:2px solid #fff!important}
   .quickActionList,.quickActionsContextBar,.quickReviewAction,.quickPrimaryAction,.quickCompactAction{border-width:1px!important}
-}
-
-
-/* 42.2 consolidated dock foundation.
-   Equal icon stages, optical centring, restrained liquid glass and icon-anchored badges. */
-:root{
-  --rudder-nav-height:64px;
-  --rudder-action-size:34px;
-}
-.bottom.reactTabs{
-  width:min(calc(100vw - 12px),500px)!important;
-  height:64px!important;
-  min-height:64px!important;
-  display:grid!important;
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
-  align-items:center!important;
-  gap:2px!important;
-  padding:5px 6px!important;
-  overflow:visible!important;
-  border:1px solid rgba(255,255,255,.52)!important;
-  border-radius:23px!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.54),rgba(255,255,255,.14) 55%,rgba(255,255,255,.08)),
-    rgba(244,248,253,.34)!important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.78),
-    0 12px 30px rgba(24,42,68,.105)!important;
-  -webkit-backdrop-filter:blur(28px) saturate(165%) contrast(1.015)!important;
-  backdrop-filter:blur(28px) saturate(165%) contrast(1.015)!important;
-}
-.bottom.reactTabs::before{
-  content:"";
-  position:absolute;
-  z-index:0;
-  left:14px;
-  right:14px;
-  top:1px;
-  height:1px;
-  border-radius:999px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.82),transparent);
-  pointer-events:none;
-}
-body.dark .bottom.reactTabs,
-html[data-theme="dark"] .bottom.reactTabs{
-  border-color:rgba(255,255,255,.085)!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.018) 58%,transparent),
-    rgba(23,27,34,.54)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.085),0 14px 34px rgba(0,0,0,.30)!important;
-}
-.bottom.reactTabs button[data-v],
-.bottom.reactTabs .quickRudder{
-  position:relative!important;
-  z-index:1!important;
-  width:100%!important;
-  min-width:0!important;
-  height:54px!important;
-  min-height:54px!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:2px!important;
-  margin:0!important;
-  padding:2px 1px!important;
-  border-radius:16px!important;
-  transform:none!important;
-}
-.bottom.reactTabs .navIconWrap,
-.bottom.reactTabs .quickRudderDisc{
-  position:relative!important;
-  width:34px!important;
-  height:34px!important;
-  min-width:34px!important;
-  flex:0 0 34px!important;
-  display:grid!important;
-  place-items:center!important;
-}
-.bottom.reactTabs .navIconWrap{
-  border-radius:12px!important;
-  background:transparent!important;
-  overflow:visible!important;
-  max-width:none!important;
-}
-.bottom.reactTabs button[data-v] .navIconWrap svg{
-  width:20px!important;
-  height:20px!important;
-  margin:0!important;
-}
-.bottom.reactTabs button[data-v]>span:last-child,
-.bottom.reactTabs .quickRudderLabel{
-  min-height:10px!important;
-  display:block!important;
-  margin:0!important;
-  padding:0!important;
-  font-size:9.75px!important;
-  font-weight:690!important;
-  line-height:10px!important;
-  letter-spacing:-.012em!important;
-  text-align:center!important;
-}
-.bottom.reactTabs .quickRudder{
-  color:var(--liquid-accent-strong)!important;
-}
-.bottom.reactTabs .quickRudderDisc{
-  border-radius:12px!important;
-  border:1px solid color-mix(in srgb,#fff 44%,var(--liquid-accent))!important;
-  background:
-    radial-gradient(circle at 32% 18%,rgba(255,255,255,.28),transparent 42%),
-    linear-gradient(180deg,color-mix(in srgb,var(--liquid-accent) 90%,#69a8ff 10%),color-mix(in srgb,var(--liquid-accent) 88%,#075ccc 12%))!important;
-  color:#fff!important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.36),
-    0 5px 13px color-mix(in srgb,var(--liquid-accent) 19%,transparent)!important;
-}
-.bottom.reactTabs .quickRudderDisc::before{display:none!important}
-.bottom.reactTabs .quickRudderDisc svg{
-  width:18px!important;
-  height:18px!important;
-  margin:0!important;
-}
-.bottom.reactTabs .quickRudder.open .quickRudderDisc,
-.bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:scale(.96)!important}
-
-.bottom.reactTabs .tabSlidingIndicator{
-  border:1px solid rgba(61,132,226,.095)!important;
-  border-radius:16px!important;
-  background:
-    linear-gradient(180deg,rgba(237,246,255,.74),rgba(222,238,255,.44)),
-    rgba(255,255,255,.16)!important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.70),
-    0 5px 14px rgba(31,76,132,.055)!important;
-  -webkit-backdrop-filter:blur(12px) saturate(145%)!important;
-  backdrop-filter:blur(12px) saturate(145%)!important;
-}
-body.dark .bottom.reactTabs .tabSlidingIndicator,
-html[data-theme="dark"] .bottom.reactTabs .tabSlidingIndicator{
-  border-color:rgba(92,158,255,.08)!important;
-  background:rgba(76,145,244,.085)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 4px 12px rgba(0,0,0,.16)!important;
-}
-.bottom.reactTabs button[data-v].active{
-  color:var(--liquid-accent-strong)!important;
-}
-.bottom.reactTabs .quickRudderLabel{
-  color:var(--liquid-secondary)!important;
-}
-.bottom.reactTabs .navIconWrap .navTaskBadge{
-  top:-3px!important;
-  right:-7px!important;
-  left:auto!important;
-  margin:0!important;
-  min-width:18px!important;
-  height:18px!important;
-  padding:0 4px!important;
-  border-width:2px!important;
-  box-sizing:border-box!important;
-  font-size:9px!important;
-  transform:none!important;
-}
-.bottom.reactTabs .quickRudderAttention{
-  top:-3px!important;
-  right:-6px!important;
-}
-body[data-view] main{
-  padding-bottom:calc(var(--rudder-nav-height) + 26px + env(safe-area-inset-bottom))!important;
-}
-@media(max-width:390px){
-  .bottom.reactTabs{
-    width:calc(100vw - 8px)!important;
-    gap:1px!important;
-    padding-inline:4px!important;
-  }
-  .bottom.reactTabs .navIconWrap,
-  .bottom.reactTabs .quickRudderDisc{
-    width:32px!important;
-    height:32px!important;
-    min-width:32px!important;
-    flex-basis:32px!important;
-  }
-  .bottom.reactTabs button[data-v]>span:last-child,
-  .bottom.reactTabs .quickRudderLabel{font-size:9.25px!important}
-}
-@media(prefers-reduced-motion:reduce){
-  .bottom.reactTabs .quickRudderDisc,
-  .bottom.reactTabs .quickRudderDisc svg{transition:none!important}
-  .bottom.reactTabs .quickRudder.open .quickRudderDisc,
-  .bottom.reactTabs .quickRudder:active .quickRudderDisc{transform:none!important}
-}
-@media(prefers-reduced-transparency:reduce){
-  .bottom.reactTabs,
-  .bottom.reactTabs .tabSlidingIndicator{
-    -webkit-backdrop-filter:none!important;
-    backdrop-filter:none!important;
-    background:var(--liquid-surface)!important;
-  }
 }
