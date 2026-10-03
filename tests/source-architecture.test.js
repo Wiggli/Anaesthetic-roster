@@ -106,4 +106,7 @@ assert.ok(currentPresentationMarker > 0, 'current 42.4 presentation foundation m
 const historicalPresentation = presentation.slice(0, currentPresentationMarker);
 assert.equal((historicalPresentation.match(/!important/g) || []).length, 0,
   'historical presentation CSS must not retain priority flags that can defeat current styling');
+const currentPresentation = presentation.slice(currentPresentationMarker);
+assert.match(currentPresentation, /42\.6 authoritative visibility state[\s\S]*?\.hidden\{display:none!important\}/,
+  'the current presentation must own one authoritative hidden-state utility so component display rules cannot reveal inactive UI');
 console.log('Modular UI ownership and TypeScript runtime source architecture passed.');

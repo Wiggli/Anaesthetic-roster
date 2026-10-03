@@ -34,3 +34,8 @@ The production cascade has explicit ownership boundaries so older compatibility 
 - `account-admin-polish.css` owns account and administrator refinements, while `rudder-navigation.css` owns primary dock geometry. New work should modify the owning stylesheet rather than adding a competing override elsewhere.
 
 When a visual defect appears, first identify the owning stylesheet and remove or demote the competing rule. Do not fix cascade conflicts by adding another higher-specificity selector or another `!important`.
+
+
+## Visibility state
+
+Visibility state is an explicit exception to ordinary component cascade ownership. The current unlayered presentation owns the global `.hidden` utility and deliberately uses `display: none !important` so a component's normal `display` declaration can never reveal a surface that application state has marked inactive. This is a semantic state invariant, not a screen-specific specificity patch.
