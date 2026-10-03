@@ -1188,6 +1188,73 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
+test('Night hero keeps assignment facts readable across Android phone widths', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      date: '2026-09-26',
+      displayName: 'André Bartolo',
+      jobTitle: 'Senior Staff Nurse',
+      avatarUrl: '',
+      initial: 'A',
+      assignmentLabel: 'Tonight’s assignment',
+      title: 'Second Part theatre',
+      detail: 'Position 2 · emergency operating theatre',
+      period: '03:30–07:00',
+      breakLabel: 'First break after midnight',
+      contextLabel: 'Working with',
+      context: 'Michael Debono and overtime colleague',
+      changedLabel: '',
+      action: 'role',
+      pending: false,
+      pendingOther: '',
+      liveStatus: 'Night selected',
+      dutyPart: 'second',
+      dutyStartUtc: Date.parse('2026-09-26T22:00:00Z'),
+      handoverUtc: Date.parse('2026-09-27T01:30:00Z'),
+      dutyEndUtc: Date.parse('2026-09-27T05:00:00Z'),
+      handoverLabel: '03:30',
+      transitionUtc: 0,
+      changed: false,
+      clockChange: null
+    }}));
+  });
+
+  for (const width of [412, 390, 384, 360]) {
+    await page.setViewportSize({ width, height: 860 });
+    await page.waitForTimeout(30);
+    const geometry = await page.locator('#personalNightCard > article').evaluate(hero => {
+      const facts = Array.from(hero.querySelectorAll('.personalHeroFact'));
+      const title = hero.querySelector('.personalRoleCopy b');
+      const detail = hero.querySelector('.personalRoleCopy > span');
+      const box = hero.getBoundingClientRect();
+      const inside = element => {
+        const r = element.getBoundingClientRect();
+        return r.left >= box.left - 1 && r.right <= box.right + 1 && r.top >= box.top - 1 && r.bottom <= box.bottom + 1;
+      };
+      return {
+        clientWidth: hero.clientWidth,
+        scrollWidth: hero.scrollWidth,
+        titleInside: title ? inside(title) : false,
+        detailInside: detail ? inside(detail) : false,
+        factsInside: facts.every(inside),
+        factTops: facts.map(item => Math.round(item.getBoundingClientRect().top)),
+        factWhiteSpace: facts.map(item => getComputedStyle(item.querySelector('b')).whiteSpace)
+      };
+    });
+    expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth + 1);
+    expect(geometry.titleInside).toBe(true);
+    expect(geometry.detailInside).toBe(true);
+    expect(geometry.factsInside).toBe(true);
+    expect(geometry.factWhiteSpace.every(value => value === 'normal')).toBe(true);
+    if (width <= 430 && width > 360) expect(geometry.factTops[2]).toBeGreaterThan(geometry.factTops[0]);
+    if (width === 360) {
+      expect(geometry.factTops[1]).toBeGreaterThan(geometry.factTops[0]);
+      expect(geometry.factTops[2]).toBeGreaterThan(geometry.factTops[1]);
+    }
+  }
+});
+
 test('shared Changes workflow becomes a calm completed state', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
