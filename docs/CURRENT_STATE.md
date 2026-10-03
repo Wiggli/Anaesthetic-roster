@@ -15,7 +15,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - `app-core.js` owns the established roster engine, authentication, administration and shared base render path.
 - `src/legacy-ui/foundation.js`, `clinical.js`, `sync.js` and `bootstrap.js` are the modular source of truth for the compatibility UI. `app-ui.js` is generated.
 - `src/domain-logic.ts` and `src/runtime-foundation.ts` are TypeScript source. Their root JavaScript counterparts are generated compatibility files.
-- React/TypeScript regions under `src/` are used for progressively migrated interaction and presentation areas.
+- React/TypeScript regions under `src/` are used for progressively migrated interaction and presentation areas.\n- `src/ui-foundation.css` is the final shared presentation layer for Night, Changes, Breaks, Chat and the five-column dock. It is imported after the older presentation/rudder layers so new shared composition work should go there rather than adding another historical override block.
 
 ## Development state
 
