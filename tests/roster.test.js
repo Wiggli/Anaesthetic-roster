@@ -366,7 +366,7 @@ assert.match(css, /--apple-section-gap:14px/, 'Apple sections must share one can
 assert.match(css, /#today \.nightStatusRow\{[\s\S]*?gap:var\(--apple-control-gap\)[\s\S]*?background:transparent/, 'Night summary tiles must be visually separated');
 assert.match(css, /#today \.roles\{[\s\S]*?display:grid;gap:var\(--apple-control-gap\)[\s\S]*?background:transparent/, 'Night allocation cards must be visually separated');
 assert.match(css, /#breaks \.breakSummaryRow\{[\s\S]*?gap:var\(--apple-control-gap\)[\s\S]*?background:transparent/, 'Break summary cards must be visually separated');
-assert.match(css, /body\.dark #today \.nightStatusRow[\s\S]*?background:transparent!important/, 'dark mode must preserve separation between information cards');
+assert.match(css, /body\.dark #today \.nightStatusRow[\s\S]*?background:transparent/, 'dark mode must preserve separation between information cards without requiring legacy priority flags');
 assert.match(css, /#changes \.changesWorkflowTabs,.authSwitch,.appearanceControl,#admin \.adminTabs/, 'true segmented controls must remain intentionally grouped');
 assert.match(html, /id="screenInfoSheet"[\s\S]*aria-labelledby="screenInfoTitle"/, 'screen help must use an accessible information sheet');
 assert.match(ui, /data-go-absence[\s\S]*data-go-overtime/, 'Night summary must link absences and overtime to their exact sections');
