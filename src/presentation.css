@@ -18043,7 +18043,7 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   border-radius:18px!important;
 }
 #changes .workflowStep{
-  min-height:58px!important;
+  min-height:52px!important;
   gap:6px!important;
   border-radius:14px!important;
 }
@@ -18051,9 +18051,9 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   opacity:.55!important;
 }
 #changes .workflowStep.active .workflowSelection{
-  border-color:color-mix(in srgb,var(--liquid-accent) 22%,var(--liquid-separator))!important;
+  border:0!important;
   background:color-mix(in srgb,var(--liquid-accent) 5%,var(--liquid-surface))!important;
-  box-shadow:0 2px 8px rgba(13,43,47,.045)!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--liquid-accent) 16%,transparent),0 2px 8px rgba(13,43,47,.035)!important;
 }
 #changes .workflowStepNumber{
   width:25px!important;
@@ -18209,8 +18209,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   border-radius:15px!important;
 }
 #breaks #breakSummaryRow>.breakSummaryItem{
-  height:58px!important;
-  min-height:58px!important;
+  height:60px!important;
+  min-height:60px!important;
   padding:7px 7px!important;
 }
 #breaks #breakSummaryRow>.breakSummaryItem b{
@@ -18384,7 +18384,7 @@ html[data-theme="dark"] #today .nightOverviewBoard{
     font-size:35px!important;
   }
   #changes .workflowStep{
-    min-height:56px!important;
+    min-height:52px!important;
   }
   #changes .workflowStepCopy small{
     display:none!important;
