@@ -206,7 +206,8 @@
 
     <main>
       <section id="today" class="view">
-        <header id="appHeader">
+        <div class="nightUnifiedHero">
+          <header id="appHeader">
           <div class="clinicalBackdrop" aria-hidden="true"></div>
           <div class="hospitalStrip">
             <img src="mater-dei-logo.png?v=44.3" alt="Mater Dei Hospital" vite-ignore /><span
@@ -290,14 +291,12 @@
               ><span id="headerLiveText">Connecting</span></span
             >
           </div>
-        </header>
-        <div class="nightSectionIdentity" aria-labelledby="nightSectionTitle">
-          <h1 id="nightSectionTitle">Night</h1>
-        </div>
-        <div class="panel nightOverviewPanel">
-          <h2 class="srOnly">Selected night</h2>
-
-          <div class="nightDateShell">
+          </header>
+          <div class="nightSectionIdentity" aria-labelledby="nightSectionTitle">
+            <h1 id="nightSectionTitle">Night</h1>
+          </div>
+          <div class="nightDateShell nightUnifiedContext">
+            <h2 class="srOnly">Selected night</h2>
             <div class="grid2">
               <label class="nightDateLabel">
                 <span class="nightDateContext">Selected night</span>
@@ -313,7 +312,8 @@
               </div>
             </div>
           </div>
-
+        </div>
+        <div class="panel nightOverviewPanel">
           <div id="nightClockChange"></div>
 
           <section id="personalNight" class="personalNight" aria-labelledby="personalNightHeading">
