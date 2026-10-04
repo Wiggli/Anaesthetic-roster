@@ -37,7 +37,7 @@ assert.match(read('src/legacy-ui/clinical.js'), /function buildNightPlan\(/,
   'clinical source must own the canonical NightPlan adapter');
 assert.match(read('src/legacy-ui/sync.js'), /function reconcileApplication\(/,
   'sync source must own lifecycle reconciliation');
-assert.match(read('src/legacy-ui/education.js'), /function onboardingPages\(\)[\s\S]*function appGuidePage\(/,
+assert.match(read('src/legacy-ui/education.js'), /function appGuidePage\(\)[\s\S]*function onboardingPages\(/,
   'education source must own first-use onboarding and the reusable app guide');
 assert.doesNotMatch(read('src/legacy-ui/foundation.js'), /function onboardingPages\(/,
   'foundation must not absorb onboarding implementation again');
