@@ -12,7 +12,6 @@ declare global {
     show?: (view: string) => void;
     openChatView?: () => void;
     showQuickActions?: () => void;
-    AnaestheticUndo?: { register: (item: UndoRegistration) => void };
   }
 }
 
@@ -36,7 +35,7 @@ function openView(view: 'today' | 'changes' | 'chat') {
 }
 
 function cleanPerson(detail: any): PersonContext {
-  const source = detail?.source instanceof HTMLElement ? detail.source : null;
+  const source: HTMLElement | null = detail?.source instanceof HTMLElement ? detail.source : null;
   const direct = source?.getAttribute('data-person-name')
     || source?.querySelector<HTMLElement>('[data-person-name]')?.getAttribute('data-person-name')
     || source?.querySelector<HTMLElement>('.name,.roleName,.staffName,strong')?.textContent
@@ -177,7 +176,7 @@ function installSafePreferenceUndo() {
     preferenceBefore.set(select, after);
     if (!before || before === after) return;
     const field = select.closest('label')?.childNodes[0]?.textContent?.trim() || 'Preference';
-    window.AnaestheticUndo?.register({
+    (window as any).AnaestheticUndo?.register({
       label: `${field} changed`,
       expiresInMs: 9000,
       undo: () => {
@@ -186,7 +185,7 @@ function installSafePreferenceUndo() {
         preferenceBefore.set(select, before);
         preferenceUndoSuppressed = false;
       }
-    });
+    } satisfies UndoRegistration);
   });
 }
 
