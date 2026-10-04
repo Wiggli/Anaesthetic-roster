@@ -856,13 +856,13 @@ function NightRoles({ model }: { model: NightSummary }) {
           <span className="rosterRowCopy">
             <span className="rosterRowName">
               <span className="rosterRowPeople">{role.names}</span>
-              {(role.mine || liveState) && <span className="rosterRowBadges">
-                {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
-                {liveState && <Badge tone={liveState === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{liveState}</Badge>}
-              </span>}
             </span>
             <span className="rosterRowMeta">{role.label} · {role.detail}</span>
           </span>
+          {(role.mine || liveState) && <span className="rosterRowBadges">
+            {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
+            {liveState && <Badge tone={liveState === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{liveState}</Badge>}
+          </span>}
         </Pressable>;
       })}
     </div>
