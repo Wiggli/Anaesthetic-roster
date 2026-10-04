@@ -1115,3 +1115,382 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
     margin-right:0;
   }
 }
+
+/* 46.0 context-aware Night intelligence. */
+#today .nightFocusCard{
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  margin:0 0 12px;
+  padding:12px 13px;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 20%,var(--liquid-separator));
+  border-radius:18px;
+  background:
+    linear-gradient(130deg,color-mix(in srgb,var(--liquid-accent) 8%,transparent),transparent 62%),
+    color-mix(in srgb,var(--liquid-surface) 95%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+#today .nightFocusTime{
+  display:grid;
+  place-items:center;
+  min-height:58px;
+  border-right:1px solid color-mix(in srgb,var(--liquid-separator) 78%,transparent);
+}
+#today .nightFocusTime small{
+  color:var(--liquid-accent-strong);
+  font-size:8.5px;
+  font-weight:820;
+  letter-spacing:.08em;
+}
+#today .nightFocusTime strong{
+  color:var(--liquid-label);
+  font-size:20px;
+  font-weight:800;
+  line-height:1.08;
+  letter-spacing:-.045em;
+}
+#today .nightFocusCopy{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+#today .nightFocusCopy>small{
+  color:var(--liquid-accent-strong);
+  font-size:9px;
+  font-weight:780;
+  letter-spacing:.045em;
+  text-transform:uppercase;
+}
+#today .nightFocusCopy>strong{
+  color:var(--liquid-label);
+  font-size:14.5px;
+  font-weight:760;
+  line-height:1.25;
+  letter-spacing:-.02em;
+}
+#today .nightFocusCopy>span{
+  color:var(--liquid-secondary);
+  font-size:11px;
+  font-weight:570;
+  line-height:1.38;
+}
+
+#today .personalChangeNotice{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:0 0 12px;
+  padding:11px 11px 11px 12px;
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 28%,var(--liquid-separator));
+  border-radius:18px;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--liquid-warning) 8%,transparent),transparent 65%),
+    var(--liquid-surface);
+}
+#today .personalChangeMark{
+  display:grid;
+  width:34px;
+  height:34px;
+  place-items:center;
+  border-radius:11px;
+  background:color-mix(in srgb,var(--liquid-warning) 12%,transparent);
+  color:var(--liquid-warning);
+  font-size:17px;
+  font-weight:760;
+}
+#today .personalChangeCopy{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+#today .personalChangeCopy>small{
+  color:var(--liquid-warning);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#today .personalChangeCopy>strong{
+  overflow-wrap:anywhere;
+  color:var(--liquid-label);
+  font-size:13.5px;
+  font-weight:760;
+  line-height:1.25;
+}
+#today .personalChangeCopy>span,
+#today .personalChangeCopy>em{
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  font-style:normal;
+  line-height:1.35;
+}
+#today .personalChangeSeen{
+  min-height:40px;
+  padding:0 11px;
+  border:0;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--liquid-warning) 10%,transparent);
+  color:var(--liquid-warning);
+  box-shadow:none;
+  font-size:11px;
+  font-weight:760;
+}
+
+#today .personalChangeHistory{
+  margin-top:10px;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 78%,transparent);
+  border-radius:16px;
+  background:color-mix(in srgb,var(--liquid-surface-muted) 44%,transparent);
+}
+#today .personalChangeHistory>summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 11px;
+  cursor:pointer;
+  list-style:none;
+  color:var(--liquid-secondary);
+  font-size:11px;
+  font-weight:700;
+}
+#today .personalChangeHistory>summary::-webkit-details-marker{display:none}
+#today .personalChangeHistoryRows{
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 72%,transparent);
+}
+#today .personalChangeHistoryRow{
+  min-height:54px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:9px 11px;
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 58%,transparent);
+}
+#today .personalChangeHistoryRow:first-child{border-top:0}
+#today .personalChangeHistoryRow>span{min-width:0;display:grid;gap:2px}
+#today .personalChangeHistoryRow small{
+  color:var(--liquid-secondary);
+  font-size:8.5px;
+  font-weight:760;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#today .personalChangeHistoryRow b{
+  color:var(--liquid-label);
+  font-size:11.5px;
+  font-weight:720;
+  line-height:1.3;
+}
+#today .personalChangeHistoryRow em,
+#today .personalChangeHistoryRow time{
+  color:var(--liquid-secondary);
+  font-size:9.5px;
+  font-style:normal;
+  line-height:1.3;
+}
+#today .personalChangeHistoryRow time{white-space:nowrap}
+
+#today .nightConsequenceLine{
+  display:grid;
+  grid-template-columns:22px minmax(0,1fr);
+  gap:7px;
+  align-items:start;
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--liquid-info) 5%,transparent);
+  color:var(--liquid-secondary);
+}
+#today .nightConsequenceLine>span{
+  color:var(--liquid-info);
+  font-size:15px;
+}
+#today .nightConsequenceLine small{
+  font-size:10.5px;
+  line-height:1.4;
+}
+#today .nextActionCard{
+  border-color:color-mix(in srgb,var(--liquid-warning) 26%,var(--liquid-separator))!important;
+}
+
+#changes .confirmationDiffHeading{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin:3px 1px 9px;
+}
+#changes .confirmationDiffHeading>span{display:grid;gap:1px}
+#changes .confirmationDiffHeading small{
+  color:var(--scene-secondary);
+  font-size:9.5px;
+  line-height:1.3;
+}
+#changes .confirmationDiffHeading>span>small{
+  font-weight:800;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+#changes .confirmationDiffHeading strong{
+  color:var(--scene-ink);
+  font-size:15px;
+  font-weight:760;
+  letter-spacing:-.02em;
+}
+#changes .confirmationConsequence{
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:9px;
+  align-items:start;
+  margin:0 0 10px;
+  padding:10px 11px;
+  border-radius:13px;
+  background:color-mix(in srgb,var(--scene-accent) 6%,var(--scene-soft));
+}
+#changes .confirmationConsequence>span{
+  color:var(--scene-accent);
+  font-size:16px;
+}
+#changes .confirmationConsequence>div{display:grid;gap:2px}
+#changes .confirmationConsequence small{
+  color:var(--scene-secondary);
+  font-size:8.5px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+#changes .confirmationConsequence strong{
+  color:var(--scene-ink);
+  font-size:11.5px;
+  font-weight:680;
+  line-height:1.4;
+}
+
+.appearanceExperienceStack{
+  display:grid;
+  gap:16px;
+}
+.appearancePreferenceBlock{
+  display:grid;
+  gap:7px;
+}
+.appearancePreferenceLabel{
+  color:var(--account-muted,var(--liquid-secondary));
+  font-size:11px;
+  font-weight:760;
+}
+.appearancePreferenceBlock>p{
+  max-width:52ch;
+  margin:0;
+  color:var(--account-muted,var(--liquid-secondary));
+  font-size:11px;
+  line-height:1.4;
+}
+.lowLightPreference{
+  padding-top:14px;
+  border-top:1px solid color-mix(in srgb,var(--account-rule,var(--liquid-separator)) 76%,transparent);
+}
+
+/* Low-light mode affects Night only, after midnight until the 07:00 working-night boundary. */
+body.lowLightNight[data-view="today"]{
+  --liquid-bg:#020609;
+  --liquid-bg-alt:#04090d;
+  --liquid-surface:rgba(8,13,16,.985);
+  --liquid-surface-muted:rgba(15,22,27,.96);
+  --liquid-label:#e9eef0;
+  --liquid-secondary:#9aa7ad;
+  --liquid-tertiary:#748188;
+  --liquid-separator:rgba(126,143,151,.20);
+  --liquid-glass-clear:rgba(6,10,13,.66);
+  --liquid-glass:rgba(7,12,15,.77);
+  --liquid-glass-elevated:rgba(14,20,24,.84);
+  --liquid-glass-border:rgba(255,255,255,.075);
+  --liquid-glass-edge:rgba(255,255,255,.10);
+  --scene-bg:#020609;
+  --scene-surface:#080d10;
+  --scene-ink:#e9eef0;
+  --scene-secondary:#9aa7ad;
+  --scene-line:#1b272d;
+  --scene-soft:#0f171b;
+  --premium-canvas:#020609;
+  --premium-card:#080d10;
+  --premium-soft:#0f171b;
+  --premium-ink:#e9eef0;
+  --premium-muted:#9aa7ad;
+  background:#020609!important;
+  color-scheme:dark;
+}
+body.lowLightNight[data-view="today"] #today{
+  color:var(--liquid-label);
+}
+body.lowLightNight[data-view="today"] #today .nightUnifiedHero,
+body.lowLightNight[data-view="today"] #today #personalNightCard>.personalHeroSurface,
+body.lowLightNight[data-view="today"] #today .nightOverviewBoard,
+body.lowLightNight[data-view="today"] #today #roles>.nightSituationTimeline,
+body.lowLightNight[data-view="today"] #today #recentActivityList>.activityTimeline{
+  box-shadow:none!important;
+}
+body.lowLightNight[data-view="today"] #today .nightUnifiedHero{
+  background:
+    radial-gradient(70% 100% at 95% -10%,rgba(20,84,106,.15),transparent 62%),
+    #04090d!important;
+  border-color:rgba(255,255,255,.055)!important;
+}
+body.lowLightNight[data-view="today"] #today #personalNightCard>.personalHeroSurface{
+  background:
+    linear-gradient(145deg,rgba(21,51,70,.11),transparent 46%),
+    #070d11!important;
+}
+body.lowLightNight[data-view="today"] .bottom.reactTabs{
+  background:rgba(5,9,12,.78)!important;
+  border-color:rgba(255,255,255,.075)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 10px 28px rgba(0,0,0,.24)!important;
+}
+body.lowLightNight[data-view="today"] #today .nightFocusCard{
+  background:
+    linear-gradient(130deg,rgba(10,132,255,.07),transparent 65%),
+    #081015;
+}
+body.lowLightNight[data-view="today"] #today .personalChangeNotice{
+  background:
+    linear-gradient(135deg,rgba(255,159,10,.06),transparent 65%),
+    #090e11;
+}
+
+@media(max-width:390px){
+  #today .personalChangeNotice{
+    grid-template-columns:34px minmax(0,1fr);
+  }
+  #today .personalChangeSeen{
+    grid-column:2;
+    justify-self:start;
+    min-height:34px;
+  }
+  #today .nightFocusCard{
+    grid-template-columns:58px minmax(0,1fr);
+    gap:9px;
+    padding:10px;
+  }
+  #changes .confirmationDiffHeading{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:3px;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  #today .nightFocusCard,
+  #today .personalChangeNotice{
+    background:var(--liquid-surface);
+  }
+  body.lowLightNight[data-view="today"] .bottom.reactTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:#070c0f!important;
+  }
+}
+
