@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "project": "Anaesthetic Night Roster",
-  "currentRelease": "44.0",
+  "currentRelease": "44.1",
   "lastReleaseDate": "4 October 2026",
   "databaseSchema": 53,
   "sourceOfTruth": {
@@ -11,6 +11,7 @@
     "runtimeSources": [
       "app-core.js",
       "src/legacy-ui/foundation.js",
+      "src/legacy-ui/account.js",
       "src/legacy-ui/clinical.js",
       "src/legacy-ui/sync.js",
       "src/legacy-ui/bootstrap.js",
