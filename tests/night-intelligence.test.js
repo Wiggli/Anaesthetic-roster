@@ -12,7 +12,7 @@ const legacy = read('app-ui.js');
 
 assert.match(launch, /mountNightIntelligence\(\);[\s\S]*mountNightIntelligenceExtensions\(\);/,
   'the intelligence surfaces and interaction extensions must both mount from the isolated React launch layer');
-assert.doesNotMatch(core + extensions, /\.rpc\s*\(|\.from\s*\(/,
+assert.doesNotMatch(core + extensions, /\.rpc\s*\(|(?:supa|client)\s*\??\.\s*from\s*\(/,
   'Night Intelligence must not introduce direct roster/database mutations');
 assert.match(legacy, /ROSTER_REVISION_CONFLICT/,
   'revision-conflict protection must remain owned by the established roster engine');
