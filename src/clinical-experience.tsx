@@ -68,6 +68,12 @@ type NightSummary = {
   clockChange?: ClockChangeInfo | null;
   contextLabel?: string;
   currentPart?: 'first' | 'second' | '';
+  activeNight?: boolean;
+  dutyStartUtc?: number;
+  handoverUtc?: number;
+  dutyEndUtc?: number;
+  nextAction?: { label: string; detail: string; target: 'allocation' | 'confirm' };
+  consequence?: string;
 };
 
 type PersonalNight = {
@@ -95,6 +101,21 @@ type PersonalNight = {
   handoverLabel?: string;
   transitionUtc?: number;
   changed?: boolean;
+  activeNight?: boolean;
+  changeNotice?: {
+    signature: string;
+    before: string;
+    after: string;
+    detail: string;
+    changedAt: string;
+  } | null;
+  history?: Array<{
+    id: string;
+    label: string;
+    title: string;
+    detail: string;
+    meta: string;
+  }>;
   clockChange?: ClockChangeInfo | null;
 };
 
@@ -124,7 +145,7 @@ const roots = new Map<string, Root>();
 
 function softHaptic() {
   try {
-    if ('vibrate' in navigator && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(8);
+    if ('vibrate' in navigator && !document.body.classList.contains('personalMotionReduced') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(8);
   } catch {
     // Haptics are an optional enhancement only.
   }
@@ -480,24 +501,25 @@ function NightStatus({ model }: { model: NightSummary }) {
 
 function NightAlerts({ model }: { model: NightSummary }) {
   const needsReview = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
-  const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
   const informationalParts = !needsReview && model.alert ? model.alert.split(':') : [];
   const infoTitle = informationalParts.length > 1 ? informationalParts.shift()?.trim() : 'Night arrangement';
   const infoDetail = informationalParts.length ? informationalParts.join(':').trim() : model.alert;
+  const fallbackAction = model.firstTask
+    ? { label: model.firstTask, detail: 'Review allocation', target: 'allocation' as const }
+    : model.labourPending
+      ? { label: 'Choose the Labour Ward order', detail: 'Review allocation', target: 'allocation' as const }
+      : null;
+  const nextAction = model.nextAction || fallbackAction;
   return <>
-    {model.alert && !hasSpecificDecision && (needsReview
+    {model.alert && !nextAction && (needsReview
       ? <div className="alert compactNotice warn">{model.alert}</div>
       : <div className="alert compactNotice informational nightContextNotice"><span className="nightContextIcon" aria-hidden="true">i</span><span><b>{infoTitle}</b><small>{infoDetail}</small></span></div>)}
-    {model.firstTask && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
+    {nextAction && <button type="button" className="decisionTaskCard nextActionCard" onClick={nextAction.target === 'confirm' ? goToConfirmation : () => goToChanges('allocation')}>
       <span className="decisionTaskMark" aria-hidden="true">!</span>
-      <span className="decisionTaskCopy"><small>Allocation decision</small><b>{model.firstTask}</b><strong>Review allocation</strong></span>
+      <span className="decisionTaskCopy"><small>What needs you now</small><b>{nextAction.label}</b><strong>{nextAction.detail}</strong></span>
       <i aria-hidden="true">›</i>
     </button>}
-    {model.labourPending && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
-      <span className="decisionTaskMark" aria-hidden="true">!</span>
-      <span className="decisionTaskCopy"><small>Labour Ward</small><b>Choose the Labour Ward order</b><strong>Review allocation</strong></span>
-      <i aria-hidden="true">›</i>
-    </button>}
+    {model.consequence && <div className="nightConsequenceLine"><span aria-hidden="true">↳</span><small>{model.consequence}</small></div>}
   </>;
 }
 
@@ -615,10 +637,82 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
   </section>;
 }
 
+function nightFocusState(model: PersonalNight, value: Date) {
+  if (!model.activeNight || !model.dutyStartUtc || !model.handoverUtc || !model.dutyEndUtc) return null;
+  const now = value.getTime();
+  if (now < model.dutyStartUtc || now >= model.dutyEndUtc) return null;
+  const first = now < model.handoverUtc;
+  const phase = first ? 'First Part active' : 'Second Part active';
+  const colleague = model.context.replace(/^With\s+/i, '');
+  let title = first ? `Handover at ${model.handoverLabel || '03:30'}` : 'Second Part is now on duty';
+  let detail = colleague ? `Your allocation: ${model.title} · ${colleague}` : `Your allocation: ${model.title}`;
+
+  if (model.action === 'absence') {
+    title = 'You are not on duty tonight';
+    detail = model.detail;
+  } else if (model.pending) {
+    title = 'Your allocation still needs a decision';
+    detail = 'Open Changes to complete the shared plan.';
+  } else if (model.dutyPart === 'first') {
+    title = first ? `Handover at ${model.handoverLabel || '03:30'}` : 'Your duty block is complete';
+    detail = first ? `${model.title} · ${model.breakLabel} follows` : `${model.breakLabel} · Team allocation remains live below`;
+  } else if (model.dutyPart === 'second') {
+    title = first ? `Your duty starts at ${model.handoverLabel || '03:30'}` : 'You are on duty now';
+    detail = `${model.title} · ${model.breakLabel}`;
+  } else if (model.dutyPart === 'full') {
+    title = 'Full-night cover is active';
+    detail = `${model.title} · Coordinate your break when clinical cover allows`;
+  } else if (/seventh/i.test(model.title)) {
+    title = 'Supporting tonight’s team';
+    detail = 'Break coordinated as required.';
+  }
+
+  return { phase, time: clockText(value), title, detail, first };
+}
+
+function NightFocus({ model, value }: { model: PersonalNight; value: Date }) {
+  const focus = nightFocusState(model, value);
+  if (!focus) return null;
+  return <section className={'nightFocusCard ' + (focus.first ? 'nightFocus-first' : 'nightFocus-second')} aria-label="Night focus" role="status">
+    <span className="nightFocusTime"><small>NOW</small><strong>{focus.time}</strong></span>
+    <span className="nightFocusCopy"><small>{focus.phase}</small><strong>{focus.title}</strong><span>{focus.detail}</span></span>
+  </section>;
+}
+
+function PersonalChangeCard({ model }: { model: PersonalNight }) {
+  const change = model.changeNotice;
+  if (!change) return null;
+  return <section id="personalChangeNotice" className="personalChangeNotice" aria-live="polite">
+    <span className="personalChangeMark" aria-hidden="true">↔</span>
+    <span className="personalChangeCopy">
+      <small>Your allocation changed</small>
+      <strong>{change.before} → {change.after}</strong>
+      <span>{change.detail}</span>
+      <em>{change.changedAt}</em>
+    </span>
+    <Pressable type="button" className="personalChangeSeen" onClick={() => window.dispatchEvent(new CustomEvent('roster:personal-change-seen', { detail: { date: model.date, signature: change.signature } }))}>Seen</Pressable>
+  </section>;
+}
+
+function PersonalHistory({ model }: { model: PersonalNight }) {
+  const items = model.history || [];
+  if (!items.length) return null;
+  return <details className="personalChangeHistory">
+    <summary><span>Your change history</span><Badge tone="neutral">{items.length}</Badge></summary>
+    <div className="personalChangeHistoryRows">
+      {items.map(item => <div className="personalChangeHistoryRow" key={item.id}>
+        <span><small>{item.label}</small><b>{item.title}</b>{item.detail && <em>{item.detail}</em>}</span>
+        <time>{item.meta}</time>
+      </div>)}
+    </div>
+  </details>;
+}
+
 function PersonalNightCard({ model }: { model: PersonalNight }) {
   const reducedMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
   const previousNow = useRef(now);
+  const handoverHapticDone = useRef(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
@@ -626,7 +720,10 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   }, []);
 
   useEffect(() => {
-    if (model.handoverUtc && previousNow.current < model.handoverUtc && now >= model.handoverUtc && document.visibilityState === 'visible') softHaptic();
+    if (model.handoverUtc && !handoverHapticDone.current && previousNow.current < model.handoverUtc && now >= model.handoverUtc && document.visibilityState === 'visible') {
+      handoverHapticDone.current = true;
+      softHaptic();
+    }
     previousNow.current = now;
   }, [now, model.handoverUtc]);
 
@@ -694,6 +791,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </span>
       </div>}
 
+      <PersonalChangeCard model={model} />
+      <NightFocus model={model} value={value} />
+
       <div className={'personalAssignmentHero personalAssignmentHeroCompact personalRole-' + tone}>
         <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
         <span className="personalRoleCopy">
@@ -746,6 +846,8 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
           <span>Team allocation</span>
         </Pressable>
       </div>
+
+      <PersonalHistory model={model} />
 
       {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openNameSetup}>
         Choose your name
@@ -828,10 +930,23 @@ function roleLiveState(role: NightRole, currentPart?: NightSummary['currentPart'
   if (!currentPart) return '';
   if (role.tone === 'first') return currentPart === 'first' ? 'Now' : 'Complete';
   if (role.tone === 'second') return currentPart === 'first' ? 'Next' : 'Now';
+  const detail = role.detail.toLocaleLowerCase();
+  if (detail.includes('first part')) return currentPart === 'first' ? 'Now' : 'Complete';
+  if (detail.includes('second part')) return currentPart === 'first' ? 'Next' : 'Now';
+  if (detail.includes('full-night') || detail.includes('full night')) return 'Now';
   return '';
 }
 
 function NightRoles({ model }: { model: NightSummary }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!model.activeNight) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(timer);
+  }, [model.activeNight, model.handoverUtc, model.dutyEndUtc]);
+  const livePart: NightSummary['currentPart'] = model.activeNight && model.handoverUtc && model.dutyEndUtc && now < model.dutyEndUtc
+    ? (now < model.handoverUtc ? 'first' : 'second')
+    : model.currentPart;
   const hasMine = model.roles.some(role => role.mine);
   const jumpToMine = () => {
     softHaptic();
@@ -844,7 +959,7 @@ function NightRoles({ model }: { model: NightSummary }) {
     {hasMine && <div className="nightRoleTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToMine}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => {
-        const liveState = roleLiveState(role, model.currentPart);
+        const liveState = roleLiveState(role, livePart);
         return <Pressable
           key={role.key}
           type="button"
