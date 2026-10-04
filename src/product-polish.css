@@ -1064,6 +1064,7 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
 
 /* 45.3 Night allocation row clipping fix. */
 #today .nightSituationTimeline .rosterRow{
+  box-sizing:border-box;
   grid-template-columns:50px minmax(0,1fr) auto;
 }
 
