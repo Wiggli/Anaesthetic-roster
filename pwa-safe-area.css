@@ -1,0 +1,78 @@
+/* iPhone and standalone-PWA safe-area hardening for the 45.4 phone UI hotfix.
+   This layer is intentionally narrow: it protects viewport chrome and overlays without
+   changing roster, staffing, break, allocation or clock-change behaviour. */
+
+:root{
+  --app-safe-top:env(safe-area-inset-top,0px);
+  --app-safe-right:env(safe-area-inset-right,0px);
+  --app-safe-bottom:env(safe-area-inset-bottom,0px);
+  --app-safe-left:env(safe-area-inset-left,0px);
+}
+
+@media(max-width:759px){
+  main>.view{
+    padding-left:max(12px,var(--app-safe-left))!important;
+    padding-right:max(12px,var(--app-safe-right))!important;
+  }
+
+  .bottom,
+  .bottom.reactTabs{
+    padding-left:max(5px,var(--app-safe-left))!important;
+    padding-right:max(5px,var(--app-safe-right))!important;
+  }
+
+  .accountSheet[open]{
+    max-height:calc(100dvh - var(--app-safe-top) - 12px)!important;
+  }
+
+  .accountSheetHeader{
+    padding-left:max(18px,var(--app-safe-left))!important;
+    padding-right:max(18px,var(--app-safe-right))!important;
+  }
+
+  .accountSheetScroll{
+    padding-left:max(12px,var(--app-safe-left))!important;
+    padding-right:max(12px,var(--app-safe-right))!important;
+  }
+
+  .onboardingDialog[open],
+  .appDialog[open],
+  .releaseDialog[open]{
+    max-height:calc(100dvh - var(--app-safe-top) - var(--app-safe-top) - 16px)!important;
+  }
+
+  .appDialog[open],
+  .releaseDialog[open]{
+    overflow:auto!important;
+  }
+
+  .updateSheet[open],
+  .chatMessageActionSheet[open]{
+    max-height:calc(100dvh - var(--app-safe-top) - 12px)!important;
+  }
+
+  .activityDetailSheet[open]{
+    max-height:calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 24px)!important;
+    overflow:auto!important;
+  }
+
+  .toast{
+    left:max(12px,var(--app-safe-left))!important;
+    right:max(12px,var(--app-safe-right))!important;
+  }
+
+  .updateBanner{
+    left:max(10px,var(--app-safe-left))!important;
+    right:max(10px,var(--app-safe-right))!important;
+  }
+
+  .authGate{
+    padding-left:max(14px,var(--app-safe-left))!important;
+    padding-right:max(14px,var(--app-safe-right))!important;
+  }
+
+  .launchScreen{
+    padding-left:max(22px,var(--app-safe-left))!important;
+    padding-right:max(22px,var(--app-safe-right))!important;
+  }
+}
