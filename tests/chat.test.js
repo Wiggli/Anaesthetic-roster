@@ -175,7 +175,8 @@ assert.match(globalShiftIdentityMigration, /generate_series\([\s\S]*interval '4 
 assert.match(globalShiftIdentityMigration, /set version=52/, 'schema 52 must advertise global shift identity semantics');
 assert.match(personalisationMigration, /set_shift_identity_v53[\s\S]*p_tagline[\s\S]*p_accent_key[\s\S]*p_symbol[\s\S]*p_avatar_path/, 'schema 53 must expose one guarded shared shift identity editor');
 assert.match(personalisationMigration, /shift-identity[\s\S]*is_shift_member\(\)/, 'shared shift artwork must remain private to authorised shift members');
-assert.match(chat, /shiftIdentityModel[\s\S]*chatTeamAvatar[\s\S]*identity\.photoUrl/, 'Team Chat must render the same shared shift artwork and identity metadata');
+assert.match(chat, /shiftIdentityModel[\s\S]*identity\.photoUrl/, 'Team Chat must consume the shared shift identity model including its private artwork URL');
+assert.match(chat, /chatTeamAvatar[\s\S]*avatarImage[\s\S]*identity\.photoUrl/, 'Team Chat must render shared shift artwork in the team avatar');
 assert.match(ui, /function nightTeamIdentityFor\(date\)[\s\S]*Object\.keys\(nightTeamIdentities\|\|\{\}\)[\s\S]*updated_at/, 'the browser must fall back to the newest shared identity even when an older offline snapshot contains only one date');
 assert.match(html, /Give your shift one shared name\.[\s\S]*across every roster night\./, 'the naming sheet must explain that the identity belongs to the shift rather than one night');
 assert.match(html, /id="nightTeamNameInput"[^>]*maxlength="28"/, 'the shift nickname editor must enforce the 28-character client limit');
