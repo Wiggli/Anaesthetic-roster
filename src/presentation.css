@@ -18686,3 +18686,506 @@ html[data-theme="dark"] #today .nightOverviewBoard{
     opacity:1!important;
   }
 }
+
+/* 43.2 final Chat composition.
+   Conversation content owns the hierarchy. Secondary controls stay compact and
+   the dark theme uses near-background surfaces instead of large grey slabs. */
+#chat .chatScreen{
+  gap:8px!important;
+}
+#chat .chatScreenHeader{
+  margin-bottom:4px!important;
+  padding-bottom:4px!important;
+}
+#chat .chatScreenHeader .primaryInstitution{
+  min-height:40px!important;
+  margin-bottom:2px!important;
+}
+#chat .chatTitleRow{
+  align-items:flex-start!important;
+  gap:12px!important;
+  margin-top:2px!important;
+}
+#chat .chatScreenHeader h1{
+  margin:0!important;
+  font-size:30px!important;
+  font-weight:740!important;
+  line-height:1!important;
+  letter-spacing:-.043em!important;
+}
+#chat .primaryConnectionLine{
+  min-height:18px!important;
+  margin-top:6px!important;
+  gap:5px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:12px!important;
+  font-weight:540!important;
+  line-height:1.3!important;
+}
+#chat .primaryConnectionLine .chatLiveDot{
+  order:-1!important;
+  width:6px!important;
+  height:6px!important;
+  margin:0 3px 0 0!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--liquid-success) 11%,transparent)!important;
+}
+#chat #chatLiveStatus{
+  color:var(--liquid-success)!important;
+  font-weight:650!important;
+}
+#chat .chatHeaderCompose{
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  flex:0 0 40px!important;
+  margin-top:1px!important;
+  padding:0!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 16%,var(--liquid-separator))!important;
+  border-radius:13px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 6%,var(--liquid-surface))!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+#chat .chatHeaderCompose span{
+  display:none!important;
+}
+#chat .chatHeaderCompose svg{
+  width:19px!important;
+  height:19px!important;
+}
+
+/* Editorial section headings with quiet rules rather than dashboard labels. */
+#chat .chatInboxHeading,
+#chat .chatInboxSectionLabel{
+  min-height:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin:0!important;
+  padding:0 1px 8px!important;
+  border:0!important;
+  background:transparent!important;
+}
+#chat .chatInboxHeading::after,
+#chat .chatInboxSectionLabel::after{
+  content:"";
+  min-width:20px;
+  height:1px;
+  flex:1;
+  background:color-mix(in srgb,var(--liquid-separator) 55%,transparent);
+}
+#chat .chatInboxHeading h2,
+#chat .chatInboxSectionLabel>span{
+  margin:0!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:720!important;
+  line-height:1.2!important;
+  letter-spacing:.055em!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+}
+#chat .chatInboxHeading small,
+#chat .chatInboxSectionLabel small{
+  display:none!important;
+}
+#chat .chatHome{
+  gap:17px!important;
+}
+#chat .chatInboxSection{
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* Team conversation: compact, dark and clearly tappable without looking like a slab. */
+#chat .chatInboxTeamRow{
+  position:relative!important;
+  min-height:72px!important;
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) auto!important;
+  grid-template-rows:auto!important;
+  grid-template-areas:"avatar copy unread"!important;
+  align-items:center!important;
+  gap:11px!important;
+  margin:0!important;
+  padding:11px 12px!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 66%,transparent)!important;
+  border-radius:16px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 78%,transparent)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+  text-align:left!important;
+}
+#chat .chatInboxTeamRow::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:2px;
+  background:color-mix(in srgb,var(--liquid-accent) 58%,transparent);
+  opacity:.72;
+}
+#chat .chatInboxTeamRow:active{
+  background:color-mix(in srgb,var(--liquid-accent) 5%,var(--liquid-surface))!important;
+}
+#chat .chatTeamAvatar{
+  grid-area:avatar!important;
+  width:42px!important;
+  height:42px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 17%,transparent)!important;
+  border-radius:13px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 8%,var(--liquid-surface))!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+}
+#chat .chatTeamAvatar svg{
+  width:23px!important;
+  height:23px!important;
+}
+#chat .chatInboxTeamCopy{
+  grid-area:copy!important;
+  display:grid!important;
+  min-width:0!important;
+  gap:3px!important;
+}
+#chat .chatInboxTeamTop{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:baseline!important;
+  gap:10px!important;
+}
+#chat .chatInboxTeamTop b{
+  overflow:hidden!important;
+  color:var(--liquid-label)!important;
+  font-size:15.5px!important;
+  font-weight:700!important;
+  line-height:1.18!important;
+  letter-spacing:-.018em!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#chat .chatInboxTeamTop time{
+  color:var(--liquid-tertiary)!important;
+  font-size:10px!important;
+  font-weight:540!important;
+  font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;
+}
+#chat .chatTeamPurpose{
+  display:none!important;
+}
+#chat .chatTeamMemberCount,
+#chat .chatInboxTeamPreview{
+  display:inline!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11.5px!important;
+  font-weight:520!important;
+  line-height:1.35!important;
+}
+#chat .chatTeamMemberCount{
+  white-space:nowrap!important;
+}
+#chat .chatTeamMemberCount::after{
+  content:" · ";
+}
+#chat .chatInboxTeamPreview{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#chat .chatInboxOpen{
+  display:none!important;
+}
+#chat #chatTeamUnread{
+  grid-area:unread!important;
+  align-self:center!important;
+  justify-self:end!important;
+}
+
+/* Private conversations share the same quiet geometry and keep metadata attached. */
+#chat .chatInboxSectionLabel{
+  margin-top:17px!important;
+}
+#chat .chatConversationList{
+  margin:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatInboxList{
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 62%,transparent)!important;
+  border-radius:16px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 70%,transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018)!important;
+}
+#chat .chatInboxListItem{
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 48%,transparent)!important;
+}
+#chat .chatInboxListItem:first-child{
+  border-top:0!important;
+}
+#chat .chatInboxRowModern{
+  width:100%!important;
+  min-height:68px!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:11px!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+#chat .chatInboxRowModern.hasUnread{
+  background:color-mix(in srgb,var(--liquid-accent) 3.5%,transparent)!important;
+}
+#chat .chatInboxAvatar{
+  display:grid!important;
+  width:40px!important;
+  height:40px!important;
+  place-items:center!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 13%,transparent)!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--liquid-accent) 7%,var(--liquid-surface))!important;
+  color:color-mix(in srgb,var(--liquid-info) 80%,var(--liquid-label))!important;
+  font-size:15px!important;
+  font-weight:720!important;
+}
+#chat .chatInboxRowCopy{
+  display:grid!important;
+  min-width:0!important;
+  gap:3px!important;
+}
+#chat .chatInboxRowCopy strong{
+  overflow:hidden!important;
+  color:var(--liquid-label)!important;
+  font-size:15.5px!important;
+  font-weight:690!important;
+  line-height:1.18!important;
+  letter-spacing:-.015em!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#chat .chatInboxRowModern.hasUnread .chatInboxRowCopy strong{
+  font-weight:740!important;
+}
+#chat .chatInboxRowCopy small{
+  overflow:hidden!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11.75px!important;
+  font-weight:510!important;
+  line-height:1.35!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#chat .chatInboxMeta{
+  display:grid!important;
+  min-width:42px!important;
+  justify-items:end!important;
+  align-self:stretch!important;
+  align-content:center!important;
+  gap:5px!important;
+}
+#chat .chatInboxMeta time{
+  color:var(--liquid-tertiary)!important;
+  font-size:10px!important;
+  font-weight:540!important;
+  font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;
+}
+#chat .chatConversationBadge,
+#chat .chatInboxUnread{
+  min-width:19px!important;
+  height:19px!important;
+  padding:0 5px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:var(--liquid-accent)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  font-size:9px!important;
+  font-weight:760!important;
+}
+
+/* Safety and Notifications form one secondary utility group. */
+#chat .chatUtilityGroup{
+  overflow:hidden!important;
+  margin-top:2px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 52%,transparent)!important;
+  border-radius:16px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 48%,transparent)!important;
+  box-shadow:none!important;
+}
+#chat .chatSafetyNotice{
+  width:100%!important;
+  min-height:49px!important;
+  display:grid!important;
+  grid-template-columns:22px minmax(0,1fr) 12px!important;
+  align-items:center!important;
+  gap:9px!important;
+  margin:0!important;
+  padding:8px 11px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--liquid-secondary)!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+#chat .chatSafetyNotice svg{
+  width:17px!important;
+  height:17px!important;
+  margin:0!important;
+  color:var(--liquid-warning)!important;
+  stroke:var(--liquid-warning)!important;
+}
+#chat .chatSafetyNotice b{
+  display:block!important;
+  color:var(--liquid-label)!important;
+  font-size:11.5px!important;
+  font-weight:650!important;
+  line-height:1.25!important;
+}
+#chat .chatSafetyNotice small{
+  display:block!important;
+  margin-top:2px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:9.75px!important;
+  font-weight:500!important;
+  line-height:1.3!important;
+}
+#chat .chatSafetyNotice>i{
+  color:var(--liquid-tertiary)!important;
+  font-size:17px!important;
+}
+#chat .chatNotificationDisclosure{
+  margin:0!important;
+  border:0!important;
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 48%,transparent)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatNotificationDisclosure>summary{
+  min-height:49px!important;
+  display:grid!important;
+  grid-template-columns:22px minmax(0,1fr) 12px!important;
+  align-items:center!important;
+  gap:9px!important;
+  padding:8px 11px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#chat .chatNotificationDisclosureIcon{
+  width:22px!important;
+  height:22px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--liquid-info)!important;
+}
+#chat .chatNotificationDisclosureIcon svg{
+  width:17px!important;
+  height:17px!important;
+}
+#chat .chatNotificationDisclosure>summary b{
+  display:block!important;
+  color:var(--liquid-label)!important;
+  font-size:11.5px!important;
+  font-weight:650!important;
+  line-height:1.25!important;
+}
+#chat .chatNotificationDisclosure>summary small{
+  display:block!important;
+  margin-top:2px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:9.75px!important;
+  font-weight:500!important;
+  line-height:1.3!important;
+}
+#chat .chatNotificationDisclosure>summary>i{
+  color:var(--liquid-tertiary)!important;
+  font-size:17px!important;
+}
+#chat .chatNotificationCard{
+  margin:0 9px 9px!important;
+  border-radius:13px!important;
+}
+
+/* Dark Chat surfaces stay close to the page background instead of turning grey. */
+body.dark #chat .chatInboxTeamRow,
+html[data-theme="dark"] #chat .chatInboxTeamRow{
+  border-color:rgba(255,255,255,.075)!important;
+  background:rgba(255,255,255,.028)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+body.dark #chat .chatInboxList,
+html[data-theme="dark"] #chat .chatInboxList{
+  border-color:rgba(255,255,255,.065)!important;
+  background:rgba(255,255,255,.018)!important;
+}
+body.dark #chat .chatUtilityGroup,
+html[data-theme="dark"] #chat .chatUtilityGroup{
+  border-color:rgba(255,255,255,.055)!important;
+  background:rgba(255,255,255,.012)!important;
+}
+body.dark #chat .chatTeamAvatar,
+body.dark #chat .chatInboxAvatar,
+html[data-theme="dark"] #chat .chatTeamAvatar,
+html[data-theme="dark"] #chat .chatInboxAvatar{
+  border-color:rgba(87,157,255,.14)!important;
+  background:rgba(41,112,212,.09)!important;
+}
+body.dark #chat .chatHeaderCompose,
+html[data-theme="dark"] #chat .chatHeaderCompose{
+  border-color:rgba(94,160,255,.14)!important;
+  background:rgba(63,128,221,.075)!important;
+}
+
+@media(max-width:390px){
+  #chat .chatScreenHeader h1{
+    font-size:29px!important;
+  }
+  #chat .chatInboxTeamRow{
+    grid-template-columns:40px minmax(0,1fr) auto!important;
+    padding-inline:10px!important;
+  }
+  #chat .chatTeamAvatar{
+    width:40px!important;
+    height:40px!important;
+  }
+  #chat .chatInboxRowModern{
+    grid-template-columns:38px minmax(0,1fr) auto!important;
+    padding-inline:10px!important;
+  }
+  #chat .chatInboxAvatar{
+    width:38px!important;
+    height:38px!important;
+  }
+  #chat .chatInboxTeamTop b,
+  #chat .chatInboxRowCopy strong{
+    font-size:15px!important;
+  }
+}
+@media(prefers-contrast:more){
+  #chat .chatInboxTeamRow,
+  #chat .chatInboxList,
+  #chat .chatUtilityGroup{
+    border-color:currentColor!important;
+  }
+}
