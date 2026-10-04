@@ -347,6 +347,23 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   expect(newPrivateChatSizing.scrollWidth).toBeLessThanOrEqual(newPrivateChatSizing.clientWidth + 1);
   await expect(page.locator('#chatTeamThread')).toHaveClass(/hidden/);
   await expect(page.locator('#chatSafetyInfo')).toContainText('Staff coordination only');
+  await expect(page.locator('.chatUtilityHeading')).toContainText('Chat essentials');
+  await expect(page.locator('#chatTeamUnread')).toHaveClass(/hidden/);
+  await expect(page.locator('#chatTeamUnread')).toHaveText('');
+  const chatPolishMetrics = await page.evaluate(() => {
+    const utility = document.querySelector('.chatUtilityGroup');
+    const safetyTitle = document.querySelector('.chatSafetyNotice b');
+    const identity = document.querySelector('.nightTeamIdentityContext');
+    if (identity) { identity.textContent = '✦ Night Owls'; identity.classList.remove('hidden'); }
+    return {
+      utilityRadius: utility ? parseFloat(getComputedStyle(utility).borderRadius) : 0,
+      safetyTitleSize: safetyTitle ? parseFloat(getComputedStyle(safetyTitle).fontSize) : 0,
+      identitySize: identity ? parseFloat(getComputedStyle(identity).fontSize) : 0
+    };
+  });
+  expect(chatPolishMetrics.utilityRadius).toBeGreaterThanOrEqual(20);
+  expect(chatPolishMetrics.safetyTitleSize).toBeGreaterThanOrEqual(15);
+  expect(chatPolishMetrics.identitySize).toBeGreaterThanOrEqual(12);
 
   await page.evaluate(() => {
     const chat = document.getElementById('chat');
