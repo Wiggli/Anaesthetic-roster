@@ -20,7 +20,8 @@ where exists (select 1 from latest)
 
 update public.night_team_identity
 set roster_date=(select min(v.effective_from)::date from public.rotation_versions v)
-where roster_date is distinct from (select min(v.effective_from)::date from public.rotation_versions v);
+where (select min(v.effective_from)::date from public.rotation_versions v) is not null
+  and roster_date is distinct from (select min(v.effective_from)::date from public.rotation_versions v);
 
 create or replace function public.set_night_team_identity_v51(
   p_roster_date date,
