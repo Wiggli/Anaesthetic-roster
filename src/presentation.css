@@ -20974,3 +20974,29 @@ body.headerCompact[data-view="today"] #today .nightUnifiedHero #appHeader .head{
     animation:none!important;
   }
 }
+
+.accountBtn,
+.primaryHeaderAccount{
+  position:relative!important;
+  overflow:visible!important;
+}
+.accountUtilityBadge{
+  position:absolute!important;
+  top:-2px!important;
+  right:-2px!important;
+  z-index:4!important;
+  min-width:17px!important;
+  height:17px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0 4px!important;
+  border:2px solid var(--liquid-surface)!important;
+  border-radius:999px!important;
+  background:var(--liquid-danger,#ff3b30)!important;
+  color:#fff!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  box-shadow:0 2px 6px rgba(0,0,0,.16)!important;
+}
+.accountUtilityBadge.hidden{display:none!important;}
