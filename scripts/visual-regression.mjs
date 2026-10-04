@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pixelmatch from 'pixelmatch';
-import { PNG } from 'pngjs';
+import pngjs from 'pngjs';
+const { PNG } = pngjs;
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const baselineDir = process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, 'visual-baseline');
@@ -65,7 +66,7 @@ for (const name of config.snapshots || []) {
     includeAA: false
   });
   const ratio = changed / Math.max(1, after.width * after.height);
-  if (changed) PNG.sync.write(diff).length && fs.writeFileSync(path.join(diffDir, name), PNG.sync.write(diff));
+  if (changed) fs.writeFileSync(path.join(diffDir, name), PNG.sync.write(diff));
   const approved = allowedForRelease.has(name);
   if (ratio > maxRatio && !approved) {
     console.error(`::error::Visual regression in ${name}: ${(ratio * 100).toFixed(2)}% of pixels changed, limit ${(maxRatio * 100).toFixed(2)}%.`);
