@@ -1,13 +1,12 @@
 {
-  "version": "44.0",
+  "version": "44.1",
   "date": "4 October 2026",
-  "title": "Introduce Personalisation Studio",
-  "summary": "Night Roster now has a dedicated Me and Our Shift studio for polished personal identity, accessibility preferences and a richer shared shift brand without altering clinical meaning.",
+  "title": "Polish shift identity and review readability",
+  "summary": "Shift identity now keeps its personality without sacrificing readability, while the pending seventh-nurse review is clearer and easier to act on.",
   "changes": [
-    "Account now includes a dedicated Me and Our Shift Personalisation Studio with live identity previews instead of scattered cosmetic settings.",
-    "Members can personalise their avatar style, preferred name, professional title, accent, text size, motion and greeting while verified roster identity and clinical colours remain protected.",
-    "The whole shift can share one name, optional tagline, symbol, accent and private team picture across Night and Team Chat.",
-    "Shift images are restricted to authorised shift members, personal photos remain private to their owner, and generated identity fallbacks keep the app polished without requiring uploads."
+    "Shared shift names now use neutral high-contrast text, while the chosen shift accent is reserved for the icon, border and subtle surface tint.",
+    "Team Chat gives the shared shift icon a fixed identity stage and more breathing room so the icon can never crowd the shift name on phone screens.",
+    "Pending seventh-nurse review cards now use dark primary copy with amber only as an emphasis cue, fixing the washed-out yellow text."
   ],
-  "update_policy": "important"
+  "update_policy": "normal"
 }
