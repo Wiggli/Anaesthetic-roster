@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V43.5 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V44.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -65,6 +65,9 @@ var releaseNotesQueued=false;
 var pendingProfilePhoto=null;
 var pendingProfilePhotoUrl='';
 var profileSavedSignature='';
+var shiftAvatarUrl='';
+var pendingShiftPhoto=null;
+var pendingShiftPhotoUrl='';
 var launchStartedAt=Date.now();
 var launchFinished=false;
 var launchSlowTimer=null;
@@ -89,6 +92,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"44.0","date":"4 October 2026","title":"Introduce Personalisation Studio","changes":["Account now includes a dedicated Me and Our Shift Personalisation Studio with live identity previews instead of scattered cosmetic settings.","Members can personalise their own avatar style, preferred name, professional title, accent, text size, motion and greeting while verified roster identity and clinical colours stay protected.","The whole shift can share one name, optional tagline, symbol, accent and private team picture across Night and Team Chat.","Shift images are restricted to authorised shift members, personal photos remain private to their owner, and generated identity fallbacks keep the app polished without requiring uploads."],"policy":"important"},
   {"version":"43.5","date":"4 October 2026","title":"Make shift identity persistent and more distinctive","changes":["The shared shift name now belongs to the team rather than one roster date, so it stays visible when moving between every published night.","Existing shift names are carried forward automatically and the database now treats rename or removal as one global team identity while retaining the guarded shared-write and audit protections.","The Night header gives the shift identity a richer glass badge with a dedicated identity mark, stronger typography, depth and a subtle reveal without competing with the selected date.","Changes, Breaks and Chat continue to use the same shared identity, while the naming sheet now explains clearly that the name applies across every roster night."],"policy":"normal"},
   {"version":"43.4","date":"4 October 2026","title":"Give Chat and shift identity a premium visual hierarchy","changes":["Team Chat is promoted into a richer featured conversation surface with a larger team icon, stronger shift title, cleaner metadata and more deliberate depth.","Chat essentials are rebuilt as one premium glass surface with generous safety and notification rows, larger icons, clearer typography and better touch targets.","Zero unread counts are never rendered as badges; unread indicators now appear only when there is something that genuinely needs attention.","Direct messages gain larger avatars, names and previews with improved spacing so the inbox feels more confident and easier to scan on a night shift.","Shared shift names are larger and more distinctive across Night, Changes, Breaks and Chat, using one consistent identity treatment without overpowering clinical information."],"policy":"normal"},
   {"version":"43.3","date":"4 October 2026","title":"Rebuild Chat around the night team","changes":["Chat is rebuilt around one compact conversation language: Team Chat and direct messages now share aligned avatars, names, previews, timestamps and unread states without oversized dashboard cards.","The header and selected-night context are tighter and calmer, while safety guidance and notification preferences move into a quiet footer so conversations remain the primary task.","Any roster member can give the selected shift a shared nickname of up to 28 characters; the name is stored per roster night, synchronises across devices and can be renamed or removed.","A shift nickname becomes the Team Chat identity and also appears subtly beside the selected night in Night, Changes and Breaks, while Anaesthetic Team remains visible as the clinical context.","Shared shift-name writes are protected by the existing authenticated compatibility boundary, audited server-side, included in startup and offline snapshots, and propagated through shared revision and realtime updates."],"policy":"normal"},
@@ -355,19 +359,56 @@ function nightTeamIdentityFor(date){
   });
   return best
 }
+var PERSONAL_ACCENT_COLOURS={teal:'#0a8f88',blue:'#3478f6',violet:'#7c5ce5',rose:'#d85d86',amber:'#c77b16',graphite:'#687078'};
+function normaliseAccentKey(value){value=String(value||'teal').toLowerCase();return PERSONAL_ACCENT_COLOURS[value]?value:'teal'}
+function accentColourFor(value){return PERSONAL_ACCENT_COLOURS[normaliseAccentKey(value)]}
+function shiftSymbolGlyph(value){return{spark:'✦',moon:'☾',cross:'✚',diamond:'◆',dot:'●',star:'★'}[String(value||'spark')]||'✦'}
+window.shiftSymbolGlyph=shiftSymbolGlyph;
+function identityInitials(value){
+  var words=String(value||'').trim().split(/\s+/).filter(Boolean);
+  if(!words.length)return'AT';
+  if(words.length===1)return words[0].slice(0,2).toUpperCase();
+  return(words[0].charAt(0)+words[words.length-1].charAt(0)).toUpperCase()
+}
 function nightTeamNickname(date){
   var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
   return value.slice(0,28)
 }
 window.nightTeamNickname=nightTeamNickname;
+function shiftIdentityModel(date){
+  var row=nightTeamIdentityFor(date),name=nightTeamNickname(date)||'Anaesthetic Team';
+  return{name:name,tagline:row&&row.tagline||'',avatarPath:row&&row.avatar_path||'',accentKey:normaliseAccentKey(row&&row.accent_key),symbol:row&&row.symbol||'spark',initials:identityInitials(name),updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||'',photoUrl:shiftAvatarUrl}
+}
+window.shiftIdentityModel=shiftIdentityModel;
+window.shiftIdentityPhotoUrl=function(){return shiftAvatarUrl};
+async function refreshShiftAvatar(){
+  shiftAvatarUrl='';
+  var row=nightTeamIdentityFor(cur&&cur().date),path=row&&row.avatar_path;
+  if(path&&supa&&currentUser&&navigator.onLine!==false){
+    try{var result=await supa.storage.from('shift-identity').createSignedUrl(path,3600);if(!result.error&&result.data)shiftAvatarUrl=result.data.signedUrl||''}catch(error){}
+  }
+  return shiftAvatarUrl
+}
+window.refreshShiftAvatar=refreshShiftAvatar;
 function renderNightTeamIdentityContext(date){
-  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date);
+  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date),model=shiftIdentityModel(date);
   Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
     node.classList.toggle('hidden',!nickname);
-    node.textContent=nickname||'';
-    node.title=nickname?(row&&row.updated_by?'Shift name · shared across every roster night · updated by '+row.updated_by:'Shift name · shared across every roster night'):'';
+    node.dataset.shiftAccent=model.accentKey;
+    node.style.setProperty('--shift-identity-accent',accentColourFor(model.accentKey));
+    node.textContent='';
+    if(nickname){
+      var mark=document.createElement('span');mark.className='shiftIdentityMark';
+      if(shiftAvatarUrl){var image=document.createElement('img');image.src=shiftAvatarUrl;image.alt='';mark.appendChild(image)}
+      else mark.textContent=shiftSymbolGlyph(model.symbol);
+      var copy=document.createElement('span');copy.className='shiftIdentityCopy';
+      var strong=document.createElement('strong');strong.textContent=nickname;copy.appendChild(strong);
+      if(model.tagline){var small=document.createElement('small');small.textContent=model.tagline;copy.appendChild(small)}
+      node.appendChild(mark);node.appendChild(copy);
+    }
+    node.title=nickname?(row&&row.updated_by?'Shift identity · shared across every roster night · updated by '+row.updated_by:'Shift identity · shared across every roster night'):'';
   });
-  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||''}}))
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,tagline:model.tagline,accentKey:model.accentKey,symbol:model.symbol,photoUrl:shiftAvatarUrl,updatedBy:model.updatedBy,updatedAt:model.updatedAt}}))
 }
 
 async function requestStartupSnapshot(){
@@ -631,8 +672,8 @@ function finishLaunch(ready){
     return
   }
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.recovery){window.AnaestheticRuntime.recovery.markReady();runtimeRecoveryStatus=window.AnaestheticRuntime.recovery.status()}
-  var name=privateProfileName()||currentUserProfile&&currentUserProfile.display_name||'';
-  setLaunchState(name?'Welcome back, '+name:'Your night is ready',navigator.onLine&&!forcedOfflineSession?'Everything is ready.':'Showing the last saved roster');
+  var name=privateProfileName()||currentUserProfile&&currentUserProfile.display_name||'',greeting=!currentPrivateProfile||currentPrivateProfile.greeting_enabled!==false;
+  setLaunchState(greeting&&name?'Welcome back, '+name:'Your night is ready',navigator.onLine&&!forcedOfflineSession?'Everything is ready.':'Showing the last saved roster');
   screen.classList.add('ready');screen.setAttribute('aria-busy','false');document.body.classList.add('appRevealing');launchFinished=true;
   var hold=motion?320:0,fade=motion?520:20;
   setTimeout(function(){screen.classList.add('dismissed')},hold);
@@ -711,6 +752,21 @@ async function signInWithPasskey(){
 }
 
 function privateProfileName(){return currentPrivateProfile&&currentPrivateProfile.profile_name||currentUserProfile&&currentUserProfile.display_name||''}
+function profileInitialText(name){
+  var words=String(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!words.length)return'?';
+  if(words.length===1)return words[0].slice(0,2).toUpperCase();
+  return(words[0].charAt(0)+words[words.length-1].charAt(0)).toUpperCase()
+}
+function profileAvatarStyle(){var value=currentPrivateProfile&&currentPrivateProfile.avatar_style||'photo';return['photo','monogram','spark'].indexOf(value)>=0?value:'photo'}
+function applyPersonalProfilePreferences(){
+  var profile=currentPrivateProfile||{},accent=normaliseAccentKey(profile.accent_key),scale=['standard','large','xlarge'].indexOf(profile.text_scale)>=0?profile.text_scale:'standard',motion=profile.motion_pref==='reduced'?'reduced':'system';
+  document.documentElement.style.setProperty('--personal-accent',accentColourFor(accent));
+  document.body.setAttribute('data-personal-accent',accent);
+  document.body.setAttribute('data-text-scale',scale);
+  document.body.classList.toggle('personalMotionReduced',motion==='reduced');
+}
+window.applyPersonalProfilePreferences=applyPersonalProfilePreferences;
 
 async function refreshProfileAvatar(){
   profileAvatarUrl='';var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;
@@ -719,19 +775,27 @@ async function refreshProfileAvatar(){
 }
 
 function applyProfileIdentity(){
-  if(!currentUserProfile)return;var name=privateProfileName(),initial=(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),headerImage=byId('accountAvatar'),headerInitial=byId('accountInitial'),previewUrl=pendingProfilePhotoUrl||profileAvatarUrl;
-  headerInitial.textContent=initial;headerImage.classList.toggle('hidden',!profileAvatarUrl);headerInitial.classList.toggle('hidden',!!profileAvatarUrl);if(profileAvatarUrl)headerImage.src=profileAvatarUrl;
-  byId('accountBtn').title=name+' · Open account';syncPrimaryHeaderActions();var preview=byId('profilePhotoPreview'),previewInitial=byId('profilePhotoInitial');if(preview){preview.classList.toggle('hidden',!previewUrl);previewInitial.classList.toggle('hidden',!!previewUrl);previewInitial.textContent=initial;if(previewUrl)preview.src=previewUrl}var remove=byId('removeProfilePhoto');if(remove){remove.classList.toggle('hidden',!profileAvatarUrl&&!pendingProfilePhoto);remove.textContent=pendingProfilePhoto?'Cancel':'Remove'}
+  if(!currentUserProfile)return;
+  var name=privateProfileName(),style=profileAvatarStyle(),fallback=style==='spark'?'✦':profileInitialText(name||currentUserProfile.display_name||currentUserProfile.email||'?'),headerImage=byId('accountAvatar'),headerInitial=byId('accountInitial'),previewUrl=pendingProfilePhotoUrl||profileAvatarUrl,showPhoto=style==='photo'&&!!profileAvatarUrl;
+  headerInitial.textContent=fallback;headerImage.classList.toggle('hidden',!showPhoto);headerInitial.classList.toggle('hidden',showPhoto);if(showPhoto)headerImage.src=profileAvatarUrl;
+  byId('accountBtn').title=name+' · Open account';byId('accountBtn').style.setProperty('--personal-accent',accentColourFor(currentPrivateProfile&&currentPrivateProfile.accent_key));syncPrimaryHeaderActions();
+  var preview=byId('profilePhotoPreview'),previewInitial=byId('profilePhotoInitial'),showPreview=style==='photo'&&!!previewUrl;
+  if(preview){preview.classList.toggle('hidden',!showPreview);previewInitial.classList.toggle('hidden',showPreview);previewInitial.textContent=fallback;if(showPreview)preview.src=previewUrl}
+  var remove=byId('removeProfilePhoto');if(remove){remove.classList.toggle('hidden',!profileAvatarUrl&&!pendingProfilePhoto);remove.textContent=pendingProfilePhoto?'Cancel photo':'Remove photo'}
+  var homeAvatar=byId('accountHomeAvatar');if(homeAvatar)homeAvatar.textContent=fallback;
+  applyPersonalProfilePreferences()
 }
 
 async function loadOwnProfile(){
-  if(!currentUser)return;var result=await supa.from('user_profiles').select('user_id,profile_name,job_title,avatar_path,updated_at').eq('user_id',currentUser.id).maybeSingle();
-  if(result.error){profileFeatureAvailable=false;currentPrivateProfile=null;return}profileFeatureAvailable=true;currentPrivateProfile=result.data||{user_id:currentUser.id,profile_name:'',job_title:'',avatar_path:null};await refreshProfileAvatar();
+  if(!currentUser)return;var result=await supa.from('user_profiles').select('user_id,profile_name,job_title,avatar_path,accent_key,text_scale,motion_pref,avatar_style,greeting_enabled,updated_at').eq('user_id',currentUser.id).maybeSingle();
+  if(result.error){profileFeatureAvailable=false;currentPrivateProfile=null;applyPersonalProfilePreferences();return}
+  profileFeatureAvailable=true;currentPrivateProfile=result.data||{user_id:currentUser.id,profile_name:'',job_title:'',avatar_path:null,accent_key:'teal',text_scale:'standard',motion_pref:'system',avatar_style:'photo',greeting_enabled:true};
+  await refreshProfileAvatar();applyPersonalProfilePreferences();
 }
 
 function showProfileMessage(message,type){var el=byId('profileMessage');if(!el)return;el.textContent=message||'';el.className='formMessage'+(type?' '+type:'')}
 
-function profileDraftSignature(){return JSON.stringify([(byId('profileName')&&byId('profileName').value||'').trim(),(byId('profileJobTitle')&&byId('profileJobTitle').value||'').trim(),byId('profileRosterName')&&byId('profileRosterName').value||''])}
+function profileDraftSignature(){return JSON.stringify([(byId('profileName')&&byId('profileName').value||'').trim(),(byId('profileJobTitle')&&byId('profileJobTitle').value||'').trim(),byId('profileRosterName')&&byId('profileRosterName').value||'',byId('profileAccentKey')&&byId('profileAccentKey').value||'teal',byId('profileTextScale')&&byId('profileTextScale').value||'standard',byId('profileMotionPref')&&byId('profileMotionPref').value||'system',byId('profileAvatarStyle')&&byId('profileAvatarStyle').value||'photo',byId('profileGreetingEnabled')&&byId('profileGreetingEnabled').value||'1'])}
 
 function updateProfileSaveState(){var button=byId('saveProfileBtn');if(!button)return;var changed=!!pendingProfilePhoto||profileDraftSignature()!==profileSavedSignature;button.classList.toggle('hidden',!changed);if(changed&&byId('profileMessage').classList.contains('success')&&!pendingProfilePhoto)showProfileMessage('')}
 
@@ -745,7 +809,7 @@ function prepareAccountInformationArchitecture(){
   var home=byId('accountHomeHub');
   if(!home){
     home=document.createElement('section');home.id='accountHomeHub';home.className='accountHomeHub';
-    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Profile</b><small>Your name, photo and roster highlight</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button></div>';
+    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Personalise</b><small>Your identity and your shared shift look</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button></div>';
     scroll.insertBefore(home,scroll.firstChild);
     var signOut=byId('accountSignOutBtn'),version=byId('accountVersion');if(signOut)home.appendChild(signOut);if(version)home.appendChild(version);
     Array.prototype.forEach.call(home.querySelectorAll('[data-account-section]'),function(button){button.onclick=function(){showAccountSection(button.getAttribute('data-account-section'))}});
@@ -756,7 +820,7 @@ function prepareAccountInformationArchitecture(){
 }
 function showAccountSection(section){
   prepareAccountInformationArchitecture();var home=byId('accountHomeHub'),back=byId('accountBackBtn'),title=byId('accountSheetTitle'),eyebrow=byId('accountSheetEyebrow')||document.querySelector('#accountSheet .accountSheetHeader>div>span');
-  var labels={profile:'Profile',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
+  var labels={profile:'Personalise',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
   if(home)home.classList.toggle('hidden',!!target);Array.prototype.forEach.call(document.querySelectorAll('#accountSheet [data-account-pane]'),function(pane){pane.classList.toggle('hidden',pane!==target)});
   if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'Account';if(eyebrow)eyebrow.textContent=target?'Account':'Profile & preferences';
   var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0
@@ -764,11 +828,17 @@ function showAccountSection(section){
 
 function populateAccountSheet(){
   prepareAccountInformationArchitecture();
-  var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName();
-  profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'']);
-  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar');if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=(name||currentUserProfile.display_name||currentUserProfile.email||'?').charAt(0).toUpperCase();
-  showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
-  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.',messageType:profileFeatureAvailable?'':'error',changed:false}}}));
+  var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName(),shift=shiftIdentityModel(cur&&cur().date);
+  profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'',profile.accent_key||'teal',profile.text_scale||'standard',profile.motion_pref||'system',profile.avatar_style||'photo',profile.greeting_enabled===false?'0':'1']);
+  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');
+  var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar');
+  if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=profile.avatar_style==='spark'?'✦':profileInitialText(name||currentUserProfile.display_name||currentUserProfile.email||'?');
+  showProfileMessage(profileFeatureAvailable?'':'Personal profile storage is not available yet.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{
+    theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,
+    profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:profileInitialText(name||currentUserProfile.email||'?'),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Personal profile storage is not available yet.',messageType:profileFeatureAvailable?'':'error',changed:false,accentKey:normaliseAccentKey(profile.accent_key),textScale:['standard','large','xlarge'].indexOf(profile.text_scale)>=0?profile.text_scale:'standard',motionPref:profile.motion_pref==='reduced'?'reduced':'system',avatarStyle:profileAvatarStyle(),greetingEnabled:profile.greeting_enabled!==false},
+    shift:{name:shift.name,tagline:shift.tagline,accentKey:shift.accentKey,symbol:shift.symbol,initials:shift.initials,photoUrl:pendingShiftPhotoUrl||shiftAvatarUrl||'',pendingPhoto:!!pendingShiftPhoto,featureAvailable:!!(rosterCapabilities().personalisationStudio&&!forcedOfflineSession),updatedBy:shift.updatedBy||'',message:'',messageType:''}
+  }}));
 }
 
 async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();showAccountSection('home');if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
@@ -789,14 +859,64 @@ function photoBlob(file){
 async function chooseProfilePhoto(file){try{pendingProfilePhoto=await photoBlob(file);if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl=URL.createObjectURL(pendingProfilePhoto);applyProfileIdentity();var onboardingPhoto=byId('onboardingPhotoBtn');if(onboardingPhoto)onboardingPhoto.innerHTML='<img id="onboardingPhotoPreview" src="'+esc(pendingProfilePhotoUrl)+'" alt=""><i aria-hidden="true">+</i>';updateProfileSaveState();showProfileMessage('Photo ready to save.','success')}catch(error){showProfileMessage(error.message,'error')}}
 
 async function saveProfile(){
-  if(!requireOnline())return;if(!profileFeatureAvailable){showProfileMessage('Run the V32 profile database upgrade first.','error');return}var button=byId('saveProfileBtn'),name=byId('profileName').value.trim(),title=byId('profileJobTitle').value.trim(),rosterName=byId('profileRosterName').value,path=currentPrivateProfile&&currentPrivateProfile.avatar_path||null;button.disabled=true;button.textContent='Saving…';showProfileMessage('Saving your profile…','');
-  try{if(pendingProfilePhoto){path=currentUser.id+'/avatar.jpg';var uploaded=await supa.storage.from('profile-photos').upload(path,pendingProfilePhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}var result=await supa.from('user_profiles').upsert({user_id:currentUser.id,profile_name:name||null,job_title:title||null,avatar_path:path,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select().single();if(result.error)throw result.error;currentPrivateProfile=result.data;pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';if(rosterName)appStorage.setItem('anaes_my_name',rosterName);else appStorage.removeItem('anaes_my_name');profileSavedSignature=profileDraftSignature();await refreshProfileAvatar();render();updateProfileSaveState();showProfileMessage('Your profile has been saved.','success');toast('Profile saved')}
-  catch(error){showProfileMessage('Your profile could not be saved. Check your connection and try again.','error')}
-  finally{button.disabled=false;button.textContent='Save profile';updateProfileSaveState()}
+  if(!requireOnline())return;if(!profileFeatureAvailable){showProfileMessage('Personal profile storage is not available yet.','error');return}
+  var button=byId('saveProfileBtn'),name=byId('profileName').value.trim(),title=byId('profileJobTitle').value.trim(),rosterName=byId('profileRosterName').value,path=currentPrivateProfile&&currentPrivateProfile.avatar_path||null,accent=normaliseAccentKey(byId('profileAccentKey')&&byId('profileAccentKey').value),textScale=byId('profileTextScale')&&byId('profileTextScale').value||'standard',motionPref=byId('profileMotionPref')&&byId('profileMotionPref').value||'system',avatarStyle=byId('profileAvatarStyle')&&byId('profileAvatarStyle').value||'photo',greetingEnabled=!(byId('profileGreetingEnabled')&&byId('profileGreetingEnabled').value==='0');
+  if(['standard','large','xlarge'].indexOf(textScale)<0)textScale='standard';if(['system','reduced'].indexOf(motionPref)<0)motionPref='system';if(['photo','monogram','spark'].indexOf(avatarStyle)<0)avatarStyle='photo';
+  button.disabled=true;button.textContent='Saving…';showProfileMessage('Saving your personalisation…','');
+  try{
+    if(pendingProfilePhoto){path=currentUser.id+'/avatar.jpg';var uploaded=await supa.storage.from('profile-photos').upload(path,pendingProfilePhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}
+    var result=await supa.from('user_profiles').upsert({user_id:currentUser.id,profile_name:name||null,job_title:title||null,avatar_path:path,accent_key:accent,text_scale:textScale,motion_pref:motionPref,avatar_style:avatarStyle,greeting_enabled:greetingEnabled,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select().single();
+    if(result.error)throw result.error;currentPrivateProfile=result.data;pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';
+    if(rosterName)appStorage.setItem('anaes_my_name',rosterName);else appStorage.removeItem('anaes_my_name');
+    profileSavedSignature=profileDraftSignature();await refreshProfileAvatar();applyPersonalProfilePreferences();render();updateProfileSaveState();showProfileMessage('Your personalisation has been saved.','success');toast('Personalisation saved')
+  }catch(error){showProfileMessage('Your personalisation could not be saved. Check your connection and try again.','error')}
+  finally{button.disabled=false;button.textContent='Save my personalisation';updateProfileSaveState()}
 }
 
 async function removeProfilePhoto(){
   if(!profileFeatureAvailable)return;if(pendingProfilePhoto){pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';applyProfileIdentity();updateProfileSaveState();showProfileMessage('Photo change cancelled.');return}var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;if(path){var removed=await supa.storage.from('profile-photos').remove([path]);if(removed.error){showProfileMessage('The photo could not be removed.','error');return}var updated=await supa.from('user_profiles').update({avatar_path:null,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);if(updated.error){showProfileMessage('The photo record could not be updated.','error');return}currentPrivateProfile.avatar_path=null}profileAvatarUrl='';applyProfileIdentity();updateProfileSaveState();render();showProfileMessage('Profile photo removed.','success')
+}
+
+function showShiftStudioMessage(message,type){var el=byId('shiftStudioMessage');if(!el)return;el.textContent=message||'';el.className='formMessage'+(type?' '+type:'')}
+function updateShiftStudioPhotoPreview(url,row){
+  var wrap=byId('shiftStudioPhotoPreviewWrap');if(!wrap)return;wrap.textContent='';
+  if(url){var image=document.createElement('img');image.id='shiftStudioPhotoPreview';image.src=url;image.alt='Shift identity';wrap.appendChild(image)}
+  else{var fallback=document.createElement('b');fallback.id='shiftStudioPhotoFallback';fallback.textContent=shiftSymbolGlyph(row&&row.symbol||'spark');wrap.appendChild(fallback)}
+  var remove=byId('removeShiftPhotoBtn');if(remove){remove.classList.toggle('hidden',!url&&!pendingShiftPhoto);remove.textContent=pendingShiftPhoto?'Cancel picture':'Remove picture'}
+}
+async function chooseShiftPhoto(file){
+  try{
+    pendingShiftPhoto=await photoBlob(file);if(pendingShiftPhotoUrl)URL.revokeObjectURL(pendingShiftPhotoUrl);pendingShiftPhotoUrl=URL.createObjectURL(pendingShiftPhoto);
+    updateShiftStudioPhotoPreview(pendingShiftPhotoUrl,nightTeamIdentityFor(cur().date));var save=byId('saveShiftPersonalisationBtn');if(save)save.classList.remove('hidden');showShiftStudioMessage('Picture ready to share with the shift.','success')
+  }catch(error){showShiftStudioMessage(error.message,'error')}
+}
+async function saveShiftPersonalisation(){
+  if(!requireOnline())return;if(!rosterCapabilities().personalisationStudio){showShiftStudioMessage('Update Night Roster before changing shared shift styling.','error');return}
+  if(sharedWritesBlocked()){showShiftStudioMessage('Update Night Roster before changing the shared shift identity.','error');return}
+  var button=byId('saveShiftPersonalisationBtn'),name=String(byId('shiftStudioName')&&byId('shiftStudioName').value||'').trim().replace(/\s+/g,' '),tagline=String(byId('shiftStudioTagline')&&byId('shiftStudioTagline').value||'').trim().replace(/\s+/g,' '),accent=normaliseAccentKey(byId('shiftStudioAccentKey')&&byId('shiftStudioAccentKey').value),symbol=String(byId('shiftStudioSymbol')&&byId('shiftStudioSymbol').value||'spark'),row=nightTeamIdentityFor(cur().date),avatarPath=row&&row.avatar_path||null;
+  if(!name||name.length>28){showShiftStudioMessage('Choose a shift name up to 28 characters.','error');return}if(tagline.length>56){showShiftStudioMessage('Keep the tagline to 56 characters or fewer.','error');return}
+  if(['spark','moon','cross','diamond','dot','star'].indexOf(symbol)<0)symbol='spark';
+  if(button){button.disabled=true;button.textContent='Saving…'}showShiftStudioMessage('Saving for everyone…','');
+  try{
+    if(pendingShiftPhoto){avatarPath='shift/avatar.jpg';var uploaded=await supa.storage.from('shift-identity').upload(avatarPath,pendingShiftPhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}
+    var result=await supa.rpc('set_shift_identity_v53',{p_nickname:name,p_tagline:tagline,p_accent_key:accent,p_symbol:symbol,p_avatar_path:avatarPath,p_client_version:APP_VERSION});
+    if(result.error)throw result.error;
+    pendingShiftPhoto=null;if(pendingShiftPhotoUrl)URL.revokeObjectURL(pendingShiftPhotoUrl);pendingShiftPhotoUrl='';
+    await loadSharedData({background:true});await refreshShiftAvatar();renderNightTeamIdentityContext(cur().date);if(window.chatRefreshCurrentContext)window.chatRefreshCurrentContext();
+    updateShiftStudioPhotoPreview(shiftAvatarUrl,nightTeamIdentityFor(cur().date));showShiftStudioMessage('Shared shift identity saved.','success');if(button)button.classList.add('hidden');toast('Shift identity updated for everyone')
+  }catch(error){recordAppDiagnostic('team-identity','personalise',error&&error.code||'failed');showShiftStudioMessage('The shared shift identity could not be saved. Try again.','error')}
+  finally{if(button){button.disabled=false;button.textContent='Save for everyone'}}
+}
+async function removeShiftPhoto(){
+  var row=nightTeamIdentityFor(cur().date);
+  if(pendingShiftPhoto){pendingShiftPhoto=null;if(pendingShiftPhotoUrl)URL.revokeObjectURL(pendingShiftPhotoUrl);pendingShiftPhotoUrl='';updateShiftStudioPhotoPreview(shiftAvatarUrl,row);showShiftStudioMessage('Picture change cancelled.');return}
+  if(!row||!row.avatar_path)return;if(!confirm('Remove the shared shift picture for everyone?'))return;
+  if(sharedWritesBlocked()||!requireOnline())return;
+  try{
+    var removed=await supa.storage.from('shift-identity').remove([row.avatar_path]);if(removed.error)throw removed.error;
+    var result=await supa.rpc('set_shift_identity_v53',{p_nickname:row.nickname,p_tagline:row.tagline||'',p_accent_key:normaliseAccentKey(row.accent_key),p_symbol:row.symbol||'spark',p_avatar_path:null,p_client_version:APP_VERSION});if(result.error)throw result.error;
+    await loadSharedData({background:true});shiftAvatarUrl='';renderNightTeamIdentityContext(cur().date);updateShiftStudioPhotoPreview('',nightTeamIdentityFor(cur().date));showShiftStudioMessage('Shared shift picture removed.','success');toast('Shift picture removed')
+  }catch(error){showShiftStudioMessage('The shared shift picture could not be removed.','error')}
 }
 
 async function loadPasskeys(){
