@@ -154,6 +154,13 @@ function updateAdminAttentionBadge(){
   if(pending)details.push(pending+' access request'+(pending===1?'':'s'));
   if(publicationDue)details.push('roster publication');
   button.setAttribute('aria-label',count?'Administrator tools · '+details.join(', '):'Administrator tools');
+  Array.prototype.forEach.call(document.querySelectorAll('#accountBtn,[data-shell-account]'),function(accountButton){
+    var accountBadge=accountButton.querySelector('.accountUtilityBadge');
+    if(!accountBadge){accountBadge=document.createElement('span');accountBadge.className='accountUtilityBadge hidden';accountBadge.setAttribute('aria-hidden','true');accountButton.appendChild(accountBadge)}
+    accountBadge.textContent=count>9?'9+':String(count);
+    accountBadge.classList.toggle('hidden',!count);
+    accountButton.setAttribute('aria-label',count?'Open account · '+details.join(', '):'Open account')
+  });
   syncAppBadge();
 }
 function renderAdminHealth(){
