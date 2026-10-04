@@ -56,9 +56,9 @@ assert.match(html, new RegExp(`chat\\.js\\?v=${releaseVersionPattern}`), 'chat c
 assert.match(ui, /function featureEducationPage\(key\)[\s\S]*if\(key==='chat'\)[\s\S]*Team chat, when you need it\./, 'Chat must retain a dedicated contextual education page');
 assert.match(ui, /roster:viewchange[\s\S]*showFeatureEducation\(view,false\)/, 'Chat education must be triggered contextually when the user opens the view');
 assert.match(ui, /anaes_chat_intro_v37_31/, 'the contextual Chat education must preserve the earlier one-time device marker for compatibility');
-assert.match(ui, /markEducationSeen\(key,1\)/, 'completed feature education must be recorded once per device');
-assert.doesNotMatch(ui.slice(ui.indexOf('function onboardingPages'), ui.indexOf('function bindGuideActions')), /featureEducationPage\('chat'\)|onboardingChatPage\(\)/, 'new users must not receive a separate Chat training page during first-use onboarding');
-assert.match(ui, /Anaesthetic Team reaches everyone on tonight’s roster/, 'Chat education must explain the team audience in plain language');
+assert.match(ui, /markEducationSeen\(key,educationVersion\(key\)\)/, 'completed feature education must record the current education generation once per device');
+assert.match(ui.slice(ui.indexOf('function onboardingPages'), ui.indexOf('function bindGuideActions')), /featureEducationPage\('chat'\)/, 'the complete first-use tutorial must include the current Team Chat lesson');
+assert.match(ui, /Team chat reaches everyone on tonight’s roster/, 'Chat education must explain the team audience in plain language');
 assert.match(ui, /Chat never changes the roster\.[\s\S]*Changes/, 'Chat education must explain that agreed roster changes are recorded separately');
 assert.match(ui, /never patient-identifiable or clinical information/, 'Chat education must keep the patient-information safety boundary explicit');
 assert.match(core, /var viewScrollPositions=\{today:0,changes:0,breaks:0,chat:0,roster:0,admin:0\}/, 'each primary view must keep its own scroll position');
