@@ -1,12 +1,13 @@
 {
-  "version": "44.1",
+  "version": "44.2",
   "date": "4 October 2026",
-  "title": "Polish shift identity and review readability",
-  "summary": "Shift identity now keeps its personality without sacrificing readability, while the pending seventh-nurse review is clearer and easier to act on.",
+  "title": "Compact the selected-night header",
+  "summary": "Changes and Breaks now reach the useful work sooner while giving the shared shift identity more visual presence.",
   "changes": [
-    "Shared shift names now use neutral high-contrast text, while the chosen shift accent is reserved for the icon, border and subtle surface tint.",
-    "Team Chat gives the shared shift icon a fixed identity stage and more breathing room so the icon can never crowd the shift name on phone screens.",
-    "Pending seventh-nurse review cards now use dark primary copy with amber only as an emphasis cue, fixing the washed-out yellow text."
+    "Changes and Breaks use a tighter institutional masthead with the information action aligned inside the title row instead of occupying a large empty area.",
+    "The shared shift identity is amplified with a larger fixed artwork stage, stronger name hierarchy and clearer tagline while the surrounding context takes less vertical space.",
+    "Selected-night date and staffing controls are consolidated into a compact context surface, allowing Manage this night and the break plan to appear higher on phone screens.",
+    "Breaks now establishes shift and selected-night context before the personal break card so the screen follows the same where, when, what hierarchy as the rest of the app."
   ],
   "update_policy": "normal"
 }
