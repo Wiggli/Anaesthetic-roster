@@ -650,14 +650,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         ? 'Full night'
         : model.period || 'Pending';
 
-  const openFullNight = () => {
-    if (model.action === 'choose') return openAccount();
+  const openNameSetup = () => {
     softHaptic();
-    const details = document.querySelector<HTMLDetailsElement>('#today .nightTeamDetails');
-    details?.setAttribute('open', '');
-    const target = document.querySelector<HTMLElement>('#roles .rosterRow.mine,#fiveArrangement .fiveNurseSurface.mine') || details;
-    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    target?.focus?.({ preventScroll: true });
+    openAccount();
   };
 
   const openBreak = () => { softHaptic(); window.show?.('breaks'); };
@@ -752,7 +747,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </Pressable>
       </div>
 
-      {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openFullNight}>
+      {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openNameSetup}>
         Choose your name
         <span aria-hidden="true">›</span>
       </Pressable>}
