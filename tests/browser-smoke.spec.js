@@ -792,7 +792,13 @@ test('App Guide opens reusable contextual help without resetting first-use setup
   await expect(dialog.locator('#onboardingTitle')).toContainText('Help that takes you to the right place');
   await expect(dialog.locator('.appGuideList button')).toHaveCount(10);
   await expect(dialog.locator('.appGuideList')).toContainText('Team Chat');
+  await expect(dialog.locator('.appGuideList')).toContainText('Actions');
+  await expect(dialog.locator('.appGuideList')).toContainText('Account & Personalise');
   await expect(dialog.locator('#onboardingStepLabel')).toHaveText('Tutorial & app guide');
+  await dialog.locator('.appGuidePrimary').click();
+  await expect(dialog.locator('#onboardingStepLabel')).toHaveText('1 of 8');
+  await expect(dialog.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '8');
+  await expect(dialog.locator('#onboardingTitle')).toContainText('First, which roster name is yours');
 });
 
 test('cinematic surfaces respect reduced motion', async ({ page }) => {
