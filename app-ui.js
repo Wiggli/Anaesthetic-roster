@@ -54,6 +54,7 @@ var realtimeSubscribed=false;
 var onboardingStep=0;
 var onboardingCandidate=!educationSeen('main',3);
 var onboardingReplay=false;
+var onboardingDeferredSession=false;
 var onboardingChatIntro=false;
 var onboardingFeatureKey='';
 var onboardingClockChangeDate='';
@@ -834,13 +835,13 @@ async function finishOnboarding(){
   var dialog=byId('onboardingDialog');
   if(onboardingGuideMenu){onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast('App guide closed');return}
   if(onboardingFeatureKey||onboardingChatIntro){var key=onboardingFeatureKey||'chat';if(key==='clockchange')markClockChangeEducationSeen(onboardingClockChangeDate);else markEducationSeen(key,educationVersion(key));onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast(key==='clockchange'?'Clock-change timing understood':featureEducationLabel(key)+' guide completed');return}
-  var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)appStorage.setItem('anaes_my_name',select.value);markEducationSeen('main',educationVersion('main'));['night','changes','actions','breaks','chat','roster','account'].forEach(function(key){markEducationSeen(key,educationVersion(key))});onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Tutorial completed':'Your night is ready')
+  var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)appStorage.setItem('anaes_my_name',select.value);onboardingDeferredSession=false;markEducationSeen('main',educationVersion('main'));['night','changes','actions','breaks','chat','roster','account'].forEach(function(key){markEducationSeen(key,educationVersion(key))});onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Tutorial completed':'Your night is ready')
 }
 function skipOnboardingForNow(){
-  var dialog=byId('onboardingDialog');onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();toast('Tutorial available in Account')
+  var dialog=byId('onboardingDialog');onboardingDeferredSession=true;onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();toast('Tutorial available in Account')
 }
 function showOnboardingIfNeeded(){
-  if(!currentUserProfile||releaseNotesQueued||educationSeen('main',educationVersion('main')))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?520:40)
+  if(!currentUserProfile||releaseNotesQueued||onboardingDeferredSession||educationSeen('main',educationVersion('main')))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?520:40)
 }
 function showFeatureEducation(key,force){
   if(['changes','breaks','chat'].indexOf(key)<0||!currentUserProfile||!educationSeen('main',2))return;if(!force&&educationSeen(key,educationVersion(key)))return;
