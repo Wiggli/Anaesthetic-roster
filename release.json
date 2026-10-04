@@ -1,14 +1,14 @@
 {
-  "version": "43.0",
+  "version": "43.1",
   "date": "4 October 2026",
-  "title": "Refine mobile hierarchy and readability",
-  "summary": "Night, Changes, Breaks and Chat now share a calmer type scale, tighter spacing and clearer task hierarchy for faster reading during a night shift.",
+  "title": "Make Chat conversation-first",
+  "summary": "Chat now reads like a native messaging inbox, with conversations taking priority and secondary controls visually receding.",
   "changes": [
-    "Primary screen titles, section headings and supporting text now use one calmer mobile type scale with more consistent spacing across Night, Changes, Breaks and Chat.",
-    "Night keeps the personal assignment as the visual priority while reducing competing emphasis in timeline details, status messaging and the Tonight summary.",
-    "Changes now lets completed workflow stages recede and gives unresolved allocation decisions, including the seventh-nurse choice, a clearer and more accessible focus.",
-    "Breaks is more compact around pending states and selected-night context so the actual break plan appears sooner without hiding any staffing information.",
-    "Chat now uses a compact compose control, denser native-style conversation rows and more disciplined unread/status treatments, while the bottom navigation is easier to read and less visually dominated by Actions."
+    "The large all-in-one Chat card has been replaced by separate Team and Private conversation sections with cleaner spacing and much less visual bulk.",
+    "Anaesthetic Team is now one fully tappable conversation row with a clearer title, timestamp, member count and latest-message preview, without a redundant Open chat button.",
+    "Private chats now use larger names, more readable previews, quieter timestamps and unread badges, and no redundant chevrons.",
+    "The Chat header is tighter and more balanced, with the compose action integrated beside the title instead of appearing as a detached control.",
+    "Safety guidance and notification settings remain accessible but are visually demoted so they no longer compete with the messaging task."
   ],
   "update_policy": "quiet"
 }
