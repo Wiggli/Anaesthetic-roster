@@ -19009,6 +19009,7 @@ body.dark #chat .chatUtilityGroup{
   padding:6px 11px 6px 7px;
   font-size:13px;
   font-weight:790;
+  text-transform:none;
   letter-spacing:-.015em;
   isolation:isolate;
 }
