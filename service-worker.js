@@ -169,13 +169,16 @@ self.addEventListener('push', event => {
       visibleClient.postMessage({
         type: messageType,
         conversationId: payload.conversation_id || '',
-        rosterDate: payload.roster_date || ''
+        rosterDate: payload.roster_date || '',
+        focus: payload.focus || '',
+        personalChange: payload.personal_change === true
       });
       return;
     }
 
     try {
-      if (self.navigator && self.navigator.setAppBadge) await self.navigator.setAppBadge();
+      const meaningfulBadge = type === 'chat' || (type === 'roster' && payload.personal_change === true);
+      if (meaningfulBadge && self.navigator && self.navigator.setAppBadge) await self.navigator.setAppBadge(1);
     } catch (error) {}
 
     const title = payload.title || 'Night Roster';
@@ -189,7 +192,9 @@ self.addEventListener('push', event => {
         type,
         url: payload.url || new URL('./', self.registration.scope).href,
         conversationId: payload.conversation_id || '',
-        rosterDate: payload.roster_date || ''
+        rosterDate: payload.roster_date || '',
+        focus: payload.focus || '',
+        personalChange: payload.personal_change === true
       }
     };
 
@@ -214,6 +219,8 @@ self.addEventListener('notificationclick', event => {
           type: 'OPEN_APP_NOTIFICATION',
           conversationId: data.conversationId || '',
           rosterDate: data.rosterDate || '',
+          focus: data.focus || '',
+          personalChange: data.personalChange === true,
           notificationType: data.type || 'chat'
         });
         return;
