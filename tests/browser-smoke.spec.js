@@ -979,6 +979,52 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakDate')).toBeEmpty();
 });
 
+test('Night allocation badges remain visible beside long professional names', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 6, absenceCount: 0, overtimeCount: 0, taskCount: 0, decisionTasks: 0,
+      confirmNeeded: false, alert: '', firstTask: '', labourPending: false,
+      breakLabel: 'First break', chatUnread: 0, liveState: 'On duty now', currentPart: 'first',
+      roles: [
+        {
+          key: 'second',
+          label: 'Second Part',
+          names: 'André Bartolo + Michael Debono',
+          detail: 'Works 03:30–07:00 · First break',
+          tone: 'second',
+          mine: false
+        }
+      ],
+      extras: []
+    }}));
+  });
+
+  const row = page.locator('#roles .rosterRow-second');
+  await expect(row).toContainText('André Bartolo + Michael Debono');
+  await expect(row.locator('.rosterLiveBadge')).toHaveText('Next');
+  const geometry = await row.evaluate(element => {
+    const rowRect = element.getBoundingClientRect();
+    const badge = element.querySelector('.rosterLiveBadge');
+    const badgeRect = badge ? badge.getBoundingClientRect() : null;
+    const people = element.querySelector('.rosterRowPeople');
+    const peopleRect = people ? people.getBoundingClientRect() : null;
+    return {
+      rowLeft: rowRect.left,
+      rowRight: rowRect.right,
+      badgeLeft: badgeRect?.left ?? 0,
+      badgeRight: badgeRect?.right ?? 0,
+      badgeWidth: badgeRect?.width ?? 0,
+      peopleWidth: peopleRect?.width ?? 0
+    };
+  });
+
+  expect(geometry.badgeWidth).toBeGreaterThan(20);
+  expect(geometry.peopleWidth).toBeGreaterThan(40);
+  expect(geometry.badgeLeft).toBeGreaterThanOrEqual(geometry.rowLeft);
+  expect(geometry.badgeRight).toBeLessThanOrEqual(geometry.rowRight - 30);
+});
+
 test('Night hero keeps assignment facts readable across Android phone widths', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {

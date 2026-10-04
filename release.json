@@ -1,13 +1,12 @@
 {
-  "version": "45.2",
+  "version": "45.3",
   "date": "4 October 2026",
-  "title": "Refresh onboarding and tutorial",
-  "summary": "First-run onboarding and the reusable tutorial now teach the same complete 45.x app, including the newest navigation, decision, personalisation and sharing features.",
+  "title": "Keep Night allocation badges visible",
+  "summary": "Team allocation rows now keep long professional names and live status badges readable without clipped pills on phone screens.",
   "changes": [
-    "Rebuilds first-use onboarding as an eight-step current-app tutorial covering identity, Night, Changes, Actions, Breaks, Team Chat, Account and Personalisation, sharing, installation and reusable help.",
-    "Updates the App Guide into a complete Tutorial & app guide with one-tap lessons for Night, Changes, Actions, Breaks, Team Chat, Full roster, Account & Personalise, sharing and update history.",
-    "Advances the education generation so existing users receive the refreshed walkthrough once, while updated Changes, Breaks and Chat tips can be rediscovered without repeating them after the full tutorial is completed.",
-    "Makes Skip for now genuinely temporary and keeps the complete tutorial replayable from Account, while preserving clock-change guidance, roster logic, staffing rules and shared-data behaviour."
+    "Fixes Team allocation rows so live status chips such as Next, Now and Complete reserve their own space instead of being cropped beside long professional names.",
+    "Lets paired professional names wrap naturally while keeping the You badge, live state and row chevron readable across small phone widths.",
+    "Adds browser regression coverage for the long-name Second Part allocation layout without changing roster, break or clock-change logic."
   ],
   "update_policy": "normal"
 }
