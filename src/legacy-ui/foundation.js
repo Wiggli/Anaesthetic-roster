@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V43.5 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V44.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -65,6 +65,10 @@ var releaseNotesQueued=false;
 var pendingProfilePhoto=null;
 var pendingProfilePhotoUrl='';
 var profileSavedSignature='';
+var shiftAvatarUrl='';
+var pendingShiftPhoto=null;
+var pendingShiftPhotoUrl='';
+var photoCropState={file:null,url:'',target:'profile',image:null};
 var launchStartedAt=Date.now();
 var launchFinished=false;
 var launchSlowTimer=null;
@@ -89,6 +93,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"44.0","date":"4 October 2026","title":"Introduce Personalisation Studio","changes":["Account now includes a dedicated Me and Our Shift Personalisation Studio with live identity previews instead of scattered cosmetic settings.","Members can personalise their own avatar style, preferred name, professional title, accent, text size, motion and greeting while verified roster identity and clinical colours stay protected.","The whole shift can share one name, optional tagline, symbol, accent and private team picture across Night and Team Chat.","Shift images are restricted to authorised shift members, personal photos remain private to their owner, and generated identity fallbacks keep the app polished without requiring uploads."],"policy":"important"},
   {"version":"43.5","date":"4 October 2026","title":"Make shift identity persistent and more distinctive","changes":["The shared shift name now belongs to the team rather than one roster date, so it stays visible when moving between every published night.","Existing shift names are carried forward automatically and the database now treats rename or removal as one global team identity while retaining the guarded shared-write and audit protections.","The Night header gives the shift identity a richer glass badge with a dedicated identity mark, stronger typography, depth and a subtle reveal without competing with the selected date.","Changes, Breaks and Chat continue to use the same shared identity, while the naming sheet now explains clearly that the name applies across every roster night."],"policy":"normal"},
   {"version":"43.4","date":"4 October 2026","title":"Give Chat and shift identity a premium visual hierarchy","changes":["Team Chat is promoted into a richer featured conversation surface with a larger team icon, stronger shift title, cleaner metadata and more deliberate depth.","Chat essentials are rebuilt as one premium glass surface with generous safety and notification rows, larger icons, clearer typography and better touch targets.","Zero unread counts are never rendered as badges; unread indicators now appear only when there is something that genuinely needs attention.","Direct messages gain larger avatars, names and previews with improved spacing so the inbox feels more confident and easier to scan on a night shift.","Shared shift names are larger and more distinctive across Night, Changes, Breaks and Chat, using one consistent identity treatment without overpowering clinical information."],"policy":"normal"},
   {"version":"43.3","date":"4 October 2026","title":"Rebuild Chat around the night team","changes":["Chat is rebuilt around one compact conversation language: Team Chat and direct messages now share aligned avatars, names, previews, timestamps and unread states without oversized dashboard cards.","The header and selected-night context are tighter and calmer, while safety guidance and notification preferences move into a quiet footer so conversations remain the primary task.","Any roster member can give the selected shift a shared nickname of up to 28 characters; the name is stored per roster night, synchronises across devices and can be renamed or removed.","A shift nickname becomes the Team Chat identity and also appears subtly beside the selected night in Night, Changes and Breaks, while Anaesthetic Team remains visible as the clinical context.","Shared shift-name writes are protected by the existing authenticated compatibility boundary, audited server-side, included in startup and offline snapshots, and propagated through shared revision and realtime updates."],"policy":"normal"},
@@ -355,21 +360,6 @@ function nightTeamIdentityFor(date){
   });
   return best
 }
-function nightTeamNickname(date){
-  var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
-  return value.slice(0,28)
-}
-window.nightTeamNickname=nightTeamNickname;
-function renderNightTeamIdentityContext(date){
-  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date);
-  Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
-    node.classList.toggle('hidden',!nickname);
-    node.textContent=nickname||'';
-    node.title=nickname?(row&&row.updated_by?'Shift name · shared across every roster night · updated by '+row.updated_by:'Shift name · shared across every roster night'):'';
-  });
-  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||''}}))
-}
-
 async function requestStartupSnapshot(){
   var token=currentAccessToken;
   if(!token){
@@ -631,8 +621,8 @@ function finishLaunch(ready){
     return
   }
   if(window.AnaestheticRuntime&&window.AnaestheticRuntime.recovery){window.AnaestheticRuntime.recovery.markReady();runtimeRecoveryStatus=window.AnaestheticRuntime.recovery.status()}
-  var name=privateProfileName()||currentUserProfile&&currentUserProfile.display_name||'';
-  setLaunchState(name?'Welcome back, '+name:'Your night is ready',navigator.onLine&&!forcedOfflineSession?'Everything is ready.':'Showing the last saved roster');
+  var name=privateProfileName()||currentUserProfile&&currentUserProfile.display_name||'',greeting=!currentPrivateProfile||currentPrivateProfile.greeting_enabled!==false;
+  setLaunchState(greeting&&name?'Welcome back, '+name:'Your night is ready',navigator.onLine&&!forcedOfflineSession?'Everything is ready.':'Showing the last saved roster');
   screen.classList.add('ready');screen.setAttribute('aria-busy','false');document.body.classList.add('appRevealing');launchFinished=true;
   var hold=motion?320:0,fade=motion?520:20;
   setTimeout(function(){screen.classList.add('dismissed')},hold);
@@ -682,7 +672,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=43.5" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=44.0" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -708,95 +698,6 @@ async function signInWithPasskey(){
   try{var result=await supa.auth.signInWithPasskey();if(result.error)throw result.error;if(result.data&&result.data.session)rememberAuthSession(result.data.session);if(result.data&&result.data.user)await authorizeUser(result.data.user,result.data.session)}
   catch(error){var cancelled=error&&(error.name==='NotAllowedError'||/cancel|not allowed/i.test(error.message||''));authMessage(cancelled?'Passkey sign-in was cancelled.':/disabled|not enabled/i.test(error.message||'')?'Passkeys have not been enabled for this roster yet. Use your password for now.':'Passkey sign-in could not be completed. You can still use your password.',!cancelled)}
   finally{button.disabled=false}
-}
-
-function privateProfileName(){return currentPrivateProfile&&currentPrivateProfile.profile_name||currentUserProfile&&currentUserProfile.display_name||''}
-
-async function refreshProfileAvatar(){
-  profileAvatarUrl='';var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;
-  if(path&&profileFeatureAvailable){var result=await supa.storage.from('profile-photos').createSignedUrl(path,3600);if(!result.error&&result.data)profileAvatarUrl=result.data.signedUrl||''}
-  applyProfileIdentity();
-}
-
-function applyProfileIdentity(){
-  if(!currentUserProfile)return;var name=privateProfileName(),initial=(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),headerImage=byId('accountAvatar'),headerInitial=byId('accountInitial'),previewUrl=pendingProfilePhotoUrl||profileAvatarUrl;
-  headerInitial.textContent=initial;headerImage.classList.toggle('hidden',!profileAvatarUrl);headerInitial.classList.toggle('hidden',!!profileAvatarUrl);if(profileAvatarUrl)headerImage.src=profileAvatarUrl;
-  byId('accountBtn').title=name+' · Open account';syncPrimaryHeaderActions();var preview=byId('profilePhotoPreview'),previewInitial=byId('profilePhotoInitial');if(preview){preview.classList.toggle('hidden',!previewUrl);previewInitial.classList.toggle('hidden',!!previewUrl);previewInitial.textContent=initial;if(previewUrl)preview.src=previewUrl}var remove=byId('removeProfilePhoto');if(remove){remove.classList.toggle('hidden',!profileAvatarUrl&&!pendingProfilePhoto);remove.textContent=pendingProfilePhoto?'Cancel':'Remove'}
-}
-
-async function loadOwnProfile(){
-  if(!currentUser)return;var result=await supa.from('user_profiles').select('user_id,profile_name,job_title,avatar_path,updated_at').eq('user_id',currentUser.id).maybeSingle();
-  if(result.error){profileFeatureAvailable=false;currentPrivateProfile=null;return}profileFeatureAvailable=true;currentPrivateProfile=result.data||{user_id:currentUser.id,profile_name:'',job_title:'',avatar_path:null};await refreshProfileAvatar();
-}
-
-function showProfileMessage(message,type){var el=byId('profileMessage');if(!el)return;el.textContent=message||'';el.className='formMessage'+(type?' '+type:'')}
-
-function profileDraftSignature(){return JSON.stringify([(byId('profileName')&&byId('profileName').value||'').trim(),(byId('profileJobTitle')&&byId('profileJobTitle').value||'').trim(),byId('profileRosterName')&&byId('profileRosterName').value||''])}
-
-function updateProfileSaveState(){var button=byId('saveProfileBtn');if(!button)return;var changed=!!pendingProfilePhoto||profileDraftSignature()!==profileSavedSignature;button.classList.toggle('hidden',!changed);if(changed&&byId('profileMessage').classList.contains('success')&&!pendingProfilePhoto)showProfileMessage('')}
-
-function prepareAccountInformationArchitecture(){
-  var dialog=byId('accountSheet'),scroll=dialog&&dialog.querySelector('.accountSheetScroll'),header=dialog&&dialog.querySelector('.accountSheetHeader');
-  if(!dialog||!scroll||!header)return;
-  var intro=scroll.querySelector('.accountSheetIntro');if(intro)intro.classList.add('hidden');
-  var profile=byId('profileExperience'),appearance=byId('appearanceExperience'),actions=byId('accountActionsExperience'),passkeys=byId('passkeyList');
-  var panes={profile:profile,preferences:appearance&&appearance.closest('.accountGroup'),help:actions&&actions.closest('.accountGroup'),security:passkeys&&passkeys.closest('.accountGroup')};
-  Object.keys(panes).forEach(function(key){var pane=panes[key];if(pane){pane.classList.add('accountDetailPane','hidden');pane.setAttribute('data-account-pane',key)}});
-  var home=byId('accountHomeHub');
-  if(!home){
-    home=document.createElement('section');home.id='accountHomeHub';home.className='accountHomeHub';
-    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Profile</b><small>Your name, photo and roster highlight</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button></div>';
-    scroll.insertBefore(home,scroll.firstChild);
-    var signOut=byId('accountSignOutBtn'),version=byId('accountVersion');if(signOut)home.appendChild(signOut);if(version)home.appendChild(version);
-    Array.prototype.forEach.call(home.querySelectorAll('[data-account-section]'),function(button){button.onclick=function(){showAccountSection(button.getAttribute('data-account-section'))}});
-  }
-  if(!byId('accountBackBtn')){
-    var back=document.createElement('button');back.type='button';back.id='accountBackBtn';back.className='accountBackBtn hidden';back.setAttribute('aria-label','Back to Account');back.textContent='‹';back.onclick=function(){showAccountSection('home')};header.insertBefore(back,header.firstChild)
-  }
-}
-function showAccountSection(section){
-  prepareAccountInformationArchitecture();var home=byId('accountHomeHub'),back=byId('accountBackBtn'),title=byId('accountSheetTitle'),eyebrow=byId('accountSheetEyebrow')||document.querySelector('#accountSheet .accountSheetHeader>div>span');
-  var labels={profile:'Profile',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
-  if(home)home.classList.toggle('hidden',!!target);Array.prototype.forEach.call(document.querySelectorAll('#accountSheet [data-account-pane]'),function(pane){pane.classList.toggle('hidden',pane!==target)});
-  if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'Account';if(eyebrow)eyebrow.textContent=target?'Account':'Profile & preferences';
-  var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0
-}
-
-function populateAccountSheet(){
-  prepareAccountInformationArchitecture();
-  var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName();
-  profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'']);
-  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar');if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=(name||currentUserProfile.display_name||currentUserProfile.email||'?').charAt(0).toUpperCase();
-  showProfileMessage(profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
-  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:(name||currentUserProfile.email||'?').charAt(0).toUpperCase(),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Ask the administrator to run the V32 profile upgrade before saving your profile.',messageType:profileFeatureAvailable?'':'error',changed:false}}}));
-}
-
-async function showAccountSheet(){var dialog=byId('accountSheet');populateAccountSheet();showAccountSection('home');if(dialog&&dialog.showModal&&!dialog.open){dialog.showModal();await loadPasskeys()}}
-
-async function runAccountAction(action){
-  if(action==='theme')return;
-  if(action==='guide'){openOnboardingReplay();return}
-  if(action==='whatsnew'){byId('accountSheet').close();renderReleaseNotes(false);var latest=byId('releaseNotes');if(latest&&!latest.open)latest.showModal();return}
-  if(action==='versions'){byId('accountSheet').close();renderReleaseNotes(true);var history=byId('releaseNotes');if(history&&!history.open)history.showModal();return}
-  if(action==='share'){showShareApp();return}
-  if(action==='install'){byId('accountSheet').close();if(deferredInstallPrompt)await runInstallPrompt();else showInstallGuide()}
-}
-
-function photoBlob(file){
-  return new Promise(function(resolve,reject){if(!file||!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>8*1024*1024){reject(new Error('Choose a JPEG, PNG or WebP photo smaller than 8 MB.'));return}var image=new Image(),url=URL.createObjectURL(file);image.onload=function(){var size=Math.min(image.naturalWidth,image.naturalHeight),left=(image.naturalWidth-size)/2,top=(image.naturalHeight-size)/2,canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;canvas.getContext('2d').drawImage(image,left,top,size,size,0,0,512,512);URL.revokeObjectURL(url);canvas.toBlob(function(blob){blob?resolve(blob):reject(new Error('The photo could not be prepared.'))},'image/jpeg',.86)};image.onerror=function(){URL.revokeObjectURL(url);reject(new Error('The selected photo could not be opened.'))};image.src=url})
-}
-
-async function chooseProfilePhoto(file){try{pendingProfilePhoto=await photoBlob(file);if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl=URL.createObjectURL(pendingProfilePhoto);applyProfileIdentity();var onboardingPhoto=byId('onboardingPhotoBtn');if(onboardingPhoto)onboardingPhoto.innerHTML='<img id="onboardingPhotoPreview" src="'+esc(pendingProfilePhotoUrl)+'" alt=""><i aria-hidden="true">+</i>';updateProfileSaveState();showProfileMessage('Photo ready to save.','success')}catch(error){showProfileMessage(error.message,'error')}}
-
-async function saveProfile(){
-  if(!requireOnline())return;if(!profileFeatureAvailable){showProfileMessage('Run the V32 profile database upgrade first.','error');return}var button=byId('saveProfileBtn'),name=byId('profileName').value.trim(),title=byId('profileJobTitle').value.trim(),rosterName=byId('profileRosterName').value,path=currentPrivateProfile&&currentPrivateProfile.avatar_path||null;button.disabled=true;button.textContent='Saving…';showProfileMessage('Saving your profile…','');
-  try{if(pendingProfilePhoto){path=currentUser.id+'/avatar.jpg';var uploaded=await supa.storage.from('profile-photos').upload(path,pendingProfilePhoto,{contentType:'image/jpeg',upsert:true,cacheControl:'3600'});if(uploaded.error)throw uploaded.error}var result=await supa.from('user_profiles').upsert({user_id:currentUser.id,profile_name:name||null,job_title:title||null,avatar_path:path,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select().single();if(result.error)throw result.error;currentPrivateProfile=result.data;pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';if(rosterName)appStorage.setItem('anaes_my_name',rosterName);else appStorage.removeItem('anaes_my_name');profileSavedSignature=profileDraftSignature();await refreshProfileAvatar();render();updateProfileSaveState();showProfileMessage('Your profile has been saved.','success');toast('Profile saved')}
-  catch(error){showProfileMessage('Your profile could not be saved. Check your connection and try again.','error')}
-  finally{button.disabled=false;button.textContent='Save profile';updateProfileSaveState()}
-}
-
-async function removeProfilePhoto(){
-  if(!profileFeatureAvailable)return;if(pendingProfilePhoto){pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';applyProfileIdentity();updateProfileSaveState();showProfileMessage('Photo change cancelled.');return}var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;if(path){var removed=await supa.storage.from('profile-photos').remove([path]);if(removed.error){showProfileMessage('The photo could not be removed.','error');return}var updated=await supa.from('user_profiles').update({avatar_path:null,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);if(updated.error){showProfileMessage('The photo record could not be updated.','error');return}currentPrivateProfile.avatar_path=null}profileAvatarUrl='';applyProfileIdentity();updateProfileSaveState();render();showProfileMessage('Profile photo removed.','success')
 }
 
 async function loadPasskeys(){

@@ -274,6 +274,7 @@ const logicFoundationMigration = fs.readFileSync(path.join(__dirname, '..', 'sup
 const reliabilityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
 const trustBoundaryMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002180000_trust_boundary_v49.sql'), 'utf8');
 const globalShiftIdentityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261004062000_global_shift_identity_v52.sql'), 'utf8');
+const personalisationMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261004070000_personalisation_studio_v53.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 const releaseHistorySnapshot = Array.from(context.RELEASE_HISTORY, entry => ({
   version: String(entry.version),
@@ -435,10 +436,11 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 25, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 26, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004024500_night_team_identity_v51.sql'), 'the schema-51 shared night identity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004062000_global_shift_identity_v52.sql'), 'the schema-52 global shift identity migration must stay checked in');
+assert.ok(checkedInMigrations.includes('20261004070000_personalisation_studio_v53.sql'), 'the schema-53 Personalisation Studio migration must stay checked in');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');
@@ -521,10 +523,14 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 52, 'the application must require the global shift identity schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 53, 'the application must require the Personalisation Studio schema');
 assert.match(globalShiftIdentityMigration, /set_night_team_identity_v51[\s\S]*values\(\s*v_anchor/, 'schema 52 must store one canonical shift identity regardless of selected night');
 assert.match(globalShiftIdentityMigration, /generate_series\([\s\S]*interval '4 days'/, 'schema 52 startup snapshots must project the shift identity across every roster date');
 assert.match(globalShiftIdentityMigration, /update public\.app_schema_version[\s\S]*version=52/, 'schema 52 migration must advance the schema marker');
+assert.match(personalisationMigration, /alter table public\.user_profiles[\s\S]*accent_key[\s\S]*text_scale[\s\S]*motion_pref[\s\S]*avatar_style[\s\S]*greeting_enabled/, 'schema 53 must persist personal presentation preferences separately from roster identity');
+assert.match(personalisationMigration, /insert into storage\.buckets[\s\S]*'shift-identity'[\s\S]*false[\s\S]*array\['image\/jpeg','image\/png','image\/webp'\]/, 'schema 53 must keep the shared shift image in a private bucket');
+assert.match(personalisationMigration, /set_shift_identity_v53[\s\S]*assert_app_write_compatible_v49[\s\S]*is_shift_member/, 'schema 53 shift styling writes must retain compatibility and membership guards');
+assert.match(personalisationMigration, /update public\.app_schema_version[\s\S]*version=53/, 'schema 53 migration must advance the schema marker');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');
@@ -570,7 +576,7 @@ assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function prepareAdminInformationArchitecture\(\)[\s\S]*What do you need to manage\?[\s\S]*People & Access[\s\S]*Roster Management[\s\S]*System/, 'Admin must open from one four-area management hub');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /adminLegacyTabs/, 'the superseded five-tab administrator rail must be retired from the active interface');
-assert.match(ui, /function prepareAccountInformationArchitecture\(\)[\s\S]*Profile[\s\S]*Preferences[\s\S]*Security[\s\S]*App & Help/, 'Account must use progressive disclosure instead of one long settings sheet');
+assert.match(ui, /function prepareAccountInformationArchitecture\(\)[\s\S]*Personalise[\s\S]*Preferences[\s\S]*Security[\s\S]*App & Help/, 'Account must use progressive disclosure instead of one long settings sheet');
 assert.match(html, /id="quickActionsSheet"[\s\S]*data-quick-action="absence"[\s\S]*data-quick-action="overtime"[\s\S]*data-quick-action="review"/, 'Quick Actions must retain a usable HTML fallback for the core night actions');
 assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.showQuickActions/, 'the React navigation must expose one central Quick Actions rudder rather than a fifth destination');
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');

@@ -1,9 +1,14 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
 
 type ThemeChoice = 'light' | 'system' | 'dark';
+type AccentKey = 'teal' | 'blue' | 'violet' | 'rose' | 'amber' | 'graphite';
+type TextScale = 'standard' | 'large' | 'xlarge';
+type MotionPref = 'system' | 'reduced';
+type AvatarStyle = 'photo' | 'monogram' | 'spark';
+type ShiftSymbol = 'spark' | 'moon' | 'cross' | 'diamond' | 'dot' | 'star';
 type ProfileExperience = {
   name: string;
   jobTitle: string;
@@ -18,8 +23,26 @@ type ProfileExperience = {
   message?: string;
   messageType?: string;
   changed?: boolean;
+  accentKey: AccentKey;
+  textScale: TextScale;
+  motionPref: MotionPref;
+  avatarStyle: AvatarStyle;
+  greetingEnabled: boolean;
 };
-type AccountExperience = { theme: ThemeChoice; installed: boolean; newRelease?: boolean; version?: string; profile?: ProfileExperience };
+type ShiftExperience = {
+  name: string;
+  tagline: string;
+  accentKey: AccentKey;
+  symbol: ShiftSymbol;
+  initials: string;
+  photoUrl?: string;
+  pendingPhoto: boolean;
+  featureAvailable: boolean;
+  updatedBy?: string;
+  message?: string;
+  messageType?: string;
+};
+type AccountExperience = { theme: ThemeChoice; installed: boolean; newRelease?: boolean; version?: string; profile?: ProfileExperience; shift?: ShiftExperience };
 type ShareExperience = { shareUrl: string; installed: boolean; nativeShare: boolean };
 type PasskeyExperience = { message: string; items: { id: string; label: string }[] };
 
@@ -44,171 +67,307 @@ function shareAct(action: 'native' | 'copy' | 'install') {
   window.dispatchEvent(new CustomEvent('roster:share-action', { detail: { action } }));
 }
 
-function ProfileEditor({ model }: { model: ProfileExperience }) {
+const accentChoices: { value: AccentKey; label: string }[] = [
+  { value: 'teal', label: 'Teal' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'violet', label: 'Violet' },
+  { value: 'rose', label: 'Rose' },
+  { value: 'amber', label: 'Amber' },
+  { value: 'graphite', label: 'Graphite' }
+];
+
+const symbolChoices: { value: ShiftSymbol; glyph: string; label: string }[] = [
+  { value: 'spark', glyph: '✦', label: 'Spark' },
+  { value: 'moon', glyph: '☾', label: 'Moon' },
+  { value: 'cross', glyph: '✚', label: 'Cross' },
+  { value: 'diamond', glyph: '◆', label: 'Diamond' },
+  { value: 'dot', glyph: '●', label: 'Dot' },
+  { value: 'star', glyph: '★', label: 'Star' }
+];
+
+function accentColour(key: AccentKey) {
+  return ({
+    teal: '#0a8f88',
+    blue: '#3478f6',
+    violet: '#7c5ce5',
+    rose: '#d85d86',
+    amber: '#c77b16',
+    graphite: '#687078'
+  } as Record<AccentKey, string>)[key];
+}
+
+function symbolGlyph(key: ShiftSymbol) {
+  return symbolChoices.find(item => item.value === key)?.glyph || '✦';
+}
+
+function IdentityImage({ src, fallback, className = '' }: { src?: string; fallback: string; className?: string }) {
+  return <span className={'personalisationIdentityImage ' + className}>
+    {src ? <img src={src} alt="" /> : <b aria-hidden="true">{fallback}</b>}
+  </span>;
+}
+
+function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: ShiftExperience }) {
+  const [tab, setTab] = useState<'me' | 'shift'>('me');
   const [dirty, setDirty] = useState(!!model.changed);
-  const reduced = useReducedMotion();
+  const [accent, setAccent] = useState<AccentKey>(model.accentKey || 'teal');
+  const [textScale, setTextScale] = useState<TextScale>(model.textScale || 'standard');
+  const [motionPref, setMotionPref] = useState<MotionPref>(model.motionPref || 'system');
+  const [avatarStyle, setAvatarStyle] = useState<AvatarStyle>(model.avatarStyle || 'photo');
+  const [greetingEnabled, setGreetingEnabled] = useState(model.greetingEnabled !== false);
+  const [shiftName, setShiftName] = useState(shift?.name || 'Anaesthetic Team');
+  const [shiftTagline, setShiftTagline] = useState(shift?.tagline || '');
+  const [shiftAccent, setShiftAccent] = useState<AccentKey>(shift?.accentKey || 'teal');
+  const [shiftSymbol, setShiftSymbol] = useState<ShiftSymbol>(shift?.symbol || 'spark');
+  const [shiftDirty, setShiftDirty] = useState(false);
+  const reduced = useReducedMotion() || motionPref === 'reduced';
   const photoUrl = model.photoUrl || '';
   const initial = model.initial || '?';
   const displayName = model.name.trim() || model.approvedName || 'Your profile';
   const displayRole = model.jobTitle.trim() || 'Anaesthetic team member';
   const markDirty = () => { setDirty(true); act('profile-input'); };
+  const markShiftDirty = () => setShiftDirty(true);
+  const personalFallback = avatarStyle === 'spark' ? '✦' : initial;
+  const showPersonalPhoto = avatarStyle === 'photo' && !!photoUrl;
+  const shiftFallback = shift?.photoUrl ? '' : (symbolGlyph(shiftSymbol) || shift?.initials || 'AT');
 
   return <motion.section
     initial={reduced ? false : { opacity: 0, y: 6 }}
     animate={{ opacity: 1, y: 0 }}
     transition={reduced ? { duration: 0 } : { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
-    className="accountProfilePanel accountProfileProfessional"
+    className="accountProfilePanel personalisationStudio"
     aria-labelledby="profileHeading"
   >
-    <div className="accountProfileHero accountProfileHeroPro">
-      <div className="accountHeroPhotoWrap">
-        <button
-          type="button"
-          id="profilePhotoButton"
-          aria-label="Choose profile photo"
-          onClick={() => document.getElementById('profilePhotoInput')?.click()}
-          className="accountPhotoButton accountHeroPhoto"
-        >
-          <img
-            id="profilePhotoPreview"
-            src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='}
-            alt="Your profile photo"
-            className={photoUrl ? '' : 'hidden'}
-          />
-          <span id="profilePhotoInitial" className={photoUrl ? 'hidden' : ''}>{initial}</span>
-          <span className="accountPhotoEditBadge" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M8.5 7 10 5h4l1.5 2H18a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2.5Z"></path>
-              <circle cx="12" cy="13" r="3.2"></circle>
-            </svg>
-          </span>
-        </button>
-        <input
-          id="profilePhotoInput"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          hidden
-          onChange={event => {
-            const file = event.currentTarget.files?.[0];
-            if (file) {
-              setDirty(true);
-              act('profile-photo', file);
-            }
-            event.currentTarget.value = '';
-          }}
-        />
-      </div>
+    <div className="personalisationStudioHeading">
+      <span>Make it yours</span>
+      <h3 id="profileHeading">Personalisation Studio</h3>
+      <p>Personal styling stays yours. Shift identity is shared with the whole anaesthetic team.</p>
+    </div>
 
-      <div className="accountProfileIntro accountProfileIntroPro">
-        <span className="accountPrivacyBadge">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 10V8a5 5 0 0 1 10 0v2"></path>
-            <rect x="5" y="10" width="14" height="10" rx="3"></rect>
-          </svg>
-          Private profile
-        </span>
-        <h3 id="profileHeading">{displayName}</h3>
-        <p className="accountProfileRole">{displayRole}</p>
-        <small className="accountProfileEmail">{model.email}</small>
-        <div className="accountPhotoActions accountPhotoActionsPro">
-          <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>
-            Change photo
-          </button>
-          <button
+    <div className="personalisationTabs" role="tablist" aria-label="Personalisation">
+      <button type="button" className={tab === 'me' ? 'active' : ''} aria-selected={tab === 'me'} onClick={() => setTab('me')}>Me</button>
+      <button type="button" className={tab === 'shift' ? 'active' : ''} aria-selected={tab === 'shift'} onClick={() => setTab('shift')}>Our Shift</button>
+    </div>
+
+    {tab === 'me' ? <>
+      <section className="personalisationPreviewCard" style={{ '--identity-accent': accentColour(accent) } as CSSProperties}>
+        <div className="personalisationPreviewGlow" />
+        <IdentityImage src={showPersonalPhoto ? photoUrl : undefined} fallback={personalFallback} className="personalisationPreviewAvatar" />
+        <div className="personalisationPreviewCopy">
+          <span>Your Night Roster identity</span>
+          <strong>{displayName}</strong>
+          <small>{displayRole}</small>
+        </div>
+        <span className="personalisationPreviewPill">You</span>
+      </section>
+
+      <section className="personalisationGroup">
+        <div className="personalisationGroupHeading">
+          <span>Identity</span>
+          <h4>Photo & avatar</h4>
+          <p>Choose how your account appears in the app. Your verified roster identity never changes.</p>
+        </div>
+        <div className="personalisationAvatarEditor">
+          <div className="accountHeroPhotoWrap">
+            <button
+              type="button"
+              id="profilePhotoButton"
+              aria-label="Choose profile photo"
+              onClick={() => document.getElementById('profilePhotoInput')?.click()}
+              className="accountPhotoButton accountHeroPhoto"
+              style={{ '--identity-accent': accentColour(accent) } as CSSProperties}
+            >
+              <img id="profilePhotoPreview" src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='} alt="Your profile photo" className={showPersonalPhoto ? '' : 'hidden'} />
+              <span id="profilePhotoInitial" className={showPersonalPhoto ? 'hidden' : ''}>{personalFallback}</span>
+              <span className="accountPhotoEditBadge" aria-hidden="true">+</span>
+            </button>
+            <input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => {
+              const file = event.currentTarget.files?.[0];
+              if (file) { setDirty(true); act('profile-photo', file); }
+              event.currentTarget.value = '';
+            }} />
+          </div>
+          <div className="personalisationAvatarStyles" role="group" aria-label="Avatar style">
+            {([
+              ['photo', 'Photo'],
+              ['monogram', 'Initials'],
+              ['spark', 'Spark']
+            ] as [AvatarStyle, string][]).map(([value, label]) =>
+              <button key={value} type="button" className={avatarStyle === value ? 'active' : ''} onClick={() => { setAvatarStyle(value); markDirty(); }}>{label}</button>
+            )}
+          </div>
+          <input id="profileAvatarStyle" type="hidden" value={avatarStyle} readOnly />
+          <div className="accountPhotoActions accountPhotoActionsPro">
+            <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>Choose photo</button>
+            <button type="button" id="removeProfilePhoto" onClick={() => act('profile-photo-remove')} className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}>{model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}</button>
+          </div>
+        </div>
+      </section>
+
+      <section className="personalisationGroup">
+        <div className="personalisationGroupHeading compact">
+          <span>About you</span>
+          <h4>Profile details</h4>
+          <p>Preferred name and professional title are private presentation details, not shared roster data.</p>
+        </div>
+        <div className="accountProfileFields tw:@container">
+          <div className="accountNameFields tw:@md:grid-cols-2">
+            <FieldShell label="Preferred name">
+              <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={markDirty} className="accountProfileInput" />
+            </FieldShell>
+            <FieldShell label="Professional title" hint="Optional">
+              <input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Senior Staff Nurse" onInput={markDirty} className="accountProfileInput" />
+            </FieldShell>
+          </div>
+          <FieldShell label="Your roster name" hint="Private device highlight">
+            <select id="profileRosterName" defaultValue={model.rosterName} onChange={markDirty} className="accountProfileInput accountProfileSelect">
+              <option value="">Do not highlight a name</option>
+              {model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </FieldShell>
+        </div>
+      </section>
+
+      <section className="personalisationGroup">
+        <div className="personalisationGroupHeading compact">
+          <span>Look & feel</span>
+          <h4>Personal accent</h4>
+          <p>Your accent colours identity details only. Clinical and warning colours stay fixed.</p>
+        </div>
+        <div className="personalisationSwatches" role="group" aria-label="Personal accent colour">
+          {accentChoices.map(item => <button
+            key={item.value}
             type="button"
-            id="removeProfilePhoto"
-            onClick={() => act('profile-photo-remove')}
-            className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}
-          >
-            {model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}
+            className={accent === item.value ? 'active' : ''}
+            aria-label={item.label}
+            aria-pressed={accent === item.value}
+            onClick={() => { setAccent(item.value); markDirty(); }}
+          ><i style={{ background: accentColour(item.value) }} /><span>{item.label}</span></button>)}
+        </div>
+        <input id="profileAccentKey" type="hidden" value={accent} readOnly />
+      </section>
+
+      <section className="personalisationGroup personalisationComfort">
+        <div className="personalisationGroupHeading compact">
+          <span>Comfort</span>
+          <h4>Reading & motion</h4>
+        </div>
+        <div className="personalisationOptionGrid">
+          <div>
+            <b>Text size</b>
+            <div className="personalisationChoiceRow" role="group" aria-label="Text size">
+              {([
+                ['standard', 'Normal'],
+                ['large', 'Large'],
+                ['xlarge', 'Extra large']
+              ] as [TextScale, string][]).map(([value, label]) => <button key={value} type="button" className={textScale === value ? 'active' : ''} onClick={() => { setTextScale(value); markDirty(); }}>{label}</button>)}
+            </div>
+            <input id="profileTextScale" type="hidden" value={textScale} readOnly />
+          </div>
+          <div>
+            <b>Motion</b>
+            <div className="personalisationChoiceRow" role="group" aria-label="Motion preference">
+              {([
+                ['system', 'Device setting'],
+                ['reduced', 'Calmer']
+              ] as [MotionPref, string][]).map(([value, label]) => <button key={value} type="button" className={motionPref === value ? 'active' : ''} onClick={() => { setMotionPref(value); markDirty(); }}>{label}</button>)}
+            </div>
+            <input id="profileMotionPref" type="hidden" value={motionPref} readOnly />
+          </div>
+          <button type="button" className={'personalisationToggleRow ' + (greetingEnabled ? 'active' : '')} onClick={() => { setGreetingEnabled(!greetingEnabled); markDirty(); }} aria-pressed={greetingEnabled}>
+            <span><b>Personal greeting</b><small>Show “Welcome back” with your preferred name when Night Roster opens.</small></span>
+            <i>{greetingEnabled ? 'On' : 'Off'}</i>
           </button>
+          <input id="profileGreetingEnabled" type="hidden" value={greetingEnabled ? '1' : '0'} readOnly />
+        </div>
+      </section>
+
+      <div className="accountIdentity accountIdentityVerified">
+        <span className="accountIdentityIcon" aria-hidden="true">✓</span>
+        <div className="accountIdentityCopy">
+          <span>Verified account identity</span>
+          <b id="profileApprovedName">{model.approvedName}</b>
+          <small id="profileEmail">{model.email}</small>
+          <p>Shared roster actions continue to use this approved identity.</p>
         </div>
       </div>
-    </div>
 
-    <section className="accountProfileSection" aria-labelledby="profileAboutHeading">
-      <div className="accountProfileSectionHeading">
-        <span>Personal profile</span>
-        <h4 id="profileAboutHeading">Personal details</h4>
-        <p>Your preferred name and professional title are visible in your own Night view. They do not change shared roster records.</p>
+      {!model.featureAvailable && <p className="formMessage error" role="alert">Personal profile storage is not available yet.</p>}
+      <div className="accountSaveRow accountSaveRowPro">
+        <div id="profileMessage" className={'formMessage ' + (model.messageType || '')} role="status" aria-live="polite">{model.message || ''}</div>
+        <button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={'primary accountProfileSave ' + (dirty ? '' : 'hidden')} disabled={!model.featureAvailable}>Save my personalisation</button>
       </div>
+    </> : <>
+      <section className="personalisationPreviewCard shiftPreviewCard" data-shift-accent={shiftAccent} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
+        <div className="personalisationPreviewGlow" />
+        <IdentityImage src={shift?.photoUrl} fallback={shiftFallback || shift?.initials || 'AT'} className="personalisationPreviewAvatar shiftPreviewAvatar" />
+        <div className="personalisationPreviewCopy">
+          <span>Shared shift identity</span>
+          <strong>{shiftName.trim() || 'Anaesthetic Team'}</strong>
+          <small>{shiftTagline.trim() || 'Anaesthetic Night Team'}</small>
+        </div>
+        <span className="personalisationPreviewPill">Shared</span>
+      </section>
 
-      <div className="accountProfileFields tw:@container">
-        <div className="accountNameFields tw:@md:grid-cols-2">
-          <FieldShell label="Preferred name">
-            <input
-              id="profileName"
-              defaultValue={model.name}
-              maxLength={60}
-              autoComplete="name"
-              placeholder="How the app greets you"
-              onInput={markDirty}
-              className="accountProfileInput"
-            />
+      <section className="personalisationGroup">
+        <div className="personalisationGroupHeading">
+          <span>Our Shift</span>
+          <h4>Name, picture & personality</h4>
+          <p>Everyone on the roster sees the same identity across Night, Changes, Breaks and Team Chat.</p>
+        </div>
+        <div className="shiftPersonalisationPhotoRow">
+          <button type="button" className="shiftPersonalisationPhoto" onClick={() => document.getElementById('shiftStudioPhotoInput')?.click()} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
+            <span id="shiftStudioPhotoPreviewWrap">
+              {shift?.photoUrl ? <img id="shiftStudioPhotoPreview" src={shift.photoUrl} alt="Shift identity" /> : <b id="shiftStudioPhotoFallback">{symbolGlyph(shiftSymbol)}</b>}
+            </span>
+            <i aria-hidden="true">+</i>
+          </button>
+          <div>
+            <b>Shift picture</b>
+            <small>Private to authorised Night Roster users.</small>
+            <div className="accountPhotoActions accountPhotoActionsPro">
+              <button type="button" onClick={() => document.getElementById('shiftStudioPhotoInput')?.click()}>Choose picture</button>
+              <button type="button" id="removeShiftPhotoBtn" className={shift?.photoUrl || shift?.pendingPhoto ? '' : 'hidden'} onClick={() => act('shift-photo-remove')}>{shift?.pendingPhoto ? 'Cancel picture' : 'Remove picture'}</button>
+            </div>
+          </div>
+          <input id="shiftStudioPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => {
+            const file = event.currentTarget.files?.[0];
+            if (file) { setShiftDirty(true); act('shift-photo', file); }
+            event.currentTarget.value = '';
+          }} />
+        </div>
+        <div className="accountNameFields">
+          <FieldShell label="Shift name">
+            <input id="shiftStudioName" value={shiftName} maxLength={28} autoComplete="off" placeholder="For example, The Night Owls" onChange={event => { setShiftName(event.target.value); markShiftDirty(); }} className="accountProfileInput" />
           </FieldShell>
-          <FieldShell label="Professional title" hint="Optional">
-            <input
-              id="profileJobTitle"
-              defaultValue={model.jobTitle}
-              maxLength={80}
-              autoComplete="organization-title"
-              placeholder="For example, Senior Staff Nurse"
-              onInput={markDirty}
-              className="accountProfileInput"
-            />
+          <FieldShell label="Tagline" hint="Optional">
+            <input id="shiftStudioTagline" value={shiftTagline} maxLength={56} autoComplete="off" placeholder="A short line for your team" onChange={event => { setShiftTagline(event.target.value); markShiftDirty(); }} className="accountProfileInput" />
           </FieldShell>
         </div>
+      </section>
+
+      <section className="personalisationGroup">
+        <div className="personalisationGroupHeading compact">
+          <span>Signature</span>
+          <h4>Shift accent & symbol</h4>
+          <p>These style only the shift identity surfaces, never clinical statuses.</p>
+        </div>
+        <div className="personalisationSwatches" role="group" aria-label="Shift accent colour">
+          {accentChoices.map(item => <button key={item.value} type="button" className={shiftAccent === item.value ? 'active' : ''} aria-label={item.label} aria-pressed={shiftAccent === item.value} onClick={() => { setShiftAccent(item.value); markShiftDirty(); }}><i style={{ background: accentColour(item.value) }} /><span>{item.label}</span></button>)}
+        </div>
+        <input id="shiftStudioAccentKey" type="hidden" value={shiftAccent} readOnly />
+        <div className="shiftSymbolPicker" role="group" aria-label="Shift symbol">
+          {symbolChoices.map(item => <button key={item.value} type="button" className={shiftSymbol === item.value ? 'active' : ''} aria-label={item.label} aria-pressed={shiftSymbol === item.value} onClick={() => { setShiftSymbol(item.value); markShiftDirty(); }}><span>{item.glyph}</span><small>{item.label}</small></button>)}
+        </div>
+        <input id="shiftStudioSymbol" type="hidden" value={shiftSymbol} readOnly />
+      </section>
+
+      <div className="personalisationSafetyNote"><span aria-hidden="true">⚠</span><p><b>Team identity only.</b> Do not upload patient photographs or patient information.</p></div>
+      {shift?.updatedBy && <p className="shiftPersonalisationMeta">Last changed by {shift.updatedBy}</p>}
+      <div className="accountSaveRow accountSaveRowPro">
+        <div id="shiftStudioMessage" className={'formMessage ' + (shift?.messageType || '')} role="status" aria-live="polite">{shift?.message || ''}</div>
+        <button type="button" id="saveShiftPersonalisationBtn" onClick={() => act('shift-save')} className={'primary accountProfileSave ' + (shiftDirty || shift?.pendingPhoto ? '' : 'hidden')} disabled={!shift?.featureAvailable}>Save for everyone</button>
       </div>
-    </section>
-
-    <section className="accountProfileSection" aria-labelledby="profileRosterHeading">
-      <div className="accountProfileSectionHeading compact">
-        <span>On this device</span>
-        <h4 id="profileRosterHeading">Roster highlight</h4>
-        <p>Choose which roster name should be highlighted as yours. This remains a private device preference.</p>
-      </div>
-      <FieldShell label="Your roster name">
-        <select
-          id="profileRosterName"
-          defaultValue={model.rosterName}
-          onChange={markDirty}
-          className="accountProfileInput accountProfileSelect"
-        >
-          <option value="">Do not highlight a name</option>
-          {model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
-      </FieldShell>
-    </section>
-
-    <div className="accountIdentity accountIdentityVerified">
-      <span className="accountIdentityIcon" aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 3 19 6v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3Z"></path>
-          <path d="m9 12 2 2 4-4"></path>
-        </svg>
-      </span>
-      <div className="accountIdentityCopy">
-        <span>Verified account identity</span>
-        <b id="profileApprovedName">{model.approvedName}</b>
-        <small id="profileEmail">{model.email}</small>
-        <p>Shared roster actions use this approved identity.</p>
-      </div>
-    </div>
-
-    {!model.featureAvailable && <p className="formMessage error" role="alert">Ask the administrator to run the V32 profile upgrade before saving your profile.</p>}
-
-    <div className="accountSaveRow accountSaveRowPro">
-      <div id="profileMessage" className={`formMessage ${model.messageType || ''}`} role="status" aria-live="polite">{model.message || ''}</div>
-      <button
-        type="button"
-        id="saveProfileBtn"
-        onClick={() => act('profile-save')}
-        className={`primary accountProfileSave ${dirty ? '' : 'hidden'}`}
-        disabled={!model.featureAvailable}
-      >
-        Save profile
-      </button>
-    </div>
+    </>}
   </motion.section>;
 }
 
@@ -337,7 +496,7 @@ function Passkeys({ model }: { model: PasskeyExperience }) {
 }
 
 export function renderAccountExperience(model: AccountExperience) {
-  if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor model={model.profile} />);
+  if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor model={model.profile} shift={model.shift} />);
   rootFor('appearanceExperience')?.render(<Appearance key={model.theme} initial={model.theme} />);
   rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} newRelease={model.newRelease} version={model.version} />);
 }

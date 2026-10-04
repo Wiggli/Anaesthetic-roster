@@ -1403,7 +1403,11 @@ test('typed account controls preserve appearance and app actions', async ({ page
     window.addEventListener('roster:account-action', event => window.__accountActions.push(event.detail));
     window.dispatchEvent(new CustomEvent('roster:account', { detail: { theme: 'system', installed: false, profile: {
       name: 'Andre', jobTitle: 'Anaesthetic Nurse', rosterName: 'Nurse One', approvedName: 'Andre Bartolo', email: 'andre@example.test',
-      options: [{ value: 'Nurse One', label: 'Nurse One' }], initial: 'A', photoUrl: '', featureAvailable: true, pendingPhoto: false, changed: false
+      options: [{ value: 'Nurse One', label: 'Nurse One' }], initial: 'A', photoUrl: '', featureAvailable: true, pendingPhoto: false, changed: false,
+      accentKey: 'teal', textScale: 'standard', motionPref: 'system', avatarStyle: 'monogram', greetingEnabled: true
+    }, shift: {
+      name: 'Night Owls', tagline: 'Anaesthetic Night Team', accentKey: 'violet', symbol: 'moon', initials: 'NO', photoUrl: '',
+      pendingPhoto: false, featureAvailable: true, updatedBy: 'Test Nurse'
     } } }));
     window.dispatchEvent(new CustomEvent('roster:passkeys', { detail: { message: '', items: [{ id: 'passkey-1', label: 'Night Roster on iPhone' }] } }));
     window.prepareAccountInformationArchitecture();
@@ -1412,19 +1416,28 @@ test('typed account controls preserve appearance and app actions', async ({ page
   });
 
   await expect(page.locator('#accountSheetTitle')).toHaveText('Account');
-  await expect(page.locator('#accountHomeHub')).toContainText('Profile');
+  await expect(page.locator('#accountHomeHub')).toContainText('Personalise');
   await expect(page.locator('#accountHomeHub')).toContainText('Preferences');
   await expect(page.locator('#accountHomeHub')).toContainText('Security');
   await expect(page.locator('#accountHomeHub')).toContainText('App & Help');
   await expect(page.locator('#profileExperience')).toBeHidden();
   await page.locator('#accountHomeHub [data-account-section="profile"]').click();
-  await expect(page.locator('#accountSheetTitle')).toHaveText('Profile');
-  await expect(page.locator('#accountSheet')).toContainText('Shared roster actions use this approved identity.');
-  await expect(page.locator('#profileExperience')).toContainText('Personal details');
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Personalise');
+  await expect(page.locator('#accountSheet')).toContainText('Shared roster actions continue to use this approved identity.');
+  await expect(page.locator('#profileExperience')).toContainText('Personalisation Studio');
   await expect(page.locator('#profileName')).toHaveValue('Andre');
   await expect(page.locator('#profilePhotoPreview')).toBeHidden();
   await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
+  await expect(page.locator('.personalisationTabs')).toContainText('Our Shift');
+  await expect(page.locator('#profileAccentKey')).toHaveValue('teal');
+  await page.locator('.personalisationTabs button', { hasText: 'Our Shift' }).click();
+  await expect(page.locator('#shiftStudioName')).toHaveValue('Night Owls');
+  await expect(page.locator('#shiftStudioTagline')).toHaveValue('Anaesthetic Night Team');
+  await expect(page.locator('#saveShiftPersonalisationBtn')).toBeHidden();
+  await page.locator('#shiftStudioTagline').fill('Keeping the night moving');
+  await expect(page.locator('#saveShiftPersonalisationBtn')).toBeVisible();
+  await page.locator('.personalisationTabs button', { hasText: 'Me' }).click();
   await captureReview(page, 'account');
   await page.locator('#profileName').fill('André');
   await expect(page.locator('#saveProfileBtn')).toBeVisible();

@@ -19068,3 +19068,598 @@ body.dark #chat .chatUtilityGroup{
 @media (prefers-reduced-motion:reduce){
   #today .nightTeamIdentityContext{animation:none}
 }
+
+
+/* 44.0 Personalisation Studio: expressive identity without altering clinical semantics. */
+:root{--personal-accent:#0a8f88}
+body[data-personal-accent="teal"]{--personal-accent:#0a8f88}
+body[data-personal-accent="blue"]{--personal-accent:#3478f6}
+body[data-personal-accent="violet"]{--personal-accent:#7c5ce5}
+body[data-personal-accent="rose"]{--personal-accent:#d85d86}
+body[data-personal-accent="amber"]{--personal-accent:#c77b16}
+body[data-personal-accent="graphite"]{--personal-accent:#687078}
+
+body[data-text-scale="large"]{font-size:17px}
+body[data-text-scale="xlarge"]{font-size:18px}
+body[data-text-scale="large"] .primaryScreenTitleRow p,
+body[data-text-scale="large"] .time,
+body[data-text-scale="large"] .fieldHelp,
+body[data-text-scale="large"] .accountGroupDescription{font-size:12.5px!important}
+body[data-text-scale="xlarge"] .primaryScreenTitleRow p,
+body[data-text-scale="xlarge"] .time,
+body[data-text-scale="xlarge"] .fieldHelp,
+body[data-text-scale="xlarge"] .accountGroupDescription{font-size:13.5px!important}
+body[data-text-scale="large"] .bottom span{font-size:10.5px!important}
+body[data-text-scale="xlarge"] .bottom span{font-size:11px!important}
+
+body.personalMotionReduced *,
+body.personalMotionReduced *::before,
+body.personalMotionReduced *::after{
+  animation-duration:.001ms!important;
+  animation-iteration-count:1!important;
+  transition-duration:.001ms!important;
+  scroll-behavior:auto!important;
+}
+
+#accountBtn{--personal-accent:#0a8f88}
+#accountBtn:has(.accountAvatar:not(.hidden)),
+#accountBtn:has(.accountInitial:not(.hidden)){
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--personal-accent) 28%,transparent),0 7px 20px color-mix(in srgb,var(--personal-accent) 10%,transparent)
+}
+.accountHomeAvatar{
+  border-color:color-mix(in srgb,var(--personal-accent) 24%,var(--liquid-separator))!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--personal-accent) 16%,var(--liquid-surface)),color-mix(in srgb,var(--personal-accent) 5%,var(--liquid-surface-muted)))!important;
+  color:color-mix(in srgb,var(--personal-accent) 86%,var(--liquid-label))!important;
+}
+
+.personalisationStudio{
+  display:grid;
+  gap:14px;
+  padding-bottom:10px;
+}
+.personalisationStudioHeading{
+  display:grid;
+  gap:3px;
+  padding:2px 2px 0;
+}
+.personalisationStudioHeading>span,
+.personalisationGroupHeading>span{
+  color:var(--personal-accent);
+  font-size:9.5px;
+  font-weight:790;
+  letter-spacing:.075em;
+  text-transform:uppercase;
+}
+.personalisationStudioHeading h3{
+  margin:0;
+  color:var(--liquid-label);
+  font-size:24px;
+  font-weight:820;
+  letter-spacing:-.035em;
+  line-height:1.06;
+}
+.personalisationStudioHeading p{
+  max-width:44ch;
+  margin:2px 0 0;
+  color:var(--liquid-secondary);
+  font-size:11.5px;
+  line-height:1.45;
+}
+.personalisationTabs{
+  position:sticky;
+  top:0;
+  z-index:4;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3px;
+  padding:3px;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 70%,transparent);
+  border-radius:15px;
+  background:color-mix(in srgb,var(--liquid-surface) 86%,transparent);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  backdrop-filter:blur(20px) saturate(150%);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 5px 15px rgba(0,0,0,.035);
+}
+.personalisationTabs button{
+  min-height:38px;
+  padding:7px 12px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--liquid-secondary);
+  box-shadow:none;
+  font-size:12.5px;
+  font-weight:720;
+}
+.personalisationTabs button.active{
+  background:var(--liquid-surface);
+  color:var(--liquid-label);
+  box-shadow:0 2px 8px rgba(0,0,0,.075),inset 0 1px 0 color-mix(in srgb,#fff 18%,transparent);
+}
+
+.personalisationPreviewCard{
+  --identity-accent:#0a8f88;
+  position:relative;
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) auto;
+  gap:13px;
+  align-items:center;
+  min-height:104px;
+  padding:15px;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid color-mix(in srgb,var(--identity-accent) 26%,var(--liquid-separator));
+  border-radius:24px;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--identity-accent) 12%,var(--liquid-surface)),color-mix(in srgb,var(--identity-accent) 3%,var(--liquid-surface)) 58%,var(--liquid-surface));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 15%,transparent),0 14px 36px color-mix(in srgb,var(--identity-accent) 10%,rgba(0,0,0,.05));
+}
+.personalisationPreviewGlow{
+  position:absolute;
+  z-index:-1;
+  width:160px;
+  height:160px;
+  right:-60px;
+  top:-92px;
+  border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--identity-accent) 18%,transparent),transparent 68%);
+  pointer-events:none;
+}
+.personalisationIdentityImage{
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--identity-accent) 30%,var(--liquid-separator));
+  background:
+    radial-gradient(circle at 30% 20%,color-mix(in srgb,#fff 23%,transparent),transparent 36%),
+    linear-gradient(145deg,color-mix(in srgb,var(--identity-accent) 25%,var(--liquid-surface)),color-mix(in srgb,var(--identity-accent) 9%,var(--liquid-surface-muted)));
+  color:color-mix(in srgb,var(--identity-accent) 88%,var(--liquid-label));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 22%,transparent),0 7px 20px color-mix(in srgb,var(--identity-accent) 16%,transparent);
+}
+.personalisationIdentityImage img{width:100%;height:100%;object-fit:cover}
+.personalisationIdentityImage b{font-size:17px;font-weight:850;letter-spacing:-.02em}
+.personalisationPreviewAvatar{width:58px;height:58px;border-radius:19px}
+.shiftPreviewAvatar{border-radius:18px}
+.personalisationPreviewCopy{display:grid;min-width:0;gap:2px}
+.personalisationPreviewCopy>span{
+  color:color-mix(in srgb,var(--identity-accent) 82%,var(--liquid-secondary));
+  font-size:8.5px;
+  font-weight:790;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.personalisationPreviewCopy strong{
+  overflow:hidden;
+  color:var(--liquid-label);
+  font-size:20px;
+  font-weight:820;
+  line-height:1.1;
+  letter-spacing:-.03em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.personalisationPreviewCopy small{
+  overflow:hidden;
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.personalisationPreviewPill{
+  align-self:start;
+  padding:5px 8px;
+  border:1px solid color-mix(in srgb,var(--identity-accent) 20%,transparent);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--identity-accent) 8%,transparent);
+  color:color-mix(in srgb,var(--identity-accent) 86%,var(--liquid-label));
+  font-size:8.5px;
+  font-weight:790;
+}
+.shiftPreviewCard{min-height:112px}
+
+.personalisationGroup{
+  display:grid;
+  gap:12px;
+  padding:14px;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 75%,transparent);
+  border-radius:22px;
+  background:color-mix(in srgb,var(--liquid-surface) 96%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 7px 24px rgba(0,0,0,.035);
+}
+.personalisationGroupHeading{display:grid;gap:2px}
+.personalisationGroupHeading h4{
+  margin:0;
+  color:var(--liquid-label);
+  font-size:16.5px;
+  font-weight:780;
+  letter-spacing:-.022em;
+}
+.personalisationGroupHeading p{
+  margin:1px 0 0;
+  color:var(--liquid-secondary);
+  font-size:10.5px;
+  line-height:1.42;
+}
+.personalisationAvatarEditor{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:12px;
+  align-items:center;
+}
+.personalisationAvatarEditor .accountHeroPhoto{width:68px!important;height:68px!important;border-radius:22px!important}
+.personalisationAvatarEditor .accountHeroPhoto{
+  border-color:color-mix(in srgb,var(--identity-accent,var(--personal-accent)) 28%,var(--liquid-separator))!important;
+  box-shadow:0 8px 23px color-mix(in srgb,var(--identity-accent,var(--personal-accent)) 14%,transparent)!important;
+}
+.personalisationAvatarStyles{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px;
+  padding:3px;
+  border-radius:13px;
+  background:var(--liquid-surface-muted);
+}
+.personalisationAvatarStyles button,
+.personalisationChoiceRow button{
+  min-height:36px;
+  padding:6px 8px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:var(--liquid-secondary);
+  box-shadow:none;
+  font-size:10.5px;
+  font-weight:700;
+}
+.personalisationAvatarStyles button.active,
+.personalisationChoiceRow button.active{
+  background:var(--liquid-surface);
+  color:var(--liquid-label);
+  box-shadow:0 2px 7px rgba(0,0,0,.07);
+}
+.personalisationAvatarEditor .accountPhotoActions{grid-column:1/-1;margin:0}
+
+.personalisationSwatches{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:6px;
+}
+.personalisationSwatches button{
+  display:grid;
+  min-width:0;
+  gap:5px;
+  justify-items:center;
+  padding:6px 2px 5px;
+  border:1px solid transparent;
+  border-radius:13px;
+  background:transparent;
+  color:var(--liquid-tertiary);
+  box-shadow:none;
+  font-size:8px;
+  font-weight:650;
+}
+.personalisationSwatches button i{
+  width:29px;
+  height:29px;
+  border:3px solid var(--liquid-surface);
+  border-radius:50%;
+  box-shadow:0 0 0 1px var(--liquid-separator),0 3px 9px rgba(0,0,0,.08);
+}
+.personalisationSwatches button.active{
+  border-color:color-mix(in srgb,var(--personal-accent) 24%,transparent);
+  background:color-mix(in srgb,var(--personal-accent) 7%,transparent);
+  color:var(--liquid-label);
+}
+.personalisationSwatches button.active i{box-shadow:0 0 0 2px var(--personal-accent),0 4px 12px color-mix(in srgb,var(--personal-accent) 20%,transparent)}
+
+.personalisationOptionGrid{display:grid;gap:12px}
+.personalisationOptionGrid>div{display:grid;gap:7px}
+.personalisationOptionGrid>div>b{
+  color:var(--liquid-secondary);
+  font-size:10px;
+  font-weight:720;
+}
+.personalisationChoiceRow{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:4px;
+  padding:3px;
+  border-radius:13px;
+  background:var(--liquid-surface-muted);
+}
+.personalisationChoiceRow:has(button:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+.personalisationToggleRow{
+  display:flex;
+  min-height:58px;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 11px;
+  border:1px solid var(--liquid-separator);
+  border-radius:15px;
+  background:var(--liquid-surface-muted);
+  color:var(--liquid-label);
+  box-shadow:none;
+  text-align:left;
+}
+.personalisationToggleRow>span{display:grid;gap:2px}
+.personalisationToggleRow b{font-size:12px;font-weight:750}
+.personalisationToggleRow small{color:var(--liquid-secondary);font-size:9.5px;font-weight:520;line-height:1.35}
+.personalisationToggleRow>i{
+  min-width:38px;
+  padding:5px 7px;
+  border-radius:999px;
+  background:var(--liquid-fill);
+  color:var(--liquid-tertiary);
+  font-size:9px;
+  font-style:normal;
+  font-weight:780;
+  text-align:center;
+}
+.personalisationToggleRow.active>i{
+  background:color-mix(in srgb,var(--personal-accent) 15%,transparent);
+  color:color-mix(in srgb,var(--personal-accent) 88%,var(--liquid-label));
+}
+
+.shiftPersonalisationPhotoRow{
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr);
+  gap:12px;
+  align-items:center;
+}
+.shiftPersonalisationPhoto{
+  --identity-accent:#0a8f88;
+  position:relative;
+  width:76px;
+  height:76px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  overflow:visible;
+  border:1px solid color-mix(in srgb,var(--identity-accent) 30%,var(--liquid-separator));
+  border-radius:24px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--identity-accent) 22%,var(--liquid-surface)),color-mix(in srgb,var(--identity-accent) 6%,var(--liquid-surface-muted)));
+  color:color-mix(in srgb,var(--identity-accent) 90%,var(--liquid-label));
+  box-shadow:0 8px 22px color-mix(in srgb,var(--identity-accent) 15%,transparent);
+}
+.shiftPersonalisationPhoto>span{width:100%;height:100%;display:grid;place-items:center;overflow:hidden;border-radius:23px}
+.shiftPersonalisationPhoto img{width:100%;height:100%;object-fit:cover}
+.shiftPersonalisationPhoto b{font-size:24px}
+.shiftPersonalisationPhoto>i{
+  position:absolute;
+  right:-4px;
+  bottom:-4px;
+  width:25px;
+  height:25px;
+  display:grid;
+  place-items:center;
+  border:3px solid var(--liquid-surface);
+  border-radius:50%;
+  background:var(--identity-accent);
+  color:#fff;
+  font-size:15px;
+  font-style:normal;
+  line-height:1;
+}
+.shiftPersonalisationPhotoRow>div{display:grid;gap:2px}
+.shiftPersonalisationPhotoRow>div>b{font-size:13px;color:var(--liquid-label)}
+.shiftPersonalisationPhotoRow>div>small{font-size:9.5px;color:var(--liquid-secondary)}
+.shiftPersonalisationPhotoRow .accountPhotoActions{margin-top:6px}
+
+.shiftSymbolPicker{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:5px;
+}
+.shiftSymbolPicker button{
+  display:grid;
+  min-width:0;
+  gap:2px;
+  justify-items:center;
+  padding:8px 2px 6px;
+  border:1px solid var(--liquid-separator);
+  border-radius:13px;
+  background:var(--liquid-surface-muted);
+  color:var(--liquid-secondary);
+  box-shadow:none;
+}
+.shiftSymbolPicker button>span{font-size:17px;line-height:1}
+.shiftSymbolPicker button>small{font-size:7.5px}
+.shiftSymbolPicker button.active{
+  border-color:color-mix(in srgb,var(--personal-accent) 32%,var(--liquid-separator));
+  background:color-mix(in srgb,var(--personal-accent) 8%,var(--liquid-surface));
+  color:var(--personal-accent);
+}
+.personalisationSafetyNote{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  padding:11px 12px;
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 22%,var(--liquid-separator));
+  border-radius:16px;
+  background:color-mix(in srgb,var(--liquid-warning) 5%,var(--liquid-surface));
+  color:var(--liquid-secondary);
+}
+.personalisationSafetyNote>span{color:var(--liquid-warning)}
+.personalisationSafetyNote p{margin:0;font-size:10px;line-height:1.42}
+.personalisationSafetyNote b{color:var(--liquid-label)}
+.shiftPersonalisationMeta{margin:0 2px;color:var(--liquid-tertiary);font-size:9.5px}
+
+/* Rich shared identity replaces the earlier text-only sparkle. */
+.nightTeamIdentityContext::before{content:none!important;display:none!important}
+.nightTeamIdentityContext{
+  --shift-identity-accent:var(--liquid-accent);
+  display:inline-grid!important;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:8px!important;
+  align-items:center!important;
+  padding:5px 12px 5px 5px!important;
+  color:color-mix(in srgb,var(--shift-identity-accent) 88%,var(--liquid-label))!important;
+  border-color:color-mix(in srgb,var(--shift-identity-accent) 24%,var(--liquid-separator))!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--shift-identity-accent) 12%,var(--liquid-surface)),color-mix(in srgb,var(--shift-identity-accent) 4%,var(--liquid-surface)))!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent),0 8px 22px color-mix(in srgb,var(--shift-identity-accent) 11%,transparent)!important;
+}
+.shiftIdentityMark{
+  width:25px;
+  height:25px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--shift-identity-accent) 26%,var(--liquid-separator));
+  border-radius:9px;
+  background:
+    radial-gradient(circle at 30% 20%,color-mix(in srgb,#fff 25%,transparent),transparent 38%),
+    color-mix(in srgb,var(--shift-identity-accent) 14%,var(--liquid-surface));
+  color:var(--shift-identity-accent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 18%,transparent),0 3px 10px color-mix(in srgb,var(--shift-identity-accent) 14%,transparent);
+  font-size:11px;
+}
+.shiftIdentityMark img{width:100%;height:100%;object-fit:cover}
+.shiftIdentityCopy{display:grid;min-width:0;gap:0;text-align:left}
+.shiftIdentityCopy strong{
+  overflow:hidden;
+  font-size:13px;
+  font-weight:820;
+  line-height:1.15;
+  letter-spacing:-.018em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.shiftIdentityCopy small{
+  overflow:hidden;
+  max-width:230px;
+  margin-top:1px;
+  color:var(--liquid-secondary);
+  font-size:8.5px;
+  font-weight:590;
+  line-height:1.2;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#today .nightTeamIdentityContext{
+  min-height:46px!important;
+  padding:6px 15px 6px 6px!important;
+  gap:10px!important;
+}
+#today .shiftIdentityMark{width:32px;height:32px;border-radius:11px;font-size:14px}
+#today .shiftIdentityCopy strong{font-size:15px}
+#today .shiftIdentityCopy small{font-size:9px}
+
+[data-shift-accent="teal"]{--shift-identity-accent:#0a8f88}
+[data-shift-accent="blue"]{--shift-identity-accent:#3478f6}
+[data-shift-accent="violet"]{--shift-identity-accent:#7c5ce5}
+[data-shift-accent="rose"]{--shift-identity-accent:#d85d86}
+[data-shift-accent="amber"]{--shift-identity-accent:#c77b16}
+[data-shift-accent="graphite"]{--shift-identity-accent:#687078}
+
+/* Team Chat shares the same shift artwork while keeping chat readability neutral. */
+#chat .chatTeamAvatar{
+  --shift-identity-accent:var(--liquid-accent);
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--shift-identity-accent) 28%,var(--liquid-separator))!important;
+  background:
+    radial-gradient(circle at 28% 18%,color-mix(in srgb,#fff 20%,transparent),transparent 38%),
+    linear-gradient(145deg,color-mix(in srgb,var(--shift-identity-accent) 88%,#fff),var(--shift-identity-accent))!important;
+  box-shadow:0 6px 18px color-mix(in srgb,var(--shift-identity-accent) 18%,transparent)!important;
+}
+#chat .chatTeamAvatar img{width:100%;height:100%;object-fit:cover}
+#chat .chatTeamAvatar.hasPhoto{padding:0!important;background:var(--liquid-surface-muted)!important}
+#chat #chatTeamEntry[data-shift-accent]{
+  border-color:color-mix(in srgb,var(--shift-identity-accent) 18%,var(--liquid-separator))!important;
+}
+
+@media(max-width:380px){
+  .personalisationPreviewCard{grid-template-columns:52px minmax(0,1fr);padding:13px}
+  .personalisationPreviewPill{display:none}
+  .personalisationPreviewAvatar{width:52px;height:52px}
+  .personalisationSwatches,.shiftSymbolPicker{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+
+/* 44.0 shared photo crop sheet for personal and shift identity artwork. */
+.photoCropDialog[open]{
+  position:fixed;
+  inset:auto 8px calc(8px + env(safe-area-inset-bottom)) 8px;
+  width:auto;
+  max-width:480px;
+  margin:0 auto;
+  padding:0;
+  overflow:hidden;
+  border:1px solid var(--liquid-glass-border);
+  border-radius:28px;
+  background:var(--liquid-surface);
+  color:var(--liquid-label);
+  box-shadow:0 28px 90px rgba(0,0,0,.38);
+}
+.photoCropDialog::backdrop{
+  background:rgba(0,0,0,.55);
+  -webkit-backdrop-filter:blur(9px);
+  backdrop-filter:blur(9px);
+}
+.photoCropSheet{display:grid;gap:14px;padding:8px 16px 16px}
+.photoCropHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.photoCropHeader>div{display:grid;gap:2px}
+.photoCropHeader>div>span{color:var(--personal-accent);font-size:9px;font-weight:790;letter-spacing:.07em;text-transform:uppercase}
+.photoCropHeader h2{margin:0;color:var(--liquid-label);font-size:20px;font-weight:800;letter-spacing:-.025em}
+.photoCropHeader p{max-width:34ch;margin:0;color:var(--liquid-secondary);font-size:10px;line-height:1.4}
+.photoCropHeader button{min-height:34px;padding:5px 9px;border:0;background:transparent;color:var(--liquid-accent-strong);box-shadow:none;font-size:11px}
+.photoCropStage{
+  position:relative;
+  width:min(74vw,300px);
+  aspect-ratio:1;
+  justify-self:center;
+  overflow:hidden;
+  border-radius:24px;
+  background:var(--liquid-surface-muted);
+  box-shadow:inset 0 0 0 1px var(--liquid-separator),0 12px 32px rgba(0,0,0,.13);
+  touch-action:none;
+}
+.photoCropStage img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  transform-origin:center;
+  will-change:transform,object-position;
+}
+.photoCropFrame{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border:1px solid rgba(255,255,255,.48);
+  border-radius:24px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),inset 0 0 60px rgba(0,0,0,.04);
+}
+.photoCropFrame::before,
+.photoCropFrame::after{
+  content:"";
+  position:absolute;
+  background:rgba(255,255,255,.42);
+}
+.photoCropFrame::before{left:33.333%;top:0;bottom:0;width:1px;box-shadow:calc(min(74vw,300px)/3) 0 0 rgba(255,255,255,.42)}
+.photoCropFrame::after{top:33.333%;left:0;right:0;height:1px;box-shadow:0 calc(min(74vw,300px)/3) 0 rgba(255,255,255,.42)}
+.photoCropControls{display:grid;gap:9px}
+.photoCropControls label{
+  display:grid;
+  grid-template-columns:82px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  margin:0;
+  color:var(--liquid-secondary);
+  font-size:10px;
+  font-weight:690;
+  letter-spacing:0;
+  text-transform:none;
+}
+.photoCropControls input[type="range"]{
+  min-height:32px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  accent-color:var(--personal-accent);
+}
+.photoCropPrivacy{display:flex;gap:7px;align-items:center;margin:0;color:var(--liquid-tertiary);font-size:9px;line-height:1.35}
+.photoCropPrivacy>span{color:var(--liquid-warning)}
+.photoCropApply{min-height:48px;border-radius:15px!important;font-size:13px!important}

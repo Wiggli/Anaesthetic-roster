@@ -14,7 +14,7 @@ const smokeConfig = read('playwright.config.js');
 const resilienceConfig = read('playwright.resilience.config.js');
 
 assert.equal(state.currentRelease, release.version, 'machine-readable project state must follow release.json');
-assert.equal(state.databaseSchema, 52, 'project continuity state must expose the current expected database schema');
+assert.equal(state.databaseSchema, 53, 'project continuity state must expose the current expected database schema');
 assert.equal(state.ci.requiredCheck, 'test', 'the protected CI check name must remain stable');
 assert.equal(state.ci.cancelSupersededPullRequests, true, 'project state must record superseded PR cancellation');
 assert.equal(state.ci.reuseTestedPagesArtifact, true, 'project state must record exact artifact reuse');

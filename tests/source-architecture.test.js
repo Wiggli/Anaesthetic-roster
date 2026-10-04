@@ -8,13 +8,14 @@ const exists = file => fs.existsSync(path.join(root, file));
 const header = '/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */\n';
 const uiSources = [
   'src/legacy-ui/foundation.js',
+  'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
   'src/legacy-ui/sync.js',
   'src/legacy-ui/bootstrap.js'
 ];
 
 assert.equal(read('app-ui.js'), header + uiSources.map(read).join('\n'),
-  'app-ui.js must be generated from the four responsibility-specific source modules');
+  'app-ui.js must be generated from the five responsibility-specific source modules');
 for (const source of uiSources) {
   const bytes = fs.statSync(path.join(root, source)).size;
   assert.ok(bytes < 220 * 1024, source + ' must stay below 220 KiB so the UI cannot collapse back into one monolith');
@@ -23,6 +24,12 @@ assert.doesNotMatch(read('src/legacy-ui/foundation.js'), /function prepareChange
   'foundation must stop before selected-night clinical view preparation');
 assert.doesNotMatch(read('src/legacy-ui/foundation.js'), /function buildNightPlan\(/,
   'foundation must not own canonical clinical plan calculation');
+assert.doesNotMatch(read('src/legacy-ui/foundation.js'), /function prepareAccountInformationArchitecture\(/,
+  'foundation must not own Account and Personalisation Studio orchestration');
+assert.match(read('src/legacy-ui/account.js'), /function prepareAccountInformationArchitecture\(/,
+  'account source must own Account and Personalisation Studio orchestration');
+assert.match(read('src/legacy-ui/account.js'), /function saveShiftPersonalisation\(/,
+  'account source must own shared shift personalisation writes');
 assert.match(read('src/legacy-ui/clinical.js'), /function prepareChangesView\(/,
   'clinical source must own selected-night view preparation');
 assert.match(read('src/legacy-ui/clinical.js'), /function buildNightPlan\(/,
