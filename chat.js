@@ -323,12 +323,17 @@ function chatDispatchMessages(host,messages,kind,anchor,hadUnread){
 function chatRenderTeamMessages(){chatRenderMessageSequence(chatEl('chatTeamMessages'),chatState.teamMessages,'team',chatState.teamUnreadAnchor,chatState.teamHadUnread)}
 function chatRenderPrivateMessages(){chatRenderMessageSequence(chatEl('chatMessages'),chatState.messages,'private',chatState.privateUnreadAnchor,chatState.privateHadUnread)}
 function chatRenderTeamHeader(){
-  var threadCount=chatEl('chatTeamThreadMemberCount'),unread=chatEl('chatTeamUnread'),preview=chatEl('chatTeamPreview'),when=chatEl('chatTeamTime'),teamName=chatEl('chatTeamName'),teamMeta=chatEl('chatTeamMeta'),threadTitle=chatEl('chatTeamThreadTitle'),contextDate=chatEl('chatRosterContextDate'),contextMeta=chatEl('chatRosterContextMeta'),nameAction=chatEl('chatShiftNameAction'),teamEntry=chatEl('chatTeamEntry'),team=chatTeamConversation(),rosterCount=chatCurrentRosterCount(),displayName=chatTeamDisplayName(),date=chatSelectedNightDate(),live=(chatEl('chatLiveStatus')&&chatEl('chatLiveStatus').textContent)||'Live',nickname=displayName!=='Anaesthetic Team';
+  var threadCount=chatEl('chatTeamThreadMemberCount'),unread=chatEl('chatTeamUnread'),preview=chatEl('chatTeamPreview'),when=chatEl('chatTeamTime'),teamName=chatEl('chatTeamName'),teamMeta=chatEl('chatTeamMeta'),threadTitle=chatEl('chatTeamThreadTitle'),contextDate=chatEl('chatRosterContextDate'),contextMeta=chatEl('chatRosterContextMeta'),nameAction=chatEl('chatShiftNameAction'),teamEntry=chatEl('chatTeamEntry'),teamAvatar=chatEl('chatTeamAvatar'),team=chatTeamConversation(),rosterCount=chatCurrentRosterCount(),displayName=chatTeamDisplayName(),date=chatSelectedNightDate(),live=(chatEl('chatLiveStatus')&&chatEl('chatLiveStatus').textContent)||'Live',nickname=displayName!=='Anaesthetic Team',identity=window.shiftIdentityModel?window.shiftIdentityModel(date):{name:displayName,tagline:'',accentKey:'teal',symbol:'spark',initials:'AT',photoUrl:''};
   var nurseLabel=rosterCount+' nurse'+(rosterCount===1?'':'s');
+  if(teamAvatar){
+    teamAvatar.textContent='';teamAvatar.dataset.shiftAccent=identity.accentKey||'teal';
+    if(identity.photoUrl){var avatarImage=document.createElement('img');avatarImage.src=identity.photoUrl;avatarImage.alt='';teamAvatar.appendChild(avatarImage);teamAvatar.classList.add('hasPhoto')}
+    else{teamAvatar.textContent=window.shiftSymbolGlyph?window.shiftSymbolGlyph(identity.symbol):identity.initials||'AT';teamAvatar.classList.remove('hasPhoto')}
+  }
   if(teamName){teamName.textContent=displayName;teamName.classList.toggle('shiftIdentityTitle',nickname)}
-  if(teamMeta)teamMeta.textContent=nickname?'Anaesthetic Team · '+nurseLabel:nurseLabel+' · Team chat';
+  if(teamMeta)teamMeta.textContent=nickname?(identity.tagline?identity.tagline+' · '+nurseLabel:'Anaesthetic Team · '+nurseLabel):nurseLabel+' · Team chat';
   if(threadTitle){threadTitle.textContent=displayName;threadTitle.classList.toggle('shiftIdentityTitle',nickname)}
-  if(teamEntry)teamEntry.classList.toggle('hasShiftIdentity',nickname);
+  if(teamEntry){teamEntry.classList.toggle('hasShiftIdentity',nickname);teamEntry.dataset.shiftAccent=identity.accentKey||'teal'}
   if(threadCount)threadCount.textContent=(nickname?'Anaesthetic Team · ':'')+nurseLabel+' · '+live;
   if(contextDate)contextDate.textContent=chatRosterDateLabel(date);
   if(contextMeta)contextMeta.textContent=nurseLabel+' · Team chat '+String(live).toLowerCase();
@@ -343,6 +348,7 @@ function chatRenderTeamHeader(){
     if(unread){unread.textContent='';unread.removeAttribute('aria-label');unread.classList.add('hidden')}if(preview)preview.textContent='No messages yet';if(when)when.textContent=''
   }
 }
+
 function chatRenderConversationList(){
   var host=chatEl('chatConversationList');if(!host)return;host.textContent='';
   var list=chatDirectConversations().slice().sort(chatConversationSort);
