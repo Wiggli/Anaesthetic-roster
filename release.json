@@ -1,13 +1,13 @@
 {
-  "version": "43.5",
+  "version": "44.0",
   "date": "4 October 2026",
-  "title": "Make shift identity persistent and more distinctive",
-  "summary": "The shared shift name now stays with the team across every roster date, with a richer identity treatment at the top of Night and backward-compatible shared-data behaviour.",
+  "title": "Introduce Personalisation Studio",
+  "summary": "Night Roster now has a dedicated Me and Our Shift studio for polished personal identity, accessibility preferences and a richer shared shift brand without altering clinical meaning.",
   "changes": [
-    "The shared shift name now belongs to the team rather than one roster date, so it stays visible when moving between every published night.",
-    "Existing shift names are carried forward automatically and the database now treats rename or removal as one global team identity while retaining guarded shared-write and audit protections.",
-    "The Night header gives the shift identity a richer glass badge with a dedicated identity mark, stronger typography, depth and a subtle reveal without competing with the selected date.",
-    "Changes, Breaks and Chat continue to use the same shared identity, while the naming sheet now explains clearly that the name applies across every roster night."
+    "Account now includes a dedicated Me and Our Shift Personalisation Studio with live identity previews instead of scattered cosmetic settings.",
+    "Members can personalise their avatar style, preferred name, professional title, accent, text size, motion and greeting while verified roster identity and clinical colours remain protected.",
+    "The whole shift can share one name, optional tagline, symbol, accent and private team picture across Night and Team Chat.",
+    "Shift images are restricted to authorised shift members, personal photos remain private to their owner, and generated identity fallbacks keep the app polished without requiring uploads."
   ],
-  "update_policy": "normal"
+  "update_policy": "important"
 }
