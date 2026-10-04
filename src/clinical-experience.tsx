@@ -448,6 +448,7 @@ function NightStatus({ model }: { model: NightSummary }) {
   const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
   const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
   const overtimeNames = (model.overtimeNames || []).filter(Boolean);
+  const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
 
   return <section className={'nightSignal ' + (provisional ? 'needsReview' : '')} aria-label="Tonight at a glance">
     <div className="nightContextLine">
@@ -471,7 +472,7 @@ function NightStatus({ model }: { model: NightSummary }) {
         </span>
       </span>
     </div>
-    {model.taskCount > 0 && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
+    {model.taskCount > 0 && !hasSpecificDecision && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
       Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
     </Pressable>}
   </section>;
@@ -479,18 +480,23 @@ function NightStatus({ model }: { model: NightSummary }) {
 
 function NightAlerts({ model }: { model: NightSummary }) {
   const needsReview = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
+  const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
   const informationalParts = !needsReview && model.alert ? model.alert.split(':') : [];
   const infoTitle = informationalParts.length > 1 ? informationalParts.shift()?.trim() : 'Night arrangement';
   const infoDetail = informationalParts.length ? informationalParts.join(':').trim() : model.alert;
   return <>
-    {model.alert && (needsReview
+    {model.alert && !hasSpecificDecision && (needsReview
       ? <div className="alert compactNotice warn">{model.alert}</div>
       : <div className="alert compactNotice informational nightContextNotice"><span className="nightContextIcon" aria-hidden="true">i</span><span><b>{infoTitle}</b><small>{infoDetail}</small></span></div>)}
-    {model.firstTask && <button type="button" className="alert gold taskAlert" onClick={() => goToChanges('allocation')}>
-      <b>{model.firstTask}</b><span>Complete now ›</span>
+    {model.firstTask && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
+      <span className="decisionTaskMark" aria-hidden="true">!</span>
+      <span className="decisionTaskCopy"><small>Allocation decision</small><b>{model.firstTask}</b><strong>Review allocation</strong></span>
+      <i aria-hidden="true">›</i>
     </button>}
-    {model.labourPending && <button type="button" className="alert gold taskAlert" onClick={() => goToChanges('allocation')}>
-      <b>Choose the Labour Ward order</b><span>Complete now ›</span>
+    {model.labourPending && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
+      <span className="decisionTaskMark" aria-hidden="true">!</span>
+      <span className="decisionTaskCopy"><small>Labour Ward</small><b>Choose the Labour Ward order</b><strong>Review allocation</strong></span>
+      <i aria-hidden="true">›</i>
     </button>}
   </>;
 }
@@ -746,10 +752,10 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </Pressable>
       </div>
 
-      <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openFullNight}>
-        {model.action === 'choose' ? 'Choose your name' : 'View full night'}
+      {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openFullNight}>
+        Choose your name
         <span aria-hidden="true">›</span>
-      </Pressable>
+      </Pressable>}
     </div>
   </motion.article>;
 }
@@ -777,38 +783,32 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
       <span className="recentActivityDigestMark" aria-hidden="true">↻</span>
       <span><b>{model.updatedCount} {model.updatedCount === 1 ? 'change' : 'changes'} since {model.sinceLabel || 'you last opened Night'}</b><small>Review the latest shared staffing and allocation updates below.</small></span>
     </div>}
-    {model.items.map((item, index) => <Pressable
-      key={`${item.type}-${item.title}-${item.meta}-${index}`}
-      type="button"
-      className="recentActivityRow"
-      onClick={() => window.dispatchEvent(new CustomEvent('roster:activity-open', { detail: { index } }))}
-      aria-label={`View details for ${item.title}`}
-    >
-      <span className={`activityType ${item.type}`}>{item.label}</span>
-      <span className="recentActivityCopy">
-        <b>{item.title}</b>
-        {item.detail && <small className="recentActivityDetail">{item.detail}</small>}
-        <small className="recentActivityMeta">{item.meta}</small>
-      </span>
-      <i aria-hidden="true">›</i>
-    </Pressable>)}
+    {model.items.map((item, index) => {
+      const type = item.type.toLocaleLowerCase();
+      const glyph = type.includes('overtime') ? '+' : type.includes('absence') ? '−' : type.includes('allocation') || type.includes('role') ? '↔' : '·';
+      return <Pressable
+        key={`${item.type}-${item.title}-${item.meta}-${index}`}
+        type="button"
+        className="recentActivityRow"
+        onClick={() => window.dispatchEvent(new CustomEvent('roster:activity-open', { detail: { index } }))}
+        aria-label={`View details for ${item.title}`}
+      >
+        <span className={`activityTimelineMark ${item.type}`} aria-hidden="true">{glyph}</span>
+        <span className="recentActivityCopy">
+          <small className="recentActivityKicker">{item.label}</small>
+          <b>{item.title}</b>
+          {item.detail && <small className="recentActivityDetail">{item.detail}</small>}
+          <small className="recentActivityMeta">{item.meta}</small>
+        </span>
+        <i aria-hidden="true">›</i>
+      </Pressable>;
+    })}
   </div>;
-}
-
-function NightBreakShortcut({ model }: { model: PersonalNight }) {
-  return <Pressable type="button" className="nightOverviewShortcut nightBreakShortcut" onClick={() => { softHaptic(); window.show?.('breaks'); }}>
-    <span className="nightOverviewIcon" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" /><path d="M17 11h2a2 2 0 0 1 0 4h-2" /><path d="M8 6c0-1 1-1 1-2M12 6c0-1 1-1 1-2" /></svg>
-    </span>
-    <span className="nightOverviewShortcutCopy"><small>Your break</small><strong>{model.breakLabel || 'Pending'}</strong><span>Open the full break plan</span></span>
-    <i aria-hidden="true">›</i>
-  </Pressable>;
 }
 
 export function renderPersonalNightExperience(model: PersonalNight) {
   rootFor('personalNightCard')?.render(<PersonalNightCard model={model} />);
   rootFor('personalAllocationNotice')?.render(<PersonalPending model={model} />);
-  rootFor('nightBreakShortcut')?.render(<NightBreakShortcut model={model} />);
 }
 
 export function renderRecentActivityExperience(model: RecentActivity) {
