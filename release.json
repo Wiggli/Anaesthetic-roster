@@ -1,12 +1,15 @@
 {
-  "version": "45.3",
+  "version": "46.0",
   "date": "4 October 2026",
-  "title": "Keep Night allocation badges visible",
-  "summary": "Team allocation rows now keep long professional names and live status badges readable without clipped pills on phone screens.",
+  "title": "Make Night context-aware",
+  "summary": "Night now reacts to the live duty phase, personal roster changes and the next action that matters, while stronger visual and notification safeguards keep the experience clearer and harder to regress.",
   "changes": [
-    "Fixes Team allocation rows so live status chips such as Next, Now and Complete reserve their own space instead of being cropped beside long professional names.",
-    "Lets paired professional names wrap naturally while keeping the You badge, live state and row chevron readable across small phone widths.",
-    "Adds browser regression coverage for the long-name Second Part allocation layout without changing roster, break or clock-change logic."
+    "Introduces Night Focus during the active duty window, showing current Malta time, the live First Part or Second Part phase, the signed-in nurse’s immediate duty context, automatic handover state changes and one subtle optional handover haptic.",
+    "Makes personal roster changes unmistakable with a direct before-to-after alert, a private per-device history of changes affecting the signed-in nurse, assignment-focused notification deep links and a meaningful app badge reserved for unread Chat or unresolved personal change.",
+    "Separates notification controls for Changes affecting me and General roster updates, with schema-54 targeted delivery that uses verified roster identity without exposing the affected-name list in notification content.",
+    "Upgrades Changes review with an explicit Before versus After diff, plain-language five-nurse and seven-nurse consequences, and one promoted next action instead of competing prompts.",
+    "Consolidates Night, Changes and Breaks around one selected-night state model and adds automatic low-light Night mode from midnight to 07:00 while preserving clinical semantic colours and the user’s normal appearance preference.",
+    "Adds multi-width layout contracts plus an approved screenshot-regression workflow that compares canonical Night, Changes and Breaks captures against the latest successful main baseline and flags unapproved visual drift."
   ],
-  "update_policy": "normal"
+  "update_policy": "important"
 }
