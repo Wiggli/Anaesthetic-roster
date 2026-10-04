@@ -1,13 +1,13 @@
 {
-  "version": "44.2",
+  "version": "44.3",
   "date": "4 October 2026",
-  "title": "Compact the selected-night header",
-  "summary": "Changes and Breaks now reach the useful work sooner while giving the shared shift identity more visual presence.",
+  "title": "Let mobile context breathe",
+  "summary": "Important hospital, shift and selected-night context now stacks naturally on phones instead of being compressed or truncated.",
   "changes": [
-    "Changes and Breaks use a tighter institutional masthead with the information action aligned inside the title row instead of occupying a large empty area.",
-    "The shared shift identity is amplified with a larger fixed artwork stage, stronger name hierarchy and clearer tagline while the surrounding context takes less vertical space.",
-    "Selected-night date and staffing controls are consolidated into a compact context surface, allowing Manage this night and the break plan to appear higher on phone screens.",
-    "Breaks now establishes shift and selected-night context before the personal break card so the screen follows the same where, when, what hierarchy as the rest of the app."
+    "Changes and Breaks no longer squeeze Main Operating Theatres beside the Mater Dei logo; the unit label can use its own line and never ellipsises.",
+    "Selected-night staffing moves into a small context chip so the date navigator gets the full card width and can show the complete date and roster-night label.",
+    "Shift identity remains prominent with a large artwork tile, full shift name and wrapping tagline rather than sacrificing team personality for density.",
+    "Primary context across Night, Changes and Breaks now wraps instead of truncating when screen width or text scaling needs more room."
   ],
   "update_policy": "normal"
 }
