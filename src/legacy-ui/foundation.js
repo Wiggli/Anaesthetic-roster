@@ -834,6 +834,9 @@ async function finishOnboarding(){
   if(onboardingFeatureKey||onboardingChatIntro){var key=onboardingFeatureKey||'chat';if(key==='clockchange')markClockChangeEducationSeen(onboardingClockChangeDate);else markEducationSeen(key,educationVersion(key));onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast(key==='clockchange'?'Clock-change timing understood':featureEducationLabel(key)+' guide completed');return}
   var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)appStorage.setItem('anaes_my_name',select.value);markEducationSeen('main',educationVersion('main'));['night','changes','actions','breaks','chat','roster','account'].forEach(function(key){markEducationSeen(key,educationVersion(key))});onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Tutorial completed':'Your night is ready')
 }
+function skipOnboardingForNow(){
+  var dialog=byId('onboardingDialog');onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();toast('Tutorial available in Account')
+}
 function showOnboardingIfNeeded(){
   if(!currentUserProfile||releaseNotesQueued||educationSeen('main',educationVersion('main')))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?520:40)
 }
@@ -852,7 +855,7 @@ function bindFeatureEducation(){
 }
 function bindOnboarding(){
   var dialog=byId('onboardingDialog'),next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
-  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingDirection=1;onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingFeatureKey||onboardingChatIntro||onboardingGuideMenu?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingDirection=-1;onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
+  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingDirection=1;onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingFeatureKey||onboardingChatIntro||onboardingGuideMenu?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingDirection=-1;onboardingStep--;renderOnboarding()}};skip.onclick=function(){if(onboardingGuideMenu||onboardingFeatureKey||onboardingChatIntro)finishOnboarding();else skipOnboardingForNow()};
   if(dialog&&typeof dialog.addEventListener==='function')dialog.addEventListener('cancel',function(event){if(onboardingFeatureKey||onboardingChatIntro){event.preventDefault();finishOnboarding();return}onboardingGuideMenu=false;onboardingReplay=false})
 }
 
