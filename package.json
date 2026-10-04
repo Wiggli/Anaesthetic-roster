@@ -1,7 +1,7 @@
 {
   "name": "anaesthetic-night-roster",
   "private": true,
-  "version": "42.9",
+  "version": "43.0",
   "scripts": {
     "context": "node scripts/project-context.mjs",
     "release": "node scripts/release.mjs",

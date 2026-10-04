@@ -17905,3 +17905,524 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   right:2px;
   z-index:3;
 }
+
+
+/* 43.0 mobile hierarchy and readability polish.
+   One final presentation authority only. Clinical logic, workflow state and
+   navigation behaviour are intentionally unchanged. */
+
+/* Shared type scale and screen rhythm. */
+.appScreenHeader{
+  --screen-header-title:clamp(31px,7.4vw,35px);
+  --screen-header-section:clamp(19px,4.7vw,21px);
+  margin-bottom:16px!important;
+}
+.appScreenHeader .primaryInstitution{
+  min-height:42px!important;
+  margin-bottom:8px!important;
+}
+.appScreenHeader .primaryScreenTitleRow{
+  align-items:flex-end!important;
+  gap:10px!important;
+}
+.appScreenHeader .primaryScreenTitleRow h1,
+.appScreenHeaderRoster h2{
+  font-size:var(--screen-header-title)!important;
+  font-weight:760!important;
+  line-height:1.02!important;
+  letter-spacing:-.045em!important;
+}
+.appScreenHeader .primaryScreenTitleRow p{
+  max-width:34ch;
+  margin-top:5px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:12.5px!important;
+  font-weight:540!important;
+  line-height:1.4!important;
+}
+.appScreenHeader .screenEyebrow,
+.appScreenHeader .chatEyebrow{
+  color:var(--liquid-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:680!important;
+  letter-spacing:.045em!important;
+}
+#today .nightSectionIdentity h1{
+  font-size:clamp(34px,8.2vw,38px)!important;
+  font-weight:760!important;
+  line-height:1.02!important;
+  letter-spacing:-.048em!important;
+}
+#today .personalNight>.sectionTitle,
+#today .nightSummaryTitle .sectionTitle,
+#breaks .breakPlanTitle h2,
+#changes>.changePanel>.ctop h2{
+  font-size:20px!important;
+  font-weight:740!important;
+  line-height:1.18!important;
+  letter-spacing:-.028em!important;
+}
+
+/* Night: keep the personal assignment dominant while calming supporting detail. */
+#today .personalAssignmentHeroCompact .personalRoleCopy b{
+  font-size:20.5px!important;
+  font-weight:740!important;
+  line-height:1.16!important;
+  letter-spacing:-.025em!important;
+}
+#today .personalAssignmentHeroCompact .personalRoleCopy>span{
+  margin-top:3px!important;
+  font-size:11.5px!important;
+  line-height:1.34!important;
+}
+#today .personalHeroCompact .nightTimelineHead small,
+#today .personalHeroCompact .nightTimelinePhaseLabels,
+#today .personalHeroCompact .nightTimelineScale{
+  font-size:10px!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact{
+  min-height:64px!important;
+  padding:9px 10px!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact small{
+  font-size:9.5px!important;
+  font-weight:680!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact b{
+  font-size:12.5px!important;
+  font-weight:720!important;
+}
+#today .personalHeroFactGrid>.personalHeroFact span{
+  font-size:10px!important;
+  font-weight:570!important;
+}
+#today .nightSignalLeadCopy>strong{
+  font-size:19px!important;
+  font-weight:750!important;
+}
+#today .nightSignalLeadCopy>small,
+#today .nightSignalLeadCopy>span:not(.nightSignalState){
+  font-size:10.5px!important;
+}
+#today .nightSignalState b{
+  font-size:10.5px!important;
+}
+#today .nightTeamDetails>summary strong,
+#today .recentActivityPanel .nightOverviewRowHeading h2{
+  font-size:13.5px!important;
+  font-weight:720!important;
+}
+#today .compactNotice.warn{
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 16%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-warning) 4.5%,var(--liquid-surface))!important;
+}
+#today .taskAlert{
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 22%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-warning) 7%,var(--liquid-surface))!important;
+  box-shadow:none!important;
+}
+
+/* Changes: the unresolved decision is the visual focus, completed stages recede. */
+#changes .workflowExperience{
+  margin:14px 0 20px!important;
+}
+#changes .workflowProgress{
+  gap:6px!important;
+  margin:0 0 9px!important;
+  padding:9px 11px!important;
+  border-color:color-mix(in srgb,var(--liquid-separator) 72%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-surface-muted) 72%,transparent)!important;
+}
+#changes .workflowProgressCopy>span,
+#changes .workflowProgressCopy>b{
+  font-size:9.5px!important;
+}
+#changes .workflowSteps{
+  gap:4px!important;
+  padding:4px!important;
+  border-radius:18px!important;
+}
+#changes .workflowStep{
+  min-height:52px!important;
+  gap:6px!important;
+  border-radius:14px!important;
+}
+#changes .workflowStep.quiet:not(.active):not(.hasTasks){
+  opacity:.55!important;
+}
+#changes .workflowStep.active .workflowSelection{
+  border:0!important;
+  background:color-mix(in srgb,var(--liquid-accent) 5%,var(--liquid-surface))!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--liquid-accent) 16%,transparent),0 2px 8px rgba(13,43,47,.035)!important;
+}
+#changes .workflowStepNumber{
+  width:25px!important;
+  height:25px!important;
+  border-radius:9px!important;
+}
+#changes .workflowStepCopy b{
+  font-size:12.5px!important;
+  font-weight:720!important;
+}
+#changes .workflowStepCopy small{
+  font-size:9.5px!important;
+}
+#changes .workflowGuidance{
+  gap:10px!important;
+  margin-top:9px!important;
+  padding:12px 14px!important;
+  border-radius:15px!important;
+}
+#changes .workflowGuidance strong{
+  font-size:12.5px!important;
+  font-weight:720!important;
+}
+#changes .workflowGuidance small{
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+#changes .allocationSection .seventhDecisionCard{
+  margin:12px 0!important;
+  padding:14px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-radius:18px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+}
+#changes .allocationSection .seventhDecisionCard.needsDecision{
+  border-color:color-mix(in srgb,var(--liquid-warning) 34%,var(--liquid-separator))!important;
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--liquid-warning) 4%,transparent),transparent 44%),
+    var(--liquid-surface)!important;
+}
+#changes .seventhDecisionCard .decisionEyebrow{
+  color:var(--liquid-warning)!important;
+  font-size:9.5px!important;
+  font-weight:760!important;
+  letter-spacing:.055em!important;
+}
+#changes .seventhDecisionCard h3{
+  margin:5px 0 0!important;
+  font-size:16px!important;
+  font-weight:740!important;
+  line-height:1.3!important;
+  letter-spacing:-.018em!important;
+}
+#changes .seventhDecisionCard .decisionRoute{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-top:11px!important;
+}
+#changes .seventhDecisionCard .decisionRoute>div{
+  min-width:0!important;
+  padding:10px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 72%,transparent)!important;
+  border-radius:13px!important;
+  background:color-mix(in srgb,var(--liquid-surface-muted) 72%,transparent)!important;
+}
+#changes .seventhDecisionCard .decisionRoute span{
+  font-size:9px!important;
+  font-weight:680!important;
+}
+#changes .seventhDecisionCard .decisionRoute b{
+  margin-top:4px!important;
+  font-size:12px!important;
+  font-weight:720!important;
+  line-height:1.35!important;
+}
+#changes .seventhDecisionCard .decisionRoute small{
+  margin-top:3px!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+}
+#changes .seventhDecisionCard .decisionButtons{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-top:10px!important;
+}
+#changes .seventhDecisionCard .decisionButtons button{
+  min-height:46px!important;
+  padding:8px 10px!important;
+  border:1px solid var(--liquid-separator)!important;
+  border-radius:13px!important;
+  background:var(--liquid-surface-muted)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  font-weight:720!important;
+  line-height:1.25!important;
+}
+#changes .seventhDecisionCard .decisionButtons button.selected{
+  border-color:color-mix(in srgb,var(--liquid-accent) 30%,var(--liquid-separator))!important;
+  background:color-mix(in srgb,var(--liquid-accent) 10%,var(--liquid-surface))!important;
+  color:var(--liquid-accent-strong)!important;
+}
+#changes .seventhDecisionCard .decisionButtons button:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--liquid-accent) 28%,transparent)!important;
+  outline-offset:2px!important;
+}
+#changes .seventhDecisionCard .decisionPrompt,
+#changes .seventhDecisionCard .decisionSaved{
+  margin-top:9px!important;
+  font-size:10.5px!important;
+  line-height:1.4!important;
+}
+
+/* Breaks: remove repeated visual weight so the actual break plan starts sooner. */
+#breaks>.panel{
+  margin-top:10px!important;
+}
+#breakPersonalSummary{
+  margin-bottom:13px!important;
+}
+#breaks .personalBreakSummary{
+  min-height:90px!important;
+  padding:13px 15px!important;
+  border-radius:18px!important;
+}
+#breaks .personalBreakMain{
+  margin-top:4px!important;
+}
+#breaks .personalBreakMain h2{
+  font-size:22px!important;
+  font-weight:750!important;
+  line-height:1.1!important;
+  letter-spacing:-.032em!important;
+}
+#breaks .personalBreakMain p{
+  margin-top:5px!important;
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+#breaks .personalBreakMark{
+  width:44px!important;
+  height:44px!important;
+  border-radius:14px!important;
+}
+#breaks>.panel>.grid2{
+  margin-bottom:14px!important;
+}
+#breaks .breakSummaryRow{
+  margin:9px 0 13px!important;
+  border-radius:15px!important;
+}
+#breaks #breakSummaryRow>.breakSummaryItem{
+  height:60px!important;
+  min-height:60px!important;
+  padding:7px 7px!important;
+}
+#breaks #breakSummaryRow>.breakSummaryItem b{
+  font-size:12.5px!important;
+}
+#breaks #breakSummaryRow>.breakSummaryItem small{
+  font-size:9px!important;
+}
+#breaks #breakDate.notice{
+  margin:0 0 14px!important;
+  padding:10px 12px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 16%,transparent)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--liquid-warning) 4.5%,var(--liquid-surface))!important;
+}
+#breaks .breakScheduleBoard{
+  border-radius:18px!important;
+}
+#breaks .breakScheduleHeader{
+  min-height:56px!important;
+  padding:9px 13px!important;
+}
+#breaks .breakScheduleHeadingCopy h3{
+  font-size:15px!important;
+  font-weight:720!important;
+}
+#breaks .breakPerson{
+  min-height:54px!important;
+  padding:9px 15px!important;
+}
+#breaks .breakPerson [data-ui-title],
+#breaks .breakPerson .listRowTitle{
+  font-size:14.5px!important;
+  font-weight:680!important;
+}
+#breaks .breakNotesBlock{
+  margin-top:20px!important;
+}
+#breaks .coverageRow{
+  min-height:56px!important;
+}
+
+/* Chat: compact the composer and make the inbox read like a native message list. */
+#chat .chatScreen{
+  gap:12px!important;
+}
+#chat .chatTitleRow{
+  align-items:flex-end!important;
+}
+#chat .chatHeaderCompose{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 7%,var(--liquid-surface))!important;
+}
+#chat .chatHeaderCompose span{
+  display:none!important;
+}
+#chat .chatHeaderCompose svg{
+  width:21px!important;
+  height:21px!important;
+}
+#chat .chatInboxSection{
+  border-radius:18px!important;
+}
+#chat .chatInboxHeading{
+  min-height:62px!important;
+  padding:12px 15px!important;
+}
+#chat .chatInboxHeading h2{
+  font-size:18.5px!important;
+  font-weight:740!important;
+}
+#chat .chatInboxHeading small{
+  font-size:10.5px!important;
+}
+#chat .chatInboxTeamRow{
+  min-height:96px!important;
+  grid-template-columns:46px minmax(0,1fr) auto!important;
+  gap:5px 10px!important;
+  padding:11px 14px!important;
+}
+#chat .chatTeamAvatar{
+  width:46px!important;
+  height:46px!important;
+  border-radius:14px!important;
+}
+#chat .chatInboxTeamTop b{
+  font-size:14.5px!important;
+  font-weight:720!important;
+}
+#chat .chatTeamPurpose{
+  margin-top:3px!important;
+  font-size:11.5px!important;
+}
+#chat .chatTeamMemberCount,
+#chat .chatInboxTeamPreview{
+  font-size:10.5px!important;
+}
+#chat .chatInboxOpen{
+  min-height:30px!important;
+  padding:0 9px!important;
+  font-size:10px!important;
+}
+#chat .chatInboxSectionLabel{
+  min-height:44px!important;
+  padding:9px 15px!important;
+}
+#chat .chatInboxSectionLabel span{
+  font-size:13px!important;
+  font-weight:720!important;
+}
+#chat .chatInboxSectionLabel small{
+  font-size:10px!important;
+}
+#chat .chatInboxRow{
+  min-height:66px!important;
+  padding:9px 14px!important;
+}
+#chat .chatInboxRow [data-ui-title],
+#chat .chatInboxRow strong{
+  font-size:14.5px!important;
+  font-weight:680!important;
+}
+#chat .chatInboxRow small{
+  font-size:11.5px!important;
+  line-height:1.35!important;
+}
+#chat .chatInboxMeta{
+  gap:4px!important;
+}
+#chat .chatInboxMeta time{
+  font-size:9.5px!important;
+}
+#chat .chatConversationBadge,
+#chat .chatInboxUnread{
+  min-width:20px!important;
+  height:20px!important;
+  padding:0 5px!important;
+  font-size:9px!important;
+}
+#chat .chatSafetyNotice{
+  min-height:56px!important;
+  padding:9px 12px!important;
+  border-radius:15px!important;
+}
+#chat .chatSafetyNotice b{
+  font-size:11.5px!important;
+  font-weight:700!important;
+}
+#chat .chatSafetyNotice small{
+  font-size:10px!important;
+}
+#chat .chatNotificationDisclosure>summary{
+  min-height:56px!important;
+  padding:9px 12px!important;
+  border-radius:15px!important;
+}
+
+@media(max-width:430px){
+  .appScreenHeader .primaryScreenTitleRow h1,
+  .appScreenHeaderRoster h2{
+    font-size:33px!important;
+  }
+  #today .nightSectionIdentity h1{
+    font-size:35px!important;
+  }
+  #changes .workflowStep{
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    gap:2px!important;
+    padding:3px 2px!important;
+  }
+  #changes .workflowStepCopy small{
+    display:none!important;
+  }
+}
+@media(max-width:370px){
+  .appScreenHeader .primaryScreenTitleRow h1,
+  .appScreenHeaderRoster h2{
+    font-size:31px!important;
+  }
+  #today .nightSectionIdentity h1{
+    font-size:33px!important;
+  }
+  #changes .seventhDecisionCard .decisionRoute,
+  #changes .seventhDecisionCard .decisionButtons{
+    grid-template-columns:1fr!important;
+  }
+  #chat .chatInboxTeamRow{
+    grid-template-columns:42px minmax(0,1fr) auto!important;
+  }
+  #chat .chatTeamAvatar{
+    width:42px!important;
+    height:42px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #changes .workflowStep,
+  #changes .seventhDecisionCard .decisionButtons button,
+  #chat .chatHeaderCompose{
+    transition:none!important;
+  }
+}
+@media(prefers-contrast:more){
+  #changes .workflowStep.quiet:not(.active):not(.hasTasks){
+    opacity:1!important;
+  }
+}

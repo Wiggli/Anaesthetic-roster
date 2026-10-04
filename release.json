@@ -1,13 +1,14 @@
 {
-  "version": "42.9",
+  "version": "43.0",
   "date": "4 October 2026",
-  "title": "Keep administrator alerts administrative",
-  "summary": "The settings gear now surfaces only administrator work instead of duplicating selected-night roster decisions already shown in Changes.",
+  "title": "Refine mobile hierarchy and readability",
+  "summary": "Night, Changes, Breaks and Chat now share a calmer type scale, tighter spacing and clearer task hierarchy for faster reading during a night shift.",
   "changes": [
-    "The administrator settings gear no longer repeats selected-night review work such as an unresolved seven-nurse allocation.",
-    "Night-specific decisions remain clearly surfaced through Changes and Quick Actions, where they can actually be resolved.",
-    "The administrator badge now counts only pending access requests and roster publication attention.",
-    "Browser regression coverage verifies that a selected-night task alone leaves the settings gear clear while a pending access request still raises it."
+    "Primary screen titles, section headings and supporting text now use one calmer mobile type scale with more consistent spacing across Night, Changes, Breaks and Chat.",
+    "Night keeps the personal assignment as the visual priority while reducing competing emphasis in timeline details, status messaging and the Tonight summary.",
+    "Changes now lets completed workflow stages recede and gives unresolved allocation decisions, including the seventh-nurse choice, a clearer and more accessible focus.",
+    "Breaks is more compact around pending states and selected-night context so the actual break plan appears sooner without hiding any staffing information.",
+    "Chat now uses a compact compose control, denser native-style conversation rows and more disciplined unread/status treatments, while the bottom navigation is easier to read and less visually dominated by Actions."
   ],
   "update_policy": "quiet"
 }
