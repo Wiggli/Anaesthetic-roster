@@ -1,13 +1,13 @@
 {
-  "version": "44.3",
+  "version": "44.4",
   "date": "4 October 2026",
-  "title": "Let mobile context breathe",
-  "summary": "Important hospital, shift and selected-night context now stacks naturally on phones instead of being compressed or truncated.",
+  "title": "Unify the Night context hero",
+  "summary": "Night now opens with one composed context hero that combines hospital identity, screen title, shared shift identity and selected-night navigation.",
   "changes": [
-    "Changes and Breaks no longer squeeze Main Operating Theatres beside the Mater Dei logo; the unit label can use its own line and never ellipsises.",
-    "Selected-night staffing moves into a small context chip so the date navigator gets the full card width and can show the complete date and roster-night label.",
-    "Shift identity remains prominent with a large artwork tile, full shift name and wrapping tagline rather than sacrificing team personality for density.",
-    "Primary context across Night, Changes and Breaks now wraps instead of truncating when screen width or text scaling needs more room."
+    "Night now treats the Mater Dei utility strip, Night title, shared shift identity and selected date as one unified top hero rather than separate floating sections.",
+    "The shared shift artwork and name remain the personality anchor inside the hero, with room for the tagline to wrap naturally.",
+    "Previous and next night controls are embedded directly into the full-width date navigator instead of floating separately at the edges of the screen.",
+    "Staffing remains available as a small subordinate chip so it never competes with the date, while Your night begins immediately below the unified hero."
   ],
   "update_policy": "normal"
 }

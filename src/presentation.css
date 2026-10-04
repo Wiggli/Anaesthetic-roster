@@ -20351,3 +20351,395 @@ body.personalMotionReduced *::after{
     font-size:13.5px!important;
   }
 }
+
+
+/* 44.4 unified Night context hero. */
+/* Night now begins with one composed context surface. The hospital utility row,
+   page title, shared shift identity and date navigator belong to the same hero. */
+#today .nightUnifiedHero{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  margin:0 0 18px!important;
+  padding:14px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 78%,transparent)!important;
+  border-radius:28px!important;
+  background:
+    radial-gradient(110% 90% at 100% 0%,color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 8%,transparent),transparent 60%),
+    linear-gradient(155deg,color-mix(in srgb,var(--liquid-surface) 98%,transparent),color-mix(in srgb,var(--liquid-surface-muted) 72%,transparent))!important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent),
+    0 18px 46px rgba(24,39,58,.07)!important;
+}
+#today .nightUnifiedHero::after{
+  content:""!important;
+  position:absolute!important;
+  inset:auto -20% -34% 40%!important;
+  height:48%!important;
+  z-index:-1!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 7%,transparent)!important;
+  filter:blur(40px)!important;
+  pointer-events:none!important;
+}
+
+/* Utility strip: brand left, actions right, no separate header slab. */
+#today .nightUnifiedHero #appHeader,
+body.headerCompact[data-view="today"] #today .nightUnifiedHero #appHeader{
+  position:relative!important;
+  top:auto!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto!important;
+  align-items:start!important;
+  gap:10px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+#today .nightUnifiedHero #appHeader .clinicalBackdrop,
+#today .nightUnifiedHero #appHeader .headerIdentity,
+#today .nightUnifiedHero #appHeader .headerChips{
+  display:none!important;
+}
+#today .nightUnifiedHero #appHeader .hospitalStrip,
+body.headerCompact[data-view="today"] #today .nightUnifiedHero #appHeader .hospitalStrip{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:auto!important;
+  max-width:none!important;
+  min-height:auto!important;
+  max-height:none!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-items:start!important;
+  align-content:start!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:0!important;
+  opacity:1!important;
+  transform:none!important;
+  overflow:visible!important;
+  pointer-events:auto!important;
+}
+#today .nightUnifiedHero #appHeader .hospitalStrip img{
+  width:auto!important;
+  max-width:118px!important;
+  height:auto!important;
+  max-height:31px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+#today .nightUnifiedHero #appHeader .hospitalStrip span{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  overflow:visible!important;
+  color:var(--liquid-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:760!important;
+  line-height:1.18!important;
+  letter-spacing:.06em!important;
+  text-align:left!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#today .nightUnifiedHero #appHeader .head,
+body.headerCompact[data-view="today"] #today .nightUnifiedHero #appHeader .head{
+  grid-column:2!important;
+  grid-row:1!important;
+  position:static!important;
+  display:block!important;
+  min-height:0!important;
+  margin:0!important;
+}
+#today .nightUnifiedHero #appHeader .headActions{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:7px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightUnifiedHero #appHeader .headActions button,
+#today .nightUnifiedHero #appHeader .adminSettingsBtn,
+#today .nightUnifiedHero #appHeader .accountBtn{
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  max-width:42px!important;
+  max-height:42px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 82%,transparent)!important;
+  border-radius:50%!important;
+  background:color-mix(in srgb,var(--liquid-surface) 88%,transparent)!important;
+  color:var(--liquid-label)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 38%,transparent),0 5px 14px rgba(25,42,60,.045)!important;
+}
+
+/* Title belongs to the hero, with enough presence but no separate empty band. */
+#today .nightUnifiedHero .nightSectionIdentity{
+  margin:15px 0 13px!important;
+  padding:0!important;
+}
+#today .nightUnifiedHero .nightSectionIdentity h1{
+  margin:0!important;
+  color:var(--liquid-label)!important;
+  font-size:clamp(38px,9vw,44px)!important;
+  font-weight:810!important;
+  line-height:.98!important;
+  letter-spacing:-.052em!important;
+}
+
+/* Identity lane is the personality anchor inside the unified hero. */
+#today .nightUnifiedHero .nightUnifiedContext{
+  margin:0!important;
+  padding:0!important;
+}
+#today .nightUnifiedHero .nightUnifiedContext .grid2{
+  display:block!important;
+  margin:0!important;
+}
+#today .nightUnifiedHero .nightDateLabel{
+  display:block!important;
+  min-width:0!important;
+  margin:0!important;
+  font-size:0!important;
+  line-height:0!important;
+}
+#today .nightUnifiedHero .nightDateContext{
+  display:none!important;
+}
+#today .nightUnifiedHero .nightTeamIdentityContext{
+  width:100%!important;
+  max-width:none!important;
+  min-height:68px!important;
+  display:grid!important;
+  grid-template-columns:50px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:13px!important;
+  margin:0 0 12px!important;
+  padding:9px 14px 9px 9px!important;
+  border:1px solid color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 28%,var(--liquid-separator))!important;
+  border-radius:21px!important;
+  background:
+    linear-gradient(145deg,color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 7%,var(--liquid-surface)),color-mix(in srgb,var(--liquid-surface) 96%,transparent))!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 28%,transparent),0 9px 22px color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 9%,transparent)!important;
+}
+#today .nightUnifiedHero .shiftIdentityMark{
+  width:50px!important;
+  height:50px!important;
+  min-width:50px!important;
+  min-height:50px!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  font-size:17px!important;
+  box-shadow:0 4px 12px rgba(28,42,58,.10)!important;
+}
+#today .nightUnifiedHero .shiftIdentityCopy{
+  min-width:0!important;
+  display:grid!important;
+  gap:3px!important;
+}
+#today .nightUnifiedHero .shiftIdentityCopy strong{
+  overflow:visible!important;
+  color:var(--liquid-label)!important;
+  font-size:19px!important;
+  font-weight:830!important;
+  line-height:1.08!important;
+  letter-spacing:-.03em!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#today .nightUnifiedHero .shiftIdentityCopy small{
+  overflow:visible!important;
+  max-width:none!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11px!important;
+  font-weight:590!important;
+  line-height:1.28!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+
+/* Date arrows are now part of the date control, not floating islands. */
+#today .nightUnifiedHero .dateNav{
+  width:100%!important;
+  min-height:64px!important;
+  display:grid!important;
+  grid-template-columns:44px minmax(0,1fr) 44px!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:5px!important;
+  overflow:visible!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 78%,transparent)!important;
+  border-radius:20px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 90%,transparent)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 32%,transparent)!important;
+}
+#today .nightUnifiedHero .dateNav>button{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 7%,var(--liquid-surface-muted))!important;
+  color:var(--liquid-accent-strong)!important;
+  box-shadow:none!important;
+  font-size:25px!important;
+}
+#today .nightUnifiedHero .prettyDateControl{
+  width:100%!important;
+  min-width:0!important;
+}
+#today .nightUnifiedHero .prettyDateButton{
+  width:100%!important;
+  min-width:0!important;
+  min-height:50px!important;
+  display:grid!important;
+  align-content:center!important;
+  justify-items:center!important;
+  padding:4px 8px!important;
+  overflow:visible!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#today .nightUnifiedHero .prettyDateButton strong{
+  max-width:100%!important;
+  overflow:visible!important;
+  color:var(--liquid-label)!important;
+  font-size:16px!important;
+  font-weight:790!important;
+  line-height:1.14!important;
+  letter-spacing:-.025em!important;
+  text-align:center!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#today .nightUnifiedHero .prettyDateButton small{
+  max-width:100%!important;
+  overflow:visible!important;
+  margin-top:3px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10px!important;
+  font-weight:590!important;
+  line-height:1.18!important;
+  text-align:center!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+
+/* Keep staffing present but subordinate, so it never steals width from the date. */
+#today .nightUnifiedHero .staffingCount{
+  width:max-content!important;
+  min-width:0!important;
+  min-height:26px!important;
+  display:inline-flex!important;
+  align-items:baseline!important;
+  gap:4px!important;
+  margin:8px 0 0 auto!important;
+  padding:4px 8px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 70%,transparent)!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 78%,transparent)!important;
+  box-shadow:none!important;
+}
+#today .nightUnifiedHero .staffingCount span,
+#today .nightUnifiedHero .staffingCount small{
+  display:none!important;
+}
+#today .nightUnifiedHero .staffingCount strong{
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  font-weight:720!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+}
+
+/* Content starts immediately after the hero. */
+#today>.nightOverviewPanel{
+  margin:0!important;
+  padding:0 0 4px!important;
+}
+#today>.nightOverviewPanel #nightClockChange:empty{
+  display:none!important;
+}
+#today>.nightOverviewPanel .personalNight{
+  margin-top:0!important;
+}
+#today>.nightOverviewPanel .personalNight>.sectionTitle{
+  margin-top:0!important;
+}
+
+@media(max-width:390px){
+  #today .nightUnifiedHero{
+    padding:12px!important;
+    border-radius:25px!important;
+  }
+  #today .nightUnifiedHero #appHeader .hospitalStrip img{
+    max-width:108px!important;
+  }
+  #today .nightUnifiedHero #appHeader .hospitalStrip span{
+    font-size:8.8px!important;
+  }
+  #today .nightUnifiedHero .nightSectionIdentity h1{
+    font-size:38px!important;
+  }
+  #today .nightUnifiedHero .nightTeamIdentityContext{
+    grid-template-columns:46px minmax(0,1fr)!important;
+    min-height:64px!important;
+    gap:11px!important;
+  }
+  #today .nightUnifiedHero .shiftIdentityMark{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    min-height:46px!important;
+  }
+  #today .nightUnifiedHero .shiftIdentityCopy strong{
+    font-size:18px!important;
+  }
+  #today .nightUnifiedHero .shiftIdentityCopy small{
+    font-size:10.25px!important;
+  }
+  #today .nightUnifiedHero .dateNav{
+    grid-template-columns:42px minmax(0,1fr) 42px!important;
+    gap:6px!important;
+  }
+  #today .nightUnifiedHero .dateNav>button{
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+  }
+  #today .nightUnifiedHero .prettyDateButton strong{
+    font-size:15px!important;
+  }
+}
+
+
+/* 44.4 fallback: never reserve identity space when no shared shift identity exists. */
+#today .nightUnifiedHero .nightTeamIdentityContext.hidden,
+#today .nightUnifiedHero .nightTeamIdentityContext:empty{
+  display:none!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
