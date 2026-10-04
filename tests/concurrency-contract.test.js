@@ -26,7 +26,7 @@ assert.match(ui, /noteCompatibilityStartup\(/, 'legacy startup fallbacks must be
 assert.match(ui, /anaes_compat_startup_count/, 'compatibility fallback usage must persist locally so retirement can be evidence-based');
 assert.match(ui, /syncServerClock\(/, 'server time must be used as an online clock sanity check');
 assert.match(core, /function rosterCapabilities\(/, 'database capabilities must be centralized');
-assert.match(core, /EXPECTED_SCHEMA_VERSION = 51/, 'shared night identity architecture requires schema 51');
+assert.match(core, /EXPECTED_SCHEMA_VERSION = 52/, 'global shared shift identity architecture requires schema 52');
 assert.match(core, /base\.trustBoundary=Number\(schemaVersion\|\|0\)>=49/, 'schema 49 must expose the Trust Boundary capability');
 assert.match(domain, /snapshotIsExpired/, 'offline data must have an explicit retention bound');
 assert.match(domain, /DIAG_LIMIT=30/, 'local diagnostics must be bounded');

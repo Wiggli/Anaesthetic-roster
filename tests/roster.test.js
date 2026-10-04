@@ -273,6 +273,7 @@ const chatPolicyFixMigration = fs.readFileSync(path.join(__dirname, '..', 'supab
 const logicFoundationMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
 const reliabilityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002153000_reliability_architecture_v48.sql'), 'utf8');
 const trustBoundaryMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261002180000_trust_boundary_v49.sql'), 'utf8');
+const globalShiftIdentityMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261004062000_global_shift_identity_v52.sql'), 'utf8');
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version, 'APP_VERSION must match the newest release-history entry');
 const releaseHistorySnapshot = Array.from(context.RELEASE_HISTORY, entry => ({
   version: String(entry.version),
@@ -434,9 +435,10 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 24, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 25, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004024500_night_team_identity_v51.sql'), 'the schema-51 shared night identity migration must stay checked in');
+assert.ok(checkedInMigrations.includes('20261004062000_global_shift_identity_v52.sql'), 'the schema-52 global shift identity migration must stay checked in');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');
@@ -519,7 +521,10 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 51, 'the application must require the shared night team identity schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 52, 'the application must require the global shift identity schema');
+assert.match(globalShiftIdentityMigration, /set_night_team_identity_v51[\s\S]*values\(\s*v_anchor/, 'schema 52 must store one canonical shift identity regardless of selected night');
+assert.match(globalShiftIdentityMigration, /generate_series\([\s\S]*interval '4 days'/, 'schema 52 startup snapshots must project the shift identity across every roster date');
+assert.match(globalShiftIdentityMigration, /update public\.app_schema_version[\s\S]*version=52/, 'schema 52 migration must advance the schema marker');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
 assert.match(chatPolicyFixMigration, /update public\.app_schema_version[\s\S]*version=46/, 'schema 46 migration must advance the schema marker');
 assert.match(logicFoundationMigration, /create or replace function public\.app_server_clock_v47\(\)/, 'schema 47 must expose an authenticated server clock');

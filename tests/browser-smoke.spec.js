@@ -354,7 +354,7 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
     const utility = document.querySelector('.chatUtilityGroup');
     const safetyTitle = document.querySelector('.chatSafetyNotice b');
     const identity = document.querySelector('.nightTeamIdentityContext');
-    if (identity) { identity.textContent = '✦ Night Owls'; identity.classList.remove('hidden'); }
+    if (identity) { identity.textContent = 'Night Owls'; identity.classList.remove('hidden'); }
     return {
       utilityRadius: utility ? parseFloat(getComputedStyle(utility).borderRadius) : 0,
       safetyTitleSize: safetyTitle ? parseFloat(getComputedStyle(safetyTitle).fontSize) : 0,
@@ -363,7 +363,7 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   });
   expect(chatPolishMetrics.utilityRadius).toBeGreaterThanOrEqual(20);
   expect(chatPolishMetrics.safetyTitleSize).toBeGreaterThanOrEqual(15);
-  expect(chatPolishMetrics.identitySize).toBeGreaterThanOrEqual(12);
+  expect(chatPolishMetrics.identitySize).toBeGreaterThanOrEqual(14);
 
   await page.evaluate(() => {
     const chat = document.getElementById('chat');
@@ -397,7 +397,7 @@ test('shared shift nickname editor is concise and patient-safe', async ({ page }
   });
   await expect(page.locator('#nightTeamNameDialog')).toBeVisible();
   await expect(page.locator('#nightTeamNameInput')).toHaveAttribute('maxlength', '28');
-  await expect(page.locator('#nightTeamNameDialog')).toContainText('Everyone on the team will see the same name');
+  await expect(page.locator('#nightTeamNameDialog')).toContainText('across every roster night');
   await expect(page.locator('#nightTeamNameDialog')).toContainText('No patient information');
   await page.locator('#nightTeamNameInput').fill('The Night Owls');
   await expect(page.locator('#nightTeamNameInput')).toHaveValue('The Night Owls');

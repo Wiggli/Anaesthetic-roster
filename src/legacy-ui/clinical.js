@@ -527,8 +527,8 @@ function openNightTeamNameDialog(){
   if(!base||!dialog||!input)return;
   input.value=nickname;
   input.dataset.rosterDate=base.date;
-  if(date)date.textContent=fmt(base.date);
-  if(meta){meta.textContent=row&&row.updated_by?'Last changed by '+row.updated_by+' · '+shortTime(row.updated_at):'Everyone on this roster night will see the same name.';meta.classList.toggle('hidden',false)}
+  if(date)date.textContent='Shared across every roster night';
+  if(meta){meta.textContent=row&&row.updated_by?'Last changed by '+row.updated_by+' · '+shortTime(row.updated_at):'Everyone in this shift will see the same name.';meta.classList.toggle('hidden',false)}
   if(clear)clear.classList.toggle('hidden',!nickname);
   if(status){status.textContent='';status.classList.remove('error')}
   if(dialog.showModal&&!dialog.open)dialog.showModal();
@@ -544,13 +544,13 @@ async function saveNightTeamName(clearName){
   if(nickname.length>28){if(status){status.textContent='Keep the shift name to 28 characters or fewer.';status.classList.add('error')}return}
   if(sharedWritesBlocked()){if(status){status.textContent='Update Night Roster before changing the shared shift name.';status.classList.add('error')}return}
   if(!navigator.onLine||forcedOfflineSession){if(status){status.textContent='Reconnect before changing the shared shift name.';status.classList.add('error')}return}
-  if(save)save.disabled=true;if(clear)clear.disabled=true;if(status){status.textContent=clearName?'Removing shared name…':'Saving for everyone…';status.classList.remove('error')}
+  if(save)save.disabled=true;if(clear)clear.disabled=true;if(status){status.textContent=clearName?'Removing shared shift name…':'Saving shift identity…';status.classList.remove('error')}
   try{
     var result=await supa.rpc('set_night_team_identity_v51',{p_roster_date:rosterDate,p_nickname:nickname,p_client_version:APP_VERSION});
     if(result.error)throw result.error;
     await loadSharedData({background:true});
     if(dialog&&dialog.open)dialog.close();
-    toast(clearName?'Shift nickname removed':('Shift named “'+nickname+'”'));
+    toast(clearName?'Shift name removed':('Shift named “'+nickname+'” across all roster nights'));
   }catch(error){
     recordAppDiagnostic('team-identity','save',error&&error.code||'failed');
     if(status){status.textContent='The shared shift name could not be saved. Try again.';status.classList.add('error')}

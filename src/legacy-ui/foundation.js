@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V43.4 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V43.5 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -89,6 +89,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"43.5","date":"4 October 2026","title":"Make shift identity persistent and more distinctive","changes":["The shared shift name now belongs to the team rather than one roster date, so it stays visible when moving between every published night.","Existing shift names are carried forward automatically and the database now treats rename or removal as one global team identity while retaining the guarded shared-write and audit protections.","The Night header gives the shift identity a richer glass badge with a dedicated identity mark, stronger typography, depth and a subtle reveal without competing with the selected date.","Changes, Breaks and Chat continue to use the same shared identity, while the naming sheet now explains clearly that the name applies across every roster night."],"policy":"normal"},
   {"version":"43.4","date":"4 October 2026","title":"Give Chat and shift identity a premium visual hierarchy","changes":["Team Chat is promoted into a richer featured conversation surface with a larger team icon, stronger shift title, cleaner metadata and more deliberate depth.","Chat essentials are rebuilt as one premium glass surface with generous safety and notification rows, larger icons, clearer typography and better touch targets.","Zero unread counts are never rendered as badges; unread indicators now appear only when there is something that genuinely needs attention.","Direct messages gain larger avatars, names and previews with improved spacing so the inbox feels more confident and easier to scan on a night shift.","Shared shift names are larger and more distinctive across Night, Changes, Breaks and Chat, using one consistent identity treatment without overpowering clinical information."],"policy":"normal"},
   {"version":"43.3","date":"4 October 2026","title":"Rebuild Chat around the night team","changes":["Chat is rebuilt around one compact conversation language: Team Chat and direct messages now share aligned avatars, names, previews, timestamps and unread states without oversized dashboard cards.","The header and selected-night context are tighter and calmer, while safety guidance and notification preferences move into a quiet footer so conversations remain the primary task.","Any roster member can give the selected shift a shared nickname of up to 28 characters; the name is stored per roster night, synchronises across devices and can be renamed or removed.","A shift nickname becomes the Team Chat identity and also appears subtly beside the selected night in Night, Changes and Breaks, while Anaesthetic Team remains visible as the clinical context.","Shared shift-name writes are protected by the existing authenticated compatibility boundary, audited server-side, included in startup and offline snapshots, and propagated through shared revision and realtime updates."],"policy":"normal"},
   {"version":"43.2","date":"4 October 2026","title":"Refine Chat into a calmer native inbox","changes":["Team Chat now uses a compact near-background conversation surface with a restrained accent edge, smaller avatar and clearer timestamp hierarchy.","Private conversations now use purpose-built messaging rows so names, previews, timestamps and unread badges stay aligned as one coherent item.","Message previews are shorter and more natural: private rows no longer repeat the colleague name and Team Chat no longer prefixes every preview with Latest.","Safety guidance and notification settings are now grouped into one quiet secondary utility surface rather than competing with conversations.","The active bottom-navigation lens is visually inset and the Actions control is calmer, preserving the same tested navigation geometry while reducing visual bulk."],"policy":"quiet"},
@@ -344,8 +345,15 @@ function rowsIndexedByDate(rows){
 }
 
 function nightTeamIdentityFor(date){
-  var row=nightTeamIdentities&&nightTeamIdentities[date];
-  return plainSnapshotRecord(row)?row:null
+  var best=null,bestTime=-Infinity,bestDate='';
+  Object.keys(nightTeamIdentities||{}).forEach(function(key){
+    var row=nightTeamIdentities[key],value=plainSnapshotRecord(row)&&typeof row.nickname==='string'?row.nickname.trim():'';
+    if(!value)return;
+    var stamp=Date.parse(row.updated_at||''),rowDate=String(row.roster_date||key||'');
+    if(!Number.isFinite(stamp))stamp=0;
+    if(!best||stamp>bestTime||(stamp===bestTime&&rowDate>bestDate)){best=row;bestTime=stamp;bestDate=rowDate}
+  });
+  return best
 }
 function nightTeamNickname(date){
   var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
@@ -356,8 +364,8 @@ function renderNightTeamIdentityContext(date){
   var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date);
   Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
     node.classList.toggle('hidden',!nickname);
-    node.textContent=nickname?'✦ '+nickname:'';
-    node.title=nickname&&row&&row.updated_by?'Shift nickname · updated by '+row.updated_by:'';
+    node.textContent=nickname||'';
+    node.title=nickname?(row&&row.updated_by?'Shift name · shared across every roster night · updated by '+row.updated_by:'Shift name · shared across every roster night'):'';
   });
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||''}}))
 }
@@ -674,7 +682,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=43.4" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=43.5" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}

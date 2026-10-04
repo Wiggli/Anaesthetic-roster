@@ -23,6 +23,7 @@ const operationalMigration = fs.readFileSync(path.join(root, 'supabase', 'migrat
 const chatPolicyFixMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20260924211500_fix_chat_reply_policy.sql'), 'utf8');
 const logicFoundationMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261002120000_logic_foundation_v47.sql'), 'utf8');
 const teamIdentityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261004024500_night_team_identity_v51.sql'), 'utf8');
+const globalShiftIdentityMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261004062000_global_shift_identity_v52.sql'), 'utf8');
 
 new vm.Script(chat, { filename: 'chat.js' });
 
@@ -42,7 +43,8 @@ assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversati
 assert.match(html, /Direct messages[\s\S]*One-to-one chats/, 'private messaging must remain explicitly one-to-one');
 assert.match(html, /Staff coordination only[\s\S]*No patient information[\s\S]*Messages removed after 14 days/, 'chat must retain the patient-information safety notice');
 assert.match(html, /chatUtilityHeading[\s\S]*Chat essentials[\s\S]*Safety &amp; alerts/, 'Chat safety and notification controls must live inside one premium essentials surface');
-assert.match(presentationCss, /\.nightTeamIdentityContext\{[\s\S]*border-radius:999px[\s\S]*font-size:12\.5px/, 'shared shift names must keep the larger app-wide identity treatment');
+assert.match(presentationCss, /\.nightTeamIdentityContext\{[\s\S]*border-radius:999px[\s\S]*font-size:12\.5px/, 'shared shift names must keep the app-wide identity foundation');
+assert.match(presentationCss, /43\.5 persistent shift identity[\s\S]*#today \.nightTeamIdentityContext\{[\s\S]*font-size:14\.5px/, 'Night must promote the shared shift name into the richer 43.5 identity treatment');
 assert.match(presentationCss, /#chat \.chatConversationBadge\.hidden,[\s\S]*display:none!important/, 'zero unread badges must remain visually suppressed');
 assert.match(chat, /unread\.textContent=''[\s\S]*removeAttribute\('aria-label'\)/, 'zero team unread state must clear the badge content instead of rendering 0');
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
@@ -156,7 +158,7 @@ assert.doesNotMatch(chatPolicyFixMigration, /from public\.chat_messages replied/
 assert.match(operationalMigration, /now\(\) - interval '14 days'/, 'chat retention must delete only messages older than 14 days');
 assert.match(operationalMigration, /cron\.schedule\([\s\S]*chat-retention-14-days[\s\S]*prune_expired_chat_messages/, '14-day retention must run automatically server-side');
 
-assert.match(teamIdentityMigration, /create table public\.night_team_identity/, 'shared shift nicknames must be stored per roster night');
+assert.match(teamIdentityMigration, /create table public\.night_team_identity/, 'the schema-51 compatibility store for shared shift identity must remain available');
 assert.match(teamIdentityMigration, /alter table public\.night_team_identity enable row level security/, 'shared shift nicknames must be protected by RLS');
 assert.match(teamIdentityMigration, /grant select on table public\.night_team_identity to authenticated/, 'signed-in roster members may read the shared shift nickname');
 assert.match(teamIdentityMigration, /set_night_team_identity_v51[\s\S]*assert_app_write_compatible_v49/, 'shift nickname writes must use the guarded app compatibility boundary');
@@ -166,6 +168,12 @@ assert.match(teamIdentityMigration, /audit_night_team_identity_v51/, 'shift nick
 assert.match(teamIdentityMigration, /supabase_realtime add table public\.night_team_identity/, 'shift nickname changes must be available to realtime subscribers');
 assert.match(teamIdentityMigration, /'night_team_identity'/, 'protected startup snapshots must include shared shift identity');
 assert.match(teamIdentityMigration, /set version=51/, 'schema 51 must advertise the shift identity capability');
+assert.match(globalShiftIdentityMigration, /set_night_team_identity_v51[\s\S]*values\(\s*v_anchor/, 'schema 52 must treat a rename from any selected date as one team-level identity');
+assert.match(globalShiftIdentityMigration, /delete from public\.night_team_identity;/, 'schema 52 must remove the shift name globally rather than only from one date');
+assert.match(globalShiftIdentityMigration, /generate_series\([\s\S]*interval '4 days'/, 'schema 52 must keep installed 43.4 clients date-complete through the startup snapshot');
+assert.match(globalShiftIdentityMigration, /set version=52/, 'schema 52 must advertise global shift identity semantics');
+assert.match(ui, /function nightTeamIdentityFor\(date\)[\s\S]*Object\.keys\(nightTeamIdentities\|\|\{\}\)[\s\S]*updated_at/, 'the browser must fall back to the newest shared identity even when an older offline snapshot contains only one date');
+assert.match(html, /Give your shift one shared name\.[\s\S]*across every roster night\./, 'the naming sheet must explain that the identity belongs to the shift rather than one night');
 assert.match(html, /id="nightTeamNameInput"[^>]*maxlength="28"/, 'the shift nickname editor must enforce the 28-character client limit');
 assert.match(html, /Keep it friendly and work-appropriate\. No patient information\./, 'the nickname editor must explicitly forbid patient information');
 assert.match(ui, /set_night_team_identity_v51[\s\S]*p_client_version:APP_VERSION/, 'the browser must change shared shift identity only through the guarded schema-51 RPC');
