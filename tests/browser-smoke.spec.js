@@ -773,7 +773,7 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
     window.onboardingStep = 1;
     window.renderOnboarding();
   });
-  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '3');
+  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '8');
   await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuenow', '2');
   await expect(page.locator('#onboardingTitle')).toContainText('What matters to you stays first');
   await expect(page.locator('#onboardingTitle')).toBeFocused();
@@ -783,16 +783,16 @@ test('App Guide opens reusable contextual help without resetting first-use setup
   await openShell(page);
   await page.evaluate(() => {
     localStorage.setItem('anaes_onboarding_complete_v34', '1');
-    localStorage.setItem('anaes_education_state_v1', JSON.stringify({ main: 2, chat: 1, changes: 1, breaks: 1 }));
+    localStorage.setItem('anaes_education_state_v1', JSON.stringify({ main: 3, chat: 2, changes: 2, breaks: 2 }));
     window.currentUserProfile = { display_name: 'Andre Bartolo', email: 'andre@example.test', user_role: 'member' };
     window.openOnboardingReplay();
   });
   const dialog = page.locator('#onboardingDialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('#onboardingTitle')).toContainText('Help that takes you to the right place');
-  await expect(dialog.locator('.appGuideList button')).toHaveCount(6);
+  await expect(dialog.locator('.appGuideList button')).toHaveCount(10);
   await expect(dialog.locator('.appGuideList')).toContainText('Team Chat');
-  await expect(dialog.locator('#onboardingStepLabel')).toHaveText('App guide');
+  await expect(dialog.locator('#onboardingStepLabel')).toHaveText('Tutorial & app guide');
 });
 
 test('cinematic surfaces respect reduced motion', async ({ page }) => {
@@ -1454,7 +1454,7 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await page.locator('#accountBackBtn').click();
   await page.locator('#accountHomeHub [data-account-section="help"]').click();
   await expect(page.locator('#accountActionsExperience')).toContainText('Install Night Roster');
-  await expect(page.locator('#accountActionsExperience button', { hasText: 'App guide' })).toBeVisible();
+  await expect(page.locator('#accountActionsExperience button', { hasText: 'Tutorial & app guide' })).toBeVisible();
   await expect(page.locator('#accountActionsExperience button', { hasText: 'What’s new' })).toBeVisible();
   await expect(page.locator('#accountActionsExperience button', { hasText: 'Version history' })).toBeVisible();
   await page.locator('#accountActionsExperience button', { hasText: 'Version history' }).click();
