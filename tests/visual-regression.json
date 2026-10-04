@@ -1,0 +1,29 @@
+{
+  "max_changed_ratio": 0.015,
+  "snapshots": [
+    "mobile-chromium-night.png",
+    "desktop-chromium-night.png",
+    "mobile-chromium-night-dark.png",
+    "desktop-chromium-night-dark.png",
+    "mobile-chromium-breaks.png",
+    "desktop-chromium-breaks.png",
+    "mobile-chromium-changes-shared.png",
+    "desktop-chromium-changes-shared.png",
+    "mobile-chromium-night-intelligence-390.png",
+    "desktop-chromium-night-intelligence-390.png",
+    "mobile-chromium-night-intelligence-low-light.png",
+    "desktop-chromium-night-intelligence-low-light.png",
+    "mobile-chromium-changes-before-after.png",
+    "desktop-chromium-changes-before-after.png"
+  ],
+  "allow_changes": {
+    "46.0": [
+      "mobile-chromium-night-intelligence-390.png",
+      "desktop-chromium-night-intelligence-390.png",
+      "mobile-chromium-night-intelligence-low-light.png",
+      "desktop-chromium-night-intelligence-low-light.png",
+      "mobile-chromium-changes-before-after.png",
+      "desktop-chromium-changes-before-after.png"
+    ]
+  }
+}
