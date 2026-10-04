@@ -391,7 +391,7 @@ function Appearance({ initial }: { initial: ThemeChoice }) {
 
 function AccountActions({ installed, newRelease, version }: { installed: boolean; newRelease?: boolean; version?: string }) {
   const actions = [
-    { action: 'guide', title: 'App guide', detail: 'Help for Night, Changes, Breaks, Chat and more', icon: '✦' },
+    { action: 'guide', title: 'Tutorial & app guide', detail: 'Replay the full tutorial or jump to any feature', icon: '✦' },
     { action: 'whatsnew', title: 'What’s new', detail: newRelease ? `New in version ${version || ''}` : 'See the latest Night Roster improvements', icon: '●', isNew: !!newRelease },
     !installed && { action: 'install', title: 'Install Night Roster', detail: 'Add Night Roster to this device', icon: '↓' },
     { action: 'share', title: 'Share Night Roster', detail: 'QR code, WhatsApp, Messages and more', icon: '↗' },

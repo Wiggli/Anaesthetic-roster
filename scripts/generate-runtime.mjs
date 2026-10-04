@@ -15,6 +15,7 @@ const uiSources = [
   'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
   'src/legacy-ui/sync.js',
+  'src/legacy-ui/education.js',
   'src/legacy-ui/bootstrap.js'
 ];
 

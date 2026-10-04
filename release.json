@@ -1,13 +1,13 @@
 {
-  "version": "45.1",
+  "version": "45.2",
   "date": "4 October 2026",
-  "title": "Simplify Night actions and activity",
-  "summary": "Night and Changes now present one clear action per intent, with cleaner pending decisions and better-formatted activity history.",
+  "title": "Refresh onboarding and tutorial",
+  "summary": "First-run onboarding and the reusable tutorial now teach the same complete 45.x app, including the newest navigation, decision, personalisation and sharing features.",
   "changes": [
-    "Removes redundant Night actions so personal allocation, team allocation and Breaks each have one obvious route instead of repeated full-width shortcuts.",
-    "Collapses unresolved staffing and allocation prompts into one clear amber decision card while preserving separate confirmation actions when they are genuinely required.",
-    "Reformats Changes history and Night activity into compact structured rows with clearer hierarchy, metadata and state styling.",
-    "Strengthens the Review changes action and pending workflow styling without changing roster calculations, staffing rules or clock-change logic."
+    "Rebuilds first-use onboarding as an eight-step current-app tutorial covering identity, Night, Changes, Actions, Breaks, Team Chat, Account and Personalisation, sharing, installation and reusable help.",
+    "Updates the App Guide into a complete Tutorial & app guide with one-tap lessons for Night, Changes, Actions, Breaks, Team Chat, Full roster, Account & Personalise, sharing and update history.",
+    "Advances the education generation so existing users receive the refreshed walkthrough once, while updated Changes, Breaks and Chat tips can be rediscovered without repeating them after the full tutorial is completed.",
+    "Makes Skip for now genuinely temporary and keeps the complete tutorial replayable from Account, while preserving clock-change guidance, roster logic, staffing rules and shared-data behaviour."
   ],
   "update_policy": "normal"
 }

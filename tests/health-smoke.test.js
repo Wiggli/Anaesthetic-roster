@@ -46,10 +46,10 @@ assert.match(html, /id="adminHealthGrid"/,
 assert.doesNotMatch(html + push, /send test notification|test notification/i,
   'no test-notification button or workflow may be added');
 
-assert.match(ui, /The normal roster is automatic\./,
-  'onboarding must end by explaining that the standard roster needs no action');
+assert.match(ui, /The normal calculated roster is automatic\./,
+  'the Changes tutorial must explain that the standard calculated roster needs no action');
 const onboarding = ui.slice(ui.indexOf('function onboardingPages()'), ui.indexOf('function renderOnboarding()', ui.indexOf('function onboardingPages()')));
 assert.doesNotMatch(onboarding, /onboardingProfileSetup|onboardingPasskeyButton/,
-  'optional profile and passkey setup must stay out of the shortened onboarding path');
+  'optional profile and passkey setup forms must stay out of the educational tutorial path');
 
 console.log('Authenticated startup, lazy chat, push endpoint, onboarding and admin-health contracts passed.');
