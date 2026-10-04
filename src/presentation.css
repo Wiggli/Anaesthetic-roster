@@ -18999,3 +18999,71 @@ body.dark #chat .chatUtilityGroup{
     backdrop-filter:none;
   }
 }
+
+
+/* 43.5 persistent shift identity: one richer signature across every roster night. */
+.nightTeamIdentityContext{
+  position:relative;
+  gap:7px;
+  min-height:32px;
+  padding:6px 11px 6px 7px;
+  font-size:13px;
+  font-weight:790;
+  letter-spacing:-.015em;
+  isolation:isolate;
+}
+.nightTeamIdentityContext::before{
+  content:"✦";
+  width:22px;
+  height:22px;
+  flex:0 0 22px;
+  display:grid;
+  place-items:center;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 24%,var(--liquid-separator));
+  border-radius:9px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 18%,var(--liquid-surface)),color-mix(in srgb,var(--liquid-accent) 7%,transparent));
+  color:var(--liquid-accent-strong);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 16%,transparent),0 4px 12px color-mix(in srgb,var(--liquid-accent) 13%,transparent);
+  font-size:11px;
+  line-height:1;
+}
+#today .nightTeamIdentityContext{
+  min-height:42px;
+  margin:7px auto 12px;
+  padding:6px 15px 6px 7px;
+  gap:9px;
+  border-color:color-mix(in srgb,var(--liquid-accent) 30%,var(--liquid-separator));
+  background:
+    linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 14%,var(--liquid-surface)),color-mix(in srgb,var(--liquid-accent) 5%,var(--liquid-surface))),
+    var(--liquid-surface);
+  color:color-mix(in srgb,var(--liquid-accent-strong) 92%,var(--liquid-label));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,#fff 18%,transparent),
+    0 10px 28px color-mix(in srgb,var(--liquid-accent) 14%,transparent),
+    0 1px 2px color-mix(in srgb,var(--liquid-label) 8%,transparent);
+  font-size:14.5px;
+  font-weight:820;
+  letter-spacing:-.022em;
+  text-shadow:0 1px 0 color-mix(in srgb,#fff 12%,transparent);
+  animation:shiftIdentityReveal .34s cubic-bezier(.2,.8,.2,1) both;
+}
+#today .nightTeamIdentityContext::before{
+  width:29px;
+  height:29px;
+  flex-basis:29px;
+  border-radius:11px;
+  background:
+    radial-gradient(circle at 32% 25%,color-mix(in srgb,#fff 24%,transparent),transparent 42%),
+    linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 24%,var(--liquid-surface)),color-mix(in srgb,var(--liquid-accent) 10%,transparent));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),
+    0 5px 16px color-mix(in srgb,var(--liquid-accent) 18%,transparent);
+  font-size:13px;
+}
+@keyframes shiftIdentityReveal{
+  from{opacity:0;transform:translateY(-3px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  #today .nightTeamIdentityContext{animation:none}
+}
