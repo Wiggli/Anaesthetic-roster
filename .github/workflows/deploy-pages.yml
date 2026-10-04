@@ -59,6 +59,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -84,14 +87,43 @@ jobs:
         run: npx playwright install chromium
       - name: Run mobile and desktop Chromium smoke tests
         run: npm run verify:browser
+      - name: Download latest approved visual baseline
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p visual-baseline
+          run_id="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows/deploy-pages.yml/runs?branch=main&status=success&per_page=20" \
+            --jq '.workflow_runs[] | select(.event == "push") | .id' | head -n 1)"
+          if [ -z "$run_id" ]; then
+            echo "::notice::No successful main visual baseline run exists yet."
+            exit 0
+          fi
+          artifact_id="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" \
+            --jq '.artifacts[] | select(.name == "presentation-review" and .expired == false) | .id' | head -n 1)"
+          if [ -z "$artifact_id" ]; then
+            echo "::notice::The latest successful main run predates approved screenshot baselines."
+            exit 0
+          fi
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/presentation-baseline.zip
+          unzip -q /tmp/presentation-baseline.zip -d visual-baseline
+      - name: Compare approved screenshots
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock pixelmatch@7.1.0 pngjs@7.0.0
+          node scripts/visual-regression.mjs visual-baseline visual-review
       - name: Preserve presentation review captures
-        if: always() && github.event_name == 'pull_request'
+        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push')
         uses: actions/upload-artifact@v4
         with:
           name: presentation-review
-          path: visual-review
+          path: |
+            visual-review
+            visual-diff
           if-no-files-found: ignore
-          retention-days: 3
+          retention-days: 14
 
   browser-resilience:
     needs: build
