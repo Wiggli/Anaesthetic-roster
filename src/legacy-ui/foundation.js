@@ -15,6 +15,7 @@ var waitingUpdateState='new';
 var updateActivationTimer=null;
 var pendingRemovals={};
 var labourOrders={};
+var nightTeamIdentities={};
 var labourOrderAvailable=true;
 var allocationDrafts={};
 var labourOrderDrafts={};
@@ -340,6 +341,25 @@ function rowsIndexedByDate(rows){
   var result={};(Array.isArray(rows)?rows:[]).forEach(function(row){if(plainSnapshotRecord(row)&&typeof row.roster_date==='string')result[row.roster_date]=row});return result
 }
 
+function nightTeamIdentityFor(date){
+  var row=nightTeamIdentities&&nightTeamIdentities[date];
+  return plainSnapshotRecord(row)?row:null
+}
+function nightTeamNickname(date){
+  var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
+  return value.slice(0,28)
+}
+window.nightTeamNickname=nightTeamNickname;
+function renderNightTeamIdentityContext(date){
+  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
+    node.classList.toggle('hidden',!nickname);
+    node.textContent=nickname?'✦ '+nickname:'';
+    node.title=nickname&&row&&row.updated_by?'Shift nickname · updated by '+row.updated_by:'';
+  });
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||''}}))
+}
+
 async function requestStartupSnapshot(){
   var token=currentAccessToken;
   if(!token){
@@ -443,7 +463,8 @@ async function requestCompatibilityStartup(){
     var labourOrder=await startupQuery(supa.from('night_labour_order').select('*'),'Labour Ward order did not respond.');
     var planStatus=await startupQuery(supa.from('night_plan_status').select('*'),'Night plan status did not respond.');
     var roleOverrides=await startupQuery(supa.from('night_role_overrides').select('*'),'Night-only roles did not respond.');
-    var allocations=[labourOrder,planStatus,roleOverrides];
+    var teamIdentity=await startupQuery(supa.from('night_team_identity').select('*'),'Shift nickname did not respond.');
+    var allocations=[labourOrder,planStatus,roleOverrides,teamIdentity];
     if(allocations.some(startupQueryFailed))throw new Error('Shared allocations could not be loaded.');
 
     sharedLoadFailureStage='support';
@@ -458,6 +479,7 @@ async function requestCompatibilityStartup(){
       night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
       roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
       night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
+      night_team_identity:allocations[3].data||[],
       app_settings:support[0]&&!support[0].error?support[0].data:null,
       schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):0,
       compatibility:support[2]&&!support[2].error?support[2].data:null,
@@ -479,7 +501,7 @@ function readOfflineSnapshot(){
     if(window.AnaestheticDomain&&window.AnaestheticDomain.snapshotIsExpired&&window.AnaestheticDomain.snapshotIsExpired(raw.saved_at,604800000,appNowMs())){appStorage.removeItem('anaes_offline_snapshot');if(window.AnaestheticRuntime&&window.AnaestheticRuntime.snapshots)window.AnaestheticRuntime.snapshots.remove('offline-roster');recordAppDiagnostic('offline','snapshot','expired');return null}
     var versions=raw.rotationVersions.filter(function(version){return plainSnapshotRecord(version)&&/^\d{4}-\d{2}-\d{2}$/.test(version.effective_from||'')&&['first1','first2','second1','second2','pager','reliever'].every(function(key){return typeof version[key]==='string'&&version[key].trim()})}).map(function(version){var copy=Object.assign({},version);copy.seventh_cycle=Array.isArray(version.seventh_cycle)&&version.seventh_cycle.length?version.seventh_cycle.filter(function(name){return typeof name==='string'&&name.trim()}):ORIGINAL_SEVENTH.slice();return copy});
     if(!versions.length||!/^\d{4}-\d{2}-\d{2}$/.test(raw.rosterSettings.published_until||''))return null;
-    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0,accessEpoch:Number(raw.accessEpoch||0)||0,compatibility:normaliseAppCompatibility(raw.compatibility)}
+    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),nightTeamIdentities:snapshotRecordsByDate(raw.nightTeamIdentities),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0,accessEpoch:Number(raw.accessEpoch||0)||0,compatibility:normaliseAppCompatibility(raw.compatibility)}
   }catch(error){recordAppDiagnostic('offline','snapshot-read','failed');return null}
 }
 
@@ -553,7 +575,7 @@ async function enterAccessLost(){
   if(window.chatTeardownSession)window.chatTeardownSession();
   await clearPrivateDeviceData();
   currentUserProfile=null;currentPrivateProfile=null;profileAvatarUrl='';currentAccessToken='';
-  nightChanges={};nightOvertime={};changeHistory={};overtimeHistory={};roleOverrideHistory={};fiveCoverChoices={};labourOrders={};nightPlanStatuses={};nightRoleOverrides={};
+  nightChanges={};nightOvertime={};changeHistory={};overtimeHistory={};roleOverrideHistory={};fiveCoverChoices={};labourOrders={};nightPlanStatuses={};nightRoleOverrides={};nightTeamIdentities={};
   lastObservedSyncRevision=null;lastObservedAccessEpoch=null;
   try{await supa.auth.signOut({scope:'local'})}catch(error){}
   currentUser=null;setAuthMode('login');showAuth('Your Night Roster access has changed. Sign in again, or contact the roster administrator if you still need access.',true);
@@ -613,7 +635,7 @@ function rememberOnboardingProfile(){var name=byId('onboardingProfileName'),titl
 function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;var account=byId('accountSheet');if(account&&account.open)account.close();onboardingChatIntro=false;onboardingFeatureKey='';onboardingGuideMenu=true;onboardingReplay=true;onboardingDirection=1;onboardingStep=0;renderOnboarding();if(!dialog.open)dialog.showModal()}
 
 function offlineSnapshotPayload(){
-  return{saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0),accessEpoch:Number(lastObservedAccessEpoch||0),compatibility:appCompatibility}
+  return{saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,nightTeamIdentities:nightTeamIdentities,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0),accessEpoch:Number(lastObservedAccessEpoch||0),compatibility:appCompatibility}
 }
 function saveOfflineSnapshot(){
   try{
@@ -638,7 +660,7 @@ async function primeOfflineSnapshotFromIndexedDb(){
 function restoreOfflineSnapshot(){
   try{
     var snapshot=readOfflineSnapshot();if(!snapshot)return false;
-    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastObservedAccessEpoch=Number(snapshot.accessEpoch||0);setAppCompatibility(snapshot.compatibility);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
+    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;nightTeamIdentities=snapshot.nightTeamIdentities||{};if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastObservedAccessEpoch=Number(snapshot.accessEpoch||0);setAppCompatibility(snapshot.compatibility);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
   }catch(error){console.error('Saved roster could not be restored',error);return false}
 }
 
