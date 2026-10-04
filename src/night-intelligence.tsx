@@ -77,7 +77,7 @@ function writePref(key: string, value: string) {
 }
 
 function emit() { listeners.forEach(listener => listener()); }
-function subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); }
+function subscribe(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }
 function snapshot(): IntelligenceSnapshot { return { personal, activity, account, sync: syncState, online: navigator.onLine, presence: presenceCount }; }
 
 function currentPhase() {
