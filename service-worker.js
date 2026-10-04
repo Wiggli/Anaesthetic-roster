@@ -1,20 +1,20 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v45-3';
+const CACHE_NAME = 'anaesthetic-night-roster-v45-4';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=45.3',
-  './theme-bootstrap.js?v=45.3',
-  './domain-logic.js?v=45.3',
-  './runtime-foundation.js?v=45.3',
-  './app-core.js?v=45.3',
-  './app-ui.js?v=45.3',
-  './manifest.webmanifest?v=45.3',
+  './styles.css?v=45.4',
+  './theme-bootstrap.js?v=45.4',
+  './domain-logic.js?v=45.4',
+  './runtime-foundation.js?v=45.4',
+  './app-core.js?v=45.4',
+  './app-ui.js?v=45.4',
+  './manifest.webmanifest?v=45.4',
   './release.json',
-  './icon-192.png?v=45.3',
-  './icon-512.png?v=45.3',
-  './apple-touch-icon.png?v=45.3',
-  './anaesthesia-header.jpg?v=45.3',
-  './mater-dei-logo.png?v=45.3'
+  './icon-192.png?v=45.4',
+  './icon-512.png?v=45.4',
+  './apple-touch-icon.png?v=45.4',
+  './anaesthesia-header.jpg?v=45.4',
+  './mater-dei-logo.png?v=45.4'
 ];
 
 // Vite injects the fingerprinted React/CSS assets here at build time.
@@ -181,8 +181,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=45.3', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=45.3', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=45.4', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=45.4', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
