@@ -465,7 +465,7 @@ async function requestCompatibilityStartup(){
     var planStatus=await startupQuery(supa.from('night_plan_status').select('*'),'Night plan status did not respond.');
     var roleOverrides=await startupQuery(supa.from('night_role_overrides').select('*'),'Night-only roles did not respond.');
     var teamIdentity=await startupQuery(supa.from('night_team_identity').select('*'),'Shift nickname did not respond.');
-    var allocations=[labourOrder,planStatus,roleOverrides,teamIdentity];
+    var allocations=[labourOrder,planStatus,roleOverrides];
     if(allocations.some(startupQueryFailed))throw new Error('Shared allocations could not be loaded.');
 
     sharedLoadFailureStage='support';
@@ -480,7 +480,7 @@ async function requestCompatibilityStartup(){
       night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
       roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
       night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
-      night_team_identity:allocations[3].data||[],
+      night_team_identity:teamIdentity&&!startupQueryFailed(teamIdentity)?teamIdentity.data||[]:[],
       app_settings:support[0]&&!support[0].error?support[0].data:null,
       schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):0,
       compatibility:support[2]&&!support[2].error?support[2].data:null,
