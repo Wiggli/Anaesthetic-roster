@@ -396,12 +396,15 @@
           </div>
         </div>
         <div class="panel changesDatePanel nightContextPanel">
-          <h2>Selected night</h2>
-          <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
-          <div class="grid2">
-            <label>Night<div class="dateNav rosterDateControl"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div><button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current or next night</button></label>
-            <div class="staffingCount" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div>
+          <div class="nightContextMetaRow">
+            <h2>Selected night</h2>
+            <div class="staffingCount nightContextStaffing" aria-live="polite"><span>Staffing</span><strong id="changesModeStatus">6 nurses</strong><small>Linked across the app</small></div>
           </div>
+          <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
+          <label class="nightContextDateLabel">Night
+            <div class="dateNav rosterDateControl"><button type="button" id="changesPrevNightBtn" aria-label="Previous roster night">‹</button><input id="changesDatePick" type="date" aria-label="Choose a date to manage staffing changes"><button type="button" id="changesNextNightBtn" aria-label="Next roster night">›</button></div>
+            <button type="button" class="dateResetBtn" id="changesSmartNightBtn">Open current or next night</button>
+          </label>
         </div>
         <div class="panel changePanel">
           <div class="ctop">
@@ -517,36 +520,20 @@
           </div>
         </div>
         <div class="panel breaksContextPanel nightContextPanel">
-          <h2>Selected night</h2>
-          <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
-          <div class="grid2">
-            <label
-              >Night
-              <div class="dateNav rosterDateControl">
-                <button
-                  type="button"
-                  id="breakPrevNightBtn"
-                  aria-label="Previous roster night"
-                >
-                  ‹</button
-                ><input
-                  id="breakDatePick"
-                  type="date"
-                  aria-label="Choose a date to open that night or the next rostered night"
-                /><button
-                  type="button"
-                  id="breakNextNightBtn"
-                  aria-label="Next roster night"
-                >
-                  ›
-                </button>
-              </div></label
-            >
-            <div class="staffingCount" aria-live="polite">
-              <span>Staffing</span><strong id="breakModeStatus">6 nurses</strong
-              ><small>Linked to Night</small>
+          <div class="nightContextMetaRow">
+            <h2>Selected night</h2>
+            <div class="staffingCount nightContextStaffing" aria-live="polite">
+              <span>Staffing</span><strong id="breakModeStatus">6 nurses</strong><small>Linked to Night</small>
             </div>
           </div>
+          <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
+          <label class="nightContextDateLabel">Night
+            <div class="dateNav rosterDateControl">
+              <button type="button" id="breakPrevNightBtn" aria-label="Previous roster night">‹</button>
+              <input id="breakDatePick" type="date" aria-label="Choose a date to open that night or the next rostered night" />
+              <button type="button" id="breakNextNightBtn" aria-label="Next roster night">›</button>
+            </div>
+          </label>
           <div id="breakPersonalSummary" aria-live="polite"></div>
           <div id="breakClockChange"></div>
           <div id="breakSummaryRow" class="breakSummaryRow"></div>
