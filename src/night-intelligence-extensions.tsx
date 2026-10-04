@@ -18,6 +18,8 @@ declare global {
 
 let extensionRoot: Root | null = null;
 let conflictContext: ConflictContext | null = null;
+let ignoredConflictMessage = '';
+let ignoredConflictUntil = 0;
 let suppressQuickActionsUntil = 0;
 let originalShowQuickActions: (() => void) | undefined;
 let notificationMode: NotificationMode = 'important';
@@ -73,6 +75,7 @@ function scanConflictMessages() {
   for (const node of Array.from(nodes)) {
     const message = node.textContent?.replace(/\s+/g, ' ').trim() || '';
     if (!message || !CONFLICT_PATTERN.test(message)) continue;
+    if (message === ignoredConflictMessage && Date.now() < ignoredConflictUntil) continue;
     if (conflictContext?.message === message && Date.now() - conflictContext.at < 30000) return;
     emitConflict({ message, at: Date.now() });
     return;
@@ -272,7 +275,15 @@ function ExtensionRoot() {
     };
   }, []);
 
-  const resolved = () => { emitConflict(null); setConflict(null); setConflictOpen(false); };
+  const resolved = () => {
+    if (conflict?.message) {
+      ignoredConflictMessage = conflict.message;
+      ignoredConflictUntil = Date.now() + 60000;
+    }
+    emitConflict(null);
+    setConflict(null);
+    setConflictOpen(false);
+  };
   return <>
     <div className="niA11yStatus" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
     {person ? <PersonSheet person={person} onClose={() => setPerson(null)} /> : null}
