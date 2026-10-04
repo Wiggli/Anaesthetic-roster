@@ -375,7 +375,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: event, error: eventError } = await admin
       .from("roster_push_events")
-      .select("id,roster_date,event_type,revision,created_by,created_at")
+      .select("id,roster_date,event_type,revision,created_by,created_at,affected_roster_names")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -392,24 +392,47 @@ Deno.serve(async (req: Request) => {
 
       const { data: allowedRows, error: allowedError } = await admin
         .from("allowed_users")
-        .select("email")
+        .select("email,roster_name")
         .eq("active", true);
       if (allowedError) throw allowedError;
 
       const { data: usersPage, error: usersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
       if (usersError) throw usersError;
 
-      const allowedEmails = new Set((allowedRows || []).map((row) => String(row.email || "").toLocaleLowerCase()));
-      const recipientUserIds = (usersPage?.users || [])
-        .filter((candidate) => candidate.id !== user.id && candidate.email && allowedEmails.has(candidate.email.toLocaleLowerCase()))
-        .map((candidate) => candidate.id);
-      const { subscriptions, preferences, config } = await loadPushData(admin, recipientUserIds, "roster_enabled");
+      const allowedByEmail = new Map((allowedRows || []).map((row) => [
+        String(row.email || "").toLocaleLowerCase(),
+        String(row.roster_name || "").trim(),
+      ]));
+      const recipientUsers = (usersPage?.users || [])
+        .filter((candidate) => candidate.id !== user.id && candidate.email && allowedByEmail.has(candidate.email.toLocaleLowerCase()));
+      const recipientUserIds = recipientUsers.map((candidate) => candidate.id);
+      const rosterNameByUser = new Map(recipientUsers.map((candidate) => [
+        candidate.id,
+        allowedByEmail.get(String(candidate.email || "").toLocaleLowerCase()) || "",
+      ]));
+      const affectedNames = new Set(
+        (Array.isArray(event.affected_roster_names) ? event.affected_roster_names : [])
+          .map((name) => String(name || "").trim().toLocaleLowerCase())
+          .filter(Boolean),
+      );
+      const personalByUser = new Map(recipientUserIds.map((id) => [
+        id,
+        affectedNames.has(String(rosterNameByUser.get(id) || "").trim().toLocaleLowerCase()),
+      ]));
+
+      const { subscriptions, preferences, config } = await loadPushData(
+        admin,
+        recipientUserIds,
+        "roster_enabled,personal_changes_enabled",
+      );
       if (!config) throw new Error("Push server configuration missing");
 
       const preferenceMap = new Map(preferences.map((row) => [String(row.user_id), row]));
       const eligible = subscriptions.filter((sub) => {
         const pref = preferenceMap.get(sub.user_id) as Record<string, unknown> | undefined;
-        return pref?.roster_enabled !== false;
+        return personalByUser.get(sub.user_id)
+          ? pref?.personal_changes_enabled !== false
+          : pref?.roster_enabled !== false;
       });
 
       const wording: Record<string, string> = {
@@ -419,14 +442,23 @@ Deno.serve(async (req: Request) => {
       };
       const body = `${wording[event.event_type] || "The roster was updated"} for ${dateLabel(event.roster_date)}.`;
 
-      const delivered = await deliver(admin, eligible, config, () => JSON.stringify({
-        type: "roster",
-        title: "Night Roster updated",
-        body,
-        roster_date: event.roster_date,
-        tag: `roster-${event.roster_date}`,
-        url: `${APP_URL}?view=night&date=${encodeURIComponent(event.roster_date)}`,
-      }));
+      const delivered = await deliver(admin, eligible, config, (sub) => {
+        const personalChange = personalByUser.get(sub.user_id) === true;
+        return JSON.stringify({
+          type: "roster",
+          title: personalChange ? "Your Night allocation changed" : "Night Roster updated",
+          body: personalChange
+            ? `Your duty, role or break may have changed for ${dateLabel(event.roster_date)}. Open Night to review it.`
+            : body,
+          roster_date: event.roster_date,
+          personal_change: personalChange,
+          focus: personalChange ? "assignment" : "",
+          tag: personalChange ? `roster-personal-${event.roster_date}` : `roster-${event.roster_date}`,
+          url: personalChange
+            ? `${APP_URL}?view=night&date=${encodeURIComponent(event.roster_date)}&focus=assignment`
+            : `${APP_URL}?view=night&date=${encodeURIComponent(event.roster_date)}`,
+        });
+      });
 
       const status = dispatchStatus(delivered.attempted, delivered.succeeded);
       await finishGenericDispatch(admin, eventKey, status, delivered.attempted, delivered.succeeded);
