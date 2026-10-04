@@ -68,6 +68,7 @@ var profileSavedSignature='';
 var shiftAvatarUrl='';
 var pendingShiftPhoto=null;
 var pendingShiftPhotoUrl='';
+var photoCropState={file:null,url:'',target:'profile',image:null};
 var launchStartedAt=Date.now();
 var launchFinished=false;
 var launchSlowTimer=null;
@@ -852,11 +853,61 @@ async function runAccountAction(action){
   if(action==='install'){byId('accountSheet').close();if(deferredInstallPrompt)await runInstallPrompt();else showInstallGuide()}
 }
 
-function photoBlob(file){
-  return new Promise(function(resolve,reject){if(!file||!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>8*1024*1024){reject(new Error('Choose a JPEG, PNG or WebP photo smaller than 8 MB.'));return}var image=new Image(),url=URL.createObjectURL(file);image.onload=function(){var size=Math.min(image.naturalWidth,image.naturalHeight),left=(image.naturalWidth-size)/2,top=(image.naturalHeight-size)/2,canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;canvas.getContext('2d').drawImage(image,left,top,size,size,0,0,512,512);URL.revokeObjectURL(url);canvas.toBlob(function(blob){blob?resolve(blob):reject(new Error('The photo could not be prepared.'))},'image/jpeg',.86)};image.onerror=function(){URL.revokeObjectURL(url);reject(new Error('The selected photo could not be opened.'))};image.src=url})
+function validIdentityPhoto(file){
+  return !!(file&&/^image\/(jpeg|png|webp)$/i.test(file.type)&&file.size<=8*1024*1024)
 }
-
-async function chooseProfilePhoto(file){try{pendingProfilePhoto=await photoBlob(file);if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl=URL.createObjectURL(pendingProfilePhoto);applyProfileIdentity();var onboardingPhoto=byId('onboardingPhotoBtn');if(onboardingPhoto)onboardingPhoto.innerHTML='<img id="onboardingPhotoPreview" src="'+esc(pendingProfilePhotoUrl)+'" alt=""><i aria-hidden="true">+</i>';updateProfileSaveState();showProfileMessage('Photo ready to save.','success')}catch(error){showProfileMessage(error.message,'error')}}
+function closePhotoCropper(){
+  var dialog=byId('photoCropDialog');if(dialog&&dialog.open)dialog.close();
+  if(photoCropState.url)URL.revokeObjectURL(photoCropState.url);
+  photoCropState={file:null,url:'',target:'profile',image:null}
+}
+function updatePhotoCropPreview(){
+  var image=byId('photoCropImage'),zoom=Number(byId('photoCropZoom')&&byId('photoCropZoom').value||100)/100,x=Number(byId('photoCropX')&&byId('photoCropX').value||0),y=Number(byId('photoCropY')&&byId('photoCropY').value||0);
+  if(!image)return;
+  image.style.transform='scale('+zoom+')';
+  image.style.objectPosition=((x+100)/2)+'% '+((y+100)/2)+'%'
+}
+function openPhotoCropper(file,target){
+  if(!validIdentityPhoto(file)){
+    var message='Choose a JPEG, PNG or WebP photo smaller than 8 MB.';
+    if(target==='shift')showShiftStudioMessage(message,'error');else showProfileMessage(message,'error');
+    return
+  }
+  if(photoCropState.url)URL.revokeObjectURL(photoCropState.url);
+  var url=URL.createObjectURL(file),image=byId('photoCropImage'),dialog=byId('photoCropDialog'),title=byId('photoCropTitle');
+  photoCropState={file:file,url:url,target:target==='shift'?'shift':'profile',image:null};
+  if(title)title.textContent=target==='shift'?'Position the shift picture':'Position your profile picture';
+  if(byId('photoCropZoom'))byId('photoCropZoom').value='100';if(byId('photoCropX'))byId('photoCropX').value='0';if(byId('photoCropY'))byId('photoCropY').value='0';
+  if(image){image.onload=function(){photoCropState.image=image;updatePhotoCropPreview()};image.src=url}
+  if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal()
+}
+function croppedPhotoBlob(){
+  return new Promise(function(resolve,reject){
+    var image=photoCropState.image||byId('photoCropImage'),file=photoCropState.file;
+    if(!file||!image||!image.naturalWidth||!image.naturalHeight){reject(new Error('The selected photo is not ready yet.'));return}
+    var zoom=Math.max(1,Math.min(2.5,Number(byId('photoCropZoom')&&byId('photoCropZoom').value||100)/100)),x=Math.max(-100,Math.min(100,Number(byId('photoCropX')&&byId('photoCropX').value||0))),y=Math.max(-100,Math.min(100,Number(byId('photoCropY')&&byId('photoCropY').value||0)));
+    var naturalW=image.naturalWidth,naturalH=image.naturalHeight,cropSize=Math.min(naturalW,naturalH)/zoom,maxX=Math.max(0,(naturalW-cropSize)/2),maxY=Math.max(0,(naturalH-cropSize)/2),centerX=naturalW/2+(x/100)*maxX,centerY=naturalH/2+(y/100)*maxY,sx=Math.max(0,Math.min(naturalW-cropSize,centerX-cropSize/2)),sy=Math.max(0,Math.min(naturalH-cropSize,centerY-cropSize/2));
+    var canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;var context=canvas.getContext('2d');if(!context){reject(new Error('The photo editor is not available on this device.'));return}
+    context.drawImage(image,sx,sy,cropSize,cropSize,0,0,512,512);
+    canvas.toBlob(function(blob){blob?resolve(blob):reject(new Error('The photo could not be prepared.'))},'image/jpeg',.86)
+  })
+}
+async function applyPhotoCrop(){
+  var target=photoCropState.target;
+  try{
+    var blob=await croppedPhotoBlob();
+    if(target==='shift'){
+      pendingShiftPhoto=blob;if(pendingShiftPhotoUrl)URL.revokeObjectURL(pendingShiftPhotoUrl);pendingShiftPhotoUrl=URL.createObjectURL(blob);
+      updateShiftStudioPhotoPreview(pendingShiftPhotoUrl,nightTeamIdentityFor(cur().date));var shiftSave=byId('saveShiftPersonalisationBtn');if(shiftSave)shiftSave.classList.remove('hidden');showShiftStudioMessage('Picture ready to share with the shift.','success')
+    }else{
+      pendingProfilePhoto=blob;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl=URL.createObjectURL(blob);applyProfileIdentity();var onboardingPhoto=byId('onboardingPhotoBtn');if(onboardingPhoto)onboardingPhoto.innerHTML='<img id="onboardingPhotoPreview" src="'+esc(pendingProfilePhotoUrl)+'" alt=""><i aria-hidden="true">+</i>';updateProfileSaveState();showProfileMessage('Photo ready to save.','success')
+    }
+    closePhotoCropper()
+  }catch(error){
+    if(target==='shift')showShiftStudioMessage(error.message||'The picture could not be prepared.','error');else showProfileMessage(error.message||'The photo could not be prepared.','error')
+  }
+}
+async function chooseProfilePhoto(file){openPhotoCropper(file,'profile')}
 
 async function saveProfile(){
   if(!requireOnline())return;if(!profileFeatureAvailable){showProfileMessage('Personal profile storage is not available yet.','error');return}
@@ -884,12 +935,7 @@ function updateShiftStudioPhotoPreview(url,row){
   else{var fallback=document.createElement('b');fallback.id='shiftStudioPhotoFallback';fallback.textContent=shiftSymbolGlyph(row&&row.symbol||'spark');wrap.appendChild(fallback)}
   var remove=byId('removeShiftPhotoBtn');if(remove){remove.classList.toggle('hidden',!url&&!pendingShiftPhoto);remove.textContent=pendingShiftPhoto?'Cancel picture':'Remove picture'}
 }
-async function chooseShiftPhoto(file){
-  try{
-    pendingShiftPhoto=await photoBlob(file);if(pendingShiftPhotoUrl)URL.revokeObjectURL(pendingShiftPhotoUrl);pendingShiftPhotoUrl=URL.createObjectURL(pendingShiftPhoto);
-    updateShiftStudioPhotoPreview(pendingShiftPhotoUrl,nightTeamIdentityFor(cur().date));var save=byId('saveShiftPersonalisationBtn');if(save)save.classList.remove('hidden');showShiftStudioMessage('Picture ready to share with the shift.','success')
-  }catch(error){showShiftStudioMessage(error.message,'error')}
-}
+async function chooseShiftPhoto(file){openPhotoCropper(file,'shift')}
 async function saveShiftPersonalisation(){
   if(!requireOnline())return;if(!rosterCapabilities().personalisationStudio){showShiftStudioMessage('Update Night Roster before changing shared shift styling.','error');return}
   if(sharedWritesBlocked()){showShiftStudioMessage('Update Night Roster before changing the shared shift identity.','error');return}
