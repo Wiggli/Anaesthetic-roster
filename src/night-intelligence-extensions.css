@@ -1,0 +1,13 @@
+.niA11yStatus{position:fixed!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.niExtensionScrim{z-index:2147481200}
+.niPersonSheet,.niConflictSheet{width:min(620px,100%)}
+.niPersonMeta{margin:0 3px 13px;color:var(--muted,var(--apple-secondary,#6e6e73));font-size:12px;line-height:1.48}
+.niSheetActionList{display:grid;gap:8px}
+.niSheetActionList>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--line,var(--apple-separator,#d1d1d6)) 72%,transparent);border-radius:16px;background:color-mix(in srgb,var(--panel,var(--apple-surface,#fff)) 94%,var(--text,var(--apple-label,#111)) 6%);color:var(--text,var(--apple-label,#111));box-shadow:none;text-align:left}
+.niSheetActionList>button>span{display:grid;min-width:0;gap:2px}.niSheetActionList strong{font-size:14px;line-height:1.28}.niSheetActionList small{color:var(--muted,var(--apple-secondary,#6e6e73));font-size:11px;line-height:1.4}.niSheetActionList>button>b{flex:0 0 auto;color:var(--muted,var(--apple-secondary,#6e6e73));font-size:22px;font-weight:500}
+.niConflictCallout{display:grid;gap:7px;margin-bottom:12px;padding:14px;border:1px solid color-mix(in srgb,#d98c1d 32%,var(--line,var(--apple-separator,#d1d1d6)));border-radius:18px;background:color-mix(in srgb,#d98c1d 10%,var(--panel,var(--apple-surface,#fff)));color:var(--text,var(--apple-label,#111))}.niConflictCallout strong{font-size:14px;line-height:1.35}.niConflictCallout p{margin:0;font-size:12px;line-height:1.48}.niConflictCallout small{color:var(--muted,var(--apple-secondary,#6e6e73));font-size:11px;line-height:1.45}
+[data-quick-rudder][data-ni-context="review"] .quickRudderDisc{box-shadow:0 0 0 1px color-mix(in srgb,#d98c1d 38%,transparent),0 8px 22px color-mix(in srgb,#d98c1d 18%,transparent)}
+[data-quick-rudder][data-ni-context="review"] .quickRudderLabel{font-weight:780}
+.niSheetActionList>button:focus-visible,.niPersonSheet button:focus-visible,.niConflictSheet button:focus-visible{outline:3px solid color-mix(in srgb,var(--accent,var(--apple-accent,#0a84ff)) 34%,transparent);outline-offset:2px}
+@media(max-width:520px){.niPersonSheet,.niConflictSheet{width:100%;border-radius:26px 26px 18px 18px}.niSheetActionList>button{min-height:60px;padding:13px}}
+@media(prefers-reduced-motion:reduce){.niExtensionScrim,.niPersonSheet,.niConflictSheet,.niSheetActionList>button{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
