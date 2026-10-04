@@ -1025,6 +1025,31 @@
         </div>
       </section>
     </main>
+    <dialog id="photoCropDialog" class="photoCropDialog" aria-labelledby="photoCropTitle">
+      <div class="photoCropSheet">
+        <div class="nightTeamNameHandle" aria-hidden="true"></div>
+        <div class="photoCropHeader">
+          <div>
+            <span>Identity photo</span>
+            <h2 id="photoCropTitle">Position your picture</h2>
+            <p>Zoom and move the image until the square preview feels right.</p>
+          </div>
+          <button type="button" id="cancelPhotoCropBtn" aria-label="Cancel photo">Cancel</button>
+        </div>
+        <div class="photoCropStage" aria-label="Photo crop preview">
+          <img id="photoCropImage" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Selected photo preview">
+          <div class="photoCropFrame" aria-hidden="true"></div>
+        </div>
+        <div class="photoCropControls">
+          <label><span>Zoom</span><input id="photoCropZoom" type="range" min="100" max="250" value="100" step="1"></label>
+          <label><span>Left / right</span><input id="photoCropX" type="range" min="-100" max="100" value="0" step="1"></label>
+          <label><span>Up / down</span><input id="photoCropY" type="range" min="-100" max="100" value="0" step="1"></label>
+        </div>
+        <p class="photoCropPrivacy"><span aria-hidden="true">⌁</span>Identity photos only. Never include patient information.</p>
+        <button type="button" id="applyPhotoCropBtn" class="primary photoCropApply">Use this picture</button>
+      </div>
+    </dialog>
+
     <dialog id="nightTeamNameDialog" class="nightTeamNameDialog">
     <form method="dialog" class="nightTeamNameSheet" id="nightTeamNameForm">
       <div class="nightTeamNameHandle" aria-hidden="true"></div>
