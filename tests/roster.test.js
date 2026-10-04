@@ -528,7 +528,7 @@ assert.match(globalShiftIdentityMigration, /set_night_team_identity_v51[\s\S]*va
 assert.match(globalShiftIdentityMigration, /generate_series\([\s\S]*interval '4 days'/, 'schema 52 startup snapshots must project the shift identity across every roster date');
 assert.match(globalShiftIdentityMigration, /update public\.app_schema_version[\s\S]*version=52/, 'schema 52 migration must advance the schema marker');
 assert.match(personalisationMigration, /alter table public\.user_profiles[\s\S]*accent_key[\s\S]*text_scale[\s\S]*motion_pref[\s\S]*avatar_style[\s\S]*greeting_enabled/, 'schema 53 must persist personal presentation preferences separately from roster identity');
-assert.match(personalisationMigration, /insert into storage\.buckets[\s\S]*'shift-identity'[\s\S]*public,false/, 'schema 53 must keep the shared shift image in a private bucket');
+assert.match(personalisationMigration, /insert into storage\.buckets[\s\S]*'shift-identity'[\s\S]*false[\s\S]*array\['image\/jpeg','image\/png','image\/webp'\]/, 'schema 53 must keep the shared shift image in a private bucket');
 assert.match(personalisationMigration, /set_shift_identity_v53[\s\S]*assert_app_write_compatible_v49[\s\S]*is_shift_member/, 'schema 53 shift styling writes must retain compatibility and membership guards');
 assert.match(personalisationMigration, /update public\.app_schema_version[\s\S]*version=53/, 'schema 53 migration must advance the schema marker');
 assert.match(chatPolicyFixMigration, /reply_belongs_to_conversation[\s\S]*security definer[\s\S]*grant execute[\s\S]*to authenticated/, 'schema 46 must validate reply targets without recursive message-table RLS');
