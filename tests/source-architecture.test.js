@@ -11,11 +11,12 @@ const uiSources = [
   'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
   'src/legacy-ui/sync.js',
+  'src/legacy-ui/education.js',
   'src/legacy-ui/bootstrap.js'
 ];
 
 assert.equal(read('app-ui.js'), header + uiSources.map(read).join('\n'),
-  'app-ui.js must be generated from the five responsibility-specific source modules');
+  'app-ui.js must be generated from the six responsibility-specific source modules');
 for (const source of uiSources) {
   const bytes = fs.statSync(path.join(root, source)).size;
   assert.ok(bytes < 220 * 1024, source + ' must stay below 220 KiB so the UI cannot collapse back into one monolith');
@@ -36,6 +37,10 @@ assert.match(read('src/legacy-ui/clinical.js'), /function buildNightPlan\(/,
   'clinical source must own the canonical NightPlan adapter');
 assert.match(read('src/legacy-ui/sync.js'), /function reconcileApplication\(/,
   'sync source must own lifecycle reconciliation');
+assert.match(read('src/legacy-ui/education.js'), /function onboardingPages\(\)[\s\S]*function appGuidePage\(/,
+  'education source must own first-use onboarding and the reusable app guide');
+assert.doesNotMatch(read('src/legacy-ui/foundation.js'), /function onboardingPages\(/,
+  'foundation must not absorb onboarding implementation again');
 assert.match(read('src/legacy-ui/bootstrap.js'), /function bind\(/,
   'bootstrap source must own final browser event wiring');
 
