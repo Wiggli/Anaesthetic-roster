@@ -843,19 +843,28 @@ function NightRoles({ model }: { model: NightSummary }) {
   return <>
     {hasMine && <div className="nightRoleTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToMine}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
     <div className="liquidRosterList nightSituationTimeline">
-      {model.roles.map(role => <Pressable
-        key={role.key}
-        type="button"
-        onClick={openRoleEditor}
-        className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
-        aria-label={`Change this night's ${role.label} allocation`}
-      >
-        <span className="rosterRoleMark">{roleMark(role.tone)}</span>
-        <span className="rosterRowCopy">
-          <span className="rosterRowName">{role.names}{role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}{roleLiveState(role, model.currentPart) && <Badge tone={roleLiveState(role, model.currentPart) === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{roleLiveState(role, model.currentPart)}</Badge>}</span>
-          <span className="rosterRowMeta">{role.label} · {role.detail}</span>
-        </span>
-      </Pressable>)}
+      {model.roles.map(role => {
+        const liveState = roleLiveState(role, model.currentPart);
+        return <Pressable
+          key={role.key}
+          type="button"
+          onClick={openRoleEditor}
+          className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
+          aria-label={`Change this night's ${role.label} allocation`}
+        >
+          <span className="rosterRoleMark">{roleMark(role.tone)}</span>
+          <span className="rosterRowCopy">
+            <span className="rosterRowName">
+              <span className="rosterRowPeople">{role.names}</span>
+              {(role.mine || liveState) && <span className="rosterRowBadges">
+                {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
+                {liveState && <Badge tone={liveState === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{liveState}</Badge>}
+              </span>}
+            </span>
+            <span className="rosterRowMeta">{role.label} · {role.detail}</span>
+          </span>
+        </Pressable>;
+      })}
     </div>
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
