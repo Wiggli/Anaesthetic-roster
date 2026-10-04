@@ -228,7 +228,7 @@ body:not(.authPending){
   line-height:1.22!important;
 }
 
-#changes .workflowGuidance>span>small{
+#changes .workflowGuidanceSummary>small{
   font-size:12px!important;
   line-height:1.4!important;
 }
