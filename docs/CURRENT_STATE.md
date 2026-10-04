@@ -7,7 +7,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - The latest `main` branch is the source of truth.
 - `release.json` is the source of truth for the deployable app version and release notes.
 - `.project-state.json` contains machine-readable release, schema, verification and CI continuity data.
-- The current database contract is schema 53. Any later schema change must be a new forward-only migration and must update the machine-readable state.
+- The current database contract is schema 54. Schema 54 separates personal roster-change alerts from general roster notifications and records only the bounded roster identities needed for targeted delivery. Any later schema change must be a new forward-only migration and must update the machine-readable state.
 - `AGENTS.md` contains the permanent product, clinical, security, design and deployment invariants.
 
 ## Runtime ownership
