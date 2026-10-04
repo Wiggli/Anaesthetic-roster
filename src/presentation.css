@@ -19663,3 +19663,91 @@ body.personalMotionReduced *::after{
 .photoCropPrivacy{display:flex;gap:7px;align-items:center;margin:0;color:var(--liquid-tertiary);font-size:9px;line-height:1.35}
 .photoCropPrivacy>span{color:var(--liquid-warning)}
 .photoCropApply{min-height:48px;border-radius:15px!important;font-size:13px!important}
+
+
+/* 44.1 shift identity spacing and pending-decision readability polish. */
+/* Custom shift colour is an accent, not primary-copy colour. */
+.nightTeamIdentityContext{
+  color:var(--liquid-label)!important;
+}
+.shiftIdentityCopy strong{
+  color:var(--liquid-label)!important;
+}
+#chat .chatInboxTeamRow.hasShiftIdentity #chatTeamName,
+#chat .shiftIdentityTitle{
+  color:var(--liquid-label)!important;
+  text-shadow:none!important;
+}
+
+/* Reserve a real identity stage so the shared shift mark can never crowd the title. */
+#chat .chatInboxTeamRow{
+  grid-template-columns:54px minmax(0,1fr) auto!important;
+  column-gap:18px!important;
+  row-gap:0!important;
+  padding:15px 16px!important;
+}
+#chat .chatTeamAvatar{
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  min-height:52px!important;
+  justify-self:start!important;
+  flex:none!important;
+  margin:0!important;
+}
+#chat .chatInboxTeamCopy{
+  min-width:0!important;
+  padding-left:1px!important;
+}
+#chat .chatInboxTeamTop{
+  gap:12px!important;
+}
+#chat .chatInboxTeamTop b{
+  line-height:1.16!important;
+}
+@media(max-width:430px){
+  #chat .chatInboxTeamRow{
+    grid-template-columns:48px minmax(0,1fr) auto!important;
+    column-gap:15px!important;
+    padding:14px 15px!important;
+  }
+  #chat .chatTeamAvatar{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    min-height:46px!important;
+    border-radius:15px!important;
+  }
+}
+
+/* Pending seventh-nurse decisions keep amber as a cue while all task copy remains readable. */
+#today .compactNotice.warn{
+  color:var(--liquid-label)!important;
+  font-weight:650!important;
+  line-height:1.42!important;
+}
+#today .taskAlert{
+  color:var(--liquid-label)!important;
+}
+#today .taskAlert b{
+  color:var(--liquid-label)!important;
+  font-weight:730!important;
+  line-height:1.34!important;
+}
+#today .taskAlert span{
+  color:color-mix(in srgb,var(--liquid-warning) 62%,var(--liquid-label))!important;
+  font-weight:700!important;
+}
+#today .nightSignalTask{
+  color:color-mix(in srgb,var(--liquid-warning) 58%,var(--liquid-label))!important;
+}
+@media(prefers-contrast:more){
+  #today .compactNotice.warn,
+  #today .taskAlert{
+    color:var(--liquid-label)!important;
+  }
+  #today .taskAlert span,
+  #today .nightSignalTask{
+    color:var(--liquid-label)!important;
+  }
+}
