@@ -2,7 +2,7 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  testMatch: /browser-smoke\.spec\.js/,
+  testMatch: /(?:browser-smoke|night-intelligence)\.spec\.js/,
   timeout: 30000,
   retries: 0,
   workers: process.env.CI ? 2 : 1,
