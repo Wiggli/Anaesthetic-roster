@@ -325,9 +325,10 @@ function chatRenderPrivateMessages(){chatRenderMessageSequence(chatEl('chatMessa
 function chatRenderTeamHeader(){
   var threadCount=chatEl('chatTeamThreadMemberCount'),unread=chatEl('chatTeamUnread'),preview=chatEl('chatTeamPreview'),when=chatEl('chatTeamTime'),teamName=chatEl('chatTeamName'),teamMeta=chatEl('chatTeamMeta'),threadTitle=chatEl('chatTeamThreadTitle'),contextDate=chatEl('chatRosterContextDate'),contextMeta=chatEl('chatRosterContextMeta'),nameAction=chatEl('chatShiftNameAction'),teamEntry=chatEl('chatTeamEntry'),team=chatTeamConversation(),rosterCount=chatCurrentRosterCount(),displayName=chatTeamDisplayName(),date=chatSelectedNightDate(),live=(chatEl('chatLiveStatus')&&chatEl('chatLiveStatus').textContent)||'Live',nickname=displayName!=='Anaesthetic Team';
   var nurseLabel=rosterCount+' nurse'+(rosterCount===1?'':'s');
-  if(teamName)teamName.textContent=displayName;
+  if(teamName){teamName.textContent=displayName;teamName.classList.toggle('shiftIdentityTitle',nickname)}
   if(teamMeta)teamMeta.textContent=nickname?'Anaesthetic Team · '+nurseLabel:nurseLabel+' · Team chat';
-  if(threadTitle)threadTitle.textContent=displayName;
+  if(threadTitle){threadTitle.textContent=displayName;threadTitle.classList.toggle('shiftIdentityTitle',nickname)}
+  if(teamEntry)teamEntry.classList.toggle('hasShiftIdentity',nickname);
   if(threadCount)threadCount.textContent=(nickname?'Anaesthetic Team · ':'')+nurseLabel+' · '+live;
   if(contextDate)contextDate.textContent=chatRosterDateLabel(date);
   if(contextMeta)contextMeta.textContent=nurseLabel+' · Team chat '+String(live).toLowerCase();
@@ -335,11 +336,11 @@ function chatRenderTeamHeader(){
   if(teamEntry)teamEntry.setAttribute('aria-label','Open '+displayName+' team chat with everyone on tonight\'s roster');
   if(team){
     var number=Number(chatState.unreadByConversation[team.id]||0),latest=chatState.latestByConversation[team.id];
-    if(unread){unread.textContent=number?chatCap(number,99):'0';unread.setAttribute('aria-label',number+' unread team message'+(number===1?'':'s'));unread.classList.toggle('hidden',!number)}
+    if(unread){if(number){unread.textContent=chatCap(number,99);unread.setAttribute('aria-label',number+' unread team message'+(number===1?'':'s'))}else{unread.textContent='';unread.removeAttribute('aria-label')}unread.classList.toggle('hidden',!number)}
     if(preview)preview.textContent=latest?((chatOwnMessage(latest)?'You':chatShortDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'No messages yet';
     if(when)when.textContent=latest?chatTime(latest.created_at):'';
   }else{
-    if(unread)unread.classList.add('hidden');if(preview)preview.textContent='No messages yet';if(when)when.textContent=''
+    if(unread){unread.textContent='';unread.removeAttribute('aria-label');unread.classList.add('hidden')}if(preview)preview.textContent='No messages yet';if(when)when.textContent=''
   }
 }
 function chatRenderConversationList(){
