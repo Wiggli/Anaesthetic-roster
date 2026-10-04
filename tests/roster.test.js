@@ -402,7 +402,9 @@ assert.match(ui, /visible=!!\(tasks\|\|confirmNeeded\)[\s\S]*host\.innerHTML=vis
 assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReason\(base\)[\s\S]*View full plan/, 'confirmation must lead with changed roles and their reason while keeping the full plan secondary');
 assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*assignmentLabel:nightCopy\.assignment[\s\S]*period:assignment\.period,breakLabel:assignment\.breakLabel/, 'Your night must pass date-aware assignment wording, time and break separately');
 assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
-assert.match(clinicalExperience, /const openFullNight[\s\S]*nightTeamDetails[\s\S]*scrollIntoView[\s\S]*View full night/, 'Your night must keep one direct full-night action that opens the matching team allocation');
+assert.doesNotMatch(clinicalExperience, /View full night/, 'Your night must not duplicate the Team allocation route with a second full-night CTA');
+assert.match(html, /class="nightTeamDetails"[\s\S]*<strong>Team allocation<\/strong>[\s\S]*id="viewRosterBtn"[\s\S]*View full roster/, 'Team allocation must remain the canonical current-night detail route with Full roster secondary inside it');
+assert.match(clinicalExperience, /model\.action === 'choose'[\s\S]*Choose your name/, 'Your night must keep the account setup action when the user has not chosen a roster identity');
 assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*<small>Duty<\/small>[\s\S]*<small>Break<\/small>[\s\S]*scanContextLabel/, 'Your night must keep Duty, Break and Colleague as the three scan-first facts');
 assert.match(clinicalExperience, /personalClockException[\s\S]*Clock-change night · equal duty[\s\S]*model\.clockChange\.summary/, 'clock-change nights must keep their equal-duty exception prominent in the personal hero');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');

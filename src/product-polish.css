@@ -640,3 +640,254 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
     border-color:currentColor!important;
   }
 }
+
+
+/* 45.1 hierarchy pass: one intent, one obvious action. */
+#today #alerts{
+  margin-top:8px!important;
+}
+#today .nightOverviewBoard>#alerts:not(:empty){
+  padding:10px 12px 12px!important;
+  border-bottom:1px solid var(--polish-hairline)!important;
+}
+#today .decisionTaskCard{
+  width:100%;
+  min-height:76px;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) 18px;
+  align-items:center;
+  gap:11px;
+  padding:12px 13px;
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 30%,var(--liquid-separator));
+  border-radius:16px;
+  background:color-mix(in srgb,var(--liquid-warning) 7%,var(--liquid-surface));
+  color:var(--liquid-label);
+  text-align:left;
+  box-shadow:none;
+}
+#today .decisionTaskMark{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:color-mix(in srgb,var(--liquid-warning) 15%,transparent);
+  color:color-mix(in srgb,var(--liquid-warning) 78%,var(--liquid-label));
+  font-size:14px;
+  font-weight:820;
+}
+#today .decisionTaskCopy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+#today .decisionTaskCopy>small{
+  color:color-mix(in srgb,var(--liquid-warning) 68%,var(--liquid-label));
+  font-size:10px;
+  font-weight:780;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+}
+#today .decisionTaskCopy>b{
+  color:var(--liquid-label);
+  font-size:14px;
+  font-weight:740;
+  line-height:1.32;
+  letter-spacing:-.012em;
+}
+#today .decisionTaskCopy>strong{
+  margin-top:1px;
+  color:color-mix(in srgb,var(--liquid-warning) 68%,var(--liquid-label));
+  font-size:11px;
+  font-weight:760;
+}
+#today .decisionTaskCard>i{
+  color:color-mix(in srgb,var(--liquid-warning) 66%,var(--liquid-label));
+  font-size:22px;
+  font-style:normal;
+}
+
+/* Recent activity reads as a compact timeline, not a collection of badges. */
+#today .recentActivityPanel{
+  margin-top:18px!important;
+}
+#today .nightOverviewRowHeading{
+  min-height:50px!important;
+  padding:8px 2px!important;
+}
+#today .nightOverviewRowHeading h2{
+  font-size:15px!important;
+  font-weight:760!important;
+}
+#today .nightOverviewRowHeading p{
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+#today #recentActivityList>.activityTimeline{
+  overflow:hidden!important;
+  border:1px solid var(--polish-hairline)!important;
+  border-radius:18px!important;
+  background:var(--liquid-surface)!important;
+}
+#today .activityTimeline .recentActivityRow{
+  grid-template-columns:34px minmax(0,1fr) 18px!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:76px!important;
+  padding:11px 13px!important;
+  border-top:1px solid var(--polish-hairline)!important;
+}
+#today .activityTimelineMark{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:color-mix(in srgb,var(--liquid-accent) 9%,transparent);
+  color:var(--liquid-accent-strong);
+  font-size:17px;
+  font-weight:760;
+}
+#today .activityTimelineMark.overtime{
+  background:color-mix(in srgb,var(--liquid-accent) 9%,transparent);
+  color:var(--liquid-accent-strong);
+}
+#today .activityTimelineMark.absence{
+  background:color-mix(in srgb,var(--liquid-danger) 9%,transparent);
+  color:var(--liquid-danger);
+}
+#today .activityTimelineMark.allocation,
+#today .activityTimelineMark.role{
+  background:color-mix(in srgb,var(--liquid-accent) 9%,transparent);
+  color:var(--liquid-accent-strong);
+}
+#today .recentActivityCopy{
+  display:grid!important;
+  gap:2px!important;
+  min-width:0;
+}
+#today .recentActivityKicker{
+  color:var(--liquid-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:760!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase;
+}
+#today .recentActivityCopy>b{
+  color:var(--liquid-label)!important;
+  font-size:14px!important;
+  font-weight:720!important;
+  line-height:1.3!important;
+}
+#today .recentActivityDetail{
+  margin-top:1px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:11.5px!important;
+  line-height:1.35!important;
+}
+#today .recentActivityMeta{
+  margin-top:3px!important;
+  color:var(--liquid-tertiary)!important;
+  font-size:10.5px!important;
+}
+
+/* Changes keeps pending work unmistakable and history visually secondary. */
+#changes .workflowStep.hasTasks:not(.active){
+  background:color-mix(in srgb,var(--liquid-warning) 6%,transparent)!important;
+  color:color-mix(in srgb,var(--liquid-warning) 66%,var(--liquid-label))!important;
+}
+#changes .workflowStep.hasTasks:not(.active) .workflowStepCopy small{
+  color:color-mix(in srgb,var(--liquid-warning) 58%,var(--liquid-secondary))!important;
+  opacity:1!important;
+}
+#changes #continueToConfirmBtn:not(.hidden):not(:disabled){
+  border:0!important;
+  background:var(--liquid-accent)!important;
+  color:#fff!important;
+  box-shadow:0 7px 18px color-mix(in srgb,var(--liquid-accent) 18%,transparent)!important;
+}
+#changes #continueToConfirmBtn:disabled{
+  background:color-mix(in srgb,var(--liquid-secondary) 9%,var(--liquid-surface))!important;
+  color:var(--liquid-secondary)!important;
+  box-shadow:none!important;
+}
+#changes .historyBox{
+  margin-top:16px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:1px solid var(--polish-hairline)!important;
+  border-radius:18px!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+}
+#changes .historyBox>summary{
+  min-height:64px!important;
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr) 18px!important;
+  align-items:center!important;
+  gap:11px!important;
+  padding:10px 13px!important;
+  list-style:none!important;
+  cursor:pointer;
+  color:var(--liquid-label)!important;
+}
+#changes .historyBox>summary::-webkit-details-marker{display:none}
+#changes .historySummaryIcon{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:color-mix(in srgb,var(--liquid-accent) 8%,transparent);
+  color:var(--liquid-accent-strong);
+  font-size:15px;
+  font-weight:760;
+}
+#changes .historySummaryCopy{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+#changes .historySummaryCopy>strong{
+  color:var(--liquid-label);
+  font-size:14px;
+  font-weight:720;
+  letter-spacing:-.012em;
+}
+#changes .historySummaryCopy>small{
+  color:var(--liquid-secondary);
+  font-size:11px;
+  line-height:1.3;
+}
+#changes .historySummaryChevron{
+  color:var(--liquid-tertiary);
+  font-size:22px;
+  transition:transform .18s ease;
+}
+#changes .historyBox[open]>.historySummaryChevron,
+#changes .historyBox[open]>summary .historySummaryChevron{
+  transform:rotate(90deg);
+}
+#changes .historyBox[open]>summary{
+  border-bottom:1px solid var(--polish-hairline)!important;
+}
+#changes .historyBox #changeHistory{
+  padding:10px!important;
+}
+
+@media(max-width:390px){
+  #today .decisionTaskCard{
+    grid-template-columns:32px minmax(0,1fr) 16px;
+    gap:9px;
+    padding:11px;
+  }
+  #today .activityTimeline .recentActivityRow{
+    grid-template-columns:32px minmax(0,1fr) 16px!important;
+    gap:9px!important;
+    padding:10px 11px!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  #changes .historySummaryChevron{transition:none}
+}
