@@ -41,6 +41,10 @@ assert.match(html, /id="chatTeamThread"[\s\S]*id="chatTeamComposer"[\s\S]*id="ch
 assert.match(html, /id="chatConversationList"[^>]*aria-label="Private conversations"/, 'private conversations must remain a distinct inbox section');
 assert.match(html, /Direct messages[\s\S]*One-to-one chats/, 'private messaging must remain explicitly one-to-one');
 assert.match(html, /Staff coordination only[\s\S]*No patient information[\s\S]*Messages removed after 14 days/, 'chat must retain the patient-information safety notice');
+assert.match(html, /chatUtilityHeading[\s\S]*Chat essentials[\s\S]*Safety &amp; alerts/, 'Chat safety and notification controls must live inside one premium essentials surface');
+assert.match(presentationCss, /\.nightTeamIdentityContext\{[\s\S]*border-radius:999px[\s\S]*font-size:12\.5px/, 'shared shift names must keep the larger app-wide identity treatment');
+assert.match(presentationCss, /#chat \.chatConversationBadge\.hidden,[\s\S]*display:none!important/, 'zero unread badges must remain visually suppressed');
+assert.match(chat, /unread\.textContent=''[\s\S]*removeAttribute\('aria-label'\)/, 'zero team unread state must clear the badge content instead of rendering 0');
 assert.match(html, /id="chatTeamInput"[^>]*maxlength="2000"/, 'group chat must remain bounded plain text');
 assert.match(html, /id="chatMessageInput"[^>]*maxlength="2000"/, 'private chat must remain bounded plain text');
 assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf('<section id="admin"')), /type="file"|accept="image|camera|microphone|video|location/i, 'chat must not expose attachment or media controls');
@@ -68,9 +72,9 @@ assert.match(chatCss, /\.chatSafetyNotice\{[\s\S]*padding:8px 10px/, 'the safety
 assert.match(chatCss, /\.chatMemberChoice:disabled\{[\s\S]*opacity:1/, 'unregistered roster members must stay legible rather than looking broken');
 assert.match(chatCss, /body\.dark/, 'chat must include dark-mode styling');
 assert.match(presentationCss, /40\.1 Chat polish/, 'the current Chat polish layer must stay identifiable and reviewable');
-assert.match(presentationCss, /43\.3 authoritative Chat experience/, 'Chat must have one reviewable current presentation authority');
+assert.match(presentationCss, /43\.4 authoritative Chat experience/, 'Chat must have one reviewable current presentation authority');
 assert.doesNotMatch(presentationCss, /Chat: conversation-first mobile composition|43\.2 final Chat composition/, 'superseded Chat-only presentation generations must stay removed');
-assert.match(presentationCss, /#chat \.chatInboxTeamRow\{[\s\S]*min-height:82px!important/, 'Team Chat must use compact conversation-row geometry rather than a large dashboard card');
+assert.match(presentationCss, /#chat \.chatInboxTeamRow\{[\s\S]*min-height:96px!important/, 'Team Chat must keep the larger featured-conversation geometry');
 assert.match(presentationCss, /#chat \.chatMessageText\{color:inherit;font-size:var\(--chat-readable\)/, 'message text must keep the readable night-shift type scale');
 assert.match(presentationCss, /#chat \.chatPrivateMessage\.own \.chatPrivateBubble\{[\s\S]*background:var\(--premium-blue\)/, 'private outgoing messages must remain visually distinct without changing delivery behaviour');
 assert.match(presentationCss, /#chat \.chatComposerGlass\{[\s\S]*border:1px solid[\s\S]*border-radius:26px/, 'the composer must remain a single polished surface rather than nested bordered controls');

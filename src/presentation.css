@@ -18306,11 +18306,11 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 
 
-/* 43.3 authoritative Chat experience.
+/* 43.4 authoritative Chat experience.
    Messaging-first composition with one conversation grammar, restrained
    night-shift identity, and no competing dashboard-card hierarchy. */
 #chat{
-  --chat-row-avatar:42px;
+  --chat-row-avatar:50px;
   --chat-row-radius:17px;
   --chat-row-line:color-mix(in srgb,var(--liquid-separator) 54%,transparent);
   --chat-row-surface:color-mix(in srgb,var(--liquid-surface) 40%,transparent);
@@ -18370,8 +18370,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 #chat .chatHeaderCompose{
   width:40px!important;
-  min-width:40px!important;
-  height:40px!important;
+  min-width:44px!important;
+  height:44px!important;
   min-height:40px!important;
   flex:0 0 40px!important;
   display:grid!important;
@@ -18484,20 +18484,19 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 /* Team and direct messages deliberately share the same row grammar. */
 #chat .chatInboxTeamRow{
   width:100%!important;
-  min-height:82px!important;
+  min-height:96px!important;
   display:grid!important;
   grid-template-columns:var(--chat-row-avatar) minmax(0,1fr) auto!important;
   grid-template-areas:"avatar copy unread"!important;
   align-items:center!important;
-  gap:11px!important;
-  margin:0!important;
-  padding:11px 4px!important;
-  border:0!important;
-  border-bottom:1px solid var(--chat-row-line)!important;
-  border-radius:0!important;
-  background:transparent!important;
+  gap:13px!important;
+  margin:2px 0 0!important;
+  padding:14px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 15%,var(--liquid-separator))!important;
+  border-radius:24px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 8%,var(--liquid-surface)) 0%,color-mix(in srgb,var(--liquid-surface) 94%,transparent) 58%,color-mix(in srgb,var(--liquid-info) 4%,var(--liquid-surface)) 100%)!important;
   color:var(--liquid-label)!important;
-  box-shadow:none!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 11%,transparent),0 12px 34px color-mix(in srgb,#000 11%,transparent)!important;
   text-align:left!important;
 }
 #chat .chatInboxTeamRow:active,
@@ -18511,14 +18510,14 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   display:grid!important;
   place-items:center!important;
   border:1px solid color-mix(in srgb,var(--liquid-accent) 14%,var(--liquid-separator))!important;
-  border-radius:14px!important;
-  background:color-mix(in srgb,var(--liquid-accent) 8%,var(--liquid-surface))!important;
+  border-radius:17px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 18%,var(--liquid-surface)),color-mix(in srgb,var(--liquid-accent) 7%,var(--liquid-surface)))!important;
   color:var(--liquid-accent-strong)!important;
-  box-shadow:none!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 13%,transparent),0 8px 22px color-mix(in srgb,var(--liquid-accent) 11%,transparent)!important;
 }
 #chat .chatTeamAvatar svg{
-  width:23px!important;
-  height:23px!important;
+  width:26px!important;
+  height:26px!important;
 }
 #chat .chatInboxTeamCopy{
   grid-area:copy!important;
@@ -18536,8 +18535,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 #chat .chatInboxTeamTop b{
   overflow:hidden!important;
   color:var(--liquid-label)!important;
-  font-size:16px!important;
-  font-weight:720!important;
+  font-size:19px!important;
+  font-weight:780!important;
   line-height:1.2!important;
   letter-spacing:-.018em!important;
   text-overflow:ellipsis!important;
@@ -18545,16 +18544,16 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 #chat .chatInboxTeamTop time{
   color:var(--liquid-tertiary)!important;
-  font-size:10px!important;
-  font-weight:540!important;
+  font-size:10.75px!important;
+  font-weight:580!important;
   font-variant-numeric:tabular-nums!important;
   white-space:nowrap!important;
 }
 #chat .chatTeamMeta{
   overflow:hidden!important;
   color:var(--liquid-tertiary)!important;
-  font-size:10.5px!important;
-  font-weight:540!important;
+  font-size:11.5px!important;
+  font-weight:590!important;
   line-height:1.25!important;
   text-overflow:ellipsis!important;
   white-space:nowrap!important;
@@ -18562,8 +18561,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 #chat .chatInboxTeamPreview{
   overflow:hidden!important;
   color:var(--liquid-secondary)!important;
-  font-size:12.5px!important;
-  font-weight:520!important;
+  font-size:13px!important;
+  font-weight:540!important;
   line-height:1.32!important;
   text-overflow:ellipsis!important;
   white-space:nowrap!important;
@@ -18573,6 +18572,24 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   align-self:center!important;
   justify-self:end!important;
 }
+#chat .chatInboxTeamRow.hasShiftIdentity{
+  border-color:color-mix(in srgb,var(--liquid-accent) 26%,var(--liquid-separator))!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent),0 14px 38px color-mix(in srgb,var(--liquid-accent) 10%,transparent)!important;
+}
+#chat .chatInboxTeamRow.hasShiftIdentity #chatTeamName{
+  color:color-mix(in srgb,var(--liquid-accent-strong) 86%,var(--liquid-label))!important;
+  font-size:20px!important;
+  font-weight:800!important;
+  letter-spacing:-.025em!important;
+  text-shadow:0 0 20px color-mix(in srgb,var(--liquid-accent) 16%,transparent);
+}
+#chat .shiftIdentityTitle{
+  color:color-mix(in srgb,var(--liquid-accent-strong) 86%,var(--liquid-label))!important;
+  font-size:21px!important;
+  font-weight:790!important;
+  letter-spacing:-.025em!important;
+}
+
 #chat .chatTeamPurpose,
 #chat .chatTeamMemberCount,
 #chat .chatInboxOpen{
@@ -18584,17 +18601,17 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   min-height:32px!important;
   display:flex!important;
   align-items:flex-end!important;
-  margin:17px 0 0!important;
-  padding:0 2px 7px!important;
+  margin:22px 0 0!important;
+  padding:0 4px 8px!important;
   border:0!important;
   background:transparent!important;
 }
 #chat .chatInboxSectionLabel>span{
   color:var(--liquid-tertiary)!important;
-  font-size:10px!important;
-  font-weight:720!important;
+  font-size:11px!important;
+  font-weight:760!important;
   line-height:1.2!important;
-  letter-spacing:.045em!important;
+  letter-spacing:.055em!important;
   text-transform:uppercase!important;
 }
 #chat .chatInboxSectionLabel small{
@@ -18617,13 +18634,13 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 #chat .chatInboxRowModern{
   width:100%!important;
-  min-height:68px!important;
+  min-height:76px!important;
   display:grid!important;
-  grid-template-columns:40px minmax(0,1fr) auto!important;
+  grid-template-columns:44px minmax(0,1fr) auto!important;
   align-items:center!important;
   gap:11px!important;
   margin:0!important;
-  padding:9px 4px!important;
+  padding:11px 6px!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
@@ -18643,8 +18660,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   border-radius:50%!important;
   background:color-mix(in srgb,var(--liquid-surface-muted) 58%,transparent)!important;
   color:color-mix(in srgb,var(--liquid-info) 78%,var(--liquid-label))!important;
-  font-size:14.5px!important;
-  font-weight:720!important;
+  font-size:15.5px!important;
+  font-weight:760!important;
 }
 #chat .chatInboxRowCopy{
   display:grid!important;
@@ -18654,8 +18671,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 #chat .chatInboxRowCopy strong{
   overflow:hidden!important;
   color:var(--liquid-label)!important;
-  font-size:15.5px!important;
-  font-weight:690!important;
+  font-size:16.5px!important;
+  font-weight:730!important;
   line-height:1.18!important;
   letter-spacing:-.015em!important;
   text-overflow:ellipsis!important;
@@ -18667,8 +18684,8 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 #chat .chatInboxRowCopy small{
   overflow:hidden!important;
   color:var(--liquid-secondary)!important;
-  font-size:12.25px!important;
-  font-weight:510!important;
+  font-size:12.75px!important;
+  font-weight:530!important;
   line-height:1.32!important;
   text-overflow:ellipsis!important;
   white-space:nowrap!important;
@@ -18690,139 +18707,68 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 #chat .chatConversationBadge,
 #chat .chatInboxUnread{
-  min-width:20px!important;
-  height:20px!important;
-  display:grid!important;
-  place-items:center!important;
-  padding:0 5px!important;
-  border:0!important;
-  border-radius:999px!important;
-  background:var(--liquid-accent)!important;
-  color:#fff!important;
-  box-shadow:none!important;
-  font-size:9px!important;
-  font-style:normal!important;
-  font-weight:780!important;
+  min-width:24px!important;height:24px!important;display:grid!important;place-items:center!important;padding:0 7px!important;
+  border:1px solid color-mix(in srgb,#fff 24%,transparent)!important;border-radius:999px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 88%,#fff),var(--liquid-accent))!important;color:#fff!important;
+  box-shadow:0 6px 16px color-mix(in srgb,var(--liquid-accent) 24%,transparent)!important;font-size:10.5px!important;font-style:normal!important;font-weight:800!important;
 }
+#chat .chatConversationBadge.hidden,
+#chat .chatInboxUnread.hidden,
+#chat .chatInboxUnread:empty{display:none!important;}
 
-/* Safety and notification controls become a footer, not content cards. */
+/* Chat essentials are intentionally richer than settings rows: one premium glass surface,
+   two generous touch targets, and strong icon/title hierarchy. */
 #chat .chatUtilityGroup{
-  margin:22px 0 0!important;
-  padding:0!important;
-  overflow:visible!important;
-  border:0!important;
-  border-top:1px solid var(--chat-row-line)!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
+  margin:26px 0 6px!important;padding:8px!important;overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 11%,var(--liquid-glass-border))!important;border-radius:24px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--liquid-surface) 94%,transparent),color-mix(in srgb,var(--liquid-accent) 4%,var(--liquid-surface)))!important;
+  -webkit-backdrop-filter:blur(24px) saturate(155%)!important;backdrop-filter:blur(24px) saturate(155%)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 14px 38px color-mix(in srgb,#000 10%,transparent)!important;
 }
+#chat .chatUtilityHeading{min-height:34px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 8px 8px}
+#chat .chatUtilityHeading span{color:var(--liquid-label);font-size:12px;font-weight:780;letter-spacing:.045em;text-transform:uppercase}
+#chat .chatUtilityHeading small{color:var(--liquid-tertiary);font-size:10.5px;font-weight:560}
 #chat .chatSafetyNotice{
-  width:100%!important;
-  min-height:44px!important;
-  display:grid!important;
-  grid-template-columns:18px minmax(0,1fr) 10px!important;
-  align-items:center!important;
-  gap:8px!important;
-  margin:0!important;
-  padding:8px 2px!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  color:var(--liquid-secondary)!important;
-  box-shadow:none!important;
-  text-align:left!important;
+  width:100%!important;min-height:72px!important;display:grid!important;grid-template-columns:40px minmax(0,1fr) 18px!important;
+  align-items:center!important;gap:12px!important;margin:0!important;padding:12px!important;border:0!important;border-radius:18px!important;
+  background:color-mix(in srgb,var(--liquid-warning) 3.5%,transparent)!important;color:var(--liquid-label)!important;box-shadow:none!important;text-align:left!important;
 }
 #chat .chatSafetyNotice svg{
-  width:15px!important;
-  height:15px!important;
-  margin:0!important;
-  stroke:var(--liquid-warning)!important;
+  width:40px!important;height:40px!important;margin:0!important;padding:10px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-warning) 21%,var(--liquid-separator))!important;border-radius:13px!important;
+  background:color-mix(in srgb,var(--liquid-warning) 8%,var(--liquid-surface))!important;stroke:var(--liquid-warning)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent)!important;
 }
-#chat .chatSafetyNotice b{
-  display:inline!important;
-  color:var(--liquid-secondary)!important;
-  font-size:10.5px!important;
-  font-weight:650!important;
-}
-#chat .chatSafetyNotice small{
-  display:inline!important;
-  margin-left:4px!important;
-  color:var(--liquid-tertiary)!important;
-  font-size:9.75px!important;
-  font-weight:500!important;
-}
-#chat .chatSafetyNotice>i{
-  color:var(--liquid-tertiary)!important;
-  font-size:16px!important;
-}
-#chat .chatNotificationDisclosure{
-  margin:0!important;
-  border:0!important;
-  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 42%,transparent)!important;
-  background:transparent!important;
-}
+#chat .chatSafetyNotice b{display:block!important;color:var(--liquid-label)!important;font-size:15.5px!important;font-weight:740!important;line-height:1.2!important;letter-spacing:-.012em!important}
+#chat .chatSafetyNotice small{display:block!important;margin:3px 0 0!important;color:var(--liquid-secondary)!important;font-size:11.5px!important;font-weight:520!important;line-height:1.35!important}
+#chat .chatSafetyNotice>i{color:var(--liquid-tertiary)!important;font-size:22px!important;font-weight:360!important}
+#chat .chatNotificationDisclosure{margin:4px 0 0!important;border:0!important;border-top:1px solid color-mix(in srgb,var(--liquid-separator) 44%,transparent)!important;background:transparent!important}
 #chat .chatNotificationDisclosure>summary{
-  min-height:43px!important;
-  display:grid!important;
-  grid-template-columns:18px minmax(0,1fr) 10px!important;
-  align-items:center!important;
-  gap:8px!important;
-  padding:7px 2px!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
+  min-height:72px!important;display:grid!important;grid-template-columns:40px minmax(0,1fr) 18px!important;align-items:center!important;gap:12px!important;
+  padding:12px!important;border:0!important;border-radius:18px!important;background:color-mix(in srgb,var(--liquid-info) 2.5%,transparent)!important;box-shadow:none!important;
 }
 #chat .chatNotificationDisclosureIcon{
-  width:18px!important;
-  height:18px!important;
-  display:grid!important;
-  place-items:center!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  color:var(--liquid-info)!important;
+  width:40px!important;height:40px!important;display:grid!important;place-items:center!important;
+  border:1px solid color-mix(in srgb,var(--liquid-info) 20%,var(--liquid-separator))!important;border-radius:13px!important;
+  background:color-mix(in srgb,var(--liquid-info) 8%,var(--liquid-surface))!important;color:var(--liquid-info)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent)!important;
 }
-#chat .chatNotificationDisclosureIcon svg{
-  width:15px!important;
-  height:15px!important;
-}
-#chat .chatNotificationDisclosure>summary b{
-  display:inline!important;
-  color:var(--liquid-secondary)!important;
-  font-size:10.5px!important;
-  font-weight:650!important;
-}
-#chat .chatNotificationDisclosure>summary small{
-  display:inline!important;
-  margin-left:4px!important;
-  color:var(--liquid-tertiary)!important;
-  font-size:9.75px!important;
-  font-weight:500!important;
-}
-#chat .chatNotificationDisclosure>summary>i{
-  color:var(--liquid-tertiary)!important;
-  font-size:16px!important;
-}
-#chat .chatNotificationCard{
-  margin:8px 0 2px!important;
-  border-radius:14px!important;
-}
+#chat .chatNotificationDisclosureIcon svg{width:21px!important;height:21px!important}
+#chat .chatNotificationDisclosure>summary b{display:block!important;color:var(--liquid-label)!important;font-size:15.5px!important;font-weight:740!important;line-height:1.2!important;letter-spacing:-.012em!important}
+#chat .chatNotificationDisclosure>summary small{display:block!important;margin:3px 0 0!important;color:var(--liquid-secondary)!important;font-size:11.5px!important;font-weight:520!important;line-height:1.35!important}
+#chat .chatNotificationDisclosure>summary>i{color:var(--liquid-tertiary)!important;font-size:22px!important;font-weight:360!important;transition:transform .2s ease!important}
+#chat .chatNotificationDisclosure[open]>summary>i{transform:rotate(90deg)}
+#chat .chatNotificationCard{margin:4px 8px 8px!important;border-radius:18px!important}
 
-/* Shared nickname appears quietly outside Chat on the selected night. */
+/* Shared shift identity is a deliberate app-wide visual signature. */
 .nightTeamIdentityContext{
-  width:max-content;
-  max-width:100%;
-  display:inline-flex;
-  align-items:center;
-  margin:3px 0 6px;
-  overflow:hidden;
-  color:var(--liquid-accent-strong);
-  font-size:10.5px;
-  font-weight:650;
-  line-height:1.25;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  width:max-content;max-width:100%;min-height:30px;display:inline-flex;align-items:center;margin:5px 0 9px;padding:6px 10px;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 20%,var(--liquid-separator));border-radius:999px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--liquid-accent) 10%,var(--liquid-surface)),color-mix(in srgb,var(--liquid-accent) 4%,transparent));
+  color:color-mix(in srgb,var(--liquid-accent-strong) 88%,var(--liquid-label));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 11%,transparent),0 7px 20px color-mix(in srgb,var(--liquid-accent) 9%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(145%);backdrop-filter:blur(16px) saturate(145%);
+  font-size:12.5px;font-weight:760;line-height:1.25;letter-spacing:-.01em;text-overflow:ellipsis;white-space:nowrap;
 }
 .nightTeamIdentityContext.hidden{
   display:none!important;
@@ -18989,10 +18935,11 @@ body.dark #chat .chatHeaderCompose{
   border-color:rgba(90,154,245,.12)!important;
   background:rgba(54,118,208,.07)!important;
 }
-body.dark #chat .chatInboxTeamRow,
-body.dark #chat .chatInboxRowModern,
+body.dark #chat .chatInboxRowModern{background:transparent!important}
 body.dark #chat .chatUtilityGroup{
-  background:transparent!important;
+  border-color:rgba(102,163,255,.10)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.034),rgba(54,118,208,.042))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 16px 42px rgba(0,0,0,.20)!important;
 }
 
 @media(max-width:759px){
