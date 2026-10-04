@@ -395,7 +395,7 @@
             <button type="button" class="screenInfoButton" id="changesInfoBtn" aria-label="Staffing changes information">i</button>
           </div>
         </div>
-        <div class="panel changesDatePanel">
+        <div class="panel changesDatePanel nightContextPanel">
           <h2>Selected night</h2>
           <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
           <div class="grid2">
@@ -516,8 +516,7 @@
             <button type="button" class="screenInfoButton" id="breaksInfoBtn" aria-label="Break plan information">i</button>
           </div>
         </div>
-        <div class="panel">
-          <div id="breakPersonalSummary" aria-live="polite"></div>
+        <div class="panel breaksContextPanel nightContextPanel">
           <h2>Selected night</h2>
           <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
           <div class="grid2">
@@ -548,6 +547,7 @@
               ><small>Linked to Night</small>
             </div>
           </div>
+          <div id="breakPersonalSummary" aria-live="polite"></div>
           <div id="breakClockChange"></div>
           <div id="breakSummaryRow" class="breakSummaryRow"></div>
           <div id="breakDate" class="notice"></div>
