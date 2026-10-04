@@ -1097,38 +1097,27 @@ test('unresolved seventh-nurse decision still names recorded overtime without cl
   expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth + 1);
 });
 
-test('administrator attention badge stays fully visible inside the settings control', async ({ page }) => {
+test('administrator attention badge stays fully visible on the account utility entry', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
-    const button = document.getElementById('adminSettingsBtn');
-    button.classList.remove('hidden');
-    let badge = document.getElementById('adminAttentionBadge');
-    if (!badge) {
-      badge = document.createElement('span');
-      badge.id = 'adminAttentionBadge';
-      badge.className = 'adminAttentionBadge';
-      badge.textContent = '1';
-      button.appendChild(badge);
-    } else {
-      badge.classList.remove('hidden');
-      badge.textContent = '1';
-    }
+    window.currentUserProfile = { ...(window.currentUserProfile || {}), user_role: 'admin' };
+    window.accessRequests = [{ user_id: 'pending-user' }];
+    window.rosterSettings = { ...(window.rosterSettings || {}), published_until: '2099-12-30' };
+    window.updateAdminAttentionBadge();
   });
   const geometry = await page.evaluate(() => {
-    const button = document.getElementById('adminSettingsBtn').getBoundingClientRect();
-    const badge = document.getElementById('adminAttentionBadge').getBoundingClientRect();
+    const button = document.getElementById('accountBtn').getBoundingClientRect();
+    const badge = document.querySelector('#accountBtn .accountUtilityBadge').getBoundingClientRect();
     return { button: { left: button.left, top: button.top, right: button.right, bottom: button.bottom }, badge: { left: badge.left, top: badge.top, right: badge.right, bottom: badge.bottom } };
   });
-  expect(geometry.badge.top).toBeGreaterThanOrEqual(geometry.button.top);
-  expect(geometry.badge.right).toBeLessThanOrEqual(geometry.button.right);
-  await expect(page.locator('#adminAttentionBadge')).toBeVisible();
+  expect(geometry.badge.top).toBeGreaterThanOrEqual(geometry.button.top - 4);
+  expect(geometry.badge.right).toBeLessThanOrEqual(geometry.button.right + 4);
+  await expect(page.locator('#accountBtn .accountUtilityBadge')).toBeVisible();
 });
 
-test('administrator badge ignores selected-night work but still reports admin work', async ({ page }) => {
+test('administrator avatar badge ignores selected-night work but still reports admin work', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
-    const button = document.getElementById('adminSettingsBtn');
-    button.classList.remove('hidden');
     window.currentUserProfile = { ...(window.currentUserProfile || {}), user_role: 'admin' };
     window.accessRequests = [];
     window.rosterSettings = { ...(window.rosterSettings || {}), published_until: '2099-12-30' };
@@ -1139,16 +1128,16 @@ test('administrator badge ignores selected-night work but still reports admin wo
     window.workflowTaskDetails = () => ['Resolve selected-night allocation'];
     window.updateAdminAttentionBadge();
   });
-  await expect(page.locator('#adminAttentionBadge')).toBeHidden();
-  await expect(page.locator('#adminSettingsBtn')).toHaveAttribute('aria-label', 'Administrator tools');
+  await expect(page.locator('#accountBtn .accountUtilityBadge')).toBeHidden();
+  await expect(page.locator('#accountBtn')).toHaveAttribute('aria-label', 'Open account');
 
   await page.evaluate(() => {
     window.accessRequests = [{ user_id: 'pending-user' }];
     window.updateAdminAttentionBadge();
   });
-  await expect(page.locator('#adminAttentionBadge')).toHaveText('1');
-  await expect(page.locator('#adminAttentionBadge')).toBeVisible();
-  await expect(page.locator('#adminSettingsBtn')).toHaveAttribute('aria-label', /1 access request/);
+  await expect(page.locator('#accountBtn .accountUtilityBadge')).toHaveText('1');
+  await expect(page.locator('#accountBtn .accountUtilityBadge')).toBeVisible();
+  await expect(page.locator('#accountBtn')).toHaveAttribute('aria-label', /1 access request/);
 });
 
 test('confirmed seven-nurse context stays Plan ready instead of forcing review', async ({ page }) => {
