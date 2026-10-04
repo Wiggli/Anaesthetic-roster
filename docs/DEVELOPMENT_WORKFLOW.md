@@ -23,6 +23,8 @@ npm run verify:browser
 
 Do not reinstall browsers between small changes in the same workspace.
 
+Canonical Night, Changes and Breaks screenshots are captured during browser smoke. On pull requests, the workflow compares the reviewed snapshot set against the latest successful main baseline with a bounded pixel-difference threshold. An intentional visual change must be listed for the incoming release in `tests/visual-regression.json`; after that release reaches main, its captures become the baseline for later work.
+
 ## Change classes
 
 | Change | Fast loop expectation | Full gate |
