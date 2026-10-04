@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import './tailwind.css';
 import { onRosterEvent } from './contracts';
 import { mountNightIntelligence } from './night-intelligence';
+import { mountNightIntelligenceExtensions } from './night-intelligence-extensions';
 
 function LaunchMotto() {
   const reducedMotion = useReducedMotion();
@@ -187,3 +188,4 @@ onRosterEvent('roster:releasenotes', (detail) => {
 });
 
 mountNightIntelligence();
+mountNightIntelligenceExtensions();
