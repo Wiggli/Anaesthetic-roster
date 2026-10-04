@@ -18239,7 +18239,7 @@ html[data-theme="dark"] #today .nightOverviewBoard{
 }
 #breaks .breakPerson{
   min-height:54px!important;
-  padding:9px 14px!important;
+  padding:9px 15px!important;
 }
 #breaks .breakPerson [data-ui-title],
 #breaks .breakPerson .listRowTitle{
@@ -18384,7 +18384,11 @@ html[data-theme="dark"] #today .nightOverviewBoard{
     font-size:35px!important;
   }
   #changes .workflowStep{
+    height:52px!important;
     min-height:52px!important;
+    max-height:52px!important;
+    gap:2px!important;
+    padding:3px 2px!important;
   }
   #changes .workflowStepCopy small{
     display:none!important;
