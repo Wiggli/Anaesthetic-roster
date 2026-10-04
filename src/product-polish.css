@@ -1061,3 +1061,51 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
     grid-column:auto;
   }
 }
+
+/* 45.3 Night allocation row clipping fix. */
+#today .nightSituationTimeline .rosterRowCopy{
+  min-width:0;
+  display:grid;
+  gap:4px;
+}
+
+#today .nightSituationTimeline .rosterRowName{
+  min-width:0;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) max-content;
+  align-items:start;
+  gap:8px;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:normal;
+}
+
+#today .nightSituationTimeline .rosterRowPeople{
+  min-width:0;
+  overflow-wrap:anywhere;
+  line-height:1.22;
+}
+
+#today .nightSituationTimeline .rosterRowBadges{
+  min-width:max-content;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+}
+
+#today .nightSituationTimeline .rosterYouBadge,
+#today .nightSituationTimeline .rosterLiveBadge{
+  flex:0 0 auto;
+  margin-left:0!important;
+}
+
+@media(max-width:390px){
+  #today .nightSituationTimeline .rosterRowName{
+    grid-template-columns:minmax(0,1fr);
+    gap:6px;
+  }
+  #today .nightSituationTimeline .rosterRowBadges{
+    justify-content:flex-start;
+  }
+}
