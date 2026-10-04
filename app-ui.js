@@ -361,58 +361,6 @@ function nightTeamIdentityFor(date){
   });
   return best
 }
-var PERSONAL_ACCENT_COLOURS={teal:'#0a8f88',blue:'#3478f6',violet:'#7c5ce5',rose:'#d85d86',amber:'#c77b16',graphite:'#687078'};
-function normaliseAccentKey(value){value=String(value||'teal').toLowerCase();return PERSONAL_ACCENT_COLOURS[value]?value:'teal'}
-function accentColourFor(value){return PERSONAL_ACCENT_COLOURS[normaliseAccentKey(value)]}
-function shiftSymbolGlyph(value){return{spark:'✦',moon:'☾',cross:'✚',diamond:'◆',dot:'●',star:'★'}[String(value||'spark')]||'✦'}
-window.shiftSymbolGlyph=shiftSymbolGlyph;
-function identityInitials(value){
-  var words=String(value||'').trim().split(/\s+/).filter(Boolean);
-  if(!words.length)return'AT';
-  if(words.length===1)return words[0].slice(0,2).toUpperCase();
-  return(words[0].charAt(0)+words[words.length-1].charAt(0)).toUpperCase()
-}
-function nightTeamNickname(date){
-  var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
-  return value.slice(0,28)
-}
-window.nightTeamNickname=nightTeamNickname;
-function shiftIdentityModel(date){
-  var row=nightTeamIdentityFor(date),name=nightTeamNickname(date)||'Anaesthetic Team';
-  return{name:name,tagline:row&&row.tagline||'',avatarPath:row&&row.avatar_path||'',accentKey:normaliseAccentKey(row&&row.accent_key),symbol:row&&row.symbol||'spark',initials:identityInitials(name),updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||'',photoUrl:shiftAvatarUrl}
-}
-window.shiftIdentityModel=shiftIdentityModel;
-window.shiftIdentityPhotoUrl=function(){return shiftAvatarUrl};
-async function refreshShiftAvatar(){
-  shiftAvatarUrl='';
-  var row=nightTeamIdentityFor(''),path=row&&row.avatar_path;
-  if(path&&supa&&currentUser&&navigator.onLine!==false){
-    try{var result=await supa.storage.from('shift-identity').createSignedUrl(path,3600);if(!result.error&&result.data)shiftAvatarUrl=result.data.signedUrl||''}catch(error){}
-  }
-  return shiftAvatarUrl
-}
-window.refreshShiftAvatar=refreshShiftAvatar;
-function renderNightTeamIdentityContext(date){
-  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date),model=shiftIdentityModel(date);
-  Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
-    node.classList.toggle('hidden',!nickname);
-    node.dataset.shiftAccent=model.accentKey;
-    node.style.setProperty('--shift-identity-accent',accentColourFor(model.accentKey));
-    node.textContent='';
-    if(nickname){
-      var mark=document.createElement('span');mark.className='shiftIdentityMark';
-      if(shiftAvatarUrl){var image=document.createElement('img');image.src=shiftAvatarUrl;image.alt='';mark.appendChild(image)}
-      else mark.textContent=shiftSymbolGlyph(model.symbol);
-      var copy=document.createElement('span');copy.className='shiftIdentityCopy';
-      var strong=document.createElement('strong');strong.textContent=nickname;copy.appendChild(strong);
-      if(model.tagline){var small=document.createElement('small');small.textContent=model.tagline;copy.appendChild(small)}
-      node.appendChild(mark);node.appendChild(copy);
-    }
-    node.title=nickname?(row&&row.updated_by?'Shift identity · shared across every roster night · updated by '+row.updated_by:'Shift identity · shared across every roster night'):'';
-  });
-  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,tagline:model.tagline,accentKey:model.accentKey,symbol:model.symbol,photoUrl:shiftAvatarUrl,updatedBy:model.updatedBy,updatedAt:model.updatedAt}}))
-}
-
 async function requestStartupSnapshot(){
   var token=currentAccessToken;
   if(!token){
@@ -753,6 +701,216 @@ async function signInWithPasskey(){
   finally{button.disabled=false}
 }
 
+async function loadPasskeys(){
+  var button=byId('addPasskeyBtn'),message=byId('passkeyMessage'),detail={message:'',items:[]};if(!passkeySupported()){detail.message='Passkeys are not supported by this browser. Password sign-in remains available.';button.classList.add('hidden');if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:passkeys',{detail:detail}));return}button.classList.remove('hidden');message.textContent='';var result=await supa.auth.passkey.list();if(result.error){detail.message='No passkeys are available yet. Your administrator may still need to enable them in Supabase.';if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:passkeys',{detail:detail}));return}var list=result.data&&result.data.passkeys||result.data||[];detail.items=list.map(function(item){return{id:item.id||item.passkey_id,label:item.friendly_name||item.friendlyName||'Saved passkey'}});detail.message='No passkey has been added to this account.';if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:passkeys',{detail:detail}));
+}
+
+async function addPasskey(){var button=byId('addPasskeyBtn');button.disabled=true;byId('passkeyMessage').textContent='Follow your device instructions…';try{var result=await supa.auth.registerPasskey();if(result.error)throw result.error;if(result.data&&result.data.id)await supa.auth.passkey.update({passkeyId:result.data.id,friendlyName:'Night Roster on '+(navigator.platform||'this device')});byId('passkeyMessage').textContent='Passkey added. You can use it on the sign-in screen.';await loadPasskeys();toast('Passkey added')}catch(error){byId('passkeyMessage').textContent=/cancel|not allowed/i.test(error.message||'')?'Passkey setup was cancelled.':/disabled|not enabled/i.test(error.message||'')?'Passkeys must first be enabled in Supabase Authentication settings.':'The passkey could not be added. '+(error.message||'Please try again.')}finally{button.disabled=false}}
+
+async function deletePasskey(id){if(!id||!confirm('Remove this passkey from your Night Roster account?'))return;var result=await supa.auth.passkey.delete({passkeyId:id});if(result.error){byId('passkeyMessage').textContent='The passkey could not be removed.';return}await loadPasskeys();toast('Passkey removed')}
+
+function releasePolicy(){var latest=RELEASE_HISTORY[0]||{};return ['quiet','normal','important'].indexOf(latest.policy)>=0?latest.policy:'normal'}
+function releaseNeedsAttention(){return appStorage.getItem('anaes_seen_version')!==APP_VERSION&&releasePolicy()!=='quiet'}
+function markCurrentReleaseSeen(){appStorage.setItem('anaes_seen_version',APP_VERSION);var account=byId('accountSheet');if(account&&account.open)populateAccountSheet()}
+function showReleaseNotesIfNeeded(){
+  if(appStorage.getItem('anaes_seen_version')===APP_VERSION)return;
+  var policy=releasePolicy(),returning=appStorage.getItem('anaes_selected_date')||appStorage.getItem('anaes_my_name');
+  if(policy!=='important'||!returning)return;
+  renderReleaseNotes();releaseNotesQueued=true;var dialog=byId('releaseNotes');setTimeout(function(){if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal()},900)
+}
+function releaseMonthLabel(date){return String(date||'').replace(/^\\d+\\s+/,'')||String(date||'')}
+function releaseActionButtons(actions){return(actions||[]).map(function(item){return'<button type="button" class="releaseShowMe" data-release-action="'+esc(item.action)+'" data-release-value="'+esc(item.value||'')+'">'+esc(item.label)+'<span aria-hidden="true">›</span></button>'}).join('')}
+function releaseCurrentFallback(entry,actions){
+  return'<div class="releaseHistory"><section class="releaseEntry latest releaseEditorial"><div class="releaseHero"><span class="releaseHeroMark" aria-hidden="true">✦</span><div><span class="releaseHeroEyebrow">Night Roster '+esc(entry.version)+'</span><h3>'+esc(entry.title)+'</h3><p>Here are the improvements worth knowing about.</p></div><time>'+esc(entry.date)+'</time></div><div class="releaseHighlights">'+entry.changes.map(function(change,index){var action=actions[index];return'<article class="releaseHighlight"><span class="releaseHighlightIndex" aria-hidden="true">'+(index+1)+'</span><p>'+esc(change)+'</p>'+(action?releaseActionButtons([action]):'')+'</article>'}).join('')+'</div><button type="button" class="releaseHistoryLink" data-release-action="history">View complete version history <span aria-hidden="true">›</span></button></section></div>'
+}
+function releaseHistoryFallback(entries){
+  var month='';return'<div class="releaseNav" aria-label="Version history navigation"><button type="button" data-release-jump="latest">Latest update</button><button type="button" data-release-jump="previous">Earlier releases <span>'+Math.max(0,entries.length-1)+'</span></button></div><div class="releaseHistory releaseHistoryCompact" tabindex="0" aria-label="Complete Night Roster version history">'+entries.map(function(entry,index){var label=releaseMonthLabel(entry.date),heading=label!==month?'<div class="releaseMonthHeading">'+esc(label)+'</div>':'';month=label;return heading+'<details class="releaseEntry releaseHistoryItem '+(index===0?'latest':'')+'" data-history-index="'+index+'" '+(index===0?'open':'')+'><summary><span class="releaseHistoryVersion">v'+esc(entry.version)+'</span><span class="releaseHistoryCopy"><b>'+esc(entry.title)+'</b><small>'+esc(entry.date)+'</small></span><span class="releaseHistoryChevron" aria-hidden="true">⌄</span></summary><ul>'+entry.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('')+'</ul></details>'}).join('')+'</div>'
+}
+function bindReleaseFallbackActions(host){
+  Array.prototype.forEach.call(host.querySelectorAll('[data-release-action]'),function(button){button.onclick=function(){window.dispatchEvent(new CustomEvent('roster:release-action',{detail:{action:button.getAttribute('data-release-action'),value:button.getAttribute('data-release-value')||''}}))}});
+  var history=host.querySelector('.releaseHistory');Array.prototype.forEach.call(host.querySelectorAll('[data-release-jump]'),function(button){button.onclick=function(){if(!history)return;var previous=button.getAttribute('data-release-jump')==='previous',target=history.querySelector('.releaseHistoryItem[data-history-index="'+(previous?'1':'0')+'"]');if(!target)return;history.scrollTo({top:Math.max(0,target.offsetTop-8),behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}})
+}
+function renderReleaseNotes(showHistory){
+  var dialog=byId('releaseNotes');if(!dialog)return;var latest=RELEASE_HISTORY[0],entries=showHistory?RELEASE_HISTORY:[latest],actions=RELEASE_ACTIONS[latest.version]||[];dialog.classList.add('releaseDialog');dialog.dataset.releaseMode=showHistory?'history':'current';
+  var title=byId('releaseNotesTitle'),intro=byId('releaseNotesIntro'),close=byId('closeReleaseNotes');if(title)title.textContent=showHistory?'Version history':'What’s new';if(intro)intro.textContent=showHistory?'Every Night Roster release, newest first':'Version '+latest.version+' · The changes worth knowing about';if(close)close.textContent=showHistory?'Done':'Got it';
+  if(!window.__forceReleaseNotesFallback&&typeof window.renderReactReleaseNotes==='function'){window.renderReactReleaseNotes(entries,!!showHistory,actions);return}
+  var host=byId('releaseNotesContent');if(!host)return;host.innerHTML=showHistory?releaseHistoryFallback(entries):releaseCurrentFallback(latest,actions);bindReleaseFallbackActions(host);
+  if(typeof window.CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:releasenotes',{detail:{entries:entries,showHistory:!!showHistory,actions:actions}}))
+}
+
+function ensureRecordActionSheet(){
+  var dialog=byId('recordActionSheet');if(dialog)return dialog;
+  dialog=document.createElement('dialog');dialog.id='recordActionSheet';dialog.className='recordActionSheet';dialog.setAttribute('aria-labelledby','recordActionTitle');dialog.innerHTML='<div class="sheetGrabber" aria-hidden="true"></div><div class="recordActionHeading"><span>Staffing record</span><h2 id="recordActionTitle">Choose an action</h2><p id="recordActionDetail"></p></div><div class="recordActionGroup"><button type="button" id="recordEditAction">Edit absence</button><button type="button" class="destructive" id="recordRemoveAction">Remove</button></div><button type="button" class="recordActionCancel" id="recordCancelAction">Cancel</button>';
+  document.body.appendChild(dialog);byId('recordCancelAction').onclick=function(){dialog.close()};dialog.addEventListener('click',function(event){if(event.target===dialog)dialog.close()});return dialog;
+}
+
+function showRecordActions(kind,id,name){
+  var dialog=ensureRecordActionSheet(),edit=byId('recordEditAction'),remove=byId('recordRemoveAction'),absence=kind==='absence';
+  byId('recordActionTitle').textContent=name;byId('recordActionDetail').textContent=absence?'Recorded absence':'Confirmed overtime nurse';edit.classList.toggle('hidden',!absence);edit.onclick=function(){dialog.close();editNightChange(id)};remove.textContent=absence?'Remove absence':'Remove overtime nurse';remove.onclick=function(){dialog.close();if(absence)removeNightChange(id);else removeOvertime(id)};if(!dialog.open)dialog.showModal();
+}
+
+function educationState(){
+  var state={main:0,chat:0,changes:0,breaks:0};
+  try{var saved=JSON.parse(appStorage.getItem('anaes_education_state_v1')||'{}');Object.keys(state).forEach(function(key){if(Number(saved[key])>0)state[key]=Number(saved[key])})}catch(error){}
+  if(appStorage.getItem('anaes_onboarding_complete_v34'))state.main=Math.max(state.main,2);
+  if(appStorage.getItem('anaes_chat_intro_v37_31'))state.chat=Math.max(state.chat,1);
+  return state
+}
+function educationSeen(key,version){return Number(educationState()[key]||0)>=Number(version||1)}
+function markEducationSeen(key,version){
+  var state=educationState();state[key]=Math.max(Number(state[key]||0),Number(version||1));try{appStorage.setItem('anaes_education_state_v1',JSON.stringify(state))}catch(error){}
+  if(key==='main')appStorage.setItem('anaes_onboarding_complete_v34','1');if(key==='chat')appStorage.setItem('anaes_chat_intro_v37_31','1');refreshEducationMarkers()
+}
+function refreshEducationMarkers(){
+  ['changes','breaks','chat'].forEach(function(view){var button=document.querySelector('.bottom button[data-v="'+view+'"]');if(!button)return;var fresh=!educationSeen(view,1);button.classList.toggle('educationNew',fresh);if(fresh)button.setAttribute('data-education-label','New');else button.removeAttribute('data-education-label')})
+}
+function onboardingMiniNight(selected){
+  return'<div class="onboardingProductPreview onboardingNightPreview" aria-hidden="true"><div class="onboardingPreviewHead"><span>YOUR NIGHT</span><small>Example</small></div><div class="onboardingPreviewPerson"><span class="onboardingPreviewAvatar">'+esc(selected?professionalName(selected).charAt(0).toUpperCase():'A')+'</span><div><b>'+esc(selected?professionalName(selected):'Your roster name')+'</b><small>Your allocation stays first</small></div></div><div class="onboardingPreviewFacts"><span><small>Role</small><b>Shown here</b></span><span><small>Break</small><b>Highlighted</b></span></div></div>'
+}
+function onboardingWorkflowPreview(){
+  return'<div class="onboardingProductPreview onboardingWorkflowPreview" aria-hidden="true"><div><span>1</span><b>Staffing</b><small>Who changed?</small></div><i></i><div><span>2</span><b>Allocation</b><small>Only if needed</small></div><i></i><div><span>3</span><b>Share</b><small>Confirm once</small></div></div>'
+}
+function featureEducationPage(key){
+  if(key==='clockchange'){var date=onboardingClockChangeDate||cur().date,timing=nightDutyTiming(date),detail=clockChangeDetailFor(date);return'<div class="onboardingProductPreview clockChangeOnboardingPreview" aria-hidden="true"><div class="clockChangePreviewClock"><span>02</span><i>→</i><span>'+(timing.direction==='back'?'02':'03')+'</span></div><div class="clockChangePreviewSplit"><span><small>FIRST PART</small><b>'+esc(timing.firstPeriodDisplay)+'</b><em>'+esc(detail.partHoursLabel)+' actual</em></span><i></i><span><small>SECOND PART</small><b>'+esc(timing.secondPeriod)+'</b><em>'+esc(detail.partHoursLabel)+' actual</em></span></div></div><span class="onboardingEyebrow">Clock change night</span><h2 id="onboardingTitle">The app keeps both parts equal.</h2><p>'+esc(detail.transitionLabel)+'. Night Roster automatically moves the handover to <b>'+esc(detail.handoverDisplay)+'</b> so First Part and Second Part each work <b>'+esc(detail.partHoursLabel)+'</b> of real elapsed duty.</p><div class="onboardingCallout"><b>No manual adjustment needed</b><span>The roster names and break ownership stay the same. Only the duty handover time changes for this night.</span></div><p class="onboardingFootnote">Night, Breaks, live duty status and roster summaries all use this same equal-duty timing.</p>'}
+  if(key==='chat')return'<div class="onboardingProductPreview featureChatPreview" aria-hidden="true"><span>'+interfaceIcon('chat')+'</span><div><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team Chat</span><h2 id="onboardingTitle">Team chat, when you need it.</h2><p>Anaesthetic Team reaches everyone on tonight’s roster. Start a private conversation when you only need one colleague.</p><div class="onboardingFeatureList"><div><b>Team</b><span>Coordinate with tonight’s whole roster</span></div><div><b>Private</b><span>Message one registered team member</span></div><div><b>Safety</b><span>Roster coordination only, never patient-identifiable or clinical information</span></div></div><p class="onboardingFootnote">Chat never changes the roster. Record an agreed staffing or role change separately in Changes.</p>';
+  if(key==='changes')return onboardingWorkflowPreview()+'<span class="onboardingEyebrow">Changes</span><h2 id="onboardingTitle">You usually don’t need this screen.</h2><p>The standard six-nurse night is already calculated. Use Changes only for a confirmed absence, overtime nurse or agreed night-only allocation.</p><div class="onboardingCallout onboardingCalmCallout"><b>Normal night?</b><span>There is nothing to confirm. Night and Breaks are already ready.</span></div>';
+  return'<div class="onboardingProductPreview onboardingBreakPreview" aria-hidden="true"><div><small>FIRST BREAK</small><b>Your name</b><span>03:30 onward</span></div><div><small>SECOND BREAK</small><b>Team</b><span>00:00 to 03:30</span></div><button type="button" tabindex="-1">Jump to me</button></div><span class="onboardingEyebrow">Breaks</span><h2 id="onboardingTitle">Your break is already highlighted.</h2><p>Breaks follows the same live staffing plan as Night. Use Jump to me when you want your own row immediately.</p><div class="onboardingCallout onboardingCalmCallout"><b>One shared plan</b><span>Staffing and role changes flow through to Breaks automatically.</span></div>'
+}
+function appGuidePage(){
+  return'<span class="onboardingEyebrow">App guide</span><h2 id="onboardingTitle">Help that takes you to the right place.</h2><p>Choose a topic. Night Roster will either open that screen or replay its short explanation.</p><div class="appGuideList"><button type="button" data-guide-view="today"><span class="appGuideIcon">'+interfaceIcon('night')+'</span><span><b>Night</b><small>Your allocation and the live team plan</small></span><i>›</i></button><button type="button" data-guide-view="changes"><span class="appGuideIcon">'+interfaceIcon('staffing')+'</span><span><b>Changes</b><small>Absence, overtime and agreed exceptions</small></span><i>›</i></button><button type="button" data-guide-view="breaks"><span class="appGuideIcon">'+interfaceIcon('task')+'</span><span><b>Breaks</b><small>Your break and the shared schedule</small></span><i>›</i></button><button type="button" data-guide-view="chat"><span class="appGuideIcon">'+interfaceIcon('chat')+'</span><span><b>Team Chat</b><small>Team and private roster coordination</small></span><i>›</i></button><button type="button" data-guide-action="account"><span class="appGuideIcon">Aa</span><span><b>Account & notifications</b><small>Profile, appearance, alerts and sign-in</small></span><i>›</i></button><button type="button" data-guide-action="updates"><span class="appGuideIcon">↺</span><span><b>Updates & version history</b><small>What changed and every previous release</small></span><i>›</i></button></div>'
+}
+function onboardingPages(){
+  if(onboardingGuideMenu)return[appGuidePage()];if(onboardingFeatureKey||onboardingChatIntro)return[featureEducationPage(onboardingFeatureKey||'chat')];
+  var accountName=currentUserProfile&&currentUserProfile.display_name||'',selected=myName()||TEAM.find(function(name){return sameNurse(name,accountName)})||'';
+  return[
+    '<span class="onboardingEyebrow">Welcome</span><h2 id="onboardingTitle">First, which roster name is yours?</h2><p>Night Roster uses this only to bring your own allocation and break to the front on this device.</p><div class="onboardingIdentityPreview"><span>'+(selected?esc(professionalName(selected).charAt(0).toUpperCase()):'?')+'</span><div><b>'+(selected?esc(professionalName(selected)):'Choose your roster name')+'</b><small>'+(selected?'Matched from your signed-in account':'You can change this later in Account')+'</small></div></div><label class="onboardingNameLabel"><span>Roster name</span><select id="onboardingNamePick"><option value="">Choose your name</option>'+TEAM.map(function(name){return'<option value="'+esc(name)+'" '+(sameNurse(name,selected)?'selected':'')+'>'+esc(professionalName(name))+'</option>'}).join('')+'</select></label><p class="onboardingFootnote">This never changes the shared roster or anyone else’s allocation.</p>',
+    onboardingMiniNight(selected)+'<span class="onboardingEyebrow">Night</span><h2 id="onboardingTitle">What matters to you stays first.</h2><p>Night opens with your own assignment, your break and the live staffing picture before the rest of the team detail.</p><div class="onboardingCallout"><b>No hunting through the roster</b><span>Your personal answer is always the first thing Night tries to show.</span></div>',
+    onboardingWorkflowPreview()+'<span class="onboardingEyebrow">Changes</span><h2 id="onboardingTitle">The normal roster is automatic.</h2><p>You only need Changes when something genuinely differs from the calculated night, such as an absence, overtime nurse or an agreed night-only role change.</p><div class="onboardingCallout onboardingCalmCallout"><b>That’s enough to start</b><span>Breaks and Team Chat will explain themselves the first time you open them.</span></div><button type="button" class="onboardingShareShortcut" data-share-night-roster><span><b>Share Night Roster</b><small>Show a QR code to another authorised team member</small></span><i>›</i></button>'
+  ]
+}
+function bindGuideActions(){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-guide-view]'),function(button){button.onclick=function(){var view=button.getAttribute('data-guide-view'),dialog=byId('onboardingDialog');onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();show(view);if(view!=='today')setTimeout(function(){showFeatureEducation(view,true)},160)}});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-guide-action]'),function(button){button.onclick=function(){var action=button.getAttribute('data-guide-action'),dialog=byId('onboardingDialog');onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();if(action==='account')showAccountSheet();else if(action==='updates'){renderReleaseNotes(true);var release=byId('releaseNotes');if(release&&!release.open)release.showModal()}}})
+}
+function renderOnboarding(){
+  var dialog=byId('onboardingDialog'),content=byId('onboardingContent'),pages=onboardingPages();if(!dialog||!content)return;
+  onboardingStep=Math.max(0,Math.min(pages.length-1,onboardingStep));var feature=onboardingFeatureKey||onboardingChatIntro?'feature':onboardingGuideMenu?'guide':'main';dialog.dataset.onboardingPage=feature==='main'?String(onboardingStep):feature;dialog.classList.toggle('onboardingFeatureIntro',feature==='feature');dialog.classList.toggle('onboardingGuideMode',feature==='guide');
+  content.innerHTML=pages[onboardingStep];content.classList.remove('onboardingContentIn','onboardingContentBack');void content.offsetWidth;content.classList.add(onboardingDirection<0?'onboardingContentBack':'onboardingContentIn');
+  byId('onboardingProgress').innerHTML=pages.map(function(_,index){return'<span class="'+(index===onboardingStep?'active':'')+'" aria-hidden="true"></span>'}).join('');byId('onboardingProgress').setAttribute('aria-valuenow',String(onboardingStep+1));byId('onboardingProgress').setAttribute('aria-valuemax',String(pages.length));
+  byId('onboardingStepLabel').textContent=feature==='guide'?'App guide':feature==='feature'?'Quick tip · '+(onboardingFeatureKey==='clockchange'?'Clock change':onboardingFeatureKey==='chat'||onboardingChatIntro?'Chat':onboardingFeatureKey==='changes'?'Changes':'Breaks'):(onboardingStep+1)+' of '+pages.length;
+  byId('onboardingBackBtn').classList.toggle('hidden',feature!=='main'||onboardingStep===0);byId('onboardingNextBtn').textContent=feature==='guide'?'Done':feature==='feature'?'Got it':onboardingStep===pages.length-1?'Open my night':'Continue';byId('onboardingSkipBtn').textContent=feature==='main'?'Skip for now':'Close';byId('onboardingSkipBtn').classList.toggle('hidden',feature!=='main'||onboardingStep===pages.length-1);
+  var select=byId('onboardingNamePick');if(select)select.onchange=function(){if(select.value)appStorage.setItem('anaes_my_name',select.value);else appStorage.removeItem('anaes_my_name');renderOnboarding()};var shareShortcut=document.querySelector('[data-share-night-roster]');if(shareShortcut)shareShortcut.onclick=function(){var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();showShareApp()};bindGuideActions();
+  if(dialog.open){content.scrollTop=0;var heading=byId('onboardingTitle');if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true})}}
+}
+async function finishOnboarding(){
+  var dialog=byId('onboardingDialog');
+  if(onboardingGuideMenu){onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast('App guide closed');return}
+  if(onboardingFeatureKey||onboardingChatIntro){var key=onboardingFeatureKey||'chat';if(key==='clockchange')markClockChangeEducationSeen(onboardingClockChangeDate);else markEducationSeen(key,1);onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast(key==='clockchange'?'Clock-change timing understood':key==='chat'?'Team chat is ready':key==='changes'?'Changes guide completed':'Breaks guide completed');return}
+  var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)appStorage.setItem('anaes_my_name',select.value);markEducationSeen('main',2);onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready')
+}
+function showOnboardingIfNeeded(){
+  if(!currentUserProfile||releaseNotesQueued||educationSeen('main',2))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?520:40)
+}
+function showFeatureEducation(key,force){
+  if(['changes','breaks','chat'].indexOf(key)<0||!currentUserProfile||!educationSeen('main',2))return;if(!force&&educationSeen(key,1))return;
+  var dialog=byId('onboardingDialog'),release=byId('releaseNotes');if(!dialog||!dialog.showModal||dialog.open||release&&release.open)return;onboardingFeatureKey=key;onboardingChatIntro=key==='chat';onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?240:20)
+}
+function showClockChangeEducation(date,force){
+  var timing=nightDutyTiming(date);if(!timing.isClockChange||!currentUserProfile||!educationSeen('main',2))return;if(!force&&clockChangeEducationSeen(date))return;
+  var dialog=byId('onboardingDialog'),release=byId('releaseNotes');if(!dialog||!dialog.showModal||dialog.open||release&&release.open)return;onboardingFeatureKey='clockchange';onboardingClockChangeDate=date;onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?240:20)
+}
+function bindFeatureEducation(){
+  refreshEducationMarkers();
+  window.addEventListener('roster:viewchange',function(event){var view=event&&event.detail&&event.detail.view;if(['changes','breaks','chat'].indexOf(view)>=0){refreshEducationMarkers();setTimeout(function(){showFeatureEducation(view,false)},220)}});
+  window.addEventListener('roster:release-action',function(event){var detail=event&&event.detail||{},dialog=byId('releaseNotes');if(detail.action==='history'){renderReleaseNotes(true);return}if(dialog&&dialog.open){markCurrentReleaseSeen();dialog.close()}if(detail.action==='guide'){openOnboardingReplay();return}if(detail.action==='share'){showShareApp();return}if(detail.action==='view'&&detail.value){show(detail.value);if(['changes','breaks','chat'].indexOf(detail.value)>=0)setTimeout(function(){showFeatureEducation(detail.value,true)},180)}})
+}
+function bindOnboarding(){
+  var dialog=byId('onboardingDialog'),next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
+  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingDirection=1;onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingFeatureKey||onboardingChatIntro||onboardingGuideMenu?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingDirection=-1;onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
+  if(dialog&&typeof dialog.addEventListener==='function')dialog.addEventListener('cancel',function(event){if(onboardingFeatureKey||onboardingChatIntro){event.preventDefault();finishOnboarding();return}onboardingGuideMenu=false;onboardingReplay=false})
+}
+
+function installedReleaseState(){var latest=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version||'Unknown',cache=String(serviceWorkerCacheVersion||'').replace(/^anaesthetic-night-roster-v/,'').replace(/-/g,'.'),stale=cache!=='Checking…'&&cache!=='Not active'&&cache!==APP_VERSION;return{latest:latest,cache:serviceWorkerCacheVersion,stale:stale,waiting:!!(updateRegistration&&updateRegistration.waiting)}}
+
+function diagnosticsText(){
+  var backupAt=appStorage.getItem('anaes_last_backup_at'),release=installedReleaseState(),clock=window.AnaestheticDomain&&window.AnaestheticDomain.clockState?window.AnaestheticDomain.clockState():{source:'device',offsetMs:0},caps=rosterCapabilities(),events=window.AnaestheticDomain&&window.AnaestheticDomain.readDiagnostics?window.AnaestheticDomain.readDiagnostics().slice(-10):[],lines=['Running app version: '+APP_VERSION,'Latest release-history version: '+release.latest,'Service-worker cache: '+release.cache,'Installed release: '+(release.stale?'stale cache detected':release.waiting?'update waiting for approval':'current'),'Expected database schema: '+EXPECTED_SCHEMA_VERSION,'Actual database schema: '+(schemaVersion||'legacy'),'Capabilities: server clock '+(caps.serverClock?'yes':'no')+' · chat idempotency '+(caps.chatIdempotency?'yes':'no')+' · monotonic reads '+(caps.monotonicChatRead?'yes':'no'),'Clock source: '+clock.source+' · offset '+Math.round(Number(clock.offsetMs||0))+' ms','Connection state: '+sharedSyncState,'Last successful refresh: '+(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet'),'Startup compatibility fallback uses this session: '+compatibilityStartupUseCount+(compatibilityStartupLastUsed?' · last '+compatibilityStartupLastUsed:''),'Last roster-data export: '+(backupAt?new Date(backupAt).toLocaleString('en-GB'):'not recorded on this device'),'Published roster until: '+(rosterSettings.published_until||'unknown'),'Calculated nights: '+R.length,'Current account: '+(currentUserProfile?'signed in as '+currentUserProfile.user_role:'not signed in')];if(events.length){lines.push('Recent local diagnostics:');events.forEach(function(item){lines.push(item.at+' · '+item.category+' · '+item.operation+' · '+item.code)})}return lines.join('\n');
+}
+
+function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var backupAt=appStorage.getItem('anaes_last_backup_at'),schemaState=schemaVersion>=EXPECTED_SCHEMA_VERSION?'Current':'Upgrade required',release=installedReleaseState(),compatCount=Number(appStorage.getItem('anaes_compat_startup_count')||0),compatLast=appStorage.getItem('anaes_compat_startup_last_at'),clockConfidence=window.AnaestheticRuntime&&window.AnaestheticRuntime.clock?window.AnaestheticRuntime.clock.confidence():null;el.innerHTML='<div class="diagnosticGrid"><div class="historyItem"><b>Application versions</b><div class="changeMeta">Running '+esc(APP_VERSION)+' · Release history '+esc(release.latest)+'</div></div><div class="historyItem"><b>Service-worker cache</b><div class="changeMeta">'+esc(release.cache)+' · '+esc(release.stale?'Stale cached release detected':release.waiting?'Update awaiting approval':'Current')+'</div></div><div class="historyItem"><b>Database schema</b><div class="changeMeta">Expected '+esc(EXPECTED_SCHEMA_VERSION)+' · Actual '+esc(schemaVersion||'legacy')+' · '+esc(schemaState)+'</div></div><div class="historyItem"><b>Shared-data connection</b><div class="changeMeta">'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet')+'</div></div><div class="historyItem"><b>Clock confidence</b><div class="changeMeta">'+esc(clockConfidence?clockConfidence.level+' · '+clockConfidence.sampleCount+' accepted sample'+(clockConfidence.sampleCount===1?'':'s'):'Device clock')+'</div></div><div class="historyItem"><b>Compatibility startup</b><div class="changeMeta">'+esc(compatCount?compatCount+' fallback use'+(compatCount===1?'':'s')+' · Last '+(compatLast?new Date(compatLast).toLocaleString('en-GB'):'this session'):'No fallback use recorded on this device')+'</div></div><div class="historyItem"><b>Last roster-data export</b><div class="changeMeta">'+esc(backupAt?new Date(backupAt).toLocaleString('en-GB'):'Not recorded')+'</div></div></div>'+(release.waiting?'<button type="button" class="primary wide" id="diagnosticUpdateBtn">Update now</button>':'')+'<button type="button" class="soft wide" id="copyDiagnosticsBtn">Copy diagnostic report</button>';var button=byId('copyDiagnosticsBtn');if(button)button.onclick=async function(){try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnostic report copied')}catch(error){toast('Diagnostic report could not be copied')}};var update=byId('diagnosticUpdateBtn');if(update)update.onclick=applyWaitingUpdate}
+
+function prettyDateMarkup(date){
+  if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
+  var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear(),state=R.length?automaticNightState():null,automatic=state&&R[state.index]&&R[state.index].date;
+  var context=automatic&&date===automatic?(state.isCurrent?'Current roster night':'Next roster night'):automatic&&date<automatic?'Past roster night':'Roster night';
+  return'<strong>'+esc(main)+'</strong><small>'+esc(context+' · '+year)+'</small>';
+}
+
+function updatePrettyDate(input){
+  if(!input)return;var button=input.parentNode&&input.parentNode.querySelector('.prettyDateButton');if(button)button.innerHTML=prettyDateMarkup(input.value);
+}
+
+function enhanceDatePicker(id){
+  var input=byId(id);if(!input||input.parentNode.classList.contains('prettyDateControl'))return;
+  var host=document.createElement('div'),button=document.createElement('button');host.className='prettyDateControl';button.type='button';button.className='prettyDateButton';button.setAttribute('aria-label','Open calendar');
+  input.parentNode.insertBefore(host,input);host.appendChild(button);host.appendChild(input);input.classList.add('nativeDatePicker');updatePrettyDate(input);
+  button.onclick=function(){try{if(input.showPicker)input.showPicker();else input.click()}catch(error){input.focus();input.click()}};
+}
+
+
+/* Account and Personalisation Studio source. Generated into app-ui.js by scripts/generate-runtime.mjs. */
+
+var PERSONAL_ACCENT_COLOURS={teal:'#0a8f88',blue:'#3478f6',violet:'#7c5ce5',rose:'#d85d86',amber:'#c77b16',graphite:'#687078'};
+function normaliseAccentKey(value){value=String(value||'teal').toLowerCase();return PERSONAL_ACCENT_COLOURS[value]?value:'teal'}
+function accentColourFor(value){return PERSONAL_ACCENT_COLOURS[normaliseAccentKey(value)]}
+function shiftSymbolGlyph(value){return{spark:'✦',moon:'☾',cross:'✚',diamond:'◆',dot:'●',star:'★'}[String(value||'spark')]||'✦'}
+window.shiftSymbolGlyph=shiftSymbolGlyph;
+function identityInitials(value){
+  var words=String(value||'').trim().split(/\s+/).filter(Boolean);
+  if(!words.length)return'AT';
+  if(words.length===1)return words[0].slice(0,2).toUpperCase();
+  return(words[0].charAt(0)+words[words.length-1].charAt(0)).toUpperCase()
+}
+function nightTeamNickname(date){
+  var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
+  return value.slice(0,28)
+}
+window.nightTeamNickname=nightTeamNickname;
+function shiftIdentityModel(date){
+  var row=nightTeamIdentityFor(date),name=nightTeamNickname(date)||'Anaesthetic Team';
+  return{name:name,tagline:row&&row.tagline||'',avatarPath:row&&row.avatar_path||'',accentKey:normaliseAccentKey(row&&row.accent_key),symbol:row&&row.symbol||'spark',initials:identityInitials(name),updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||'',photoUrl:shiftAvatarUrl}
+}
+window.shiftIdentityModel=shiftIdentityModel;
+window.shiftIdentityPhotoUrl=function(){return shiftAvatarUrl};
+async function refreshShiftAvatar(){
+  shiftAvatarUrl='';
+  var row=nightTeamIdentityFor(''),path=row&&row.avatar_path;
+  if(path&&supa&&currentUser&&navigator.onLine!==false){
+    try{var result=await supa.storage.from('shift-identity').createSignedUrl(path,3600);if(!result.error&&result.data)shiftAvatarUrl=result.data.signedUrl||''}catch(error){}
+  }
+  return shiftAvatarUrl
+}
+window.refreshShiftAvatar=refreshShiftAvatar;
+function renderNightTeamIdentityContext(date){
+  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date),model=shiftIdentityModel(date);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
+    node.classList.toggle('hidden',!nickname);
+    node.dataset.shiftAccent=model.accentKey;
+    node.style.setProperty('--shift-identity-accent',accentColourFor(model.accentKey));
+    node.textContent='';
+    if(nickname){
+      var mark=document.createElement('span');mark.className='shiftIdentityMark';
+      if(shiftAvatarUrl){var image=document.createElement('img');image.src=shiftAvatarUrl;image.alt='';mark.appendChild(image)}
+      else mark.textContent=shiftSymbolGlyph(model.symbol);
+      var copy=document.createElement('span');copy.className='shiftIdentityCopy';
+      var strong=document.createElement('strong');strong.textContent=nickname;copy.appendChild(strong);
+      if(model.tagline){var small=document.createElement('small');small.textContent=model.tagline;copy.appendChild(small)}
+      node.appendChild(mark);node.appendChild(copy);
+    }
+    node.title=nickname?(row&&row.updated_by?'Shift identity · shared across every roster night · updated by '+row.updated_by:'Shift identity · shared across every roster night'):'';
+  });
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,tagline:model.tagline,accentKey:model.accentKey,symbol:model.symbol,photoUrl:shiftAvatarUrl,updatedBy:model.updatedBy,updatedAt:model.updatedAt}}))
+}
+
 function privateProfileName(){return currentPrivateProfile&&currentPrivateProfile.profile_name||currentUserProfile&&currentUserProfile.display_name||''}
 function profileInitialText(name){
   var words=String(name||'').trim().split(/\s+/).filter(Boolean);
@@ -965,162 +1123,6 @@ async function removeShiftPhoto(){
     await loadSharedData({background:true});shiftAvatarUrl='';renderNightTeamIdentityContext(cur().date);updateShiftStudioPhotoPreview('',nightTeamIdentityFor(cur().date));showShiftStudioMessage('Shared shift picture removed.','success');toast('Shift picture removed')
   }catch(error){showShiftStudioMessage('The shared shift picture could not be removed.','error')}
 }
-
-async function loadPasskeys(){
-  var button=byId('addPasskeyBtn'),message=byId('passkeyMessage'),detail={message:'',items:[]};if(!passkeySupported()){detail.message='Passkeys are not supported by this browser. Password sign-in remains available.';button.classList.add('hidden');if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:passkeys',{detail:detail}));return}button.classList.remove('hidden');message.textContent='';var result=await supa.auth.passkey.list();if(result.error){detail.message='No passkeys are available yet. Your administrator may still need to enable them in Supabase.';if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:passkeys',{detail:detail}));return}var list=result.data&&result.data.passkeys||result.data||[];detail.items=list.map(function(item){return{id:item.id||item.passkey_id,label:item.friendly_name||item.friendlyName||'Saved passkey'}});detail.message='No passkey has been added to this account.';if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:passkeys',{detail:detail}));
-}
-
-async function addPasskey(){var button=byId('addPasskeyBtn');button.disabled=true;byId('passkeyMessage').textContent='Follow your device instructions…';try{var result=await supa.auth.registerPasskey();if(result.error)throw result.error;if(result.data&&result.data.id)await supa.auth.passkey.update({passkeyId:result.data.id,friendlyName:'Night Roster on '+(navigator.platform||'this device')});byId('passkeyMessage').textContent='Passkey added. You can use it on the sign-in screen.';await loadPasskeys();toast('Passkey added')}catch(error){byId('passkeyMessage').textContent=/cancel|not allowed/i.test(error.message||'')?'Passkey setup was cancelled.':/disabled|not enabled/i.test(error.message||'')?'Passkeys must first be enabled in Supabase Authentication settings.':'The passkey could not be added. '+(error.message||'Please try again.')}finally{button.disabled=false}}
-
-async function deletePasskey(id){if(!id||!confirm('Remove this passkey from your Night Roster account?'))return;var result=await supa.auth.passkey.delete({passkeyId:id});if(result.error){byId('passkeyMessage').textContent='The passkey could not be removed.';return}await loadPasskeys();toast('Passkey removed')}
-
-function releasePolicy(){var latest=RELEASE_HISTORY[0]||{};return ['quiet','normal','important'].indexOf(latest.policy)>=0?latest.policy:'normal'}
-function releaseNeedsAttention(){return appStorage.getItem('anaes_seen_version')!==APP_VERSION&&releasePolicy()!=='quiet'}
-function markCurrentReleaseSeen(){appStorage.setItem('anaes_seen_version',APP_VERSION);var account=byId('accountSheet');if(account&&account.open)populateAccountSheet()}
-function showReleaseNotesIfNeeded(){
-  if(appStorage.getItem('anaes_seen_version')===APP_VERSION)return;
-  var policy=releasePolicy(),returning=appStorage.getItem('anaes_selected_date')||appStorage.getItem('anaes_my_name');
-  if(policy!=='important'||!returning)return;
-  renderReleaseNotes();releaseNotesQueued=true;var dialog=byId('releaseNotes');setTimeout(function(){if(dialog&&dialog.showModal&&!dialog.open)dialog.showModal()},900)
-}
-function releaseMonthLabel(date){return String(date||'').replace(/^\\d+\\s+/,'')||String(date||'')}
-function releaseActionButtons(actions){return(actions||[]).map(function(item){return'<button type="button" class="releaseShowMe" data-release-action="'+esc(item.action)+'" data-release-value="'+esc(item.value||'')+'">'+esc(item.label)+'<span aria-hidden="true">›</span></button>'}).join('')}
-function releaseCurrentFallback(entry,actions){
-  return'<div class="releaseHistory"><section class="releaseEntry latest releaseEditorial"><div class="releaseHero"><span class="releaseHeroMark" aria-hidden="true">✦</span><div><span class="releaseHeroEyebrow">Night Roster '+esc(entry.version)+'</span><h3>'+esc(entry.title)+'</h3><p>Here are the improvements worth knowing about.</p></div><time>'+esc(entry.date)+'</time></div><div class="releaseHighlights">'+entry.changes.map(function(change,index){var action=actions[index];return'<article class="releaseHighlight"><span class="releaseHighlightIndex" aria-hidden="true">'+(index+1)+'</span><p>'+esc(change)+'</p>'+(action?releaseActionButtons([action]):'')+'</article>'}).join('')+'</div><button type="button" class="releaseHistoryLink" data-release-action="history">View complete version history <span aria-hidden="true">›</span></button></section></div>'
-}
-function releaseHistoryFallback(entries){
-  var month='';return'<div class="releaseNav" aria-label="Version history navigation"><button type="button" data-release-jump="latest">Latest update</button><button type="button" data-release-jump="previous">Earlier releases <span>'+Math.max(0,entries.length-1)+'</span></button></div><div class="releaseHistory releaseHistoryCompact" tabindex="0" aria-label="Complete Night Roster version history">'+entries.map(function(entry,index){var label=releaseMonthLabel(entry.date),heading=label!==month?'<div class="releaseMonthHeading">'+esc(label)+'</div>':'';month=label;return heading+'<details class="releaseEntry releaseHistoryItem '+(index===0?'latest':'')+'" data-history-index="'+index+'" '+(index===0?'open':'')+'><summary><span class="releaseHistoryVersion">v'+esc(entry.version)+'</span><span class="releaseHistoryCopy"><b>'+esc(entry.title)+'</b><small>'+esc(entry.date)+'</small></span><span class="releaseHistoryChevron" aria-hidden="true">⌄</span></summary><ul>'+entry.changes.map(function(change){return'<li>'+esc(change)+'</li>'}).join('')+'</ul></details>'}).join('')+'</div>'
-}
-function bindReleaseFallbackActions(host){
-  Array.prototype.forEach.call(host.querySelectorAll('[data-release-action]'),function(button){button.onclick=function(){window.dispatchEvent(new CustomEvent('roster:release-action',{detail:{action:button.getAttribute('data-release-action'),value:button.getAttribute('data-release-value')||''}}))}});
-  var history=host.querySelector('.releaseHistory');Array.prototype.forEach.call(host.querySelectorAll('[data-release-jump]'),function(button){button.onclick=function(){if(!history)return;var previous=button.getAttribute('data-release-jump')==='previous',target=history.querySelector('.releaseHistoryItem[data-history-index="'+(previous?'1':'0')+'"]');if(!target)return;history.scrollTo({top:Math.max(0,target.offsetTop-8),behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}})
-}
-function renderReleaseNotes(showHistory){
-  var dialog=byId('releaseNotes');if(!dialog)return;var latest=RELEASE_HISTORY[0],entries=showHistory?RELEASE_HISTORY:[latest],actions=RELEASE_ACTIONS[latest.version]||[];dialog.classList.add('releaseDialog');dialog.dataset.releaseMode=showHistory?'history':'current';
-  var title=byId('releaseNotesTitle'),intro=byId('releaseNotesIntro'),close=byId('closeReleaseNotes');if(title)title.textContent=showHistory?'Version history':'What’s new';if(intro)intro.textContent=showHistory?'Every Night Roster release, newest first':'Version '+latest.version+' · The changes worth knowing about';if(close)close.textContent=showHistory?'Done':'Got it';
-  if(!window.__forceReleaseNotesFallback&&typeof window.renderReactReleaseNotes==='function'){window.renderReactReleaseNotes(entries,!!showHistory,actions);return}
-  var host=byId('releaseNotesContent');if(!host)return;host.innerHTML=showHistory?releaseHistoryFallback(entries):releaseCurrentFallback(latest,actions);bindReleaseFallbackActions(host);
-  if(typeof window.CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:releasenotes',{detail:{entries:entries,showHistory:!!showHistory,actions:actions}}))
-}
-
-function ensureRecordActionSheet(){
-  var dialog=byId('recordActionSheet');if(dialog)return dialog;
-  dialog=document.createElement('dialog');dialog.id='recordActionSheet';dialog.className='recordActionSheet';dialog.setAttribute('aria-labelledby','recordActionTitle');dialog.innerHTML='<div class="sheetGrabber" aria-hidden="true"></div><div class="recordActionHeading"><span>Staffing record</span><h2 id="recordActionTitle">Choose an action</h2><p id="recordActionDetail"></p></div><div class="recordActionGroup"><button type="button" id="recordEditAction">Edit absence</button><button type="button" class="destructive" id="recordRemoveAction">Remove</button></div><button type="button" class="recordActionCancel" id="recordCancelAction">Cancel</button>';
-  document.body.appendChild(dialog);byId('recordCancelAction').onclick=function(){dialog.close()};dialog.addEventListener('click',function(event){if(event.target===dialog)dialog.close()});return dialog;
-}
-
-function showRecordActions(kind,id,name){
-  var dialog=ensureRecordActionSheet(),edit=byId('recordEditAction'),remove=byId('recordRemoveAction'),absence=kind==='absence';
-  byId('recordActionTitle').textContent=name;byId('recordActionDetail').textContent=absence?'Recorded absence':'Confirmed overtime nurse';edit.classList.toggle('hidden',!absence);edit.onclick=function(){dialog.close();editNightChange(id)};remove.textContent=absence?'Remove absence':'Remove overtime nurse';remove.onclick=function(){dialog.close();if(absence)removeNightChange(id);else removeOvertime(id)};if(!dialog.open)dialog.showModal();
-}
-
-function educationState(){
-  var state={main:0,chat:0,changes:0,breaks:0};
-  try{var saved=JSON.parse(appStorage.getItem('anaes_education_state_v1')||'{}');Object.keys(state).forEach(function(key){if(Number(saved[key])>0)state[key]=Number(saved[key])})}catch(error){}
-  if(appStorage.getItem('anaes_onboarding_complete_v34'))state.main=Math.max(state.main,2);
-  if(appStorage.getItem('anaes_chat_intro_v37_31'))state.chat=Math.max(state.chat,1);
-  return state
-}
-function educationSeen(key,version){return Number(educationState()[key]||0)>=Number(version||1)}
-function markEducationSeen(key,version){
-  var state=educationState();state[key]=Math.max(Number(state[key]||0),Number(version||1));try{appStorage.setItem('anaes_education_state_v1',JSON.stringify(state))}catch(error){}
-  if(key==='main')appStorage.setItem('anaes_onboarding_complete_v34','1');if(key==='chat')appStorage.setItem('anaes_chat_intro_v37_31','1');refreshEducationMarkers()
-}
-function refreshEducationMarkers(){
-  ['changes','breaks','chat'].forEach(function(view){var button=document.querySelector('.bottom button[data-v="'+view+'"]');if(!button)return;var fresh=!educationSeen(view,1);button.classList.toggle('educationNew',fresh);if(fresh)button.setAttribute('data-education-label','New');else button.removeAttribute('data-education-label')})
-}
-function onboardingMiniNight(selected){
-  return'<div class="onboardingProductPreview onboardingNightPreview" aria-hidden="true"><div class="onboardingPreviewHead"><span>YOUR NIGHT</span><small>Example</small></div><div class="onboardingPreviewPerson"><span class="onboardingPreviewAvatar">'+esc(selected?professionalName(selected).charAt(0).toUpperCase():'A')+'</span><div><b>'+esc(selected?professionalName(selected):'Your roster name')+'</b><small>Your allocation stays first</small></div></div><div class="onboardingPreviewFacts"><span><small>Role</small><b>Shown here</b></span><span><small>Break</small><b>Highlighted</b></span></div></div>'
-}
-function onboardingWorkflowPreview(){
-  return'<div class="onboardingProductPreview onboardingWorkflowPreview" aria-hidden="true"><div><span>1</span><b>Staffing</b><small>Who changed?</small></div><i></i><div><span>2</span><b>Allocation</b><small>Only if needed</small></div><i></i><div><span>3</span><b>Share</b><small>Confirm once</small></div></div>'
-}
-function featureEducationPage(key){
-  if(key==='clockchange'){var date=onboardingClockChangeDate||cur().date,timing=nightDutyTiming(date),detail=clockChangeDetailFor(date);return'<div class="onboardingProductPreview clockChangeOnboardingPreview" aria-hidden="true"><div class="clockChangePreviewClock"><span>02</span><i>→</i><span>'+(timing.direction==='back'?'02':'03')+'</span></div><div class="clockChangePreviewSplit"><span><small>FIRST PART</small><b>'+esc(timing.firstPeriodDisplay)+'</b><em>'+esc(detail.partHoursLabel)+' actual</em></span><i></i><span><small>SECOND PART</small><b>'+esc(timing.secondPeriod)+'</b><em>'+esc(detail.partHoursLabel)+' actual</em></span></div></div><span class="onboardingEyebrow">Clock change night</span><h2 id="onboardingTitle">The app keeps both parts equal.</h2><p>'+esc(detail.transitionLabel)+'. Night Roster automatically moves the handover to <b>'+esc(detail.handoverDisplay)+'</b> so First Part and Second Part each work <b>'+esc(detail.partHoursLabel)+'</b> of real elapsed duty.</p><div class="onboardingCallout"><b>No manual adjustment needed</b><span>The roster names and break ownership stay the same. Only the duty handover time changes for this night.</span></div><p class="onboardingFootnote">Night, Breaks, live duty status and roster summaries all use this same equal-duty timing.</p>'}
-  if(key==='chat')return'<div class="onboardingProductPreview featureChatPreview" aria-hidden="true"><span>'+interfaceIcon('chat')+'</span><div><i></i><i></i><i></i></div></div><span class="onboardingEyebrow">Team Chat</span><h2 id="onboardingTitle">Team chat, when you need it.</h2><p>Anaesthetic Team reaches everyone on tonight’s roster. Start a private conversation when you only need one colleague.</p><div class="onboardingFeatureList"><div><b>Team</b><span>Coordinate with tonight’s whole roster</span></div><div><b>Private</b><span>Message one registered team member</span></div><div><b>Safety</b><span>Roster coordination only, never patient-identifiable or clinical information</span></div></div><p class="onboardingFootnote">Chat never changes the roster. Record an agreed staffing or role change separately in Changes.</p>';
-  if(key==='changes')return onboardingWorkflowPreview()+'<span class="onboardingEyebrow">Changes</span><h2 id="onboardingTitle">You usually don’t need this screen.</h2><p>The standard six-nurse night is already calculated. Use Changes only for a confirmed absence, overtime nurse or agreed night-only allocation.</p><div class="onboardingCallout onboardingCalmCallout"><b>Normal night?</b><span>There is nothing to confirm. Night and Breaks are already ready.</span></div>';
-  return'<div class="onboardingProductPreview onboardingBreakPreview" aria-hidden="true"><div><small>FIRST BREAK</small><b>Your name</b><span>03:30 onward</span></div><div><small>SECOND BREAK</small><b>Team</b><span>00:00 to 03:30</span></div><button type="button" tabindex="-1">Jump to me</button></div><span class="onboardingEyebrow">Breaks</span><h2 id="onboardingTitle">Your break is already highlighted.</h2><p>Breaks follows the same live staffing plan as Night. Use Jump to me when you want your own row immediately.</p><div class="onboardingCallout onboardingCalmCallout"><b>One shared plan</b><span>Staffing and role changes flow through to Breaks automatically.</span></div>'
-}
-function appGuidePage(){
-  return'<span class="onboardingEyebrow">App guide</span><h2 id="onboardingTitle">Help that takes you to the right place.</h2><p>Choose a topic. Night Roster will either open that screen or replay its short explanation.</p><div class="appGuideList"><button type="button" data-guide-view="today"><span class="appGuideIcon">'+interfaceIcon('night')+'</span><span><b>Night</b><small>Your allocation and the live team plan</small></span><i>›</i></button><button type="button" data-guide-view="changes"><span class="appGuideIcon">'+interfaceIcon('staffing')+'</span><span><b>Changes</b><small>Absence, overtime and agreed exceptions</small></span><i>›</i></button><button type="button" data-guide-view="breaks"><span class="appGuideIcon">'+interfaceIcon('task')+'</span><span><b>Breaks</b><small>Your break and the shared schedule</small></span><i>›</i></button><button type="button" data-guide-view="chat"><span class="appGuideIcon">'+interfaceIcon('chat')+'</span><span><b>Team Chat</b><small>Team and private roster coordination</small></span><i>›</i></button><button type="button" data-guide-action="account"><span class="appGuideIcon">Aa</span><span><b>Account & notifications</b><small>Profile, appearance, alerts and sign-in</small></span><i>›</i></button><button type="button" data-guide-action="updates"><span class="appGuideIcon">↺</span><span><b>Updates & version history</b><small>What changed and every previous release</small></span><i>›</i></button></div>'
-}
-function onboardingPages(){
-  if(onboardingGuideMenu)return[appGuidePage()];if(onboardingFeatureKey||onboardingChatIntro)return[featureEducationPage(onboardingFeatureKey||'chat')];
-  var accountName=currentUserProfile&&currentUserProfile.display_name||'',selected=myName()||TEAM.find(function(name){return sameNurse(name,accountName)})||'';
-  return[
-    '<span class="onboardingEyebrow">Welcome</span><h2 id="onboardingTitle">First, which roster name is yours?</h2><p>Night Roster uses this only to bring your own allocation and break to the front on this device.</p><div class="onboardingIdentityPreview"><span>'+(selected?esc(professionalName(selected).charAt(0).toUpperCase()):'?')+'</span><div><b>'+(selected?esc(professionalName(selected)):'Choose your roster name')+'</b><small>'+(selected?'Matched from your signed-in account':'You can change this later in Account')+'</small></div></div><label class="onboardingNameLabel"><span>Roster name</span><select id="onboardingNamePick"><option value="">Choose your name</option>'+TEAM.map(function(name){return'<option value="'+esc(name)+'" '+(sameNurse(name,selected)?'selected':'')+'>'+esc(professionalName(name))+'</option>'}).join('')+'</select></label><p class="onboardingFootnote">This never changes the shared roster or anyone else’s allocation.</p>',
-    onboardingMiniNight(selected)+'<span class="onboardingEyebrow">Night</span><h2 id="onboardingTitle">What matters to you stays first.</h2><p>Night opens with your own assignment, your break and the live staffing picture before the rest of the team detail.</p><div class="onboardingCallout"><b>No hunting through the roster</b><span>Your personal answer is always the first thing Night tries to show.</span></div>',
-    onboardingWorkflowPreview()+'<span class="onboardingEyebrow">Changes</span><h2 id="onboardingTitle">The normal roster is automatic.</h2><p>You only need Changes when something genuinely differs from the calculated night, such as an absence, overtime nurse or an agreed night-only role change.</p><div class="onboardingCallout onboardingCalmCallout"><b>That’s enough to start</b><span>Breaks and Team Chat will explain themselves the first time you open them.</span></div><button type="button" class="onboardingShareShortcut" data-share-night-roster><span><b>Share Night Roster</b><small>Show a QR code to another authorised team member</small></span><i>›</i></button>'
-  ]
-}
-function bindGuideActions(){
-  Array.prototype.forEach.call(document.querySelectorAll('[data-guide-view]'),function(button){button.onclick=function(){var view=button.getAttribute('data-guide-view'),dialog=byId('onboardingDialog');onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();show(view);if(view!=='today')setTimeout(function(){showFeatureEducation(view,true)},160)}});
-  Array.prototype.forEach.call(document.querySelectorAll('[data-guide-action]'),function(button){button.onclick=function(){var action=button.getAttribute('data-guide-action'),dialog=byId('onboardingDialog');onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();if(action==='account')showAccountSheet();else if(action==='updates'){renderReleaseNotes(true);var release=byId('releaseNotes');if(release&&!release.open)release.showModal()}}})
-}
-function renderOnboarding(){
-  var dialog=byId('onboardingDialog'),content=byId('onboardingContent'),pages=onboardingPages();if(!dialog||!content)return;
-  onboardingStep=Math.max(0,Math.min(pages.length-1,onboardingStep));var feature=onboardingFeatureKey||onboardingChatIntro?'feature':onboardingGuideMenu?'guide':'main';dialog.dataset.onboardingPage=feature==='main'?String(onboardingStep):feature;dialog.classList.toggle('onboardingFeatureIntro',feature==='feature');dialog.classList.toggle('onboardingGuideMode',feature==='guide');
-  content.innerHTML=pages[onboardingStep];content.classList.remove('onboardingContentIn','onboardingContentBack');void content.offsetWidth;content.classList.add(onboardingDirection<0?'onboardingContentBack':'onboardingContentIn');
-  byId('onboardingProgress').innerHTML=pages.map(function(_,index){return'<span class="'+(index===onboardingStep?'active':'')+'" aria-hidden="true"></span>'}).join('');byId('onboardingProgress').setAttribute('aria-valuenow',String(onboardingStep+1));byId('onboardingProgress').setAttribute('aria-valuemax',String(pages.length));
-  byId('onboardingStepLabel').textContent=feature==='guide'?'App guide':feature==='feature'?'Quick tip · '+(onboardingFeatureKey==='clockchange'?'Clock change':onboardingFeatureKey==='chat'||onboardingChatIntro?'Chat':onboardingFeatureKey==='changes'?'Changes':'Breaks'):(onboardingStep+1)+' of '+pages.length;
-  byId('onboardingBackBtn').classList.toggle('hidden',feature!=='main'||onboardingStep===0);byId('onboardingNextBtn').textContent=feature==='guide'?'Done':feature==='feature'?'Got it':onboardingStep===pages.length-1?'Open my night':'Continue';byId('onboardingSkipBtn').textContent=feature==='main'?'Skip for now':'Close';byId('onboardingSkipBtn').classList.toggle('hidden',feature!=='main'||onboardingStep===pages.length-1);
-  var select=byId('onboardingNamePick');if(select)select.onchange=function(){if(select.value)appStorage.setItem('anaes_my_name',select.value);else appStorage.removeItem('anaes_my_name');renderOnboarding()};var shareShortcut=document.querySelector('[data-share-night-roster]');if(shareShortcut)shareShortcut.onclick=function(){var dialog=byId('onboardingDialog');if(dialog&&dialog.open)dialog.close();showShareApp()};bindGuideActions();
-  if(dialog.open){content.scrollTop=0;var heading=byId('onboardingTitle');if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true})}}
-}
-async function finishOnboarding(){
-  var dialog=byId('onboardingDialog');
-  if(onboardingGuideMenu){onboardingGuideMenu=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast('App guide closed');return}
-  if(onboardingFeatureKey||onboardingChatIntro){var key=onboardingFeatureKey||'chat';if(key==='clockchange')markClockChangeEducationSeen(onboardingClockChangeDate);else markEducationSeen(key,1);onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingReplay=false;if(dialog&&dialog.open)dialog.close();toast(key==='clockchange'?'Clock-change timing understood':key==='chat'?'Team chat is ready':key==='changes'?'Changes guide completed':'Breaks guide completed');return}
-  var wasReplay=onboardingReplay,select=byId('onboardingNamePick');if(select&&select.value)appStorage.setItem('anaes_my_name',select.value);markEducationSeen('main',2);onboardingCandidate=false;onboardingReplay=false;onboardingProfileDraft=null;if(dialog&&dialog.open)dialog.close();render();toast(wasReplay?'Guide completed':'Your night is ready')
-}
-function showOnboardingIfNeeded(){
-  if(!currentUserProfile||releaseNotesQueued||educationSeen('main',2))return;var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;onboardingFeatureKey='';onboardingClockChangeDate='';onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?520:40)
-}
-function showFeatureEducation(key,force){
-  if(['changes','breaks','chat'].indexOf(key)<0||!currentUserProfile||!educationSeen('main',2))return;if(!force&&educationSeen(key,1))return;
-  var dialog=byId('onboardingDialog'),release=byId('releaseNotes');if(!dialog||!dialog.showModal||dialog.open||release&&release.open)return;onboardingFeatureKey=key;onboardingChatIntro=key==='chat';onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?240:20)
-}
-function showClockChangeEducation(date,force){
-  var timing=nightDutyTiming(date);if(!timing.isClockChange||!currentUserProfile||!educationSeen('main',2))return;if(!force&&clockChangeEducationSeen(date))return;
-  var dialog=byId('onboardingDialog'),release=byId('releaseNotes');if(!dialog||!dialog.showModal||dialog.open||release&&release.open)return;onboardingFeatureKey='clockchange';onboardingClockChangeDate=date;onboardingChatIntro=false;onboardingGuideMenu=false;onboardingReplay=false;onboardingDirection=1;onboardingStep=0;renderOnboarding();setTimeout(function(){if(!dialog.open)dialog.showModal()},cinematicMotionAllowed()?240:20)
-}
-function bindFeatureEducation(){
-  refreshEducationMarkers();
-  window.addEventListener('roster:viewchange',function(event){var view=event&&event.detail&&event.detail.view;if(['changes','breaks','chat'].indexOf(view)>=0){refreshEducationMarkers();setTimeout(function(){showFeatureEducation(view,false)},220)}});
-  window.addEventListener('roster:release-action',function(event){var detail=event&&event.detail||{},dialog=byId('releaseNotes');if(detail.action==='history'){renderReleaseNotes(true);return}if(dialog&&dialog.open){markCurrentReleaseSeen();dialog.close()}if(detail.action==='guide'){openOnboardingReplay();return}if(detail.action==='share'){showShareApp();return}if(detail.action==='view'&&detail.value){show(detail.value);if(['changes','breaks','chat'].indexOf(detail.value)>=0)setTimeout(function(){showFeatureEducation(detail.value,true)},180)}})
-}
-function bindOnboarding(){
-  var dialog=byId('onboardingDialog'),next=byId('onboardingNextBtn'),back=byId('onboardingBackBtn'),skip=byId('onboardingSkipBtn');if(!next||!back||!skip)return;
-  next.onclick=async function(){rememberOnboardingProfile();var last=onboardingPages().length-1;if(onboardingStep<last){onboardingDirection=1;onboardingStep++;renderOnboarding()}else{next.disabled=true;next.textContent=onboardingFeatureKey||onboardingChatIntro||onboardingGuideMenu?'Closing…':'Saving…';await finishOnboarding();next.disabled=false}};back.onclick=function(){if(onboardingStep>0){onboardingDirection=-1;onboardingStep--;renderOnboarding()}};skip.onclick=finishOnboarding;
-  if(dialog&&typeof dialog.addEventListener==='function')dialog.addEventListener('cancel',function(event){if(onboardingFeatureKey||onboardingChatIntro){event.preventDefault();finishOnboarding();return}onboardingGuideMenu=false;onboardingReplay=false})
-}
-
-function installedReleaseState(){var latest=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version||'Unknown',cache=String(serviceWorkerCacheVersion||'').replace(/^anaesthetic-night-roster-v/,'').replace(/-/g,'.'),stale=cache!=='Checking…'&&cache!=='Not active'&&cache!==APP_VERSION;return{latest:latest,cache:serviceWorkerCacheVersion,stale:stale,waiting:!!(updateRegistration&&updateRegistration.waiting)}}
-
-function diagnosticsText(){
-  var backupAt=appStorage.getItem('anaes_last_backup_at'),release=installedReleaseState(),clock=window.AnaestheticDomain&&window.AnaestheticDomain.clockState?window.AnaestheticDomain.clockState():{source:'device',offsetMs:0},caps=rosterCapabilities(),events=window.AnaestheticDomain&&window.AnaestheticDomain.readDiagnostics?window.AnaestheticDomain.readDiagnostics().slice(-10):[],lines=['Running app version: '+APP_VERSION,'Latest release-history version: '+release.latest,'Service-worker cache: '+release.cache,'Installed release: '+(release.stale?'stale cache detected':release.waiting?'update waiting for approval':'current'),'Expected database schema: '+EXPECTED_SCHEMA_VERSION,'Actual database schema: '+(schemaVersion||'legacy'),'Capabilities: server clock '+(caps.serverClock?'yes':'no')+' · chat idempotency '+(caps.chatIdempotency?'yes':'no')+' · monotonic reads '+(caps.monotonicChatRead?'yes':'no'),'Clock source: '+clock.source+' · offset '+Math.round(Number(clock.offsetMs||0))+' ms','Connection state: '+sharedSyncState,'Last successful refresh: '+(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet'),'Startup compatibility fallback uses this session: '+compatibilityStartupUseCount+(compatibilityStartupLastUsed?' · last '+compatibilityStartupLastUsed:''),'Last roster-data export: '+(backupAt?new Date(backupAt).toLocaleString('en-GB'):'not recorded on this device'),'Published roster until: '+(rosterSettings.published_until||'unknown'),'Calculated nights: '+R.length,'Current account: '+(currentUserProfile?'signed in as '+currentUserProfile.user_role:'not signed in')];if(events.length){lines.push('Recent local diagnostics:');events.forEach(function(item){lines.push(item.at+' · '+item.category+' · '+item.operation+' · '+item.code)})}return lines.join('\n');
-}
-
-function renderDiagnostics(){var el=byId('appDiagnostics');if(!el)return;var backupAt=appStorage.getItem('anaes_last_backup_at'),schemaState=schemaVersion>=EXPECTED_SCHEMA_VERSION?'Current':'Upgrade required',release=installedReleaseState(),compatCount=Number(appStorage.getItem('anaes_compat_startup_count')||0),compatLast=appStorage.getItem('anaes_compat_startup_last_at'),clockConfidence=window.AnaestheticRuntime&&window.AnaestheticRuntime.clock?window.AnaestheticRuntime.clock.confidence():null;el.innerHTML='<div class="diagnosticGrid"><div class="historyItem"><b>Application versions</b><div class="changeMeta">Running '+esc(APP_VERSION)+' · Release history '+esc(release.latest)+'</div></div><div class="historyItem"><b>Service-worker cache</b><div class="changeMeta">'+esc(release.cache)+' · '+esc(release.stale?'Stale cached release detected':release.waiting?'Update awaiting approval':'Current')+'</div></div><div class="historyItem"><b>Database schema</b><div class="changeMeta">Expected '+esc(EXPECTED_SCHEMA_VERSION)+' · Actual '+esc(schemaVersion||'legacy')+' · '+esc(schemaState)+'</div></div><div class="historyItem"><b>Shared-data connection</b><div class="changeMeta">'+(navigator.onLine?'Online':'Offline')+' · Last refreshed '+esc(lastSuccessfulSyncAt?new Date(lastSuccessfulSyncAt).toLocaleString('en-GB'):'not yet')+'</div></div><div class="historyItem"><b>Clock confidence</b><div class="changeMeta">'+esc(clockConfidence?clockConfidence.level+' · '+clockConfidence.sampleCount+' accepted sample'+(clockConfidence.sampleCount===1?'':'s'):'Device clock')+'</div></div><div class="historyItem"><b>Compatibility startup</b><div class="changeMeta">'+esc(compatCount?compatCount+' fallback use'+(compatCount===1?'':'s')+' · Last '+(compatLast?new Date(compatLast).toLocaleString('en-GB'):'this session'):'No fallback use recorded on this device')+'</div></div><div class="historyItem"><b>Last roster-data export</b><div class="changeMeta">'+esc(backupAt?new Date(backupAt).toLocaleString('en-GB'):'Not recorded')+'</div></div></div>'+(release.waiting?'<button type="button" class="primary wide" id="diagnosticUpdateBtn">Update now</button>':'')+'<button type="button" class="soft wide" id="copyDiagnosticsBtn">Copy diagnostic report</button>';var button=byId('copyDiagnosticsBtn');if(button)button.onclick=async function(){try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnostic report copied')}catch(error){toast('Diagnostic report could not be copied')}};var update=byId('diagnosticUpdateBtn');if(update)update.onclick=applyWaitingUpdate}
-
-function prettyDateMarkup(date){
-  if(!date)return'<strong>Select a night</strong><small>Open calendar</small>';
-  var value=new Date(date+'T12:00:00'),main=value.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),year=value.getFullYear(),state=R.length?automaticNightState():null,automatic=state&&R[state.index]&&R[state.index].date;
-  var context=automatic&&date===automatic?(state.isCurrent?'Current roster night':'Next roster night'):automatic&&date<automatic?'Past roster night':'Roster night';
-  return'<strong>'+esc(main)+'</strong><small>'+esc(context+' · '+year)+'</small>';
-}
-
-function updatePrettyDate(input){
-  if(!input)return;var button=input.parentNode&&input.parentNode.querySelector('.prettyDateButton');if(button)button.innerHTML=prettyDateMarkup(input.value);
-}
-
-function enhanceDatePicker(id){
-  var input=byId(id);if(!input||input.parentNode.classList.contains('prettyDateControl'))return;
-  var host=document.createElement('div'),button=document.createElement('button');host.className='prettyDateControl';button.type='button';button.className='prettyDateButton';button.setAttribute('aria-label','Open calendar');
-  input.parentNode.insertBefore(host,input);host.appendChild(button);host.appendChild(input);input.classList.add('nativeDatePicker');updatePrettyDate(input);
-  button.onclick=function(){try{if(input.showPicker)input.showPicker();else input.click()}catch(error){input.focus();input.click()}};
-}
-
 
 function prepareChangesView(){
   if(changesViewPrepared)return;
