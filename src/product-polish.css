@@ -196,8 +196,8 @@ body:not(.authPending){
 }
 
 #changes .workflowStep{
-  min-height:56px!important;
-  padding:8px 9px!important;
+  min-height:54px!important;
+  padding:7px 9px!important;
   border-radius:13px!important;
 }
 
@@ -413,7 +413,7 @@ body:not(.authPending){
 }
 
 #chat .chatComposerGlass{
-  border-radius:18px!important;
+  border-radius:26px!important;
   box-shadow:0 8px 22px rgba(18,32,48,.07)!important;
 }
 
@@ -510,7 +510,7 @@ body:not(.authPending){
 
 .scrollGlassMode-compact .scrollGlassMaterial{
   border-bottom:1px solid color-mix(in srgb,var(--liquid-separator) 68%,transparent)!important;
-  background:color-mix(in srgb,var(--liquid-surface) 72%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-surface) 48%,transparent)!important;
   -webkit-backdrop-filter:blur(26px) saturate(155%)!important;
   backdrop-filter:blur(26px) saturate(155%)!important;
   box-shadow:0 7px 20px rgba(18,32,48,.04)!important;
@@ -523,7 +523,7 @@ body:not(.authPending){
 }
 
 .bottom.reactTabs{
-  min-height:70px!important;
+  min-height:66px!important;
   padding:4px 5px calc(4px + env(safe-area-inset-bottom))!important;
   border:1px solid color-mix(in srgb,var(--liquid-separator) 64%,transparent)!important;
   background:color-mix(in srgb,var(--liquid-surface) 70%,transparent)!important;
