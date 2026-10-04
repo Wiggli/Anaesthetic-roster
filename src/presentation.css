@@ -20743,3 +20743,234 @@ body.headerCompact[data-view="today"] #today .nightUnifiedHero #appHeader .head{
   background:transparent!important;
   box-shadow:none!important;
 }
+
+
+/* 44.5 right-side App & Account drawer and leaner top chrome. */
+/* Navigation rule: bottom bar moves between work areas; the avatar owns app/account utilities. */
+#today #installBtn,
+#today #adminSettingsBtn,
+.primaryHeaderAdmin{
+  display:none!important;
+}
+
+/* With only the avatar remaining, utility chrome stays quiet and compact. */
+#today .nightUnifiedHero #appHeader .headActions{
+  gap:0!important;
+}
+#today .nightUnifiedHero #appHeader .accountBtn{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  min-height:40px!important;
+  max-width:40px!important;
+  max-height:40px!important;
+}
+#changes .primaryHeaderActions,
+#breaks .primaryHeaderActions,
+#chat .primaryHeaderActions{
+  gap:0!important;
+}
+#changes .primaryHeaderAccount,
+#breaks .primaryHeaderAccount,
+#chat .primaryHeaderAccount{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  min-height:40px!important;
+}
+
+/* Night hero keeps the identity prominent while removing redundant vertical context. */
+#today .nightUnifiedHero{
+  margin-bottom:14px!important;
+  padding:11px!important;
+  border-radius:25px!important;
+}
+#today .nightUnifiedHero .nightSectionIdentity{
+  margin:11px 0 10px!important;
+}
+#today .nightUnifiedHero .nightSectionIdentity h1{
+  font-size:clamp(35px,8.4vw,40px)!important;
+}
+#today .nightUnifiedHero .nightTeamIdentityContext{
+  min-height:62px!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  gap:11px!important;
+  margin-bottom:9px!important;
+  padding:7px 12px 7px 7px!important;
+}
+#today .nightUnifiedHero .shiftIdentityMark{
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  border-radius:15px!important;
+}
+#today .nightUnifiedHero .shiftIdentityCopy strong{
+  font-size:18.5px!important;
+}
+#today .nightUnifiedHero .dateNav{
+  min-height:56px!important;
+  grid-template-columns:42px minmax(0,1fr) 42px!important;
+  gap:6px!important;
+  padding:4px!important;
+  border-radius:18px!important;
+}
+#today .nightUnifiedHero .dateNav>button{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  border-radius:13px!important;
+}
+#today .nightUnifiedHero .prettyDateButton{
+  min-height:46px!important;
+}
+#today .nightUnifiedHero .staffingCount{
+  display:none!important;
+}
+
+/* The existing Account system becomes a native-feeling right-side utility drawer. */
+.accountSheet[open]{
+  position:fixed!important;
+  inset:0 0 0 auto!important;
+  width:min(94vw,430px)!important;
+  max-width:430px!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-left:1px solid color-mix(in srgb,var(--account-rule) 80%,transparent)!important;
+  border-radius:28px 0 0 28px!important;
+  background:var(--account-paper)!important;
+  box-shadow:-24px 0 70px rgba(14,24,38,.18)!important;
+  animation:accountDrawerIn 260ms cubic-bezier(.2,.82,.2,1) both!important;
+}
+.accountSheet::backdrop{
+  background:rgba(15,23,34,.28)!important;
+  -webkit-backdrop-filter:blur(5px)!important;
+  backdrop-filter:blur(5px)!important;
+}
+@keyframes accountDrawerIn{
+  from{opacity:.72;transform:translate3d(100%,0,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+.accountSheet>.sheetGrabber{
+  display:none!important;
+}
+.accountSheetHeader{
+  position:sticky!important;
+  top:0!important;
+  z-index:5!important;
+  min-height:74px!important;
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:9px!important;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 11px!important;
+  border-bottom:1px solid color-mix(in srgb,var(--account-rule) 72%,transparent)!important;
+  background:color-mix(in srgb,var(--account-paper) 90%,transparent)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  backdrop-filter:blur(22px) saturate(145%)!important;
+}
+.accountSheetHeader>div{
+  min-width:0!important;
+}
+.accountSheetHeader>div>span{
+  font-size:9.5px!important;
+  font-weight:760!important;
+  letter-spacing:.055em!important;
+  text-transform:uppercase!important;
+}
+.accountSheetHeader h2{
+  margin-top:2px!important;
+  font-size:22px!important;
+  line-height:1.08!important;
+  letter-spacing:-.03em!important;
+}
+.accountSheetHeader #closeAccountSheet{
+  min-width:42px!important;
+  min-height:42px!important;
+  padding:0 11px!important;
+  border-radius:13px!important;
+}
+.accountSheetHeader .accountBackBtn{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  margin:0!important;
+  border-radius:13px!important;
+}
+.accountSheetScroll{
+  height:calc(100dvh - 74px)!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  padding:16px 14px calc(24px + env(safe-area-inset-bottom))!important;
+  background:var(--account-paper)!important;
+}
+.accountHomeHub{
+  display:grid!important;
+  gap:14px!important;
+}
+.accountHomeIdentity{
+  margin:0!important;
+  padding:16px!important;
+  border:1px solid color-mix(in srgb,var(--account-rule) 82%,transparent)!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:0 8px 24px rgba(20,34,50,.05)!important;
+}
+.accountHubList{
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--account-rule) 82%,transparent)!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:0 8px 24px rgba(20,34,50,.04)!important;
+}
+.accountHubRow{
+  min-height:62px!important;
+}
+.accountHubRow+.accountHubRow{
+  border-top:1px solid color-mix(in srgb,var(--account-rule) 72%,transparent)!important;
+}
+#accountAdminHubRow:not(.hidden){
+  background:color-mix(in srgb,var(--account-accent) 5%,var(--account-surface))!important;
+}
+#accountAdminHubRow .accountHubIcon{
+  color:var(--account-accent)!important;
+}
+
+/* Larger screens keep the same side-drawer model rather than switching back to a centered modal. */
+@media(min-width:760px){
+  .accountSheet[open]{
+    inset:0 0 0 auto!important;
+    width:min(430px,calc(100% - 48px))!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    border-radius:28px 0 0 28px!important;
+  }
+}
+@media(max-width:390px){
+  .accountSheet[open]{
+    width:96vw!important;
+    border-radius:24px 0 0 24px!important;
+  }
+  .accountSheetHeader{
+    padding-inline:13px!important;
+  }
+  .accountSheetScroll{
+    padding-inline:11px!important;
+  }
+  #today .nightUnifiedHero{
+    padding:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .accountSheet[open]{
+    animation:none!important;
+  }
+}
