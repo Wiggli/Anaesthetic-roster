@@ -85,7 +85,15 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
     </div>
     <div className={`workflowGuidance workflowGuidance-${model.tone}`} role="status" aria-live="polite">
       <span className="workflowGuidanceMark" aria-hidden="true">{model.tone === 'attention' ? '!' : model.tone === 'ready' ? '→' : model.tone === 'complete' ? '✓' : '·'}</span>
-      <span><strong>{model.headline}</strong><small>{model.guidance}</small></span>
+      <span className="workflowGuidanceSummary">
+        <strong>{model.headline}</strong>
+        {model.tone === 'attention' || model.tone === 'ready'
+          ? <details className="workflowWhy">
+              <summary>{model.tone === 'attention' ? 'Why this needs you' : 'Why this is ready'}</summary>
+              <p>{model.guidance}</p>
+            </details>
+          : <small>{model.guidance}</small>}
+      </span>
     </div>
   </section>;
 }
