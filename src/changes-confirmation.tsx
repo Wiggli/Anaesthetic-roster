@@ -10,6 +10,7 @@ export type ConfirmationModel = {
   changed: Change[];
   full: PlanRole[];
   reason: string;
+  consequence?: string;
 };
 
 let root: Root | undefined;
@@ -22,15 +23,20 @@ function Confirmation({ model }: { model: ConfirmationModel }) {
 
   return <section className="confirmationExperience" aria-label="Selected-night confirmation preview">
     <div className={model.blocked ? 'confirmationWarning' : 'confirmationReady'} role={model.blocked ? 'alert' : 'status'}>
-      {model.blocked ? `${model.instruction} before continuing.` : 'Review only what changed before sharing.'}
+      {model.blocked ? `${model.instruction} before continuing.` : 'Review the exact before and after plan before sharing.'}
     </div>
+    <div className="confirmationDiffHeading">
+      <span><small>Before → After</small><strong>{model.changed.length ? `${model.changed.length} ${model.changed.length === 1 ? 'change' : 'changes'}` : 'No role changes'}</strong></span>
+      <small>Only differences are emphasised</small>
+    </div>
+    {model.consequence && <div className="confirmationConsequence"><span aria-hidden="true">↳</span><div><small>What this means</small><strong>{model.consequence}</strong></div></div>}
     <div className="confirmationChanges" aria-label="Changed assignments">
       {model.changed.map((item, index) => <div className="confirmationChangeRow" key={`${item.label}-${index}`}>
         <div><span>{item.label}</span>{item.detail && <small>{item.detail}</small>}</div>
         <div className="confirmationChangeValues">
-          <span className="confirmationCompareValue"><small>Rostered</small><del>{item.before}</del></span>
+          <span className="confirmationCompareValue"><small>Before</small><del>{item.before}</del></span>
           <span className="confirmationCompareArrow" aria-hidden="true">→</span>
-          <span className="confirmationCompareValue current"><small>This night</small><ins>{item.after}</ins></span>
+          <span className="confirmationCompareValue current"><small>After</small><ins>{item.after}</ins></span>
         </div>
       </div>)}
     </div>
