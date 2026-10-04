@@ -144,6 +144,7 @@ async function loadSharedData(options){
       labourOrderAvailable=true;labourOrders=rowsIndexedByDate(snapshot.night_labour_order);
       nightPlanStatuses=rowsIndexedByDate(snapshot.night_plan_status);
       nightRoleOverrideAvailable=true;nightRoleOverrides=rowsIndexedByDate(snapshot.night_role_overrides);
+      nightTeamIdentities=rowsIndexedByDate(snapshot.night_team_identity||[]);
       if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings}
       schemaVersion=Number(snapshot.schema_version||0);setAppCompatibility(snapshot.compatibility);var incomingRevision=Number(snapshot.sync_revision||0),incomingAccessEpoch=Number(snapshot.access_epoch||0);
       if(lastObservedSyncRevision!==null&&incomingRevision<lastObservedSyncRevision){var staleError=new Error('An older roster snapshot was rejected.');staleError.code='STALE_SNAPSHOT';throw staleError}
@@ -223,7 +224,7 @@ function subscribeToChanges(){
     realtimeSubscribed=false;if(changesChannel){supa.removeChannel(changesChannel);changesChannel=null}setSharedSyncState('live','');return;
   }
   var generation=++realtimeGeneration;realtimeSubscribed=false;if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}if(changesChannel)supa.removeChannel(changesChannel);
-  var tables=['app_sync_state','app_access_signal','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');
+  var tables=['app_sync_state','app_access_signal','night_changes','night_overtime','night_change_history','night_overtime_history','night_five_cover','roster_settings','rotation_versions','night_plan_status','app_settings'];if(labourOrderAvailable)tables.push('night_labour_order');if(nightRoleOverrideAvailable)tables.push('night_role_overrides','night_role_override_history');if(rosterCapabilities().nightTeamIdentity)tables.push('night_team_identity');
   changesChannel=supa.channel('roster-live-v41');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
@@ -308,7 +309,7 @@ async function backup(){
   toast('Preparing roster-data export');
   var allHistory=await Promise.all([supa.from('night_change_history').select('*').order('changed_at',{ascending:false}),supa.from('night_overtime_history').select('*').order('changed_at',{ascending:false}),supa.from('night_role_override_history').select('*').order('changed_at',{ascending:false})]);
   if(allHistory.some(function(x){return x.error})){toast('The roster-data export could not be prepared');return}
-  var createdAt=new Date().toISOString();download('roster-data-export-v'+APP_VERSION.replace('.','-')+'.json',JSON.stringify({created_at:createdAt,app_version:APP_VERSION,scope_note:'Roster and administrator data only. Private profile details and profile photos are excluded.',roster_settings:rosterSettings,rotation_versions:rotationVersions,night_changes:nightChanges,night_overtime:nightOvertime,absence_history:allHistory[0].data||[],overtime_history:allHistory[1].data||[],night_role_overrides:Object.values(nightRoleOverrides),night_role_override_history:allHistory[2].data||[],five_nurse_cover:fiveCoverChoices,labour_ward_orders:Object.values(labourOrders),night_plan_statuses:Object.values(nightPlanStatuses),app_settings:appSettings,authorised_accounts:authorisedAccounts},null,2),'application/json');appStorage.setItem('anaes_last_backup_at',createdAt);renderDiagnostics();
+  var createdAt=new Date().toISOString();download('roster-data-export-v'+APP_VERSION.replace('.','-')+'.json',JSON.stringify({created_at:createdAt,app_version:APP_VERSION,scope_note:'Roster and administrator data only. Private profile details and profile photos are excluded.',roster_settings:rosterSettings,rotation_versions:rotationVersions,night_changes:nightChanges,night_overtime:nightOvertime,absence_history:allHistory[0].data||[],overtime_history:allHistory[1].data||[],night_role_overrides:Object.values(nightRoleOverrides),night_role_override_history:allHistory[2].data||[],five_nurse_cover:fiveCoverChoices,labour_ward_orders:Object.values(labourOrders),night_plan_statuses:Object.values(nightPlanStatuses),night_team_identity:Object.values(nightTeamIdentities),app_settings:appSettings,authorised_accounts:authorisedAccounts},null,2),'application/json');appStorage.setItem('anaes_last_backup_at',createdAt);renderDiagnostics();
 }
 
 function fallbackUpdateMeta(){return{version:'',date:'',title:'Night Roster update',summary:'The latest Night Roster improvements are ready to install.',changes:['Reliability, clarity and interface improvements are ready.'],update_policy:'important'}}

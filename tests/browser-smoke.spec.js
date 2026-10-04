@@ -335,9 +335,10 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   await page.evaluate(() => window.show && window.show('chat'));
   await expect(page.locator('#chat')).toBeVisible();
   await expect(page.locator('#chatTeamEntry')).toBeVisible();
-  await expect(page.locator('#chatInboxHeading')).toHaveText('Team chat');
-  await expect(page.locator('#chatTeamEntry')).toContainText('Chat with everyone on tonight’s roster');
-  await expect(page.locator('#chatNewPrivateBtn')).toContainText('New private chat');
+  await expect(page.locator('#chatInboxHeading')).toHaveText('Team and direct messages');
+  await expect(page.locator('#chatTeamEntry')).toContainText('Anaesthetic Team');
+  await expect(page.locator('#chatRosterContextDate')).toBeVisible();
+  await expect(page.locator('#chatShiftNameBtn')).toBeVisible();
   await expect(page.locator('#chatNewPrivateBtn')).toHaveAttribute('aria-label', 'Start a new private chat');
   const newPrivateChatSizing = await page.locator('#chatNewPrivateBtn').evaluate(el => ({
     clientWidth: el.clientWidth,
@@ -359,13 +360,32 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   await expect(page.locator('#chatTeamThread')).toBeVisible();
   await expect(page.locator('#chatTeamThread .chatThreadHeading')).toContainText('Anaesthetic Team');
   await expect(page.locator('#chatTeamComposer')).toBeVisible();
-  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Write to Anaesthetic Team…');
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Message the team…');
   if (isMobile) {
     await expect(page.locator('#chatHome')).not.toBeVisible();
     const pane = await page.locator('#chat .chatConversationPane').boundingBox();
     expect(pane).not.toBeNull();
     expect(pane.height).toBeGreaterThan(400);
   }
+});
+
+test('shared shift nickname editor is concise and patient-safe', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show && window.show('chat');
+    const input = document.getElementById('nightTeamNameInput');
+    if (input) input.dataset.rosterDate = '2026-10-04';
+    const dialog = document.getElementById('nightTeamNameDialog');
+    if (dialog && !dialog.open) dialog.showModal();
+  });
+  await expect(page.locator('#nightTeamNameDialog')).toBeVisible();
+  await expect(page.locator('#nightTeamNameInput')).toHaveAttribute('maxlength', '28');
+  await expect(page.locator('#nightTeamNameDialog')).toContainText('Everyone on the team will see the same name');
+  await expect(page.locator('#nightTeamNameDialog')).toContainText('No patient information');
+  await page.locator('#nightTeamNameInput').fill('The Night Owls');
+  await expect(page.locator('#nightTeamNameInput')).toHaveValue('The Night Owls');
+  await page.locator('#cancelNightTeamNameBtn').click();
+  await expect(page.locator('#nightTeamNameDialog')).not.toBeVisible();
 });
 
 test('notification settings use readable rows and explicit switch states', async ({ page }) => {
@@ -1568,9 +1588,9 @@ test('typed Chat overview renders private conversations and registered members',
   });
 
   await expect(page.locator('#chatConversationList')).toContainText('I can cover');
-  await expect(page.locator('#chatInboxHeading')).toHaveText('Team chat');
+  await expect(page.locator('#chatInboxHeading')).toHaveText('Team and direct messages');
   await expect(page.locator('#chatTeamEntry')).toContainText('Anaesthetic Team');
-  await expect(page.locator('#chatTeamEntry')).toContainText('Chat with everyone on tonight’s roster');
+  await expect(page.locator('#chatShiftNameBtn')).toBeVisible();
   await captureReview(page, 'chat');
   await expect(page.locator('#chatConversationList')).toContainText('2');
   await expect(page.locator('#chatConversationList button[aria-label]')).toHaveAttribute('aria-label', 'Open conversation with Maria Borg, 2 unread');
@@ -1611,7 +1631,7 @@ test('typed Chat overview renders private conversations and registered members',
   expect(composerMaterial.radius).toBeGreaterThanOrEqual(24);
   await expect(page.locator('#chatTeamComposer .liquidControlOverlay')).toHaveCount(0);
   await expect(page.locator('#chatTeamInput')).toHaveCSS('border-top-width', '0px');
-  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Write to Anaesthetic Team…');
+  await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Message the team…');
   await expect(page.locator('#chatSafetyInfo .chatRetentionNote')).toHaveCount(0);
   await expect(page.locator('#chatTeamSendBtn')).toBeDisabled();
   await page.locator('#chatTeamInput').fill('x'.repeat(1600));

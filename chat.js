@@ -73,6 +73,22 @@ function chatShortDisplayName(personKey){
   var display=chatDisplayName(personKey),first=display.split(/\s+/)[0];
   return first||display;
 }
+function chatSelectedNightDate(){
+  try{var row=typeof cur==='function'?cur():null;return row&&row.date||''}catch(error){return''}
+}
+function chatTeamDisplayName(){
+  var date=chatSelectedNightDate(),nickname=window.nightTeamNickname&&window.nightTeamNickname(date);
+  return nickname||'Anaesthetic Team'
+}
+function chatCurrentRosterCount(){
+  try{var row=typeof cur==='function'?cur():null,plan=row&&typeof staffingPlan==='function'?staffingPlan(row):null,count=Number(plan&&plan.count);if(Number.isFinite(count)&&count>0)return count}catch(error){}
+  return chatRosterKeys().length
+}
+function chatRosterDateLabel(date){
+  if(!date)return'Selected roster night';
+  try{if(typeof fmt==='function')return fmt(date)}catch(error){}
+  var parsed=new Date(date+'T12:00:00');return isNaN(parsed.getTime())?date:parsed.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})
+}
 function chatCurrentPersonKey(){
   var member=chatState.membersById[chatCurrentId()];
   if(member&&member.person_key)return member.person_key;
@@ -307,15 +323,23 @@ function chatDispatchMessages(host,messages,kind,anchor,hadUnread){
 function chatRenderTeamMessages(){chatRenderMessageSequence(chatEl('chatTeamMessages'),chatState.teamMessages,'team',chatState.teamUnreadAnchor,chatState.teamHadUnread)}
 function chatRenderPrivateMessages(){chatRenderMessageSequence(chatEl('chatMessages'),chatState.messages,'private',chatState.privateUnreadAnchor,chatState.privateHadUnread)}
 function chatRenderTeamHeader(){
-  var count=chatEl('chatTeamMemberCount'),threadCount=chatEl('chatTeamThreadMemberCount'),unread=chatEl('chatTeamUnread'),preview=chatEl('chatTeamPreview'),when=chatEl('chatTeamTime'),team=chatTeamConversation(),rosterCount=chatRosterKeys().length;
-  var countLabel=rosterCount+' team member'+(rosterCount===1?'':'s');
-  if(count)count.textContent=countLabel;
-  if(threadCount)threadCount.textContent=countLabel+' · '+((chatEl('chatLiveStatus')&&chatEl('chatLiveStatus').textContent)||'Live');
+  var threadCount=chatEl('chatTeamThreadMemberCount'),unread=chatEl('chatTeamUnread'),preview=chatEl('chatTeamPreview'),when=chatEl('chatTeamTime'),teamName=chatEl('chatTeamName'),teamMeta=chatEl('chatTeamMeta'),threadTitle=chatEl('chatTeamThreadTitle'),contextDate=chatEl('chatRosterContextDate'),contextMeta=chatEl('chatRosterContextMeta'),nameAction=chatEl('chatShiftNameAction'),teamEntry=chatEl('chatTeamEntry'),team=chatTeamConversation(),rosterCount=chatCurrentRosterCount(),displayName=chatTeamDisplayName(),date=chatSelectedNightDate(),live=(chatEl('chatLiveStatus')&&chatEl('chatLiveStatus').textContent)||'Live',nickname=displayName!=='Anaesthetic Team';
+  var nurseLabel=rosterCount+' nurse'+(rosterCount===1?'':'s');
+  if(teamName)teamName.textContent=displayName;
+  if(teamMeta)teamMeta.textContent=nickname?'Anaesthetic Team · '+nurseLabel:nurseLabel+' · Team chat';
+  if(threadTitle)threadTitle.textContent=displayName;
+  if(threadCount)threadCount.textContent=(nickname?'Anaesthetic Team · ':'')+nurseLabel+' · '+live;
+  if(contextDate)contextDate.textContent=chatRosterDateLabel(date);
+  if(contextMeta)contextMeta.textContent=nurseLabel+' · Team chat '+String(live).toLowerCase();
+  if(nameAction)nameAction.textContent=nickname?'Rename':'Name shift';
+  if(teamEntry)teamEntry.setAttribute('aria-label','Open '+displayName+' team chat with everyone on tonight\'s roster');
   if(team){
     var number=Number(chatState.unreadByConversation[team.id]||0),latest=chatState.latestByConversation[team.id];
-    if(unread){unread.textContent=number?chatCap(number,99)+' new':'0';unread.setAttribute('aria-label',number+' unread team message'+(number===1?'':'s'));unread.classList.toggle('hidden',!number)}
+    if(unread){unread.textContent=number?chatCap(number,99):'0';unread.setAttribute('aria-label',number+' unread team message'+(number===1?'':'s'));unread.classList.toggle('hidden',!number)}
     if(preview)preview.textContent=latest?((chatOwnMessage(latest)?'You':chatShortDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'No messages yet';
     if(when)when.textContent=latest?chatTime(latest.created_at):'';
+  }else{
+    if(unread)unread.classList.add('hidden');if(preview)preview.textContent='No messages yet';if(when)when.textContent=''
   }
 }
 function chatRenderConversationList(){
@@ -663,6 +687,7 @@ function chatBindComposerUi(){
 function chatBindUi(){
   chatEnsureEnhancedUi();
   window.addEventListener('roster:chat-composers-mounted',chatBindComposerUi);
+  window.addEventListener('roster:night-team-identity',function(){chatRenderTeamHeader()});
   window.addEventListener('roster:chat-action',function(event){var detail=event&&event.detail||{};if(detail.action==='conversation')chatOpenPrivateConversation(detail.value);else if(detail.action==='member')chatStartPrivate(detail.value);else if(detail.action==='message'||detail.action==='retry'){var list=detail.kind==='team'?chatState.teamMessages:chatState.messages,message=list.find(function(item){return String(item.id)===String(detail.value)});if(message){if(detail.action==='message')chatOpenMessageActions(message,detail.kind);else chatRetryFailed(message,detail.kind)}}});
   var newButton=chatEl('chatNewPrivateBtn');if(newButton)newButton.onclick=chatOpenNewConversation;
   var safety=chatEl('chatSafetyInfo');if(safety)safety.onclick=chatOpenSafetyInfo;

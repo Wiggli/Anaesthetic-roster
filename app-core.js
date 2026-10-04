@@ -4,8 +4,8 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '43.2';
-var EXPECTED_SCHEMA_VERSION = 50;
+var APP_VERSION = '43.3';
+var EXPECTED_SCHEMA_VERSION = 51;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var appStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
 var currentUser = null;
@@ -40,7 +40,7 @@ var schemaVersion=0;
 function appNow(){return window.AnaestheticDomain&&window.AnaestheticDomain.now?window.AnaestheticDomain.now():new Date()}
 function appNowMs(){return window.AnaestheticDomain&&window.AnaestheticDomain.nowMs?window.AnaestheticDomain.nowMs():Date.now()}
 function recordAppDiagnostic(category,operation,code){if(window.AnaestheticDomain&&window.AnaestheticDomain.recordDiagnostic)return window.AnaestheticDomain.recordDiagnostic(category,operation,code)}
-function rosterCapabilities(){var base=window.AnaestheticDomain&&window.AnaestheticDomain.capabilities?window.AnaestheticDomain.capabilities(schemaVersion):{schemaVersion:Number(schemaVersion||0),serverClock:false,chatIdempotency:false,monotonicChatRead:false,atomicFinalise:schemaVersion>=37,nightRoleOverrides:schemaVersion>=36};base.commandIdempotency=Number(schemaVersion||0)>=48;base.freshnessBarrier=Number(schemaVersion||0)>=48;base.serverPlanValidation=Number(schemaVersion||0)>=48;base.trustBoundary=Number(schemaVersion||0)>=49;base.liveAccessEpoch=Number(schemaVersion||0)>=49;base.durableAudit=Number(schemaVersion||0)>=50;base.paginatedHistory=Number(schemaVersion||0)>=50;base.healthCanary=Number(schemaVersion||0)>=50;return base}
+function rosterCapabilities(){var base=window.AnaestheticDomain&&window.AnaestheticDomain.capabilities?window.AnaestheticDomain.capabilities(schemaVersion):{schemaVersion:Number(schemaVersion||0),serverClock:false,chatIdempotency:false,monotonicChatRead:false,atomicFinalise:schemaVersion>=37,nightRoleOverrides:schemaVersion>=36};base.commandIdempotency=Number(schemaVersion||0)>=48;base.freshnessBarrier=Number(schemaVersion||0)>=48;base.serverPlanValidation=Number(schemaVersion||0)>=48;base.trustBoundary=Number(schemaVersion||0)>=49;base.liveAccessEpoch=Number(schemaVersion||0)>=49;base.durableAudit=Number(schemaVersion||0)>=50;base.paginatedHistory=Number(schemaVersion||0)>=50;base.healthCanary=Number(schemaVersion||0)>=50;base.nightTeamIdentity=Number(schemaVersion||0)>=51;return base}
 window.rosterCapabilities=rosterCapabilities;
 var nightPlanStatuses={};
 var nightRoleOverrides={};

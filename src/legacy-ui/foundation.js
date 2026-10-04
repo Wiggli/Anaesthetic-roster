@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V43.2 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V43.3 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -15,6 +15,7 @@ var waitingUpdateState='new';
 var updateActivationTimer=null;
 var pendingRemovals={};
 var labourOrders={};
+var nightTeamIdentities={};
 var labourOrderAvailable=true;
 var allocationDrafts={};
 var labourOrderDrafts={};
@@ -88,6 +89,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"43.3","date":"4 October 2026","title":"Rebuild Chat around the night team","changes":["Chat is rebuilt around one compact conversation language: Team Chat and direct messages now share aligned avatars, names, previews, timestamps and unread states without oversized dashboard cards.","The header and selected-night context are tighter and calmer, while safety guidance and notification preferences move into a quiet footer so conversations remain the primary task.","Any roster member can give the selected shift a shared nickname of up to 28 characters; the name is stored per roster night, synchronises across devices and can be renamed or removed.","A shift nickname becomes the Team Chat identity and also appears subtly beside the selected night in Night, Changes and Breaks, while Anaesthetic Team remains visible as the clinical context.","Shared shift-name writes are protected by the existing authenticated compatibility boundary, audited server-side, included in startup and offline snapshots, and propagated through shared revision and realtime updates."],"policy":"normal"},
   {"version":"43.2","date":"4 October 2026","title":"Refine Chat into a calmer native inbox","changes":["Team Chat now uses a compact near-background conversation surface with a restrained accent edge, smaller avatar and clearer timestamp hierarchy.","Private conversations now use purpose-built messaging rows so names, previews, timestamps and unread badges stay aligned as one coherent item.","Message previews are shorter and more natural: private rows no longer repeat the colleague name and Team Chat no longer prefixes every preview with Latest.","Safety guidance and notification settings are now grouped into one quiet secondary utility surface rather than competing with conversations.","The active bottom-navigation lens is visually inset and the Actions control is calmer, preserving the same tested navigation geometry while reducing visual bulk."],"policy":"quiet"},
   {"version":"43.1","date":"4 October 2026","title":"Make Chat conversation-first","changes":["The large all-in-one Chat card has been replaced by separate Team and Private conversation sections with cleaner spacing and much less visual bulk.","Anaesthetic Team is now one fully tappable conversation row with a clearer title, timestamp, member count and latest-message preview, without a redundant Open chat button.","Private chats now use larger names, more readable previews, quieter timestamps and unread badges, and no redundant chevrons.","The Chat header is tighter and more balanced, with the compose action integrated beside the title instead of appearing as a detached control.","Safety guidance and notification settings remain accessible but are visually demoted so they no longer compete with the messaging task."],"policy":"quiet"},
   {"version":"43.0","date":"4 October 2026","title":"Refine mobile hierarchy and readability","changes":["Primary screen titles, section headings and supporting text now use one calmer mobile type scale with more consistent spacing across Night, Changes, Breaks and Chat.","Night keeps the personal assignment as the visual priority while reducing competing emphasis in timeline details, status messaging and the Tonight summary.","Changes now lets completed workflow stages recede and gives unresolved allocation decisions, including the seventh-nurse choice, a clearer and more accessible focus.","Breaks is more compact around pending states and selected-night context so the actual break plan appears sooner without hiding any staffing information.","Chat now uses a compact compose control, denser native-style conversation rows and more disciplined unread/status treatments, while the bottom navigation is easier to read and less visually dominated by Actions."],"policy":"quiet"},
@@ -340,6 +342,25 @@ function rowsIndexedByDate(rows){
   var result={};(Array.isArray(rows)?rows:[]).forEach(function(row){if(plainSnapshotRecord(row)&&typeof row.roster_date==='string')result[row.roster_date]=row});return result
 }
 
+function nightTeamIdentityFor(date){
+  var row=nightTeamIdentities&&nightTeamIdentities[date];
+  return plainSnapshotRecord(row)?row:null
+}
+function nightTeamNickname(date){
+  var row=nightTeamIdentityFor(date),value=row&&typeof row.nickname==='string'?row.nickname.trim():'';
+  return value.slice(0,28)
+}
+window.nightTeamNickname=nightTeamNickname;
+function renderNightTeamIdentityContext(date){
+  var nickname=nightTeamNickname(date),row=nightTeamIdentityFor(date);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-night-team-identity]'),function(node){
+    node.classList.toggle('hidden',!nickname);
+    node.textContent=nickname?'✦ '+nickname:'';
+    node.title=nickname&&row&&row.updated_by?'Shift nickname · updated by '+row.updated_by:'';
+  });
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night-team-identity',{detail:{date:date,nickname:nickname,updatedBy:row&&row.updated_by||'',updatedAt:row&&row.updated_at||''}}))
+}
+
 async function requestStartupSnapshot(){
   var token=currentAccessToken;
   if(!token){
@@ -443,6 +464,7 @@ async function requestCompatibilityStartup(){
     var labourOrder=await startupQuery(supa.from('night_labour_order').select('*'),'Labour Ward order did not respond.');
     var planStatus=await startupQuery(supa.from('night_plan_status').select('*'),'Night plan status did not respond.');
     var roleOverrides=await startupQuery(supa.from('night_role_overrides').select('*'),'Night-only roles did not respond.');
+    var teamIdentity=await startupQuery(supa.from('night_team_identity').select('*'),'Shift nickname did not respond.');
     var allocations=[labourOrder,planStatus,roleOverrides];
     if(allocations.some(startupQueryFailed))throw new Error('Shared allocations could not be loaded.');
 
@@ -458,6 +480,7 @@ async function requestCompatibilityStartup(){
       night_changes:staffing[0].data||[],night_overtime:staffing[1].data||[],night_five_cover:staffing[2].data||[],
       roster_settings:staffing[3].data,rotation_versions:staffing[4].data||[],
       night_labour_order:allocations[0].data||[],night_plan_status:allocations[1].data||[],night_role_overrides:allocations[2].data||[],
+      night_team_identity:teamIdentity&&!startupQueryFailed(teamIdentity)?teamIdentity.data||[]:[],
       app_settings:support[0]&&!support[0].error?support[0].data:null,
       schema_version:support[1]&&!support[1].error&&support[1].data?Number(support[1].data.version||0):0,
       compatibility:support[2]&&!support[2].error?support[2].data:null,
@@ -479,7 +502,7 @@ function readOfflineSnapshot(){
     if(window.AnaestheticDomain&&window.AnaestheticDomain.snapshotIsExpired&&window.AnaestheticDomain.snapshotIsExpired(raw.saved_at,604800000,appNowMs())){appStorage.removeItem('anaes_offline_snapshot');if(window.AnaestheticRuntime&&window.AnaestheticRuntime.snapshots)window.AnaestheticRuntime.snapshots.remove('offline-roster');recordAppDiagnostic('offline','snapshot','expired');return null}
     var versions=raw.rotationVersions.filter(function(version){return plainSnapshotRecord(version)&&/^\d{4}-\d{2}-\d{2}$/.test(version.effective_from||'')&&['first1','first2','second1','second2','pager','reliever'].every(function(key){return typeof version[key]==='string'&&version[key].trim()})}).map(function(version){var copy=Object.assign({},version);copy.seventh_cycle=Array.isArray(version.seventh_cycle)&&version.seventh_cycle.length?version.seventh_cycle.filter(function(name){return typeof name==='string'&&name.trim()}):ORIGINAL_SEVENTH.slice();return copy});
     if(!versions.length||!/^\d{4}-\d{2}-\d{2}$/.test(raw.rosterSettings.published_until||''))return null;
-    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0,accessEpoch:Number(raw.accessEpoch||0)||0,compatibility:normaliseAppCompatibility(raw.compatibility)}
+    return{saved_at:typeof raw.saved_at==='string'&&!isNaN(Date.parse(raw.saved_at))?raw.saved_at:null,nightChanges:snapshotRowsByDate(raw.nightChanges),nightOvertime:snapshotRowsByDate(raw.nightOvertime),fiveCoverChoices:snapshotRecordsByDate(raw.fiveCoverChoices),rosterSettings:Object.assign({},raw.rosterSettings),rotationVersions:versions,labourOrders:snapshotRecordsByDate(raw.labourOrders),nightRoleOverrides:snapshotRecordsByDate(raw.nightRoleOverrides),nightPlanStatuses:snapshotRecordsByDate(raw.nightPlanStatuses),nightTeamIdentities:snapshotRecordsByDate(raw.nightTeamIdentities),appSettings:plainSnapshotRecord(raw.appSettings)?Object.assign({},raw.appSettings):null,schemaVersion:Number(raw.schemaVersion||0)||0,syncRevision:Number(raw.syncRevision||0)||0,accessEpoch:Number(raw.accessEpoch||0)||0,compatibility:normaliseAppCompatibility(raw.compatibility)}
   }catch(error){recordAppDiagnostic('offline','snapshot-read','failed');return null}
 }
 
@@ -553,7 +576,7 @@ async function enterAccessLost(){
   if(window.chatTeardownSession)window.chatTeardownSession();
   await clearPrivateDeviceData();
   currentUserProfile=null;currentPrivateProfile=null;profileAvatarUrl='';currentAccessToken='';
-  nightChanges={};nightOvertime={};changeHistory={};overtimeHistory={};roleOverrideHistory={};fiveCoverChoices={};labourOrders={};nightPlanStatuses={};nightRoleOverrides={};
+  nightChanges={};nightOvertime={};changeHistory={};overtimeHistory={};roleOverrideHistory={};fiveCoverChoices={};labourOrders={};nightPlanStatuses={};nightRoleOverrides={};nightTeamIdentities={};
   lastObservedSyncRevision=null;lastObservedAccessEpoch=null;
   try{await supa.auth.signOut({scope:'local'})}catch(error){}
   currentUser=null;setAuthMode('login');showAuth('Your Night Roster access has changed. Sign in again, or contact the roster administrator if you still need access.',true);
@@ -613,7 +636,7 @@ function rememberOnboardingProfile(){var name=byId('onboardingProfileName'),titl
 function openOnboardingReplay(){var dialog=byId('onboardingDialog');if(!dialog||!dialog.showModal)return;var account=byId('accountSheet');if(account&&account.open)account.close();onboardingChatIntro=false;onboardingFeatureKey='';onboardingGuideMenu=true;onboardingReplay=true;onboardingDirection=1;onboardingStep=0;renderOnboarding();if(!dialog.open)dialog.showModal()}
 
 function offlineSnapshotPayload(){
-  return{saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0),accessEpoch:Number(lastObservedAccessEpoch||0),compatibility:appCompatibility}
+  return{saved_at:lastSuccessfulSyncAt||new Date(appNowMs()).toISOString(),nightChanges:nightChanges,nightOvertime:nightOvertime,fiveCoverChoices:fiveCoverChoices,rosterSettings:rosterSettings,rotationVersions:rotationVersions,labourOrders:labourOrders,nightRoleOverrides:nightRoleOverrides,nightPlanStatuses:nightPlanStatuses,nightTeamIdentities:nightTeamIdentities,appSettings:appSettings,schemaVersion:schemaVersion,syncRevision:Number(lastObservedSyncRevision||0),accessEpoch:Number(lastObservedAccessEpoch||0),compatibility:appCompatibility}
 }
 function saveOfflineSnapshot(){
   try{
@@ -638,7 +661,7 @@ async function primeOfflineSnapshotFromIndexedDb(){
 function restoreOfflineSnapshot(){
   try{
     var snapshot=readOfflineSnapshot();if(!snapshot)return false;
-    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastObservedAccessEpoch=Number(snapshot.accessEpoch||0);setAppCompatibility(snapshot.compatibility);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
+    nightChanges=snapshot.nightChanges;nightOvertime=snapshot.nightOvertime;fiveCoverChoices=snapshot.fiveCoverChoices;rosterSettings=snapshot.rosterSettings;rotationVersions=snapshot.rotationVersions;labourOrders=snapshot.labourOrders;nightRoleOverrides=snapshot.nightRoleOverrides;nightPlanStatuses=snapshot.nightPlanStatuses;nightTeamIdentities=snapshot.nightTeamIdentities||{};if(snapshot.appSettings)appSettings=snapshot.appSettings;schemaVersion=snapshot.schemaVersion;lastObservedSyncRevision=Number(snapshot.syncRevision||0);lastObservedAccessEpoch=Number(snapshot.accessEpoch||0);setAppCompatibility(snapshot.compatibility);lastSuccessfulSyncAt=snapshot.saved_at;changeHistory={};overtimeHistory={};roleOverrideHistory={};historyLoadedDates={};historyLoadingDates={};rebuildCalculatedRoster();if(!R.length)return false;nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx]&&R[idx].date;initialNightChosen=true;setSharedSyncState('offline','');render();return true;
   }catch(error){console.error('Saved roster could not be restored',error);return false}
 }
 
@@ -650,7 +673,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=43.2" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=43.3" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
