@@ -69,6 +69,10 @@ function chatDisplayName(personKey){
   if(!value)return'Team member';
   return typeof professionalName==='function'?professionalName(value):value;
 }
+function chatShortDisplayName(personKey){
+  var display=chatDisplayName(personKey),first=display.split(/\s+/)[0];
+  return first||display;
+}
 function chatCurrentPersonKey(){
   var member=chatState.membersById[chatCurrentId()];
   if(member&&member.person_key)return member.person_key;
@@ -310,7 +314,7 @@ function chatRenderTeamHeader(){
   if(team){
     var number=Number(chatState.unreadByConversation[team.id]||0),latest=chatState.latestByConversation[team.id];
     if(unread){unread.textContent=number?chatCap(number,99)+' new':'0';unread.setAttribute('aria-label',number+' unread team message'+(number===1?'':'s'));unread.classList.toggle('hidden',!number)}
-    if(preview)preview.textContent=latest?'Latest: '+((chatOwnMessage(latest)?'You':chatDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'No messages yet';
+    if(preview)preview.textContent=latest?((chatOwnMessage(latest)?'You':chatShortDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'No messages yet';
     if(when)when.textContent=latest?chatTime(latest.created_at):'';
   }
 }
@@ -324,7 +328,7 @@ function chatRenderConversationList(){
     var button=chatCreate('button','chatConversationItem'+(conversation.id===chatState.activeConversationId?' active':''));button.type='button';button.dataset.chatConversation=conversation.id;
     var title=chatConversationTitle(conversation),avatar=chatCreate('span','chatConversationAvatar',chatInitial(title)),content=chatCreate('span','chatConversationContent'),top=chatCreate('span','chatConversationTop'),name=chatCreate('b','',title),latest=chatState.latestByConversation[conversation.id],when=chatCreate('small','',latest?chatTime(latest.created_at):'');
     top.appendChild(name);top.appendChild(when);
-    var previewText=latest?((chatOwnMessage(latest)?'You':chatDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'Private conversation';
+    var previewText=latest?((chatOwnMessage(latest)?'You: ':'')+chatMessageBodyText(latest)):'No messages yet';
     content.appendChild(top);content.appendChild(chatCreate('span','chatConversationPreview',previewText));button.appendChild(avatar);button.appendChild(content);
     var unread=Number(chatState.unreadByConversation[conversation.id]||0);if(unread)button.appendChild(chatCreate('em','chatConversationBadge',chatCap(unread,99)));
     button.onclick=function(){chatOpenPrivateConversation(conversation.id)};host.appendChild(button);
@@ -332,7 +336,7 @@ function chatRenderConversationList(){
 }
 function chatDispatchOverview(){
   if(!window.dispatchEvent||typeof CustomEvent!=='function')return;
-  var conversations=chatDirectConversations().slice().sort(chatConversationSort).map(function(conversation){var title=chatConversationTitle(conversation),latest=chatState.latestByConversation[conversation.id],preview=latest?((chatOwnMessage(latest)?'You':chatDisplayName(latest.sender_display_name))+': '+chatMessageBodyText(latest)):'Private conversation';return{id:conversation.id,title:title,initial:chatInitial(title),time:latest?chatTime(latest.created_at):'',preview:preview,unread:Number(chatState.unreadByConversation[conversation.id]||0),active:conversation.id===chatState.activeConversationId}});
+  var conversations=chatDirectConversations().slice().sort(chatConversationSort).map(function(conversation){var title=chatConversationTitle(conversation),latest=chatState.latestByConversation[conversation.id],preview=latest?((chatOwnMessage(latest)?'You: ':'')+chatMessageBodyText(latest)):'No messages yet';return{id:conversation.id,title:title,initial:chatInitial(title),time:latest?chatTime(latest.created_at):'',preview:preview,unread:Number(chatState.unreadByConversation[conversation.id]||0),active:conversation.id===chatState.activeConversationId}});
   var members=chatRosterDirectory().map(function(entry){return{personKey:entry.person_key,displayName:entry.display_name,initial:chatInitial(entry.display_name),available:!!(entry.registered&&entry.preferred_user_id)}});
   window.dispatchEvent(new CustomEvent('roster:chat-overview',{detail:{conversations:conversations,members:members}}));
 }

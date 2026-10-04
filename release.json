@@ -1,14 +1,14 @@
 {
-  "version": "43.1",
+  "version": "43.2",
   "date": "4 October 2026",
-  "title": "Make Chat conversation-first",
-  "summary": "Chat now reads like a native messaging inbox, with conversations taking priority and secondary controls visually receding.",
+  "title": "Refine Chat into a calmer native inbox",
+  "summary": "Chat now uses quieter near-background surfaces, tighter typography and a more disciplined messaging hierarchy instead of prominent grey slabs and oversized cards.",
   "changes": [
-    "The large all-in-one Chat card has been replaced by separate Team and Private conversation sections with cleaner spacing and much less visual bulk.",
-    "Anaesthetic Team is now one fully tappable conversation row with a clearer title, timestamp, member count and latest-message preview, without a redundant Open chat button.",
-    "Private chats now use larger names, more readable previews, quieter timestamps and unread badges, and no redundant chevrons.",
-    "The Chat header is tighter and more balanced, with the compose action integrated beside the title instead of appearing as a detached control.",
-    "Safety guidance and notification settings remain accessible but are visually demoted so they no longer compete with the messaging task."
+    "Team Chat now uses a compact near-background conversation surface with a restrained accent edge, smaller avatar and clearer timestamp hierarchy.",
+    "Private conversations now use purpose-built messaging rows so names, previews, timestamps and unread badges stay aligned as one coherent item.",
+    "Message previews are shorter and more natural: private rows no longer repeat the colleague name and Team Chat no longer prefixes every preview with Latest.",
+    "Safety guidance and notification settings are now grouped into one quiet secondary utility surface rather than competing with conversations.",
+    "The active bottom-navigation lens is visually inset and the Actions control is calmer, preserving the same tested navigation geometry while reducing visual bulk."
   ],
   "update_policy": "quiet"
 }

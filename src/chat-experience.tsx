@@ -32,28 +32,36 @@ function ConversationList({ items }: { items: Conversation[] }) {
     <EmptyState title="No private chats yet" detail="Tap New private chat to message one colleague." />
   </Surface>;
 
-  return <GroupedList className="reactConversationGroup chatInboxList tw:overflow-visible">
+  return <div className="reactConversationGroup chatInboxList">
     <AnimatePresence initial={false}>
       {items.map((item, index) => <motion.div
         layout
         key={item.id}
-        initial={reduced ? false : { opacity: 0, y: 5 }}
+        className="chatInboxListItem"
+        initial={reduced ? false : { opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         exit={reduced ? undefined : { opacity: 0, y: -3 }}
-        transition={{ duration: reduced ? 0 : 0.16, delay: reduced ? 0 : Math.min(index * 0.018, 0.09) }}
+        transition={{ duration: reduced ? 0 : 0.15, delay: reduced ? 0 : Math.min(index * 0.016, 0.08) }}
       >
-        <ListRow
-          leading={<Avatar initial={item.initial} />}
-          title={item.title}
-          subtitle={<span className="tw:block tw:truncate">{conversationPreview(item)}</span>}
-          trailing={<span className="chatInboxMeta"><time>{item.time}</time>{item.unread > 0 && <Badge tone="accent" className="chatInboxUnread">{item.unread > 99 ? '99+' : item.unread}</Badge>}</span>}
+        <Pressable
+          type="button"
           onClick={() => act('conversation', item.id)}
-          ariaLabel={`Open conversation with ${item.title}${item.unread ? `, ${item.unread} unread` : ''}`}
-          className={`chatInboxRow ${item.unread ? 'hasUnread' : ''} ${item.active ? 'active' : ''}`}
-        />
+          aria-label={`Open conversation with ${item.title}${item.unread ? `, ${item.unread} unread` : ''}`}
+          className={`chatInboxRow chatInboxRowModern ${item.unread ? 'hasUnread' : ''} ${item.active ? 'active' : ''}`}
+        >
+          <span className="chatInboxAvatar" aria-hidden="true">{item.initial}</span>
+          <span className="chatInboxRowCopy">
+            <strong>{item.title}</strong>
+            <small>{conversationPreview(item)}</small>
+          </span>
+          <span className="chatInboxMeta">
+            <time>{item.time}</time>
+            {item.unread > 0 && <Badge tone="accent" className="chatInboxUnread">{item.unread > 99 ? '99+' : item.unread}</Badge>}
+          </span>
+        </Pressable>
       </motion.div>)}
     </AnimatePresence>
-  </GroupedList>;
+  </div>;
 }
 
 function MemberPicker({ members }: { members: Member[] }) {
