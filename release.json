@@ -1,14 +1,14 @@
 {
-  "version": "43.3",
+  "version": "43.4",
   "date": "4 October 2026",
-  "title": "Rebuild Chat around the night team",
-  "summary": "Chat is now a calm native-style communication hub, and every roster night can have a shared team nickname that follows the team across devices.",
+  "title": "Give Chat and shift identity a premium visual hierarchy",
+  "summary": "Chat now has richer conversation hierarchy, a premium safety and notifications surface, and a stronger shared shift identity across the app.",
   "changes": [
-    "Chat is rebuilt around one compact conversation language: Team Chat and direct messages now share aligned avatars, names, previews, timestamps and unread states without oversized dashboard cards.",
-    "The header and selected-night context are tighter and calmer, while safety guidance and notification preferences move into a quiet footer so conversations remain the primary task.",
-    "Any roster member can give the selected shift a shared nickname of up to 28 characters; the name is stored per roster night, synchronises across devices and can be renamed or removed.",
-    "A shift nickname becomes the Team Chat identity and also appears subtly beside the selected night in Night, Changes and Breaks, while Anaesthetic Team remains visible as the clinical context.",
-    "Shared shift-name writes are protected by the existing authenticated compatibility boundary, audited server-side, included in startup and offline snapshots, and propagated through shared revision and realtime updates."
+    "Team Chat is promoted into a richer featured conversation surface with a larger team icon, stronger shift title, cleaner metadata and more deliberate depth.",
+    "Chat essentials are rebuilt as one premium glass surface with generous safety and notification rows, larger icons, clearer typography and better touch targets.",
+    "Zero unread counts are never rendered as badges; unread indicators now appear only when there is something that genuinely needs attention.",
+    "Direct messages gain larger avatars, names and previews with improved spacing so the inbox feels more confident and easier to scan on a night shift.",
+    "Shared shift names are larger and more distinctive across Night, Changes, Breaks and Chat, using one consistent identity treatment without overpowering clinical information."
   ],
   "update_policy": "normal"
 }
