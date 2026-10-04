@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
 
 type ThemeChoice = 'light' | 'system' | 'dark';
@@ -149,7 +149,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
     </div>
 
     {tab === 'me' ? <>
-      <section className="personalisationPreviewCard" style={{ '--identity-accent': accentColour(accent) } as React.CSSProperties}>
+      <section className="personalisationPreviewCard" style={{ '--identity-accent': accentColour(accent) } as CSSProperties}>
         <div className="personalisationPreviewGlow" />
         <IdentityImage src={showPersonalPhoto ? photoUrl : undefined} fallback={personalFallback} className="personalisationPreviewAvatar" />
         <div className="personalisationPreviewCopy">
@@ -174,7 +174,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
               aria-label="Choose profile photo"
               onClick={() => document.getElementById('profilePhotoInput')?.click()}
               className="accountPhotoButton accountHeroPhoto"
-              style={{ '--identity-accent': accentColour(accent) } as React.CSSProperties}
+              style={{ '--identity-accent': accentColour(accent) } as CSSProperties}
             >
               <img id="profilePhotoPreview" src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='} alt="Your profile photo" className={showPersonalPhoto ? '' : 'hidden'} />
               <span id="profilePhotoInitial" className={showPersonalPhoto ? 'hidden' : ''}>{personalFallback}</span>
@@ -297,7 +297,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={'primary accountProfileSave ' + (dirty ? '' : 'hidden')} disabled={!model.featureAvailable}>Save my personalisation</button>
       </div>
     </> : <>
-      <section className="personalisationPreviewCard shiftPreviewCard" data-shift-accent={shiftAccent} style={{ '--identity-accent': accentColour(shiftAccent) } as React.CSSProperties}>
+      <section className="personalisationPreviewCard shiftPreviewCard" data-shift-accent={shiftAccent} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
         <div className="personalisationPreviewGlow" />
         <IdentityImage src={shift?.photoUrl} fallback={shiftFallback || shift?.initials || 'AT'} className="personalisationPreviewAvatar shiftPreviewAvatar" />
         <div className="personalisationPreviewCopy">
@@ -315,7 +315,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
           <p>Everyone on the roster sees the same identity across Night, Changes, Breaks and Team Chat.</p>
         </div>
         <div className="shiftPersonalisationPhotoRow">
-          <button type="button" className="shiftPersonalisationPhoto" onClick={() => document.getElementById('shiftStudioPhotoInput')?.click()} style={{ '--identity-accent': accentColour(shiftAccent) } as React.CSSProperties}>
+          <button type="button" className="shiftPersonalisationPhoto" onClick={() => document.getElementById('shiftStudioPhotoInput')?.click()} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
             <span id="shiftStudioPhotoPreviewWrap">
               {shift?.photoUrl ? <img id="shiftStudioPhotoPreview" src={shift.photoUrl} alt="Shift identity" /> : <b id="shiftStudioPhotoFallback">{symbolGlyph(shiftSymbol)}</b>}
             </span>
