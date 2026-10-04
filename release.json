@@ -1,12 +1,12 @@
 {
-  "version": "45.3",
+  "version": "45.4",
   "date": "4 October 2026",
-  "title": "Keep Night allocation badges visible",
-  "summary": "Team allocation rows now keep long professional names and live status badges readable without clipped pills on phone screens.",
+  "title": "Fix iPhone top controls and pending allocation layout",
+  "summary": "iPhone safe areas now keep top controls below the status bar, while pending shared-allocation prompts use the full width of their card.",
   "changes": [
-    "Fixes Team allocation rows so live status chips such as Next, Now and Complete reserve their own space instead of being cropped beside long professional names.",
-    "Lets paired professional names wrap naturally while keeping the You badge, live state and row chevron readable across small phone widths.",
-    "Adds browser regression coverage for the long-name Second Part allocation layout without changing roster, break or clock-change logic."
+    "Keeps Night, Changes, Breaks and Chat top controls below the iPhone status bar and Dynamic Island by preserving an additive safe-area inset on narrow screens.",
+    "Fixes the pending Labour Ward / Pager allocation prompt so its text uses the full amber card instead of collapsing into a narrow grid column.",
+    "Adds phone regression coverage for safe-area reachability and the shared-allocation prompt without changing roster, staffing, break or clock-change logic."
   ],
   "update_policy": "normal"
 }

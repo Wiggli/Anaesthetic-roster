@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "project": "Anaesthetic Night Roster",
-  "currentRelease": "45.3",
+  "currentRelease": "45.4",
   "lastReleaseDate": "4 October 2026",
   "databaseSchema": 53,
   "sourceOfTruth": {

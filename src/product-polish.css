@@ -1115,3 +1115,44 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator{
     margin-right:0;
   }
 }
+
+/* 45.4 iPhone safe-area and pending-allocation resilience. */
+:root{
+  --app-safe-top:env(safe-area-inset-top,0px);
+}
+
+#appHeader{
+  box-sizing:border-box;
+  padding-top:calc(var(--app-safe-top) + 8px)!important;
+}
+
+body.headerCompact[data-view="today"] #appHeader{
+  padding-top:calc(var(--app-safe-top) + 6px)!important;
+}
+
+#today .personalTaskCard{
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:0!important;
+  overflow:hidden;
+}
+
+#today .personalTaskCard>span{
+  display:block;
+  min-width:0;
+  width:100%;
+}
+
+#roster{
+  padding-top:calc(var(--app-safe-top) + 14px)!important;
+}
+
+@media(max-width:640px){
+  #changes .primaryScreenHeader,
+  #breaks .primaryScreenHeader,
+  #chat .primaryScreenHeader{
+    box-sizing:border-box;
+    padding-top:calc(var(--app-safe-top) + 12px)!important;
+    padding-right:max(16px,env(safe-area-inset-right,0px))!important;
+    padding-left:max(16px,env(safe-area-inset-left,0px))!important;
+  }
+}

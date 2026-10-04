@@ -1025,6 +1025,49 @@ test('Night allocation badges remain visible beside long professional names', as
   expect(geometry.badgeRight).toBeLessThanOrEqual(geometry.rowRight - 30);
 });
 
+
+test('iPhone safe area keeps top controls reachable and pending allocation text full width', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openShell(page);
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--app-safe-top', '47px');
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      date: '2026-09-26', displayName: 'Shaun Galea', jobTitle: '', avatarUrl: '', initial: 'S',
+      assignmentLabel: 'Tonight’s assignment', title: 'Pager / Labour Ward', detail: 'Shared allocation',
+      period: '00:00–07:00', breakLabel: 'Second break', contextLabel: 'Shared with', context: 'Yentl Cutajar',
+      changedLabel: '', action: 'role', pending: true, pendingOther: 'Yentl Cutajar', liveStatus: 'Night selected',
+      dutyPart: 'full', dutyStartUtc: Date.parse('2026-09-26T22:00:00Z'),
+      handoverUtc: Date.parse('2026-09-27T01:30:00Z'), dutyEndUtc: Date.parse('2026-09-27T05:00:00Z'),
+      handoverLabel: '03:30', transitionUtc: 0, changed: false, clockChange: null
+    }}));
+  });
+
+  const pendingCard = page.locator('#personalAllocationNotice .personalTaskCard');
+  await expect(pendingCard).toContainText('Your allocation is not final yet');
+  await expect(pendingCard).toContainText('Yentl Cutajar');
+  const pendingGeometry = await pendingCard.evaluate(element => {
+    const child = element.firstElementChild;
+    const card = element.getBoundingClientRect();
+    const content = child ? child.getBoundingClientRect() : null;
+    return { clientWidth: element.clientWidth, scrollWidth: element.scrollWidth, cardWidth: card.width, contentWidth: content?.width ?? 0 };
+  });
+  expect(pendingGeometry.scrollWidth).toBeLessThanOrEqual(pendingGeometry.clientWidth + 1);
+  expect(pendingGeometry.contentWidth).toBeGreaterThan(pendingGeometry.cardWidth * 0.75);
+
+  const nightAccount = await page.locator('#accountBtn').boundingBox();
+  expect(nightAccount).not.toBeNull();
+  expect(nightAccount.y).toBeGreaterThanOrEqual(47);
+
+  for (const view of ['changes', 'breaks', 'chat']) {
+    await page.evaluate(nextView => window.show(nextView), view);
+    const account = page.locator(`#${view} [data-shell-account]`);
+    await expect(account).toBeVisible();
+    const box = await account.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.y).toBeGreaterThanOrEqual(47);
+  }
+});
+
 test('Night hero keeps assignment facts readable across Android phone widths', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
