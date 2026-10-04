@@ -73,12 +73,16 @@
     right:max(10px,var(--app-safe-right))!important;
   }
 
+  /* Both shells can be full-width in the signed-out state. Keep their safe-area
+     padding inside that width so compact phones never acquire horizontal overflow. */
   .authGate{
+    box-sizing:border-box!important;
     padding-left:max(14px,var(--app-safe-left))!important;
     padding-right:max(14px,var(--app-safe-right))!important;
   }
 
   .launchScreen{
+    box-sizing:border-box!important;
     padding-left:max(22px,var(--app-safe-left))!important;
     padding-right:max(22px,var(--app-safe-right))!important;
   }
