@@ -8,6 +8,7 @@ const file = name => path.join(root, name);
 const read = name => fs.readFileSync(file(name), 'utf8');
 const uiSources = [
   'src/legacy-ui/foundation.js',
+  'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
   'src/legacy-ui/sync.js',
   'src/legacy-ui/bootstrap.js'
