@@ -18995,6 +18995,10 @@ body.dark #chat .chatUtilityGroup{
   background:transparent!important;
 }
 
+@media(max-width:759px){
+  #chat.chat-thread-open .chatHome{display:none!important}
+}
+
 @media(max-width:390px){
   #chat .chatScreenHeader h1{
     font-size:32px!important;
