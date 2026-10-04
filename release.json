@@ -1,13 +1,13 @@
 {
-  "version": "45.0",
+  "version": "45.1",
   "date": "4 October 2026",
-  "title": "Polish the complete night experience",
-  "summary": "A complete presentation pass makes every operational screen feel calmer, clearer and more consistent while preserving the existing roster, break and clock-change logic.",
+  "title": "Simplify Night actions and activity",
+  "summary": "Night and Changes now present one clear action per intent, with cleaner pending decisions and better-formatted activity history.",
   "changes": [
-    "Unifies typography, spacing, surface depth and colour hierarchy across Night, Changes, Breaks, Chat, Full Roster and Personalise.",
-    "Makes Changes decision-first by keeping the Staffing → Allocation → Confirm workflow prominent while moving secondary explanations behind calm on-demand disclosure.",
-    "Improves Full Roster scanning with role-aware grouping and increases the readability of secondary labels, statuses and supporting information across the app.",
-    "Refines the shared shift identity, collapsed scroll chrome, bottom navigation, chat bubbles, break schedule and Personalisation Studio with restrained motion and accessibility fallbacks."
+    "Removes redundant Night actions so personal allocation, team allocation and Breaks each have one obvious route instead of repeated full-width shortcuts.",
+    "Collapses unresolved staffing and allocation prompts into one clear amber decision card while preserving separate confirmation actions when they are genuinely required.",
+    "Reformats Changes history and Night activity into compact structured rows with clearer hierarchy, metadata and state styling.",
+    "Strengthens the Review changes action and pending workflow styling without changing roster calculations, staffing rules or clock-change logic."
   ],
   "update_policy": "normal"
 }
