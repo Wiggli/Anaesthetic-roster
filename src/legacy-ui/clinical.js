@@ -574,7 +574,19 @@ function updateScrollChrome(){scrollChromeFrame=null;var scrolled=window.scrollY
 function scheduleScrollChrome(){if(scrollChromeFrame)return;scrollChromeFrame=requestAnimationFrame(updateScrollChrome)}
 
 function failedAction(message,retry){lastFailedAction=retry||null;toast(message,retry?{label:'Retry',run:function(){var action=lastFailedAction;lastFailedAction=null;return action&&action()}}:null)}
-function notifyRosterUpdate(type,date){if(window.dispatchRosterPush)window.dispatchRosterPush(type,date)}
+function rosterPushAffectedNames(type,date){
+  var cutoff=Date.now()-3*60*1000,names=[];
+  function add(name){name=normaliseNurseName(name||'');if(name&&!names.some(function(existing){return canonicalNurseName(existing)===canonicalNurseName(name)}))names.push(name)}
+  (changeHistory[date]||[]).forEach(function(item){if((new Date(item.changed_at).getTime()||0)<cutoff)return;add(item.absent_name);add(item.replacement_name)});
+  (overtimeHistory[date]||[]).forEach(function(item){if((new Date(item.changed_at).getTime()||0)<cutoff)return;add(item.nurse_name)});
+  (roleOverrideHistory[date]||[]).forEach(function(item){
+    if((new Date(item.changed_at).getTime()||0)<cutoff)return;
+    var assignments=item.assignments||{};Object.keys(assignments).forEach(function(key){if(key!=='mode')add(assignments[key])})
+  });
+  if(!names.length&&(type==='roles'||type==='allocation'))activeNames(baseForDate(date)).forEach(add);
+  return names.slice(0,20)
+}
+function notifyRosterUpdate(type,date){if(window.dispatchRosterPush)window.dispatchRosterPush(type,date,rosterPushAffectedNames(type,date))}
 
 function openNightTeamNameDialog(){
   var base=cur(),dialog=byId('nightTeamNameDialog'),input=byId('nightTeamNameInput'),date=byId('nightTeamNameDate'),meta=byId('nightTeamNameMeta'),clear=byId('clearNightTeamNameBtn'),status=byId('nightTeamNameStatus'),row=base&&nightTeamIdentityFor(base.date),nickname=base?nightTeamNickname(base.date):'';
