@@ -110,10 +110,19 @@ function prepareAccountInformationArchitecture(){
   var home=byId('accountHomeHub');
   if(!home){
     home=document.createElement('section');home.id='accountHomeHub';home.className='accountHomeHub';
-    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Personalise</b><small>Your identity and your shared shift look</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button></div>';
+    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Personalise</b><small>Your profile and shared shift identity</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-shortcut="notifications"><span class="accountHubIcon" aria-hidden="true">◌</span><span><b>Notifications</b><small>Message and roster alerts</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Appearance</b><small>Theme and display preferences</small></span><i aria-hidden="true">›</i></button><button type="button" id="accountAdminHubRow" class="accountHubRow hidden" data-account-shortcut="admin"><span class="accountHubIcon" aria-hidden="true">⚙</span><span><b>Roster management</b><small>Administrator controls and system tools</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button></div>';
     scroll.insertBefore(home,scroll.firstChild);
     var signOut=byId('accountSignOutBtn'),version=byId('accountVersion');if(signOut)home.appendChild(signOut);if(version)home.appendChild(version);
     Array.prototype.forEach.call(home.querySelectorAll('[data-account-section]'),function(button){button.onclick=function(){showAccountSection(button.getAttribute('data-account-section'))}});
+    Array.prototype.forEach.call(home.querySelectorAll('[data-account-shortcut]'),function(button){button.onclick=function(){
+      var action=button.getAttribute('data-account-shortcut'),account=byId('accountSheet');
+      if(account&&account.open)account.close();
+      if(action==='admin'){var admin=byId('adminSettingsBtn');if(admin)admin.click();return}
+      if(action==='notifications'){
+        show('chat');
+        setTimeout(function(){var disclosure=document.querySelector('#chat .chatNotificationDisclosure');if(disclosure){disclosure.open=true;disclosure.scrollIntoView({behavior:cinematicMotionAllowed()?'smooth':'auto',block:'center'})}},80)
+      }
+    }});
   }
   if(!byId('accountBackBtn')){
     var back=document.createElement('button');back.type='button';back.id='accountBackBtn';back.className='accountBackBtn hidden';back.setAttribute('aria-label','Back to Account');back.textContent='‹';back.onclick=function(){showAccountSection('home')};header.insertBefore(back,header.firstChild)
@@ -123,7 +132,7 @@ function showAccountSection(section){
   prepareAccountInformationArchitecture();var home=byId('accountHomeHub'),back=byId('accountBackBtn'),title=byId('accountSheetTitle'),eyebrow=byId('accountSheetEyebrow')||document.querySelector('#accountSheet .accountSheetHeader>div>span');
   var labels={profile:'Personalise',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
   if(home)home.classList.toggle('hidden',!!target);Array.prototype.forEach.call(document.querySelectorAll('#accountSheet [data-account-pane]'),function(pane){pane.classList.toggle('hidden',pane!==target)});
-  if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'Account';if(eyebrow)eyebrow.textContent=target?'Account':'Profile & preferences';
+  if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'App & Account';if(eyebrow)eyebrow.textContent=target?'App & Account':'Settings & profile';
   var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0
 }
 
@@ -132,7 +141,8 @@ function populateAccountSheet(){
   var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName(),shift=shiftIdentityModel(cur&&cur().date);
   profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'',profile.accent_key||'teal',profile.text_scale||'standard',profile.motion_pref||'system',profile.avatar_style||'photo',profile.greeting_enabled===false?'0':'1']);
   var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');
-  var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar');
+  var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar'),adminRow=byId('accountAdminHubRow');
+  if(adminRow)adminRow.classList.toggle('hidden',!(currentUserProfile&&currentUserProfile.user_role==='admin'));
   if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=profile.avatar_style==='spark'?'✦':profileInitialText(name||currentUserProfile.display_name||currentUserProfile.email||'?');
   showProfileMessage(profileFeatureAvailable?'':'Personal profile storage is not available yet.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{
