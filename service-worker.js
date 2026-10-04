@@ -3,6 +3,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './styles.css?v=45.4',
+  './pwa-safe-area.css?v=45.4',
   './theme-bootstrap.js?v=45.4',
   './domain-logic.js?v=45.4',
   './runtime-foundation.js?v=45.4',
