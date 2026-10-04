@@ -26,9 +26,12 @@
   /* Keep the bottom-anchored account sheet physically below the iPhone top safe area.
      Setting its height directly is more reliable than relying on max-height to clamp
      the existing 92/94dvh product rule. On browsers with no top inset it still reaches
-     the viewport top; on iPhone it begins exactly below the reported safe area. */
+     the viewport top; on iPhone it begins exactly below the reported safe area.
+     Use 100vw rather than percentage width so fixed sheets also cover a classic browser
+     scrollbar gutter in mobile Chromium while retaining the product's 620px cap. */
   .accountSheet[open]{
     inset:auto 0 0!important;
+    width:min(620px,100vw)!important;
     height:min(820px,calc(100dvh - var(--app-safe-top)))!important;
     max-height:calc(100dvh - var(--app-safe-top))!important;
   }
