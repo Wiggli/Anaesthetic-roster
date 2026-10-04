@@ -9,4 +9,15 @@
   document.documentElement.style.backgroundColor=background;
   var colour=document.querySelector('meta[name="theme-color"]');
   if(colour)colour.setAttribute('content',background);
+
+  function ensurePwaSafeAreaStyles(){
+    if(document.querySelector('link[data-pwa-safe-area]'))return;
+    var link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='pwa-safe-area.css?v=45.4';
+    link.setAttribute('data-pwa-safe-area','');
+    document.head.appendChild(link);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensurePwaSafeAreaStyles,{once:true});
+  else ensurePwaSafeAreaStyles();
 })();
