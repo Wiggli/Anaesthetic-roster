@@ -384,7 +384,7 @@ assert.match(changesWorkflowExperience, /workflowProgress[\s\S]*role="progressba
 assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
 assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[\s\S]*nightRoleOverrideDrafts[\s\S]*protectLocalChangesDraft[\s\S]*beforeunload',protectLocalChangesDraft/, 'leaving or reloading must protect unfinished Changes work across selected nights');
 assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
-assert.match(changesConfirmationExperience, /Rostered[\s\S]*This night/, 'confirmation must make the rostered versus selected-night comparison explicit');
+assert.match(changesConfirmationExperience, /Before[\s\S]*After/, 'confirmation must make the before-versus-after selected-night comparison explicit');
 assert.match(presentationCss, /\.workflowProgress[\s\S]*\.workflowProgressTrack[\s\S]*\.workflowProgressFill/, 'meaningful workflow progress must have a restrained visual treatment');
 assert.match(ui, /function clockChangeDetailFor\(date\)[\s\S]*Handover moves to[\s\S]*First Part and Second Part each work/, 'clock-change copy must explain the equal-duty midpoint');
 assert.match(ui, /function showClockChangeEducation\(date,force\)[\s\S]*clockchange/, 'clock-change nights must have contextual onboarding');
