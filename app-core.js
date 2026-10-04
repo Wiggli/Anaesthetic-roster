@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '42.8';
+var APP_VERSION = '42.9';
 var EXPECTED_SCHEMA_VERSION = 50;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var appStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
@@ -146,14 +146,12 @@ function updateAdminAttentionBadge(){
   var button=byId('adminSettingsBtn');if(!button||!currentUserProfile||currentUserProfile.user_role!=='admin')return;
   var badge=byId('adminAttentionBadge');
   if(!badge){badge=document.createElement('span');badge.id='adminAttentionBadge';badge.className='adminAttentionBadge hidden';badge.setAttribute('aria-hidden','true');button.appendChild(badge)}
-  var base=R.length?cur():null,taskCount=base?workflowTaskDetails(base,staffingPlan(base)).length:0;
   var pending=accessRequests.length,daysRemaining=rosterSettings&&rosterSettings.published_until?daysBetween(iso(new Date()),rosterSettings.published_until):9999;
-  var publicationDue=daysRemaining<=45?1:0,count=pending+(taskCount?1:0)+publicationDue;
+  var publicationDue=daysRemaining<=45?1:0,count=pending+publicationDue;
   badge.textContent=count>9?'9+':String(count);
   badge.classList.toggle('hidden',!count);
   var details=[];
   if(pending)details.push(pending+' access request'+(pending===1?'':'s'));
-  if(taskCount)details.push('selected-night action');
   if(publicationDue)details.push('roster publication');
   button.setAttribute('aria-label',count?'Administrator tools · '+details.join(', '):'Administrator tools');
   syncAppBadge();

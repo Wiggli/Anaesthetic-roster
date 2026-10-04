@@ -1087,6 +1087,33 @@ test('administrator attention badge stays fully visible inside the settings cont
   await expect(page.locator('#adminAttentionBadge')).toBeVisible();
 });
 
+test('administrator badge ignores selected-night work but still reports admin work', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    const button = document.getElementById('adminSettingsBtn');
+    button.classList.remove('hidden');
+    window.currentUserProfile = { ...(window.currentUserProfile || {}), user_role: 'admin' };
+    window.accessRequests = [];
+    window.rosterSettings = { ...(window.rosterSettings || {}), published_until: '2099-12-30' };
+    window.R = [{ date: '2099-01-01' }];
+    window.idx = 0;
+    window.cur = () => ({ date: '2099-01-01' });
+    window.staffingPlan = () => ({});
+    window.workflowTaskDetails = () => ['Resolve selected-night allocation'];
+    window.updateAdminAttentionBadge();
+  });
+  await expect(page.locator('#adminAttentionBadge')).toBeHidden();
+  await expect(page.locator('#adminSettingsBtn')).toHaveAttribute('aria-label', 'Administrator tools');
+
+  await page.evaluate(() => {
+    window.accessRequests = [{ user_id: 'pending-user' }];
+    window.updateAdminAttentionBadge();
+  });
+  await expect(page.locator('#adminAttentionBadge')).toHaveText('1');
+  await expect(page.locator('#adminAttentionBadge')).toBeVisible();
+  await expect(page.locator('#adminSettingsBtn')).toHaveAttribute('aria-label', /1 access request/);
+});
+
 test('confirmed seven-nurse context stays Plan ready instead of forcing review', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {

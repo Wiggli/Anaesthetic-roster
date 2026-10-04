@@ -1,13 +1,13 @@
 {
-  "version": "42.8",
-  "date": "3 October 2026",
-  "title": "Show every recorded overtime nurse",
-  "summary": "Tonight now keeps the complete recorded overtime list readable on narrow phones while seven-nurse decisions are still pending.",
+  "version": "42.9",
+  "date": "4 October 2026",
+  "title": "Keep administrator alerts administrative",
+  "summary": "The settings gear now surfaces only administrator work instead of duplicating selected-night roster decisions already shown in Changes.",
   "changes": [
-    "Recorded overtime names on Tonight now wrap naturally instead of being truncated on narrow phones.",
-    "Multiple overtime nurses remain fully readable while a seven-nurse role decision is unresolved.",
-    "The 42.7 staffing visibility and administrator attention badge fixes remain unchanged.",
-    "Browser coverage now verifies that long and multiple overtime names do not overflow or disappear."
+    "The administrator settings gear no longer repeats selected-night review work such as an unresolved seven-nurse allocation.",
+    "Night-specific decisions remain clearly surfaced through Changes and Quick Actions, where they can actually be resolved.",
+    "The administrator badge now counts only pending access requests and roster publication attention.",
+    "Browser regression coverage verifies that a selected-night task alone leaves the settings gear clear while a pending access request still raises it."
   ],
   "update_policy": "quiet"
 }
