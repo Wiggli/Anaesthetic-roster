@@ -672,13 +672,19 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:3[\s\S]*changes:2[\s\S]*breaks:2[\s\S]*chat:2/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
-assert.ok(onboardingSequence.indexOf('What matters to you stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'first-use onboarding must teach the personal Night hierarchy after identity');
-assert.ok(onboardingSequence.indexOf('The normal roster is automatic.') > onboardingSequence.indexOf('What matters to you stays first.'), 'first-use onboarding must finish by explaining that the standard plan is automatic');
-assert.equal(onboardingSequence.includes('featureChatPreview'), false, 'Chat education must not be embedded as a first-use onboarding page');
-assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup must stay in Account rather than first-use onboarding');
+assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
+assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');
+assert.ok(onboardingSequence.indexOf('Use the centre + for common jobs.') > onboardingSequence.indexOf('Only exceptions need your attention.'), 'the tutorial must teach the centre Actions control');
+assert.ok(onboardingSequence.indexOf("featureEducationPage('breaks')") > onboardingSequence.indexOf('Use the centre + for common jobs.'), 'the tutorial must include Breaks');
+assert.ok(onboardingSequence.indexOf("featureEducationPage('chat')") > onboardingSequence.indexOf("featureEducationPage('breaks')"), 'the tutorial must include Team Chat after Breaks');
+assert.ok(onboardingSequence.indexOf("featureEducationPage('account')") > onboardingSequence.indexOf("featureEducationPage('chat')"), 'the tutorial must include Account and Personalisation Studio');
+assert.ok(onboardingSequence.indexOf('You can always find your way back.') > onboardingSequence.indexOf("featureEducationPage('account')"), 'the tutorial must finish with share, install, updates and reusable help');
+assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup forms must stay in Account rather than first-use onboarding');
 assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
-assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Team chat, when you need it\.[\s\S]*You usually don’t need this screen\.[\s\S]*Your break is already highlighted\./, 'Chat, Changes and Breaks must retain contextual first-use education');
+assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Your own night is the first answer\.[\s\S]*The centre \+ is your shortcut\.[\s\S]*Your avatar is the home for settings\.[\s\S]*Use Full roster when you need the wider picture\.[\s\S]*Team chat, when you need it\.[\s\S]*Only exceptions need your attention\.[\s\S]*Your break is already highlighted\./, 'the reusable guide must cover Night, Actions, Account, Full roster, Chat, Changes and Breaks');
+assert.match(ui, /function appGuidePage\(\)[\s\S]*Replay complete tutorial[\s\S]*Night[\s\S]*Changes[\s\S]*Actions[\s\S]*Breaks[\s\S]*Team Chat[\s\S]*Full roster[\s\S]*Account & Personalise[\s\S]*Share & install[\s\S]*What’s new & version history/, 'App Guide must expose the complete tutorial and all current feature topics');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
 
