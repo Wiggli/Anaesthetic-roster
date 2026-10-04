@@ -1095,6 +1095,209 @@ test('Night hero keeps assignment facts readable across Android phone widths', a
   }
 });
 
+
+test('Night focus, personal change awareness and layout contracts survive supported widths', async ({ page }) => {
+  await openShell(page);
+  const fixedNow = Date.parse('2026-09-27T00:45:00Z');
+  await page.evaluate(fixedNow => {
+    Date.now = () => fixedNow;
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      date: '2026-09-26',
+      displayName: 'André Bartolo',
+      jobTitle: 'Senior Staff Nurse',
+      avatarUrl: '',
+      initial: 'A',
+      assignmentLabel: 'Tonight’s assignment',
+      title: 'Second Part theatre',
+      detail: 'Position 2 · emergency operating theatre',
+      period: '03:30–07:00',
+      breakLabel: 'First break',
+      contextLabel: 'Working with',
+      context: 'With Michael Debono',
+      changedLabel: 'Changed tonight',
+      action: 'role',
+      pending: false,
+      pendingOther: '',
+      liveStatus: 'On duty later · starts 03:30',
+      dutyPart: 'second',
+      dutyStartUtc: Date.parse('2026-09-26T22:00:00Z'),
+      handoverUtc: Date.parse('2026-09-27T01:30:00Z'),
+      dutyEndUtc: Date.parse('2026-09-27T05:00:00Z'),
+      handoverLabel: '03:30',
+      transitionUtc: 0,
+      changed: true,
+      activeNight: true,
+      changeNotice: {
+        signature: 'second-part-v2',
+        before: 'Pager',
+        after: 'Second Part theatre',
+        detail: '03:30–07:00 · First break',
+        changedAt: '02:31'
+      },
+      history: [
+        { id: 'h1', label: 'Allocation', title: 'Your allocation moved to Second Part theatre', detail: 'Pager → Second Part theatre', meta: '02:31' },
+        { id: 'h2', label: 'Staffing', title: 'You were added as replacement cover', detail: 'Emergency theatre cover', meta: '22:14' }
+      ],
+      clockChange: null
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 6, absenceCount: 1, overtimeCount: 1, taskCount: 1, decisionTasks: 1,
+      confirmNeeded: true, alert: '', firstTask: 'Review the Second Part replacement',
+      labourPending: false, breakLabel: 'First break', chatUnread: 0, liveState: 'On duty later',
+      activeNight: true,
+      dutyStartUtc: Date.parse('2026-09-26T22:00:00Z'),
+      handoverUtc: Date.parse('2026-09-27T01:30:00Z'),
+      dutyEndUtc: Date.parse('2026-09-27T05:00:00Z'),
+      currentPart: 'first',
+      nextAction: { label: 'Review the Second Part replacement', detail: 'Review allocation', target: 'allocation' },
+      consequence: 'André moves to Second Part while overtime fills the vacated Pager role.',
+      roles: [
+        { key: 'first', label: 'First Part', names: 'James Galea + Michael Galea', detail: 'Works 00:00–03:30 · Second break', tone: 'first', mine: false },
+        { key: 'second', label: 'Second Part', names: 'André Bartolo + Michael Debono', detail: 'Works 03:30–07:00 · First break', tone: 'second', mine: true },
+        { key: 'pager', label: 'Pager', names: 'Alexandra Constantinou', detail: 'Labour Ward first part · Second break', tone: 'pager', mine: false }
+      ],
+      extras: []
+    }}));
+  }, fixedNow);
+
+  await expect(page.locator('#personalNightCard .nightFocusCard')).toContainText('First Part active');
+  await expect(page.locator('#personalNightCard .nightFocusCard')).toContainText('Your duty starts at 03:30');
+  await expect(page.locator('#personalChangeNotice')).toContainText('Pager → Second Part theatre');
+  await expect(page.locator('#personalNightCard .personalChangeHistory')).toContainText('Your change history');
+  await expect(page.locator('#alerts .nextActionCard')).toContainText('What needs you now');
+  await expect(page.locator('#alerts .nextActionCard')).toContainText('Review the Second Part replacement');
+  await expect(page.locator('#alerts .nightConsequenceLine')).toContainText('André moves to Second Part');
+  await expect(page.locator('#roles .rosterRow-second .rosterLiveBadge')).toHaveText('Next');
+  await expect(page.locator('#roles .rosterRow-pager .rosterLiveBadge')).toHaveText('Now');
+
+  for (const width of [320, 360, 390, 430, 768]) {
+    await page.setViewportSize({ width, height: width < 500 ? 880 : 1024 });
+    await page.waitForTimeout(40);
+    const contract = await page.evaluate(() => {
+      const viewport = document.documentElement.clientWidth;
+      const selectors = [
+        '#personalNightCard > article',
+        '#personalChangeNotice',
+        '#personalNightCard .nightFocusCard',
+        '#alerts .nextActionCard',
+        '#roles .nightSituationTimeline',
+        '.bottom.reactTabs'
+      ];
+      const boxes = selectors.map(selector => {
+        const element = document.querySelector(selector);
+        if (!element) return { selector, present: false };
+        const rect = element.getBoundingClientRect();
+        return { selector, present: true, left: rect.left, right: rect.right, width: rect.width, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
+      });
+      const importantTargets = Array.from(document.querySelectorAll('#personalChangeNotice button,.bottom.reactTabs button')).map(element => {
+        const rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      });
+      return {
+        viewport,
+        pageScrollWidth: document.documentElement.scrollWidth,
+        boxes,
+        importantTargets
+      };
+    });
+    expect(contract.pageScrollWidth).toBeLessThanOrEqual(contract.viewport + 1);
+    for (const box of contract.boxes) {
+      expect(box.present).toBe(true);
+      expect(box.left).toBeGreaterThanOrEqual(-1);
+      expect(box.right).toBeLessThanOrEqual(contract.viewport + 1);
+      expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
+    }
+    expect(contract.importantTargets.every(item => item.height >= 34 && item.width >= 34)).toBe(true);
+    if (process.env.CI && (width === 320 || width === 390 || width === 768)) {
+      await captureReview(page, 'night-intelligence-' + width);
+    }
+  }
+
+  await page.setViewportSize({ width: 390, height: 880 });
+  await page.evaluate(() => document.body.classList.add('lowLightNight'));
+  await expect(page.locator('body')).toHaveClass(/lowLightNight/);
+  const lowLight = await page.locator('#today').evaluate(element => {
+    const body = getComputedStyle(document.body);
+    const hero = getComputedStyle(element.querySelector('#personalNightCard > article'));
+    return { bodyBg: body.backgroundColor, heroBg: hero.backgroundColor, text: hero.color };
+  });
+  expect(lowLight.bodyBg).not.toBe('rgb(242, 242, 247)');
+  expect(lowLight.heroBg).not.toBe('rgb(255, 255, 255)');
+  await captureReview(page, 'night-intelligence-low-light');
+});
+
+test('Changes confirmation presents a clear before-after diff and consequence', async ({ page }) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show('changes');
+    window.dispatchEvent(new CustomEvent('roster:changes-confirmation', { detail: {
+      visible: true,
+      blocked: false,
+      instruction: '',
+      changed: [
+        { label: 'Second Part', before: 'André Bartolo + Michael Debono', after: 'André Bartolo + Yentl Cutajar', detail: '03:30–07:00 · First break' },
+        { label: 'Pager', before: 'Yentl Cutajar', after: 'Michael Debono', detail: 'Labour Ward first part · Second break' }
+      ],
+      full: [
+        { label: 'First Part', value: 'James Galea + Michael Galea', detail: '00:00–03:30' },
+        { label: 'Second Part', value: 'André Bartolo + Yentl Cutajar', detail: '03:30–07:00' }
+      ],
+      reason: 'Agreed role change',
+      consequence: 'Michael moves to Pager while Yentl joins André on Second Part.'
+    }}));
+  });
+
+  const confirmation = page.locator('#confirmationPreview');
+  await expect(confirmation).toContainText('Before → After');
+  await expect(confirmation).toContainText('2 changes');
+  await expect(confirmation.locator('.confirmationCompareValue').first()).toContainText('Before');
+  await expect(confirmation.locator('.confirmationCompareValue.current').first()).toContainText('After');
+  await expect(confirmation.locator('.confirmationConsequence')).toContainText('What this means');
+  await expect(confirmation.locator('.confirmationConsequence')).toContainText('Michael moves to Pager');
+  await captureReview(page, 'changes-before-after');
+});
+
+test('handover intelligence updates role states and emits one optional haptic', async ({ page }) => {
+  await openShell(page);
+  const start = Date.parse('2026-09-26T22:00:00Z');
+  const handover = Date.parse('2026-09-27T01:30:00Z');
+  const end = Date.parse('2026-09-27T05:00:00Z');
+  await page.evaluate(({ start, handover, end }) => {
+    window.__hapticCount = 0;
+    window.__testNow = handover - 1000;
+    Date.now = () => window.__testNow;
+    Object.defineProperty(navigator, 'vibrate', { configurable: true, value: () => { window.__hapticCount += 1; return true; } });
+    const originalInterval = window.setInterval;
+    window.setInterval = (fn, delay) => originalInterval(fn, delay === 30000 ? 25 : delay);
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
+      date: '2026-09-26', displayName: 'André Bartolo', jobTitle: '', avatarUrl: '', initial: 'A',
+      assignmentLabel: 'Tonight', title: 'First Part theatre', detail: 'Position 1',
+      period: '00:00–03:30', breakLabel: 'Second break', contextLabel: 'Working with', context: 'With James Galea',
+      changedLabel: '', action: 'role', pending: false, pendingOther: '', liveStatus: 'On duty now',
+      dutyPart: 'first', dutyStartUtc: start, handoverUtc: handover, dutyEndUtc: end, handoverLabel: '03:30',
+      transitionUtc: 0, changed: false, activeNight: true, changeNotice: null, history: [], clockChange: null
+    }}));
+    window.dispatchEvent(new CustomEvent('roster:night', { detail: {
+      nurseCount: 6, absenceCount: 0, overtimeCount: 0, taskCount: 0, decisionTasks: 0, confirmNeeded: false,
+      alert: '', firstTask: '', labourPending: false, breakLabel: 'Second break', chatUnread: 0, liveState: 'On duty now',
+      activeNight: true, dutyStartUtc: start, handoverUtc: handover, dutyEndUtc: end, currentPart: 'first',
+      roles: [
+        { key: 'first', label: 'First Part', names: 'André Bartolo + James Galea', detail: 'Works 00:00–03:30 · Second break', tone: 'first', mine: true },
+        { key: 'reliever', label: 'Reliever', names: 'Yentl Cutajar', detail: 'Labour Ward second part · First break', tone: 'reliever', mine: false }
+      ],
+      extras: []
+    }}));
+  }, { start, handover, end });
+
+  await expect(page.locator('#roles .rosterRow-first .rosterLiveBadge')).toHaveText('Now');
+  await expect(page.locator('#roles .rosterRow-reliever .rosterLiveBadge')).toHaveText('Next');
+  await page.evaluate(({ handover }) => { window.__testNow = handover + 1000; }, { handover });
+  await page.waitForTimeout(90);
+  await expect(page.locator('#roles .rosterRow-first .rosterLiveBadge')).toHaveText('Complete');
+  await expect(page.locator('#roles .rosterRow-reliever .rosterLiveBadge')).toHaveText('Now');
+  expect(await page.evaluate(() => window.__hapticCount)).toBe(1);
+});
+
 test('shared Changes workflow becomes a calm completed state', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
