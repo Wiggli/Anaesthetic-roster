@@ -82,7 +82,7 @@ export function Badge({ children, tone = 'neutral', className = '' }: {
   className?: string;
 }) {
   return <span className={cx(
-    'tw:inline-flex tw:min-h-6 tw:items-center tw:justify-center tw:rounded-full tw:px-2.5 tw:py-1 tw:text-[0.68rem] tw:font-bold tw:leading-none',
+    'tw:inline-flex tw:min-h-6 tw:items-center tw:justify-center tw:rounded-full tw:px-2.5 tw:py-1 tw:text-[0.72rem] tw:font-bold tw:leading-none',
     toneClasses[tone],
     className
   )}>{children}</span>;
@@ -112,8 +112,8 @@ export function EmptyState({ title, detail, icon }: { title: string; detail?: st
   return <div className="tw:flex tw:min-h-16 tw:items-start tw:gap-2.5 tw:px-3 tw:py-4 tw:text-left">
     {icon ? <div className="tw:mt-0.5 tw:grid tw:h-7 tw:w-7 tw:shrink-0 tw:place-items-center tw:rounded-lg tw:bg-black/5 tw:text-xs tw:text-[var(--muted)] tw:dark:bg-white/8">{icon}</div> : null}
     <div className="tw:min-w-0">
-      <strong className="tw:block tw:text-[0.8rem] tw:font-semibold">{title}</strong>
-      {detail ? <span className="tw:mt-0.5 tw:block tw:text-[0.7rem] tw:leading-relaxed tw:text-[var(--muted)]">{detail}</span> : null}
+      <strong className="tw:block tw:text-[0.9rem] tw:font-semibold">{title}</strong>
+      {detail ? <span className="tw:mt-0.5 tw:block tw:text-[0.76rem] tw:leading-relaxed tw:text-[var(--muted)]">{detail}</span> : null}
     </div>
   </div>;
 }
@@ -142,8 +142,8 @@ export function ListRow({
   const content = <>
     {leading ? <span className="tw:shrink-0">{leading}</span> : null}
     <span className="tw:min-w-0 tw:flex-1">
-      <strong className="tw:block tw:truncate tw:text-[0.92rem] tw:font-semibold tw:tracking-[-0.012em]">{title}</strong>
-      {subtitle ? <small className="tw:mt-0.5 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{subtitle}</small> : null}
+      <strong className="tw:block tw:truncate tw:text-[0.96rem] tw:font-semibold tw:tracking-[-0.012em]">{title}</strong>
+      {subtitle ? <small className="tw:mt-0.5 tw:block tw:text-[0.8rem] tw:leading-relaxed tw:text-[var(--muted)]">{subtitle}</small> : null}
     </span>
     {trailing ? <span className="tw:ml-auto tw:shrink-0">{trailing}</span> : null}
     {onClick ? <span className="tw:ml-1 tw:shrink-0 tw:text-xl tw:font-light tw:text-[var(--muted)]" aria-hidden="true">›</span> : null}
@@ -195,9 +195,9 @@ export function SegmentedControl<T extends string>({
           /> : null}
           <span className="tw:flex tw:items-center tw:justify-center tw:gap-1.5">
             {option.icon}
-            <strong className="tw:truncate tw:text-xs tw:font-bold">{option.label}</strong>
+            <strong className="tw:truncate tw:text-[0.8rem] tw:font-bold">{option.label}</strong>
           </span>
-          {!compact && option.detail ? <small className="tw:mt-1 tw:block tw:truncate tw:text-[0.62rem] tw:leading-tight tw:opacity-75">{option.detail}</small> : null}
+          {!compact && option.detail ? <small className="tw:mt-1 tw:block tw:truncate tw:text-[0.7rem] tw:leading-tight tw:opacity-75">{option.detail}</small> : null}
         </Pressable>;
       })}
     </div>
@@ -211,8 +211,8 @@ export function FieldShell({ label, hint, children, className = '' }: {
   className?: string;
 }) {
   return <label className={cx('tw:grid tw:min-w-0 tw:gap-1.5', className)}>
-    <span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">{label}</span>
+    <span className="tw:text-[0.8rem] tw:font-bold tw:text-[var(--muted)]">{label}</span>
     {children}
-    {hint ? <small className="tw:text-[0.7rem] tw:leading-relaxed tw:text-[var(--muted)]">{hint}</small> : null}
+    {hint ? <small className="tw:text-[0.76rem] tw:leading-relaxed tw:text-[var(--muted)]">{hint}</small> : null}
   </label>;
 }
