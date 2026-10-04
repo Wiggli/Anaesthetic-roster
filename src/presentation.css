@@ -20730,3 +20730,16 @@ body.headerCompact[data-view="today"] #today .nightUnifiedHero #appHeader .head{
     font-size:15px!important;
   }
 }
+
+
+/* 44.4 fallback: never reserve identity space when no shared shift identity exists. */
+#today .nightUnifiedHero .nightTeamIdentityContext.hidden,
+#today .nightUnifiedHero .nightTeamIdentityContext:empty{
+  display:none!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
