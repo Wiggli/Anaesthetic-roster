@@ -179,7 +179,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
       defaultValue={initialValue}
       maxLength={2000}
       rows={1}
-      placeholder={team ? 'Write to Anaesthetic Team…' : 'Write a message…'}
+      placeholder={team ? 'Message the team…' : 'Write a message…'}
       aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'}
       className="tw:max-h-32 tw:min-h-10 tw:min-w-0 tw:flex-1 tw:resize-none tw:rounded-[16px] tw:border-0! tw:bg-transparent! tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:shadow-none! tw:outline-none tw:ring-0! tw:placeholder:text-[var(--muted)] tw:focus:border-0! tw:focus:shadow-none! tw:focus:ring-0!"
     />
