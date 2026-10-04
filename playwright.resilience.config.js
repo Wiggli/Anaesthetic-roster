@@ -2,7 +2,7 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  testMatch: /resilience-browser\.spec\.js/,
+  testMatch: /(?:resilience-browser|iphone-pwa)\.spec\.js/,
   timeout: 30000,
   retries: 0,
   workers: process.env.CI ? 2 : 1,
