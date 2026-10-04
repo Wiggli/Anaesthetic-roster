@@ -383,7 +383,7 @@ window.shiftIdentityModel=shiftIdentityModel;
 window.shiftIdentityPhotoUrl=function(){return shiftAvatarUrl};
 async function refreshShiftAvatar(){
   shiftAvatarUrl='';
-  var row=nightTeamIdentityFor(cur&&cur().date),path=row&&row.avatar_path;
+  var row=nightTeamIdentityFor(''),path=row&&row.avatar_path;
   if(path&&supa&&currentUser&&navigator.onLine!==false){
     try{var result=await supa.storage.from('shift-identity').createSignedUrl(path,3600);if(!result.error&&result.data)shiftAvatarUrl=result.data.signedUrl||''}catch(error){}
   }
