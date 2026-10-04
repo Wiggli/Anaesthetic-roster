@@ -1,14 +1,14 @@
 {
-  "version": "43.2",
+  "version": "43.3",
   "date": "4 October 2026",
-  "title": "Refine Chat into a calmer native inbox",
-  "summary": "Chat now uses quieter near-background surfaces, tighter typography and a more disciplined messaging hierarchy instead of prominent grey slabs and oversized cards.",
+  "title": "Rebuild Chat around the night team",
+  "summary": "Chat is now a calm native-style communication hub, and every roster night can have a shared team nickname that follows the team across devices.",
   "changes": [
-    "Team Chat now uses a compact near-background conversation surface with a restrained accent edge, smaller avatar and clearer timestamp hierarchy.",
-    "Private conversations now use purpose-built messaging rows so names, previews, timestamps and unread badges stay aligned as one coherent item.",
-    "Message previews are shorter and more natural: private rows no longer repeat the colleague name and Team Chat no longer prefixes every preview with Latest.",
-    "Safety guidance and notification settings are now grouped into one quiet secondary utility surface rather than competing with conversations.",
-    "The active bottom-navigation lens is visually inset and the Actions control is calmer, preserving the same tested navigation geometry while reducing visual bulk."
+    "Chat is rebuilt around one compact conversation language: Team Chat and direct messages now share aligned avatars, names, previews, timestamps and unread states without oversized dashboard cards.",
+    "The header and selected-night context are tighter and calmer, while safety guidance and notification preferences move into a quiet footer so conversations remain the primary task.",
+    "Any roster member can give the selected shift a shared nickname of up to 28 characters; the name is stored per roster night, synchronises across devices and can be renamed or removed.",
+    "A shift nickname becomes the Team Chat identity and also appears subtly beside the selected night in Night, Changes and Breaks, while Anaesthetic Team remains visible as the clinical context.",
+    "Shared shift-name writes are protected by the existing authenticated compatibility boundary, audited server-side, included in startup and offline snapshots, and propagated through shared revision and realtime updates."
   ],
-  "update_policy": "quiet"
+  "update_policy": "normal"
 }
