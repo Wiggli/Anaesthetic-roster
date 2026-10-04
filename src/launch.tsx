@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { motion, useReducedMotion } from 'motion/react';
 import './tailwind.css';
 import { onRosterEvent } from './contracts';
+import { mountNightIntelligence } from './night-intelligence';
 
 function LaunchMotto() {
   const reducedMotion = useReducedMotion();
@@ -184,3 +185,5 @@ onRosterEvent('roster:releasenotes', (detail) => {
     if (request === releaseNotesRequest) renderReleaseNotes(detail.entries, detail.showHistory);
   }).catch(() => { /* The escaped HTML release history remains available. */ });
 });
+
+mountNightIntelligence();
