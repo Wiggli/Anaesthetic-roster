@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from 'react';
 import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
 
 type ThemeChoice = 'light' | 'system' | 'dark';
+type LowLightChoice = 'auto' | 'off';
 type AccentKey = 'teal' | 'blue' | 'violet' | 'rose' | 'amber' | 'graphite';
 type TextScale = 'standard' | 'large' | 'xlarge';
 type MotionPref = 'system' | 'reduced';
@@ -42,7 +43,7 @@ type ShiftExperience = {
   message?: string;
   messageType?: string;
 };
-type AccountExperience = { theme: ThemeChoice; installed: boolean; newRelease?: boolean; version?: string; profile?: ProfileExperience; shift?: ShiftExperience };
+type AccountExperience = { theme: ThemeChoice; lowLight?: LowLightChoice; installed: boolean; newRelease?: boolean; version?: string; profile?: ProfileExperience; shift?: ShiftExperience };
 type ShareExperience = { shareUrl: string; installed: boolean; nativeShare: boolean };
 type PasskeyExperience = { message: string; items: { id: string; label: string }[] };
 
@@ -371,22 +372,45 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   </motion.section>;
 }
 
-function Appearance({ initial }: { initial: ThemeChoice }) {
+function Appearance({ initial, lowLight = 'auto' }: { initial: ThemeChoice; lowLight?: LowLightChoice }) {
   const [selected, setSelected] = useState(initial);
+  const [dimming, setDimming] = useState<LowLightChoice>(lowLight);
   const choices: { value: ThemeChoice; label: string; detail: string }[] = [
     { value: 'light', label: 'Light', detail: 'Always bright' },
     { value: 'system', label: 'Automatic', detail: 'Match this device' },
     { value: 'dark', label: 'Dark', detail: 'Always dark' }
   ];
-  return <SegmentedControl
-    value={selected}
-    options={choices}
-    ariaLabel="Appearance"
-    onChange={value => {
-      setSelected(value);
-      act('theme', value);
-    }}
-  />;
+  const dimChoices: { value: LowLightChoice; label: string; detail: string }[] = [
+    { value: 'auto', label: 'Automatic', detail: 'Dim Night after midnight' },
+    { value: 'off', label: 'Off', detail: 'Keep normal appearance' }
+  ];
+  return <div className="appearanceExperienceStack">
+    <div className="appearancePreferenceBlock">
+      <span className="appearancePreferenceLabel">App appearance</span>
+      <SegmentedControl
+        value={selected}
+        options={choices}
+        ariaLabel="Appearance"
+        onChange={value => {
+          setSelected(value);
+          act('theme', value);
+        }}
+      />
+    </div>
+    <div className="appearancePreferenceBlock lowLightPreference">
+      <span className="appearancePreferenceLabel">Low-light Night mode</span>
+      <p>Between midnight and 07:00, Night can automatically use a dimmer bedside-friendly surface without changing clinical colours.</p>
+      <SegmentedControl
+        value={dimming}
+        options={dimChoices}
+        ariaLabel="Low-light Night mode"
+        onChange={value => {
+          setDimming(value);
+          act('low-light', value);
+        }}
+      />
+    </div>
+  </div>;
 }
 
 function AccountActions({ installed, newRelease, version }: { installed: boolean; newRelease?: boolean; version?: string }) {
@@ -497,7 +521,7 @@ function Passkeys({ model }: { model: PasskeyExperience }) {
 
 export function renderAccountExperience(model: AccountExperience) {
   if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor model={model.profile} shift={model.shift} />);
-  rootFor('appearanceExperience')?.render(<Appearance key={model.theme} initial={model.theme} />);
+  rootFor('appearanceExperience')?.render(<Appearance key={model.theme + '-' + (model.lowLight || 'auto')} initial={model.theme} lowLight={model.lowLight} />);
   rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} newRelease={model.newRelease} version={model.version} />);
 }
 
