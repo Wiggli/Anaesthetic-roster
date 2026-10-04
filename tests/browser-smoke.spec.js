@@ -1432,7 +1432,9 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await expect(page.locator('#saveProfileBtn')).toBeVisible();
   const bounds = await page.locator('#accountSheet').boundingBox();
   expect(bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
-  if (page.viewportSize().width >= 760) expect(bounds.y).toBeGreaterThan(30);
+  expect(bounds.y).toBeLessThanOrEqual(1);
+  expect(bounds.x + bounds.width).toBeGreaterThanOrEqual(page.viewportSize().width - 1);
+  if (page.viewportSize().width >= 760) expect(bounds.width).toBeLessThanOrEqual(430);
   await page.locator('#accountBackBtn').click();
   await page.locator('#accountHomeHub [data-account-section="preferences"]').click();
   const appearanceSurface = page.locator('#appearanceExperience > div');
