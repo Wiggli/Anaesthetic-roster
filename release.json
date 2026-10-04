@@ -1,13 +1,13 @@
 {
-  "version": "44.5",
+  "version": "45.0",
   "date": "4 October 2026",
-  "title": "Move app utilities into a side drawer",
-  "summary": "The avatar now opens a right-side App & Account drawer, removing persistent settings clutter from the top while keeping Night context prominent.",
+  "title": "Polish the complete night experience",
+  "summary": "A complete presentation pass makes every operational screen feel calmer, clearer and more consistent while preserving the existing roster, break and clock-change logic.",
   "changes": [
-    "Persistent gear and install controls have been removed from the visible top bars; the avatar is now the single entry point for account and app utilities.",
-    "Account now opens as a right-edge drawer with direct destinations for Personalise, Notifications, Appearance, App & Help, Security and administrator-only Roster management.",
-    "Night uses the freed space to reduce top chrome and remove the redundant staffing chip while preserving the shared shift identity as the visual anchor.",
-    "Notifications opens the existing Chat alert controls directly, while Roster management continues to use the existing administrator area and permissions."
+    "Unifies typography, spacing, surface depth and colour hierarchy across Night, Changes, Breaks, Chat, Full Roster and Personalise.",
+    "Makes Changes decision-first by keeping the Staffing → Allocation → Confirm workflow prominent while moving secondary explanations behind calm on-demand disclosure.",
+    "Improves Full Roster scanning with role-aware grouping and increases the readability of secondary labels, statuses and supporting information across the app.",
+    "Refines the shared shift identity, collapsed scroll chrome, bottom navigation, chat bubbles, break schedule and Personalisation Studio with restrained motion and accessibility fallbacks."
   ],
   "update_policy": "normal"
 }

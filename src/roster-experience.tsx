@@ -15,10 +15,11 @@ function DetailRow({ detail }: { detail: RosterDetail }) {
     : detail.tone === 'second' ? 'tw:bg-sky-400/12 tw:text-sky-800 tw:dark:text-sky-200'
       : detail.tone === 'warning' ? 'tw:bg-amber-400/14 tw:text-amber-800 tw:dark:text-amber-200'
         : 'tw:bg-[var(--surface)] tw:text-[var(--accent-strong)]';
-  return <div className="tw:grid tw:grid-cols-[6.5rem_1fr] tw:gap-3 tw:border-t tw:border-black/6 tw:py-3 tw:first:border-t-0 tw:dark:border-white/8">
-    <span className="tw:text-xs tw:font-bold tw:text-[var(--muted)]">{detail.label}</span>
-    <div className="tw:flex tw:flex-wrap tw:justify-end tw:gap-1.5">
-      {detail.values.map((value, index) => <span key={`${value}-${index}`} className={`tw:rounded-full tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold ${tone}`}>{value}</span>)}
+  const semanticTone = detail.tone || 'neutral';
+  return <div className={`rosterDetailRow rosterDetail-${semanticTone} tw:grid tw:grid-cols-[6.5rem_1fr] tw:gap-3 tw:border-t tw:border-black/6 tw:py-3 tw:first:border-t-0 tw:dark:border-white/8`}>
+    <span className="rosterDetailLabel tw:text-xs tw:font-bold tw:text-[var(--muted)]">{detail.label}</span>
+    <div className="rosterDetailValues tw:flex tw:flex-wrap tw:justify-end tw:gap-1.5">
+      {detail.values.map((value, index) => <span key={`${value}-${index}`} className={`rosterRolePill tw:rounded-full tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold ${tone}`}>{value}</span>)}
     </div>
   </div>;
 }
@@ -26,7 +27,7 @@ function DetailRow({ detail }: { detail: RosterDetail }) {
 function Cards({ cards }: { cards: RosterCard[] }) {
   const reduced = useReducedMotion();
   if (!cards.length) return <div className="tw:rounded-2xl tw:border tw:border-dashed tw:border-black/12 tw:bg-[var(--surface)] tw:p-6 tw:text-center tw:text-sm tw:text-[var(--muted)] tw:dark:border-white/14">No roster nights match this search.</div>;
-  return <div className="tw:grid tw:gap-3" aria-label={`${cards.length} roster nights`}>
+  return <div className="rosterExperienceShell tw:grid tw:gap-3" aria-label={`${cards.length} roster nights`}>
     <p className="tw:m-0 tw:text-xs tw:font-semibold tw:text-[var(--muted)]" role="status">{cards.length} {cards.length === 1 ? 'night' : 'nights'} shown · Select a night to open its live plan</p>
     <div className="tw:grid tw:gap-3 tw:lg:grid-cols-2">
     {cards.map((card, index) => <motion.button
@@ -38,7 +39,7 @@ function Cards({ cards }: { cards: RosterCard[] }) {
       whileTap={{ scale: reduced ? 1 : 0.99 }}
       onClick={() => openNight(card.index)}
       aria-label={`Open roster for ${card.date}`}
-      className="tw:w-full tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:text-left tw:shadow-sm tw:dark:border-white/10"
+      className="rosterExperienceCard tw:w-full tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:text-left tw:shadow-sm tw:dark:border-white/10"
     >
       <div className="tw:flex tw:items-start tw:justify-between tw:gap-3">
         <div className="tw:min-w-0">

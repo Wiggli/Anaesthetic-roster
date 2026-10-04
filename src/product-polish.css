@@ -1,0 +1,642 @@
+/* 45.0 product polish convergence layer.
+   This file intentionally sits after the historical presentation modules so the app has
+   one final hierarchy, spacing, typography and motion contract without touching clinical logic. */
+
+:root{
+  --polish-space-1:4px;
+  --polish-space-2:8px;
+  --polish-space-3:12px;
+  --polish-space-4:16px;
+  --polish-space-5:24px;
+  --polish-space-6:32px;
+  --polish-radius-s:12px;
+  --polish-radius-m:18px;
+  --polish-radius-l:24px;
+  --polish-hairline:color-mix(in srgb,var(--liquid-separator) 78%,transparent);
+  --polish-shadow:0 10px 30px rgba(20,34,50,.055);
+  --polish-shadow-float:0 18px 48px rgba(18,32,48,.09);
+}
+
+body:not(.authPending){
+  font-size:16px;
+  letter-spacing:-.006em;
+}
+
+#today,#changes,#breaks,#chat,#roster{
+  --screen-section-gap:var(--polish-space-5);
+}
+
+.sectionTitle,
+.nightOverviewRowHeading,
+.breakPlanTitle,
+.staffingSectionHeading,
+.chatSectionHeading{
+  letter-spacing:-.022em!important;
+}
+
+.appScreenHeader .primaryScreenTitleRow h1,
+.appScreenHeaderRoster h2{
+  font-size:clamp(30px,8vw,35px)!important;
+  font-weight:800!important;
+  line-height:1.02!important;
+  letter-spacing:-.045em!important;
+}
+
+.appScreenHeader .primaryScreenTitleRow p,
+.appScreenHeaderRoster p,
+.primaryScreenHeader p{
+  font-size:13px!important;
+  line-height:1.42!important;
+}
+
+#today .nightUnifiedHero{
+  margin-bottom:var(--polish-space-4)!important;
+  padding:12px!important;
+  border-radius:26px!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 38%,transparent),0 16px 44px rgba(22,38,56,.065)!important;
+}
+
+#today .nightUnifiedHero .nightSectionIdentity{
+  margin:12px 0!important;
+}
+
+#today .nightUnifiedHero .nightSectionIdentity h1{
+  font-size:clamp(36px,8.8vw,42px)!important;
+  font-weight:820!important;
+  letter-spacing:-.055em!important;
+}
+
+#today .nightUnifiedHero .nightTeamIdentityContext{
+  min-height:68px!important;
+  grid-template-columns:50px minmax(0,1fr)!important;
+  gap:13px!important;
+  margin-bottom:10px!important;
+  padding:8px 14px 8px 8px!important;
+  border-radius:20px!important;
+  border-color:color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 24%,var(--liquid-separator))!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 6%,var(--liquid-surface)),var(--liquid-surface))!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 30%,transparent),0 7px 20px color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 7%,transparent)!important;
+}
+
+#today .nightUnifiedHero .shiftIdentityMark{
+  width:50px!important;
+  height:50px!important;
+  min-width:50px!important;
+  min-height:50px!important;
+  border-radius:16px!important;
+}
+
+#today .nightUnifiedHero .shiftIdentityCopy strong{
+  font-size:20px!important;
+  line-height:1.06!important;
+}
+
+#today .nightUnifiedHero .shiftIdentityCopy small{
+  font-size:12px!important;
+  line-height:1.34!important;
+}
+
+#today .nightUnifiedHero .prettyDateButton strong{
+  font-size:16.5px!important;
+}
+
+#today .nightUnifiedHero .prettyDateButton small{
+  font-size:11px!important;
+}
+
+#today #personalNightCard>.personalHeroSurface{
+  border-radius:25px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.085),inset 0 -1px 0 rgba(0,0,0,.24),0 18px 42px rgba(12,24,42,.14)!important;
+}
+
+#today #personalNightCard .personalRoleCopy b{
+  font-size:clamp(22px,5.9vw,27px)!important;
+  letter-spacing:-.035em!important;
+}
+
+#today #personalNightCard .personalRoleCopy span{
+  font-size:13px!important;
+  line-height:1.4!important;
+}
+
+#today #personalNightCard .nightTimelineHead small,
+#today #personalNightCard .nightTimelineScale,
+#today #personalNightCard .nightTimelinePhaseLabels{
+  font-size:11px!important;
+}
+
+#today .personalHeroFactGrid>.personalHeroFact{
+  min-height:68px!important;
+  padding:10px 11px!important;
+}
+
+#today .personalHeroFactGrid>.personalHeroFact small{
+  font-size:10.5px!important;
+  font-weight:720!important;
+  letter-spacing:.015em!important;
+}
+
+#today .personalHeroFactGrid>.personalHeroFact b{
+  font-size:14px!important;
+  font-weight:740!important;
+}
+
+#today .personalHeroFactGrid>.personalHeroFact span{
+  font-size:11px!important;
+  line-height:1.28!important;
+}
+
+#today .nightSignal{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+#today .nightSignalPrimary{
+  padding:15px 16px!important;
+  border:1px solid var(--polish-hairline)!important;
+  border-radius:var(--polish-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+}
+
+#today .nightSignalLeadCopy>strong{
+  font-size:20px!important;
+}
+
+#today .nightSignalLeadCopy>small,
+#today .nightSignalLeadCopy>span:not(.nightSignalState),
+#today .nightSignalState b{
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+
+#today .nightContextLine{
+  margin:0 2px 8px!important;
+}
+
+#today .nightTeamDetails,
+#today .recentActivityPanel{
+  box-shadow:none!important;
+}
+
+#changes .workflowExperience{
+  display:grid!important;
+  gap:var(--polish-space-3)!important;
+}
+
+#changes .workflowSteps{
+  padding:4px!important;
+  gap:4px!important;
+  border:1px solid var(--polish-hairline)!important;
+  border-radius:17px!important;
+  background:color-mix(in srgb,var(--liquid-secondary) 4%,transparent)!important;
+  box-shadow:none!important;
+}
+
+#changes .workflowStep{
+  min-height:54px!important;
+  padding:7px 9px!important;
+  border-radius:13px!important;
+}
+
+#changes .workflowStepCopy b{
+  font-size:13px!important;
+}
+
+#changes .workflowStepCopy small{
+  font-size:10.5px!important;
+  line-height:1.25!important;
+}
+
+#changes .workflowStep.quiet:not(.active) .workflowStepCopy small{
+  opacity:.62!important;
+}
+
+#changes .workflowGuidance{
+  min-height:0!important;
+  padding:14px 15px!important;
+  border:1px solid var(--polish-hairline)!important;
+  border-radius:var(--polish-radius-m)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+}
+
+#changes .workflowGuidance strong{
+  font-size:16px!important;
+  line-height:1.22!important;
+}
+
+#changes .workflowGuidanceSummary>small{
+  font-size:12px!important;
+  line-height:1.4!important;
+}
+
+#changes .workflowGuidance.workflowGuidance-attention{
+  border-color:color-mix(in srgb,var(--liquid-warning) 26%,var(--liquid-separator))!important;
+  background:color-mix(in srgb,var(--liquid-warning) 4%,var(--liquid-surface))!important;
+}
+
+#changes .workflowGuidanceSummary{
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+
+#changes .workflowWhy{
+  margin:7px 0 0;
+  border-top:1px solid color-mix(in srgb,var(--liquid-separator) 68%,transparent);
+  padding-top:8px;
+}
+
+#changes .workflowWhy summary{
+  width:max-content;
+  cursor:pointer;
+  list-style:none;
+  color:var(--liquid-secondary);
+  font-size:11px;
+  font-weight:720;
+}
+
+#changes .workflowWhy summary::-webkit-details-marker{display:none}
+#changes .workflowWhy summary::after{content:"  ›";color:var(--liquid-accent-strong)}
+#changes .workflowWhy[open] summary::after{content:"  ⌄"}
+#changes .workflowWhy p{
+  max-width:52ch;
+  margin:7px 0 0;
+  color:var(--liquid-secondary);
+  font-size:12px;
+  line-height:1.45;
+}
+
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .changesRecordGroup,
+#changes .changesAllocationGroup{
+  box-shadow:none!important;
+}
+
+#changes .staffingActionRow{
+  min-height:68px!important;
+  padding:12px 14px!important;
+}
+
+#changes .staffingActionCopy strong,
+#changes .allocationRowCopy strong{
+  font-size:15px!important;
+}
+
+#changes .staffingActionCopy small,
+#changes .allocationRowCopy small{
+  font-size:12px!important;
+  line-height:1.4!important;
+}
+
+#breaks .personalBreakSummary{
+  padding:18px!important;
+  border-radius:var(--polish-radius-l)!important;
+  box-shadow:var(--polish-shadow)!important;
+}
+
+#breaks .personalBreakEyebrow{
+  font-size:11px!important;
+  letter-spacing:.04em!important;
+}
+
+#breaks .personalBreakMain h2{
+  font-size:clamp(28px,7vw,34px)!important;
+  letter-spacing:-.045em!important;
+}
+
+#breaks .personalBreakMain p{
+  font-size:14px!important;
+  line-height:1.42!important;
+}
+
+#breaks .breakScheduleBoard{
+  overflow:hidden!important;
+  border:1px solid var(--polish-hairline)!important;
+  border-radius:var(--polish-radius-l)!important;
+  background:var(--liquid-surface)!important;
+  box-shadow:none!important;
+}
+
+#breaks .breakScheduleSection{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+#breaks .breakScheduleHeader{
+  min-height:64px!important;
+  padding:12px 15px!important;
+}
+
+#breaks .breakScheduleHeadingCopy h3{
+  font-size:17px!important;
+  letter-spacing:-.025em!important;
+}
+
+#breaks .breakPerson{
+  min-height:60px!important;
+}
+
+#breaks .breakPerson strong{
+  font-size:15px!important;
+}
+
+#breaks .breakPerson small,
+#breaks .coverageRow small{
+  font-size:12px!important;
+}
+
+#chat .chatInboxTeamRow{
+  border-color:color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 20%,var(--liquid-separator))!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 4%,var(--liquid-surface)),var(--liquid-surface))!important;
+  box-shadow:none!important;
+}
+
+#chat .chatTeamAvatar{
+  box-shadow:0 5px 14px color-mix(in srgb,var(--shift-identity-accent,#4f8fe8) 12%,transparent)!important;
+}
+
+#chat .chatInboxRow{
+  min-height:72px!important;
+  padding:12px 14px!important;
+}
+
+#chat .chatInboxRowCopy strong{
+  font-size:15.5px!important;
+}
+
+#chat .chatInboxRowCopy small{
+  font-size:12.5px!important;
+  line-height:1.35!important;
+}
+
+#chat .chatTeamMessage,
+#chat .chatPrivateMessage{
+  margin-block:2px!important;
+}
+
+#chat .chatTeamBubble,
+#chat .chatPrivateBubble{
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 72%,transparent)!important;
+  box-shadow:none!important;
+}
+
+#chat .chatTeamMessage:not(.own) .chatTeamBubble,
+#chat .chatPrivateMessage:not(.own) .chatPrivateBubble{
+  background:var(--liquid-surface)!important;
+  color:var(--liquid-label)!important;
+}
+
+#chat .chatTeamMessage.own .chatTeamBubble,
+#chat .chatPrivateMessage.own .chatPrivateBubble{
+  border-color:color-mix(in srgb,var(--liquid-accent) 22%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-accent) 10%,var(--liquid-surface))!important;
+  color:var(--liquid-label)!important;
+}
+
+#chat .chatMessageText{
+  font-size:14.5px!important;
+  line-height:1.42!important;
+}
+
+#chat .chatTeamSender,
+#chat .chatPrivateSender,
+#chat .chatTeamMessageMeta,
+#chat .chatPrivateMeta{
+  font-size:11px!important;
+}
+
+#chat .chatComposerGlass{
+  border-radius:26px!important;
+  box-shadow:0 8px 22px rgba(18,32,48,.07)!important;
+}
+
+.rosterExperienceShell{
+  display:grid;
+  gap:var(--polish-space-3);
+}
+
+.rosterExperienceCard{
+  border-color:var(--polish-hairline)!important;
+  border-radius:var(--polish-radius-l)!important;
+  box-shadow:none!important;
+}
+
+.rosterDetailRow{
+  min-height:54px;
+  grid-template-columns:minmax(6.8rem,.8fr) minmax(0,1.2fr)!important;
+  align-items:center;
+  padding:12px 0!important;
+}
+
+.rosterDetailLabel{
+  font-size:12px!important;
+  line-height:1.25;
+}
+
+.rosterDetailValues{
+  gap:6px!important;
+}
+
+.rosterRolePill{
+  min-height:28px;
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px!important;
+  padding:5px 10px!important;
+  font-size:12px!important;
+  line-height:1.1;
+}
+
+.rosterDetail-first{border-left:3px solid color-mix(in srgb,#0a84ff 64%,transparent);padding-left:10px!important}
+.rosterDetail-second{border-left:3px solid color-mix(in srgb,#32ade6 64%,transparent);padding-left:10px!important}
+.rosterDetail-pager{border-left:3px solid color-mix(in srgb,#af52de 54%,transparent);padding-left:10px!important}
+.rosterDetail-reliever{border-left:3px solid color-mix(in srgb,#5e5ce6 54%,transparent);padding-left:10px!important}
+.rosterDetail-warning{border-left:3px solid color-mix(in srgb,var(--liquid-warning) 66%,transparent);padding-left:10px!important}
+
+.personalisationStudio{
+  gap:var(--polish-space-4)!important;
+}
+
+.personalisationStudioHeading{
+  padding:16px!important;
+  border:1px solid color-mix(in srgb,var(--personal-accent) 18%,var(--account-rule))!important;
+  border-radius:22px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--personal-accent) 6%,var(--account-surface)),var(--account-surface))!important;
+}
+
+.personalisationStudioHeading h3{
+  font-size:26px!important;
+}
+
+.personalisationStudioHeading p{
+  font-size:12.5px!important;
+}
+
+.personalisationPreviewCard{
+  border-radius:22px!important;
+  box-shadow:var(--polish-shadow)!important;
+}
+
+.personalisationGroup{
+  padding:16px!important;
+  border:1px solid color-mix(in srgb,var(--account-rule) 82%,transparent)!important;
+  border-radius:20px!important;
+  background:var(--account-surface)!important;
+  box-shadow:none!important;
+}
+
+.personalisationGroupHeading h4,
+.personalisationGroupHeading h3{
+  font-size:16px!important;
+}
+
+.personalisationGroupHeading p{
+  font-size:12px!important;
+  line-height:1.4!important;
+}
+
+.scrollGlassHeader.scrollGlassMode-compact{
+  height:calc(54px + env(safe-area-inset-top))!important;
+  min-height:calc(54px + env(safe-area-inset-top))!important;
+  transform:none!important;
+}
+
+.scrollGlassMode-compact .scrollGlassMaterial{
+  border-bottom:1px solid color-mix(in srgb,var(--liquid-separator) 68%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-surface) 48%,transparent)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(155%)!important;
+  backdrop-filter:blur(26px) saturate(155%)!important;
+  box-shadow:0 7px 20px rgba(18,32,48,.04)!important;
+}
+
+.scrollGlassCompactTitle{
+  font-size:15.5px!important;
+  font-weight:760!important;
+  letter-spacing:-.02em!important;
+}
+
+.bottom.reactTabs{
+  min-height:66px!important;
+  padding:4px 5px calc(4px + env(safe-area-inset-bottom))!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 64%,transparent)!important;
+  background:color-mix(in srgb,var(--liquid-surface) 36%,transparent)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(160%)!important;
+  backdrop-filter:blur(28px) saturate(160%)!important;
+  box-shadow:0 12px 34px rgba(18,32,48,.10)!important;
+}
+
+.bottom.reactTabs button:not(.quickRudder){
+  min-width:0!important;
+  color:var(--liquid-secondary)!important;
+}
+
+.bottom.reactTabs button:not(.quickRudder).active{
+  color:var(--liquid-accent-strong)!important;
+}
+
+.bottom.reactTabs button svg{
+  width:22px!important;
+  height:22px!important;
+}
+
+.bottom.reactTabs button>span:not(.navIconWrap){
+  font-size:10.5px!important;
+  font-weight:690!important;
+}
+
+body[data-view] .bottom.reactTabs .tabSlidingIndicator{
+  border:1px solid color-mix(in srgb,var(--liquid-accent) 12%,var(--liquid-separator))!important;
+  border-radius:18px!important;
+  background:color-mix(in srgb,var(--liquid-accent) 7%,var(--liquid-surface))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34)!important;
+}
+
+.bottom.reactTabs .navTaskBadge{
+  top:3px!important;
+  right:1px!important;
+  min-width:16px!important;
+  height:16px!important;
+  padding:0 4px!important;
+  border-width:2px!important;
+  font-size:8.5px!important;
+}
+
+.quickRudderAttention{
+  width:8px!important;
+  height:8px!important;
+  border-width:2px!important;
+  box-shadow:none!important;
+}
+
+.accountSheetScroll{
+  padding-block:18px calc(26px + env(safe-area-inset-bottom))!important;
+}
+
+.accountHubList,
+.accountHomeIdentity{
+  box-shadow:none!important;
+}
+
+@media(max-width:430px){
+  #today .nightUnifiedHero .nightTeamIdentityContext{
+    grid-template-columns:48px minmax(0,1fr)!important;
+  }
+  #today .nightUnifiedHero .shiftIdentityMark{
+    width:48px!important;
+    height:48px!important;
+    min-width:48px!important;
+    min-height:48px!important;
+  }
+  #today .nightUnifiedHero .shiftIdentityCopy strong{
+    font-size:19px!important;
+  }
+  #today .nightUnifiedHero .shiftIdentityCopy small{
+    font-size:11.5px!important;
+  }
+  .rosterDetailRow{
+    grid-template-columns:1fr!important;
+    gap:7px!important;
+  }
+  .rosterDetailValues{
+    justify-content:flex-start!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .bottom.reactTabs,
+  .bottom.reactTabs button,
+  .scrollGlassHeader,
+  .workflowStep,
+  .chatInboxRow,
+  .personalisationPreviewCard{
+    transition:none!important;
+    animation:none!important;
+  }
+}
+
+@media(prefers-reduced-transparency:reduce){
+  .scrollGlassMode-compact .scrollGlassMaterial,
+  .bottom.reactTabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:var(--liquid-surface)!important;
+  }
+}
+
+@media(prefers-contrast:more){
+  #changes .workflowGuidance,
+  #breaks .breakScheduleBoard,
+  #chat .chatTeamBubble,
+  #chat .chatPrivateBubble,
+  .rosterExperienceCard,
+  .personalisationGroup{
+    border-color:currentColor!important;
+  }
+}
