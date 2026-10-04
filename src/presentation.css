@@ -20038,3 +20038,316 @@ body.personalMotionReduced *::after{
     font-size:9.5px!important;
   }
 }
+
+
+/* 44.3 mobile no-cramp context: stack instead of squeeze. */
+/* Primary context is allowed to breathe. Important labels wrap instead of truncating. */
+#changes .appScreenHeader,
+#breaks .appScreenHeader{
+  margin-bottom:10px!important;
+  padding:4px 2px 8px!important;
+}
+#changes .appScreenHeader .primaryInstitution,
+#breaks .appScreenHeader .primaryInstitution{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:start!important;
+  gap:10px!important;
+  min-height:auto!important;
+  margin-bottom:8px!important;
+}
+#changes .primaryInstitutionBrand,
+#breaks .primaryInstitutionBrand{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-items:start!important;
+  align-items:start!important;
+  gap:5px!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+#changes .primaryInstitutionBrand img,
+#breaks .primaryInstitutionBrand img{
+  width:auto!important;
+  max-width:112px!important;
+  height:auto!important;
+}
+#changes .primaryInstitutionBrand>span,
+#breaks .primaryInstitutionBrand>span{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  overflow:visible!important;
+  color:var(--liquid-secondary)!important;
+  font-size:9.5px!important;
+  font-weight:760!important;
+  line-height:1.22!important;
+  letter-spacing:.055em!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#changes .primaryHeaderActions,
+#breaks .primaryHeaderActions{
+  align-self:start!important;
+}
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow{
+  align-items:center!important;
+  margin-top:0!important;
+}
+#changes .primaryScreenTitleRow>div,
+#breaks .primaryScreenTitleRow>div{
+  min-width:0!important;
+}
+#changes .appScreenHeader .primaryScreenTitleRow p,
+#breaks .appScreenHeader .primaryScreenTitleRow p{
+  max-width:none!important;
+  overflow:visible!important;
+  white-space:normal!important;
+}
+
+/* The information action is part of the heading, never a floating row of its own. */
+#changes .screenInfoButton,
+#breaks .screenInfoButton{
+  align-self:center!important;
+  justify-self:end!important;
+}
+
+/* Selected-night context uses vertical composition on phones:
+   meta -> shift identity -> full-width date. */
+#changes>.nightContextPanel,
+#breaks>.nightContextPanel{
+  display:grid!important;
+  gap:0!important;
+  margin:4px 0 15px!important;
+  padding:12px!important;
+}
+#changes .nightContextMetaRow,
+#breaks .nightContextMetaRow{
+  min-height:28px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin:0 2px 7px!important;
+}
+#changes .nightContextMetaRow>h2,
+#breaks .nightContextMetaRow>h2{
+  margin:0!important;
+  color:var(--liquid-tertiary)!important;
+  font-size:9.5px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  letter-spacing:.065em!important;
+  text-transform:uppercase!important;
+}
+#changes .nightContextStaffing,
+#breaks .nightContextStaffing{
+  width:auto!important;
+  min-width:0!important;
+  min-height:28px!important;
+  display:inline-flex!important;
+  flex-direction:row!important;
+  align-items:baseline!important;
+  justify-content:flex-end!important;
+  gap:4px!important;
+  padding:4px 8px!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 70%,transparent)!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 88%,transparent)!important;
+}
+#changes .nightContextStaffing span,
+#breaks .nightContextStaffing span{
+  display:none!important;
+}
+#changes .nightContextStaffing strong,
+#breaks .nightContextStaffing strong{
+  color:var(--liquid-label)!important;
+  font-size:11px!important;
+  font-weight:760!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+}
+#changes .nightContextStaffing small,
+#breaks .nightContextStaffing small{
+  display:none!important;
+}
+
+/* Shift identity remains the visual anchor and may use two lines when needed. */
+#changes .nightContextPanel .nightTeamIdentityContext,
+#breaks .nightContextPanel .nightTeamIdentityContext{
+  min-height:60px!important;
+  margin:0 0 10px!important;
+  grid-template-columns:42px minmax(0,1fr)!important;
+  gap:12px!important;
+  padding:8px 14px 8px 8px!important;
+  border-radius:20px!important;
+}
+#changes .nightContextPanel .shiftIdentityMark,
+#breaks .nightContextPanel .shiftIdentityMark{
+  width:42px!important;
+  height:42px!important;
+  border-radius:14px!important;
+}
+#changes .nightContextPanel .shiftIdentityCopy strong,
+#breaks .nightContextPanel .shiftIdentityCopy strong{
+  overflow:visible!important;
+  color:var(--liquid-label)!important;
+  font-size:17.5px!important;
+  line-height:1.1!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#changes .nightContextPanel .shiftIdentityCopy small,
+#breaks .nightContextPanel .shiftIdentityCopy small{
+  overflow:visible!important;
+  max-width:none!important;
+  color:var(--liquid-secondary)!important;
+  font-size:10.5px!important;
+  line-height:1.3!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+
+/* Full-width date navigation gets the space previously stolen by staffing. */
+#changes .nightContextDateLabel,
+#breaks .nightContextDateLabel{
+  display:block!important;
+  min-width:0!important;
+  margin:0!important;
+  font-size:0!important;
+  line-height:0!important;
+}
+#changes .nightContextDateLabel .dateResetBtn,
+#breaks .nightContextDateLabel .dateResetBtn{
+  display:none!important;
+}
+#changes .nightContextDateLabel .dateNav,
+#breaks .nightContextDateLabel .dateNav{
+  width:100%!important;
+  min-height:56px!important;
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr) 46px!important;
+  gap:8px!important;
+  align-items:center!important;
+  margin:0!important;
+  padding:4px!important;
+  overflow:visible!important;
+  border:1px solid color-mix(in srgb,var(--liquid-separator) 72%,transparent)!important;
+  border-radius:18px!important;
+  background:color-mix(in srgb,var(--liquid-surface) 90%,transparent)!important;
+}
+#changes .nightContextDateLabel .dateNav>button,
+#breaks .nightContextDateLabel .dateNav>button{
+  width:46px!important;
+  min-width:46px!important;
+  height:46px!important;
+  min-height:46px!important;
+  border-radius:14px!important;
+}
+#changes .nightContextDateLabel .prettyDateControl,
+#breaks .nightContextDateLabel .prettyDateControl{
+  min-width:0!important;
+  width:100%!important;
+}
+#changes .nightContextDateLabel .prettyDateButton,
+#breaks .nightContextDateLabel .prettyDateButton{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  display:grid!important;
+  align-content:center!important;
+  justify-items:center!important;
+  padding:4px 8px!important;
+  overflow:visible!important;
+}
+#changes .nightContextDateLabel .prettyDateButton strong,
+#breaks .nightContextDateLabel .prettyDateButton strong{
+  max-width:100%!important;
+  overflow:visible!important;
+  color:var(--liquid-label)!important;
+  font-size:14px!important;
+  font-weight:780!important;
+  line-height:1.15!important;
+  text-align:center!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#changes .nightContextDateLabel .prettyDateButton small,
+#breaks .nightContextDateLabel .prettyDateButton small{
+  max-width:100%!important;
+  overflow:visible!important;
+  margin-top:3px!important;
+  color:var(--liquid-secondary)!important;
+  font-size:9.75px!important;
+  font-weight:580!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+
+/* Breaks keeps personal information after context without adding another large gap. */
+#breaks #breakPersonalSummary{
+  margin-top:12px!important;
+}
+
+/* Night already uses the better stacked hospital treatment, but primary context must never truncate. */
+#today #appHeader .hospitalStrip{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-items:start!important;
+  gap:6px!important;
+}
+#today #appHeader .hospitalStrip span{
+  max-width:none!important;
+  overflow:visible!important;
+  line-height:1.25!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#today .nightTeamIdentityContext{
+  max-width:min(100%,460px)!important;
+}
+#today .shiftIdentityCopy strong,
+#today .shiftIdentityCopy small{
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+#today .nightDateShell .prettyDateButton strong,
+#today .nightDateShell .prettyDateButton small{
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+
+@media(max-width:390px){
+  #changes .appScreenHeader .primaryInstitution,
+  #breaks .appScreenHeader .primaryInstitution{
+    gap:8px!important;
+  }
+  #changes .primaryInstitutionBrand img,
+  #breaks .primaryInstitutionBrand img{
+    max-width:104px!important;
+  }
+  #changes .primaryInstitutionBrand>span,
+  #breaks .primaryInstitutionBrand>span{
+    max-width:none!important;
+    font-size:8.75px!important;
+  }
+  #changes .nightContextDateLabel .dateNav,
+  #breaks .nightContextDateLabel .dateNav{
+    grid-template-columns:44px minmax(0,1fr) 44px!important;
+    gap:6px!important;
+  }
+  #changes .nightContextDateLabel .dateNav>button,
+  #breaks .nightContextDateLabel .dateNav>button{
+    width:44px!important;
+    min-width:44px!important;
+  }
+  #changes .nightContextDateLabel .prettyDateButton strong,
+  #breaks .nightContextDateLabel .prettyDateButton strong{
+    font-size:13.5px!important;
+  }
+}
