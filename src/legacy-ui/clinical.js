@@ -522,6 +522,42 @@ function scheduleScrollChrome(){if(scrollChromeFrame)return;scrollChromeFrame=re
 function failedAction(message,retry){lastFailedAction=retry||null;toast(message,retry?{label:'Retry',run:function(){var action=lastFailedAction;lastFailedAction=null;return action&&action()}}:null)}
 function notifyRosterUpdate(type,date){if(window.dispatchRosterPush)window.dispatchRosterPush(type,date)}
 
+function openNightTeamNameDialog(){
+  var base=cur(),dialog=byId('nightTeamNameDialog'),input=byId('nightTeamNameInput'),date=byId('nightTeamNameDate'),meta=byId('nightTeamNameMeta'),clear=byId('clearNightTeamNameBtn'),status=byId('nightTeamNameStatus'),row=base&&nightTeamIdentityFor(base.date),nickname=base?nightTeamNickname(base.date):'';
+  if(!base||!dialog||!input)return;
+  input.value=nickname;
+  input.dataset.rosterDate=base.date;
+  if(date)date.textContent=fmt(base.date);
+  if(meta){meta.textContent=row&&row.updated_by?'Last changed by '+row.updated_by+' · '+shortTime(row.updated_at):'Everyone on this roster night will see the same name.';meta.classList.toggle('hidden',false)}
+  if(clear)clear.classList.toggle('hidden',!nickname);
+  if(status){status.textContent='';status.classList.remove('error')}
+  if(dialog.showModal&&!dialog.open)dialog.showModal();
+  setTimeout(function(){input.focus();input.select()},80)
+}
+window.openNightTeamNameDialog=openNightTeamNameDialog;
+
+async function saveNightTeamName(clearName){
+  var input=byId('nightTeamNameInput'),dialog=byId('nightTeamNameDialog'),save=byId('saveNightTeamNameBtn'),clear=byId('clearNightTeamNameBtn'),status=byId('nightTeamNameStatus');
+  if(!input||!supa)return;
+  var rosterDate=String(input.dataset.rosterDate||''),nickname=clearName?'':String(input.value||'').trim().replace(/\s+/g,' ');
+  if(!/^20\d{2}-\d{2}-\d{2}$/.test(rosterDate))return;
+  if(nickname.length>28){if(status){status.textContent='Keep the shift name to 28 characters or fewer.';status.classList.add('error')}return}
+  if(sharedWritesBlocked()){if(status){status.textContent='Update Night Roster before changing the shared shift name.';status.classList.add('error')}return}
+  if(!navigator.onLine||forcedOfflineSession){if(status){status.textContent='Reconnect before changing the shared shift name.';status.classList.add('error')}return}
+  if(save)save.disabled=true;if(clear)clear.disabled=true;if(status){status.textContent=clearName?'Removing shared name…':'Saving for everyone…';status.classList.remove('error')}
+  try{
+    var result=await supa.rpc('set_night_team_identity_v51',{p_roster_date:rosterDate,p_nickname:nickname,p_client_version:APP_VERSION});
+    if(result.error)throw result.error;
+    await loadSharedData({background:true});
+    if(dialog&&dialog.open)dialog.close();
+    toast(clearName?'Shift nickname removed':('Shift named “'+nickname+'”'));
+  }catch(error){
+    recordAppDiagnostic('team-identity','save',error&&error.code||'failed');
+    if(status){status.textContent='The shared shift name could not be saved. Try again.';status.classList.add('error')}
+  }finally{if(save)save.disabled=false;if(clear)clear.disabled=false}
+}
+window.saveNightTeamName=saveNightTeamName;
+
 function render(){
   if(!R.length||!currentUserProfile)return;
   var canonical=buildNightPlan(cur()),base=canonical.base,plan=canonical.staffing,r=canonical.effective,e=effective(r),count=plan.count,dutyTiming=canonical.timing;
@@ -534,7 +570,7 @@ function render(){
     roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
     roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
   }
-  syncDateInputs(base.date);renderMyName();var personal=renderPersonalNight(base,r);renderRecentActivity(base.date);renderHeaderSummary(r);updateSmartNightButtons();
+  syncDateInputs(base.date);renderNightTeamIdentityContext(base.date);renderMyName();var personal=renderPersonalNight(base,r);renderRecentActivity(base.date);renderHeaderSummary(r);updateSmartNightButtons();
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
   if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
