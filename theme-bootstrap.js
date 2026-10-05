@@ -36,6 +36,5 @@
   }
 
   function ensurePwaLayers(){ensurePwaSafeAreaStyles();ensureNightIntelligence()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensurePwaLayers,{once:true});
-  else ensurePwaLayers();
+  ensurePwaLayers();
 })();
