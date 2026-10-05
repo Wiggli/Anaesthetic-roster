@@ -9,8 +9,8 @@ const worker = read('service-worker.js');
 const manifest = JSON.parse(read('manifest.webmanifest'));
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'release.json'), 'utf8')).version;
 
-for (const file of ['domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'styles.css', 'chat.css',
-  'theme-bootstrap.js', 'pwa-safe-area.css', 'release.json', 'icon-192.png', 'icon-512.png', 'mater-dei-logo.png']) {
+for (const file of ['domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js', 'night-intelligence.js', 'styles.css', 'chat.css',
+  'theme-bootstrap.js', 'pwa-safe-area.css', 'night-intelligence.css', 'release.json', 'icon-192.png', 'icon-512.png', 'mater-dei-logo.png']) {
   assert.ok(fs.existsSync(path.join(dist, file)), `${file} must ship with the build`);
 }
 for (const file of ['AGENTS.md', 'package.json', 'package-lock.json', 'tests', 'supabase', '.git']) {
@@ -43,6 +43,8 @@ assert.match(worker, /ACTIVATE_UPDATE/);
 assert.match(worker, /GET_CACHE_VERSION/);
 assert.ok(worker.includes(`./runtime-foundation.js?v=${version}`), 'runtime foundation must be part of the offline app shell');
 assert.ok(worker.includes(`./pwa-safe-area.css?v=${version}`), 'iPhone safe-area layer must be part of the offline app shell');
+assert.ok(worker.includes(`./night-intelligence.js?v=${version}`), 'Night Intelligence runtime must be part of the offline app shell');
+assert.ok(worker.includes(`./night-intelligence.css?v=${version}`), 'Night Intelligence styles must be part of the offline app shell');
 assert.doesNotMatch(worker, /domain-logic\\.js[^\\n]*\\\\n[^\\n]*runtime-foundation/, 'service worker source must not contain a literal escaped newline in the app shell');
 assert.match(worker, /notificationclick/);
 assert.match(worker, /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary\(requestUrl\)/);
