@@ -5,6 +5,9 @@ const { spawnSync } = require('node:child_process');
 
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const release = JSON.parse(read('release.json'));
+const version = release.version;
+const escapedVersion = version.replace(/\./g, '\\.');
 const intelligence = read('night-intelligence.js');
 const css = read('night-intelligence.css');
 const theme = read('theme-bootstrap.js');
@@ -43,11 +46,12 @@ assert.match(sync, /ROSTER_REVISION_CONFLICT/);
 assert.match(push, /view==='night'/, 'roster notifications must deep-link into Night');
 assert.match(push, /rosterDate/, 'roster notification deep links must preserve the selected date');
 
-assert.match(theme, /night-intelligence\.css\?v=45\.5/);
-assert.match(theme, /night-intelligence\.js\?v=45\.5/);
+assert.match(theme, new RegExp(`night-intelligence\\.css\\?v=${escapedVersion}`));
+assert.match(theme, new RegExp(`night-intelligence\\.js\\?v=${escapedVersion}`));
 assert.match(theme, /data-night-intelligence/);
-assert.ok(worker.includes('./night-intelligence.css?v=45.5'));
-assert.ok(worker.includes('./night-intelligence.js?v=45.5'));
+assert.ok(worker.includes(`./night-intelligence.css?v=${version}`));
+assert.ok(worker.includes(`./night-intelligence.js?v=${version}`));
+assert.match(intelligence, new RegExp(`icon-192\\.png\\?v=${escapedVersion}`));
 assert.match(vite, /'night-intelligence\.css'/);
 assert.match(vite, /'night-intelligence\.js'/);
 
