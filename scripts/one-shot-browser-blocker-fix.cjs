@@ -16,10 +16,14 @@ replaceExact(
   'unique recommendation accessibility identity'
 );
 
+if (source.includes('function niBindLifecycle(){') || source.includes('function niInstallPaletteLauncher(){')) {
+  throw new Error('Lifecycle functions already exist; refusing to duplicate them');
+}
+
 replaceExact(
-  "function niScheduleRender(delay){clearTimeout(state.refreshTimer);state.refreshTimer=setTimeout(function(){niRenderCentre();niRenderAttention();niApplyDensity();niAccessibilityPass()},delay==null?80:delay)}",
-  "function niScheduleRender(delay){\n  var wait=delay==null?80:Math.max(0,Number(delay)||0);\n  if(state.refreshTimer)return;\n  state.refreshTimer=setTimeout(function(){state.refreshTimer=null;niRenderCentre();niRenderAttention();niApplyDensity();niAccessibilityPass()},wait)\n}",
-  'non-starving render scheduler'
+  " state.observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','data-view','aria-hidden']})\n}\nfunction niStart(){",
+  " state.observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','data-view','aria-hidden']})\n}\nfunction niBindLifecycle(){\n  window.addEventListener('roster:quick-actions',function(event){niEnhanceQuickActions(event&&event.detail||null)});window.addEventListener('online',function(){var intent=niReadSafeIntent();if(intent&&typeof toast==='function')toast('Connection restored. '+intent.label+' is ready to continue.',{label:'Continue',run:function(){niResumeSafeIntent(intent)}});niScheduleRender(20)});window.addEventListener('offline',function(){niScheduleRender(20)});document.addEventListener('visibilitychange',function(){niScheduleRender(40)});window.addEventListener('resize',function(){niApplyDensity()})\n}\nfunction niInstallPaletteLauncher(){\n  var sheet=niEl('quickActionsSheet');if(!sheet||niEl('nightCommandLauncher'))return;var launcher=niMake('button','quickActionRow nightCommandLauncher');launcher.id='nightCommandLauncher';launcher.type='button';launcher.innerHTML='<span class=\"quickActionCopy\"><strong>Search & commands</strong><small>Find any Night Roster action</small></span><span class=\"quickActionChevron\">›</span>';launcher.onclick=function(){if(sheet.open)sheet.close();niOpenPalette()};var list=sheet.querySelector('.quickActionList');if(list)list.appendChild(launcher)\n}\nfunction niStart(){",
+  'restored lifecycle and command launcher functions'
 );
 
 fs.writeFileSync(file, source);
