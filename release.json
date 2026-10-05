@@ -1,12 +1,12 @@
 {
-  "version": "45.4",
+  "version": "45.5",
   "date": "4 October 2026",
-  "title": "Fix iPhone top controls and pending allocation layout",
-  "summary": "iPhone safe areas now keep top controls below the status bar, while pending shared-allocation prompts use the full width of their card.",
+  "title": "Make iPhone PWA layout a first-class contract",
+  "summary": "The PWA now treats iPhone safe areas, Home-indicator spacing and WebKit layout checks as permanent release requirements rather than one-off fixes.",
   "changes": [
-    "Keeps Night, Changes, Breaks and Chat top controls below the iPhone status bar and Dynamic Island by preserving an additive safe-area inset on narrow screens.",
-    "Fixes the pending Labour Ward / Pager allocation prompt so its text uses the full amber card instead of collapsing into a narrow grid column.",
-    "Adds phone regression coverage for safe-area reachability and the shared-allocation prompt without changing roster, staffing, break or clock-change logic."
+    "Stabilises the floating bottom dock above the iPhone Home indicator without shrinking its internal controls, while respecting left and right safe areas.",
+    "Hardens Night, Changes, Breaks, Chat, Account and scrolled chrome around iPhone safe areas and prevents WebKit form-focus zoom from disrupting mobile layouts.",
+    "Adds a common-iPhone-size regression matrix and runs focused iPhone WebKit browser smoke tests on every pull request before changes can merge."
   ],
   "update_policy": "normal"
 }

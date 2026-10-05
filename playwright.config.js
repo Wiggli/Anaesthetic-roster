@@ -24,6 +24,11 @@ module.exports = defineConfig({
     {
       name: 'desktop-chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } }
+    },
+    {
+      name: 'mobile-webkit',
+      grep: /@iphone/,
+      use: { ...devices['iPhone 13'], browserName: 'webkit' }
     }
   ]
 });

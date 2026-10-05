@@ -14,7 +14,7 @@
     if(document.querySelector('link[data-pwa-safe-area]'))return;
     var link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='pwa-safe-area.css?v=45.4';
+    link.href='pwa-safe-area.css?v=45.5';
     link.setAttribute('data-pwa-safe-area','');
     document.head.appendChild(link);
   }
