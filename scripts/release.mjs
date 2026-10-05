@@ -109,7 +109,7 @@ for (const name of uiSources) {
   write(name, source.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`));
 }
 
-for (const name of ['index.html', 'manifest.webmanifest', 'styles.css']) {
+for (const name of ['index.html', 'manifest.webmanifest', 'styles.css', 'theme-bootstrap.js']) {
   const source = read(name);
   if (!/\?v=\d+(?:\.\d+)+/.test(source)) fail(`${name} has no versioned asset reference.`);
   write(name, source.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`));
@@ -142,5 +142,5 @@ if (fs.existsSync(file('.project-state.json'))) {
 const generated = spawnSync(process.execPath, [file('scripts/generate-runtime.mjs')], { cwd: root, stdio: 'inherit' });
 if (generated.status !== 0) process.exit(generated.status || 1);
 const verify = spawnSync(process.execPath, [file('scripts/verify-release.mjs')], { cwd: root, stdio: 'inherit' });
-if (verify.status !== 0) process.exit(verify.status || 1);
+if (verify.status !== 0) process.exit(verify.status || 1;
 console.log(`Release ${version} references are synchronised. Commit release.json, modular source and generated compatibility artifacts together.`);
