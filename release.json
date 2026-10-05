@@ -1,14 +1,15 @@
 {
-  "version": "45.7",
+  "version": "45.8",
   "date": "6 October 2026",
-  "title": "Focus the Night experience",
-  "summary": "Night Intelligence now stays compact when the roster is healthy, surfaces only meaningful attention, and turns Focus mode into a genuinely simplified night-time view around the existing personal Night hero.",
+  "title": "Add roster-grounded AI",
+  "summary": "Night Roster gains a privacy-conscious AI layer for personal night briefs, natural-language roster questions, change summaries and allocation explanations while the deterministic roster engine remains the only authority for staffing and shared changes.",
   "changes": [
-    "Replaces the large always-on Night Intelligence Command Centre presentation with a compact phase and freshness strip so the personal Night hero remains the primary view.",
-    "Removes the duplicate My Night, Attention and routine Review this night surfaces from the healthy-state presentation while keeping the underlying attention, conflict, freshness and troubleshooting engine active.",
-    "Surfaces the recommended Night Intelligence action only when an important roster warning or unresolved decision is present, reducing repeated information during a normal night.",
-    "Turns Calm Mode into a clearer Focus control and hides the whole-team Tonight section while Focus mode is active, leaving the nurse's own allocation and meaningful warnings visible.",
-    "Adds focused browser coverage for the compact iPhone presentation and the simplified Focus-mode hierarchy."
+    "Adds a compact Night brief beneath the personal Night hero that summarises the nurse's allocation, staffing state, meaningful overtime context and unresolved roster decisions without replacing the existing hero.",
+    "Adds Ask Night Roster, a roster-grounded assistant for questions about allocation, colleagues, breaks, staffing and recorded changes, with an explicit no-patient-information boundary and no ability to mutate the roster.",
+    "Adds concise change summaries above Changes tonight so recent staffing and allocation activity can be understood quickly after returning to the app.",
+    "Adds Why this allocation explanations that make clear the deterministic rotation, staffing and approved override logic made the allocation and AI is only explaining the effective result.",
+    "Adds an authenticated Supabase Edge Function for OpenAI Responses API calls with minimal structured roster context, store=false, authorised-account checks, output limits and a safe deterministic fallback when AI is offline or not configured.",
+    "Ships the AI client and styles in the installed PWA cache, adds iPhone and browser regression coverage, and preserves all existing roster safety, offline and write-path guarantees."
   ],
   "update_policy": "normal"
 }
