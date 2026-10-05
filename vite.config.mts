@@ -8,7 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // and runtime-foundation.js are generated from modular source before every test/build.
 // Source, tests, migrations and local credentials are never copied into the Pages artifact.
 const publicFiles = [
-  'styles.css', 'chat.css', 'pwa-safe-area.css', 'theme-bootstrap.js', 'domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'push.js', 'chat.js',
+  'styles.css', 'chat.css', 'pwa-safe-area.css', 'night-intelligence.css', 'theme-bootstrap.js', 'domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'night-intelligence.js', 'push.js', 'chat.js',
   'manifest.webmanifest', 'release.json', 'anaesthesia-header.jpg',
   'mater-dei-logo.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'
 ];
