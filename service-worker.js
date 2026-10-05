@@ -4,11 +4,13 @@ const APP_SHELL = [
   './index.html',
   './styles.css?v=45.5',
   './pwa-safe-area.css?v=45.5',
+  './night-intelligence.css?v=45.5',
   './theme-bootstrap.js?v=45.5',
   './domain-logic.js?v=45.5',
   './runtime-foundation.js?v=45.5',
   './app-core.js?v=45.5',
   './app-ui.js?v=45.5',
+  './night-intelligence.js?v=45.5',
   './manifest.webmanifest?v=45.5',
   './release.json',
   './icon-192.png?v=45.5',
@@ -146,7 +148,6 @@ self.addEventListener('fetch', event => {
     }))
   );
 });
-
 
 self.addEventListener('push', event => {
   event.waitUntil((async () => {
