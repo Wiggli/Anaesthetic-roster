@@ -23,13 +23,17 @@ async function openShell(page) {
   await page.waitForFunction(() => window.NightIntelligence && document.getElementById('nightIntelligenceCentre'));
 }
 
-test('@iphone Night Intelligence command centre remains usable on phones', async ({ page }) => {
+test('@iphone Night Intelligence stays compact and avoids duplicating the personal Night hero', async ({ page }) => {
   await openShell(page);
   const centre = page.locator('#nightIntelligenceCentre');
   await expect(centre).toBeVisible();
-  await expect(centre).toContainText('Command centre');
   await expect(page.locator('#nightPhaseSignal')).not.toBeEmpty();
   await expect(page.locator('#nightFreshnessSignal')).not.toBeEmpty();
+  await expect(page.locator('#nightPresenceSignal')).toBeHidden();
+  await expect(page.locator('#nightMyNightAction')).toBeHidden();
+  await expect(page.locator('#nightAttentionAction')).toBeHidden();
+  await expect(page.locator('#nightCalmToggle')).toBeVisible();
+  await expect(page.locator('#nightCalmToggle')).toHaveAccessibleName('Toggle Calm Mode');
 
   await page.evaluate(() => window.NightIntelligence.openPalette());
   const palette = page.locator('#nightCommandPalette');
@@ -45,7 +49,7 @@ test('@iphone Night Intelligence command centre remains usable on phones', async
   expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);
 });
 
-test('Night Intelligence health, Calm Mode and offline intent stay progressive', async ({ page }) => {
+test('Night Intelligence health, true Focus mode and offline intent stay progressive', async ({ page }) => {
   await openShell(page);
 
   // The Health Check must be able to reconstruct its dialog body if startup ordering removes it.
@@ -55,11 +59,16 @@ test('Night Intelligence health, Calm Mode and offline intent stay progressive',
   await expect(page.locator('#nightHealthDialog')).toContainText('Roster freshness');
   await page.locator('#nightHealthDialog button[aria-label="Close"]').click();
 
+  await expect(page.locator('#personalNight')).toBeVisible();
+  await expect(page.locator('#today .teamOverviewGroup')).toBeVisible();
   await page.evaluate(() => window.NightIntelligence.setCalmMode(true));
   await expect(page.locator('html')).toHaveClass(/nightCalmMode/);
   await expect(page.locator('#nightIntelligenceCentre')).toBeVisible();
+  await expect(page.locator('#personalNight')).toBeVisible();
+  await expect(page.locator('#today .teamOverviewGroup')).toBeHidden();
   await page.evaluate(() => window.NightIntelligence.setCalmMode(false));
   await expect(page.locator('html')).not.toHaveClass(/nightCalmMode/);
+  await expect(page.locator('#today .teamOverviewGroup')).toBeVisible();
 
   await page.evaluate(() => {
     localStorage.removeItem('anaes_safe_intent_v1');
