@@ -77,7 +77,7 @@ function niConflictItems(){
   var assignments=niPlanAssignments(plan),seen={};assignments.forEach(function(item){var id=String(item&&item.id||'');if(!id)return;if(seen[id])items.push({id:'duplicate-'+id,severity:'critical',title:'Allocation conflict detected',detail:'The same nurse appears in more than one effective allocation. Review the latest shared plan before confirming.',action:'review',step:'allocation'});seen[id]=true});
   var age=niSyncAge();if(navigator.onLine!==false&&age!==null&&age>180000)items.push({id:'stale',severity:'warning',title:'Roster may be stale',detail:'The shared roster has not refreshed for '+Math.floor(age/60000)+' minutes.',action:'refresh'});
   var syncState=niSafe(function(){return sharedSyncState},'live');if(syncState==='stale'||syncState==='error')items.push({id:'sync-'+syncState,severity:'warning',title:'Shared roster needs attention',detail:'Refresh the shared roster before making a consequential change.',action:'refresh'});
-  if(state.conflict)items.unshift({id:'revision-conflict',severity:'critical',title:'Another device changed this night',detail:'The latest shared plan was loaded. Compare the changed items before saving your draft again.',action:'conflict'});
+  if(state.conflict&&state.conflict.date&&state.conflict.date!==niDate())state.conflict=null;if(state.conflict)items.unshift({id:'revision-conflict',severity:'critical',title:'Another device changed this night',detail:'The latest shared plan was loaded. Compare the changed items before saving your draft again.',action:'conflict'});
   return items
 }
 function niReadSafeIntent(){var raw=null;try{raw=niStorage().getItem(INTENT_KEY)}catch(error){}if(!raw)return null;try{var value=JSON.parse(raw);if(!value||Date.now()-Number(value.createdAt||0)>12*60*60*1000){niStorage().removeItem(INTENT_KEY);return null}return value}catch(error){return null}}
@@ -99,8 +99,7 @@ function niRecommendedAction(){
   return{label:'Review this night',detail:'Open the current shared plan and activity.',run:function(){if(typeof show==='function')show('changes')}}
 }
 function niPersonalSummary(){
-  var card=niEl('personalNightCard');if(card){var text=String(card.textContent||'').replace(/\s+/g,' ').trim();if(text)return text.slice(0,150)}
-  return'Your allocation, timing and break are shown below.'
+ return'Your allocation, timing and break are ready below.'
 }
 function niShiftIdentity(){
   var visible=document.querySelector('[data-night-team-identity]:not(.hidden)');if(visible&&visible.textContent.trim())return visible.textContent.trim();
@@ -155,17 +154,29 @@ function niOpenConflict(conflict){
   var changes=conflict&&Array.isArray(conflict.changes)?conflict.changes:[];
   if(!changes.length)host.appendChild(niMake('p','nightIntelligenceMuted','The shared revision changed, but there is no safe field-level comparison available. Review Staffing and Allocation before continuing.'));
   changes.forEach(function(change){var row=niMake('div','nightConflictRow'),title=niMake('b','',change.label||'Changed item'),before=niMake('small','','Was: '+String(change.before==null?'Not set':change.before)),after=niMake('small','','Now: '+String(change.after==null?'Not set':change.after));row.appendChild(title);row.appendChild(before);row.appendChild(after);host.appendChild(row)});
-  var actions=niMake('div','nightIntelligenceDialogActions'),review=niMake('button','primary','Review latest plan'),close=niMake('button','soft','Keep viewing');review.type='button';close.type='button';review.onclick=function(){niEl('nightConflictDialog').close();if(typeof show==='function')show('changes');if(typeof setChangesStep==='function')setChangesStep('allocation',true)};close.onclick=function(){niEl('nightConflictDialog').close()};actions.appendChild(review);actions.appendChild(close);host.appendChild(actions);niOpenDialog(niEl('nightConflictDialog'))
+  var actions=niMake('div','nightIntelligenceDialogActions'),review=niMake('button','primary','Review latest plan'),close=niMake('button','soft','Keep viewing');review.type='button';close.type='button';review.onclick=function(){state.conflict=null;niScheduleRender(10);niEl('nightConflictDialog').close();if(typeof show==='function')show('changes');if(typeof setChangesStep==='function')setChangesStep('allocation',true)};close.onclick=function(){niEl('nightConflictDialog').close()};actions.appendChild(review);actions.appendChild(close);host.appendChild(actions);niOpenDialog(niEl('nightConflictDialog'))
 }
 function niWrapMutation(){
   if(typeof window.runRosterMutation!=='function'||window.runRosterMutation.__nightIntelligence)return;var original=window.runRosterMutation;
-  function wrapped(){var args=arguments;return Promise.resolve(original.apply(this,args)).then(function(result){if(result&&result.error){var code=String(result.error.code||result.error.message||'');if(code.indexOf('ROSTER_REVISION_CONFLICT')>=0||Array.isArray(result.conflictChanges)&&result.conflictChanges.length){state.conflict={at:Date.now(),changes:result.conflictChanges||[]};niOpenConflict(state.conflict);niScheduleRender(10)}}return result})}
+  function wrapped(){var args=arguments;return Promise.resolve(original.apply(this,args)).then(function(result){if(result&&result.error){var code=String(result.error.code||result.error.message||'');if(code.indexOf('ROSTER_REVISION_CONFLICT')>=0||Array.isArray(result.conflictChanges)&&result.conflictChanges.length){state.conflict={at:Date.now(),date:niDate(),changes:result.conflictChanges||[]};niOpenConflict(state.conflict);niScheduleRender(10)}}else if(state.conflict){state.conflict=null;niScheduleRender(10)}return result})}
   wrapped.__nightIntelligence=true;wrapped.__original=original;window.runRosterMutation=wrapped
 }
 function niWrapToast(){
   if(typeof window.toast!=='function'||window.toast.__nightIntelligence)return;var original=window.toast;
-  function wrapped(message,options){if(options&&options.label==='Undo'&&typeof options.run==='function'){state.undo={createdAt:Date.now(),label:String(message||'Recent change'),run:options.run};niScheduleRender(10)}return original.apply(this,arguments)}
+  function wrapped(message,options){
+   if(options&&options.label==='Undo'&&typeof options.run==='function'){
+    var originalRun=options.run,consumed=false;
+    function runOnce(){if(consumed)return Promise.resolve(false);consumed=true;if(state.undo&&state.undo.run===runOnce)state.undo=null;niScheduleRender(10);return originalRun.apply(this,arguments)}
+    var next=Object.assign({},options,{run:runOnce});state.undo={createdAt:Date.now(),label:String(message||'Recent change'),run:runOnce};niScheduleRender(10);return original.call(this,message,next)
+   }
+   return original.apply(this,arguments)
+  }
   wrapped.__nightIntelligence=true;wrapped.__original=original;window.toast=wrapped
+}
+function niWrapPrivateDeviceCleanup(){
+  if(typeof window.clearPrivateDeviceData!=='function'||window.clearPrivateDeviceData.__nightIntelligence)return;var original=window.clearPrivateDeviceData;
+  function wrapped(){try{niStorage().removeItem(INTENT_KEY)}catch(error){}state.undo=null;state.conflict=null;niScheduleRender(10);return original.apply(this,arguments)}
+  wrapped.__nightIntelligence=true;wrapped.__original=original;window.clearPrivateDeviceData=wrapped
 }
 function niQueueSafeIntent(action,label){var intent={action:action,label:label,date:niDate(),createdAt:Date.now()};niWriteSafeIntent(intent);niAnnounce(label+' saved to continue when online');if(typeof toast==='function')toast(label+' saved as a reminder. It will not auto-submit.');niScheduleRender(10)}
 function niResumeSafeIntent(intent){if(!intent)return;niClearSafeIntent();if(navigator.onLine===false){niWriteSafeIntent(intent);niOpenHealth();return}if(intent.date&&typeof chooseDate==='function'){var input=niEl('datePick');if(input){input.value=intent.date;chooseDate('datePick')}}if(intent.action==='absence'||intent.action==='overtime'||intent.action==='review'){if(typeof show==='function')show('changes');if(typeof setChangesStep==='function')setChangesStep(intent.action==='review'?'allocation':'staffing',true)}niScheduleRender(10)}
@@ -264,15 +275,24 @@ function niAccessibilityPass(){
 }
 function niScheduleRender(delay){clearTimeout(state.refreshTimer);state.refreshTimer=setTimeout(function(){niRenderCentre();niRenderAttention();niApplyDensity();niAccessibilityPass()},delay==null?80:delay)}
 function niBindKeyboard(){document.addEventListener('keydown',function(event){if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();niOpenPalette();return}if(event.key==='/'&&!event.metaKey&&!event.ctrlKey&&!event.altKey&&!(event.target&&/INPUT|TEXTAREA|SELECT/.test(event.target.tagName))){event.preventDefault();niOpenPalette()}})}
-function niObserve(){if(!('MutationObserver'in window))return;state.observer=new MutationObserver(function(mutations){var relevant=mutations.some(function(mutation){var target=mutation.target;return target&&target.nodeType===1&&(target.id==='today'||target.closest&&target.closest('#today,#quickActionsSheet,#chat'))});if(relevant)niScheduleRender(90)});state.observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','data-view','aria-hidden']})}
-function niBindLifecycle(){
-  window.addEventListener('roster:quick-actions',function(event){niEnhanceQuickActions(event&&event.detail||null)});window.addEventListener('online',function(){var intent=niReadSafeIntent();if(intent&&typeof toast==='function')toast('Connection restored. '+intent.label+' is ready to continue.',{label:'Continue',run:function(){niResumeSafeIntent(intent)}});niScheduleRender(20)});window.addEventListener('offline',function(){niScheduleRender(20)});document.addEventListener('visibilitychange',function(){niScheduleRender(40)});window.addEventListener('resize',function(){niApplyDensity()})
+function niMutationIsInternal(target){
+ if(!target||target.nodeType!==1)return false;
+ return!!(target.closest&&target.closest('#nightIntelligenceCentre,#nightAttentionDialog,#nightConflictDialog,#nightCommandPalette,#nightHealthDialog,#nightPersonActions,#nightIntelligenceLive'))
 }
-function niInstallPaletteLauncher(){
-  var sheet=niEl('quickActionsSheet');if(!sheet||niEl('nightCommandLauncher'))return;var launcher=niMake('button','quickActionRow nightCommandLauncher');launcher.id='nightCommandLauncher';launcher.type='button';launcher.innerHTML='<span class="quickActionCopy"><strong>Search & commands</strong><small>Find any Night Roster action</small></span><span class="quickActionChevron">›</span>';launcher.onclick=function(){if(sheet.open)sheet.close();niOpenPalette()};var list=sheet.querySelector('.quickActionList');if(list)list.appendChild(launcher)
+function niObserve(){
+ if(!('MutationObserver'in window))return;
+ state.observer=new MutationObserver(function(mutations){
+  var relevant=mutations.some(function(mutation){
+   var target=mutation.target;
+   if(!target||target.nodeType!==1||niMutationIsInternal(target))return false;
+   return target.id==='today'||target.closest&&target.closest('#today,#quickActionsSheet,#chat')
+  });
+  if(relevant)niScheduleRender(90)
+ });
+ state.observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','data-view','aria-hidden']})
 }
 function niStart(){
-  if(state.started)return;state.started=true;niReadPrefs();niEnsureLiveRegion();niEnsureDialogs();niEnsureCentre();niWrapToast();niWrapMutation();niWrapBadge();niBindLongPress();niBindKeyboard();niBindLifecycle();niStartPrivatePresence();niInstallPaletteLauncher();niSetCalm(state.calm);niApplyDensity();niObserve();niScheduleRender(20);setInterval(function(){niScheduleRender(0)},30000)
+  if(state.started)return;state.started=true;niReadPrefs();niEnsureLiveRegion();niEnsureDialogs();niEnsureCentre();niWrapToast(); niWrapPrivateDeviceCleanup(); niWrapMutation();niWrapBadge();niBindLongPress();niBindKeyboard();niBindLifecycle();niStartPrivatePresence();niInstallPaletteLauncher();niSetCalm(state.calm);niApplyDensity();niObserve();niScheduleRender(20);setInterval(function(){niScheduleRender(0)},30000)
 }
 window.NightIntelligence={version:NI_VERSION,openAttention:niOpenAttention,openPalette:niOpenPalette,openHealth:niOpenHealth,setCalmMode:niSetCalm,queueSafeIntent:niQueueSafeIntent,refresh:niScheduleRender};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(niStart,0)},{once:true});else setTimeout(niStart,0);
