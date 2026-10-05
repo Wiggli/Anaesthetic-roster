@@ -1026,7 +1026,7 @@ test('Night allocation badges remain visible beside long professional names', as
 });
 
 
-test('iPhone safe area keeps top controls reachable and pending allocation text full width', async ({ page }) => {
+test('@iphone iPhone safe area keeps top controls reachable and pending allocation text full width', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openShell(page);
   await page.evaluate(() => {
@@ -1065,6 +1065,86 @@ test('iPhone safe area keeps top controls reachable and pending allocation text 
     const box = await account.boundingBox();
     expect(box).not.toBeNull();
     expect(box.y).toBeGreaterThanOrEqual(47);
+  }
+});
+
+test('@iphone iPhone PWA shell remains contained across common portrait sizes', async ({ page }) => {
+  await openShell(page);
+  const sizes = [
+    { width: 375, height: 667, top: 20, bottom: 0 },
+    { width: 390, height: 844, top: 47, bottom: 34 },
+    { width: 430, height: 932, top: 59, bottom: 34 }
+  ];
+
+  for (const size of sizes) {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await page.evaluate(({ top, bottom }) => {
+      document.documentElement.style.setProperty('--app-safe-top', top + 'px');
+      document.documentElement.style.setProperty('--app-safe-bottom', bottom + 'px');
+      document.documentElement.style.setProperty('--app-safe-left', '0px');
+      document.documentElement.style.setProperty('--app-safe-right', '0px');
+    }, size);
+
+    for (const view of ['today', 'changes', 'breaks', 'chat']) {
+      await page.evaluate(nextView => window.show(nextView), view);
+      await page.waitForTimeout(20);
+      const selector = view === 'today' ? '#accountBtn' : `#${view} [data-shell-account]`;
+      await expect(page.locator(selector)).toBeVisible();
+      const geometry = await page.evaluate(({ view, top, bottom }) => {
+        const active = document.getElementById(view);
+        const account = view === 'today'
+          ? document.getElementById('accountBtn')
+          : document.querySelector(`#${view} [data-shell-account]`);
+        const dock = document.querySelector('.bottom.reactTabs');
+        const activeRect = active?.getBoundingClientRect();
+        const accountRect = account?.getBoundingClientRect();
+        const dockRect = dock?.getBoundingClientRect();
+        return {
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+          activeLeft: activeRect?.left ?? 0,
+          activeRight: activeRect?.right ?? 0,
+          activeScrollWidth: active?.scrollWidth ?? 0,
+          activeClientWidth: active?.clientWidth ?? 0,
+          accountTop: accountRect?.top ?? 0,
+          accountRight: accountRect?.right ?? 0,
+          dockLeft: dockRect?.left ?? 0,
+          dockRight: dockRect?.right ?? 0,
+          dockBottom: dockRect?.bottom ?? 0,
+          dockHeight: dockRect?.height ?? 0,
+          safeTop: top,
+          safeBottom: bottom
+        };
+      }, { view, top: size.top, bottom: size.bottom });
+
+      expect(geometry.activeScrollWidth).toBeLessThanOrEqual(geometry.activeClientWidth + 2);
+      expect(geometry.activeLeft).toBeGreaterThanOrEqual(-3);
+      expect(geometry.activeRight).toBeLessThanOrEqual(geometry.innerWidth + 3);
+      expect(geometry.accountTop).toBeGreaterThanOrEqual(size.top);
+      expect(geometry.accountRight).toBeLessThanOrEqual(size.width + 1);
+      expect(geometry.dockLeft).toBeGreaterThanOrEqual(5);
+      expect(geometry.dockRight).toBeLessThanOrEqual(size.width - 5);
+      expect(geometry.dockBottom).toBeLessThanOrEqual(size.height - size.bottom + 1);
+      expect(geometry.dockHeight).toBeGreaterThanOrEqual(60);
+      expect(geometry.dockHeight).toBeLessThanOrEqual(70);
+    }
+
+    const accountSafeArea = await page.evaluate(() => {
+      const header = document.querySelector('.accountSheetHeader');
+      const scroll = document.querySelector('.accountSheetScroll');
+      const headerStyle = header ? getComputedStyle(header) : null;
+      const scrollStyle = scroll ? getComputedStyle(scroll) : null;
+      return {
+        paddingTop: headerStyle ? parseFloat(headerStyle.paddingTop) : 0,
+        paddingLeft: headerStyle ? parseFloat(headerStyle.paddingLeft) : 0,
+        paddingRight: headerStyle ? parseFloat(headerStyle.paddingRight) : 0,
+        paddingBottom: scrollStyle ? parseFloat(scrollStyle.paddingBottom) : 0
+      };
+    });
+    expect(accountSafeArea.paddingTop).toBeGreaterThanOrEqual(size.top + 9);
+    expect(accountSafeArea.paddingLeft).toBeGreaterThanOrEqual(16);
+    expect(accountSafeArea.paddingRight).toBeGreaterThanOrEqual(16);
+    expect(accountSafeArea.paddingBottom).toBeGreaterThanOrEqual(size.bottom + 25);
   }
 });
 

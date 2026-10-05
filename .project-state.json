@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "project": "Anaesthetic Night Roster",
-  "currentRelease": "45.4",
+  "currentRelease": "45.5",
   "lastReleaseDate": "4 October 2026",
   "databaseSchema": 53,
   "sourceOfTruth": {
@@ -37,13 +37,15 @@
     "pullRequestBrowsers": [
       "mobile-chromium",
       "desktop-chromium",
-      "low-end-chromium"
+      "low-end-chromium",
+      "mobile-webkit"
     ],
     "productionBrowsers": [
       "mobile-chromium",
       "desktop-chromium",
       "low-end-chromium",
-      "webkit-iphone"
+      "webkit-iphone",
+      "mobile-webkit"
     ],
     "cancelSupersededPullRequests": true,
     "reuseTestedPagesArtifact": true,
