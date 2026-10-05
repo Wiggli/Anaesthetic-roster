@@ -1,14 +1,14 @@
 {
-  "version": "45.6",
-  "date": "5 October 2026",
-  "title": "Complete Night Intelligence",
-  "summary": "Night Roster now turns the selected shift into a focused command centre with attention, conflict, freshness, offline-confidence and troubleshooting intelligence around the existing safe roster workflow.",
+  "version": "45.7",
+  "date": "6 October 2026",
+  "title": "Focus the Night experience",
+  "summary": "Night Intelligence now stays compact when the roster is healthy, surfaces only meaningful attention, and turns Focus mode into a genuinely simplified night-time view around the existing personal Night hero.",
   "changes": [
-    "Adds a Night Command Centre with My Night, shift phase, sync freshness, privacy-preserving presence, an Attention Inbox and a context-sensitive recommended next action.",
-    "Adds supported Undo surfacing, concurrent-edit review, roster conflict warnings, long-press person actions, Search & Commands, adaptive density and Calm Mode without creating a second clinical write path.",
-    "Makes roster notifications and app badges more meaningful, preserves deep links to the selected night and keeps offline use explicitly read-only with private reminders that never auto-submit shared changes.",
-    "Adds an in-app PWA Health Check, guided troubleshooting and accessibility fallbacks while preserving the existing shared Shift Identity and Personalisation Studio.",
-    "Ships the intelligence layer in the reviewed Pages bundle and installed-app cache with deterministic, real-browser, low-end and iPhone regression coverage."
+    "Replaces the large always-on Night Intelligence Command Centre presentation with a compact phase and freshness strip so the personal Night hero remains the primary view.",
+    "Removes the duplicate My Night, Attention and routine Review this night surfaces from the healthy-state presentation while keeping the underlying attention, conflict, freshness and troubleshooting engine active.",
+    "Surfaces the recommended Night Intelligence action only when an important roster warning or unresolved decision is present, reducing repeated information during a normal night.",
+    "Turns Calm Mode into a clearer Focus control and hides the whole-team Tonight section while Focus mode is active, leaving the nurse's own allocation and meaningful warnings visible.",
+    "Adds focused browser coverage for the compact iPhone presentation and the simplified Focus-mode hierarchy."
   ],
-  "update_policy": "important"
+  "update_policy": "normal"
 }
