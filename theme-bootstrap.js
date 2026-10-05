@@ -35,6 +35,7 @@
     }
   }
 
-  function ensurePwaLayers(){ensurePwaSafeAreaStyles();ensureNightIntelligence()}
-  ensurePwaLayers();
+  ensureNightIntelligence();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensurePwaSafeAreaStyles,{once:true});
+  else ensurePwaSafeAreaStyles();
 })();
