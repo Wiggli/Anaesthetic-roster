@@ -1,12 +1,14 @@
 {
-  "version": "45.5",
-  "date": "4 October 2026",
-  "title": "Make iPhone PWA layout a first-class contract",
-  "summary": "The PWA now treats iPhone safe areas, Home-indicator spacing and WebKit layout checks as permanent release requirements rather than one-off fixes.",
+  "version": "45.6",
+  "date": "5 October 2026",
+  "title": "Complete Night Intelligence",
+  "summary": "Night Roster now turns the selected shift into a focused command centre with attention, conflict, freshness, offline-confidence and troubleshooting intelligence around the existing safe roster workflow.",
   "changes": [
-    "Stabilises the floating bottom dock above the iPhone Home indicator without shrinking its internal controls, while respecting left and right safe areas.",
-    "Hardens Night, Changes, Breaks, Chat, Account and scrolled chrome around iPhone safe areas and prevents WebKit form-focus zoom from disrupting mobile layouts.",
-    "Adds a common-iPhone-size regression matrix and runs focused iPhone WebKit browser smoke tests on every pull request before changes can merge."
+    "Adds a Night Command Centre with My Night, shift phase, sync freshness, privacy-preserving presence, an Attention Inbox and a context-sensitive recommended next action.",
+    "Adds supported Undo surfacing, concurrent-edit review, roster conflict warnings, long-press person actions, Search & Commands, adaptive density and Calm Mode without creating a second clinical write path.",
+    "Makes roster notifications and app badges more meaningful, preserves deep links to the selected night and keeps offline use explicitly read-only with private reminders that never auto-submit shared changes.",
+    "Adds an in-app PWA Health Check, guided troubleshooting and accessibility fallbacks while preserving the existing shared Shift Identity and Personalisation Studio.",
+    "Ships the intelligence layer in the reviewed Pages bundle and installed-app cache with deterministic, real-browser, low-end and iPhone regression coverage."
   ],
-  "update_policy": "normal"
+  "update_policy": "important"
 }

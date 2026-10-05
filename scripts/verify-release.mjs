@@ -77,7 +77,7 @@ const projectState = JSON.parse(read('.project-state.json'));
 if (projectState.currentRelease !== version) fail('.project-state.json currentRelease does not match release.json.');
 if (projectState.databaseSchema !== Number(core.match(/var EXPECTED_SCHEMA_VERSION = (\d+);/)?.[1])) fail('.project-state.json databaseSchema does not match EXPECTED_SCHEMA_VERSION.');
 
-for (const name of ['index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css', 'theme-bootstrap.js', ...uiSources]) {
+for (const name of ['index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css', 'theme-bootstrap.js', 'night-intelligence.js', ...uiSources]) {
   const source = read(name);
   const refs = Array.from(source.matchAll(/\?v=(\d+(?:\.\d+)+)/g), match => match[1]);
   if (!refs.length && !uiSources.includes(name)) fail(`${name} has no versioned asset references to verify.`);
