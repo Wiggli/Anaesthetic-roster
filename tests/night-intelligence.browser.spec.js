@@ -48,6 +48,7 @@ test('@iphone Night Intelligence command centre remains usable on phones', async
 test('Night Intelligence health, Calm Mode and offline intent stay progressive', async ({ page }) => {
   await openShell(page);
 
+  // The Health Check must be able to reconstruct its dialog body if startup ordering removes it.
   await page.evaluate(() => window.NightIntelligence.openHealth());
   await expect(page.locator('#nightHealthDialog')).toHaveAttribute('open', '');
   await expect(page.locator('#nightHealthDialog')).toContainText('Connection');
