@@ -1,0 +1,46 @@
+name: Night Intelligence browser diagnostic
+
+on:
+  push:
+    branches: [feat/night-intelligence-complete]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feat/night-intelligence-complete
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build exact app under test
+        run: npm run build
+      - name: Install pinned browser smoke runner
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Capture exact browser smoke output
+        shell: bash
+        run: |
+          set +e
+          npm run verify:browser > browser-diagnostic.txt 2>&1
+          code=$?
+          printf '\nEXIT_CODE=%s\n' "$code" >> browser-diagnostic.txt
+          exit 0
+      - name: Commit diagnostic result
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add browser-diagnostic.txt
+          git commit -m "chore: capture browser smoke failure output" || exit 0
+          git push origin HEAD:feat/night-intelligence-complete
