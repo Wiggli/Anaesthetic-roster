@@ -1,23 +1,23 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v45-5';
+const CACHE_NAME = 'anaesthetic-night-roster-v45-6';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=45.5',
-  './pwa-safe-area.css?v=45.5',
-  './night-intelligence.css?v=45.5',
-  './theme-bootstrap.js?v=45.5',
-  './domain-logic.js?v=45.5',
-  './runtime-foundation.js?v=45.5',
-  './app-core.js?v=45.5',
-  './app-ui.js?v=45.5',
-  './night-intelligence.js?v=45.5',
-  './manifest.webmanifest?v=45.5',
+  './styles.css?v=45.6',
+  './pwa-safe-area.css?v=45.6',
+  './night-intelligence.css?v=45.6',
+  './theme-bootstrap.js?v=45.6',
+  './domain-logic.js?v=45.6',
+  './runtime-foundation.js?v=45.6',
+  './app-core.js?v=45.6',
+  './app-ui.js?v=45.6',
+  './night-intelligence.js?v=45.6',
+  './manifest.webmanifest?v=45.6',
   './release.json',
-  './icon-192.png?v=45.5',
-  './icon-512.png?v=45.5',
-  './apple-touch-icon.png?v=45.5',
-  './anaesthesia-header.jpg?v=45.5',
-  './mater-dei-logo.png?v=45.5'
+  './icon-192.png?v=45.6',
+  './icon-512.png?v=45.6',
+  './apple-touch-icon.png?v=45.6',
+  './anaesthesia-header.jpg?v=45.6',
+  './mater-dei-logo.png?v=45.6'
 ];
 
 // Vite injects the fingerprinted React/CSS assets here at build time.
@@ -183,8 +183,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=45.5', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=45.5', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=45.6', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=45.6', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
