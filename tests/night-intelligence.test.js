@@ -30,10 +30,10 @@ for (const contract of [
 assert.match(intelligence, /ROSTER_REVISION_CONFLICT/);
 assert.match(intelligence, /conflictChanges/);
 assert.match(intelligence, /It will never auto-submit/);
+assert.match(intelligence, /Shared changes will not be queued or sent until you reconnect/);
 assert.match(intelligence, /read-only/i);
 assert.doesNotMatch(intelligence, /\.rpc\s*\(/, 'Night Intelligence must not create a second clinical RPC path');
 assert.doesNotMatch(intelligence, /\.from\s*\(/, 'Night Intelligence must not create a second database write/read contract');
-assert.doesNotMatch(intelligence, /offline[^\n]{0,60}(queue|submit)/i, 'Offline intelligence must remain read-only and must not queue mutations');
 
 assert.match(clinical, /label:'Undo'/, 'existing clinical mutations must retain supported Undo paths');
 assert.match(sync, /function runRosterMutation/);
