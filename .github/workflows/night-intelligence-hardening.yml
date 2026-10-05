@@ -1,0 +1,39 @@
+name: Night Intelligence hardening
+
+on:
+  push:
+    branches:
+      - feat/night-intelligence-complete
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/night-intelligence-complete
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply guarded source patch
+        run: node scripts/one-shot-night-intelligence-hardening.cjs
+      - name: Validate patched JavaScript
+        run: node --check night-intelligence.js
+      - name: Run deterministic Night Intelligence tests
+        run: node tests/night-intelligence.test.js
+      - name: Commit hardened source
+        run: |
+          if git diff --quiet; then
+            echo "No source changes required"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add night-intelligence.js night-intelligence.css
+          git commit -m "fix: harden Night Intelligence phone flows"
+          git push origin HEAD:feat/night-intelligence-complete
