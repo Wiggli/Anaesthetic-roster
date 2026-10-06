@@ -6,29 +6,25 @@ async function openShell(page) {
     contentType: 'application/javascript',
     body: 'window.supabase={createClient:function(){return null}};'
   }));
-  await page.route('**/functions/v1/night-roster-ai', async route => {
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': 'http://127.0.0.1:4173',
-      'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  await page.addInitScript(() => {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async function(input, init) {
+      const url = typeof input === 'string' ? input : input && input.url || '';
+      if (url.includes('/functions/v1/night-roster-ai')) {
+        const payload = JSON.parse(init && init.body || '{}');
+        const answers = {
+          brief: 'You are allocated to Second Part Theatre. Six nurses are confirmed and no roster decisions need attention.',
+          changes: 'Since you last checked, Yentl was added as overtime cover. Your allocation is unchanged.',
+          explain: 'The deterministic roster engine places you in Second Part Theatre from the effective rotation for this night; AI is only explaining that result.',
+          ask: 'You are working with Michael Galea tonight.'
+        };
+        return new Response(JSON.stringify({ answer: answers[payload.mode] || answers.ask, ai: true, model: 'test-model' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return nativeFetch(input, init);
     };
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: corsHeaders, body: '' });
-      return;
-    }
-    const payload = JSON.parse(route.request().postData() || '{}');
-    const answers = {
-      brief: 'You are allocated to Second Part Theatre. Six nurses are confirmed and no roster decisions need attention.',
-      changes: 'Since you last checked, Yentl was added as overtime cover. Your allocation is unchanged.',
-      explain: 'The deterministic roster engine places you in Second Part Theatre from the effective rotation for this night; AI is only explaining that result.',
-      ask: 'You are working with Michael Galea tonight.'
-    };
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: corsHeaders,
-      body: JSON.stringify({ answer: answers[payload.mode] || answers.ask, ai: true, model: 'test-model' })
-    });
   });
   await page.goto('/index.html');
   await page.evaluate(() => {
