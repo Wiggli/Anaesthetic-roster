@@ -413,7 +413,7 @@ assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selec
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
 
-assert.match(workflow, /- name: Build public app files\n        run: npm run build/, 'Pages must build the reviewed dist artifact');
+assert.match(workflow, /test:[\s\S]*run: npm run verify:ci[\s\S]*actions\/upload-artifact@v4[\s\S]*name: pages-dist/, 'Pages must build and preserve the reviewed dist artifact through the deterministic release gate');
 const viteConfig = fs.readFileSync(path.join(__dirname, '..', 'vite.config.mts'), 'utf8');
 const requiredProductionAssets = [
   'styles.css', 'theme-bootstrap.js', 'domain-logic.js', 'runtime-foundation.js', 'app-core.js', 'app-ui.js', 'manifest.webmanifest', 'release.json',
@@ -452,11 +452,11 @@ assert.match(workflow, /github\.event\.pull_request\.number \|\| github\.ref[\s\
 assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/, 'production jobs must allow only main pushes or safe manual recovery');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'production jobs must remain restricted to main');
 assert.match(workflow, /service-worker\.js[\s\S]*anaesthetic-night-roster-v\$\{cache_version\}/, 'post-deployment checks must verify the live service-worker cache version');
-assert.match(workflow, /browser-smoke:[\s\S]*@playwright\/test@1\.55\.0[\s\S]*verify:browser[\s\S]*browser-resilience:[\s\S]*verify:resilience/, 'browser verification must run in dedicated lanes before the required aggregate test gate');
-assert.match(workflow, /test:[\s\S]*needs: \[build, regression, browser-smoke, browser-resilience\]/, 'the required test status must aggregate build, deterministic and browser verification lanes');
-assert.match(workflow, /github\.event_name == 'pull_request'[\s\S]*--project=low-end-chromium[\s\S]*github\.event_name != 'pull_request'[\s\S]*chromium webkit/, 'pull requests must use Chromium resilience while release and scheduled runs retain WebKit coverage');
-assert.match(workflow, /schedule:[\s\S]*cron:/, 'the workflow must keep a scheduled full compatibility run');
-assert.match(workflow, /migrate:[\s\S]*needs: test/, 'production migration must wait for deterministic and browser verification in the required test job');
+const compatibilityWorkflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'compatibility.yml'), 'utf8');
+assert.doesNotMatch(workflow, /browser-smoke:|browser-resilience:|schedule:/, 'routine deployment must not include expensive browser or scheduled compatibility lanes');
+assert.match(compatibilityWorkflow, /@playwright\/test@1\.55\.0[\s\S]*verify:browser[\s\S]*verify:resilience/, 'the separate compatibility workflow must retain pinned browser smoke and resilience coverage');
+assert.match(compatibilityWorkflow, /schedule:[\s\S]*cron: '17 3 \* \* \*'/, 'the separate compatibility workflow must retain the nightly browser run');
+assert.match(workflow, /migrate:[\s\S]*needs: test/, 'production migration must wait for the deterministic required test job');
 assert.match(workflow, /manifest\.webmanifest\?v=\$\{app_version\}[\s\S]*icon-192\.png\?v=\$\{app_version\}/, 'post-deployment checks must verify the live manifest version');
 assert.match(ui, /entries=showHistory\?RELEASE_HISTORY:\[latest\]/, 'the update window must contain only the installed release');
 assert.match(html, /id="updateBanner"[\s\S]*id="openUpdateDetailsBtn"[\s\S]*id="laterUpdateBtn"[\s\S]*id="applyUpdateBtn"/, 'the update notice must offer details, deferral and explicit installation');
