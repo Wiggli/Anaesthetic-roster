@@ -44,7 +44,10 @@ function releaseHistory(source) {
       depth--;
       if (depth === 0) {
         const literal = source.slice(start, i + 1);
-        return Function(`"use strict"; return (${literal});`)();
+        const raw = Function(`"use strict"; return (${literal});`)();
+        return raw.map(entry => Array.isArray(entry)
+          ? { version: entry[0], date: entry[1], title: entry[2], changes: entry[3], policy: entry[4] }
+          : entry);
       }
     }
   }
