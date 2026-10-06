@@ -18,10 +18,17 @@ assert.match(client, /SIGNED_OUT/, 'Night AI must clear private in-memory state 
 assert.doesNotMatch(client, /sessionStorage/, 'Roster-grounded AI answers must not persist in browser session storage');
 assert.doesNotMatch(client, /api\.openai\.com/, 'The browser must never call OpenAI directly');
 assert.doesNotMatch(client, /OPENAI_API_KEY/, 'The browser bundle must never contain an OpenAI secret');
+assert.doesNotMatch(client, /GROQ_API_KEY/, 'The browser bundle must never contain a Groq secret');
+assert.doesNotMatch(client, /api\.groq\.com/, 'The browser must never call Groq directly');
 
-assert.match(edge, /OPENAI_API_KEY/, 'The model key must stay in the Edge Function environment');
-assert.match(edge, /https:\/\/api\.openai\.com\/v1\/responses/, 'The Edge Function must use the Responses API');
+assert.match(edge, /GROQ_API_KEY/, 'The Groq key must stay in the Edge Function environment');
+assert.match(edge, /GROQ_NIGHT_ROSTER_MODEL/, 'The Groq model override must stay server-side');
+assert.match(edge, /openai\/gpt-oss-20b/, 'The free-tier default model must be GPT-OSS 20B');
+assert.match(edge, /https:\/\/api\.groq\.com\/openai\/v1\/responses/, 'The Edge Function must use the Groq Responses API');
+assert.doesNotMatch(edge, /https:\/\/api\.openai\.com/, 'The Edge Function must not call the paid OpenAI API');
+assert.doesNotMatch(edge, /OPENAI_API_KEY/, 'The Edge Function must not depend on an OpenAI API key');
 assert.match(edge, /store:\s*false/, 'Model requests must disable response storage');
+assert.match(edge, /reasoning:\s*\{\s*effort:\s*"low"\s*\}/, 'Groq GPT-OSS should use low reasoning effort to conserve the free quota');
 assert.match(edge, /allowed_users/, 'Only approved roster accounts may use the AI endpoint');
 assert.match(edge, /normalisedEmail/, 'Roster access must use an explicit case-normalised email identity');
 assert.doesNotMatch(edge, /\.ilike\(/, 'Authentication must never treat email characters as SQL wildcard patterns');
