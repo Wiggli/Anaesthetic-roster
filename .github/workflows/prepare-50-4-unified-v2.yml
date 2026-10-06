@@ -1,0 +1,37 @@
+name: Prepare 50.4 unified UI v2
+
+on:
+  push:
+    branches:
+      - fix/50-4-unified-date-update
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply 50.4 source patches
+        run: python3 scripts/prepare-50-4.py
+      - name: Synchronise release
+        run: node scripts/release.mjs
+      - name: Verify fast gate
+        run: npm run verify:fast
+      - name: Remove temporary preparation files and commit
+        run: |
+          rm -f scripts/prepare-50-4.py .github/workflows/prepare-50-4-unified-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "50.4 Complete unified UI and PWA update fixes"
+          git push origin HEAD:fix/50-4-unified-date-update
