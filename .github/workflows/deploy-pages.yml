@@ -74,7 +74,8 @@ jobs:
             core.setOutput('source_pr', String(pr.number));
       - name: Reuse verified deterministic regression result
         if: steps.reuse.outputs.reuse == 'true'
-        run: echo "Reusing the successful required test gate from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
+        run: |
+          echo "Reusing the successful required test gate from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
       - uses: actions/checkout@v5
         if: steps.reuse.outputs.reuse != 'true'
       - uses: actions/setup-node@v5
@@ -119,7 +120,8 @@ jobs:
             core.setOutput('source_pr', String(pr.number));
       - name: Reuse verified Chromium and iPhone WebKit smoke result
         if: steps.reuse.outputs.reuse == 'true'
-        run: echo "Reusing browser smoke from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
+        run: |
+          echo "Reusing browser smoke from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
       - uses: actions/checkout@v5
         if: steps.reuse.outputs.reuse != 'true'
       - uses: actions/setup-node@v5
@@ -193,7 +195,8 @@ jobs:
             core.setOutput('source_pr', String(pr.number));
       - name: Reuse verified Chromium and iPhone WebKit resilience result
         if: steps.reuse.outputs.reuse == 'true'
-        run: echo "Reusing full browser resilience from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
+        run: |
+          echo "Reusing full browser resilience from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
       - uses: actions/checkout@v5
         if: steps.reuse.outputs.reuse != 'true'
       - uses: actions/setup-node@v5
