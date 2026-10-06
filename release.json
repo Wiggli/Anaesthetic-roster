@@ -1,15 +1,13 @@
 {
-  "version": "50.1",
+  "version": "50.2",
   "date": "6 October 2026",
-  "title": "Unify the app into one professional design language",
-  "summary": "Makes Night, Changes, Breaks, Chat, Actions and Account feel like one product by standardising the app shell, typography, selected-night component, navigation geometry and mobile date rendering.",
+  "title": "Remove the legacy mobile date conflict",
+  "summary": "Stops the old pretty-date control from reappearing inside the shared selected-night component so Night, Changes and Breaks render one clean product-owned date selector on real phones.",
   "changes": [
-    "Standardises the institution header, logo sizing, account control, page-title hierarchy, spacing rhythm, radii and surfaces across the operational app.",
-    "Makes Night, Changes and Breaks share one selected-night component with the same shift identity and date-navigation geometry.",
-    "Removes platform-rendered segmented date text from the visible interface and replaces it with a controlled product-owned date label that opens the native picker when tapped.",
-    "Keeps Night allocation, Changes workflow, Break plan and Chat conversation as the dominant task on their respective screens while visually demoting secondary information.",
-    "Standardises the bottom dock, Actions, Account, live-state presentation, focus treatment and compact-phone behaviour under the same product system.",
-    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes and clinical state colours."
+    "Removes the legacy pretty-date wrapper whenever it is injected into the shared roster date control, preventing the old vertical Thursday, day and month layout from coexisting with the new one-line date label.",
+    "Keeps one visible date presentation across Night, Changes and Breaks while retaining the native system date picker as the underlying accessible interaction.",
+    "Makes the repair resilient to late legacy DOM mutations so installed Android and iPhone PWAs cannot reintroduce the superseded date UI after the modern shell has mounted.",
+    "Preserves the 50.1 design language, roster calculations, staffing rules, Malta and DST timing, authentication, database writes and clinical state colours."
   ],
   "update_policy": "normal"
 }
