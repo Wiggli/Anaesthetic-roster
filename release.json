@@ -1,15 +1,14 @@
 {
-  "version": "50.0",
+  "version": "50.1",
   "date": "6 October 2026",
-  "title": "Simplify the Night Roster interface around the nurse",
-  "summary": "Removes repeated context and oversized presentation from the 49.0 phone layout so the app reads as a compact institution bar, one night selector and the nurse\u2019s allocation, with the same simpler rhythm across operational screens.",
+  "title": "Unify the app into one professional design language",
+  "summary": "Makes Night, Changes, Breaks, Chat, Actions and Account feel like one product by standardising the app shell, typography, selected-night component, navigation geometry and mobile date rendering.",
   "changes": [
-    "Compresses the Night opening into a slim institution row, greeting, one compact night selector and the personal allocation without the repeated selected-night and live-status layer.",
-    "Makes shift identity a lightweight row inside the selected-night surface instead of another prominent card.",
-    "Replaces unreliable native segmented date text with a controlled one-line date label while retaining the native date input as the accessible tap target.",
-    "Reduces the personal allocation card height while keeping assignment, live timeline, duty, break and colleague information immediately available.",
-    "Applies the same compact selected-night date treatment to Changes and Breaks and reduces top-header volume across Night, Changes, Breaks and Chat.",
-    "Reduces bottom-dock height and supporting-card emphasis so the allocation remains the strongest visual element.",
+    "Standardises the institution header, logo sizing, account control, page-title hierarchy, spacing rhythm, radii and surfaces across the operational app.",
+    "Makes Night, Changes and Breaks share one selected-night component with the same shift identity and date-navigation geometry.",
+    "Removes platform-rendered segmented date text from the visible interface and replaces it with a controlled product-owned date label that opens the native picker when tapped.",
+    "Keeps Night allocation, Changes workflow, Break plan and Chat conversation as the dominant task on their respective screens while visually demoting secondary information.",
+    "Standardises the bottom dock, Actions, Account, live-state presentation, focus treatment and compact-phone behaviour under the same product system.",
     "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes and clinical state colours."
   ],
   "update_policy": "normal"

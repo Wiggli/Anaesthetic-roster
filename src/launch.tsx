@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { motion, useReducedMotion } from 'motion/react';
 import './tailwind.css';
+import './coherent-shell';
 import { onRosterEvent } from './contracts';
 
 function LaunchMotto() {
