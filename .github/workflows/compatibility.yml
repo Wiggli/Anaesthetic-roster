@@ -1,0 +1,50 @@
+name: Browser compatibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-compatibility-main
+  cancel-in-progress: true
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify the exact release tree
+        run: npm run verify:ci
+      - name: Install pinned Playwright runner
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+      - name: Restore browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.55.0-chromium-webkit
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Run browser smoke suite
+        run: npm run verify:browser
+      - name: Run resilience suite
+        run: npm run verify:resilience
+      - name: Preserve compatibility diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-compatibility-diagnostics
+          path: |
+            visual-review
+            test-results
+          if-no-files-found: ignore
+          retention-days: 5
