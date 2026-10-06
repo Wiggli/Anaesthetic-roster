@@ -11,6 +11,8 @@ const workflow = read('.github/workflows/deploy-pages.yml');
 const compatibility = read('.github/workflows/compatibility.yml');
 const development = read('docs/DEVELOPMENT_WORKFLOW.md');
 const current = read('docs/CURRENT_STATE.md');
+const featureRules = read('docs/FEATURE_RELEASE_RULES.md');
+const contextScript = read('scripts/project-context.mjs');
 const smokeConfig = read('playwright.config.js');
 const resilienceConfig = read('playwright.resilience.config.js');
 const nvmrc = read('.nvmrc').trim();
@@ -22,6 +24,23 @@ assert.equal(state.ci.cancelSupersededPullRequests, true, 'project state must re
 assert.equal(state.ci.reuseTestedPagesArtifact, true, 'project state must record exact artifact reuse');
 assert.equal(state.ci.routineBrowserGate, false, 'routine merges must not depend on the expensive compatibility suite');
 assert.equal(state.ci.nightlyCompatibilityRun, true, 'browser compatibility must still run on a schedule');
+
+assert.equal(state.releaseRules.featureEducationRequired, true,
+  'feature releases must permanently require onboarding and tutorial review');
+assert.equal(state.releaseRules.featureEducationSource, 'src/legacy-ui/education.js',
+  'project state must point developers to the education source of truth');
+assert.equal(state.releaseRules.deepPatchVersionsAllowed, false,
+  'routine app versioning must stay on the simple major.patch scheme');
+assert.ok(state.continuity.readFirst.includes('docs/FEATURE_RELEASE_RULES.md'),
+  'fresh development sessions must be told to read the permanent feature-release rules');
+assert.match(featureRules, /feature-level release[\s\S]*src\/legacy-ui\/education\.js[\s\S]*educationVersions\(\)/,
+  'feature-release rules must require current onboarding, app-guide content and an education generation review');
+assert.match(featureRules, /substantial feature release[\s\S]*next whole release number[\s\S]*Small follow-up fixes[\s\S]*one decimal sequence/,
+  'release numbering must keep whole-number feature milestones and one-decimal maintenance releases');
+assert.match(featureRules, /Do not introduce deeper version chains such as `47\.2\.1`/,
+  'release rules must reject routine deep patch numbering');
+assert.match(contextScript, /Feature education:[\s\S]*required for feature-level releases[\s\S]*Release numbering:/,
+  'npm run context must surface the permanent education and version-numbering rules');
 
 assert.equal(packageJson.engines.node, '22.x', 'local package metadata must pin the same Node major as CI');
 assert.equal(nvmrc, '22', '.nvmrc must pin Node 22 for local development');
@@ -70,4 +89,4 @@ assert.match(smokeConfig, /workers:\s*process\.env\.CI \? 2 : 1/,
 assert.match(resilienceConfig, /workers:\s*process\.env\.CI \? 2 : 1/,
   'full resilience browsers should still run in parallel on CI while local runs remain conservative');
 
-console.log('Simplified development workflow, continuity state and CI guardrails passed.');
+console.log('Simplified development workflow, continuity state and feature-release guardrails passed.');
