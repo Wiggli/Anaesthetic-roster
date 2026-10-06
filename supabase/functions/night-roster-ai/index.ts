@@ -216,8 +216,12 @@ Deno.serve(async (req: Request) => {
   const user = userData?.user;
   if (userError || !user || !user.email) return json(req, { error: "Invalid session" }, 401);
 
-  const { data: access, error: accessError } = await admin.from("allowed_users").select("active,user_role,roster_name").ilike("email", user.email).maybeSingle();
-  if (accessError || !access?.active) return json(req, { error: "Roster access is not approved" }, 403);
+  const normalisedEmail = user.email.trim().toLowerCase();
+  const { data: accessRows, error: accessError } = await admin.from("allowed_users").select("active,user_role,roster_name,email").eq("active", true);
+  const access = Array.isArray(accessRows)
+    ? accessRows.find(row => text((row as Record<string, unknown>).email, 320).toLowerCase() === normalisedEmail)
+    : null;
+  if (accessError || !access) return json(req, { error: "Roster access is not approved" }, 403);
 
   const contentLength = Number(req.headers.get("content-length") || 0);
   if (contentLength > 24000) return json(req, { error: "Request too large" }, 413);
