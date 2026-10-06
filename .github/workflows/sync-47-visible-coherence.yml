@@ -1,0 +1,41 @@
+name: One-shot 47.0 coherence sync
+
+on:
+  push:
+    branches:
+      - fix/47-visible-coherence
+
+permissions:
+  contents: write
+
+jobs:
+  sync-release:
+    if: ${{ !contains(github.event.head_commit.message, 'Synchronise 47.0 release assets') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/47-visible-coherence
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Synchronise release
+        run: npm run release
+      - name: Verify corrected coherence contracts
+        run: npm run verify:fast
+      - name: Commit synchronised release and remove one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/sync-47-visible-coherence.yml
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Synchronise 47.0 release assets"
+          git push origin HEAD:fix/47-visible-coherence
