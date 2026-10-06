@@ -75,7 +75,6 @@ function niConflictItems(){
     if(!items.some(function(item){return item.id===key||item.title===text}))items.push({id:key,severity:'warning',title:text,detail:'This night still has an allocation decision to complete.',action:'review',step:'allocation'});
   });
   var assignments=niPlanAssignments(plan),seen={};assignments.forEach(function(item){var id=String(item&&item.id||'');if(!id)return;if(seen[id])items.push({id:'duplicate-'+id,severity:'critical',title:'Allocation conflict detected',detail:'The same nurse appears in more than one effective allocation. Review the latest shared plan before confirming.',action:'review',step:'allocation'});seen[id]=true});
-  var age=niSyncAge();if(navigator.onLine!==false&&age!==null&&age>180000)items.push({id:'stale',severity:'warning',title:'Roster may be stale',detail:'The shared roster has not refreshed for '+Math.floor(age/60000)+' minutes.',action:'refresh'});
   var syncState=niSafe(function(){return sharedSyncState},'live');if(syncState==='stale'||syncState==='error')items.push({id:'sync-'+syncState,severity:'warning',title:'Shared roster needs attention',detail:'Refresh the shared roster before making a consequential change.',action:'refresh'});
   if(state.conflict&&state.conflict.date&&state.conflict.date!==niDate())state.conflict=null;if(state.conflict)items.unshift({id:'revision-conflict',severity:'critical',title:'Another device changed this night',detail:'The latest shared plan was loaded. Compare the changed items before saving your draft again.',action:'conflict'});
   return items
@@ -91,7 +90,8 @@ function niAttentionItems(){
   if(state.undo&&Date.now()-state.undo.createdAt<20000)items.unshift({id:'undo',severity:'info',title:'Undo last change',detail:state.undo.label||'A recent shared change can still be reversed.',action:'undo'});
   return items
 }
-function niAttentionCount(){return niAttentionItems().filter(function(item){return item.severity==='critical'||item.severity==='warning'}).length}
+function niActionableAttention(item){return !!item&&(item.severity==='critical'||item.severity==='warning')&&item.action!=='refresh'}
+function niAttentionCount(){return niAttentionItems().filter(niActionableAttention).length}
 function niRecommendedAction(){
   var items=niAttentionItems(),priority=items.find(function(item){return item.severity==='critical'})||items.find(function(item){return item.severity==='warning'});
   if(priority)return{label:priority.title,detail:priority.detail,run:function(){niRoute(priority)}};
@@ -256,9 +256,9 @@ function niOpenHealth(){
   var actions=niMake('div','nightIntelligenceDialogActions'),refresh=niMake('button','primary','Refresh latest roster'),close=niMake('button','soft','Close');refresh.type=close.type='button';refresh.disabled=navigator.onLine===false;refresh.onclick=function(){if(typeof loadSharedData==='function')Promise.resolve(loadSharedData({background:false})).finally(function(){niOpenHealth()})};close.onclick=function(){niEl('nightHealthDialog').close()};actions.appendChild(refresh);actions.appendChild(close);host.appendChild(actions);niOpenDialog(dialog)
 }
 function niSmartNotify(items){
-  var critical=items.filter(function(item){return item.severity==='critical'||item.severity==='warning'}),signature=critical.map(function(item){return item.id}).sort().join('|');state.lastAttentionSignature=signature;if(!signature||signature===state.lastNotifiedSignature)return;
+  var critical=items.filter(niActionableAttention),signature=critical.map(function(item){return item.id}).sort().join('|');state.lastAttentionSignature=signature;if(!signature||signature===state.lastNotifiedSignature)return;
   var toggle=niEl('pushRosterToggle');if(toggle&&toggle.checked===false)return;if(document.visibilityState!=='hidden'||!('Notification'in window)||Notification.permission!=='granted'||!navigator.serviceWorker)return;
-  state.lastNotifiedSignature=signature;var first=critical[0],date=niDate(),url='./?view=night'+(date?'&date='+encodeURIComponent(date):'');navigator.serviceWorker.ready.then(function(registration){if(registration&&registration.showNotification)return registration.showNotification('Night Roster needs attention',{body:first.title+(critical.length>1?' · '+critical.length+' items need review':''),icon:'icon-192.png?v=45.8',badge:'icon-192.png?v=45.8',tag:'night-intelligence-'+(date||'selected'),renotify:false,data:{type:'roster',url:url,rosterDate:date}})}).catch(function(){})
+  state.lastNotifiedSignature=signature;var first=critical[0],date=niDate(),url='./?view=night'+(date?'&date='+encodeURIComponent(date):'');navigator.serviceWorker.ready.then(function(registration){if(registration&&registration.showNotification)return registration.showNotification('Night Roster needs attention',{body:first.title+(critical.length>1?' · '+critical.length+' items need review':''),icon:'icon-192.png?v=45.9',badge:'icon-192.png?v=45.9',tag:'night-intelligence-'+(date||'selected'),renotify:false,data:{type:'roster',url:url,rosterDate:date}})}).catch(function(){})
 }
 function niSyncBadge(){
   var count=niAttentionCount()+niChatUnread();if(!navigator.setAppBadge&&!navigator.clearAppBadge)return;try{if(count&&navigator.setAppBadge)navigator.setAppBadge(count);else if(navigator.clearAppBadge)navigator.clearAppBadge()}catch(error){}

@@ -1,15 +1,13 @@
 {
-  "version": "45.8",
+  "version": "45.9",
   "date": "6 October 2026",
-  "title": "Add roster-grounded AI",
-  "summary": "Night Roster gains a privacy-conscious AI layer for personal night briefs, natural-language roster questions, change summaries and allocation explanations while the deterministic roster engine remains the only authority for staffing and shared changes.",
+  "title": "Quiet passive roster freshness alerts",
+  "summary": "Night Roster keeps sync age visible without treating a few quiet minutes as an incident, while push notifications stay focused on roster issues that genuinely need a nurse to act.",
   "changes": [
-    "Adds a compact Night brief beneath the personal Night hero that summarises the nurse's allocation, staffing state, meaningful overtime context and unresolved roster decisions without replacing the existing hero.",
-    "Adds Ask Night Roster, a roster-grounded assistant for questions about allocation, colleagues, breaks, staffing and recorded changes, with an explicit no-patient-information boundary and no ability to mutate the roster.",
-    "Adds concise change summaries above Changes tonight so recent staffing and allocation activity can be understood quickly after returning to the app.",
-    "Adds Why this allocation explanations that make clear the deterministic rotation, staffing and approved override logic made the allocation and AI is only explaining the effective result.",
-    "Adds an authenticated Supabase Edge Function for OpenAI Responses API calls with minimal structured roster context, store=false, authorised-account checks, output limits and a safe deterministic fallback when AI is offline or not configured.",
-    "Ships the AI client and styles in the installed PWA cache, adds iPhone and browser regression coverage, and preserves all existing roster safety, offline and write-path guarantees."
+    "Removes the three-minute age-only stale warning so an otherwise healthy online roster no longer raises a prominent Roster may be stale card simply because no full refresh happened for a few minutes.",
+    "Keeps freshness visible in the compact Night status strip while reserving in-app sync warnings for real stale or error states reported by the shared-data runtime.",
+    "Stops technical refresh and sync-health items from generating Night Intelligence push notifications or app-badge attention, while preserving meaningful staffing, allocation and conflict alerts.",
+    "Adds regression coverage so passive refresh age cannot silently become an attention warning or noisy push path again."
   ],
   "update_policy": "normal"
 }
