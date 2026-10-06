@@ -2,7 +2,7 @@
   "version": "50.4",
   "date": "6 October 2026",
   "title": "Complete the unified Night Roster experience",
-  "summary": "Restores the selected-night date on real phones, removes the same-version update loop and makes the shared product design visibly consistent across Night, Changes, Breaks, Chat, Actions and Account.",
+  "summary": "Restores the visible selected-night date, resolves same-version PWA update loops and strengthens one shared product design across Night, Changes, Breaks, Chat, Actions and Account.",
   "changes": [
     "Restores a clear product-owned selected-night date on Android and iPhone, with explicit visible text styling instead of inheriting the transparent legacy date label state.",
     "Stops an already-running release from repeatedly presenting Finish installing the update when the active PWA controller is already on the same app version, while preserving the deliberate user-approved update flow for genuinely newer releases.",
