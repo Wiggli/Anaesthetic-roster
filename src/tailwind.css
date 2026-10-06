@@ -17,5 +17,9 @@
 
 @import "./product-coherence-bridge.css";
 
+/* 47.0 corrective composition pass. Imported last so it can retire old
+   presentation locks without touching clinical state or runtime visibility. */
+@import "./product-coherence-correction.css";
+
 /* The long-lived presentation token is --liquid-bg. Keep the 47.0 cohesion canvas wired to it. */
 :root { --coherence-canvas: var(--liquid-bg); }
