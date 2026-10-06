@@ -42,6 +42,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/prepare-ci-optimization.yml scripts/prepare-ci-optimization.mjs scripts/update-ci-contract.mjs
-          git add .github/workflows/deploy-pages.yml .github/workflows/deploy-night-ai.yml tests/roster.test.js
+          git add .github/workflows/deploy-pages.yml .github/workflows/deploy-night-ai.yml tests/roster.test.js tests/development-workflow.test.js
           git commit -m "Speed up safe production deployments"
           git push origin HEAD:perf/faster-safe-deploys
