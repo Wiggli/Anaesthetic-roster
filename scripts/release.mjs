@@ -60,7 +60,11 @@ function releaseHistory(source) {
       depth--;
       if (depth === 0) {
         const literal = source.slice(start, i + 1);
-        return { start, end: i + 1, entries: Function(`"use strict"; return (${literal});`)() };
+        const raw = Function(`"use strict"; return (${literal});`)();
+        const entries = raw.map(entry => Array.isArray(entry)
+          ? { version: entry[0], date: entry[1], title: entry[2], changes: entry[3], policy: entry[4] }
+          : entry);
+        return { start, end: i + 1, entries, compact: raw.every(Array.isArray) };
       }
     }
   }
@@ -89,13 +93,16 @@ if (latest.version !== version) {
   if (compareVersions(version, latest.version) <= 0) {
     fail(`release.json version ${version} must be newer than RELEASE_HISTORY ${latest.version}.`);
   }
-  const entry = JSON.stringify({
+  const entryData = {
     version,
     date: release.date,
     title: release.title,
     changes: release.changes,
     policy: ['quiet', 'normal', 'important'].includes(release.update_policy) ? release.update_policy : 'normal'
-  });
+  };
+  const entry = parsedHistory.compact
+    ? JSON.stringify([entryData.version, entryData.date, entryData.title, entryData.changes, entryData.policy])
+    : JSON.stringify(entryData);
   foundation = foundation.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + foundation.slice(parsedHistory.start + 1);
 } else if (latest.title !== release.title) {
   fail('release.json title does not match the existing newest release-history entry. Bump the version instead of rewriting released history.');

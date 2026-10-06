@@ -319,9 +319,12 @@ function updateIsAutomatic(){return !!(pendingUpdateMeta&&(pendingUpdateMeta.upd
 function cacheVersionNumber(value){var match=String(value||'').match(/anaesthetic-night-roster-v(\d+(?:-\d+)+)/);return match?match[1].replace(/-/g,'.'):''}
 function waitingUpdateDeferralKey(){return'anaes_update_later_'+(waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'unknown')}
 function clearUpdateNotice(){var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close()}
+function updateControllerIsCurrent(){return cacheVersionNumber(serviceWorkerCacheVersion)===APP_VERSION}
+function waitingWorkerIsRedundant(){return !!(waitingUpdateVersion&&waitingUpdateVersion===APP_VERSION&&updateControllerIsCurrent())}
 function classifyWaitingUpdate(){
   var incoming=waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'',active=cacheVersionNumber(serviceWorkerCacheVersion);
   if(incoming&&incoming!==APP_VERSION)return'new';
+  if(incoming&&incoming===APP_VERSION&&active===APP_VERSION)return'current';
   if(incoming&&active===incoming)return'refresh';
   return'finish';
 }
@@ -411,7 +414,14 @@ async function loadPendingUpdateMeta(){
 
 async function showUpdate(registration){
   updateRegistration=registration;var waiting=registration&&registration.waiting;if(!waiting){clearUpdateNotice();renderWriteGuardState();renderDiagnostics();return}
-  pendingUpdateMeta=null;waitingUpdateVersion=cacheVersionNumber(await workerCacheName(waiting));await loadPendingUpdateMeta();waitingUpdateState=classifyWaitingUpdate();renderPendingUpdate();renderDiagnostics();
+  pendingUpdateMeta=null;waitingUpdateVersion=cacheVersionNumber(await workerCacheName(waiting));await loadPendingUpdateMeta();
+  if(navigator.serviceWorker&&navigator.serviceWorker.controller)await refreshControllerCacheVersion();
+  waitingUpdateState=classifyWaitingUpdate();
+  if(waitingWorkerIsRedundant()||waitingUpdateState==='current'){
+    try{waiting.postMessage({type:'ACTIVATE_UPDATE'})}catch(error){}
+    finishUpdateActivation();renderWriteGuardState();renderDiagnostics();return
+  }
+  renderPendingUpdate();renderDiagnostics();
   sessionStorage.removeItem('anaes_update_later');
   if(sessionStorage.getItem(waitingUpdateDeferralKey())==='1'&&!updateIsAutomatic()&&!compatibilityNeedsUpdate()){renderWriteGuardState();return}
   var banner=byId('updateBanner');if(banner)banner.classList.remove('hidden');renderWriteGuardState();
@@ -436,10 +446,19 @@ function applyWaitingUpdate(){
   if(updateActivationTimer)clearTimeout(updateActivationTimer);
   updateActivationTimer=setTimeout(async function(){
     if(!reloadForUpdate)return;
-    try{if(updateRegistration)await updateRegistration.update()}catch(error){}
-    if(updateRegistration&&!updateRegistration.waiting){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
-    reloadForUpdate=false;resetUpdateButtons();if(status)status.textContent='The update is still waiting. Try Update once more.';toast('Update is still waiting to activate');
-  },5000);
+    var activeCache='';
+    try{if(updateRegistration)await updateRegistration.update();activeCache=await refreshControllerCacheVersion()}catch(error){}
+    var waiting=updateRegistration&&updateRegistration.waiting,incoming=waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'',activeVersion=cacheVersionNumber(activeCache||serviceWorkerCacheVersion);
+    if(activeVersion&&incoming&&activeVersion===incoming){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
+    if(updateRegistration&&!waiting){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
+    if(waiting&&incoming===APP_VERSION){
+      try{waiting.postMessage({type:'ACTIVATE_UPDATE'})}catch(error){}
+      reloadForUpdate=false;resetUpdateButtons();waitingUpdateState='current';clearUpdateNotice();renderDiagnostics();
+      if(status)status.textContent='This release is already open. The cached shell will finish synchronising quietly.';
+      toast('Night Roster is current. Cache synchronisation will finish quietly.');return
+    }
+    reloadForUpdate=false;resetUpdateButtons();if(status)status.textContent='The newer update is still waiting. Close and reopen Night Roster, then try once more.';toast('Update is still waiting to activate');
+  },8000);
 }
 
 function applyStandaloneUi(){

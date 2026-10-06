@@ -45,17 +45,18 @@ function enhanceRosterDateControl(control: HTMLElement) {
     text.className = 'rosterDateText';
     text.setAttribute('role', 'button');
     text.setAttribute('tabindex', '0');
-    text.setAttribute('aria-label', 'Choose roster night');
     input.insertAdjacentElement('afterend', text);
   }
 
   const sync = () => {
     const supplied = control.getAttribute('data-date-label') || '';
     const nextLabel = supplied || formatRosterDate(input.value) || 'Choose night';
-    // The product shell watches child-list mutations so it can repair a legacy
-    // date wrapper injected later. Updating textContent unconditionally here can
-    // create another child-list mutation and starve startup in a feedback loop.
+    // Keep a product-owned label on the control as a CSS fallback and for diagnostics.
+    // Only mutate when the value genuinely changes so the global child-list observer
+    // cannot retrigger itself in a startup feedback loop.
+    if (control.getAttribute('data-date-label') !== nextLabel) control.setAttribute('data-date-label', nextLabel);
     if (text && text.textContent !== nextLabel) text.textContent = nextLabel;
+    if (text) text.setAttribute('aria-label', `Choose roster night, ${nextLabel}`);
   };
 
   if (control.dataset.coherentDate !== 'true') {
@@ -85,7 +86,7 @@ function enhanceRosterDateControl(control: HTMLElement) {
 
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
-  document.documentElement.dataset.productShell = '50.3';
+  document.documentElement.dataset.productShell = '50.4';
 }
 
 if (document.readyState === 'loading') {
