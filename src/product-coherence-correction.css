@@ -1,0 +1,631 @@
+/* 47.0 visible coherence correction.
+   This layer fixes composition problems that the first coherence pass did not
+   overcome in older presentation generations. It changes presentation only.
+   Roster calculations, clinical colours, visibility state and mutation paths
+   remain owned by the existing runtime. */
+
+:root {
+  --coherence-shell-radius: 24px;
+  --coherence-shell-pad: 14px;
+  --coherence-section-gap: 20px;
+  --coherence-compact-gap: 10px;
+  --coherence-shell-line: color-mix(in srgb, var(--liquid-separator) 72%, transparent);
+  --coherence-shell-fill: color-mix(in srgb, var(--liquid-surface) 88%, transparent);
+  --coherence-shell-shadow: 0 14px 36px rgba(10, 22, 38, .07);
+}
+
+/* --------------------------------------------------------------------------
+   Shared top shell
+   -------------------------------------------------------------------------- */
+
+#today .nightUnifiedHero {
+  overflow: hidden !important;
+  margin: 0 0 var(--coherence-section-gap) !important;
+  padding: 0 !important;
+  border: 1px solid var(--coherence-shell-line) !important;
+  border-radius: var(--coherence-shell-radius) !important;
+  background: var(--coherence-shell-fill) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 32%, transparent), var(--coherence-shell-shadow) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+  backdrop-filter: blur(22px) saturate(145%);
+}
+
+#today #appHeader {
+  margin: 0 !important;
+  padding: calc(var(--app-safe-top, 0px) + 10px) var(--coherence-shell-pad) 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+#today .hospitalStrip,
+#changes .primaryInstitution,
+#breaks .primaryInstitution,
+#chat .primaryInstitution {
+  min-height: 26px !important;
+  padding-bottom: 8px !important;
+}
+
+#today .hospitalStrip img,
+#changes .primaryInstitutionBrand img,
+#breaks .primaryInstitutionBrand img,
+#chat .primaryInstitutionBrand img {
+  max-height: 21px !important;
+}
+
+#today .hospitalStrip span,
+#changes .primaryInstitutionBrand > span,
+#breaks .primaryInstitutionBrand > span,
+#chat .primaryInstitutionBrand > span {
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
+}
+
+#today .head {
+  min-height: 46px !important;
+  padding-top: 9px !important;
+}
+
+#today .nightSectionIdentity {
+  margin: 0 !important;
+  padding: 10px var(--coherence-shell-pad) 0 !important;
+}
+
+#today .nightWelcomeEyebrow {
+  margin: 0 0 4px !important;
+  font-size: 10.5px !important;
+  letter-spacing: .02em !important;
+}
+
+#today .nightUnifiedHero .nightSectionIdentity h1 {
+  max-width: 100% !important;
+  font-size: clamp(27px, 7.3vw, 33px) !important;
+  font-weight: 790 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.045em !important;
+}
+
+#today #nightWelcomeSubtitle {
+  margin: 5px 0 0 !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+#today .nightDateShell {
+  margin: 0 !important;
+  padding: 10px var(--coherence-shell-pad) var(--coherence-shell-pad) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#today .nightDateShell > .grid2 {
+  gap: 8px !important;
+}
+
+#today .nightDateLabel,
+#today .staffingCount {
+  border-color: var(--coherence-shell-line) !important;
+  background: color-mix(in srgb, var(--liquid-surface) 66%, transparent) !important;
+}
+
+#today .nightTeamIdentityContext {
+  min-height: 56px !important;
+  grid-template-columns: 42px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin: 6px 0 8px !important;
+  padding: 7px 10px 7px 7px !important;
+  border-radius: 17px !important;
+}
+
+#today .nightTeamIdentityContext .shiftIdentityMark {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  border-radius: 13px !important;
+}
+
+#today .nightTeamIdentityContext .shiftIdentityCopy strong {
+  font-size: 17px !important;
+}
+
+#today .nightTeamIdentityContext .shiftIdentityCopy small {
+  margin-top: 2px !important;
+  font-size: 10.5px !important;
+  line-height: 1.25 !important;
+}
+
+#today .dateNav.rosterDateControl {
+  min-height: 48px !important;
+  border-radius: 16px !important;
+}
+
+#today .dateNav.rosterDateControl button {
+  width: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  border-radius: 13px !important;
+}
+
+/* Changes and Breaks now use the same compound shell rather than a header card
+   followed by an unrelated large context card. */
+#changes .appScreenHeader,
+#breaks .appScreenHeader {
+  margin: 0 !important;
+  padding: calc(var(--app-safe-top, 0px) + 10px) var(--coherence-shell-pad) 0 !important;
+  border: 1px solid var(--coherence-shell-line) !important;
+  border-bottom: 0 !important;
+  border-radius: var(--coherence-shell-radius) var(--coherence-shell-radius) 0 0 !important;
+  background: var(--coherence-shell-fill) !important;
+  box-shadow: none !important;
+}
+
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow {
+  min-height: 58px !important;
+  padding: 10px 0 9px !important;
+}
+
+#changes .primaryScreenTitleRow h1,
+#breaks .primaryScreenTitleRow h1 {
+  font-size: clamp(28px, 7.4vw, 32px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.045em !important;
+}
+
+#changes .primaryScreenTitleRow p,
+#breaks .primaryScreenTitleRow p {
+  margin-top: 4px !important;
+  font-size: 11.5px !important;
+  line-height: 1.3 !important;
+}
+
+#changes .screenInfoButton,
+#breaks .screenInfoButton {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  border-radius: 13px !important;
+}
+
+#changes .changesDatePanel,
+#breaks .breaksContextPanel {
+  margin: -1px 0 var(--coherence-section-gap) !important;
+  padding: 0 var(--coherence-shell-pad) var(--coherence-shell-pad) !important;
+  border: 1px solid var(--coherence-shell-line) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 var(--coherence-shell-radius) var(--coherence-shell-radius) !important;
+  background: var(--coherence-shell-fill) !important;
+  box-shadow: var(--coherence-shell-shadow) !important;
+}
+
+#changes .nightContextMetaRow,
+#breaks .nightContextMetaRow {
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 6px 0 5px !important;
+  align-items: center !important;
+}
+
+#changes .nightContextMetaRow h2,
+#breaks .nightContextMetaRow h2 {
+  margin: 0 !important;
+  font-size: 10.5px !important;
+  font-weight: 720 !important;
+  line-height: 1.2 !important;
+  letter-spacing: .025em !important;
+  text-transform: uppercase !important;
+  color: var(--liquid-secondary) !important;
+}
+
+#changes .nightContextStaffing,
+#breaks .nightContextStaffing {
+  min-height: 32px !important;
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--liquid-surface) 68%, transparent) !important;
+}
+
+#changes .nightContextStaffing span,
+#changes .nightContextStaffing small,
+#breaks .nightContextStaffing span,
+#breaks .nightContextStaffing small {
+  display: none !important;
+}
+
+#changes .nightContextStaffing strong,
+#breaks .nightContextStaffing strong {
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+#changes .nightTeamIdentityContext,
+#breaks .nightTeamIdentityContext {
+  min-height: 52px !important;
+  grid-template-columns: 40px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin: 5px 0 8px !important;
+  padding: 6px 10px 6px 6px !important;
+  border-radius: 16px !important;
+}
+
+#changes .nightTeamIdentityContext .shiftIdentityMark,
+#breaks .nightTeamIdentityContext .shiftIdentityMark {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  border-radius: 12px !important;
+}
+
+#changes .nightTeamIdentityContext .shiftIdentityCopy strong,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy strong {
+  font-size: 15px !important;
+  line-height: 1.05 !important;
+}
+
+#changes .nightTeamIdentityContext .shiftIdentityCopy small,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy small {
+  margin-top: 2px !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+#changes .nightContextPanel .dateNav,
+#breaks .nightContextPanel .dateNav {
+  min-height: 48px !important;
+  border-radius: 16px !important;
+}
+
+#changes .nightContextPanel .dateNav button,
+#breaks .nightContextPanel .dateNav button {
+  width: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  border-radius: 13px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Changes: compact process, stronger hierarchy
+   -------------------------------------------------------------------------- */
+
+#changes .changePanel {
+  margin-top: 0 !important;
+  padding: 0 !important;
+}
+
+#changes .ctop {
+  min-height: 0 !important;
+  margin: 0 0 10px !important;
+  padding: 0 2px !important;
+}
+
+#changes .ctop h2 {
+  font-size: 22px !important;
+  font-weight: 780 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.035em !important;
+}
+
+#changes .ctop .time {
+  margin-top: 2px !important;
+  font-size: 11px !important;
+}
+
+#changes .workflowExperience {
+  gap: 10px !important;
+}
+
+#changes .workflowSteps {
+  gap: 3px !important;
+  padding: 3px !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--liquid-secondary) 4%, var(--liquid-surface)) !important;
+}
+
+#changes .workflowStep {
+  min-height: 48px !important;
+  padding-block: 6px !important;
+  border-radius: 12px !important;
+}
+
+#changes .workflowGuidance {
+  padding: 12px 14px !important;
+  border-radius: 16px !important;
+}
+
+#changes .workflowGuidance h3,
+#changes .workflowGuidance strong {
+  line-height: 1.2 !important;
+}
+
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .changesRecordGroup,
+#changes .changesAllocationGroup,
+#changes .historyBox {
+  border-radius: 18px !important;
+}
+
+#changes .staffingActionRow,
+#changes .allocationRow {
+  min-height: 60px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Night: keep the personal card dominant and remove intermediary visual noise
+   -------------------------------------------------------------------------- */
+
+#today .nightContextLine {
+  margin: 0 2px 8px !important;
+  min-height: 36px !important;
+}
+
+#today .personalNight {
+  margin-top: 0 !important;
+}
+
+#today #personalNightCard > .personalHeroSurface {
+  border-radius: 24px !important;
+}
+
+#today .personalHeroFactGrid {
+  gap: 6px !important;
+}
+
+#today .personalHeroFactGrid > .personalHeroFact {
+  min-height: 74px !important;
+  padding: 10px !important;
+  border-radius: 14px !important;
+}
+
+#today .nightAiBriefCard,
+#today .nightSignalPrimary,
+#today .nightTeamDetails,
+#today .recentActivityPanel {
+  border-radius: 18px !important;
+}
+
+#today .teamOverviewGroup {
+  margin-top: 18px !important;
+}
+
+#today .nightSummaryTitle,
+#today .nightOverviewRowHeading {
+  margin-bottom: 8px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Breaks: same shell rhythm and one grouped break unit
+   -------------------------------------------------------------------------- */
+
+#breakPersonalSummary {
+  margin-top: 0 !important;
+}
+
+#breaks .personalBreakSummary {
+  padding: 15px !important;
+  border-radius: 18px 18px 0 0 !important;
+}
+
+#breaks .personalBreakMain h2 {
+  font-size: clamp(25px, 6.8vw, 31px) !important;
+}
+
+#breaks .breakSummaryRow {
+  margin-bottom: 18px !important;
+  border-radius: 0 0 18px 18px !important;
+}
+
+#breaks .breakSummaryItem {
+  min-height: 56px !important;
+  padding-block: 8px !important;
+}
+
+#breaks .breakPlanTitle {
+  min-height: 0 !important;
+  margin: 18px 2px 8px !important;
+}
+
+#breaks .breakScheduleBoard,
+#breaks .breakNotesBoard {
+  border-radius: 18px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Chat: attach roster context to the same top shell and prioritise conversation
+   -------------------------------------------------------------------------- */
+
+#chat .appScreenHeader {
+  margin: 0 !important;
+  padding: calc(var(--app-safe-top, 0px) + 10px) var(--coherence-shell-pad) 10px !important;
+  border: 1px solid var(--coherence-shell-line) !important;
+  border-radius: var(--coherence-shell-radius) !important;
+  background: var(--coherence-shell-fill) !important;
+  box-shadow: var(--coherence-shell-shadow) !important;
+}
+
+#chat .primaryScreenTitleRow {
+  min-height: 58px !important;
+  padding: 10px 0 0 !important;
+}
+
+#chat .primaryScreenTitleRow h1 {
+  font-size: clamp(28px, 7.4vw, 32px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.045em !important;
+}
+
+#chat .primaryScreenTitleRow p {
+  margin-top: 4px !important;
+  font-size: 11.5px !important;
+}
+
+#chat .chatScreen {
+  gap: 12px !important;
+}
+
+#chat .chatRosterContext {
+  min-height: 48px !important;
+  margin-top: 0 !important;
+  padding: 8px 10px 8px 12px !important;
+  border-radius: 16px !important;
+}
+
+#chat .chatInboxTeamRow {
+  min-height: 80px !important;
+  padding: 11px 12px !important;
+  border-radius: 18px !important;
+}
+
+#chat .chatConversationList,
+#chat .chatUtilityGroup {
+  border-radius: 18px !important;
+}
+
+#chat .chatInboxRow,
+#chat .chatNotificationDisclosure > summary {
+  min-height: 60px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Account and sheets use the same grouped surface grammar
+   -------------------------------------------------------------------------- */
+
+.accountSheetHeader {
+  min-height: calc(60px + var(--app-safe-top, 0px)) !important;
+}
+
+.accountSheetScroll {
+  padding-top: 14px !important;
+}
+
+.personalisationStudioHeading,
+.personalisationPreviewCard,
+.personalisationGroup,
+.accountGroup,
+.accountIdentity,
+.accountHubList,
+.accountHomeIdentity {
+  border-radius: 18px !important;
+}
+
+.personalisationStudio {
+  gap: 12px !important;
+}
+
+.personalisationGroup,
+.accountGroup {
+  padding: 14px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Bottom dock: one quiet piece of chrome, not five separate buttons
+   -------------------------------------------------------------------------- */
+
+.bottom.reactTabs {
+  width: min(calc(100vw - 18px - var(--app-safe-left, 0px) - var(--app-safe-right, 0px)), 500px) !important;
+  min-height: 60px !important;
+  padding: 3px !important;
+  border-radius: 22px !important;
+  background: color-mix(in srgb, var(--liquid-surface) 82%, transparent) !important;
+  box-shadow: 0 12px 30px rgba(10, 22, 38, .13) !important;
+}
+
+.bottom.reactTabs button:not(.quickRudder) {
+  min-height: 50px !important;
+  border-radius: 16px !important;
+}
+
+body[data-view] .bottom.reactTabs .tabSlidingIndicator {
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--liquid-accent) 10%, var(--liquid-surface)) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 14%, var(--coherence-shell-line)) !important;
+}
+
+.bottom.reactTabs .quickRudder {
+  min-width: 54px !important;
+}
+
+.bottom.reactTabs .quickRudderDisc {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 14px !important;
+  background: color-mix(in srgb, var(--liquid-accent) 13%, var(--liquid-surface)) !important;
+  color: var(--liquid-accent-strong) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 24%, var(--coherence-shell-line)), 0 5px 12px rgba(18,32,48,.08) !important;
+}
+
+.bottom.reactTabs .quickRudderLabel {
+  font-size: 10px !important;
+}
+
+/* Keep page spacing consistent and keep content clear of the dock. */
+#today,
+#changes,
+#breaks,
+#chat,
+#roster {
+  padding-bottom: calc(92px + var(--app-safe-bottom, 0px)) !important;
+}
+
+@media (max-width: 430px) {
+  :root {
+    --coherence-shell-radius: 21px;
+    --coherence-shell-pad: 12px;
+    --coherence-section-gap: 16px;
+  }
+
+  #today,
+  #changes,
+  #breaks,
+  #chat,
+  #roster {
+    padding-inline: max(9px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
+  }
+
+  #today .nightUnifiedHero .nightSectionIdentity h1,
+  #changes .primaryScreenTitleRow h1,
+  #breaks .primaryScreenTitleRow h1,
+  #chat .primaryScreenTitleRow h1 {
+    font-size: 28px !important;
+  }
+
+  #changes .nightContextStaffing strong,
+  #breaks .nightContextStaffing strong {
+    font-size: 12.5px !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #today .nightUnifiedHero,
+  #changes .appScreenHeader,
+  #changes .changesDatePanel,
+  #breaks .appScreenHeader,
+  #breaks .breaksContextPanel,
+  #chat .appScreenHeader,
+  .bottom.reactTabs {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--liquid-surface) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #today .nightUnifiedHero,
+  #changes .appScreenHeader,
+  #changes .changesDatePanel,
+  #breaks .appScreenHeader,
+  #breaks .breaksContextPanel,
+  #chat .appScreenHeader,
+  .bottom.reactTabs {
+    transition: none !important;
+    animation: none !important;
+  }
+}
