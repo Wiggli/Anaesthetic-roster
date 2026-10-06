@@ -37,6 +37,11 @@ assert.match(intelligence, /Shared changes will not be queued or sent until you 
 assert.match(intelligence, /read-only/i);
 assert.doesNotMatch(intelligence, /\.rpc\s*\(/, 'Night Intelligence must not create a second clinical RPC path');
 assert.doesNotMatch(intelligence, /\.from\s*\(/, 'Night Intelligence must not create a second database write/read contract');
+assert.doesNotMatch(intelligence, /age>180000/, 'elapsed minutes alone must not create a stale-roster warning');
+assert.doesNotMatch(intelligence, /id:'stale'/, 'passive refresh age must not become an attention warning');
+assert.match(intelligence, /function niActionableAttention/, 'Night Intelligence must distinguish actionable roster issues from technical refresh notices');
+assert.match(intelligence, /item\.action!=='refresh'/, 'technical refresh items must not drive push notifications or app-badge attention');
+assert.match(intelligence, /items\.filter\(niActionableAttention\)/, 'smart notifications must use the actionable-attention filter');
 
 assert.match(clinical, /label:'Undo'/, 'existing clinical mutations must retain supported Undo paths');
 assert.match(sync, /function runRosterMutation/);
