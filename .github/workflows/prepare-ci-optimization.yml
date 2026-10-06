@@ -25,6 +25,8 @@ jobs:
       - run: npm ci
       - name: Apply deployment optimisation
         run: node scripts/prepare-ci-optimization.mjs
+      - name: Update deployment safety contract
+        run: node scripts/update-ci-contract.mjs
       - name: Verify application regression suite remains green
         run: npm test
       - name: Verify optimisation contracts
@@ -39,7 +41,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/prepare-ci-optimization.yml scripts/prepare-ci-optimization.mjs
-          git add .github/workflows/deploy-pages.yml .github/workflows/deploy-night-ai.yml
+          git rm .github/workflows/prepare-ci-optimization.yml scripts/prepare-ci-optimization.mjs scripts/update-ci-contract.mjs
+          git add .github/workflows/deploy-pages.yml .github/workflows/deploy-night-ai.yml tests/roster.test.js
           git commit -m "Speed up safe production deployments"
           git push origin HEAD:perf/faster-safe-deploys
