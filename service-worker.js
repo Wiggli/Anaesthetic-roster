@@ -1,25 +1,27 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v46-0';
+const CACHE_NAME = 'anaesthetic-night-roster-v46-1';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=46.0',
-  './pwa-safe-area.css?v=46.0',
-  './night-intelligence.css?v=46.0',
-  './night-ai.css?v=46.0',
-  './theme-bootstrap.js?v=46.0',
-  './domain-logic.js?v=46.0',
-  './runtime-foundation.js?v=46.0',
-  './app-core.js?v=46.0',
-  './app-ui.js?v=46.0',
-  './night-intelligence.js?v=46.0',
-  './night-ai.js?v=46.0',
-  './manifest.webmanifest?v=46.0',
+  './styles.css?v=46.1',
+  './pwa-safe-area.css?v=46.1',
+  './night-intelligence.css?v=46.1',
+  './night-ai.css?v=46.1',
+  './night-welcome.css?v=46.1',
+  './theme-bootstrap.js?v=46.1',
+  './domain-logic.js?v=46.1',
+  './runtime-foundation.js?v=46.1',
+  './app-core.js?v=46.1',
+  './app-ui.js?v=46.1',
+  './night-intelligence.js?v=46.1',
+  './night-ai.js?v=46.1',
+  './night-welcome.js?v=46.1',
+  './manifest.webmanifest?v=46.1',
   './release.json',
-  './icon-192.png?v=46.0',
-  './icon-512.png?v=46.0',
-  './apple-touch-icon.png?v=46.0',
-  './anaesthesia-header.jpg?v=46.0',
-  './mater-dei-logo.png?v=46.0'
+  './icon-192.png?v=46.1',
+  './icon-512.png?v=46.1',
+  './apple-touch-icon.png?v=46.1',
+  './anaesthesia-header.jpg?v=46.1',
+  './mater-dei-logo.png?v=46.1'
 ];
 
 // Vite injects the fingerprinted React/CSS assets here at build time.
@@ -185,8 +187,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=46.0', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=46.0', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=46.1', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=46.1', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {

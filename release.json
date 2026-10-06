@@ -1,14 +1,14 @@
 {
-  "version": "46.0",
+  "version": "46.1",
   "date": "6 October 2026",
-  "title": "Move Night Roster AI to the Groq free tier",
-  "summary": "Night Roster AI now targets Groq's free-tier Responses API with GPT-OSS 20B, keeping the provider credential exclusively in the Supabase Edge Function and retaining the deterministic roster summary whenever the free AI service is unavailable or its quota is exhausted.",
+  "title": "Personalise the Night welcome experience",
+  "summary": "Night opens as one coherent personal dashboard with a time-aware nurse greeting, restrained one-time typing motion and a clearer visual handoff into shift identity, date and allocation.",
   "changes": [
-    "Moves server-side Night Roster AI requests from the paid OpenAI API endpoint to Groq's OpenAI-compatible Responses API.",
-    "Uses openai/gpt-oss-20b as the default model and low reasoning effort to keep requests within Groq free-tier limits while preserving concise roster-grounded answers.",
-    "Keeps GROQ_API_KEY entirely inside the authenticated Supabase Edge Function so no provider credential is exposed to the browser or installed PWA.",
-    "Preserves the deterministic roster engine as the authority and automatically falls back to the existing roster summary when Groq is unavailable, unconfigured, rate-limited or offline.",
-    "Adds regression checks preventing accidental browser-side Groq calls or a return to a paid OpenAI API dependency."
+    "Replaces the generic Night heading with a personalised time-aware greeting using the saved preferred name, verified roster identity or professional roster name fallback.",
+    "Adds a restrained one-time typing reveal for the greeting while respecting the existing greeting preference and reduced-motion accessibility settings.",
+    "Keeps the welcome, shared shift identity and selected-night controls inside the existing unified Night hero so the page reads as one coherent personal dashboard rather than stacked unrelated cards.",
+    "Adds a concise orientation line that frames allocation, break and team plan as the page hierarchy before the existing Your night, Night brief and Tonight sections.",
+    "Ships and caches the dedicated welcome runtime and styles with regression coverage so installed Android and iPhone PWAs receive the same personalised experience."
   ],
   "update_policy": "normal"
 }
