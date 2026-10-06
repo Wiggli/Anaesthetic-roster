@@ -109,7 +109,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy notify-chat-message --project-ref "$SUPABASE_PROJECT_REF"
-      - name: Check chat notification boundary
+      - name: Chat notification endpoint health check
         if: steps.backend.outputs.changed == 'true'
         shell: bash
         run: |
