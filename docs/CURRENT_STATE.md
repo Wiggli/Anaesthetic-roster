@@ -19,9 +19,9 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 
 ## Development state
 
-Development uses a fast inner loop and a separate release gate. Ordinary iterations should use `npm run verify:fast`; complete regression and browser compatibility remain part of the pull-request and production pipeline. A developer should not repeatedly bump the public app version while exploring UI polish.
+Development uses a fast inner loop and a single deterministic release gate. Ordinary iterations use `npm run verify:fast`, while `npm run verify:ci` is the exact routine CI gate for consequential changes and combines the complete deterministic regression suite, TypeScript validation, one Vite build and build-artifact verification.
 
-The CI workflow builds the deployable artifact once, reuses that exact artifact in browser verification and production deployment, runs Chromium-focused checks for pull requests, and reserves WebKit resilience for production or scheduled compatibility verification. The required status check remains named `test`.
+The routine GitHub Actions workflow now contains one `test` job, a conditional Supabase migration job and Pages deployment of the exact artifact produced by `test`. It has no scheduled browser work of its own. Expensive Chromium and WebKit smoke and resilience work is isolated in the separate nightly/manual browser compatibility workflow, so browser-runner instability no longer creates repeated repair commits during ordinary merges. The required status check remains named `test`, Node 22 is pinned across local and CI tooling, and production still performs a small live PWA-shell version check after deployment.
 
 ## Continuity rule
 

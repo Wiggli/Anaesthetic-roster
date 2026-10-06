@@ -27,25 +27,21 @@
   "developerCommands": {
     "context": "npm run context",
     "fastVerify": "npm run verify:fast",
-    "fullVerify": "npm test",
+    "fullVerify": "npm run verify:ci",
     "build": "npm run build",
     "release": "npm run release"
   },
   "ci": {
     "workflow": ".github/workflows/deploy-pages.yml",
+    "compatibilityWorkflow": ".github/workflows/compatibility.yml",
     "requiredCheck": "test",
-    "pullRequestBrowsers": [
+    "routineBrowserGate": false,
+    "scheduledBrowsers": [
       "mobile-chromium",
       "desktop-chromium",
+      "mobile-webkit",
       "low-end-chromium",
-      "mobile-webkit"
-    ],
-    "productionBrowsers": [
-      "mobile-chromium",
-      "desktop-chromium",
-      "low-end-chromium",
-      "webkit-iphone",
-      "mobile-webkit"
+      "webkit-iphone"
     ],
     "cancelSupersededPullRequests": true,
     "reuseTestedPagesArtifact": true,
