@@ -236,14 +236,14 @@ Deno.serve(async (req: Request) => {
   const context = sanitiseContext(body.context);
   if (!context.date) return json(req, { error: "Roster context is missing a selected night" }, 400);
   const safeFallback = fallback(mode, context, question);
-  const apiKey = Deno.env.get("OPENAI_API_KEY") || "";
+  const apiKey = Deno.env.get("GROQ_API_KEY") || "";
   if (!apiKey) return json(req, { answer: safeFallback, ai: false, reason: "not_configured" });
 
-  const model = Deno.env.get("OPENAI_NIGHT_ROSTER_MODEL") || "gpt-6-luna";
+  const model = Deno.env.get("GROQ_NIGHT_ROSTER_MODEL") || "openai/gpt-oss-20b";
   const input = `Mode: ${mode}\n${question ? `Question: ${question}\n` : ""}Roster context (authoritative for this answer):\n${JSON.stringify(context)}`;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.groq.com/openai/v1/responses", {
       method: "POST",
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -252,19 +252,20 @@ Deno.serve(async (req: Request) => {
         instructions: modelInstructions(mode),
         input,
         max_output_tokens: mode === "ask" ? 360 : 260,
+        reasoning: { effort: "low" },
       }),
       signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) {
-      console.error("Night Roster AI model request failed", { status: response.status, mode });
+      console.error("Night Roster AI provider request failed", { status: response.status, mode });
       return json(req, { answer: safeFallback, ai: false, reason: "model_unavailable" });
     }
     const data = await response.json() as Record<string, unknown>;
     const answer = extractResponseText(data);
     if (!answer) return json(req, { answer: safeFallback, ai: false, reason: "empty_model_response" });
-    return json(req, { answer: text(answer, 1800), ai: true, model });
+    return json(req, { answer: text(answer, 1800), ai: true, model, provider: "groq" });
   } catch (error) {
-    console.error("Night Roster AI request error", { mode, name: error instanceof Error ? error.name : "error" });
+    console.error("Night Roster AI provider error", { mode, name: error instanceof Error ? error.name : "error" });
     return json(req, { answer: safeFallback, ai: false, reason: "model_unavailable" });
   }
 });

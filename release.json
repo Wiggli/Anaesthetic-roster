@@ -1,13 +1,14 @@
 {
-  "version": "45.9",
+  "version": "46.0",
   "date": "6 October 2026",
-  "title": "Quiet passive roster freshness alerts",
-  "summary": "Night Roster keeps sync age visible without treating a few quiet minutes as an incident, while push notifications stay focused on roster issues that genuinely need a nurse to act.",
+  "title": "Move Night Roster AI to the Groq free tier",
+  "summary": "Night Roster AI now targets Groq's free-tier Responses API with GPT-OSS 20B, keeping the provider credential exclusively in the Supabase Edge Function and retaining the deterministic roster summary whenever the free AI service is unavailable or its quota is exhausted.",
   "changes": [
-    "Removes the three-minute age-only stale warning so an otherwise healthy online roster no longer raises a prominent Roster may be stale card simply because no full refresh happened for a few minutes.",
-    "Keeps freshness visible in the compact Night status strip while reserving in-app sync warnings for real stale or error states reported by the shared-data runtime.",
-    "Stops technical refresh and sync-health items from generating Night Intelligence push notifications or app-badge attention, while preserving meaningful staffing, allocation and conflict alerts.",
-    "Adds regression coverage so passive refresh age cannot silently become an attention warning or noisy push path again."
+    "Moves server-side Night Roster AI requests from the paid OpenAI API endpoint to Groq's OpenAI-compatible Responses API.",
+    "Uses openai/gpt-oss-20b as the default model and low reasoning effort to keep requests within Groq free-tier limits while preserving concise roster-grounded answers.",
+    "Keeps GROQ_API_KEY entirely inside the authenticated Supabase Edge Function so no provider credential is exposed to the browser or installed PWA.",
+    "Preserves the deterministic roster engine as the authority and automatically falls back to the existing roster summary when Groq is unavailable, unconfigured, rate-limited or offline.",
+    "Adds regression checks preventing accidental browser-side Groq calls or a return to a paid OpenAI API dependency."
   ],
   "update_policy": "normal"
 }
