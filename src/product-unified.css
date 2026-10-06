@@ -811,3 +811,329 @@ textarea:focus-visible,
   border-radius: 20px !important;
   background: var(--unified-glass) !important;
 }
+
+
+/* 50.5 shared branded identity system. */
+:root {
+  --identity-edge: color-mix(in srgb, var(--liquid-accent) 22%, var(--unified-border));
+  --identity-edge-strong: color-mix(in srgb, var(--liquid-accent) 38%, var(--unified-border));
+  --identity-surface: linear-gradient(145deg,
+    color-mix(in srgb, var(--liquid-accent) 8%, var(--unified-surface)) 0%,
+    color-mix(in srgb, var(--liquid-secondary) 3%, var(--unified-surface)) 58%,
+    var(--unified-surface) 100%);
+  --identity-glow: 0 16px 42px color-mix(in srgb, var(--liquid-accent) 10%, transparent);
+}
+
+#today .nightUnifiedHero,
+#changes .appScreenHeader,
+#breaks .appScreenHeader,
+#chat .appScreenHeader {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  border: 1px solid var(--identity-edge) !important;
+  border-radius: 26px !important;
+  background: var(--identity-surface) !important;
+  box-shadow: var(--identity-glow) !important;
+}
+#today .nightUnifiedHero::after,
+#changes .appScreenHeader::after,
+#breaks .appScreenHeader::after,
+#chat .appScreenHeader::after {
+  content: '+';
+  position: absolute;
+  z-index: -1;
+  right: -20px;
+  top: 42px;
+  color: color-mix(in srgb, var(--liquid-accent) 6%, transparent);
+  font-size: 190px;
+  font-weight: 900;
+  line-height: .72;
+  pointer-events: none;
+  transform: rotate(-1deg);
+}
+#today .nightUnifiedHero {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  margin: 0 0 12px !important;
+  padding: 0 10px 12px !important;
+}
+#today #appHeader { order: 1; position: relative !important; z-index: 2; }
+#today .nightDateShell { order: 2; }
+#today .nightSectionIdentity { order: 3; }
+
+#today .hospitalStrip,
+#changes .primaryInstitution,
+#breaks .primaryInstitution,
+#chat .primaryInstitution {
+  min-height: 48px !important;
+  padding: 0 2px 4px !important;
+  border-bottom: 0 !important;
+}
+#changes .primaryInstitutionBrand,
+#breaks .primaryInstitutionBrand,
+#chat .primaryInstitutionBrand {
+  display: flex !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+#today .hospitalStrip img,
+#changes .primaryInstitutionBrand img,
+#breaks .primaryInstitutionBrand img,
+#chat .primaryInstitutionBrand img {
+  max-width: 118px !important;
+  max-height: 26px !important;
+}
+#today .hospitalStrip > span,
+#changes .primaryInstitutionBrand > span,
+#breaks .primaryInstitutionBrand > span,
+#chat .primaryInstitutionBrand > span {
+  display: inline-flex !important;
+  width: auto !important;
+  max-width: 172px !important;
+  min-height: 27px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: auto !important;
+  padding: 4px 9px !important;
+  border: 1px solid color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--liquid-accent) 7%, var(--unified-surface)) !important;
+  color: var(--liquid-text) !important;
+  font-size: 8.8px !important;
+  font-weight: 760 !important;
+  line-height: 1.05 !important;
+  letter-spacing: .025em !important;
+  text-align: center;
+}
+#today .hospitalStrip > span { margin-right: 48px !important; }
+#today .headActions { top: calc(var(--app-safe-top, 0px) + 9px) !important; right: 2px !important; }
+#today .accountBtn,
+#changes .primaryHeaderAccount,
+#breaks .primaryHeaderAccount,
+#chat .primaryHeaderAccount {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  border-color: var(--identity-edge) !important;
+  background: color-mix(in srgb, var(--liquid-accent) 8%, var(--unified-soft-strong)) !important;
+}
+
+#today .nightDateShell {
+  margin: 5px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#today .nightTeamIdentityContext {
+  position: relative !important;
+  min-height: 82px !important;
+  grid-template-columns: 62px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: center !important;
+  margin: 0 0 8px !important;
+  padding: 9px 36px 9px 10px !important;
+  border: 1px solid var(--identity-edge-strong) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 12%, var(--unified-surface)),
+    color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-surface))) !important;
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 10%, transparent) !important;
+}
+#today .nightTeamIdentityContext::after {
+  content: '›';
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  color: var(--liquid-secondary);
+  font-size: 28px;
+  font-weight: 400;
+  transform: translateY(-52%);
+}
+#today .nightTeamIdentityContext .shiftIdentityMark {
+  width: 62px !important;
+  min-width: 62px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  border-radius: 17px !important;
+}
+#today .nightTeamIdentityContext .shiftIdentityCopy strong {
+  font-size: clamp(22px, 6.3vw, 28px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.03em !important;
+}
+#today .nightTeamIdentityContext .shiftIdentityCopy small {
+  display: -webkit-box !important;
+  margin-top: 5px !important;
+  overflow: hidden !important;
+  color: var(--liquid-secondary) !important;
+  font-size: 11px !important;
+  font-weight: 570 !important;
+  line-height: 1.22 !important;
+  white-space: normal !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+#today .dateNav.rosterDateControl {
+  min-height: 42px !important;
+  border-color: color-mix(in srgb, var(--liquid-accent) 12%, var(--unified-border)) !important;
+  background: color-mix(in srgb, var(--liquid-secondary) 4%, transparent) !important;
+}
+#today .nightSectionIdentity {
+  margin: 0 !important;
+  padding: 14px 4px 3px !important;
+}
+#today .nightWelcomeEyebrow { display: none !important; }
+#today .nightUnifiedHero .nightSectionIdentity h1 {
+  max-width: 100% !important;
+  font-size: clamp(29px, 8vw, 36px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.045em !important;
+}
+
+#changes .appScreenHeader,
+#breaks .appScreenHeader,
+#chat .appScreenHeader {
+  margin: 0 0 10px !important;
+  padding: calc(var(--app-safe-top, 0px) + 7px) 10px 10px !important;
+}
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow,
+#chat .primaryScreenTitleRow { padding: 7px 2px 3px !important; }
+#changes .primaryScreenTitleRow h1,
+#breaks .primaryScreenTitleRow h1,
+#chat .primaryScreenTitleRow h1 { font-size: clamp(28px, 7.2vw, 33px) !important; }
+#changes .changesDatePanel,
+#breaks .breaksContextPanel,
+#chat .chatRosterContext {
+  border-color: var(--identity-edge) !important;
+  background: color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface)) !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.055) !important;
+}
+#changes .nightContextMetaRow h2,
+#breaks .nightContextMetaRow h2 { display: none !important; }
+#changes .nightContextMetaRow,
+#breaks .nightContextMetaRow {
+  min-height: 23px !important;
+  justify-content: flex-end !important;
+  margin-bottom: 4px !important;
+}
+#changes .nightTeamIdentityContext,
+#breaks .nightTeamIdentityContext,
+#chat .chatShiftIdentity {
+  min-height: 60px !important;
+  grid-template-columns: 48px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  padding: 6px 8px !important;
+  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 18%, var(--unified-border)) !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 6%, transparent) !important;
+}
+#changes .nightTeamIdentityContext .shiftIdentityMark,
+#breaks .nightTeamIdentityContext .shiftIdentityMark,
+#chat .chatShiftIdentity .shiftIdentityMark {
+  width: 48px !important;
+  min-width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  border-radius: 14px !important;
+}
+#changes .nightTeamIdentityContext .shiftIdentityCopy strong,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy strong,
+#chat .chatShiftIdentity .shiftIdentityCopy strong { font-size: 18px !important; }
+#changes .nightTeamIdentityContext .shiftIdentityCopy small,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy small,
+#chat .chatShiftIdentity .shiftIdentityCopy small {
+  margin-top: 3px !important;
+  font-size: 10px !important;
+  white-space: normal !important;
+}
+#chat .chatRosterContext {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 7px 9px !important;
+  align-items: center !important;
+  padding: 8px !important;
+}
+#chat .chatShiftIdentity { grid-column: 1 / -1; margin: 0 !important; }
+#chat .chatRosterContextCopy { min-width: 0 !important; padding: 2px 4px 3px !important; }
+#chat .chatShiftNameButton {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+}
+#chat .chatShiftNameButton span { display: none !important; }
+
+#today #personalNightCard > .personalHeroSurface,
+#changes .staffingSection,
+#breaks .personalBreakSummary,
+#breaks .breakScheduleBoard,
+#chat .chatInboxTeamRow,
+#chat .chatConversationList,
+.quickPrimaryAction,
+.quickReviewAction,
+.quickCompactAction,
+.personalisationGroup,
+.accountGroup,
+#admin .panel,
+#admin .adminPanel,
+#admin .adminGroup,
+#admin .historyItem,
+#admin .contentSurface { border-color: var(--identity-edge) !important; }
+.quickActionsContextBar {
+  border-color: var(--identity-edge) !important;
+  background: color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-soft)) !important;
+}
+.bottom.reactTabs {
+  border-color: var(--identity-edge) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.14) !important;
+}
+
+@media (max-width: 430px) {
+  #today .nightUnifiedHero { padding-inline: 8px !important; border-radius: 23px !important; }
+  #today .hospitalStrip > span,
+  #changes .primaryInstitutionBrand > span,
+  #breaks .primaryInstitutionBrand > span,
+  #chat .primaryInstitutionBrand > span {
+    max-width: 150px !important;
+    padding-inline: 7px !important;
+    font-size: 8.1px !important;
+  }
+  #today .hospitalStrip img,
+  #changes .primaryInstitutionBrand img,
+  #breaks .primaryInstitutionBrand img,
+  #chat .primaryInstitutionBrand img { max-width: 105px !important; max-height: 23px !important; }
+  #today .nightTeamIdentityContext {
+    min-height: 76px !important;
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding-left: 8px !important;
+  }
+  #today .nightTeamIdentityContext .shiftIdentityMark {
+    width: 56px !important;
+    min-width: 56px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+  }
+  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: clamp(21px, 6.2vw, 25px) !important; }
+  #today .nightUnifiedHero .nightSectionIdentity h1 { font-size: clamp(28px, 8vw, 34px) !important; }
+}
+@media (max-width: 370px) {
+  #today .hospitalStrip > span,
+  #changes .primaryInstitutionBrand > span,
+  #breaks .primaryInstitutionBrand > span,
+  #chat .primaryInstitutionBrand > span { max-width: 128px !important; font-size: 7.6px !important; }
+  #today .hospitalStrip img,
+  #changes .primaryInstitutionBrand img,
+  #breaks .primaryInstitutionBrand img,
+  #chat .primaryInstitutionBrand img { max-width: 96px !important; }
+  #today .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 10px !important; }
+}
