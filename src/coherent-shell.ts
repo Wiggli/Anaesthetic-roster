@@ -20,47 +20,68 @@ function openNativePicker(input: HTMLInputElement) {
   input.click();
 }
 
+function removeLegacyDatePresentation(control: HTMLElement, input: HTMLInputElement) {
+  const legacyWrapper = input.closest<HTMLElement>('.prettyDateControl');
+  if (legacyWrapper && control.contains(legacyWrapper)) {
+    legacyWrapper.parentNode?.insertBefore(input, legacyWrapper);
+    legacyWrapper.remove();
+  }
+
+  control.querySelectorAll<HTMLElement>('.prettyDateButton').forEach((button) => button.remove());
+}
+
 function enhanceRosterDateControl(control: HTMLElement) {
-  if (control.dataset.coherentDate === 'true') return;
   const input = control.querySelector<HTMLInputElement>('input[type="date"]');
   if (!input) return;
 
-  const text = document.createElement('span');
-  text.className = 'rosterDateText';
-  text.setAttribute('role', 'button');
-  text.setAttribute('tabindex', '0');
-  text.setAttribute('aria-label', 'Choose roster night');
-  input.insertAdjacentElement('afterend', text);
+  // The legacy date enhancer can run after the modern shell and re-wrap this input.
+  // Always normalise first, even when this control was already enhanced, so the two
+  // generations of date UI can never coexist on Android, iPhone or desktop browsers.
+  removeLegacyDatePresentation(control, input);
+
+  let text = control.querySelector<HTMLElement>(':scope > .rosterDateText');
+  if (!text) {
+    text = document.createElement('span');
+    text.className = 'rosterDateText';
+    text.setAttribute('role', 'button');
+    text.setAttribute('tabindex', '0');
+    text.setAttribute('aria-label', 'Choose roster night');
+    input.insertAdjacentElement('afterend', text);
+  }
 
   const sync = () => {
     const supplied = control.getAttribute('data-date-label') || '';
-    text.textContent = supplied || formatRosterDate(input.value) || 'Choose night';
-  };
-  const open = (event: Event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    openNativePicker(input);
+    if (text) text.textContent = supplied || formatRosterDate(input.value) || 'Choose night';
   };
 
-  text.addEventListener('click', open);
-  text.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') open(event);
-  });
-  input.addEventListener('change', sync);
-  input.addEventListener('input', sync);
+  if (control.dataset.coherentDate !== 'true') {
+    const open = (event: Event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openNativePicker(input);
+    };
 
-  new MutationObserver(sync).observe(control, {
-    attributes: true,
-    attributeFilter: ['data-date-label']
-  });
+    text.addEventListener('click', open);
+    text.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') open(event);
+    });
+    input.addEventListener('change', sync);
+    input.addEventListener('input', sync);
 
-  control.dataset.coherentDate = 'true';
+    new MutationObserver(sync).observe(control, {
+      attributes: true,
+      attributeFilter: ['data-date-label']
+    });
+
+    control.dataset.coherentDate = 'true';
+  }
+
   sync();
 }
 
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
-  document.documentElement.dataset.productShell = '50.1';
+  document.documentElement.dataset.productShell = '50.2';
 }
 
 if (document.readyState === 'loading') {
