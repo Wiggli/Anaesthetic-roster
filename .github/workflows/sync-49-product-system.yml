@@ -25,69 +25,206 @@ jobs:
       - run: npm ci
       - name: Consolidate the active product design system
         run: |
-          node <<'NODE'
-          const fs = require('node:fs');
+          python3 <<'PY'
+          from pathlib import Path
+          import json, re
 
-          const unifiedPath = 'src/product-unified.css';
-          let unified = fs.readFileSync(unifiedPath, 'utf8').trimEnd();
-          const marker = '/* 49.0 coherence completion: one active product authority */';
-          if (!unified.includes(marker)) {
-            unified += `\n\n${marker}\n\n:root {\n  --unified-fast: 180ms;\n  --unified-base: 240ms;\n  --unified-ease: cubic-bezier(.2,.8,.2,1);\n}\n\n/* Actions stays the command centre while using the same surfaces and radii. */\n.quickActionsExperience {\n  gap: var(--unified-space-3) !important;\n}\n.quickActionsContextBar,\n.quickPrimaryAction,\n.quickReviewAction,\n.quickCompactAction {\n  border: 1px solid var(--unified-border) !important;\n  border-radius: var(--unified-radius-lg) !important;\n  background: var(--unified-surface) !important;\n  box-shadow: none !important;\n}\n.quickActionsContextBar {\n  background: var(--unified-soft) !important;\n}\n.quickPrimaryAction,\n.quickCompactAction { min-height: 70px !important; }\n.quickReviewAction { min-height: 74px !important; }\n.quickReviewAction:not(:disabled) {\n  border-color: color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;\n  background: var(--unified-accent-soft) !important;\n}\n\n/* One quiet live-state language everywhere. */\n.headerLiveChip,\n.liveStatus,\n#breakPlanLive,\n.primaryConnectionLine {\n  color: var(--liquid-secondary) !important;\n  font-variant-numeric: tabular-nums;\n}\n.headerLiveDot,\n.liveDot,\n.chatLiveDot,\n#breakPlanLive i {\n  width: 7px !important;\n  height: 7px !important;\n  box-shadow: none !important;\n}\n\n/* Shared keyboard, pointer and motion language. */\n:is(button, [role="button"], summary) {\n  -webkit-tap-highlight-color: transparent;\n}\n:is(button, [role="button"], summary):focus-visible,\ninput:focus-visible,\nselect:focus-visible,\ntextarea:focus-visible {\n  outline: 3px solid color-mix(in srgb, var(--liquid-accent) 38%, transparent) !important;\n  outline-offset: 2px !important;\n}\n@media (hover:hover) and (pointer:fine) {\n  :is(button, [role="button"], summary) {\n    transition: background-color var(--unified-fast) var(--unified-ease), border-color var(--unified-fast) var(--unified-ease), color var(--unified-fast) var(--unified-ease), opacity var(--unified-fast) var(--unified-ease), transform var(--unified-fast) var(--unified-ease) !important;\n  }\n}\n\n/* Slightly wider small-phone guard, including compact Android/iPhone layouts. */\n@media (max-width: 430px) {\n  #today, #changes, #breaks, #chat, #roster {\n    padding-inline: max(10px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;\n  }\n  #today .dateNav.rosterDateControl input[type="date"],\n  #changes .nightContextPanel .dateNav.rosterDateControl input[type="date"],\n  #breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"] {\n    overflow: hidden !important;\n    text-overflow: ellipsis !important;\n    white-space: nowrap !important;\n  }\n}\n\n@media (prefers-contrast: more) {\n  #today .nightDateShell,\n  #changes .changesDatePanel,\n  #breaks .breaksContextPanel,\n  #today #personalNightCard > .personalHeroSurface,\n  #today .nightSignalPrimary,\n  #today .nightTeamDetails,\n  #changes .workflowGuidance,\n  #changes .staffingSection,\n  #breaks .breakScheduleBoard,\n  #chat .chatInboxTeamRow,\n  #chat .chatConversationList,\n  .quickActionsContextBar,\n  .quickPrimaryAction,\n  .quickReviewAction,\n  .quickCompactAction,\n  .personalisationGroup,\n  .accountGroup {\n    border-color: currentColor !important;\n  }\n}\n`;
-          }
-          fs.writeFileSync(unifiedPath, unified + '\n');
+          unified_path = Path('src/product-unified.css')
+          unified = unified_path.read_text().rstrip()
+          marker = '/* 49.0 coherence completion: one active product authority */'
+          if marker not in unified:
+              unified += r'''
 
-          const tailwindPath = 'src/tailwind.css';
-          let tailwind = fs.readFileSync(tailwindPath, 'utf8');
-          tailwind = tailwind
-            .replace(/\n@import "\.\/product-coherence\.css";\n/g, '\n')
-            .replace(/\n@import "\.\/product-coherence-bridge\.css";\n/g, '\n')
-            .replace(/\/\* 48\.0 simple coherent system[\s\S]*?\*\/\n@import "\.\/product-unified\.css";/, '/* 49.0 single product-wide presentation authority. Historical coherence files remain in the repository but are no longer active in the cascade. */\n@import "./product-unified.css";')
-            .replace('/* The long-lived presentation token is --liquid-bg. Keep the unified canvas wired to it. */\n:root { --coherence-canvas: var(--liquid-bg); }', '/* Keep one canvas token bridge for long-lived theme compatibility. */\n:root { --coherence-canvas: var(--liquid-bg); }');
-          fs.writeFileSync(tailwindPath, tailwind);
+/* 49.0 coherence completion: one active product authority */
+:root {
+  --unified-fast: 180ms;
+  --unified-base: 240ms;
+  --unified-ease: cubic-bezier(.2,.8,.2,1);
+}
+.quickActionsExperience { gap: var(--unified-space-3) !important; }
+.quickActionsContextBar,
+.quickPrimaryAction,
+.quickReviewAction,
+.quickCompactAction {
+  border: 1px solid var(--unified-border) !important;
+  border-radius: var(--unified-radius-lg) !important;
+  background: var(--unified-surface) !important;
+  box-shadow: none !important;
+}
+.quickActionsContextBar { background: var(--unified-soft) !important; }
+.quickPrimaryAction,
+.quickCompactAction { min-height: 70px !important; }
+.quickReviewAction { min-height: 74px !important; }
+.quickReviewAction:not(:disabled) {
+  border-color: color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
+  background: var(--unified-accent-soft) !important;
+}
+.headerLiveChip,
+.liveStatus,
+#breakPlanLive,
+.primaryConnectionLine {
+  color: var(--liquid-secondary) !important;
+  font-variant-numeric: tabular-nums;
+}
+.headerLiveDot,
+.liveDot,
+.chatLiveDot,
+#breakPlanLive i {
+  width: 7px !important;
+  height: 7px !important;
+  box-shadow: none !important;
+}
+:is(button, [role="button"], summary) { -webkit-tap-highlight-color: transparent; }
+:is(button, [role="button"], summary):focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--liquid-accent) 38%, transparent) !important;
+  outline-offset: 2px !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  :is(button, [role="button"], summary) {
+    transition: background-color var(--unified-fast) var(--unified-ease), border-color var(--unified-fast) var(--unified-ease), color var(--unified-fast) var(--unified-ease), opacity var(--unified-fast) var(--unified-ease), transform var(--unified-fast) var(--unified-ease) !important;
+  }
+}
+@media (max-width: 430px) {
+  #today, #changes, #breaks, #chat, #roster {
+    padding-inline: max(10px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
+  }
+  #today .dateNav.rosterDateControl input[type="date"],
+  #changes .nightContextPanel .dateNav.rosterDateControl input[type="date"],
+  #breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"] {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+@media (prefers-contrast: more) {
+  #today .nightDateShell,
+  #changes .changesDatePanel,
+  #breaks .breaksContextPanel,
+  #today #personalNightCard > .personalHeroSurface,
+  #today .nightSignalPrimary,
+  #today .nightTeamDetails,
+  #changes .workflowGuidance,
+  #changes .staffingSection,
+  #breaks .breakScheduleBoard,
+  #chat .chatInboxTeamRow,
+  #chat .chatConversationList,
+  .quickActionsContextBar,
+  .quickPrimaryAction,
+  .quickReviewAction,
+  .quickCompactAction,
+  .personalisationGroup,
+  .accountGroup { border-color: currentColor !important; }
+}
+'''
+          unified_path.write_text(unified + '\n')
 
-          const designPath = 'docs/DESIGN_SYSTEM.md';
-          let design = fs.readFileSync(designPath, 'utf8');
-          design = design.replace('The current product-coherence tokens use the 4, 8, 12, 16, 24 and 32 pixel spacing rhythm, 14 pixel control radius, 20 pixel content-card radius and 28 pixel hero radius. Ordinary transitions should use the shared 180 to 240 millisecond motion range.', 'The active product system uses a 6, 10, 14, 18 and 24 pixel spacing rhythm, 12 to 15 pixel control radii and a 20 pixel content-card radius. Ordinary transitions use the shared 180 to 240 millisecond motion range. These values are owned by `product-unified.css`, so new screens should consume the same tokens rather than introduce another local scale.');
-          const cascadeStart = design.indexOf('## Cascade ownership');
-          const visibilityStart = design.indexOf('## Visibility state');
-          if (cascadeStart !== -1 && visibilityStart !== -1) {
-            const replacement = `## Cascade ownership\n\nThe production cascade has one final product-wide presentation owner. Older compatibility layers may provide component internals, but they are not allowed to define a second competing coherence system.\n\n- \`styles.css\` remains the compatibility base inside \`@layer legacy-base\`.\n- \`chat.css\` remains the Chat fallback inside \`@layer legacy-chat\`.\n- Historical presentation generations remain compatibility history and should continue shrinking.\n- \`account-admin-polish.css\` owns account and administrator component internals.\n- \`rudder-navigation.css\` owns low-level primary dock geometry.\n- \`product-polish.css\` owns established safety-sensitive compatibility polish that has not yet been retired.\n- \`product-unified.css\` is the single final product-wide presentation authority. It owns shared spacing, typography hierarchy, surfaces, radii, shift identity, live-state language, Actions presentation, navigation appearance, motion, focus treatment and small-phone adaptation across Night, Changes, Actions, Breaks, Chat, Account and Personalisation.\n- \`product-coherence.css\`, \`product-coherence-bridge.css\` and \`product-coherence-correction.css\` are retained only as historical migration references and are not imported into the production cascade.\n\nA new whole-app visual rule belongs in \`product-unified.css\`. A component-specific rule belongs in its owning component stylesheet. Do not create another final override stylesheet. If an older compatibility rule prevents the product system from taking effect, retire or demote that older rule rather than adding another coherence layer.\n\n`;
-            design = design.slice(0, cascadeStart) + replacement + design.slice(visibilityStart);
-          }
-          fs.writeFileSync(designPath, design);
+          tailwind_path = Path('src/tailwind.css')
+          tailwind = tailwind_path.read_text()
+          tailwind = tailwind.replace('\n@import "./product-coherence.css";\n', '\n')
+          tailwind = tailwind.replace('\n@import "./product-coherence-bridge.css";\n', '\n')
+          tailwind = re.sub(r'/\* 48\.0 simple coherent system[\s\S]*?\*/\n@import "\./product-unified\.css";', '/* 49.0 single product-wide presentation authority. */\n@import "./product-unified.css";', tailwind)
+          tailwind_path.write_text(tailwind)
 
-          const coherenceTest = `const assert = require('node:assert/strict');\nconst fs = require('node:fs');\nconst path = require('node:path');\n\nconst root = path.resolve(__dirname, '..');\nconst read = file => fs.readFileSync(path.join(root, file), 'utf8');\nconst unified = read('src/product-unified.css');\nconst tailwind = read('src/tailwind.css');\nconst designSystem = read('docs/DESIGN_SYSTEM.md');\n\nfunction includesAll(source, values, label) {\n  for (const value of values) assert.ok(source.includes(value), \`${'${label}'} is missing ${'${value}'}\`);\n}\n\nincludesAll(tailwind, [\n  '@import "./presentation.css";',\n  '@import "./account-admin-polish.css";',\n  '@import "./rudder-navigation.css";',\n  '@import "./product-polish.css";',\n  '@import "./product-unified.css";'\n], 'Production presentation cascade');\nassert.ok(!tailwind.includes('@import "./product-coherence.css";'), 'historical coherence layer must not remain active');\nassert.ok(!tailwind.includes('@import "./product-coherence-bridge.css";'), 'historical migration bridge must not remain active');\nassert.ok(!tailwind.includes('@import "./product-coherence-correction.css";'), '47.0 corrective layer must stay retired');\nassert.ok(tailwind.indexOf('@import "./product-unified.css";') > tailwind.indexOf('@import "./product-polish.css";'), 'product-unified.css must remain the final product authority');\n\nincludesAll(unified, [\n  '--unified-content-width:', '--unified-space-1:', '--unified-radius-lg:', '--unified-fast:', '--unified-ease:',\n  '#today .nightUnifiedHero', '#changes .changesDatePanel', '#breaks .breaksContextPanel', '#chat .chatRosterContext',\n  '.nightTeamIdentityContext', 'input[type="date"]::-webkit-datetime-edit', '#changes .workflowSteps',\n  '#today #personalNightCard > .personalHeroSurface', '#breaks .personalBreakSummary', '#chat .chatInboxTeamRow',\n  '.quickActionsExperience', '.bottom.reactTabs', '#accountSheet', '.personalisationGroup',\n  '.headerLiveChip', ':focus-visible', '@media (max-width: 430px)', '@media (prefers-reduced-transparency: reduce)',\n  '@media (prefers-reduced-motion: reduce)', '@media (prefers-contrast: more)'\n], 'Unified product contract');\n\nassert.ok(!unified.includes('.hidden {'), 'product system must not redefine runtime visibility state');\nassert.ok(!unified.includes('--liquid-critical:'), 'product system must not redefine clinical critical colour');\nassert.ok(!unified.includes('--liquid-warning:'), 'product system must not redefine clinical warning colour');\nassert.ok(!unified.includes('--liquid-success:'), 'product system must not redefine clinical success colour');\nassert.ok((unified.match(/!important/g) || []).length <= 760, 'single final product authority override budget must remain bounded');\n\nincludesAll(designSystem, [\n  'role tonight, their break, changes requiring attention, the team plan',\n  '`product-unified.css` is the single final product-wide presentation authority',\n  'Night → Changes → Actions → Breaks → Chat → Account',\n  'Do not create another final override stylesheet'\n], 'Design-system ownership');\n\nconsole.log('unified product coherence contract tests passed');\n`;
-          fs.writeFileSync('tests/product-coherence.test.js', coherenceTest);
+          design_path = Path('docs/DESIGN_SYSTEM.md')
+          design = design_path.read_text()
+          design = design.replace('The current product-coherence tokens use the 4, 8, 12, 16, 24 and 32 pixel spacing rhythm, 14 pixel control radius, 20 pixel content-card radius and 28 pixel hero radius. Ordinary transitions should use the shared 180 to 240 millisecond motion range.', 'The active product system uses a 6, 10, 14, 18 and 24 pixel spacing rhythm, 12 to 15 pixel control radii and a 20 pixel content-card radius. Ordinary transitions use the shared 180 to 240 millisecond motion range. These values are owned by `product-unified.css`, so new screens should consume the same tokens rather than introduce another local scale.')
+          start = design.find('## Cascade ownership')
+          end = design.find('## Visibility state')
+          replacement = '''## Cascade ownership
 
-          const layoutTest = `const assert = require('node:assert/strict');\nconst fs = require('node:fs');\nconst css = fs.readFileSync('src/product-unified.css', 'utf8');\nconst tailwind = fs.readFileSync('src/tailwind.css', 'utf8');\n\nconst checks = [\n  ['date controls use a three-column mobile-safe grid', 'grid-template-columns: 38px minmax(0, 1fr) 38px'],\n  ['date fields cannot wrap vertically', 'white-space: nowrap !important'],\n  ['WebKit date editing is explicitly bounded', '::-webkit-datetime-edit'],\n  ['Night allocation remains a dedicated hero', '#today #personalNightCard > .personalHeroSurface'],\n  ['Changes retains the three-step workflow rail', '#changes .workflowSteps'],\n  ['Breaks combines personal summary and statistics', '#breaks .breakSummaryRow'],\n  ['Chat promotes the team conversation', '#chat .chatInboxTeamRow'],\n  ['Actions has product-system ownership', '.quickActionsExperience'],\n  ['Account uses the product surface language', '.accountSheetHeader'],\n  ['small-phone handling exists', '@media (max-width: 390px)'],\n  ['broader compact-phone guard exists', '@media (max-width: 430px)']\n];\nfor (const [label, needle] of checks) assert.ok(css.includes(needle), label);\nassert.equal((tailwind.match(/product-(?:coherence|unified)[^\";]*\.css/g) || []).length, 1, 'only one active product-wide coherence stylesheet may be imported');\nconsole.log('coherent layout regression contract tests passed');\n`;
-          fs.writeFileSync('tests/product-layout-contract.test.js', layoutTest);
+The production cascade has one final product-wide presentation owner. Older compatibility layers may provide component internals, but they are not allowed to define a second competing coherence system.
 
-          const pkgPath = 'package.json';
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          for (const key of ['verify:fast', 'test']) {
-            if (!pkg.scripts[key].includes('product-layout-contract.test.js')) {
-              pkg.scripts[key] = pkg.scripts[key].replace('node tests/product-coherence.test.js', 'node tests/product-coherence.test.js && node tests/product-layout-contract.test.js');
-            }
-          }
-          fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+- `styles.css` remains the compatibility base inside `@layer legacy-base`.
+- `chat.css` remains the Chat fallback inside `@layer legacy-chat`.
+- Historical presentation generations remain compatibility history and should continue shrinking.
+- `account-admin-polish.css` owns account and administrator component internals.
+- `rudder-navigation.css` owns low-level primary dock geometry.
+- `product-polish.css` owns established safety-sensitive compatibility polish that has not yet been retired.
+- `product-unified.css` is the single final product-wide presentation authority. It owns shared spacing, typography hierarchy, surfaces, radii, shift identity, live-state language, Actions presentation, navigation appearance, motion, focus treatment and small-phone adaptation across Night, Changes, Actions, Breaks, Chat, Account and Personalisation.
+- `product-coherence.css`, `product-coherence-bridge.css` and `product-coherence-correction.css` are retained only as historical migration references and are not imported into the production cascade.
 
-          const releasePath = 'release.json';
-          const release = JSON.parse(fs.readFileSync(releasePath, 'utf8'));
-          release.version = '49.0';
-          release.date = '6 October 2026';
-          release.title = 'Consolidate Night Roster into one coherent product system';
-          release.summary = 'Removes competing coherence layers from the active cascade and makes one shared product system responsible for hierarchy, spacing, radii, surfaces, shift identity, live state, Actions, navigation, accessibility and compact-phone behaviour.';
-          release.changes = [
-            'Makes product-unified.css the single final product-wide presentation authority and removes the older coherence and bridge files from the active cascade.',
-            'Keeps one restrained header, one compact selected-night component and one dominant task surface per screen while preserving the dark personal Night allocation as the visual anchor.',
-            'Standardises Actions, Account, Personalisation, live-state indicators, focus treatment and motion so they use the same spacing, radius and surface language as Night, Changes, Breaks and Chat.',
-            'Strengthens Android and iPhone compact-phone guards so roster dates remain on one line and the bottom dock, shift identity and break summary keep stable geometry.',
-            'Adds regression contracts that reject multiple active coherence stylesheets and protect the shared date, Night, Changes, Breaks, Chat, Actions and Account layout primitives.',
-            'Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and guarded mutation paths.'
-          ];
-          release.update_policy = 'normal';
-          fs.writeFileSync(releasePath, JSON.stringify(release, null, 2) + '\n');
-          NODE
+A new whole-app visual rule belongs in `product-unified.css`. A component-specific rule belongs in its owning component stylesheet. Do not create another final override stylesheet. If an older compatibility rule prevents the product system from taking effect, retire or demote that older rule rather than adding another coherence layer.
+
+'''
+          if start != -1 and end != -1:
+              design = design[:start] + replacement + design[end:]
+          design_path.write_text(design)
+
+          Path('tests/product-coherence.test.js').write_text(r'''const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const unified = read('src/product-unified.css');
+const tailwind = read('src/tailwind.css');
+const designSystem = read('docs/DESIGN_SYSTEM.md');
+function includesAll(source, values, label) { for (const value of values) assert.ok(source.includes(value), `${label} is missing ${value}`); }
+includesAll(tailwind, ['@import "./presentation.css";','@import "./account-admin-polish.css";','@import "./rudder-navigation.css";','@import "./product-polish.css";','@import "./product-unified.css";'], 'Production presentation cascade');
+assert.ok(!tailwind.includes('@import "./product-coherence.css";'), 'historical coherence layer must not remain active');
+assert.ok(!tailwind.includes('@import "./product-coherence-bridge.css";'), 'historical migration bridge must not remain active');
+assert.ok(!tailwind.includes('@import "./product-coherence-correction.css";'), '47.0 corrective layer must stay retired');
+assert.ok(tailwind.indexOf('@import "./product-unified.css";') > tailwind.indexOf('@import "./product-polish.css";'), 'product-unified.css must remain the final product authority');
+includesAll(unified, ['--unified-content-width:','--unified-space-1:','--unified-radius-lg:','--unified-fast:','--unified-ease:','#today .nightUnifiedHero','#changes .changesDatePanel','#breaks .breaksContextPanel','#chat .chatRosterContext','.nightTeamIdentityContext','input[type="date"]::-webkit-datetime-edit','#changes .workflowSteps','#today #personalNightCard > .personalHeroSurface','#breaks .personalBreakSummary','#chat .chatInboxTeamRow','.quickActionsExperience','.bottom.reactTabs','#accountSheet','.personalisationGroup','.headerLiveChip',':focus-visible','@media (max-width: 430px)','@media (prefers-reduced-transparency: reduce)','@media (prefers-reduced-motion: reduce)','@media (prefers-contrast: more)'], 'Unified product contract');
+assert.ok(!unified.includes('.hidden {'), 'product system must not redefine runtime visibility state');
+assert.ok(!unified.includes('--liquid-critical:'), 'product system must not redefine clinical critical colour');
+assert.ok(!unified.includes('--liquid-warning:'), 'product system must not redefine clinical warning colour');
+assert.ok(!unified.includes('--liquid-success:'), 'product system must not redefine clinical success colour');
+assert.ok((unified.match(/!important/g) || []).length <= 760, 'single final product authority override budget must remain bounded');
+includesAll(designSystem, ['role tonight, their break, changes requiring attention, the team plan','`product-unified.css` is the single final product-wide presentation authority','Night → Changes → Actions → Breaks → Chat → Account','Do not create another final override stylesheet'], 'Design-system ownership');
+console.log('unified product coherence contract tests passed');
+''')
+
+          Path('tests/product-layout-contract.test.js').write_text(r'''const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const css = fs.readFileSync('src/product-unified.css', 'utf8');
+const tailwind = fs.readFileSync('src/tailwind.css', 'utf8');
+const checks = [
+  ['date controls use a three-column mobile-safe grid', 'grid-template-columns: 38px minmax(0, 1fr) 38px'],
+  ['date fields cannot wrap vertically', 'white-space: nowrap !important'],
+  ['WebKit date editing is explicitly bounded', '::-webkit-datetime-edit'],
+  ['Night allocation remains a dedicated hero', '#today #personalNightCard > .personalHeroSurface'],
+  ['Changes retains the three-step workflow rail', '#changes .workflowSteps'],
+  ['Breaks combines personal summary and statistics', '#breaks .breakSummaryRow'],
+  ['Chat promotes the team conversation', '#chat .chatInboxTeamRow'],
+  ['Actions has product-system ownership', '.quickActionsExperience'],
+  ['Account uses the product surface language', '.accountSheetHeader'],
+  ['small-phone handling exists', '@media (max-width: 390px)'],
+  ['broader compact-phone guard exists', '@media (max-width: 430px)']
+];
+for (const [label, needle] of checks) assert.ok(css.includes(needle), label);
+assert.equal((tailwind.match(/product-(?:coherence|unified)[^";]*\.css/g) || []).length, 1, 'only one active product-wide coherence stylesheet may be imported');
+console.log('coherent layout regression contract tests passed');
+''')
+
+          pkg_path = Path('package.json')
+          pkg = json.loads(pkg_path.read_text())
+          for key in ['verify:fast', 'test']:
+              if 'product-layout-contract.test.js' not in pkg['scripts'][key]:
+                  pkg['scripts'][key] = pkg['scripts'][key].replace('node tests/product-coherence.test.js', 'node tests/product-coherence.test.js && node tests/product-layout-contract.test.js')
+          pkg_path.write_text(json.dumps(pkg, indent=2) + '\n')
+
+          release_path = Path('release.json')
+          release = json.loads(release_path.read_text())
+          release.update({
+              'version': '49.0',
+              'date': '6 October 2026',
+              'title': 'Consolidate Night Roster into one coherent product system',
+              'summary': 'Removes competing coherence layers from the active cascade and makes one shared product system responsible for hierarchy, spacing, radii, surfaces, shift identity, live state, Actions, navigation, accessibility and compact-phone behaviour.',
+              'changes': [
+                  'Makes product-unified.css the single final product-wide presentation authority and removes the older coherence and bridge files from the active cascade.',
+                  'Keeps one restrained header, one compact selected-night component and one dominant task surface per screen while preserving the dark personal Night allocation as the visual anchor.',
+                  'Standardises Actions, Account, Personalisation, live-state indicators, focus treatment and motion so they use the same spacing, radius and surface language as Night, Changes, Breaks and Chat.',
+                  'Strengthens Android and iPhone compact-phone guards so roster dates remain on one line and the bottom dock, shift identity and break summary keep stable geometry.',
+                  'Adds regression contracts that reject multiple active coherence stylesheets and protect the shared date, Night, Changes, Breaks, Chat, Actions and Account layout primitives.',
+                  'Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and guarded mutation paths.'
+              ],
+              'update_policy': 'normal'
+          })
+          release_path.write_text(json.dumps(release, indent=2) + '\n')
+          PY
       - name: Synchronise the 49.0 PWA release boundary
         run: npm run release
       - name: Verify the consolidated product system
