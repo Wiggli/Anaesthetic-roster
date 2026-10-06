@@ -1,5 +1,5 @@
 /* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
-/* Anaesthetic Night Roster V50.3 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V50.4 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -95,6 +95,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  {"version":"50.4","date":"6 October 2026","title":"Complete the unified Night Roster experience","changes":["Restores a clear product-owned selected-night date on Android and iPhone, with explicit visible text styling instead of inheriting the transparent legacy date label state.","Stops an already-running release from repeatedly presenting Finish installing the update when the active PWA controller is already on the same app version, while preserving the deliberate user-approved update flow for genuinely newer releases.","Strengthens the single final product system across Night, Changes, Breaks, Chat, Actions, Account, administrator surfaces and the bottom dock so spacing, typography, surfaces, headers and selected-night context read as one coherent application rather than several generations of UI.","Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, offline safety, clinical state colours and guarded mutation paths."],"policy":"important"},
   {"version":"50.3","date":"6 October 2026","title":"Fix the launch-screen freeze","changes":["Makes the product-owned date label update idempotent so the child-list observer does not create a self-sustaining DOM mutation loop during startup.","Keeps the 50.2 protection that removes late legacy pretty-date wrappers on Night, Changes and Breaks without starving authentication, shared-roster loading or launch recovery.","Adds a deterministic regression contract that rejects unconditional date-label rewrites inside the observed product shell.","Preserves roster calculations, staffing rules, Malta and DST timing, authentication, database writes, offline safety and clinical state colours."],"policy":"important"},
   {"version":"50.2","date":"6 October 2026","title":"Remove the legacy mobile date conflict","changes":["Removes the legacy pretty-date wrapper whenever it is injected into the shared roster date control, preventing the old vertical Thursday, day and month layout from coexisting with the new one-line date label.","Keeps one visible date presentation across Night, Changes and Breaks while retaining the native system date picker as the underlying accessible interaction.","Makes the repair resilient to late legacy DOM mutations so installed Android and iPhone PWAs cannot reintroduce the superseded date UI after the modern shell has mounted.","Preserves the 50.1 design language, roster calculations, staffing rules, Malta and DST timing, authentication, database writes and clinical state colours."],"policy":"normal"},
   {"version":"50.1","date":"6 October 2026","title":"Unify the app into one professional design language","changes":["Standardises the institution header, logo sizing, account control, page-title hierarchy, spacing rhythm, radii and surfaces across the operational app.","Makes Night, Changes and Breaks share one selected-night component with the same shift identity and date-navigation geometry.","Removes platform-rendered segmented date text from the visible interface and replaces it with a controlled product-owned date label that opens the native picker when tapped.","Keeps Night allocation, Changes workflow, Break plan and Chat conversation as the dominant task on their respective screens while visually demoting secondary information.","Standardises the bottom dock, Actions, Account, live-state presentation, focus treatment and compact-phone behaviour under the same product system.","Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes and clinical state colours."],"policy":"normal"},
@@ -699,7 +700,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=50.3" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=50.4" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -2425,9 +2426,12 @@ function updateIsAutomatic(){return !!(pendingUpdateMeta&&(pendingUpdateMeta.upd
 function cacheVersionNumber(value){var match=String(value||'').match(/anaesthetic-night-roster-v(\d+(?:-\d+)+)/);return match?match[1].replace(/-/g,'.'):''}
 function waitingUpdateDeferralKey(){return'anaes_update_later_'+(waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'unknown')}
 function clearUpdateNotice(){var banner=byId('updateBanner'),dialog=byId('updateDetails');if(banner)banner.classList.add('hidden');if(dialog&&dialog.open)dialog.close()}
+function updateControllerIsCurrent(){return cacheVersionNumber(serviceWorkerCacheVersion)===APP_VERSION}
+function waitingWorkerIsRedundant(){return !!(waitingUpdateVersion&&waitingUpdateVersion===APP_VERSION&&updateControllerIsCurrent())}
 function classifyWaitingUpdate(){
   var incoming=waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'',active=cacheVersionNumber(serviceWorkerCacheVersion);
   if(incoming&&incoming!==APP_VERSION)return'new';
+  if(incoming&&incoming===APP_VERSION&&active===APP_VERSION)return'current';
   if(incoming&&active===incoming)return'refresh';
   return'finish';
 }
@@ -2517,7 +2521,14 @@ async function loadPendingUpdateMeta(){
 
 async function showUpdate(registration){
   updateRegistration=registration;var waiting=registration&&registration.waiting;if(!waiting){clearUpdateNotice();renderWriteGuardState();renderDiagnostics();return}
-  pendingUpdateMeta=null;waitingUpdateVersion=cacheVersionNumber(await workerCacheName(waiting));await loadPendingUpdateMeta();waitingUpdateState=classifyWaitingUpdate();renderPendingUpdate();renderDiagnostics();
+  pendingUpdateMeta=null;waitingUpdateVersion=cacheVersionNumber(await workerCacheName(waiting));await loadPendingUpdateMeta();
+  if(navigator.serviceWorker&&navigator.serviceWorker.controller)await refreshControllerCacheVersion();
+  waitingUpdateState=classifyWaitingUpdate();
+  if(waitingWorkerIsRedundant()||waitingUpdateState==='current'){
+    try{waiting.postMessage({type:'ACTIVATE_UPDATE'})}catch(error){}
+    finishUpdateActivation();renderWriteGuardState();renderDiagnostics();return
+  }
+  renderPendingUpdate();renderDiagnostics();
   sessionStorage.removeItem('anaes_update_later');
   if(sessionStorage.getItem(waitingUpdateDeferralKey())==='1'&&!updateIsAutomatic()&&!compatibilityNeedsUpdate()){renderWriteGuardState();return}
   var banner=byId('updateBanner');if(banner)banner.classList.remove('hidden');renderWriteGuardState();
@@ -2542,10 +2553,19 @@ function applyWaitingUpdate(){
   if(updateActivationTimer)clearTimeout(updateActivationTimer);
   updateActivationTimer=setTimeout(async function(){
     if(!reloadForUpdate)return;
-    try{if(updateRegistration)await updateRegistration.update()}catch(error){}
-    if(updateRegistration&&!updateRegistration.waiting){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
-    reloadForUpdate=false;resetUpdateButtons();if(status)status.textContent='The update is still waiting. Try Update once more.';toast('Update is still waiting to activate');
-  },5000);
+    var activeCache='';
+    try{if(updateRegistration)await updateRegistration.update();activeCache=await refreshControllerCacheVersion()}catch(error){}
+    var waiting=updateRegistration&&updateRegistration.waiting,incoming=waitingUpdateVersion||(pendingUpdateMeta&&pendingUpdateMeta.version)||'',activeVersion=cacheVersionNumber(activeCache||serviceWorkerCacheVersion);
+    if(activeVersion&&incoming&&activeVersion===incoming){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
+    if(updateRegistration&&!waiting){finishUpdateActivation();reloadForUpdate=false;window.location.reload();return}
+    if(waiting&&incoming===APP_VERSION){
+      try{waiting.postMessage({type:'ACTIVATE_UPDATE'})}catch(error){}
+      reloadForUpdate=false;resetUpdateButtons();waitingUpdateState='current';clearUpdateNotice();renderDiagnostics();
+      if(status)status.textContent='This release is already open. The cached shell will finish synchronising quietly.';
+      toast('Night Roster is current. Cache synchronisation will finish quietly.');return
+    }
+    reloadForUpdate=false;resetUpdateButtons();if(status)status.textContent='The newer update is still waiting. Close and reopen Night Roster, then try once more.';toast('Update is still waiting to activate');
+  },8000);
 }
 
 function applyStandaloneUi(){
