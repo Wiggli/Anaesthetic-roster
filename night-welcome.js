@@ -1,6 +1,7 @@
 (function(){
 'use strict';
-var TYPED_KEY='anaes_night_welcome_typed_v1',typingTimer=null,retryTimer=null,identityRetries=0;
+var TYPED_KEY='anaes_night_welcome_typed_v2',typingTimer=null,retryTimer=null,identityRetries=0;
+var START_DELAY_MS=190,GREETING_CHAR_MS=50,NAME_PAUSE_MS=420,NAME_CHAR_MS=92,CURSOR_HOLD_MS=650;
 function el(id){return document.getElementById(id)}
 function safe(fn,fallback){try{return fn()}catch(error){return fallback}}
 function reducedMotion(){return !!(document.body&&document.body.classList.contains('personalMotionReduced'))||!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
@@ -17,10 +18,19 @@ function preferredFirstName(){
   return value?value.split(/\s+/)[0]:''
 }
 function timeGreeting(){var hour=new Date().getHours();if(hour<12)return'Good morning';if(hour<18)return'Good afternoon';return'Good evening'}
-function greetingText(){if(!greetingEnabled())return'Night';var first=preferredFirstName();return timeGreeting()+(first?', '+first:'')}
+function greetingParts(){
+  if(!greetingEnabled())return{greeting:'Night',name:'',message:'Night',nameStart:-1};
+  var greeting=timeGreeting(),name=preferredFirstName(),message=greeting+(name?', '+name:'');
+  return{greeting:greeting,name:name,message:message,nameStart:name?greeting.length+2:-1}
+}
 function alreadyTyped(){return safe(function(){return sessionStorage.getItem(TYPED_KEY)==='1'},false)}
 function markTyped(){safe(function(){sessionStorage.setItem(TYPED_KEY,'1')},null)}
 function stopTyping(){if(typingTimer){clearTimeout(typingTimer);typingTimer=null}}
+function typingDelay(index,parts){
+  if(parts.name&&index===parts.nameStart)return NAME_PAUSE_MS;
+  if(parts.name&&index>parts.nameStart)return NAME_CHAR_MS;
+  return GREETING_CHAR_MS
+}
 function renderWelcome(){
   var hero=el('nightWelcomeHero'),title=el('nightSectionTitle'),text=el('nightWelcomeText'),cursor=el('nightWelcomeCursor');
   if(!hero||!title||!text||!cursor)return;
@@ -28,15 +38,20 @@ function renderWelcome(){
   var hasIdentity=typeof currentUserProfile!=='undefined'&&!!currentUserProfile;
   if(!hasIdentity&&identityRetries<12){identityRetries++;clearTimeout(retryTimer);retryTimer=setTimeout(renderWelcome,240);return}
   identityRetries=0;
-  var message=greetingText();
+  var parts=greetingParts(),message=parts.message;
   title.setAttribute('aria-label',message);
   var animate=greetingEnabled()&&!reducedMotion()&&!alreadyTyped()&&document.visibilityState!=='hidden';
   stopTyping();
   if(!animate){text.textContent=message;cursor.hidden=true;hero.classList.remove('is-typing');hero.classList.add('is-ready');return}
   text.textContent='';cursor.hidden=false;hero.classList.add('is-typing');hero.classList.remove('is-ready');
   var index=0;
-  function typeNext(){index++;text.textContent=message.slice(0,index);if(index<message.length){typingTimer=setTimeout(typeNext,index<6?34:27);return}markTyped();hero.classList.remove('is-typing');hero.classList.add('is-ready');typingTimer=setTimeout(function(){cursor.hidden=true},520)}
-  typingTimer=setTimeout(typeNext,120)
+  function finishTyping(){markTyped();hero.classList.remove('is-typing');hero.classList.add('is-ready');typingTimer=setTimeout(function(){cursor.hidden=true},CURSOR_HOLD_MS)}
+  function typeNext(){
+    index++;text.textContent=message.slice(0,index);
+    if(index>=message.length){finishTyping();return}
+    typingTimer=setTimeout(typeNext,typingDelay(index,parts))
+  }
+  typingTimer=setTimeout(typeNext,START_DELAY_MS)
 }
 function scheduleWelcome(){clearTimeout(retryTimer);retryTimer=setTimeout(renderWelcome,60)}
 function initWelcome(){

@@ -1,20 +1,26 @@
-/* Personal Night welcome: a restrained identity layer above the existing shift/date context. */
-#today .nightSectionIdentity{margin:0;padding:15px 20px 8px;position:relative;z-index:2}
-#today .nightWelcomeHero{position:relative;min-width:0;padding:3px 2px 8px}
-#today .nightWelcomeEyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:7px;color:color-mix(in srgb,var(--personal-accent,#6bc7c7) 72%,#8da2b7);font-size:11px;line-height:1;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
-#today .nightWelcomeEyebrow i{width:6px;height:6px;border-radius:999px;background:var(--personal-accent,#6bc7c7);box-shadow:0 0 0 5px color-mix(in srgb,var(--personal-accent,#6bc7c7) 13%,transparent)}
-#today .nightWelcomeTitle{display:flex;align-items:center;min-height:1.12em;margin:0;color:var(--text,#152536);font-size:clamp(31px,8.4vw,43px);line-height:1.04;font-weight:950;letter-spacing:-.045em;text-wrap:balance}
-#today .nightWelcomeCursor{width:2px;height:.82em;margin-left:5px;border-radius:99px;background:var(--personal-accent,#6bc7c7);opacity:.9;animation:nightWelcomeBlink .72s steps(1,end) infinite}
+/* Personal Night welcome: compact identity and context before the nurse's allocation. */
+#today .nightSectionIdentity{margin:0;padding:10px 20px 3px;position:relative;z-index:2}
+#today .nightWelcomeHero{position:relative;min-width:0;padding:1px 2px 3px}
+#today .nightWelcomeEyebrow{display:inline-flex;align-items:center;gap:7px;margin-bottom:4px;color:color-mix(in srgb,var(--personal-accent,#6bc7c7) 72%,#8da2b7);font-size:10.5px;line-height:1;font-weight:900;letter-spacing:.105em;text-transform:uppercase}
+#today .nightWelcomeEyebrow i{width:5px;height:5px;border-radius:999px;background:var(--personal-accent,#6bc7c7);box-shadow:0 0 0 4px color-mix(in srgb,var(--personal-accent,#6bc7c7) 12%,transparent)}
+#today .nightWelcomeTitle{display:flex;align-items:center;min-height:1.08em;margin:0;color:var(--text,#152536);font-size:clamp(28px,7.2vw,36px);line-height:1.02;font-weight:950;letter-spacing:-.042em;text-wrap:balance}
+#today .nightWelcomeCursor{width:2px;height:.82em;margin-left:4px;border-radius:99px;background:var(--personal-accent,#6bc7c7);opacity:.9;animation:nightWelcomeBlink .78s steps(1,end) infinite}
 #today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:nightWelcomeSettle .32s cubic-bezier(.2,.8,.2,1) both}
-#today #nightWelcomeSubtitle{max-width:34rem;margin:8px 0 0;color:var(--muted,#75869a);font-size:13px;line-height:1.45;font-weight:680;letter-spacing:-.01em}
+#today #nightWelcomeSubtitle{max-width:34rem;margin:5px 0 0;color:var(--muted,#75869a);font-size:12px;line-height:1.35;font-weight:660;letter-spacing:-.005em}
 #today .nightUnifiedHero{position:relative;isolation:isolate}
-#today .nightUnifiedHero::after{content:'';position:absolute;left:14px;right:14px;top:calc(var(--app-safe-top,0px) + 72px);height:150px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 15%,color-mix(in srgb,var(--personal-accent,#6bc7c7) 9%,transparent),transparent 66%);filter:blur(8px)}
-#today .nightDateShell.nightUnifiedContext{margin-top:2px}
+#today .nightUnifiedHero::after{content:'';position:absolute;left:14px;right:14px;top:calc(var(--app-safe-top,0px) + 68px);height:112px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 15%,color-mix(in srgb,var(--personal-accent,#6bc7c7) 7%,transparent),transparent 67%);filter:blur(8px)}
+#today .nightDateShell.nightUnifiedContext{margin-top:0;margin-bottom:8px}
+#today .nightDateShell.nightUnifiedContext .dateNav>button,#today .nightDateShell.nightUnifiedContext .prettyDateButton{height:44px;min-height:44px}
+#today #nightIntelligenceCentre{margin-top:0!important;margin-bottom:8px!important}
+#today>.nightOverviewPanel{padding-top:3px}
+#today #personalNightHeading{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+#today #personalNight{margin-top:0;margin-bottom:0}
 body.dark #today .nightWelcomeTitle{color:#f7f9fc}
 body.dark #today #nightWelcomeSubtitle{color:#9ca9ba}
 @keyframes nightWelcomeBlink{0%,46%{opacity:1}47%,100%{opacity:0}}
 @keyframes nightWelcomeSettle{from{opacity:.84;transform:translateY(2px)}to{opacity:1;transform:none}}
-@media(max-width:430px){#today .nightSectionIdentity{padding:14px 16px 7px}#today .nightWelcomeTitle{font-size:clamp(30px,9.1vw,38px)}#today #nightWelcomeSubtitle{font-size:12.5px}}
+@media(max-width:520px){#today #nightWelcomeSubtitle{display:none}}
+@media(max-width:430px){#today .nightSectionIdentity{padding:9px 16px 3px}#today .nightWelcomeTitle{font-size:clamp(27px,7.8vw,33px)}#today .nightWelcomeEyebrow{margin-bottom:4px}#today .nightDateShell.nightUnifiedContext{margin-bottom:7px}#today>.nightOverviewPanel{padding-top:2px}}
 @media(prefers-reduced-motion:reduce){#today .nightWelcomeCursor{display:none!important}#today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none!important}}
 body.personalMotionReduced #today .nightWelcomeCursor{display:none!important}
 body.personalMotionReduced #today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none!important}

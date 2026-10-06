@@ -1,14 +1,14 @@
 {
-  "version": "46.1",
+  "version": "46.2",
   "date": "6 October 2026",
-  "title": "Personalise the Night welcome experience",
-  "summary": "Night opens as one coherent personal dashboard with a time-aware nurse greeting, restrained one-time typing motion and a clearer visual handoff into shift identity, date and allocation.",
+  "title": "Compact the Night opening",
+  "summary": "Night keeps its personalised welcome but moves the nurse's actual allocation higher on phone screens, with a slower, more deliberate name reveal and a tighter selected-night hierarchy.",
   "changes": [
-    "Replaces the generic Night heading with a personalised time-aware greeting using the saved preferred name, verified roster identity or professional roster name fallback.",
-    "Adds a restrained one-time typing reveal for the greeting while respecting the existing greeting preference and reduced-motion accessibility settings.",
-    "Keeps the welcome, shared shift identity and selected-night controls inside the existing unified Night hero so the page reads as one coherent personal dashboard rather than stacked unrelated cards.",
-    "Adds a concise orientation line that frames allocation, break and team plan as the page hierarchy before the existing Your night, Night brief and Tonight sections.",
-    "Ships and caches the dedicated welcome runtime and styles with regression coverage so installed Android and iPhone PWAs receive the same personalised experience."
+    "Compacts the personalised Night hero and selected-night spacing so the nurse's actual allocation appears higher on phone screens without removing shift identity, date navigation, live status or Focus.",
+    "Slows the welcome animation deliberately, including a short pause before the nurse's name and a slower name reveal, while still playing only once per session and respecting reduced-motion settings.",
+    "Removes the duplicate visible Your night heading while retaining its accessible section label, reducing repeated hierarchy without changing roster content.",
+    "Tightens the handoff from selected-night context through freshness and Focus into the personal allocation, while preserving the live timeline rail, break information, AI Night Brief and daylight-saving clock-change behaviour.",
+    "Adds regression coverage for the slower personalised reveal and compact Night hierarchy."
   ],
   "update_policy": "normal"
 }

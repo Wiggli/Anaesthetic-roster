@@ -13,8 +13,16 @@ assert.match(client,/professionalName/,'Welcome must support the professional ro
 assert.match(client,/greeting_enabled/,'Welcome must respect the saved greeting preference');
 assert.match(client,/prefers-reduced-motion/,'Welcome must respect reduced motion');
 assert.match(client,/sessionStorage\.getItem\(TYPED_KEY\)/,'Typing should happen once per session');
+assert.match(client,/anaes_night_welcome_typed_v2/,'The refined welcome should receive a fresh one-time session reveal after update');
+assert.match(client,/NAME_PAUSE_MS=420/,'The welcome must pause deliberately before revealing the nurse name');
+assert.match(client,/NAME_CHAR_MS=92/,'The nurse name must type more slowly than the greeting');
+assert.match(client,/GREETING_CHAR_MS=50/,'The greeting itself must remain calmly readable');
+assert.match(client,/typingDelay\(index,parts\)/,'Typing cadence must distinguish greeting and nurse name');
 assert.doesNotMatch(client,/Andre|André/,'Welcome must never hard-code an individual nurse name');
 assert.match(css,/nightWelcomeTitle/,'Welcome must have a dedicated visual hierarchy');
+assert.match(css,/#today #personalNightHeading\{position:absolute!important/,'The duplicate visible Your night heading must be visually collapsed while remaining accessible');
+assert.match(css,/@media\(max-width:520px\)\{#today #nightWelcomeSubtitle\{display:none\}\}/,'Phone layouts must remove the redundant orientation subtitle');
+assert.match(css,/#today #nightIntelligenceCentre\{margin-top:0!important;margin-bottom:8px!important\}/,'Night status must hand off tightly into the allocation');
 assert.match(vite,/night-welcome\.js/,'Build must ship the welcome runtime');
 assert.match(vite,/night-welcome\.css/,'Build must ship the welcome styles');
 assert.match(worker,/night-welcome\.js\?v=/,'Installed PWA must cache the welcome runtime');
