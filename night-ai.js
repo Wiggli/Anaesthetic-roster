@@ -1,8 +1,7 @@
 (function(){
 'use strict';
 
-var CACHE_KEY='anaes_night_ai_session_v1';
-var state={personal:null,night:null,activity:null,date:'',briefTimer:null,changesTimer:null,briefRequest:0,changesRequest:0,conversation:[],observer:null};
+var state={personal:null,night:null,activity:null,date:'',briefTimer:null,changesTimer:null,briefRequest:0,changesRequest:0,conversation:[],observer:null,cache:{},authSubscription:null,sessionGeneration:0};
 
 function aiEl(id){return document.getElementById(id)}
 function aiSafe(fn,fallback){try{return fn()}catch(error){return fallback}}
@@ -25,8 +24,8 @@ function aiContext(){
   }
 }
 function aiHash(value){var text=JSON.stringify(value),hash=5381;for(var i=0;i<text.length;i++)hash=((hash<<5)+hash)^text.charCodeAt(i);return(hash>>>0).toString(36)}
-function aiCacheRead(key){try{var cache=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'{}'),item=cache[key];if(item&&Date.now()-Number(item.at||0)<6*60*60*1000)return item.value||null}catch(error){}return null}
-function aiCacheWrite(key,value){try{var cache=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'{}');cache[key]={at:Date.now(),value:value};var keys=Object.keys(cache).sort(function(a,b){return(cache[b].at||0)-(cache[a].at||0)});keys.slice(20).forEach(function(k){delete cache[k]});sessionStorage.setItem(CACHE_KEY,JSON.stringify(cache))}catch(error){}}
+function aiCacheRead(key){var item=state.cache[key];if(item&&Date.now()-Number(item.at||0)<6*60*60*1000)return item.value||null;return null}
+function aiCacheWrite(key,value){state.cache[key]={at:Date.now(),value:value};var keys=Object.keys(state.cache).sort(function(a,b){return(state.cache[b].at||0)-(state.cache[a].at||0)});keys.slice(20).forEach(function(k){delete state.cache[k]})}
 function aiFallback(mode,ctx,question){
   var p=ctx.personal||{},s=ctx.staffing||{},changes=ctx.recent_changes&&ctx.recent_changes.items||[],staffing=s.nurse_count?s.nurse_count+' nurses are in the effective plan.':'Staffing is not yet available.',decision=s.unresolved_count?s.unresolved_count+' roster decision'+(s.unresolved_count===1?' remains':'s remain')+'.':'No roster decisions currently need attention.';
   if(mode==='brief'){
@@ -76,7 +75,7 @@ function aiEnsureBrief(){
 }
 function aiRenderBrief(result){var host=aiEnsureBrief();if(!host)return;var text=aiEl('nightAiBriefText'),source=host.querySelector('.nightAiSource');if(text)text.textContent=result.text;if(source)source.textContent=aiSourceText(result);host.classList.toggle('isAi',!!result.ai)}
 function aiRefreshBrief(force){
-  clearTimeout(state.briefTimer);state.briefTimer=setTimeout(async function(){if(!state.personal||!state.night||!aiSelectedDate())return;aiEnsureBrief();var request=++state.briefRequest;if(force){try{var ctx=aiContext(),key='brief:'+aiHash({ctx:ctx,q:''}),cache=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'{}');delete cache[key];sessionStorage.setItem(CACHE_KEY,JSON.stringify(cache))}catch(error){}}var result=await aiRequest('brief','');if(request===state.briefRequest)aiRenderBrief(result)},180)
+  clearTimeout(state.briefTimer);state.briefTimer=setTimeout(async function(){if(!state.personal||!state.night||!aiSelectedDate())return;aiEnsureBrief();var request=++state.briefRequest;if(force){var ctx=aiContext(),key='brief:'+aiHash({ctx:ctx,q:''});delete state.cache[key]}var result=await aiRequest('brief','');if(request===state.briefRequest)aiRenderBrief(result)},180)
 }
 function aiEnsureChanges(){
   var panel=document.querySelector('#today .recentActivityPanel');if(!panel)return null;var existing=aiEl('nightAiChangesSummary');if(existing)return existing;var heading=panel.querySelector('.nightOverviewRowHeading'),box=aiMake('div','nightAiChangesSummary');box.id='nightAiChangesSummary';var icon=aiMake('span','nightAiSpark','✦'),copy=aiMake('span','nightAiChangesCopy'),label=aiMake('b','','AI change summary'),text=aiMake('small','','Preparing…');text.id='nightAiChangesText';copy.appendChild(label);copy.appendChild(text);box.appendChild(icon);box.appendChild(copy);if(heading&&heading.nextSibling)panel.insertBefore(box,heading.nextSibling);else panel.appendChild(box);return box
@@ -96,21 +95,23 @@ function aiAddMessage(role,text,meta){var host=aiEl('nightAiMessages');if(!host)
 function aiOpenAssistant(){var dialog=aiEnsureDialog();if(!dialog.open&&dialog.showModal)dialog.showModal();var input=aiEl('nightAiInput');if(input)setTimeout(function(){input.focus()},80)}
 async function aiAsk(question,mode){
   aiOpenAssistant();if(aiPatientInfoLikely(question)){aiAddMessage('assistant','This assistant only handles roster and staffing information. Please do not enter patient information.','Safety boundary');return}
-  aiAddMessage('user',question);var pending=aiMake('div','nightAiMessage assistant pending','Thinking from the current shared roster…'),host=aiEl('nightAiMessages');if(host){host.appendChild(pending);host.scrollTop=host.scrollHeight}var result=await aiRequest(mode||'ask',question);if(pending.parentNode)pending.remove();aiAddMessage('assistant',result.text,aiSourceText(result));state.conversation.push({q:question,a:result.text});if(state.conversation.length>8)state.conversation.shift()
+  var generation=state.sessionGeneration;aiAddMessage('user',question);var pending=aiMake('div','nightAiMessage assistant pending','Thinking from the current shared roster…'),host=aiEl('nightAiMessages');if(host){host.appendChild(pending);host.scrollTop=host.scrollHeight}var result=await aiRequest(mode||'ask',question);if(pending.parentNode)pending.remove();if(generation!==state.sessionGeneration)return;aiAddMessage('assistant',result.text,aiSourceText(result));state.conversation.push({q:question,a:result.text});if(state.conversation.length>8)state.conversation.shift()
 }
 function aiExplainAllocation(){aiAsk('Why am I allocated this way tonight?','explain')}
 function aiEnsureQuickAction(){
   var host=aiEl('quickActionsExperience'),experience=host&&host.querySelector('.quickActionsExperience');if(!experience||aiEl('nightAiQuickAction'))return;var anchor=experience.querySelector('.quickReviewAction'),button=aiMake('button','quickReviewAction nightAiQuickAction');button.id='nightAiQuickAction';button.type='button';button.setAttribute('aria-label','Ask Night Roster');var icon=aiMake('span','quickReviewIcon','✦'),copy=aiMake('span','quickReviewCopy'),eyebrow=aiMake('small','','AI assistant'),strong=aiMake('strong','','Ask Night Roster'),detail=aiMake('span','','Briefs, changes and allocation explanations'),chev=aiMake('span','quickActionChevron','›');chev.setAttribute('aria-hidden','true');copy.appendChild(eyebrow);copy.appendChild(strong);copy.appendChild(detail);button.appendChild(icon);button.appendChild(copy);button.appendChild(chev);button.onclick=function(){var dialog=aiEl('quickActionsSheet');if(dialog&&dialog.open)dialog.close();aiOpenAssistant()};if(anchor&&anchor.nextSibling)experience.insertBefore(button,anchor.nextSibling);else experience.appendChild(button)
 }
 function aiObserveQuickActions(){var host=aiEl('quickActionsExperience');if(!host||state.observer)return;state.observer=new MutationObserver(function(){aiEnsureQuickAction()});state.observer.observe(host,{childList:true,subtree:true});aiEnsureQuickAction()}
-function aiResetForDate(date){if(date&&state.date&&date!==state.date){state.conversation=[];var messages=aiEl('nightAiMessages');if(messages)messages.textContent=''}state.date=date||state.date}
-function aiStart(){aiEnsureDialog();aiObserveQuickActions();if(state.personal&&state.night)aiRefreshBrief();if(state.activity)aiRefreshChanges()}
+function aiClearPrivateData(){clearTimeout(state.briefTimer);clearTimeout(state.changesTimer);state.briefRequest++;state.changesRequest++;state.sessionGeneration++;state.cache={};state.conversation=[];var messages=aiEl('nightAiMessages');if(messages)messages.textContent='';var brief=aiEl('nightAiBrief');if(brief)brief.remove();var changes=aiEl('nightAiChangesSummary');if(changes)changes.remove()}
+function aiWatchAuth(){if(state.authSubscription||!window.supa||!supa.auth||!supa.auth.onAuthStateChange)return;try{var result=supa.auth.onAuthStateChange(function(event){if(event==='SIGNED_OUT'||event==='USER_DELETED')aiClearPrivateData()});state.authSubscription=result&&result.data&&result.data.subscription||null}catch(error){}}
+function aiResetForDate(date){if(date&&state.date&&date!==state.date){clearTimeout(state.briefTimer);clearTimeout(state.changesTimer);state.briefRequest++;state.changesRequest++;state.sessionGeneration++;state.cache={};state.conversation=[];var messages=aiEl('nightAiMessages');if(messages)messages.textContent=''}state.date=date||state.date}
+function aiStart(){aiEnsureDialog();aiObserveQuickActions();aiWatchAuth();if(state.personal&&state.night)aiRefreshBrief();if(state.activity)aiRefreshChanges()}
 
 window.addEventListener('roster:personal-night',function(event){var detail=event&&event.detail||{};aiResetForDate(detail.date||aiSelectedDate());state.personal=detail;aiRefreshBrief()});
 window.addEventListener('roster:night',function(event){state.night=event&&event.detail||{};aiResetForDate(aiSelectedDate());aiRefreshBrief()});
 window.addEventListener('roster:recent-activity',function(event){state.activity=event&&event.detail||{};aiResetForDate(aiSelectedDate());aiRefreshChanges()});
 window.addEventListener('roster:quick-actions',function(){setTimeout(aiEnsureQuickAction,0)});
 window.addEventListener('online',function(){aiRefreshBrief();aiRefreshChanges()});
-window.NightRosterAI={openAssistant:aiOpenAssistant,ask:function(question){return aiAsk(question||'What should I know about this night?')},explainAllocation:aiExplainAllocation,refreshBrief:function(){aiRefreshBrief(true)},context:aiContext};
+window.NightRosterAI={openAssistant:aiOpenAssistant,ask:function(question){return aiAsk(question||'What should I know about this night?')},explainAllocation:aiExplainAllocation,refreshBrief:function(){aiRefreshBrief(true)},context:aiContext,clearPrivateData:aiClearPrivateData};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aiStart,{once:true});else aiStart();
 })();
