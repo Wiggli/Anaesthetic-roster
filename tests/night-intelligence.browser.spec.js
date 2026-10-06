@@ -59,12 +59,15 @@ test('Night Intelligence health, true Focus mode and offline intent stay progres
   await expect(page.locator('#nightHealthDialog')).toContainText('Roster freshness');
   await page.locator('#nightHealthDialog button[aria-label="Close"]').click();
 
-  await expect(page.locator('#personalNight')).toBeVisible();
+  // In the compact Night shell the semantic personal section stays mounted, but without
+  // a duplicate visible heading it has no visible box until personal roster data renders.
+  await expect(page.locator('#personalNight')).toBeHidden();
+  await expect(page.locator('#personalNightHeading')).toHaveText('Your night');
   await expect(page.locator('#today .teamOverviewGroup')).toBeVisible();
   await page.evaluate(() => window.NightIntelligence.setCalmMode(true));
   await expect(page.locator('html')).toHaveClass(/nightCalmMode/);
   await expect(page.locator('#nightIntelligenceCentre')).toBeVisible();
-  await expect(page.locator('#personalNight')).toBeVisible();
+  await expect(page.locator('#personalNight')).toBeHidden();
   await expect(page.locator('#today .teamOverviewGroup')).toBeHidden();
   await page.evaluate(() => window.NightIntelligence.setCalmMode(false));
   await expect(page.locator('html')).not.toHaveClass(/nightCalmMode/);
