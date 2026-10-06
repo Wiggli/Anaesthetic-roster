@@ -1,13 +1,13 @@
 {
-  "version": "50.2",
+  "version": "50.3",
   "date": "6 October 2026",
-  "title": "Remove the legacy mobile date conflict",
-  "summary": "Stops the old pretty-date control from reappearing inside the shared selected-night component so Night, Changes and Breaks render one clean product-owned date selector on real phones.",
+  "title": "Fix the launch-screen freeze",
+  "summary": "Stops the selected-night date repair observer from repeatedly retriggering itself, which could keep Android and other installed PWAs stuck on the Anaesthetic Night Roster opening screen.",
   "changes": [
-    "Removes the legacy pretty-date wrapper whenever it is injected into the shared roster date control, preventing the old vertical Thursday, day and month layout from coexisting with the new one-line date label.",
-    "Keeps one visible date presentation across Night, Changes and Breaks while retaining the native system date picker as the underlying accessible interaction.",
-    "Makes the repair resilient to late legacy DOM mutations so installed Android and iPhone PWAs cannot reintroduce the superseded date UI after the modern shell has mounted.",
-    "Preserves the 50.1 design language, roster calculations, staffing rules, Malta and DST timing, authentication, database writes and clinical state colours."
+    "Makes the product-owned date label update idempotent so the child-list observer does not create a self-sustaining DOM mutation loop during startup.",
+    "Keeps the 50.2 protection that removes late legacy pretty-date wrappers on Night, Changes and Breaks without starving authentication, shared-roster loading or launch recovery.",
+    "Adds a deterministic regression contract that rejects unconditional date-label rewrites inside the observed product shell.",
+    "Preserves roster calculations, staffing rules, Malta and DST timing, authentication, database writes, offline safety and clinical state colours."
   ],
-  "update_policy": "normal"
+  "update_policy": "important"
 }
