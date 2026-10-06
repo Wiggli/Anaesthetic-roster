@@ -20,10 +20,10 @@ jobs:
     env:
       SUPABASE_PROJECT_REF: voaygfleqceqacvqixxp
     steps:
-      - name: Check out released main
+      - name: Check out tested release commit
         uses: actions/checkout@v5
         with:
-          ref: main
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Check secure deployment settings
         env:
