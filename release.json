@@ -1,15 +1,16 @@
 {
-  "version": "49.0",
+  "version": "50.0",
   "date": "6 October 2026",
-  "title": "Consolidate Night Roster into one coherent product system",
-  "summary": "Removes competing coherence layers from the active cascade and makes one shared product system responsible for hierarchy, spacing, radii, surfaces, shift identity, live state, Actions, navigation, accessibility and compact-phone behaviour.",
+  "title": "Simplify the Night Roster interface around the nurse",
+  "summary": "Removes repeated context and oversized presentation from the 49.0 phone layout so the app reads as a compact institution bar, one night selector and the nurse\u2019s allocation, with the same simpler rhythm across operational screens.",
   "changes": [
-    "Makes product-unified.css the single final product-wide presentation authority and removes the older coherence and bridge files from the active cascade.",
-    "Keeps one restrained header, one compact selected-night component and one dominant task surface per screen while preserving the dark personal Night allocation as the visual anchor.",
-    "Standardises Actions, Account, Personalisation, live-state indicators, focus treatment and motion so they use the same spacing, radius and surface language as Night, Changes, Breaks and Chat.",
-    "Strengthens Android and iPhone compact-phone guards so roster dates remain on one line and the bottom dock, shift identity and break summary keep stable geometry.",
-    "Adds regression contracts that reject multiple active coherence stylesheets and protect the shared date, Night, Changes, Breaks, Chat, Actions and Account layout primitives.",
-    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and guarded mutation paths."
+    "Compresses the Night opening into a slim institution row, greeting, one compact night selector and the personal allocation without the repeated selected-night and live-status layer.",
+    "Makes shift identity a lightweight row inside the selected-night surface instead of another prominent card.",
+    "Replaces unreliable native segmented date text with a controlled one-line date label while retaining the native date input as the accessible tap target.",
+    "Reduces the personal allocation card height while keeping assignment, live timeline, duty, break and colleague information immediately available.",
+    "Applies the same compact selected-night date treatment to Changes and Breaks and reduces top-header volume across Night, Changes, Breaks and Chat.",
+    "Reduces bottom-dock height and supporting-card emphasis so the allocation remains the strongest visual element.",
+    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes and clinical state colours."
   ],
   "update_policy": "normal"
 }

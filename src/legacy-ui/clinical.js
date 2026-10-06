@@ -25,6 +25,7 @@ function openScreenInfo(kind){
 
 function syncDateInputs(date){
   ['datePick','changesDatePick','breakDatePick'].forEach(function(id){var el=byId(id);if(!el)return;el.min=R[0].date;el.max=R[R.length-1].date;el.value=date;updatePrettyDate(el)});
+  var compactDateLabel=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});Array.prototype.forEach.call(document.querySelectorAll('.rosterDateControl'),function(control){control.setAttribute('data-date-label',compactDateLabel)});
   ['prevNightBtn','changesPrevNightBtn','breakPrevNightBtn'].forEach(function(id){var el=byId(id);if(el)el.disabled=idx<=0});
   ['nextNightBtn','changesNextNightBtn','breakNextNightBtn'].forEach(function(id){var el=byId(id);if(el)el.disabled=idx>=R.length-1});
 }
