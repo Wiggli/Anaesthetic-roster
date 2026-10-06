@@ -168,14 +168,18 @@ jobs:
           index_file="$(mktemp)"
           worker_file="$(mktemp)"
           manifest_file="$(mktemp)"
-          trap 'rm -f "$index_file" "$worker_file" "$manifest_file"' EXIT
+          push_file="$(mktemp)"
+          trap 'rm -f "$index_file" "$worker_file" "$manifest_file" "$push_file"' EXIT
           curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 "${page_url}index.html" > "$index_file"
           curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 "${page_url}service-worker.js" > "$worker_file"
           curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
             --connect-timeout 10 --max-time 30 "${page_url}manifest.webmanifest?v=${app_version}" > "$manifest_file"
+          curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "${page_url}push.js?v=${app_version}" > "$push_file"
           grep -Fq "app-core.js?v=${app_version}" "$index_file" || { echo "::error::Live index is not on ${app_version}."; exit 1; }
           cache_version="${app_version//./-}"
           grep -Fq "anaesthetic-night-roster-v${cache_version}" "$worker_file" || { echo "::error::Live service worker is not on ${app_version}."; exit 1; }
           grep -Fq "icon-192.png?v=${app_version}" "$manifest_file" || { echo "::error::Live manifest is not on ${app_version}."; exit 1; }
+          test -s "$push_file" || { echo "::error::Live push client is missing or empty."; exit 1; }
