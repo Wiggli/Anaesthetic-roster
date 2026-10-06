@@ -12,3 +12,10 @@
 @import "./rudder-navigation.css";
 
 @import "./product-polish.css";
+
+@import "./product-coherence.css";
+
+@import "./product-coherence-bridge.css";
+
+/* The long-lived presentation token is --liquid-bg. Keep the 47.0 cohesion canvas wired to it. */
+:root { --coherence-canvas: var(--liquid-bg); }

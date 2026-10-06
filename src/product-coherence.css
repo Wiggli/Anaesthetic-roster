@@ -1,0 +1,500 @@
+/* 47.0 product coherence layer.
+   One calm visual grammar across Night, Changes, Breaks, Chat and Account.
+   Presentation only: clinical state, role colours and mutation paths stay owned by the existing runtime. */
+
+:root {
+  --coherence-space-1: 4px;
+  --coherence-space-2: 8px;
+  --coherence-space-3: 12px;
+  --coherence-space-4: 16px;
+  --coherence-space-5: 24px;
+  --coherence-space-6: 32px;
+  --coherence-control-radius: 14px;
+  --coherence-card-radius: 20px;
+  --coherence-hero-radius: 28px;
+  --coherence-pill-radius: 999px;
+  --coherence-content-width: 760px;
+  --coherence-fast: 180ms;
+  --coherence-base: 240ms;
+  --coherence-ease: cubic-bezier(.2,.8,.2,1);
+  --coherence-rule: color-mix(in srgb, var(--liquid-separator) 78%, transparent);
+  --coherence-surface: var(--liquid-surface);
+  --coherence-canvas: var(--liquid-background);
+  --coherence-subtle: color-mix(in srgb, var(--liquid-secondary) 5%, var(--liquid-surface));
+  --coherence-glass: color-mix(in srgb, var(--liquid-surface) 76%, transparent);
+  --coherence-glass-strong: color-mix(in srgb, var(--liquid-surface) 88%, transparent);
+  --coherence-shadow-soft: 0 10px 30px rgba(18, 32, 48, .055);
+  --coherence-shadow-hero: 0 18px 46px rgba(10, 22, 38, .13);
+}
+
+body:not(.authPending) { background: var(--coherence-canvas); }
+
+#today,
+#changes,
+#breaks,
+#chat,
+#roster {
+  width: min(100%, var(--coherence-content-width));
+  margin-inline: auto;
+  padding-inline: max(12px, var(--app-safe-left, 0px), var(--app-safe-right, 0px));
+}
+
+#today .panel,
+#changes .panel,
+#breaks .panel,
+#chat .panel { box-shadow: none; }
+
+/* One page-header grammar */
+#today .nightUnifiedHero {
+  margin: 0 0 var(--coherence-space-4);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#today #appHeader,
+#changes .appScreenHeader,
+#breaks .appScreenHeader,
+#chat .appScreenHeader {
+  box-sizing: border-box;
+  margin: 0;
+  padding: calc(var(--app-safe-top, 0px) + 12px) 16px 13px;
+  border: 1px solid var(--coherence-rule);
+  border-radius: var(--coherence-card-radius);
+  background: var(--coherence-glass-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(145%);
+  backdrop-filter: blur(20px) saturate(145%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 42%, transparent), var(--coherence-shadow-soft);
+}
+
+#today .hospitalStrip,
+.primaryInstitution {
+  min-height: 30px;
+  margin: 0;
+  padding: 0 0 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--coherence-rule) 78%, transparent);
+}
+
+#today .hospitalStrip img,
+.primaryInstitutionBrand img { width: auto; max-height: 24px; }
+
+#today .hospitalStrip span,
+.primaryInstitutionBrand > span {
+  color: var(--liquid-secondary);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: -.006em;
+}
+
+#today .head { min-height: 52px; padding-top: 12px; }
+
+#today .headerTitle,
+#changes .primaryScreenTitleRow h1,
+#breaks .primaryScreenTitleRow h1,
+#chat .primaryScreenTitleRow h1 {
+  margin: 0;
+  font-size: clamp(29px, 7.2vw, 34px);
+  font-weight: 790;
+  line-height: 1.04;
+  letter-spacing: -.042em;
+}
+
+#today .headerBrandMark { width: 32px; height: 32px; border-radius: 11px; }
+
+#today .motto {
+  margin-top: 4px;
+  color: var(--liquid-secondary);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+#changes .primaryScreenTitleRow,
+#breaks .primaryScreenTitleRow,
+#chat .primaryScreenTitleRow { min-height: 70px; padding: 13px 0 0; }
+
+#changes .primaryScreenTitleRow p,
+#breaks .primaryScreenTitleRow p,
+#chat .primaryScreenTitleRow p {
+  margin-top: 4px;
+  color: var(--liquid-secondary);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.screenEyebrow,
+.nightWelcomeEyebrow,
+.personalBreakEyebrow,
+.personalisationStudioHeading > span,
+.personalisationGroupHeading > span,
+.chatInboxSectionLabel > span,
+.chatUtilityHeading > span,
+.breakNotesHeading > span {
+  text-transform: none;
+  letter-spacing: -.005em;
+}
+
+.primaryHeaderAction,
+#today .adminSettingsBtn,
+#today .accountBtn,
+.screenInfoButton,
+.chatHeaderCompose {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 13px;
+}
+
+.primaryHeaderAdmin,
+#today .adminSettingsBtn { opacity: .66; }
+
+/* Night: personal duty first, everything else recedes */
+#today .nightSectionIdentity { margin: 0; padding: 18px 4px 10px; }
+#today .nightWelcomeEyebrow { margin-bottom: 4px; color: var(--liquid-secondary); font-size: 11.5px; font-weight: 700; }
+#today .nightUnifiedHero .nightSectionIdentity h1 {
+  margin: 0;
+  font-size: clamp(31px, 8vw, 37px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -.052em;
+}
+#today #nightWelcomeSubtitle { max-width: 36rem; margin-top: 6px; color: var(--liquid-secondary); font-size: 13px; line-height: 1.4; }
+
+#today .nightDateShell,
+#changes .changesDatePanel,
+#breaks .breaksContextPanel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#today .nightDateShell > .grid2,
+#changes .nightContextMetaRow,
+#breaks .nightContextMetaRow { gap: var(--coherence-space-3); }
+
+#today .nightDateLabel,
+#changes .nightContextDateLabel,
+#breaks .nightContextDateLabel,
+#today .staffingCount,
+#changes .nightContextStaffing,
+#breaks .nightContextStaffing {
+  border: 1px solid var(--coherence-rule);
+  border-radius: var(--coherence-card-radius);
+  background: var(--coherence-surface);
+  box-shadow: none;
+}
+
+#today .nightOverviewPanel { margin: 0; padding: 0 2px; border: 0; background: transparent; }
+#today .personalNight { margin-top: 0; }
+#today #personalNightHeading { margin: 0 2px 8px; color: var(--liquid-secondary); font-size: 12px; font-weight: 710; letter-spacing: -.008em; }
+#today #personalNightCard > .personalHeroSurface {
+  border-radius: var(--coherence-hero-radius);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09), inset 0 -1px 0 rgba(0,0,0,.22), var(--coherence-shadow-hero);
+}
+#today .personalHeroFactGrid { gap: 8px; }
+#today .personalHeroFactGrid > .personalHeroFact { border-radius: 15px; background: color-mix(in srgb, #fff 7%, transparent); }
+#today .teamOverviewGroup { margin-top: var(--coherence-space-5); }
+#today .nightSummaryTitle,
+#today .nightOverviewRowHeading { padding-inline: 2px; }
+#today .nightSignalPrimary,
+#today .nightTeamDetails,
+#today .recentActivityPanel,
+#today #recentActivityList > .activityTimeline {
+  border: 1px solid var(--coherence-rule);
+  border-radius: var(--coherence-card-radius);
+  background: var(--coherence-surface);
+  box-shadow: none;
+}
+#today .nightSignalPrimary { min-height: 82px; padding: 14px 15px; }
+#today .nightContextLine { margin: 0 2px 9px; }
+#today .nightContextCapsule,
+#today .nightSignalState,
+.headerLiveChip,
+.liveStatus,
+#breakPlanLive,
+.primaryConnectionLine { font-variant-numeric: tabular-nums; }
+#today .nightTeamDetails { overflow: hidden; }
+#today .nightTeamDetails > summary,
+#today .activityTimeline .recentActivityRow { min-height: 68px; }
+#today .recentActivityPanel { margin-top: var(--coherence-space-4); padding: 10px; }
+#today #recentActivityList > .activityTimeline { border-radius: 16px; }
+#today .decisionTaskCard { border-radius: 16px; box-shadow: none; }
+
+/* One shift identity component, expressed at different densities */
+.nightTeamIdentityContext {
+  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, #4f8fe8) 20%, var(--coherence-rule));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--shift-identity-accent, #4f8fe8) 5%, var(--coherence-surface)), var(--coherence-surface));
+  box-shadow: none;
+}
+#today .nightTeamIdentityContext { min-height: 62px; grid-template-columns: 46px minmax(0, 1fr); gap: 12px; margin: 10px 0 0; padding: 8px 12px 8px 8px; border-radius: var(--coherence-card-radius); }
+#today .nightTeamIdentityContext .shiftIdentityMark { width: 46px; height: 46px; min-width: 46px; min-height: 46px; border-radius: 14px; }
+#today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: 18px; line-height: 1.08; }
+#changes .nightTeamIdentityContext,
+#breaks .nightTeamIdentityContext { min-height: 48px; grid-template-columns: 36px minmax(0, 1fr); gap: 9px; margin: 10px 0; padding: 6px 10px 6px 6px; border-radius: 16px; }
+#changes .nightTeamIdentityContext .shiftIdentityMark,
+#breaks .nightTeamIdentityContext .shiftIdentityMark { width: 36px; height: 36px; min-width: 36px; min-height: 36px; border-radius: 11px; }
+#changes .nightTeamIdentityContext .shiftIdentityCopy strong,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: 14px; }
+#changes .nightTeamIdentityContext .shiftIdentityCopy small,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 10.5px; }
+
+/* Changes: a quiet process rail that expands only around exceptions */
+#changes .changesDatePanel { margin-top: var(--coherence-space-4); }
+#changes .changePanel { margin-top: var(--coherence-space-4); padding: 0 2px; border: 0; background: transparent; }
+#changes .ctop { min-height: 58px; margin-bottom: var(--coherence-space-3); padding: 0 2px; }
+#changes .ctop h2 { font-size: 20px; font-weight: 760; letter-spacing: -.025em; }
+#changes .ctop .time { margin-top: 3px; color: var(--liquid-secondary); font-size: 12px; line-height: 1.4; }
+#changes .workflowExperience { gap: 12px; }
+#changes .workflowProgress { padding-inline: 2px; }
+#changes .workflowSteps { padding: 4px; gap: 4px; border: 1px solid var(--coherence-rule); border-radius: 17px; background: var(--coherence-subtle); }
+#changes .workflowStep { min-height: 52px; border-radius: 13px; }
+#changes .workflowSelection { border: 1px solid color-mix(in srgb, var(--liquid-accent) 18%, var(--coherence-rule)); border-radius: 12px; background: var(--coherence-surface); box-shadow: 0 3px 10px rgba(18,32,48,.045); }
+#changes .workflowGuidance,
+#changes .staffingSection,
+#changes .confirmationCard,
+#changes .changesRecordGroup,
+#changes .changesAllocationGroup,
+#changes .historyBox { border: 1px solid var(--coherence-rule); border-radius: var(--coherence-card-radius); background: var(--coherence-surface); box-shadow: none; }
+#changes .workflowGuidance { min-height: 0; padding: 13px 14px; }
+#changes .workflowGuidance-automatic,
+#changes .workflowGuidance-complete { background: var(--coherence-subtle); }
+#changes .workflowGuidance-attention { border-color: color-mix(in srgb, var(--liquid-warning) 25%, var(--coherence-rule)); background: color-mix(in srgb, var(--liquid-warning) 5%, var(--coherence-surface)); }
+#changes .staffingActionRow,
+#changes .allocationRow { min-height: 66px; }
+#changes .historyBox { margin-top: var(--coherence-space-4); overflow: hidden; }
+
+/* Breaks: personal break and context become one visual unit */
+#breaks .breaksContextPanel { margin-top: var(--coherence-space-4); }
+#breakPersonalSummary { margin-top: var(--coherence-space-4); }
+#breaks .personalBreakSummary {
+  margin: 0;
+  padding: 17px;
+  border: 1px solid var(--coherence-rule);
+  border-radius: var(--coherence-card-radius) var(--coherence-card-radius) 0 0;
+  background: var(--coherence-surface);
+  box-shadow: none;
+}
+#breaks .personalBreakMain h2 { font-size: clamp(27px, 7vw, 33px); font-weight: 800; line-height: 1.05; letter-spacing: -.045em; }
+#breaks .breakSummaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0 0 var(--coherence-space-4);
+  overflow: hidden;
+  border: 1px solid var(--coherence-rule);
+  border-top: 0;
+  border-radius: 0 0 var(--coherence-card-radius) var(--coherence-card-radius);
+  background: var(--coherence-surface);
+}
+#breaks .breakSummaryItem { min-height: 62px; border: 0; border-left: 1px solid var(--coherence-rule); border-radius: 0; background: transparent; box-shadow: none; }
+#breaks .breakSummaryItem:first-child { border-left: 0; }
+#breaks .breakPlanTitle { min-height: 48px; margin: var(--coherence-space-5) 2px 8px; }
+#breaks .breakPlanTitle h2 { font-size: 20px; font-weight: 760; letter-spacing: -.025em; }
+#breaks #breakPlanLive { min-height: 26px; padding: 4px 8px; border: 1px solid var(--coherence-rule); border-radius: var(--coherence-pill-radius); background: var(--coherence-subtle); color: var(--liquid-secondary); font-size: 10.5px; font-weight: 680; }
+#breaks .breakScheduleBoard,
+#breaks .breakNotesBoard { border: 1px solid var(--coherence-rule); border-radius: var(--coherence-card-radius); background: var(--coherence-surface); box-shadow: none; }
+#breaks .breakScheduleSection { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+#breaks .breakPlanTools { margin: 0 0 8px; }
+#breaks .jumpToMeButton { min-height: 38px; border-radius: var(--coherence-pill-radius); }
+
+/* Chat: the shift conversation is the obvious first destination */
+#chat .chatScreen { gap: var(--coherence-space-4); }
+#chat .chatRosterContext { min-height: 54px; margin: var(--coherence-space-4) 0 0; padding: 9px 11px 9px 14px; border: 1px solid var(--coherence-rule); border-radius: var(--coherence-card-radius); background: var(--coherence-surface); box-shadow: none; }
+#chat .chatRosterContextCopy > span { text-transform: none; letter-spacing: -.005em; }
+#chat .chatShiftNameButton { width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; border-radius: 12px; background: var(--coherence-subtle); }
+#chat .chatShiftNameButton > span { display: none; }
+#chat .chatInboxTeamRow { min-height: 88px; padding: 13px 14px; border: 1px solid color-mix(in srgb, var(--shift-identity-accent, #4f8fe8) 22%, var(--coherence-rule)); border-radius: var(--coherence-card-radius); background: linear-gradient(145deg, color-mix(in srgb, var(--shift-identity-accent, #4f8fe8) 5%, var(--coherence-surface)), var(--coherence-surface)); box-shadow: none; }
+#chat .chatInboxTeamTop b { font-size: 16px; font-weight: 760; letter-spacing: -.018em; }
+#chat .chatInboxSectionLabel,
+#chat .chatUtilityHeading { min-height: 38px; padding: 14px 2px 7px; }
+#chat .chatConversationList,
+#chat .chatUtilityGroup { overflow: hidden; border: 1px solid var(--coherence-rule); border-radius: var(--coherence-card-radius); background: var(--coherence-surface); }
+#chat .chatConversationList:empty { display: none; }
+#chat .chatInboxRow,
+#chat .chatSafetyNotice,
+#chat .chatNotificationDisclosure > summary { min-height: 64px; border: 0; border-top: 1px solid var(--coherence-rule); border-radius: 0; background: transparent; box-shadow: none; }
+#chat .chatConversationList > :first-child,
+#chat .chatUtilityGroup > :first-of-type { border-top: 0; }
+#chat .chatSafetyNotice { min-height: 58px; }
+#chat .chatSafetyNotice small,
+#chat .chatThreadSafety small { font-size: 10.5px; line-height: 1.35; }
+#chat .chatThreadHeader,
+#chat .chatComposerGlass,
+#chat .chatTeamComposerWrap,
+#chat .chatPrivateComposerWrap { -webkit-backdrop-filter: blur(22px) saturate(145%); backdrop-filter: blur(22px) saturate(145%); }
+#chat .chatTeamBubble,
+#chat .chatPrivateBubble { border-radius: 17px; box-shadow: none; }
+
+/* Account: same product, not a separate settings application */
+#accountSheet { border: 0; background: var(--coherence-canvas); }
+#accountSheet .sheetGrabber { opacity: .54; }
+.accountSheetHeader {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  min-height: calc(64px + var(--app-safe-top, 0px));
+  padding: calc(10px + var(--app-safe-top, 0px)) max(16px, var(--app-safe-right, 0px)) 10px max(16px, var(--app-safe-left, 0px));
+  border-bottom: 1px solid var(--coherence-rule);
+  background: var(--coherence-glass);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+.accountSheetHeader > div > span { color: var(--liquid-secondary); font-size: 10.5px; font-weight: 650; text-transform: none; letter-spacing: -.003em; }
+.accountSheetHeader h2 { font-size: 25px; font-weight: 790; letter-spacing: -.035em; }
+#closeAccountSheet { min-width: 44px; min-height: 38px; padding: 0 10px; border: 0; border-radius: 12px; background: transparent; color: var(--liquid-accent-strong); font-size: 13px; font-weight: 720; }
+.accountSheetScroll { width: min(100%, 700px); margin-inline: auto; padding: 18px max(14px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) calc(28px + var(--app-safe-bottom, 0px)); }
+.accountSheetIntro { margin: 0 2px var(--coherence-space-4); color: var(--liquid-secondary); font-size: 12.5px; line-height: 1.4; }
+.personalisationStudio { gap: var(--coherence-space-4); }
+.personalisationStudioHeading,
+.personalisationPreviewCard,
+.personalisationGroup,
+.accountGroup,
+.accountIdentity,
+.accountHubList,
+.accountHomeIdentity { border: 1px solid var(--coherence-rule); border-radius: var(--coherence-card-radius); background: var(--coherence-surface); box-shadow: none; }
+.personalisationStudioHeading { padding: 16px; background: linear-gradient(145deg, color-mix(in srgb, var(--personal-accent, var(--liquid-accent)) 5%, var(--coherence-surface)), var(--coherence-surface)); }
+.personalisationStudioHeading h3 { margin-top: 3px; font-size: 25px; font-weight: 800; letter-spacing: -.04em; }
+.personalisationPreviewCard { box-shadow: var(--coherence-shadow-soft); }
+.personalisationGroup,
+.accountGroup { padding: 16px; }
+.personalisationTabs,
+.appearanceControl { padding: 3px; border: 1px solid var(--coherence-rule); border-radius: 15px; background: var(--coherence-subtle); }
+.personalisationTabs button,
+.appearanceControl button { min-height: 38px; border-radius: 11px; }
+.personalisationTabs button.active,
+.appearanceControl button.active,
+[role="tablist"] > button[aria-selected="true"] { background: var(--coherence-surface); box-shadow: 0 2px 8px rgba(18,32,48,.05); }
+.accountActionIcon { border-radius: 11px; }
+.securityGroup { margin-top: var(--coherence-space-4); }
+.accountSignOut { min-height: 48px; margin-top: var(--coherence-space-5); border-radius: var(--coherence-control-radius); }
+
+/* Live state uses one quiet language */
+.headerLiveChip,
+.liveStatus,
+#breakPlanLive,
+.primaryConnectionLine { color: var(--liquid-secondary); }
+.headerLiveDot,
+.liveDot,
+.chatLiveDot,
+#breakPlanLive i { width: 7px; height: 7px; box-shadow: none; }
+
+/* Bottom navigation is chrome, not another card stack */
+.bottom.reactTabs {
+  width: min(calc(100vw - 14px - var(--app-safe-left, 0px) - var(--app-safe-right, 0px)), 500px);
+  min-height: 64px;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--liquid-separator) 70%, transparent);
+  border-radius: 25px;
+  background: color-mix(in srgb, var(--liquid-surface) 74%, transparent);
+  -webkit-backdrop-filter: blur(26px) saturate(155%);
+  backdrop-filter: blur(26px) saturate(155%);
+  box-shadow: 0 10px 28px rgba(18,32,48,.10);
+}
+.bottom.reactTabs button:not(.quickRudder) { min-height: 54px; border-radius: 18px; }
+body[data-view] .bottom.reactTabs .tabSlidingIndicator { border: 0; border-radius: 18px; background: color-mix(in srgb, var(--liquid-accent) 8%, var(--coherence-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 10%, var(--coherence-rule)); }
+.bottom.reactTabs button:not(.quickRudder).active { color: var(--liquid-accent-strong); }
+.bottom.reactTabs .quickRudder { min-width: 58px; }
+.bottom.reactTabs .quickRudderDisc { width: 44px; height: 44px; border: 1px solid color-mix(in srgb, var(--liquid-accent) 18%, var(--coherence-rule)); background: var(--liquid-accent); box-shadow: 0 7px 18px color-mix(in srgb, var(--liquid-accent) 18%, transparent); }
+.bottom.reactTabs .quickRudderDisc::before,
+.bottom.reactTabs .quickRudderDisc::after { opacity: 0; }
+.bottom.reactTabs .quickRudderLabel { margin-top: 1px; font-size: 10.5px; font-weight: 700; }
+
+/* The Actions sheet is the intentional command centre */
+.quickActionsExperience { gap: var(--coherence-space-3); }
+.quickActionsContextBar,
+.quickPrimaryAction,
+.quickReviewAction,
+.quickCompactAction { border: 1px solid var(--coherence-rule); border-radius: var(--coherence-card-radius); background: var(--coherence-surface); box-shadow: none; }
+.quickActionsContextBar { background: var(--coherence-subtle); }
+.quickPrimaryAction,
+.quickCompactAction { min-height: 72px; }
+.quickReviewAction { min-height: 76px; }
+.quickReviewAction:not(:disabled) { border-color: color-mix(in srgb, var(--liquid-accent) 18%, var(--coherence-rule)); }
+
+/* Shared interaction language */
+:is(button, [role="button"], summary) { -webkit-tap-highlight-color: transparent; }
+:is(button, [role="button"], summary):focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--liquid-accent) 34%, transparent); outline-offset: 2px; }
+
+@media (hover:hover) and (pointer:fine) {
+  :is(button, [role="button"], summary) {
+    transition: background-color var(--coherence-fast) var(--coherence-ease), border-color var(--coherence-fast) var(--coherence-ease), color var(--coherence-fast) var(--coherence-ease), opacity var(--coherence-fast) var(--coherence-ease), transform var(--coherence-fast) var(--coherence-ease);
+  }
+}
+
+@media (max-width: 430px) {
+  #today,
+  #changes,
+  #breaks,
+  #chat,
+  #roster { padding-inline: max(8px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)); }
+
+  #today #appHeader,
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader { padding-inline: 12px; border-radius: 18px; }
+
+  #today .nightSectionIdentity { padding-inline: 3px; }
+  #today .nightUnifiedHero .nightSectionIdentity h1,
+  #changes .primaryScreenTitleRow h1,
+  #breaks .primaryScreenTitleRow h1,
+  #chat .primaryScreenTitleRow h1 { font-size: 30px; }
+
+  #breaks .breakSummaryItem { min-width: 0; padding-inline: 5px; }
+  #breaks .breakSummaryItem b { font-size: 13px; }
+  #breaks .breakSummaryItem small { font-size: 9.5px; }
+  #chat .chatHeaderCompose > span { display: none; }
+}
+
+@media (min-width: 720px) {
+  #today,
+  #changes,
+  #breaks,
+  #chat,
+  #roster { padding-inline: 18px; }
+  #today #appHeader,
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader { padding-inline: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(button, [role="button"], summary),
+  .bottom.reactTabs,
+  .bottom.reactTabs *,
+  .scrollGlassHeader,
+  .workflowSelection,
+  .personalisationPreviewCard { scroll-behavior: auto; transition: none; animation: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #today #appHeader,
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader,
+  .accountSheetHeader,
+  .bottom.reactTabs,
+  #chat .chatThreadHeader,
+  #chat .chatTeamComposerWrap,
+  #chat .chatPrivateComposerWrap { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--coherence-surface); }
+}
+
+@media (prefers-contrast: more) {
+  #today #appHeader,
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader,
+  #today .nightSignalPrimary,
+  #today .nightTeamDetails,
+  #changes .workflowGuidance,
+  #breaks .breakScheduleBoard,
+  #chat .chatInboxTeamRow,
+  #chat .chatConversationList,
+  .personalisationGroup,
+  .accountGroup { border-color: currentColor; }
+}
