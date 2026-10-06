@@ -1,14 +1,15 @@
 {
-  "version": "46.2",
+  "version": "47.0",
   "date": "6 October 2026",
-  "title": "Compact the Night opening",
-  "summary": "Night keeps its personalised welcome but moves the nurse's actual allocation higher on phone screens, with a slower, more deliberate name reveal and a tighter selected-night hierarchy.",
+  "title": "Unify the whole Night Roster experience",
+  "summary": "The coherence redesign is now visibly expressed across the installed app, with one compact top-shell language, stronger hierarchy, less stacked-card volume and a consistent navigation and context system across Night, Changes, Breaks, Chat and Account.",
   "changes": [
-    "Compacts the personalised Night hero and selected-night spacing so the nurse's actual allocation appears higher on phone screens without removing shift identity, date navigation, live status or Focus.",
-    "Slows the welcome animation deliberately, including a short pause before the nurse's name and a slower name reveal, while still playing only once per session and respecting reduced-motion settings.",
-    "Removes the duplicate visible Your night heading while retaining its accessible section label, reducing repeated hierarchy without changing roster content.",
-    "Tightens the handoff from selected-night context through freshness and Focus into the personal allocation, while preserving the live timeline rail, break information, AI Night Brief and daylight-saving clock-change behaviour.",
-    "Adds regression coverage for the slower personalised reveal and compact Night hierarchy."
+    "Turns the Night opening into one true unified shell that contains hospital identity, personalised greeting, shared shift identity and selected-night navigation instead of several visually unrelated layers.",
+    "Rebuilds Changes and Breaks into the same compound top-shell grammar, significantly reducing vertical volume while keeping selected-night, staffing and shift identity immediately readable.",
+    "Tightens the Changes workflow, personal Night card handoff, Breaks summary, Chat hierarchy and Account grouped surfaces so every destination follows the same spacing, radius and typography rhythm.",
+    "Refines the bottom dock into one quieter piece of navigation chrome with a more integrated centre Actions control and consistent selected-state treatment.",
+    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and existing guarded mutation paths.",
+    "Corrects the release boundary so installed PWAs receive 47.0 through a new versioned app shell and service-worker cache rather than silently retaining 46.2 presentation assets."
   ],
   "update_policy": "normal"
 }
