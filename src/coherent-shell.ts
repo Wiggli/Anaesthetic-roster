@@ -51,7 +51,11 @@ function enhanceRosterDateControl(control: HTMLElement) {
 
   const sync = () => {
     const supplied = control.getAttribute('data-date-label') || '';
-    if (text) text.textContent = supplied || formatRosterDate(input.value) || 'Choose night';
+    const nextLabel = supplied || formatRosterDate(input.value) || 'Choose night';
+    // The product shell watches child-list mutations so it can repair a legacy
+    // date wrapper injected later. Updating textContent unconditionally here can
+    // create another child-list mutation and starve startup in a feedback loop.
+    if (text && text.textContent !== nextLabel) text.textContent = nextLabel;
   };
 
   if (control.dataset.coherentDate !== 'true') {
@@ -81,7 +85,7 @@ function enhanceRosterDateControl(control: HTMLElement) {
 
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
-  document.documentElement.dataset.productShell = '50.2';
+  document.documentElement.dataset.productShell = '50.3';
 }
 
 if (document.readyState === 'loading') {
