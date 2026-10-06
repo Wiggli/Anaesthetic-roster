@@ -973,3 +973,88 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator {
     animation: none !important;
   }
 }
+
+/* 49.0 coherence completion: one active product authority */
+:root {
+  --unified-fast: 180ms;
+  --unified-base: 240ms;
+  --unified-ease: cubic-bezier(.2,.8,.2,1);
+}
+.quickActionsExperience { gap: var(--unified-space-3) !important; }
+.quickActionsContextBar,
+.quickPrimaryAction,
+.quickReviewAction,
+.quickCompactAction {
+  border: 1px solid var(--unified-border) !important;
+  border-radius: var(--unified-radius-lg) !important;
+  background: var(--unified-surface) !important;
+  box-shadow: none !important;
+}
+.quickActionsContextBar { background: var(--unified-soft) !important; }
+.quickPrimaryAction,
+.quickCompactAction { min-height: 70px !important; }
+.quickReviewAction { min-height: 74px !important; }
+.quickReviewAction:not(:disabled) {
+  border-color: color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
+  background: var(--unified-accent-soft) !important;
+}
+.headerLiveChip,
+.liveStatus,
+#breakPlanLive,
+.primaryConnectionLine {
+  color: var(--liquid-secondary) !important;
+  font-variant-numeric: tabular-nums;
+}
+.headerLiveDot,
+.liveDot,
+.chatLiveDot,
+#breakPlanLive i {
+  width: 7px !important;
+  height: 7px !important;
+  box-shadow: none !important;
+}
+:is(button, [role="button"], summary) { -webkit-tap-highlight-color: transparent; }
+:is(button, [role="button"], summary):focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--liquid-accent) 38%, transparent) !important;
+  outline-offset: 2px !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  :is(button, [role="button"], summary) {
+    transition: background-color var(--unified-fast) var(--unified-ease), border-color var(--unified-fast) var(--unified-ease), color var(--unified-fast) var(--unified-ease), opacity var(--unified-fast) var(--unified-ease), transform var(--unified-fast) var(--unified-ease) !important;
+  }
+}
+@media (max-width: 430px) {
+  #today, #changes, #breaks, #chat, #roster {
+    padding-inline: max(10px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
+  }
+  #today .dateNav.rosterDateControl input[type="date"],
+  #changes .nightContextPanel .dateNav.rosterDateControl input[type="date"],
+  #breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"] {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+@media (prefers-contrast: more) {
+  #today .nightDateShell,
+  #changes .changesDatePanel,
+  #breaks .breaksContextPanel,
+  #today #personalNightCard > .personalHeroSurface,
+  #today .nightSignalPrimary,
+  #today .nightTeamDetails,
+  #changes .workflowGuidance,
+  #changes .staffingSection,
+  #breaks .breakScheduleBoard,
+  #chat .chatInboxTeamRow,
+  #chat .chatConversationList,
+  .quickActionsContextBar,
+  .quickPrimaryAction,
+  .quickReviewAction,
+  .quickCompactAction,
+  .personalisationGroup,
+  .accountGroup { border-color: currentColor !important; }
+}
+

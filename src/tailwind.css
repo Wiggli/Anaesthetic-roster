@@ -13,12 +13,9 @@
 
 @import "./product-polish.css";
 
-@import "./product-coherence.css";
 
-@import "./product-coherence-bridge.css";
 
-/* 48.0 simple coherent system. The previous 47.0 corrective composition layer
-   is intentionally not imported because it over-compressed the mobile UI. */
+/* 49.0 single product-wide presentation authority. */
 @import "./product-unified.css";
 
 /* The long-lived presentation token is --liquid-bg. Keep the unified canvas wired to it. */

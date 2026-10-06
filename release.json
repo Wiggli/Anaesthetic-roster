@@ -1,14 +1,14 @@
 {
-  "version": "48.0",
+  "version": "49.0",
   "date": "6 October 2026",
-  "title": "Simplify the whole Night Roster experience",
-  "summary": "Replaces the over-compressed 47.0 composition with a calmer, simpler product system built around a slim app header, one compact selected-night component, one dominant task surface per screen and a consistent bottom dock.",
+  "title": "Consolidate Night Roster into one coherent product system",
+  "summary": "Removes competing coherence layers from the active cascade and makes one shared product system responsible for hierarchy, spacing, radii, surfaces, shift identity, live state, Actions, navigation, accessibility and compact-phone behaviour.",
   "changes": [
-    "Retires the 47.0 corrective composition layer that forced unrelated content into oversized combined shells and caused cramped mobile layouts.",
-    "Introduces one slim institution header and one clear screen-title rhythm across Night, Changes, Breaks and Chat without turning the entire top of each screen into a single card.",
-    "Standardises selected-night context into a compact shared component with shift identity, staffing context and a single-line date control that remains readable on small phones.",
-    "Keeps the nurse's personal Night allocation, Changes workflow, personal break summary and team conversation as the dominant surface in their respective screens while secondary information visually recedes.",
-    "Rebuilds the bottom navigation as a quieter equal-weight dock with an integrated Actions control rather than a competing floating visual language.",
+    "Makes product-unified.css the single final product-wide presentation authority and removes the older coherence and bridge files from the active cascade.",
+    "Keeps one restrained header, one compact selected-night component and one dominant task surface per screen while preserving the dark personal Night allocation as the visual anchor.",
+    "Standardises Actions, Account, Personalisation, live-state indicators, focus treatment and motion so they use the same spacing, radius and surface language as Night, Changes, Breaks and Chat.",
+    "Strengthens Android and iPhone compact-phone guards so roster dates remain on one line and the bottom dock, shift identity and break summary keep stable geometry.",
+    "Adds regression contracts that reject multiple active coherence stylesheets and protect the shared date, Night, Changes, Breaks, Chat, Actions and Account layout primitives.",
     "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and guarded mutation paths."
   ],
   "update_policy": "normal"

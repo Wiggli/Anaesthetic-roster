@@ -24,7 +24,7 @@ Use only three ordinary elevation levels: page canvas, stable content surface an
 
 Use the established spacing, radius, typography, surface and motion variables already defined in the stylesheets. New durable values should be introduced as shared custom properties rather than copied numeric literals across unrelated selectors.
 
-The current product-coherence tokens use the 4, 8, 12, 16, 24 and 32 pixel spacing rhythm, 14 pixel control radius, 20 pixel content-card radius and 28 pixel hero radius. Ordinary transitions should use the shared 180 to 240 millisecond motion range.
+The active product system uses a 6, 10, 14, 18 and 24 pixel spacing rhythm, 12 to 15 pixel control radii and a 20 pixel content-card radius. Ordinary transitions use the shared 180 to 240 millisecond motion range. These values are owned by `product-unified.css`, so new screens should consume the same tokens rather than introduce another local scale.
 
 Colour is semantic before it is decorative. Strong app accent colour means selection or action. Green means healthy, live or confirmed state, amber means attention, and red means destructive or urgent state. Personal and shift accent colours may identify people or the team but must never replace clinical state colours.
 
@@ -38,18 +38,18 @@ For whole-app polish, review the complete path Night → Changes → Actions →
 
 ## Cascade ownership
 
-The production cascade has explicit ownership boundaries so older compatibility CSS cannot unexpectedly win against current UI work.
+The production cascade has one final product-wide presentation owner. Older compatibility layers may provide component internals, but they are not allowed to define a second competing coherence system.
 
-- `styles.css` is the compatibility base and lives inside `@layer legacy-base`. It may provide defaults for unmigrated markup, but it must not contain `!important`.
-- `chat.css` is the complete Chat fallback and lives inside `@layer legacy-chat`. Shared current presentation may override overlapping Chat chrome.
-- Historical presentation generations before the 42.4 foundation live inside `@layer presentation-history` without `!important`.
-- The 42.4-and-newer presentation foundation remains unlayered and is the shared current product authority.
-- `account-admin-polish.css` owns account and administrator component internals, while `rudder-navigation.css` owns primary dock geometry.
-- `product-polish.css` owns the established screen-level refinements and safety-sensitive compatibility polish from the 45.x and 46.x generations.
-- `product-coherence.css` is the final durable product-wide cohesion authority. It normalises shared spacing, hierarchy, surfaces, chrome, typography and motion across existing components, but it must not redefine roster calculations, mutation behaviour, role semantics or clinical status meaning.
-- `product-coherence-bridge.css` is a narrow migration bridge for presentation properties that older `product-polish.css` generations locked with `!important`. It must remain presentation-only, may target only selectors already migrated into the coherence system, and should shrink as those older locks are retired from their owning stylesheet.
+- `styles.css` remains the compatibility base inside `@layer legacy-base`.
+- `chat.css` remains the Chat fallback inside `@layer legacy-chat`.
+- Historical presentation generations remain compatibility history and should continue shrinking.
+- `account-admin-polish.css` owns account and administrator component internals.
+- `rudder-navigation.css` owns low-level primary dock geometry.
+- `product-polish.css` owns established safety-sensitive compatibility polish that has not yet been retired.
+- `product-unified.css` is the single final product-wide presentation authority. It owns shared spacing, typography hierarchy, surfaces, radii, shift identity, live-state language, Actions presentation, navigation appearance, motion, focus treatment and small-phone adaptation across Night, Changes, Actions, Breaks, Chat, Account and Personalisation.
+- `product-coherence.css`, `product-coherence-bridge.css` and `product-coherence-correction.css` are retained only as historical migration references and are not imported into the production cascade.
 
-When a visual defect appears, first identify the owning stylesheet and remove or demote the competing rule. New component-specific fixes do not belong in the bridge. New product-wide rules belong in `product-coherence.css`, while the bridge is reserved only for replacing an existing important lock that prevents an already-defined coherence rule from taking effect.
+A new whole-app visual rule belongs in `product-unified.css`. A component-specific rule belongs in its owning component stylesheet. Do not create another final override stylesheet. If an older compatibility rule prevents the product system from taking effect, retire or demote that older rule rather than adding another coherence layer.
 
 ## Visibility state
 
