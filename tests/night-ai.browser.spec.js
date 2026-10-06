@@ -7,6 +7,15 @@ async function openShell(page) {
     body: 'window.supabase={createClient:function(){return null}};'
   }));
   await page.route('**/functions/v1/night-roster-ai', async route => {
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4173',
+      'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: corsHeaders, body: '' });
+      return;
+    }
     const payload = JSON.parse(route.request().postData() || '{}');
     const answers = {
       brief: 'You are allocated to Second Part Theatre. Six nurses are confirmed and no roster decisions need attention.',
@@ -17,6 +26,7 @@ async function openShell(page) {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
+      headers: corsHeaders,
       body: JSON.stringify({ answer: answers[payload.mode] || answers.ask, ai: true, model: 'test-model' })
     });
   });
