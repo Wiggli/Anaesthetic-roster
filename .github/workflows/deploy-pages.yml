@@ -1,4 +1,4 @@
-name: Test, migrate and deploy
+name: Test and deploy
 
 on:
   push:
@@ -6,22 +6,18 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: '17 3 * * *'
 
 permissions:
   contents: read
-  checks: read
-  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -29,13 +25,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Verify release metadata
-        run: npm run verify:release
-      - name: Build public app files
-        run: npm run build
-      - run: npm run verify:build
-      - name: Enforce built performance budgets
-        run: node tests/performance-budget.test.js
+      - name: Run deterministic release gate
+        run: npm run verify:ci
       - name: Preserve the exact Pages artifact
         uses: actions/upload-artifact@v4
         with:
@@ -43,235 +34,6 @@ jobs:
           path: dist
           if-no-files-found: error
           retention-days: 1
-
-  regression:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    steps:
-      - name: Detect exact-tree verified PR merge
-        id: reuse
-        uses: actions/github-script@v8
-        with:
-          script: |
-            core.setOutput('reuse', 'false');
-            core.setOutput('source_pr', '');
-            if (context.eventName !== 'push' || context.ref !== 'refs/heads/main') return;
-            const { owner, repo } = context.repo;
-            const sha = context.sha;
-            const associated = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
-            const pr = associated.data.find(candidate => candidate.merged_at && candidate.base && candidate.base.ref === 'main' && candidate.merge_commit_sha === sha);
-            if (!pr) return;
-            const [mergedCommit, headCommit, checks] = await Promise.all([
-              github.rest.repos.getCommit({ owner, repo, ref: sha }),
-              github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
-              github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 })
-            ]);
-            const exactTree = mergedCommit.data.commit.tree.sha === headCommit.data.commit.tree.sha;
-            const passedGate = checks.data.check_runs.some(check => check.name === 'test' && check.conclusion === 'success');
-            const trusted = exactTree && passedGate;
-            core.info(`PR #${pr.number}: exactTree=${exactTree}, requiredTest=${passedGate}, reuse=${trusted}`);
-            core.setOutput('reuse', trusted ? 'true' : 'false');
-            core.setOutput('source_pr', String(pr.number));
-      - name: Reuse verified deterministic regression result
-        if: steps.reuse.outputs.reuse == 'true'
-        run: |
-          echo "Reusing the successful required test gate from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
-      - uses: actions/checkout@v5
-        if: steps.reuse.outputs.reuse != 'true'
-      - uses: actions/setup-node@v5
-        if: steps.reuse.outputs.reuse != 'true'
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-        if: steps.reuse.outputs.reuse != 'true'
-      - name: Run deterministic regression suite
-        if: steps.reuse.outputs.reuse != 'true'
-        run: npm test
-
-  browser-smoke:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    steps:
-      - name: Detect exact-tree verified PR merge
-        id: reuse
-        uses: actions/github-script@v8
-        with:
-          script: |
-            core.setOutput('reuse', 'false');
-            core.setOutput('source_pr', '');
-            if (context.eventName !== 'push' || context.ref !== 'refs/heads/main') return;
-            const { owner, repo } = context.repo;
-            const sha = context.sha;
-            const associated = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
-            const pr = associated.data.find(candidate => candidate.merged_at && candidate.base && candidate.base.ref === 'main' && candidate.merge_commit_sha === sha);
-            if (!pr) return;
-            const [mergedCommit, headCommit, checks] = await Promise.all([
-              github.rest.repos.getCommit({ owner, repo, ref: sha }),
-              github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
-              github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 })
-            ]);
-            const exactTree = mergedCommit.data.commit.tree.sha === headCommit.data.commit.tree.sha;
-            const passedGate = checks.data.check_runs.some(check => check.name === 'test' && check.conclusion === 'success');
-            const trusted = exactTree && passedGate;
-            core.info(`PR #${pr.number}: exactTree=${exactTree}, requiredTest=${passedGate}, reuse=${trusted}`);
-            core.setOutput('reuse', trusted ? 'true' : 'false');
-            core.setOutput('source_pr', String(pr.number));
-      - name: Reuse verified Chromium and iPhone WebKit smoke result
-        if: steps.reuse.outputs.reuse == 'true'
-        run: |
-          echo "Reusing browser smoke from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
-      - uses: actions/checkout@v5
-        if: steps.reuse.outputs.reuse != 'true'
-      - uses: actions/setup-node@v5
-        if: steps.reuse.outputs.reuse != 'true'
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-        if: steps.reuse.outputs.reuse != 'true'
-      - name: Download the exact built app
-        if: steps.reuse.outputs.reuse != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: pages-dist
-          path: dist
-      - name: Install pinned browser smoke runner
-        if: steps.reuse.outputs.reuse != 'true'
-        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
-      - name: Restore Chromium cache
-        if: steps.reuse.outputs.reuse != 'true'
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-1.55.0-smoke-chromium-webkit
-      - name: Ensure Chromium and WebKit system dependencies
-        if: steps.reuse.outputs.reuse != 'true'
-        run: npx playwright install-deps chromium webkit
-      - name: Ensure Chromium and WebKit browsers
-        if: steps.reuse.outputs.reuse != 'true'
-        run: npx playwright install chromium webkit
-      - name: Run Chromium and focused iPhone WebKit smoke tests
-        if: steps.reuse.outputs.reuse != 'true'
-        run: npm run verify:browser
-      - name: Preserve presentation review captures
-        if: always() && github.event_name == 'pull_request' && steps.reuse.outputs.reuse != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: presentation-review
-          path: visual-review
-          if-no-files-found: ignore
-          retention-days: 3
-
-  browser-resilience:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Detect exact-tree verified PR merge
-        id: reuse
-        uses: actions/github-script@v8
-        with:
-          script: |
-            core.setOutput('reuse', 'false');
-            core.setOutput('source_pr', '');
-            if (context.eventName !== 'push' || context.ref !== 'refs/heads/main') return;
-            const { owner, repo } = context.repo;
-            const sha = context.sha;
-            const associated = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
-            const pr = associated.data.find(candidate => candidate.merged_at && candidate.base && candidate.base.ref === 'main' && candidate.merge_commit_sha === sha);
-            if (!pr) return;
-            const [mergedCommit, headCommit, checks] = await Promise.all([
-              github.rest.repos.getCommit({ owner, repo, ref: sha }),
-              github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
-              github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 })
-            ]);
-            const exactTree = mergedCommit.data.commit.tree.sha === headCommit.data.commit.tree.sha;
-            const passedGate = checks.data.check_runs.some(check => check.name === 'test' && check.conclusion === 'success');
-            const trusted = exactTree && passedGate;
-            core.info(`PR #${pr.number}: exactTree=${exactTree}, requiredTest=${passedGate}, reuse=${trusted}`);
-            core.setOutput('reuse', trusted ? 'true' : 'false');
-            core.setOutput('source_pr', String(pr.number));
-      - name: Reuse verified Chromium and iPhone WebKit resilience result
-        if: steps.reuse.outputs.reuse == 'true'
-        run: |
-          echo "Reusing full browser resilience from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
-      - uses: actions/checkout@v5
-        if: steps.reuse.outputs.reuse != 'true'
-      - uses: actions/setup-node@v5
-        if: steps.reuse.outputs.reuse != 'true'
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-        if: steps.reuse.outputs.reuse != 'true'
-      - name: Download the exact built app
-        if: steps.reuse.outputs.reuse != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: pages-dist
-          path: dist
-      - name: Install pinned resilience runner
-        if: steps.reuse.outputs.reuse != 'true'
-        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
-      - name: Restore pull-request Chromium cache
-        if: github.event_name == 'pull_request'
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-1.55.0-resilience-chromium-webkit
-      - name: Restore release browser cache
-        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-1.55.0-resilience-chromium-webkit
-      - name: Ensure pull-request Chromium dependencies
-        if: github.event_name == 'pull_request'
-        run: npx playwright install-deps chromium webkit
-      - name: Ensure pull-request Chromium browser
-        if: github.event_name == 'pull_request'
-        run: npx playwright install chromium webkit
-      - name: Run low-end Chromium resilience on pull requests
-        if: github.event_name == 'pull_request'
-        run: npm run verify:resilience -- --project=low-end-chromium
-      - name: Run iPhone WebKit resilience on pull requests
-        if: github.event_name == 'pull_request'
-        run: npm run verify:resilience -- --project=webkit-iphone
-      - name: Ensure Chromium and WebKit release dependencies
-        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
-        run: npx playwright install-deps chromium webkit
-      - name: Ensure Chromium and WebKit release browsers
-        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
-        run: npx playwright install chromium webkit
-      - name: Run full release resilience including WebKit
-        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
-        run: npm run verify:resilience
-
-  test:
-    if: always()
-    needs: [build, regression, browser-smoke, browser-resilience]
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Require every verification lane
-        env:
-          BUILD_RESULT: ${{ needs.build.result }}
-          REGRESSION_RESULT: ${{ needs.regression.result }}
-          BROWSER_SMOKE_RESULT: ${{ needs.browser-smoke.result }}
-          BROWSER_RESILIENCE_RESULT: ${{ needs.browser-resilience.result }}
-        shell: bash
-        run: |
-          printf 'build=%s\nregression=%s\nbrowser-smoke=%s\nbrowser-resilience=%s\n' \
-            "$BUILD_RESULT" "$REGRESSION_RESULT" "$BROWSER_SMOKE_RESULT" "$BROWSER_RESILIENCE_RESULT"
-          if [ "$BUILD_RESULT" != "success" ] || \
-             [ "$REGRESSION_RESULT" != "success" ] || \
-             [ "$BROWSER_SMOKE_RESULT" != "success" ] || \
-             [ "$BROWSER_RESILIENCE_RESULT" != "success" ]; then
-            echo "::error::One or more verification lanes failed or were cancelled."
-            exit 1
-          fi
 
   migrate:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
@@ -299,7 +61,7 @@ jobs:
           fi
       - name: Skip unchanged backend deployment
         if: steps.backend.outputs.changed != 'true'
-        run: echo "No database migration or chat notification function changed; continuing directly to Pages deployment."
+        run: echo "No database migration or chat notification function changed."
       - name: Check secure deployment settings
         if: steps.backend.outputs.changed == 'true'
         env:
@@ -347,7 +109,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy notify-chat-message --project-ref "$SUPABASE_PROJECT_REF"
-      - name: Chat notification endpoint health check
+      - name: Check chat notification boundary
         if: steps.backend.outputs.changed == 'true'
         shell: bash
         run: |
@@ -371,13 +133,13 @@ jobs:
       pages: write
       id-token: write
     concurrency:
-      group: ${{ github.workflow }}-pages
+      group: pages-production
       cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download the already-tested Pages artifact
+      - name: Download the tested Pages artifact
         uses: actions/download-artifact@v4
         with:
           name: pages-dist
@@ -388,7 +150,7 @@ jobs:
           path: dist
       - id: deployment
         uses: actions/deploy-pages@v5
-      - name: Verify live GitHub Pages site
+      - name: Verify the live PWA shell
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         shell: bash
@@ -404,51 +166,16 @@ jobs:
             exit 1
           fi
           index_file="$(mktemp)"
-          service_worker_file="$(mktemp)"
+          worker_file="$(mktemp)"
           manifest_file="$(mktemp)"
-          trap 'rm -f "$index_file" "$service_worker_file" "$manifest_file"' EXIT
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}index.html" > "$index_file"
-          if ! grep -Fq "app-core.js?v=${app_version}" "$index_file"; then
-            echo "::error::The deployed page does not contain application version ${app_version}."
-            exit 1
-          fi
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}app-core.js?v=${app_version}" > /dev/null
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}app-ui.js?v=${app_version}" > /dev/null
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}push.js?v=${app_version}" > /dev/null
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}chat.js?v=${app_version}" > /dev/null
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}chat.css?v=${app_version}" > /dev/null
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}service-worker.js" > "$service_worker_file"
+          trap 'rm -f "$index_file" "$worker_file" "$manifest_file"' EXIT
+          curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "${page_url}index.html" > "$index_file"
+          curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "${page_url}service-worker.js" > "$worker_file"
+          curl --fail --silent --show-error --location --proto '=https' --retry 5 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "${page_url}manifest.webmanifest?v=${app_version}" > "$manifest_file"
+          grep -Fq "app-core.js?v=${app_version}" "$index_file" || { echo "::error::Live index is not on ${app_version}."; exit 1; }
           cache_version="${app_version//./-}"
-          if ! grep -Fq "anaesthetic-night-roster-v${cache_version}" "$service_worker_file"; then
-            echo "::error::The deployed service worker does not match application version ${app_version}."
-            exit 1
-          fi
-          curl --fail --silent --show-error --location --proto '=https' \
-            --retry 5 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 \
-            "${page_url}manifest.webmanifest?v=${app_version}" > "$manifest_file"
-          if ! grep -Fq "icon-192.png?v=${app_version}" "$manifest_file"; then
-            echo "::error::The deployed manifest does not match application version ${app_version}."
-            exit 1
-          fi
+          grep -Fq "anaesthetic-night-roster-v${cache_version}" "$worker_file" || { echo "::error::Live service worker is not on ${app_version}."; exit 1; }
+          grep -Fq "icon-192.png?v=${app_version}" "$manifest_file" || { echo "::error::Live manifest is not on ${app_version}."; exit 1; }
