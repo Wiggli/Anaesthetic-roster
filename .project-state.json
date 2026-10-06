@@ -47,18 +47,28 @@
     "reuseTestedPagesArtifact": true,
     "nightlyCompatibilityRun": true
   },
+  "releaseRules": {
+    "featureEducationRequired": true,
+    "featureEducationSource": "src/legacy-ui/education.js",
+    "featureEducationGeneration": "educationVersions()",
+    "featureVersioning": "next whole major.patch number",
+    "maintenanceVersioning": "increment the single decimal patch and batch related minor work",
+    "deepPatchVersionsAllowed": false
+  },
   "continuity": {
     "readFirst": [
       "AGENTS.md",
       ".project-state.json",
       "docs/CURRENT_STATE.md",
-      "docs/DEVELOPMENT_WORKFLOW.md"
+      "docs/DEVELOPMENT_WORKFLOW.md",
+      "docs/FEATURE_RELEASE_RULES.md"
     ],
     "updateStateWhen": [
       "release version changes",
       "database schema changes",
       "source ownership changes",
-      "required verification commands change"
+      "required verification commands change",
+      "feature education or release-numbering rules change"
     ]
   },
   "pendingWork": [],
