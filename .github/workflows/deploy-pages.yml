@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: read
+  checks: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -46,13 +48,44 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
+      - name: Detect exact-tree verified PR merge
+        id: reuse
+        uses: actions/github-script@v8
+        with:
+          script: |
+            core.setOutput('reuse', 'false');
+            core.setOutput('source_pr', '');
+            if (context.eventName !== 'push' || context.ref !== 'refs/heads/main') return;
+            const { owner, repo } = context.repo;
+            const sha = context.sha;
+            const associated = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
+            const pr = associated.data.find(candidate => candidate.merged_at && candidate.base && candidate.base.ref === 'main' && candidate.merge_commit_sha === sha);
+            if (!pr) return;
+            const [mergedCommit, headCommit, checks] = await Promise.all([
+              github.rest.repos.getCommit({ owner, repo, ref: sha }),
+              github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
+              github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 })
+            ]);
+            const exactTree = mergedCommit.data.commit.tree.sha === headCommit.data.commit.tree.sha;
+            const passedGate = checks.data.check_runs.some(check => check.name === 'test' && check.conclusion === 'success');
+            const trusted = exactTree && passedGate;
+            core.info(`PR #${pr.number}: exactTree=${exactTree}, requiredTest=${passedGate}, reuse=${trusted}`);
+            core.setOutput('reuse', trusted ? 'true' : 'false');
+            core.setOutput('source_pr', String(pr.number));
+      - name: Reuse verified deterministic regression result
+        if: steps.reuse.outputs.reuse == 'true'
+        run: echo "Reusing the successful required test gate from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
       - uses: actions/checkout@v5
+        if: steps.reuse.outputs.reuse != 'true'
       - uses: actions/setup-node@v5
+        if: steps.reuse.outputs.reuse != 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.reuse.outputs.reuse != 'true'
       - name: Run deterministic regression suite
+        if: steps.reuse.outputs.reuse != 'true'
         run: npm test
 
   browser-smoke:
@@ -60,32 +93,68 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
+      - name: Detect exact-tree verified PR merge
+        id: reuse
+        uses: actions/github-script@v8
+        with:
+          script: |
+            core.setOutput('reuse', 'false');
+            core.setOutput('source_pr', '');
+            if (context.eventName !== 'push' || context.ref !== 'refs/heads/main') return;
+            const { owner, repo } = context.repo;
+            const sha = context.sha;
+            const associated = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
+            const pr = associated.data.find(candidate => candidate.merged_at && candidate.base && candidate.base.ref === 'main' && candidate.merge_commit_sha === sha);
+            if (!pr) return;
+            const [mergedCommit, headCommit, checks] = await Promise.all([
+              github.rest.repos.getCommit({ owner, repo, ref: sha }),
+              github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
+              github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 })
+            ]);
+            const exactTree = mergedCommit.data.commit.tree.sha === headCommit.data.commit.tree.sha;
+            const passedGate = checks.data.check_runs.some(check => check.name === 'test' && check.conclusion === 'success');
+            const trusted = exactTree && passedGate;
+            core.info(`PR #${pr.number}: exactTree=${exactTree}, requiredTest=${passedGate}, reuse=${trusted}`);
+            core.setOutput('reuse', trusted ? 'true' : 'false');
+            core.setOutput('source_pr', String(pr.number));
+      - name: Reuse verified Chromium and iPhone WebKit smoke result
+        if: steps.reuse.outputs.reuse == 'true'
+        run: echo "Reusing browser smoke from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
       - uses: actions/checkout@v5
+        if: steps.reuse.outputs.reuse != 'true'
       - uses: actions/setup-node@v5
+        if: steps.reuse.outputs.reuse != 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.reuse.outputs.reuse != 'true'
       - name: Download the exact built app
+        if: steps.reuse.outputs.reuse != 'true'
         uses: actions/download-artifact@v4
         with:
           name: pages-dist
           path: dist
       - name: Install pinned browser smoke runner
+        if: steps.reuse.outputs.reuse != 'true'
         run: npm install --no-save --no-package-lock @playwright/test@1.55.0
       - name: Restore Chromium cache
+        if: steps.reuse.outputs.reuse != 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-1.55.0-smoke-chromium-webkit
       - name: Ensure Chromium and WebKit system dependencies
+        if: steps.reuse.outputs.reuse != 'true'
         run: npx playwright install-deps chromium webkit
       - name: Ensure Chromium and WebKit browsers
+        if: steps.reuse.outputs.reuse != 'true'
         run: npx playwright install chromium webkit
       - name: Run Chromium and focused iPhone WebKit smoke tests
+        if: steps.reuse.outputs.reuse != 'true'
         run: npm run verify:browser
       - name: Preserve presentation review captures
-        if: always() && github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request' && steps.reuse.outputs.reuse != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: presentation-review
@@ -98,48 +167,83 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Detect exact-tree verified PR merge
+        id: reuse
+        uses: actions/github-script@v8
+        with:
+          script: |
+            core.setOutput('reuse', 'false');
+            core.setOutput('source_pr', '');
+            if (context.eventName !== 'push' || context.ref !== 'refs/heads/main') return;
+            const { owner, repo } = context.repo;
+            const sha = context.sha;
+            const associated = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
+            const pr = associated.data.find(candidate => candidate.merged_at && candidate.base && candidate.base.ref === 'main' && candidate.merge_commit_sha === sha);
+            if (!pr) return;
+            const [mergedCommit, headCommit, checks] = await Promise.all([
+              github.rest.repos.getCommit({ owner, repo, ref: sha }),
+              github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
+              github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 })
+            ]);
+            const exactTree = mergedCommit.data.commit.tree.sha === headCommit.data.commit.tree.sha;
+            const passedGate = checks.data.check_runs.some(check => check.name === 'test' && check.conclusion === 'success');
+            const trusted = exactTree && passedGate;
+            core.info(`PR #${pr.number}: exactTree=${exactTree}, requiredTest=${passedGate}, reuse=${trusted}`);
+            core.setOutput('reuse', trusted ? 'true' : 'false');
+            core.setOutput('source_pr', String(pr.number));
+      - name: Reuse verified Chromium and iPhone WebKit resilience result
+        if: steps.reuse.outputs.reuse == 'true'
+        run: echo "Reusing full browser resilience from PR #${{ steps.reuse.outputs.source_pr }} for this exact merged tree."
       - uses: actions/checkout@v5
+        if: steps.reuse.outputs.reuse != 'true'
       - uses: actions/setup-node@v5
+        if: steps.reuse.outputs.reuse != 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.reuse.outputs.reuse != 'true'
       - name: Download the exact built app
+        if: steps.reuse.outputs.reuse != 'true'
         uses: actions/download-artifact@v4
         with:
           name: pages-dist
           path: dist
       - name: Install pinned resilience runner
+        if: steps.reuse.outputs.reuse != 'true'
         run: npm install --no-save --no-package-lock @playwright/test@1.55.0
       - name: Restore pull-request Chromium cache
         if: github.event_name == 'pull_request'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-1.55.0-resilience-chromium
+          key: playwright-${{ runner.os }}-1.55.0-resilience-chromium-webkit
       - name: Restore release browser cache
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-1.55.0-resilience-chromium-webkit
       - name: Ensure pull-request Chromium dependencies
         if: github.event_name == 'pull_request'
-        run: npx playwright install-deps chromium
+        run: npx playwright install-deps chromium webkit
       - name: Ensure pull-request Chromium browser
         if: github.event_name == 'pull_request'
-        run: npx playwright install chromium
+        run: npx playwright install chromium webkit
       - name: Run low-end Chromium resilience on pull requests
         if: github.event_name == 'pull_request'
         run: npm run verify:resilience -- --project=low-end-chromium
+      - name: Run iPhone WebKit resilience on pull requests
+        if: github.event_name == 'pull_request'
+        run: npm run verify:resilience -- --project=webkit-iphone
       - name: Ensure Chromium and WebKit release dependencies
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
         run: npx playwright install-deps chromium webkit
       - name: Ensure Chromium and WebKit release browsers
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
         run: npx playwright install chromium webkit
       - name: Run full release resilience including WebKit
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.reuse.outputs.reuse != 'true'
         run: npm run verify:resilience
 
   test:
@@ -175,7 +279,26 @@ jobs:
       SUPABASE_PROJECT_REF: voaygfleqceqacvqixxp
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Detect database or chat-function changes
+        id: backend
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "push" ] || [ -z "${{ github.event.before }}" ] || [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --quiet "${{ github.event.before }}" "${{ github.sha }}" -- supabase/migrations supabase/functions/notify-chat-message; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Skip unchanged backend deployment
+        if: steps.backend.outputs.changed != 'true'
+        run: echo "No database migration or chat notification function changed; continuing directly to Pages deployment."
       - name: Check secure deployment settings
+        if: steps.backend.outputs.changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -185,9 +308,11 @@ jobs:
             exit 1
           fi
       - uses: supabase/setup-cli@v3
+        if: steps.backend.outputs.changed == 'true'
         with:
           version: 2.45.5
       - name: Prepare database migrations
+        if: steps.backend.outputs.changed == 'true'
         shell: bash
         run: |
           supabase init
@@ -203,20 +328,24 @@ jobs:
             exit 1
           fi
       - name: Link the roster database
+        if: steps.backend.outputs.changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
       - name: Apply new database migrations
+        if: steps.backend.outputs.changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: supabase db push --linked --yes
       - name: Deploy chat notification Edge Function
+        if: steps.backend.outputs.changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy notify-chat-message --project-ref "$SUPABASE_PROJECT_REF"
       - name: Chat notification endpoint health check
+        if: steps.backend.outputs.changed == 'true'
         shell: bash
         run: |
           status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
