@@ -1,15 +1,15 @@
 {
-  "version": "47.0",
+  "version": "48.0",
   "date": "6 October 2026",
-  "title": "Unify the whole Night Roster experience",
-  "summary": "The coherence redesign is now visibly expressed across the installed app, with one compact top-shell language, stronger hierarchy, less stacked-card volume and a consistent navigation and context system across Night, Changes, Breaks, Chat and Account.",
+  "title": "Simplify the whole Night Roster experience",
+  "summary": "Replaces the over-compressed 47.0 composition with a calmer, simpler product system built around a slim app header, one compact selected-night component, one dominant task surface per screen and a consistent bottom dock.",
   "changes": [
-    "Turns the Night opening into one true unified shell that contains hospital identity, personalised greeting, shared shift identity and selected-night navigation instead of several visually unrelated layers.",
-    "Rebuilds Changes and Breaks into the same compound top-shell grammar, significantly reducing vertical volume while keeping selected-night, staffing and shift identity immediately readable.",
-    "Tightens the Changes workflow, personal Night card handoff, Breaks summary, Chat hierarchy and Account grouped surfaces so every destination follows the same spacing, radius and typography rhythm.",
-    "Refines the bottom dock into one quieter piece of navigation chrome with a more integrated centre Actions control and consistent selected-state treatment.",
-    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and existing guarded mutation paths.",
-    "Corrects the release boundary so installed PWAs receive 47.0 through a new versioned app shell and service-worker cache rather than silently retaining 46.2 presentation assets."
+    "Retires the 47.0 corrective composition layer that forced unrelated content into oversized combined shells and caused cramped mobile layouts.",
+    "Introduces one slim institution header and one clear screen-title rhythm across Night, Changes, Breaks and Chat without turning the entire top of each screen into a single card.",
+    "Standardises selected-night context into a compact shared component with shift identity, staffing context and a single-line date control that remains readable on small phones.",
+    "Keeps the nurse's personal Night allocation, Changes workflow, personal break summary and team conversation as the dominant surface in their respective screens while secondary information visually recedes.",
+    "Rebuilds the bottom navigation as a quieter equal-weight dock with an integrated Actions control rather than a competing floating visual language.",
+    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, clinical colours and guarded mutation paths."
   ],
   "update_policy": "normal"
 }
