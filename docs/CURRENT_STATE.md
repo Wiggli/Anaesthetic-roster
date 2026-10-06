@@ -21,7 +21,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 
 Development uses a fast inner loop and a single deterministic release gate. Ordinary iterations use `npm run verify:fast`, while `npm run verify:ci` is the exact routine CI gate for consequential changes and combines the complete deterministic regression suite, TypeScript validation, one Vite build and build-artifact verification.
 
-The routine GitHub Actions workflow now contains one `test` job, a conditional Supabase migration job and Pages deployment of the exact artifact produced by `test`. Expensive Chromium and WebKit smoke and resilience work is isolated in the separate nightly/manual browser compatibility workflow, so browser-runner instability no longer creates repeated repair commits during ordinary merges. The required status check remains named `test`, Node 22 is pinned across local and CI tooling, and production still performs a small live PWA-shell version check after deployment.
+The routine GitHub Actions workflow now contains one `test` job, a conditional Supabase migration job and Pages deployment of the exact artifact produced by `test`. It has no scheduled browser work of its own. Expensive Chromium and WebKit smoke and resilience work is isolated in the separate nightly/manual browser compatibility workflow, so browser-runner instability no longer creates repeated repair commits during ordinary merges. The required status check remains named `test`, Node 22 is pinned across local and CI tooling, and production still performs a small live PWA-shell version check after deployment.
 
 ## Continuity rule
 
