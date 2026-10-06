@@ -26,5 +26,6 @@ assert.ok(css.includes('#today .nightContextCapsule'), 'duplicate Night context 
 assert.ok(coherentShell.includes("input.closest<HTMLElement>('.prettyDateControl')"), 'coherent date control must detect the legacy pretty-date wrapper');
 assert.ok(coherentShell.includes('legacyWrapper.remove()'), 'coherent date control must remove the legacy pretty-date presentation');
 assert.ok(coherentShell.includes("control.querySelectorAll<HTMLElement>('.prettyDateButton')"), 'coherent date control must remove stray legacy pretty-date buttons');
-assert.ok(coherentShell.includes("document.documentElement.dataset.productShell = '50.2'"), '50.2 product shell marker must identify the real-device date conflict repair');
-console.log('50.2 real-device date conflict regression checks passed');
+assert.ok(coherentShell.includes("text.textContent !== nextLabel"), 'date shell must not rewrite an unchanged label and retrigger its child-list observer');
+assert.ok(coherentShell.includes("document.documentElement.dataset.productShell = '50.3'"), '50.3 product shell marker must identify the startup freeze repair');
+console.log('50.3 date-shell startup regression checks passed');
