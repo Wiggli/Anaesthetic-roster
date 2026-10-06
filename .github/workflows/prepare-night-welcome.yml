@@ -1,0 +1,40 @@
+name: Prepare Night welcome release
+
+on:
+  push:
+    branches:
+      - fix/night-welcome-hero
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/night-welcome-hero
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prepare redesigned Night page
+        run: node scripts/prepare-night-welcome.mjs
+      - name: Synchronise release 46.1
+        run: npm run release
+      - name: Verify release
+        run: npm run verify:fast
+      - name: Commit verified release
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/prepare-night-welcome.yml scripts/prepare-night-welcome.mjs
+          git add -A
+          git commit -m "Personalise the Night welcome experience"
+          git push origin HEAD:fix/night-welcome-hero
