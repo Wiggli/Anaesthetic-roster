@@ -26,6 +26,10 @@ console.log(`Database schema: ${state.databaseSchema}`);
 console.log(`Fast verification: ${state.developerCommands.fastVerify}`);
 console.log(`Full verification: ${state.developerCommands.fullVerify}`);
 console.log(`Required CI check: ${state.ci.requiredCheck}`);
+if (state.releaseRules) {
+  console.log(`Feature education: ${state.releaseRules.featureEducationRequired ? 'required for feature-level releases' : 'not required'}`);
+  console.log(`Release numbering: features use the next whole number; maintenance uses one decimal patch and batches related minor work`);
+}
 console.log('Read first:');
 for (const file of state.continuity.readFirst) console.log(`  - ${file}`);
 if (state.pendingWork.length) {
