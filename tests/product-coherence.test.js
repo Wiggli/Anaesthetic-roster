@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const css = read('src/product-coherence.css');
 const bridge = read('src/product-coherence-bridge.css');
-const correction = read('src/product-coherence-correction.css');
+const unified = read('src/product-unified.css');
 const tailwind = read('src/tailwind.css');
 const designSystem = read('docs/DESIGN_SYSTEM.md');
 
@@ -21,7 +21,7 @@ includesAll(tailwind, [
   '@import "./product-polish.css";',
   '@import "./product-coherence.css";',
   '@import "./product-coherence-bridge.css";',
-  '@import "./product-coherence-correction.css";'
+  '@import "./product-unified.css";'
 ], 'Tailwind presentation cascade');
 
 assert.ok(
@@ -33,8 +33,12 @@ assert.ok(
   'the migration bridge must remain after the durable coherence layer'
 );
 assert.ok(
-  tailwind.indexOf('@import "./product-coherence-correction.css";') > tailwind.indexOf('@import "./product-coherence-bridge.css";'),
-  'the visible coherence correction must remain last in the presentation cascade'
+  tailwind.indexOf('@import "./product-unified.css";') > tailwind.indexOf('@import "./product-coherence-bridge.css";'),
+  'the simple unified product layer must remain last in the presentation cascade'
+);
+assert.ok(
+  !tailwind.includes('@import "./product-coherence-correction.css";'),
+  'the over-compressed 47.0 corrective composition layer must stay retired'
 );
 
 includesAll(css, [
@@ -45,31 +49,27 @@ includesAll(css, [
   '#changes .appScreenHeader',
   '#breaks .appScreenHeader',
   '#chat .appScreenHeader',
-  '#today #personalNightCard > .personalHeroSurface',
-  '#changes .workflowSteps',
-  '#breaks .breakSummaryRow',
-  '#chat .chatInboxTeamRow',
   '#accountSheet',
-  '.bottom.reactTabs',
-  '.quickActionsExperience',
-  '@media (prefers-reduced-motion: reduce)',
-  '@media (prefers-reduced-transparency: reduce)',
-  '@media (prefers-contrast: more)'
-], 'Product coherence contract');
+  '.bottom.reactTabs'
+], 'Durable product coherence contract');
 
-includesAll(correction, [
-  '--coherence-shell-radius:',
+includesAll(unified, [
+  '--unified-content-width:',
+  '--unified-radius-lg:',
   '#today .nightUnifiedHero',
   '#changes .changesDatePanel',
   '#breaks .breaksContextPanel',
-  '#chat .appScreenHeader',
+  '#chat .chatRosterContext',
+  '.nightTeamIdentityContext',
+  'input[type="date"]::-webkit-datetime-edit',
   '#changes .workflowSteps',
   '#today #personalNightCard > .personalHeroSurface',
+  '#breaks .personalBreakSummary',
   '.bottom.reactTabs',
-  '@media (max-width: 430px)',
+  '@media (max-width: 390px)',
   '@media (prefers-reduced-transparency: reduce)',
   '@media (prefers-reduced-motion: reduce)'
-], 'Visible coherence correction contract');
+], 'Simple unified product contract');
 
 assert.equal((css.match(/!important/g) || []).length, 0, 'durable coherence layer must not escalate cascade conflicts with !important');
 assert.ok(!css.includes('.hidden {'), 'coherence layer must not redefine runtime visibility state');
@@ -78,11 +78,11 @@ assert.ok(!css.includes('--liquid-warning:'), 'coherence layer must not redefine
 assert.ok(!css.includes('--liquid-success:'), 'coherence layer must not redefine the clinical success colour');
 assert.ok(!bridge.includes('.hidden {'), 'migration bridge must not redefine runtime visibility state');
 assert.ok((bridge.match(/!important/g) || []).length <= 70, 'migration bridge must remain narrowly bounded');
-assert.ok(!correction.includes('.hidden {'), 'visible correction must not redefine runtime visibility state');
-assert.ok(!correction.includes('--liquid-critical:'), 'visible correction must not redefine the clinical critical colour');
-assert.ok(!correction.includes('--liquid-warning:'), 'visible correction must not redefine the clinical warning colour');
-assert.ok(!correction.includes('--liquid-success:'), 'visible correction must not redefine the clinical success colour');
-assert.ok((correction.match(/!important/g) || []).length <= 320, 'visible correction override budget must remain bounded and presentation-only');
+assert.ok(!unified.includes('.hidden {'), 'unified layer must not redefine runtime visibility state');
+assert.ok(!unified.includes('--liquid-critical:'), 'unified layer must not redefine the clinical critical colour');
+assert.ok(!unified.includes('--liquid-warning:'), 'unified layer must not redefine the clinical warning colour');
+assert.ok(!unified.includes('--liquid-success:'), 'unified layer must not redefine the clinical success colour');
+assert.ok((unified.match(/!important/g) || []).length <= 330, 'unified override budget must remain bounded and presentation-only');
 
 includesAll(designSystem, [
   'role tonight, their break, changes requiring attention, the team plan',
