@@ -1,0 +1,170 @@
+name: One-shot Night welcome redesign v2
+
+on:
+  push:
+    branches:
+      - fix/night-welcome-hero
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/night-welcome-hero
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build personalised Night welcome experience
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import json, re
+          root=Path('.')
+
+          index_path=root/'index.html'
+          index=index_path.read_text()
+          pattern=r'<div class="nightSectionIdentity" aria-labelledby="nightSectionTitle">\s*<h1 id="nightSectionTitle">Night</h1>\s*</div>'
+          replacement='''<div class="nightSectionIdentity" aria-labelledby="nightSectionTitle">
+            <div id="nightWelcomeHero" class="nightWelcomeHero">
+              <span class="nightWelcomeEyebrow"><i aria-hidden="true"></i>Your night</span>
+              <h1 id="nightSectionTitle" class="nightWelcomeTitle" aria-label="Night">
+                <span id="nightWelcomeText" aria-hidden="true">Night</span><span id="nightWelcomeCursor" class="nightWelcomeCursor" aria-hidden="true" hidden></span>
+              </h1>
+              <p id="nightWelcomeSubtitle">Your allocation, break and team plan in one clear view.</p>
+            </div>
+          </div>'''
+          index,count=re.subn(pattern,replacement,index,count=1)
+          if count!=1: raise SystemExit(f'Night title replacement count was {count}')
+          css_anchor='    <link rel="stylesheet" href="chat.css?v=46.0" vite-ignore />'
+          if 'night-welcome.css?v=' not in index:
+              if css_anchor not in index: raise SystemExit('chat.css anchor missing')
+              index=index.replace(css_anchor,css_anchor+'\n    <link rel="stylesheet" href="night-welcome.css?v=46.0" vite-ignore />',1)
+          script_anchor='    <script src="theme-bootstrap.js?v=46.0" vite-ignore></script>'
+          if 'night-welcome.js?v=' not in index:
+              if script_anchor not in index: raise SystemExit('theme bootstrap anchor missing')
+              index=index.replace(script_anchor,script_anchor+'\n    <script src="night-welcome.js?v=46.0" defer vite-ignore></script>',1)
+          index_path.write_text(index)
+
+          (root/'night-welcome.js').write_text(r'''(function(){
+'use strict';
+var TYPED_KEY='anaes_night_welcome_typed_v1',typingTimer=null,retryTimer=null,identityRetries=0;
+function el(id){return document.getElementById(id)}
+function safe(fn,fallback){try{return fn()}catch(error){return fallback}}
+function reducedMotion(){return !!(document.body&&document.body.classList.contains('personalMotionReduced'))||!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
+function greetingEnabled(){return !(typeof currentPrivateProfile!=='undefined'&&currentPrivateProfile&&currentPrivateProfile.greeting_enabled===false)}
+function preferredFirstName(){
+  var value='';
+  if(typeof currentPrivateProfile!=='undefined'&&currentPrivateProfile&&currentPrivateProfile.profile_name)value=currentPrivateProfile.profile_name;
+  if(!value&&typeof myName==='function'){
+    var rosterName=safe(function(){return myName()},'');
+    if(rosterName)value=typeof professionalName==='function'?safe(function(){return professionalName(rosterName)},rosterName):rosterName
+  }
+  if(!value&&typeof currentUserProfile!=='undefined'&&currentUserProfile&&currentUserProfile.display_name)value=currentUserProfile.display_name;
+  value=String(value||'').trim();return value?value.split(/\s+/)[0]:''
+}
+function timeGreeting(){var hour=new Date().getHours();if(hour<12)return'Good morning';if(hour<18)return'Good afternoon';return'Good evening'}
+function greetingText(){if(!greetingEnabled())return'Night';var first=preferredFirstName();return timeGreeting()+(first?', '+first:'')}
+function alreadyTyped(){return safe(function(){return sessionStorage.getItem(TYPED_KEY)==='1'},false)}
+function markTyped(){safe(function(){sessionStorage.setItem(TYPED_KEY,'1')},null)}
+function stopTyping(){if(typingTimer){clearTimeout(typingTimer);typingTimer=null}}
+function renderWelcome(){
+  var hero=el('nightWelcomeHero'),title=el('nightSectionTitle'),text=el('nightWelcomeText'),cursor=el('nightWelcomeCursor');
+  if(!hero||!title||!text||!cursor)return;
+  if(document.body&&document.body.classList.contains('authPending'))return;
+  var hasIdentity=typeof currentUserProfile!=='undefined'&&!!currentUserProfile;
+  if(!hasIdentity&&identityRetries<12){identityRetries++;clearTimeout(retryTimer);retryTimer=setTimeout(renderWelcome,240);return}
+  identityRetries=0;
+  var message=greetingText();title.setAttribute('aria-label',message);
+  var animate=greetingEnabled()&&!reducedMotion()&&!alreadyTyped()&&document.visibilityState!=='hidden';
+  stopTyping();
+  if(!animate){text.textContent=message;cursor.hidden=true;hero.classList.remove('is-typing');hero.classList.add('is-ready');return}
+  text.textContent='';cursor.hidden=false;hero.classList.add('is-typing');hero.classList.remove('is-ready');
+  var index=0;
+  function typeNext(){index++;text.textContent=message.slice(0,index);if(index<message.length){typingTimer=setTimeout(typeNext,index<6?34:27);return}markTyped();hero.classList.remove('is-typing');hero.classList.add('is-ready');typingTimer=setTimeout(function(){cursor.hidden=true},520)}
+  typingTimer=setTimeout(typeNext,120)
+}
+function scheduleWelcome(){clearTimeout(retryTimer);retryTimer=setTimeout(renderWelcome,60)}
+function initWelcome(){
+  if(!el('nightWelcomeHero'))return;
+  ['roster:account','roster:personal-night','roster:night','roster:night-team-identity'].forEach(function(name){window.addEventListener(name,scheduleWelcome)});
+  window.addEventListener('pageshow',scheduleWelcome);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')scheduleWelcome()});
+  if(window.MutationObserver&&document.body){var observer=new MutationObserver(function(records){if(records.some(function(record){return record.attributeName==='class'}))scheduleWelcome()});observer.observe(document.body,{attributes:true,attributeFilter:['class']})}
+  scheduleWelcome()
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initWelcome,{once:true});else initWelcome();
+window.NightWelcome={render:renderWelcome};
+})();
+''')
+
+          (root/'night-welcome.css').write_text(r'''/* Personal Night welcome: a restrained identity layer above the existing shift/date context. */
+#today .nightSectionIdentity{margin:0;padding:15px 20px 8px;position:relative;z-index:2}
+#today .nightWelcomeHero{position:relative;min-width:0;padding:3px 2px 8px}
+#today .nightWelcomeEyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:7px;color:color-mix(in srgb,var(--personal-accent,#6bc7c7) 72%,#8da2b7);font-size:11px;line-height:1;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+#today .nightWelcomeEyebrow i{width:6px;height:6px;border-radius:999px;background:var(--personal-accent,#6bc7c7);box-shadow:0 0 0 5px color-mix(in srgb,var(--personal-accent,#6bc7c7) 13%,transparent)}
+#today .nightWelcomeTitle{display:flex;align-items:center;min-height:1.12em;margin:0;color:var(--text,#152536);font-size:clamp(31px,8.4vw,43px);line-height:1.04;font-weight:950;letter-spacing:-.045em;text-wrap:balance}
+#today .nightWelcomeCursor{width:2px;height:.82em;margin-left:5px;border-radius:99px;background:var(--personal-accent,#6bc7c7);opacity:.9;animation:nightWelcomeBlink .72s steps(1,end) infinite}
+#today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:nightWelcomeSettle .32s cubic-bezier(.2,.8,.2,1) both}
+#today #nightWelcomeSubtitle{max-width:34rem;margin:8px 0 0;color:var(--muted,#75869a);font-size:13px;line-height:1.45;font-weight:680;letter-spacing:-.01em}
+#today .nightUnifiedHero{position:relative;isolation:isolate}
+#today .nightUnifiedHero::after{content:'';position:absolute;left:14px;right:14px;top:calc(var(--app-safe-top,0px) + 72px);height:150px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 15%,color-mix(in srgb,var(--personal-accent,#6bc7c7) 9%,transparent),transparent 66%);filter:blur(8px)}
+#today .nightDateShell.nightUnifiedContext{margin-top:2px}
+body.dark #today .nightWelcomeTitle{color:#f7f9fc}
+body.dark #today #nightWelcomeSubtitle{color:#9ca9ba}
+@keyframes nightWelcomeBlink{0%,46%{opacity:1}47%,100%{opacity:0}}
+@keyframes nightWelcomeSettle{from{opacity:.84;transform:translateY(2px)}to{opacity:1;transform:none}}
+@media(max-width:430px){#today .nightSectionIdentity{padding:14px 16px 7px}#today .nightWelcomeTitle{font-size:clamp(30px,9.1vw,38px)}#today #nightWelcomeSubtitle{font-size:12.5px}}
+@media(prefers-reduced-motion:reduce){#today .nightWelcomeCursor{display:none!important}#today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none!important}}
+body.personalMotionReduced #today .nightWelcomeCursor{display:none!important}
+body.personalMotionReduced #today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none!important}
+''')
+
+          vite_path=root/'vite.config.mts';vite=vite_path.read_text()
+          vite=vite.replace("'night-intelligence.css', 'night-ai.css', 'theme-bootstrap.js'","'night-intelligence.css', 'night-ai.css', 'night-welcome.css', 'theme-bootstrap.js'",1)
+          vite=vite.replace("'night-intelligence.js', 'night-ai.js', 'push.js'","'night-intelligence.js', 'night-ai.js', 'night-welcome.js', 'push.js'",1)
+          if 'night-welcome.css' not in vite or 'night-welcome.js' not in vite: raise SystemExit('Vite asset insertion failed')
+          vite_path.write_text(vite)
+
+          worker_path=root/'service-worker.js';worker=worker_path.read_text()
+          if 'night-welcome.css?v=' not in worker: worker=worker.replace("  './night-ai.css?v=46.0',\n","  './night-ai.css?v=46.0',\n  './night-welcome.css?v=46.0',\n",1)
+          if 'night-welcome.js?v=' not in worker: worker=worker.replace("  './night-ai.js?v=46.0',\n","  './night-ai.js?v=46.0',\n  './night-welcome.js?v=46.0',\n",1)
+          worker_path.write_text(worker)
+
+          (root/'tests/night-welcome.test.js').write_text(r'''const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');const root=path.join(__dirname,'..');const read=f=>fs.readFileSync(path.join(root,f),'utf8');const index=read('index.html'),client=read('night-welcome.js'),css=read('night-welcome.css'),vite=read('vite.config.mts'),worker=read('service-worker.js');
+assert.match(index,/id="nightWelcomeHero"/);assert.match(index,/night-welcome\.js\?v=/);assert.match(index,/night-welcome\.css\?v=/);
+assert.match(client,/currentPrivateProfile/);assert.match(client,/currentUserProfile/);assert.match(client,/professionalName/);assert.match(client,/greeting_enabled/);assert.match(client,/prefers-reduced-motion/);assert.match(client,/sessionStorage\.getItem\(TYPED_KEY\)/);assert.doesNotMatch(client,/Andre|André/);
+assert.match(css,/nightWelcomeTitle/);assert.match(vite,/night-welcome\.js/);assert.match(vite,/night-welcome\.css/);assert.match(worker,/night-welcome\.js\?v=/);assert.match(worker,/night-welcome\.css\?v=/);console.log('Personal Night welcome contracts passed.');
+''')
+
+          package_path=root/'package.json';package=json.loads(package_path.read_text())
+          for key in ('verify:fast','test'):
+            script=package['scripts'][key];anchor='node tests/night-ai.test.js'
+            if 'node tests/night-welcome.test.js' not in script: script=script.replace(anchor,anchor+' && node tests/night-welcome.test.js',1)
+            package['scripts'][key]=script
+          package_path.write_text(json.dumps(package,indent=2)+'\n')
+
+          release={'version':'46.1','date':'6 October 2026','title':'Personalise the Night welcome experience','summary':'Night opens as one coherent personal dashboard with a time-aware nurse greeting, restrained one-time typing motion and a clearer visual handoff into shift identity, date and allocation.','changes':['Replaces the generic Night heading with a personalised time-aware greeting using the saved preferred name, verified roster identity or professional roster name fallback.','Adds a restrained one-time typing reveal for the greeting while respecting the existing greeting preference and reduced-motion accessibility settings.','Keeps the welcome, shared shift identity and selected-night controls inside the existing unified Night hero so the page reads as one coherent personal dashboard rather than stacked unrelated cards.','Adds a concise orientation line that frames allocation, break and team plan as the page hierarchy before the existing Your night, Night brief and Tonight sections.','Ships and caches the dedicated welcome runtime and styles with regression coverage so installed Android and iPhone PWAs receive the same personalised experience.'],'update_policy':'normal'}
+          (root/'release.json').write_text(json.dumps(release,indent=2)+'\n')
+          PY
+      - name: Synchronise release 46.1
+        run: npm run release
+      - name: Verify Night welcome release
+        run: npm run verify:fast
+      - name: Commit prepared release
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/one-shot-night-welcome.yml .github/workflows/one-shot-night-welcome-v2.yml
+          git add -A
+          git commit -m "Personalise the Night welcome experience"
+          git push origin HEAD:fix/night-welcome-hero
