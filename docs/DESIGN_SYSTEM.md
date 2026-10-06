@@ -46,9 +46,10 @@ The production cascade has explicit ownership boundaries so older compatibility 
 - The 42.4-and-newer presentation foundation remains unlayered and is the shared current product authority.
 - `account-admin-polish.css` owns account and administrator component internals, while `rudder-navigation.css` owns primary dock geometry.
 - `product-polish.css` owns the established screen-level refinements and safety-sensitive compatibility polish from the 45.x and 46.x generations.
-- `product-coherence.css` is the final product-wide cohesion authority. It may normalise shared spacing, hierarchy, surfaces, chrome, typography and motion across existing components, but it must not redefine roster calculations, mutation behaviour, role semantics or clinical status meaning.
+- `product-coherence.css` is the final durable product-wide cohesion authority. It normalises shared spacing, hierarchy, surfaces, chrome, typography and motion across existing components, but it must not redefine roster calculations, mutation behaviour, role semantics or clinical status meaning.
+- `product-coherence-bridge.css` is a narrow migration bridge for presentation properties that older `product-polish.css` generations locked with `!important`. It must remain presentation-only, may target only selectors already migrated into the coherence system, and should shrink as those older locks are retired from their owning stylesheet.
 
-When a visual defect appears, first identify the owning stylesheet and remove or demote the competing rule. Do not fix cascade conflicts by adding another higher-specificity selector or another `!important`. New product-wide visual rules belong in `product-coherence.css` only when they genuinely apply across the product; component-specific fixes continue to belong to their owning stylesheet.
+When a visual defect appears, first identify the owning stylesheet and remove or demote the competing rule. New component-specific fixes do not belong in the bridge. New product-wide rules belong in `product-coherence.css`, while the bridge is reserved only for replacing an existing important lock that prevents an already-defined coherence rule from taking effect.
 
 ## Visibility state
 
