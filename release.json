@@ -1,13 +1,13 @@
 {
-  "version": "50.3",
+  "version": "50.4",
   "date": "6 October 2026",
-  "title": "Fix the launch-screen freeze",
-  "summary": "Stops the selected-night date repair observer from repeatedly retriggering itself, which could keep Android and other installed PWAs stuck on the Anaesthetic Night Roster opening screen.",
+  "title": "Complete the unified Night Roster experience",
+  "summary": "Restores the selected-night date on real phones, removes the same-version update loop and makes the shared product design visibly consistent across Night, Changes, Breaks, Chat, Actions and Account.",
   "changes": [
-    "Makes the product-owned date label update idempotent so the child-list observer does not create a self-sustaining DOM mutation loop during startup.",
-    "Keeps the 50.2 protection that removes late legacy pretty-date wrappers on Night, Changes and Breaks without starving authentication, shared-roster loading or launch recovery.",
-    "Adds a deterministic regression contract that rejects unconditional date-label rewrites inside the observed product shell.",
-    "Preserves roster calculations, staffing rules, Malta and DST timing, authentication, database writes, offline safety and clinical state colours."
+    "Restores a clear product-owned selected-night date on Android and iPhone, with explicit visible text styling instead of inheriting the transparent legacy date label state.",
+    "Stops an already-running release from repeatedly presenting Finish installing the update when the active PWA controller is already on the same app version, while preserving the deliberate user-approved update flow for genuinely newer releases.",
+    "Strengthens the single final product system across Night, Changes, Breaks, Chat, Actions, Account, administrator surfaces and the bottom dock so spacing, typography, surfaces, headers and selected-night context read as one coherent application rather than several generations of UI.",
+    "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, offline safety, clinical state colours and guarded mutation paths."
   ],
   "update_policy": "important"
 }
