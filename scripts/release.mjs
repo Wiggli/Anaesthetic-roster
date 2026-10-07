@@ -18,7 +18,6 @@ const uiSources = [
   'src/legacy-ui/sync.js',
   'src/legacy-ui/bootstrap.js'
 ];
-const RELEASE_HISTORY_LIMIT = 30;
 
 function fail(message) {
   console.error(`Release sync failed: ${message}`);
@@ -72,13 +71,6 @@ function releaseHistory(source) {
   fail('Could not parse RELEASE_HISTORY.');
 }
 
-function serialiseHistory(entries, compact) {
-  const values = entries.map(entry => compact
-    ? [entry.version, entry.date, entry.title, entry.changes, entry.policy]
-    : entry);
-  return '[\n  ' + values.map(value => JSON.stringify(value)).join(',\n  ') + '\n]';
-}
-
 const release = JSON.parse(read('release.json'));
 const version = String(release.version || '').trim();
 if (!/^\d+(?:\.\d+)+$/.test(version)) fail('release.json has an invalid version.');
@@ -97,23 +89,24 @@ let foundation = read(uiSources[0]);
 const parsedHistory = releaseHistory(foundation);
 const latest = parsedHistory.entries[0];
 if (!latest) fail('RELEASE_HISTORY is empty.');
-let historyEntries = parsedHistory.entries.slice();
 if (latest.version !== version) {
   if (compareVersions(version, latest.version) <= 0) {
     fail(`release.json version ${version} must be newer than RELEASE_HISTORY ${latest.version}.`);
   }
-  historyEntries.unshift({
+  const entryData = {
     version,
     date: release.date,
     title: release.title,
     changes: release.changes,
     policy: ['quiet', 'normal', 'important'].includes(release.update_policy) ? release.update_policy : 'normal'
-  });
+  };
+  const entry = parsedHistory.compact
+    ? JSON.stringify([entryData.version, entryData.date, entryData.title, entryData.changes, entryData.policy])
+    : JSON.stringify(entryData);
+  foundation = foundation.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + foundation.slice(parsedHistory.start + 1);
 } else if (latest.title !== release.title) {
   fail('release.json title does not match the existing newest release-history entry. Bump the version instead of rewriting released history.');
 }
-historyEntries = historyEntries.slice(0, RELEASE_HISTORY_LIMIT);
-foundation = foundation.slice(0, parsedHistory.start) + serialiseHistory(historyEntries, parsedHistory.compact) + foundation.slice(parsedHistory.end);
 foundation = foundation.replace(/\/\* Anaesthetic Night Roster V\d+(?:\.\d+)+ interface, staffing, allocation and PWA features\. \*\//,
   `/* Anaesthetic Night Roster V${version} interface, staffing, allocation and PWA features. */`);
 write(uiSources[0], foundation);
