@@ -21,7 +21,7 @@ assert.ok(privateProfileIndex>=0&&rosterIndex>privateProfileIndex&&approvedProfi
 assert.match(client,/greeting_enabled/,'Welcome must respect the saved greeting preference');
 assert.match(client,/prefers-reduced-motion/,'Welcome must respect reduced motion');
 assert.match(client,/sessionStorage\.getItem\(TYPED_KEY\)/,'Typing should happen once per session');
-assert.match(client,/anaes_night_welcome_typed_v3/,'The hardened welcome should receive a fresh one-time session reveal after update');
+assert.match(client,/anaes_night_welcome_typed_v4/,'The hardened welcome should receive a fresh one-time session reveal after update');
 assert.match(client,/NAME_PAUSE_MS=420/,'The welcome must pause deliberately before revealing the nurse name');
 assert.match(client,/NAME_CHAR_MS=92/,'The nurse name must type more slowly than the greeting');
 assert.match(client,/GREETING_CHAR_MS=50/,'The greeting itself must remain calmly readable');
@@ -35,3 +35,36 @@ assert.match(vite,/night-welcome\.css/,'Build must ship the welcome styles');
 assert.match(worker,/night-welcome\.js\?v=/,'Installed PWA must cache the welcome runtime');
 assert.match(worker,/night-welcome\.css\?v=/,'Installed PWA must cache the welcome styles');
 console.log('Personal Night welcome contracts passed.');
+
+const vm=require('node:vm');
+let covered=true,dialogOpen=false,nextTimer=0;
+const timers=new Map(),storage=new Map();
+const classes=()=>({contains:()=>false,add(){},remove(){}});
+const nodes={nightWelcomeHero:{classList:classes(),getClientRects:()=>[{}]},nightSectionTitle:{setAttribute(){}},nightWelcomeText:{textContent:''},nightWelcomeCursor:{hidden:true},today:{classList:classes()},launchScreen:{classList:{contains:()=>!covered}}};
+const context={currentUserProfile:{display_name:'Test Nurse'},currentPrivateProfile:{profile_name:'Test Nurse'},Date,
+ document:{readyState:'loading',visibilityState:'visible',body:{classList:classes(),getAttribute:()=> 'today'},getElementById:id=>nodes[id],querySelector:()=>dialogOpen?{}:null,addEventListener(){}},
+ window:{matchMedia:()=>({matches:false}),getComputedStyle:()=>({display:covered?'block':'none'})},
+ sessionStorage:{getItem:key=>storage.get(key),setItem:(key,value)=>storage.set(key,value)},
+ setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer},clearTimeout:id=>timers.delete(id)};
+vm.createContext(context);vm.runInContext(client,context);
+context.window.NightWelcome.render();
+assert.equal(storage.size,0,'launch must not consume the greeting');
+assert.equal(timers.size,0,'typing must wait until Night is visible');
+covered=false;dialogOpen=true;context.window.NightWelcome.render();
+assert.equal(timers.size,0,'onboarding must not consume the greeting');
+dialogOpen=false;context.window.NightWelcome.render();
+let firstTimer=[...timers.keys()][0];
+context.window.NightWelcome.render();
+assert.equal([...timers.keys()][0],firstTimer,'background rendering must not restart typing');
+let guard=0;while(timers.size&&guard++<100){const [id,fn]=timers.entries().next().value;timers.delete(id);fn()}
+assert.equal(storage.size,1,'only a completed visible greeting counts as played');
+assert.match(nodes.nightWelcomeText.textContent,/, Test$/);
+context.window.NightWelcome.render();
+assert.equal(timers.size,0,'a completed greeting must not replay');
+storage.clear();context.window.NightWelcome.render();
+dialogOpen=true;
+{const [id,fn]=timers.entries().next().value;timers.delete(id);fn()}
+assert.equal(storage.size,0,'an interrupted greeting remains eligible for replay');
+dialogOpen=false;context.window.NightWelcome.render();
+assert.equal(timers.size,1,'closing an overlay allows the pending reveal');
+console.log('Visible greeting lifecycle and background-refresh regression checks passed.');

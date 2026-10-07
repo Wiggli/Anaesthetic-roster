@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var TYPED_KEY='anaes_night_welcome_typed_v3',typingTimer=null,retryTimer=null,identityRetries=0;
+var TYPED_KEY='anaes_night_welcome_typed_v4',typingTimer=null,retryTimer=null,identityRetries=0,activeMessage='';
 var START_DELAY_MS=190,GREETING_CHAR_MS=50,NAME_PAUSE_MS=420,NAME_CHAR_MS=92,CURSOR_HOLD_MS=650;
 var GENERIC_NAME_LEADS={have:true,good:true,hello:true,hi:true,dear:true,welcome:true,night:true,thanks:true,thank:true,please:true};
 function el(id){return document.getElementById(id)}
@@ -47,11 +47,20 @@ function greetingParts(){
 }
 function alreadyTyped(){return safe(function(){return sessionStorage.getItem(TYPED_KEY)==='1'},false)}
 function markTyped(){safe(function(){sessionStorage.setItem(TYPED_KEY,'1')},null)}
-function stopTyping(){if(typingTimer){clearTimeout(typingTimer);typingTimer=null}}
+function stopTyping(){if(typingTimer){clearTimeout(typingTimer);typingTimer=null}activeMessage=''}
 function typingDelay(index,parts){
   if(parts.name&&index===parts.nameStart)return NAME_PAUSE_MS;
   if(parts.name&&index>parts.nameStart)return NAME_CHAR_MS;
   return GREETING_CHAR_MS
+}
+function welcomeIsVisible(){
+  if(document.visibilityState==='hidden'||document.body.classList.contains('authPending'))return false;
+  var today=el('today'),hero=el('nightWelcomeHero'),launch=el('launchScreen');
+  if(!today||today.classList.contains('hidden')||!hero||!hero.getClientRects().length)return false;
+  if(document.body.getAttribute('data-view')&&document.body.getAttribute('data-view')!=='today')return false;
+  if(document.querySelector('dialog[open]'))return false;
+  if(launch&&!launch.classList.contains('hidden')&&window.getComputedStyle(launch).display!=='none')return false;
+  return true
 }
 function renderWelcome(){
   var hero=el('nightWelcomeHero'),title=el('nightSectionTitle'),text=el('nightWelcomeText'),cursor=el('nightWelcomeCursor');
@@ -62,13 +71,15 @@ function renderWelcome(){
   identityRetries=0;
   var parts=greetingParts(),message=parts.message;
   title.setAttribute('aria-label',message);
-  var animate=greetingEnabled()&&!reducedMotion()&&!alreadyTyped()&&document.visibilityState!=='hidden';
+  var visible=welcomeIsVisible(),animate=greetingEnabled()&&!reducedMotion()&&!alreadyTyped()&&visible;
+  if(animate&&activeMessage===message)return;
   stopTyping();
   if(!animate){text.textContent=message;cursor.hidden=true;hero.classList.remove('is-typing');hero.classList.add('is-ready');return}
-  text.textContent='';cursor.hidden=false;hero.classList.add('is-typing');hero.classList.remove('is-ready');
+  activeMessage=message;text.textContent='';cursor.hidden=false;hero.classList.add('is-typing');hero.classList.remove('is-ready');
   var index=0;
-  function finishTyping(){markTyped();hero.classList.remove('is-typing');hero.classList.add('is-ready');typingTimer=setTimeout(function(){cursor.hidden=true},CURSOR_HOLD_MS)}
+  function finishTyping(){activeMessage='';markTyped();hero.classList.remove('is-typing');hero.classList.add('is-ready');typingTimer=setTimeout(function(){cursor.hidden=true},CURSOR_HOLD_MS)}
   function typeNext(){
+    if(!welcomeIsVisible()){stopTyping();text.textContent=message;cursor.hidden=true;hero.classList.remove('is-typing');return}
     index++;text.textContent=message.slice(0,index);
     if(index>=message.length){finishTyping();return}
     typingTimer=setTimeout(typeNext,typingDelay(index,parts))
@@ -78,10 +89,15 @@ function renderWelcome(){
 function scheduleWelcome(){clearTimeout(retryTimer);retryTimer=setTimeout(renderWelcome,60)}
 function initWelcome(){
   if(!el('nightWelcomeHero'))return;
-  ['roster:account','roster:personal-night','roster:night','roster:night-team-identity'].forEach(function(name){window.addEventListener(name,scheduleWelcome)});
+  ['roster:account','roster:personal-night','roster:night','roster:night-team-identity','roster:viewchange'].forEach(function(name){window.addEventListener(name,scheduleWelcome)});
   window.addEventListener('pageshow',scheduleWelcome);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')scheduleWelcome()});
-  if(window.MutationObserver&&document.body){var observer=new MutationObserver(function(records){if(records.some(function(record){return record.attributeName==='class'}))scheduleWelcome()});observer.observe(document.body,{attributes:true,attributeFilter:['class']})}
+  if(window.MutationObserver&&document.body){
+    var observer=new MutationObserver(scheduleWelcome);
+    observer.observe(document.body,{attributes:true,attributeFilter:['class','data-view']});
+    ['launchScreen','today'].forEach(function(id){var target=el(id);if(target)observer.observe(target,{attributes:true,attributeFilter:['class','style']})});
+    Array.prototype.forEach.call(document.querySelectorAll('dialog'),function(dialog){observer.observe(dialog,{attributes:true,attributeFilter:['open']});dialog.addEventListener('close',scheduleWelcome)})
+  }
   scheduleWelcome()
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initWelcome,{once:true});else initWelcome();

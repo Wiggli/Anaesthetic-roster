@@ -1,13 +1,13 @@
 {
-  "version": "51.0",
+  "version": "51.1",
   "date": "7 October 2026",
-  "title": "One coherent Night Roster",
-  "summary": "A shared mobile layout for the night plan, staffing, breaks, conversations and account pages.",
+  "title": "Restore navigation, Actions and the welcome",
+  "summary": "Repairs the Chat dock, Actions layout, onboarding controls and visible welcome animation.",
   "changes": [
-    "Uses one compact selected-night context and persistent five-control dock across operational screens.",
-    "Replaces duplicate staffing steps with one workflow and puts your break and conversations first.",
-    "Opens Personalise, Preferences, Notifications, Security and App & Help as separate Account pages with Back.",
-    "Flattens the dark allocation card and separates timeline labels, including clock-change nights."
+    "Keeps Night, Changes, Actions, Breaks and Chat visible in both the normal and fallback dock.",
+    "Restores the Actions sheet layout, readable labels and correctly sized icons.",
+    "Separates onboarding progress from Skip and keeps Continue reachable on small phones.",
+    "Plays the personal greeting when Night becomes visible, without restarting during background refreshes."
   ],
   "update_policy": "normal"
 }

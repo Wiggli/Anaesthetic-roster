@@ -1,5 +1,5 @@
 /* Persistent operational dock. All five controls share exactly one geometry. */
-.bottom.reactTabs {
+.bottom {
   position: fixed; left: 50%; right: auto; bottom: max(8px,var(--app-safe-bottom));
   z-index: 60; width: min(calc(100vw - 16px - var(--app-safe-left) - var(--app-safe-right)),520px);
   height: 68px; min-height: 68px; display: grid; grid-template-columns: repeat(5,minmax(0,1fr));
@@ -9,16 +9,16 @@
   backdrop-filter: blur(24px) saturate(145%); -webkit-backdrop-filter: blur(24px) saturate(145%);
   isolation: isolate; touch-action: manipulation;
 }
-.bottom.reactTabs::before, .bottom.reactTabs::after { content: none; }
-.reactNavigationInner { position: relative; display: contents; }
-.bottom.reactTabs button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-width: 0; height: 60px; min-height: 60px; margin: 0; padding: 4px 0; border: 0; border-radius: 14px; background: transparent; color: var(--liquid-secondary); box-shadow: none; }
-.bottom.reactTabs button.active { color: var(--liquid-accent-strong); background: var(--unified-accent-soft); }
-.bottom.reactTabs button > span:last-child { font-size: 10px; font-weight: 650; line-height: 1.2; }
+.bottom::before, .bottom::after { content: none; }
+#reactNavigation, [data-react-navigation], .reactNavigationInner { position: relative; display: contents; }
+.bottom button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-width: 0; height: 60px; min-height: 60px; margin: 0; padding: 4px 0; border: 0; border-radius: 14px; background: transparent; color: var(--liquid-secondary); box-shadow: none; }
+.bottom button.active { color: var(--liquid-accent-strong); background: var(--unified-accent-soft); }
+.bottom button > span:last-child { font-size: 10px; font-weight: 650; line-height: 1.2; }
 .navIconWrap, .quickRudderDisc { position: relative; display: grid; place-items: center; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; }
-.bottom.reactTabs svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.bottom svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .quickRudderDisc { background: var(--unified-accent-soft); color: var(--liquid-accent-strong); }
 .quickRudderDisc::before, .quickRudderDisc::after { content: none; }
-.bottom.reactTabs .navTaskBadge, .bottom.reactTabs .navBadge, .bottom.reactTabs .tabBadge, .bottom.reactTabs .quickRudderAttention { position: absolute; top: -4px; right: -7px; left: auto; display: grid; place-items: center; min-width: 16px; height: 16px; margin: 0; padding: 0 4px; border: 2px solid var(--unified-surface); border-radius: 9px; background: var(--liquid-critical); color: white; font-size: 9px; font-weight: 700; font-style: normal; line-height: 1; transform: none; }
-.bottom.reactTabs .featureNewDot { position: absolute; right: 9px; top: 8px; width: 5px; height: 5px; padding: 0; border-radius: 50%; background: var(--liquid-accent); }
-.bottom.reactTabs button { transition: background var(--unified-fast) var(--unified-ease),color var(--unified-fast) var(--unified-ease); }
-@supports not (backdrop-filter: blur(1px)) { .bottom.reactTabs { background: var(--unified-surface); } }
+.bottom .navTaskBadge, .bottom .navBadge, .bottom .tabBadge, .bottom .quickRudderAttention { position: absolute; top: -4px; right: -7px; left: auto; display: grid; place-items: center; min-width: 16px; height: 16px; margin: 0; padding: 0 4px; border: 2px solid var(--unified-surface); border-radius: 9px; background: var(--liquid-critical); color: white; font-size: 9px; font-weight: 700; font-style: normal; line-height: 1; transform: none; }
+.bottom .featureNewDot { position: absolute; right: 9px; top: 8px; width: 5px; height: 5px; padding: 0; border-radius: 50%; background: var(--liquid-accent); }
+.bottom button { transition: background var(--unified-fast) var(--unified-ease),color var(--unified-fast) var(--unified-ease); }
+@supports not (backdrop-filter: blur(1px)) { .bottom { background: var(--unified-surface); } }
