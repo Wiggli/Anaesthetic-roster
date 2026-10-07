@@ -1,12 +1,12 @@
 {
-  "version": "50.8",
+  "version": "50.9",
   "date": "7 October 2026",
-  "title": "Consolidate the operational layout",
-  "summary": "Unifies the operational layout with less repetition.",
+  "title": "Make personalised greetings automatic and safe",
+  "summary": "Uses the user-selected name when valid and automatically falls back to the imported roster identity.",
   "changes": [
-    "One visible Changes workflow.",
-    "Shared compact shift and staffing context.",
-    "Tighter Night and Breaks spacing."
+    "Uses a valid name entered in Personalise first, then the imported roster name, then the approved account display name.",
+    "Rejects sentence-like or malformed personal-name values so phrases cannot appear in the Night greeting.",
+    "Applies the same automatic behaviour to existing staff and future users without hard-coding individual names."
   ],
   "update_policy": "normal"
 }
