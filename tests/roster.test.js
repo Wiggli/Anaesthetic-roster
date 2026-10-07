@@ -431,11 +431,12 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 26, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 27, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004024500_night_team_identity_v51.sql'), 'the schema-51 shared night identity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004062000_global_shift_identity_v52.sql'), 'the schema-52 global shift identity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004070000_personalisation_studio_v53.sql'), 'the schema-53 Personalisation Studio migration must stay checked in');
+assert.ok(checkedInMigrations.includes('20261007215116_fix_chat_read_receipt_identity.sql'), 'the read-receipt identity repair must stay checked in');
 assert.equal(fs.readdirSync(path.join(__dirname, '..')).some(name => /^supabase-migration-.*\.sql$/.test(name)), false, 'legacy root migration files must stay removed');
 assert.match(workflow, /supabase init[\s\S]*migration_files=\(supabase\/migrations\/\*\.sql\)[\s\S]*root_migrations=\(supabase-migration-\*\.sql\)/, 'deployment must use the checked-in Supabase migration directory and reject legacy root migrations');
 assert.match(workflow, /migrate:[\s\S]*needs: test/, 'migration must depend on the complete required test job');

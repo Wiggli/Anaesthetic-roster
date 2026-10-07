@@ -232,3 +232,8 @@ async function checkReadReceipts() {
   console.log('Visible chat receipts, refresh races and installed badge checks passed.');
 }
 checkReadReceipts().catch(error => { console.error(error); process.exitCode = 1; });
+
+const receiptRepair=fs.readFileSync(path.join(root,'supabase/migrations/20261007215116_fix_chat_read_receipt_identity.sql'),'utf8');
+assert.match(receiptRepair,/insert into public\.chat_read_state\(conversation_id,last_read_message_id\)\s+values\(p_conversation_id,p_message_id\)/,'read receipts must use the existing authenticated column grants and identity default');
+assert.doesNotMatch(receiptRepair,/security definer|grant insert|grant update|disable row level security/i,'receipt repair must not broaden permissions or bypass RLS');
+assert.match(receiptRepair,/security invoker[\s\S]*greatest\(/,'receipt repair retains owner RLS and monotonic read progress');
