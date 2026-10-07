@@ -1,12 +1,12 @@
 {
-  "version": "51.3",
+  "version": "51.4",
   "date": "7 October 2026",
-  "title": "Clear read chat notifications",
-  "summary": "Fixes chat unread counts and the installed app badge staying on after messages are read.",
+  "title": "Read receipts and startup",
+  "summary": "Fixes stuck unread badges and the startup dock.",
   "changes": [
-    "Marks visible team and private messages as read even when no scrolling is needed.",
-    "Prevents an older background refresh from restoring a cleared unread count.",
-    "Clears the installed app badge when no unread messages or attention items remain."
+    "Saves read receipts using the signed-in-user default.",
+    "Clears viewed chat and app badges.",
+    "Keeps the dock centred while opening."
   ],
   "update_policy": "normal"
 }

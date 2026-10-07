@@ -22,3 +22,8 @@
 .bottom .featureNewDot { position: absolute; right: 9px; top: 8px; width: 5px; height: 5px; padding: 0; border-radius: 50%; background: var(--liquid-accent); }
 .bottom button { transition: background var(--unified-fast) var(--unified-ease),color var(--unified-fast) var(--unified-ease); }
 @supports not (backdrop-filter: blur(1px)) { .bottom { background: var(--unified-surface); } }
+
+/* Keep the centring transform throughout the signed-in launch reveal. */
+body.appRevealing .bottom { animation: operationalDockReveal 760ms 120ms var(--cinematic-ease) both; }
+@keyframes operationalDockReveal { from { opacity: 0; transform: translate(-50%,16px); } to { opacity: 1; transform: translate(-50%,0); } }
+@media (prefers-reduced-motion: reduce) { body.appRevealing .bottom { animation: none; } }
