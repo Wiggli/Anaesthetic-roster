@@ -84,6 +84,24 @@ function addClass(selector: string, className: string) {
   document.querySelectorAll<HTMLElement>(selector).forEach((element) => element.classList.add(className));
 }
 
+function consolidateTaskNightContext(screen: 'changes' | 'breaks') {
+  const panel = document.querySelector<HTMLElement>(`#${screen} .nightContextPanel`);
+  const identity = panel?.querySelector<HTMLElement>('.nightTeamIdentityContext');
+  const staffing = panel?.querySelector<HTMLElement>('.nightContextStaffing');
+  const meta = panel?.querySelector<HTMLElement>('.nightContextMetaRow');
+  if (!panel || !identity || !staffing) return;
+
+  let row = panel.querySelector<HTMLElement>(':scope > .appShiftContextRow');
+  if (!row) {
+    row = document.createElement('div');
+    row.className = 'appShiftContextRow';
+    identity.insertAdjacentElement('beforebegin', row);
+    row.append(identity);
+  }
+  if (staffing.parentElement !== row) row.append(staffing);
+  meta?.classList.add('hidden');
+}
+
 function normaliseProductShell() {
   // These classes are the common structural contract used by the final product stylesheet.
   addClass('#today #appHeader, #changes .appScreenHeader, #breaks .appScreenHeader, #chat .appScreenHeader', 'appShellHeader');
@@ -94,6 +112,9 @@ function normaliseProductShell() {
   addClass('#today .dateNav.rosterDateControl, #changes .dateNav.rosterDateControl, #breaks .dateNav.rosterDateControl', 'appDateRail');
   addClass('.liveStatus, #breakPlanLive, .primaryConnectionLine, .headerLiveChip', 'appLiveStatus');
   addClass('.bottom.reactTabs', 'appDock');
+
+  consolidateTaskNightContext('changes');
+  consolidateTaskNightContext('breaks');
 
   const chatRosterContext = document.querySelector<HTMLElement>('#chat .chatRosterContext');
   const chatSafety = document.querySelector<HTMLElement>('#chat .chatSafetyNotice');
@@ -113,7 +134,7 @@ function normaliseProductShell() {
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
   normaliseProductShell();
-  document.documentElement.dataset.productShell = '50.7';
+  document.documentElement.dataset.productShell = '50.8';
 }
 
 if (document.readyState === 'loading') {
