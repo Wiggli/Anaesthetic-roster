@@ -1,21 +1,43 @@
 (function(){
 'use strict';
-var TYPED_KEY='anaes_night_welcome_typed_v2',typingTimer=null,retryTimer=null,identityRetries=0;
+var TYPED_KEY='anaes_night_welcome_typed_v3',typingTimer=null,retryTimer=null,identityRetries=0;
 var START_DELAY_MS=190,GREETING_CHAR_MS=50,NAME_PAUSE_MS=420,NAME_CHAR_MS=92,CURSOR_HOLD_MS=650;
+var GENERIC_NAME_LEADS={have:true,good:true,hello:true,hi:true,dear:true,welcome:true,night:true,thanks:true,thank:true,please:true};
 function el(id){return document.getElementById(id)}
 function safe(fn,fallback){try{return fn()}catch(error){return fallback}}
 function reducedMotion(){return !!(document.body&&document.body.classList.contains('personalMotionReduced'))||!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
 function greetingEnabled(){return !(typeof currentPrivateProfile!=='undefined'&&currentPrivateProfile&&currentPrivateProfile.greeting_enabled===false)}
+function normaliseName(value){return String(value||'').replace(/\s+/g,' ').trim()}
+function plausiblePersonalName(value){
+  var name=normaliseName(value);
+  if(!name||name.length>60)return'';
+  var words=name.split(' '),lead=String(words[0]||'').toLowerCase().replace(/[.'’]/g,'');
+  if(words.length>3||GENERIC_NAME_LEADS[lead])return'';
+  for(var i=0;i<words.length;i++)if(!/^[A-Za-zÀ-ÖØ-öø-ÿĀ-ž'’.-]+$/.test(words[i]))return'';
+  return name
+}
+function firstNameFrom(value){
+  var name=plausiblePersonalName(value);
+  if(!name)return'';
+  return name.split(' ')[0].replace(/[.,]+$/,'')
+}
 function preferredFirstName(){
-  var value='';
-  if(typeof currentPrivateProfile!=='undefined'&&currentPrivateProfile&&currentPrivateProfile.profile_name)value=currentPrivateProfile.profile_name;
-  if(!value&&typeof myName==='function'){
+  var personalName='';
+  if(typeof currentPrivateProfile!=='undefined'&&currentPrivateProfile&&currentPrivateProfile.profile_name)personalName=firstNameFrom(currentPrivateProfile.profile_name);
+  if(personalName)return personalName;
+  if(typeof myName==='function'){
     var rosterName=safe(function(){return myName()},'');
-    if(rosterName)value=typeof professionalName==='function'?safe(function(){return professionalName(rosterName)},rosterName):rosterName
+    if(rosterName){
+      var professionalRosterName=typeof professionalName==='function'?safe(function(){return professionalName(rosterName)},rosterName):rosterName;
+      var rosterFirstName=firstNameFrom(professionalRosterName);
+      if(rosterFirstName)return rosterFirstName
+    }
   }
-  if(!value&&typeof currentUserProfile!=='undefined'&&currentUserProfile&&currentUserProfile.display_name)value=currentUserProfile.display_name;
-  value=String(value||'').trim();
-  return value?value.split(/\s+/)[0]:''
+  if(typeof currentUserProfile!=='undefined'&&currentUserProfile&&currentUserProfile.display_name){
+    var accountFirstName=firstNameFrom(currentUserProfile.display_name);
+    if(accountFirstName)return accountFirstName
+  }
+  return''
 }
 function timeGreeting(){var hour=new Date().getHours();if(hour<12)return'Good morning';if(hour<18)return'Good afternoon';return'Good evening'}
 function greetingParts(){
@@ -63,5 +85,5 @@ function initWelcome(){
   scheduleWelcome()
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initWelcome,{once:true});else initWelcome();
-window.NightWelcome={render:renderWelcome};
+window.NightWelcome={render:renderWelcome,preferredFirstName:preferredFirstName};
 })();
