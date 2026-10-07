@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const path = require('node:path');
+test.use({ serviceWorkers: 'block' });
 
 async function openReview(page, workflowFallback = false) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ contentType: 'application/javascript', body: 'window.supabase={createClient(){return null}}' }));

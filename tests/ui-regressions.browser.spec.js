@@ -1,4 +1,5 @@
 const {test,expect}=require('@playwright/test');
+test.use({serviceWorkers:'block'});
 async function ready(page,fallback=false){
  if(fallback)await page.route('**/navigation-*.js',route=>route.abort());
  await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'application/javascript',body:'window.supabase={createClient(){return null}}'}));
