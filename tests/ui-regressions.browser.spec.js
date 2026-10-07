@@ -28,10 +28,10 @@ for(const width of [320,360,390,412,430])for(const dark of [false,true]){
  expect(await page.locator('#quickActionsSheet').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
  await page.screenshot({path:testInfo.outputPath('actions.png')});
  await page.locator('#closeQuickActionsSheet').click();
- await page.evaluate(()=>{onboardingGuideMenu=false;onboardingFeatureKey='';onboardingChatIntro=false;onboardingStep=0;renderOnboarding();document.getElementById('onboardingDialog').showModal()});
+ await page.evaluate(()=>{document.documentElement.style.setProperty('--app-safe-top','44px');document.documentElement.style.setProperty('--app-safe-bottom','34px');onboardingGuideMenu=false;onboardingFeatureKey='';onboardingChatIntro=false;onboardingStep=0;renderOnboarding();document.getElementById('onboardingDialog').showModal()});
  const rects=await page.evaluate(()=>['onboardingStepLabel','onboardingSkipBtn','onboardingProgress'].map(id=>{const r=document.getElementById(id).getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom}}));
  expect(rects[0].right).toBeLessThanOrEqual(rects[1].x);expect(rects[2].y).toBeGreaterThanOrEqual(rects[1].bottom);
- expect(await page.locator('#onboardingNextBtn').evaluate(el=>{const r=el.getBoundingClientRect();return r.bottom<=innerHeight&&r.x>=0&&r.right<=innerWidth})).toBe(true);
+ expect(await page.locator('#onboardingNextBtn').evaluate(el=>{const r=el.getBoundingClientRect();return r.bottom<=innerHeight-34&&r.y>=44&&r.x>=0&&r.right<=innerWidth})).toBe(true);
  await page.screenshot({path:testInfo.outputPath('onboarding.png')});
  await page.locator('#onboardingNextBtn').click();await expect(page.locator('#onboardingStepLabel')).toContainText('2 of');
  });

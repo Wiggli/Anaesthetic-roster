@@ -31,7 +31,24 @@ jobs:
         timeout-minutes: 5
         run: npx playwright install chromium webkit
       - name: Review repair on Chromium and iPhone WebKit
-        run: npx playwright test tests/ui-regressions.browser.spec.js tests/product-coherence.browser.spec.js --project=mobile-chromium --project=mobile-webkit
+        run: npx playwright test tests/ui-regressions.browser.spec.js tests/product-coherence.browser.spec.js --project=mobile-chromium --project=mobile-webkit --max-failures=1
+      - name: Capture representative review screenshots
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const selections=[['320-light','mobile-chromium'],['390-dark','mobile-webkit']];
+          fs.mkdirSync('docs/reviews/51.1',{recursive:true});
+          for(const [size,browser] of selections){
+            const dir=fs.readdirSync('test-results').find(d=>d.includes(size)&&d.includes(browser));
+            if(!dir)throw Error('Missing screenshots '+size+' '+browser);
+            for(const name of ['actions','onboarding'])fs.copyFileSync(path.join('test-results',dir,name+'.png'),'docs/reviews/51.1/'+size+'-'+browser+'-'+name+'.png');
+          }
+          NODE
+          git add docs/reviews/51.1
+          if ! git diff --cached --quiet; then
+            git commit -m "Capture 51.1 mobile layout evidence"
+            git push
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
