@@ -56,3 +56,36 @@ test('administrator sign-in keeps Chat visible from every screen @iphone',async(
   if(view==='breaks')await page.screenshot({path:testInfo.outputPath('breaks-chat-visible.png')});
  }
 });
+
+for (const fallback of [false, true]) test(`short unread threads clear after opening ${fallback?'fallback':'React'} @iphone`, async ({page}, testInfo) => {
+ const fs=require('node:fs'),path=require('node:path');
+ const source=fs.readFileSync(path.join(__dirname,'..','chat.js'),'utf8').replace('try{chatInit()}',"window.receiptReview={state:chatState,team:chatOpenTeamConversation,direct:chatOpenPrivateConversation,close:chatCloseThread,render:chatRenderHome};try{chatInit()}");
+ await page.route('**/chat.js*',route=>route.fulfill({contentType:'application/javascript',body:source}));
+ if(fallback)await page.route('**/chat-experience-*.js',route=>route.abort());
+ await ready(page);
+ await page.evaluate(()=>{
+   const r=window.receiptReview,s=r.state;
+   window.readCalls=[];window.badgeCalls=[];
+   Object.defineProperty(navigator,'setAppBadge',{configurable:true,value:async n=>window.badgeCalls.push(n)});
+   Object.defineProperty(navigator,'clearAppBadge',{configurable:true,value:async()=>window.badgeCalls.push(0)});
+   window.rosterCapabilities=()=>({monotonicChatRead:true});
+   supa={rpc:async(name,args)=>{if(name==='chat_mark_read_v47'){window.readCalls.push(args);return{data:args.p_message_id,error:null}}return{data:[],error:null}},from:()=>{
+     let conversation='team';const query={select(){return this},eq(key,value){if(key==='conversation_id')conversation=value;return this},order(){return this},limit(){return this},then(resolve){return Promise.resolve({data:[4,3,2,1].map(i=>({id:conversation==='team'?i:i+4,conversation_id:conversation,sender_id:'other',sender_display_name:'Review Colleague',body:'Message '+i,created_at:'2026-10-07T20:00:00Z'})),error:null}).then(resolve)}};return query;
+   }};
+   s.conversations=[{id:'team',kind:'group',title:'Anaesthetic Team'},{id:'direct',kind:'direct',other_user_id:'other'}];
+   s.members=[{user_id:'other',display_name:'Review Colleague'}];s.membersById={other:s.members[0]};
+   s.unreadByConversation={team:4,direct:4};s.readStateByConversation={};
+   document.body.setAttribute('data-view','chat');document.getElementById('today').classList.add('hidden');document.getElementById('chat').classList.remove('hidden');
+   document.querySelectorAll('dialog[open]').forEach(d=>d.close());r.render();
+ });
+ await page.evaluate(()=>window.receiptReview.team({force:true}));
+ await expect.poll(()=>page.evaluate(()=>window.receiptReview.state.unreadByConversation.team)).toBe(0);
+ await expect.poll(()=>page.evaluate(()=>window.readCalls.some(c=>c.p_conversation_id==='team'&&c.p_message_id===4))).toBe(true);
+ expect(await page.evaluate(()=>window.receiptReview.state.unreadByConversation.direct)).toBe(4);
+ await page.evaluate(()=>{window.receiptReview.close();return window.receiptReview.direct('direct')});
+ await expect.poll(()=>page.evaluate(()=>window.receiptReview.state.unreadByConversation.direct)).toBe(0);
+ await expect(page.locator('#chatUnreadBadge')).toHaveClass(/hidden/);
+ await expect.poll(()=>page.evaluate(()=>window.badgeCalls.at(-1))).toBe(0);
+ if(!fallback)await expect(page.locator('#chatMessages .chatMessageSequence')).toBeVisible();
+ await page.screenshot({path:testInfo.outputPath('read-chat.png')});
+});

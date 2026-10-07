@@ -142,7 +142,7 @@ function sameMessageGroup(previous: Message | undefined, current: Message | unde
 }
 
 function Messages({ model, hostId }: { model: MessageExperience; hostId: string }) {
-  useLayoutEffect(() => { const host = document.getElementById(hostId); if (host) host.scrollTop = Math.max(0, host.scrollHeight - host.clientHeight - model.bottomOffset); }, [hostId, model]);
+  useLayoutEffect(() => { const host = document.getElementById(hostId); if (host) { host.scrollTop = Math.max(0, host.scrollHeight - host.clientHeight - model.bottomOffset); window.dispatchEvent(new CustomEvent('roster:chat-messages-mounted')); } }, [hostId, model]);
   if (!model.items.length) return <div className="chatMessagesEmpty"><span><b>No messages yet</b><small>Start the conversation below.</small></span></div>;
   return <div className="chatMessageSequence">{model.items.map((item, index) => {
     const groupStart = !sameMessageGroup(model.items[index - 1], item);

@@ -1,12 +1,12 @@
 {
-  "version": "51.2",
+  "version": "51.3",
   "date": "7 October 2026",
-  "title": "Keep Chat visible after signing in",
-  "summary": "Fixes the sign-in layout override that hid Chat from the bottom bar.",
+  "title": "Clear read chat notifications",
+  "summary": "Fixes chat unread counts and the installed app badge staying on after messages are read.",
   "changes": [
-    "Restores Chat at the far right of the five-control bottom bar after signing in.",
-    "Preserves the same five controls when opening a saved offline roster.",
-    "Verifies the sign-in setup for members and administrators, plus normal and fallback navigation."
+    "Marks visible team and private messages as read even when no scrolling is needed.",
+    "Prevents an older background refresh from restoring a cleared unread count.",
+    "Clears the installed app badge when no unread messages or attention items remain."
   ],
   "update_policy": "normal"
 }

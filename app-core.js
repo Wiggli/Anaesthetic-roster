@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '51.2';
+var APP_VERSION = '51.3';
 var EXPECTED_SCHEMA_VERSION = 53;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var appStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
@@ -98,10 +98,10 @@ function save(){appStorage.removeItem('anaes_admin_roster');appStorage.removeIte
 function appBadgeCount(id){var el=byId(id);if(!el||el.classList.contains('hidden'))return 0;var value=parseInt(String(el.textContent||'0'),10);return Number.isFinite(value)?Math.max(0,value):0}
 function clearAppBadge(){try{if(navigator.clearAppBadge){var p=navigator.clearAppBadge();if(p&&p.catch)p.catch(function(){})}else if(navigator.setAppBadge){var q=navigator.setAppBadge(0);if(q&&q.catch)q.catch(function(){})}}catch(error){}}
 function syncAppBadge(){
-  if(!navigator.setAppBadge)return;
   var total=appBadgeCount('chatUnreadBadge');
   if(currentUserProfile&&currentUserProfile.user_role==='admin')total+=appBadgeCount('adminAttentionBadge');
   if(!total){clearAppBadge();return}
+  if(!navigator.setAppBadge)return;
   try{var p=navigator.setAppBadge(Math.min(total,99));if(p&&p.catch)p.catch(function(){})}catch(error){}
 }
 window.syncAppBadge=syncAppBadge;
