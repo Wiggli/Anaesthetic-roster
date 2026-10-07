@@ -27,7 +27,7 @@ test('@iphone Night Intelligence stays compact and avoids duplicating the person
   await openShell(page);
   const centre = page.locator('#nightIntelligenceCentre');
   await expect(centre).toBeVisible();
-  await expect(page.locator('#nightPhaseSignal')).not.toBeEmpty();
+  await expect(page.locator('#nightPhaseSignal')).toHaveCount(0);
   await expect(page.locator('#nightFreshnessSignal')).not.toBeEmpty();
   await expect(page.locator('#nightPresenceSignal')).toBeHidden();
   await expect(page.locator('#nightMyNightAction')).toBeHidden();

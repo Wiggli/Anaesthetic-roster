@@ -49,7 +49,7 @@ type PasskeyExperience = { message: string; items: { id: string; label: string }
 const roots = new Map<string, Root>();
 
 function rootFor(id: string) {
-  const host = document.getElementById(id);
+  const host = document.getElementById(id) || (window as Window & { accountPresentationElement?: (id: string) => HTMLElement | null }).accountPresentationElement?.(id);
   if (!host) return undefined;
   let root = roots.get(id);
   if (!root) {

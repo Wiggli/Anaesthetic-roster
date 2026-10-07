@@ -332,6 +332,7 @@ assert.equal(bootTheme.root['data-theme'], 'dark', 'saved appearance must be app
 assert.equal(bootTheme.colour.content, '#000000', 'pre-paint appearance must update the browser chrome colour');
 for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': css, 'manifest.webmanifest': manifest, 'service-worker.js': sw })) {
   const versions = Array.from(source.matchAll(/[?&]v=([0-9]+(?:\.[0-9]+)+)/g), match => match[1]);
+  if (file === 'styles.css' && !/url\(/i.test(source)) { assert.equal(versions.length, 0, 'obsolete decorative image references must be removed'); continue; }
   assert.ok(versions.length, `${file} must contain a production cache-busting reference`);
   assert.deepEqual(Array.from(new Set(versions)), [context.APP_VERSION], `${file} cache-busting references must all match APP_VERSION`);
 }
@@ -348,13 +349,7 @@ assert.ok(navigation.includes("window.show?.(view);"), 'destination changes must
 assert.ok(navigation.includes("const target = candidates.reduce"), 'a long bottom-bar gesture must resolve to the nearest destination when the gesture ends');
 assert.doesNotMatch(navigation, /viewSwipeStage|viewSwipeSettling|swipePreview|swipeCurrent|pinPageTrack|setPageTrackOffset|pageAnimation|settleTarget/, 'primary navigation must not stage or physically drag two full application pages');
 assert.doesNotMatch(navigation, /indicatorX\.set\(clamp\(|data-glass-touching|--glass-touch-x|--glass-touch-y/, 'the dock indicator must not chase every touchmove or animate a costly glass pointer effect');
-assert.match(presentationCss, /main>\.view\.viewEntering\{[\s\S]*animation:primaryViewEnter 145ms/, 'tab changes must use one short compositor-only settle');
-assert.match(presentationCss, /@keyframes primaryViewEnter\{[\s\S]*translate3d\(0,4px,0\)[\s\S]*translate3d\(0,0,0\)/, 'the lightweight view settle must use only opacity and a tiny translation');
 assert.doesNotMatch(presentationCss, /viewSwipeStage|swipePreview|swipeCurrent/, 'presentation must not retain the superseded full-page swipe track');
-assert.match(rudderCss, /\.bottom\.reactTabs\{[\s\S]*touch-action:manipulation!important/, 'the dock must remain tap-first instead of claiming every touch as a continuous drag');
-assert.match(rudderCss, /\.bottom\.reactTabs \.tabSlidingIndicator\{[\s\S]*backdrop-filter:none!important/, 'the moving active lens must avoid live backdrop blur');
-assert.match(rudderCss, /\.bottom\.reactTabs \.quickRudderDisc\{[\s\S]*color:var\(--liquid-accent-strong\)!important/, 'Actions must use the same restrained accent language as the dock instead of a saturated blue tile');
-assert.match(presentationCss, /\.rosterDateControl\{[\s\S]*grid-template-columns:44px minmax\(0,1fr\) 44px/, 'shared roster date controls must use the 44px touch-target geometry');
 assert.doesNotMatch(clinicalExperience, /Personalise this view/, 'Night must not duplicate Account and Settings inside the hero');
 assert.match(html, /<section id="today" class="view">[\s\S]*?<header id="appHeader">/, 'Night must continue to own its header and clinical context');
 assert.doesNotMatch(navigation, /viewMorphing|style\.opacity|scale\(/, 'navigation must not reintroduce overlapping full-page opacity or scale morphs');
@@ -384,12 +379,10 @@ assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts
 assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[\s\S]*nightRoleOverrideDrafts[\s\S]*protectLocalChangesDraft[\s\S]*beforeunload',protectLocalChangesDraft/, 'leaving or reloading must protect unfinished Changes work across selected nights');
 assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
 assert.match(changesConfirmationExperience, /Rostered[\s\S]*This night/, 'confirmation must make the rostered versus selected-night comparison explicit');
-assert.match(presentationCss, /\.workflowProgress[\s\S]*\.workflowProgressTrack[\s\S]*\.workflowProgressFill/, 'meaningful workflow progress must have a restrained visual treatment');
 assert.match(ui, /function clockChangeDetailFor\(date\)[\s\S]*Handover moves to[\s\S]*First Part and Second Part each work/, 'clock-change copy must explain the equal-duty midpoint');
 assert.match(ui, /function showClockChangeEducation\(date,force\)[\s\S]*clockchange/, 'clock-change nights must have contextual onboarding');
 assert.match(ui, /showNotification\('Clock change tonight'[\s\S]*Equal-duty handover/, 'a live clock-change night may use an already-granted device notification without prompting for permission');
 assert.match(clinicalExperience, /ClockChangeNotice[\s\S]*Equal handover[\s\S]*roster:clock-change-guide/, 'Night and Breaks must expose a replayable clock-change explanation');
-assert.match(presentationCss, /\.clockChangeNotice[\s\S]*\.clockChangeOnboardingPreview[\s\S]*prefers-reduced-motion/, 'clock-change surfaces must include polished motion with a reduced-motion fallback');
 
 assert.match(ui, /plan\.validAssignments\.some\(function\(item\)\{return item\.id===o\.id\}\)/, 'overtime status must use the validated, de-duplicated assignment');
 assert.match(ui, /pending:pending,pendingReason:/, 'Breaks must pass the derived pending state to the typed interface');
@@ -578,15 +571,13 @@ assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function prepareAdminInformationArchitecture\(\)[\s\S]*What do you need to manage\?[\s\S]*People & Access[\s\S]*Roster Management[\s\S]*System/, 'Admin must open from one four-area management hub');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /adminLegacyTabs/, 'the superseded five-tab administrator rail must be retired from the active interface');
-assert.match(ui, /function prepareAccountInformationArchitecture\(\)[\s\S]*Personalise[\s\S]*Preferences[\s\S]*Security[\s\S]*App & Help/, 'Account must use progressive disclosure instead of one long settings sheet');
+assert.match(html, /id="accountHomeHub"[\s\S]*Personalise[\s\S]*Preferences[\s\S]*App &amp; Help[\s\S]*Security/, 'Account must use progressive disclosure instead of one long settings sheet');
 assert.match(html, /id="quickActionsSheet"[\s\S]*data-quick-action="absence"[\s\S]*data-quick-action="overtime"[\s\S]*data-quick-action="review"/, 'Quick Actions must retain a usable HTML fallback for the core night actions');
 assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.showQuickActions/, 'the React navigation must expose one central Quick Actions rudder rather than a fifth destination');
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');
 assert.match(ui, /function showQuickActions\(\)[\s\S]*roster:quick-actions/, 'Quick Actions must build its context from the live selected night before opening');
 assert.match(ui, /function performQuickAction\(action\)[\s\S]*show\('changes'\)[\s\S]*setChangesStep/, 'staffing Quick Actions must route into the existing Changes workflow instead of creating a mutation shortcut');
 assert.match(quickActionsExperience, /Report an absence[\s\S]*Add overtime cover[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share Night Roster/, 'the typed Quick Actions sheet must keep the compact operational action set');
-assert.match(rudderCss, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/, 'rudder navigation must reserve one centre slot while keeping four page destinations');
-assert.match(rudderCss, /prefers-reduced-transparency:reduce[\s\S]*quickRudderDisc[\s\S]*quickActionsSheet/, 'the rudder and sheet must retain a solid reduced-transparency fallback');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(clinicalExperience, /item\.detail && <small[\s\S]*\{item\.detail\}/, 'recent activity must show the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
@@ -594,19 +585,14 @@ assert.match(ui, /function openActivityDetail\(item,date\)[\s\S]*No additional r
 assert.match(ui, /roster:activity-open[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
 assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
-assert.match(css, /\.bottom button:not\(\.active\)\{color:var\(--apple-secondary\)\}/, 'inactive navigation labels must retain readable contrast');
-assert.match(css, /button:disabled\{[\s\S]*opacity:1;filter:none;cursor:not-allowed/, 'disabled controls must remain fully legible without saturation loss');
-assert.match(css, /\.activityType\.absence[\s\S]*\.activityType\.overtime[\s\S]*\.activityType\.allocation/, 'recent activity types must retain distinct semantic colours');
-assert.match(css, /#today \.nightDateShell \.staffingCount\{margin-top:var\(--apple-control-gap\)\}/, 'the date and staffing surfaces must have deliberate separation');
-assert.match(css, /\.bottom\{column-gap:6px;padding:5px 5px calc\(5px \+ env\(safe-area-inset-bottom\)\)\}/, 'bottom navigation targets must not visually touch and must preserve the device safe area');
-assert.match(css, /\.recentActivityRow \.recentActivityDetail\{[^}]*color:var\(--apple-secondary\)[^}]*font-size:12px/, 'saved activity reasons must remain readable in the compact list');
-assert.match(css, /\.recentActivityRow \.recentActivityDetail\{font-size:13px;font-weight:520\}/, 'operational activity reasons must receive the raised final type size');
-assert.match(css, /\.view\.viewEntering\{animation:appleViewIn 280ms var\(--native-spring\)/, 'primary navigation must use restrained native-style motion');
-assert.match(css, /data-date-direction="next"[\s\S]*appleDateNext 280ms/, 'date navigation must communicate forward direction');
-assert.match(css, /body\.uiScrolled\[data-view="changes"\][\s\S]*changesScreenHeader/, 'Changes and Breaks headers must gain compact scroll-edge hierarchy');
-assert.match(css, /\.formMessage\.success:not\(:empty\)::before\{content:'✓'/, 'successful saves must provide a non-colour confirmation symbol');
-assert.match(ui, /function showButtonConfirmation\(button,restoredLabel\)[\s\S]*button\.textContent='✓ Saved'/, 'successful primary actions must acknowledge completion in place');
-assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.view\.viewEntering[\s\S]*animation:none/, 'new motion must retain a reduced-motion fallback');
+const productCss = fs.readFileSync(path.join(__dirname, '..', 'src/product-unified.css'), 'utf8');
+const dockCss = fs.readFileSync(path.join(__dirname, '..', 'src/rudder-navigation.css'), 'utf8');
+assert.match(dockCss, /button[\s\S]*height: 60px; min-height: 60px/, 'dock controls must retain consistent touch targets');
+assert.match(dockCss, /color: var\(--liquid-secondary\)/, 'inactive dock labels use the readable shared secondary token');
+assert.match(dockCss, /var\(--app-safe-bottom\)/, 'dock must preserve device safe area');
+assert.match(productCss, /--unified-base: 200ms/, 'primary navigation uses restrained shared motion');
+assert.match(productCss, /prefers-reduced-motion[\s\S]*animation: none/, 'shared motion must respect reduced motion');
+assert.match(ui, /function showButtonConfirmation\(button,restoredLabel\)[\s\S]*button\.textContent='✓ Saved'/, 'successful actions acknowledge completion in place');
 const luminance = hex => {
   const channels = hex.match(/[0-9a-f]{2}/gi).map(value => parseInt(value, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
   return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
@@ -616,7 +602,6 @@ const contrast = (foreground, background) => {
   return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 };
 [['#246965','#dff1ef'],['#545960','#eef0f2'],['#b42332','#fff0f1'],['#8a4b00','#fff3dc'],['#246b3d','#e8f6ed'],['#8edbd6','#173b39'],['#c7c7cc','#2c2c2e']].forEach(([foreground, background]) => assert.ok(contrast(foreground, background) >= 4.5, `${foreground} on ${background} must meet readable text contrast`));
-assert.match(css, /#changes>\.changesDatePanel label,#breaks>\.panel>\.grid2 label\{font-size:11px\}/, 'operational date labels must remain legible');
 assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /[A-Z0-9._%+-]+@gov\.mt/i, 'public application source must not embed named government email recipients');
 assert.match(ui, /night_role_override_history:allHistory\[2\]\.data/, 'administrator roster-data exports must include night-only role history');
 assert.match(ui, /Private profile details and profile photos are excluded/, 'administrator export scope must identify excluded private profile data');
@@ -659,7 +644,6 @@ assert.match(ui, /app_access_signal[\s\S]*access_epoch[\s\S]*checkCurrentAccessS
 assert.doesNotMatch(ui, /p_changed_by:currentUserProfile\.display_name/, 'v49 roster calls must never trust browser-provided audit names');
 assert.match(ui, /record_night_absence_v49[\s\S]*p_client_version:APP_VERSION/, 'v49 roster writes must send the running app version to the server guard');
 assert.match(html, /id="writeGuardBanner"[\s\S]*id="writeGuardTitle"[\s\S]*id="writeGuardDetail"/, 'read-only compatibility states must have a persistent user-facing explanation');
-assert.match(presentationCss, /\/\* 41\.0 Trust Boundary write guard\. \*\/[\s\S]*\.writeGuardBanner/, 'the Trust Boundary notice must use the shared presentation system');
 assert.match(ui, /forcedOfflineSession=true;if\(cached&&restoreOfflineSnapshot\(\)\)\{updateOfflineControls\(\);return true\}/, 'saved-roster fallback must require the cached authorised account and disable writes before rendering');
 assert.match(ui, /function readOfflineSnapshot\(\)[\s\S]*snapshotRowsByDate\(raw\.nightChanges\)[\s\S]*snapshotRecordsByDate\(raw\.nightRoleOverrides\)/, 'saved-roster recovery must validate and repair partial local data before rendering');
 const retrySource = ui.slice(ui.indexOf('async function retryLaunchConnection'), ui.indexOf('\nfunction useSavedRosterAtLaunch'));
@@ -672,7 +656,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:3[\s\S]*changes:2[\s\S]*breaks:2[\s\S]*chat:2/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:4[\s\S]*changes:3[\s\S]*breaks:3[\s\S]*chat:3/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');
@@ -704,11 +688,8 @@ assert.match(accountExperience, /SHARE_QR_ROWS[\s\S]*shareQrSvg[\s\S]*Scan to ge
 assert.match(ui, /function sharedAppUrl\(\)\{return APP_URL\+'\?welcome=1'\}/, 'shared links must use the harmless welcome entry point');
 assert.match(ui, /function showSharedWelcomeIfRequested[\s\S]*showInstallGuide\(true\)/, 'a scanned shared link must open device-aware installation help');
 assert.match(ui, /navigator\.share[\s\S]*navigator\.clipboard/, 'sharing must use the native share sheet with a copy-link fallback');
-assert.match(presentationCss, /\.nightTimelineNow[\s\S]*box-shadow[\s\S]*\.shareQrFrame/, 'Night rail and QR sharing must receive polished visual treatment');
 assert.match(clinicalExperience, /nightTimelineSlimRail[\s\S]*nightTimelineFill[\s\S]*nightTimelinePhaseLabels/, 'Night must use the slim progress-rail composition rather than the chunky segmented panel');
-assert.match(presentationCss, /41\.7 Night screen overhaul[\s\S]*\.nightTimelineTrackShell[\s\S]*height:31px[\s\S]*\.nightTimelineNow/, 'the live Night rail must keep the compact 41.7 orientation treatment');
 assert.doesNotMatch(clinicalExperience, /personalNextStateIntegrated|nextNightMessage/, 'ordinary nights must not restore the old dedicated what-matters-next handover block');
-assert.match(presentationCss, /#today \.personalHeroFactGrid\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[\s\S]*#today \.personalHeroFactGrid>\.personalHeroFact[\s\S]*background:var\(--liquid-surface\)!important/, 'Duty, Break and Colleague must share one balanced integrated fact row');
 assert.doesNotMatch(clinicalExperience, /countdown|remaining time|time remaining/i, 'Night polish must not introduce the excluded countdown timer');
 assert.match(clinicalExperience, /Jump to me/, 'Night and Breaks must expose fast jump-to-me affordances');
 assert.match(clinicalExperience, /recentActivityDigest/, 'Night must retain the since-last-open activity digest');

@@ -60,8 +60,8 @@ assert.match(intelligence, new RegExp(`icon-192\\.png\\?v=${escapedVersion}`));
 assert.match(vite, /'night-intelligence\.css'/);
 assert.match(vite, /'night-intelligence\.js'/);
 
-assert.match(css, /safe-area-inset-top/);
-assert.match(css, /safe-area-inset-bottom/);
+assert.match(css, /var\(--app-safe-top\)/);
+assert.match(css, /var\(--app-safe-bottom\)/);
 assert.match(css, /prefers-reduced-motion/);
 assert.match(css, /prefers-contrast:more/);
 assert.match(css, /nightCalmMode/);

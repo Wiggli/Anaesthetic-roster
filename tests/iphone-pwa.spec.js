@@ -78,8 +78,8 @@ test('iPhone landscape keeps content and bottom navigation outside notch gutters
       viewRight: viewRect.right,
       firstLeft: first.left,
       lastRight: last.right,
-      dockPaddingLeft: parseFloat(dockStyle.paddingLeft),
-      dockPaddingRight: parseFloat(dockStyle.paddingRight)
+      dockLeft: dock.getBoundingClientRect().left,
+      dockRight: dock.getBoundingClientRect().right
     };
   });
 
@@ -87,6 +87,6 @@ test('iPhone landscape keeps content and bottom navigation outside notch gutters
   expect(geometry.viewRight).toBeLessThanOrEqual(844 - 44);
   expect(geometry.firstLeft).toBeGreaterThanOrEqual(44);
   expect(geometry.lastRight).toBeLessThanOrEqual(844 - 44);
-  expect(geometry.dockPaddingLeft).toBeGreaterThanOrEqual(44);
-  expect(geometry.dockPaddingRight).toBeGreaterThanOrEqual(44);
+  expect(geometry.dockLeft).toBeGreaterThanOrEqual(44);
+  expect(geometry.dockRight).toBeLessThanOrEqual(844 - 44);
 });

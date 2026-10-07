@@ -1,1277 +1,395 @@
-/* 50.8 consolidated operational layout.
-   This remains the single final product-wide presentation authority. The 50.8 pass
-   removes duplicate workflow chrome, consolidates task-screen context and reduces
-   vertical repetition instead of adding another competing polish generation. */
-
+/* Night Roster presentation system. Component state is owned by the runtime;
+   geometry, hierarchy and materials have one owner here, without override stacks. */
 :root {
-  --liquid-text: var(--liquid-label);
   --unified-content-width: 720px;
-  --unified-gutter: clamp(12px, 3.5vw, 16px);
-  --unified-space-1: 6px;
-  --unified-space-2: 10px;
+  --unified-gutter: 16px;
+  --unified-type-scale: 1;
+  --unified-type-micro: calc(10px * var(--unified-type-scale));
+  --unified-type-caption: calc(12px * var(--unified-type-scale));
+  --unified-type-body: calc(14px * var(--unified-type-scale));
+  --unified-type-lead: calc(16px * var(--unified-type-scale));
+  --unified-type-section: calc(18px * var(--unified-type-scale));
+  --unified-type-title: calc(22px * var(--unified-type-scale));
+  --unified-type-display: calc(28px * var(--unified-type-scale));
+
+  --unified-space-1: 4px;
+  --unified-space-2: 8px;
   --unified-space-3: 12px;
-  --unified-space-4: 18px;
+  --unified-space-4: 16px;
   --unified-space-5: 24px;
-  --unified-radius-control: 14px;
-  --unified-radius-card: 20px;
-  --unified-radius-shell: 26px;
-  --unified-border: color-mix(in srgb, var(--liquid-separator) 74%, transparent);
-  --unified-edge: color-mix(in srgb, var(--liquid-accent) 25%, var(--unified-border));
-  --unified-edge-strong: color-mix(in srgb, var(--liquid-accent) 42%, var(--unified-border));
-  --unified-surface: var(--liquid-surface);
-  --unified-soft: color-mix(in srgb, var(--liquid-secondary) 5%, var(--liquid-surface));
-  --unified-soft-strong: color-mix(in srgb, var(--liquid-secondary) 9%, var(--liquid-surface));
-  --unified-accent-soft: color-mix(in srgb, var(--liquid-accent) 10%, var(--liquid-surface));
-  --unified-glass: color-mix(in srgb, var(--liquid-surface) 89%, transparent);
-  --unified-shell-bg:
-    radial-gradient(circle at 91% 8%, color-mix(in srgb, var(--liquid-accent) 13%, transparent), transparent 33%),
-    linear-gradient(145deg, color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-surface)), var(--unified-surface));
+  --unified-space-6: 32px;
+  --unified-radius-control: 12px;
+  --unified-radius-card: 16px;
+  --unified-radius-shell: 16px;
   --unified-fast: 180ms;
-  --unified-base: 220ms;
+  --unified-base: 200ms;
   --unified-ease: cubic-bezier(.2,.8,.2,1);
-}
-
-/* --------------------------------------------------------------------------
-   Canvas and shared rhythm
-   -------------------------------------------------------------------------- */
-#today,
-#changes,
-#breaks,
-#chat,
-#roster {
-  box-sizing: border-box;
-  width: min(100%, var(--unified-content-width)) !important;
-  margin-inline: auto !important;
-  padding-inline: max(var(--unified-gutter), var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
-}
-
-#today .panel,
-#changes .panel,
-#breaks .panel,
-#chat .panel { box-shadow: none !important; }
-
-#today > * + *,
-#changes > * + *,
-#breaks > * + *,
-#chat .chatScreen > * + * { margin-top: var(--unified-space-3); }
-
-/* --------------------------------------------------------------------------
-   One institution/header grammar
-   -------------------------------------------------------------------------- */
-#today .nightUnifiedHero,
-#changes .appScreenHeader,
-#breaks .appScreenHeader,
-#chat .appScreenHeader {
-  position: relative !important;
-  isolation: isolate;
-  overflow: hidden !important;
-  box-sizing: border-box;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: var(--unified-radius-shell) !important;
-  background: var(--unified-shell-bg) !important;
-  box-shadow: 0 12px 32px rgba(0,0,0,.085) !important;
-}
-
-#today .nightUnifiedHero::after,
-#changes .appScreenHeader::after,
-#breaks .appScreenHeader::after,
-#chat .appScreenHeader::after {
-  content: '+';
-  position: absolute;
-  z-index: -1;
-  right: -30px;
-  top: 54px;
-  color: color-mix(in srgb, var(--liquid-accent) 5%, transparent);
-  font-size: 190px;
-  font-weight: 850;
-  line-height: .75;
-  pointer-events: none;
-  transform: rotate(-2deg);
-}
-
-#today #appHeader,
-#changes .appScreenHeader,
-#breaks .appScreenHeader,
-#chat .appScreenHeader {
-  box-sizing: border-box;
-}
-
-#today #appHeader {
-  position: relative !important;
-  z-index: 2;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-#changes .appScreenHeader,
-#breaks .appScreenHeader,
-#chat .appScreenHeader {
-  margin: 0 0 var(--unified-space-3) !important;
-  padding: calc(var(--app-safe-top, 0px) + 8px) 12px 12px !important;
-}
-
-#today .hospitalStrip,
-#changes .primaryInstitution,
-#breaks .primaryInstitution,
-#chat .primaryInstitution {
-  display: flex !important;
-  min-height: 52px !important;
-  align-items: center !important;
-  gap: 10px !important;
-  margin: 0 !important;
-  padding: 5px 2px 7px !important;
-  border: 0 !important;
-  background: transparent !important;
-}
-
-#changes .primaryInstitutionBrand,
-#breaks .primaryInstitutionBrand,
-#chat .primaryInstitutionBrand {
-  display: flex !important;
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-  align-items: center !important;
-  gap: 9px !important;
-}
-
-#today .hospitalStrip img,
-#changes .primaryInstitutionBrand img,
-#breaks .primaryInstitutionBrand img,
-#chat .primaryInstitutionBrand img {
-  width: auto !important;
-  max-width: 118px !important;
-  max-height: 28px !important;
-  object-fit: contain !important;
-}
-
-#today .hospitalStrip > span,
-#changes .primaryInstitutionBrand > span,
-#breaks .primaryInstitutionBrand > span,
-#chat .primaryInstitutionBrand > span {
-  overflow: hidden;
-  display: inline-flex !important;
-  width: auto !important;
-  max-width: 174px !important;
-  min-height: 28px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin-left: auto !important;
-  padding: 4px 10px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
-  border-radius: 999px !important;
-  background: color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-surface)) !important;
-  color: var(--liquid-text) !important;
-  font-size: 8.7px !important;
-  font-weight: 760 !important;
-  line-height: 1.05 !important;
-  letter-spacing: .025em !important;
-  text-align: center;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-#today .hospitalStrip { padding-right: 52px !important; }
-#today .hospitalStrip > span { margin-left: auto !important; }
-#today .head { min-height: 0 !important; padding: 0 !important; }
-#today .headerIdentity,
-#today .headerBrand,
-#today .headerChips { min-height: 0 !important; }
-#today .headerTitle,
-#today .motto,
-#today .headerChips { display: none !important; }
-#today .headActions {
-  position: absolute !important;
-  z-index: 4;
-  top: calc(var(--app-safe-top, 0px) + 10px) !important;
-  right: 3px !important;
-}
-
-#today .accountBtn,
-#changes .primaryHeaderAccount,
-#breaks .primaryHeaderAccount,
-#chat .primaryHeaderAccount {
-  width: 42px !important;
-  min-width: 42px !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  padding: 0 !important;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: 50% !important;
-  background: color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-soft-strong)) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent) !important;
-}
-
-#today .accountAvatar,
-#changes .primaryHeaderAccountAvatar,
-#breaks .primaryHeaderAccountAvatar,
-#chat .primaryHeaderAccountAvatar {
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: inherit !important;
-  object-fit: cover !important;
-}
-
-#today .accountInitial,
-#changes .primaryHeaderAccountInitial,
-#breaks .primaryHeaderAccountInitial,
-#chat .primaryHeaderAccountInitial {
-  font-size: 11px !important;
-  font-weight: 800 !important;
-}
-
-#changes .primaryHeaderAdmin,
-#breaks .primaryHeaderAdmin,
-#chat .primaryHeaderAdmin,
-#changes .screenInfoButton,
-#breaks .screenInfoButton,
-#chat .chatHeaderCompose {
-  width: 40px !important;
-  min-width: 40px !important;
-  height: 40px !important;
-  min-height: 40px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 13px !important;
-  background: color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface)) !important;
-  box-shadow: none !important;
-}
-
-/* One title hierarchy. */
-#changes .primaryScreenTitleRow,
-#breaks .primaryScreenTitleRow,
-#chat .primaryScreenTitleRow {
-  min-height: 0 !important;
-  align-items: center !important;
-  margin: 0 !important;
-  padding: 8px 2px 2px !important;
-}
-
-#changes .screenEyebrow,
-#breaks .screenEyebrow,
-#chat .screenEyebrow { display: none !important; }
-
-#today .nightUnifiedHero .nightSectionIdentity h1,
-#changes .primaryScreenTitleRow h1,
-#breaks .primaryScreenTitleRow h1,
-#chat .primaryScreenTitleRow h1 {
-  margin: 0 !important;
-  color: var(--liquid-text) !important;
-  font-size: clamp(29px, 7.5vw, 35px) !important;
-  font-weight: 830 !important;
-  line-height: 1 !important;
-  letter-spacing: -.045em !important;
-}
-
-#changes .primaryScreenTitleRow p,
-#breaks .primaryScreenTitleRow p,
-#chat .primaryScreenTitleRow p {
-  margin: 5px 0 0 !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 12px !important;
-  font-weight: 560 !important;
-  line-height: 1.25 !important;
-}
-
-/* --------------------------------------------------------------------------
-   Night: one branded hero, then the nurse's allocation
-   -------------------------------------------------------------------------- */
-#today .nightUnifiedHero {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0 !important;
-  margin: 0 0 var(--unified-space-3) !important;
-  padding: calc(var(--app-safe-top, 0px) + 2px) 11px 9px !important;
-  border-color: var(--unified-edge-strong) !important;
-  background:
-    radial-gradient(circle at 88% 5%, color-mix(in srgb, var(--liquid-accent) 18%, transparent), transparent 30%),
-    radial-gradient(circle at 9% 48%, color-mix(in srgb, var(--liquid-accent) 7%, transparent), transparent 38%),
-    linear-gradient(145deg, color-mix(in srgb, var(--liquid-accent) 9%, var(--unified-surface)), var(--unified-surface) 60%, color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface))) !important;
-  box-shadow: 0 16px 38px rgba(0,0,0,.14) !important;
-}
-
-#today #appHeader { order: 1; }
-#today .hospitalStrip { min-height: 48px !important; }
-#today .nightDateShell { order: 2; }
-#today .nightSectionIdentity { order: 3; }
-
-#today .nightDateShell {
-  box-sizing: border-box;
-  margin: 3px 0 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#today .nightDateShell > .grid2 { display: block !important; margin: 0 !important; }
-#today .nightDateContext,
-#today .staffingCount { display: none !important; }
-#today .nightDateLabel { display: block !important; margin: 0 !important; padding: 0 !important; color: transparent !important; font-size: 0 !important; }
-
-/* --------------------------------------------------------------------------
-   One shift identity component, expanded on Night and compact everywhere else
-   -------------------------------------------------------------------------- */
-.nightTeamIdentityContext,
-.appShiftIdentity {
-  box-sizing: border-box;
-  min-width: 0 !important;
-  align-items: center !important;
-}
-
-#today .nightTeamIdentityContext {
-  position: relative !important;
-  min-height: 86px !important;
-  grid-template-columns: 64px minmax(0, 1fr) !important;
-  gap: 10px !important;
-  margin: 0 1px 7px !important;
-  padding: 8px 38px 8px 8px !important;
-  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 42%, var(--unified-border)) !important;
-  border-radius: 22px !important;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 11%, var(--unified-surface)), color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface))) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent), 0 8px 22px color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 8%, transparent) !important;
-}
-#today .nightTeamIdentityContext::after {
-  content: '›';
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  color: color-mix(in srgb, var(--liquid-accent) 42%, var(--liquid-secondary));
-  font-size: 30px;
-  font-weight: 420;
-  transform: translateY(-53%);
-}
-#today .nightTeamIdentityContext .shiftIdentityMark {
-  width: 64px !important;
-  min-width: 64px !important;
-  height: 64px !important;
-  min-height: 64px !important;
-  border-radius: 17px !important;
-  box-shadow: 0 7px 19px rgba(0,0,0,.18) !important;
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy {
-  min-width: 0 !important;
-  padding-left: 12px !important;
-  border-left: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 22%, var(--unified-border));
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy strong {
-  overflow: hidden;
-  display: block;
-  color: var(--liquid-text) !important;
-  font-size: clamp(23px, 6.6vw, 29px) !important;
-  font-weight: 840 !important;
-  line-height: 1.02 !important;
-  letter-spacing: -.038em !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy small {
-  display: -webkit-box !important;
-  margin-top: 5px !important;
-  overflow: hidden !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 10.8px !important;
-  font-weight: 570 !important;
-  line-height: 1.24 !important;
-  white-space: normal !important;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-#changes .nightTeamIdentityContext,
-#breaks .nightTeamIdentityContext,
-#chat .chatShiftIdentity {
-  min-height: 64px !important;
-  grid-template-columns: 50px minmax(0, 1fr) !important;
-  gap: 10px !important;
-  margin: 0 0 8px !important;
-  padding: 6px 9px !important;
-  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 22%, var(--unified-border)) !important;
-  border-radius: 17px !important;
-  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 5%, var(--unified-surface)) !important;
-  box-shadow: none !important;
-}
-#changes .nightTeamIdentityContext .shiftIdentityMark,
-#breaks .nightTeamIdentityContext .shiftIdentityMark,
-#chat .chatShiftIdentity .shiftIdentityMark {
-  width: 50px !important;
-  min-width: 50px !important;
-  height: 50px !important;
-  min-height: 50px !important;
-  border-radius: 14px !important;
-}
-#changes .nightTeamIdentityContext .shiftIdentityCopy,
-#breaks .nightTeamIdentityContext .shiftIdentityCopy,
-#chat .chatShiftIdentity .shiftIdentityCopy { min-width: 0 !important; }
-#changes .nightTeamIdentityContext .shiftIdentityCopy strong,
-#breaks .nightTeamIdentityContext .shiftIdentityCopy strong,
-#chat .chatShiftIdentity .shiftIdentityCopy strong {
-  overflow: hidden;
-  display: block;
-  color: var(--liquid-text) !important;
-  font-size: 18.5px !important;
-  font-weight: 800 !important;
-  line-height: 1.08 !important;
-  letter-spacing: -.02em !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-#changes .nightTeamIdentityContext .shiftIdentityCopy small,
-#breaks .nightTeamIdentityContext .shiftIdentityCopy small,
-#chat .chatShiftIdentity .shiftIdentityCopy small {
-  overflow: hidden;
-  display: block;
-  margin-top: 3px !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 10px !important;
-  line-height: 1.18 !important;
-  text-overflow: ellipsis;
-  white-space: nowrap !important;
-}
-
-/* --------------------------------------------------------------------------
-   One date rail
-   -------------------------------------------------------------------------- */
-#today .dateNav.rosterDateControl,
-#changes .nightContextPanel .dateNav.rosterDateControl,
-#breaks .nightContextPanel .dateNav.rosterDateControl {
-  position: relative !important;
-  display: grid !important;
-  grid-template-columns: 40px minmax(0, 1fr) 40px !important;
-  gap: 4px !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  min-height: 44px !important;
-  align-items: center !important;
-  margin: 0 !important;
-  padding: 2px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 14px !important;
-  background: color-mix(in srgb, var(--liquid-secondary) 4%, var(--unified-surface)) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 7%, transparent) !important;
-}
-#today .dateNav.rosterDateControl { min-height: 40px !important; margin-inline: 3px !important; width: calc(100% - 6px) !important; }
-
-#today .dateNav.rosterDateControl::before,
-#changes .nightContextPanel .dateNav.rosterDateControl::before,
-#breaks .nightContextPanel .dateNav.rosterDateControl::before {
-  content: attr(data-date-label);
-  grid-column: 2;
-  grid-row: 1;
-  overflow: hidden;
-  color: var(--liquid-text);
-  font-size: 13.5px;
-  font-weight: 760;
-  line-height: 1.1;
-  letter-spacing: -.015em;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.rosterDateControl:has(.rosterDateText)::before { display: none !important; }
-.rosterDateText {
-  z-index: 2;
-  grid-column: 2;
-  grid-row: 1;
-  overflow: hidden;
-  display: flex;
-  min-width: 0;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  opacity: 1 !important;
-  visibility: visible !important;
-  color: var(--liquid-label) !important;
-  -webkit-text-fill-color: var(--liquid-label) !important;
-  font-size: 13.5px !important;
-  font-weight: 770 !important;
-  line-height: 1.1 !important;
-  letter-spacing: -.018em !important;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap !important;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-#today .dateNav.rosterDateControl button,
-#changes .nightContextPanel .dateNav.rosterDateControl button,
-#breaks .nightContextPanel .dateNav.rosterDateControl button {
-  z-index: 3;
-  width: 40px !important;
-  min-width: 40px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 11px !important;
-  background: transparent !important;
-  color: var(--liquid-accent-strong) !important;
-  box-shadow: none !important;
-  font-size: 21px !important;
-}
-#today .dateNav.rosterDateControl button:first-child,
-#changes .nightContextPanel .dateNav.rosterDateControl button:first-child,
-#breaks .nightContextPanel .dateNav.rosterDateControl button:first-child { grid-column: 1 !important; grid-row: 1 !important; }
-#today .dateNav.rosterDateControl button:last-child,
-#changes .nightContextPanel .dateNav.rosterDateControl button:last-child,
-#breaks .nightContextPanel .dateNav.rosterDateControl button:last-child { grid-column: 3 !important; grid-row: 1 !important; }
-#today .dateNav.rosterDateControl input[type="date"],
-#changes .nightContextPanel .dateNav.rosterDateControl input[type="date"],
-#breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"] {
-  position: absolute !important;
-  width: 1px !important;
-  min-width: 1px !important;
-  height: 1px !important;
-  min-height: 1px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  opacity: 0 !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  clip: rect(0 0 0 0) !important;
-  clip-path: inset(50%) !important;
-  white-space: nowrap !important;
-  pointer-events: none !important;
-}
-#today .dateNav.rosterDateControl input[type="date"]::-webkit-datetime-edit,
-#changes .nightContextPanel .dateNav.rosterDateControl input[type="date"]::-webkit-datetime-edit,
-#breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"]::-webkit-datetime-edit {
-  overflow: hidden !important;
-  width: 1px !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  white-space: nowrap !important;
-}
-#today .dateNav.rosterDateControl input[type="date"]::-webkit-calendar-picker-indicator,
-#changes .nightContextPanel .dateNav.rosterDateControl input[type="date"]::-webkit-calendar-picker-indicator,
-#breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0 !important; }
-
-.dateResetBtn {
-  display: block;
-  width: 100%;
-  min-height: 28px !important;
-  margin: 4px 0 0 !important;
-  padding: 3px 8px !important;
-  overflow: hidden;
-  color: var(--liquid-secondary) !important;
-  font-size: 10px !important;
-  font-weight: 650 !important;
-  line-height: 1.2 !important;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap !important;
-}
-
-/* Greeting belongs inside the Night hero but no longer consumes a second hero layer. */
-#today .nightSectionIdentity {
-  margin: 0 !important;
-  padding: 10px 6px 1px !important;
-}
-#today .nightWelcomeEyebrow,
-#today #nightWelcomeSubtitle { display: none !important; }
-#today .nightUnifiedHero .nightSectionIdentity h1 {
-  max-width: 100% !important;
-  font-size: clamp(28px, 7.8vw, 34px) !important;
-  line-height: 1 !important;
-}
-
-/* --------------------------------------------------------------------------
-   Selected-night context on task screens
-   -------------------------------------------------------------------------- */
-#changes .changesDatePanel,
-#breaks .breaksContextPanel,
-#chat .chatRosterContext {
-  box-sizing: border-box;
-  margin: 0 0 var(--unified-space-3) !important;
-  padding: 10px !important;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 3%, var(--unified-surface)) !important;
-  box-shadow: 0 7px 20px rgba(0,0,0,.045) !important;
-}
-#changes .changesDatePanel,
-#breaks .breaksContextPanel {
-  margin-bottom: 10px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#changes .appShiftContextRow,
-#breaks .appShiftContextRow {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  gap: 8px !important;
-  align-items: center !important;
-  margin: 0 0 8px !important;
-}
-#changes .appShiftContextRow .nightTeamIdentityContext,
-#breaks .appShiftContextRow .nightTeamIdentityContext {
-  width: 100% !important;
-  margin: 0 !important;
-}
-#changes .appShiftContextRow .nightContextStaffing,
-#breaks .appShiftContextRow .nightContextStaffing {
-  min-height: 30px !important;
-  padding: 4px 9px !important;
-  background: var(--unified-accent-soft) !important;
-}
-#changes .nightContextMetaRow,
-#breaks .nightContextMetaRow {
-  display: flex !important;
-  min-height: 26px !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  margin: 0 1px 5px !important;
-  padding: 0 !important;
-}
-#changes .nightContextMetaRow h2,
-#breaks .nightContextMetaRow h2 { display: none !important; }
-#changes .nightContextStaffing,
-#breaks .nightContextStaffing {
-  display: inline-flex !important;
-  width: auto !important;
-  min-width: 0 !important;
-  min-height: 26px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  padding: 4px 9px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 999px !important;
-  background: var(--unified-soft) !important;
-  box-shadow: none !important;
-}
-#changes .nightContextStaffing span,
-#changes .nightContextStaffing small,
-#breaks .nightContextStaffing span,
-#breaks .nightContextStaffing small { display: none !important; }
-#changes .nightContextStaffing strong,
-#breaks .nightContextStaffing strong {
-  color: var(--liquid-text) !important;
-  font-size: 11.5px !important;
-  font-weight: 760 !important;
-  line-height: 1 !important;
-  white-space: nowrap;
-}
-#changes .nightContextDateLabel,
-#breaks .nightContextDateLabel {
-  display: block !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  color: transparent !important;
-  font-size: 0 !important;
-}
-
-/* --------------------------------------------------------------------------
-   Night operational content
-   -------------------------------------------------------------------------- */
-#today .nightOverviewPanel {
-  margin-top: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-}
-#today .nightContextCapsule,
-#today .nightSignalState { display: none !important; }
-#today .nightContextLine {
-  min-height: 34px !important;
-  justify-content: flex-end !important;
-  margin: 0 0 10px !important;
-  padding: 0 1px !important;
-}
-#today .nightContextLine button {
-  min-height: 32px !important;
-  padding: 4px 12px !important;
-  border-radius: 999px !important;
-  font-size: 10.5px !important;
-}
-#today .personalNight { margin-top: 0 !important; }
-#today #personalNightHeading {
-  margin: 0 2px 7px !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 10px !important;
-  font-weight: 760 !important;
-  letter-spacing: .05em !important;
-  text-transform: uppercase !important;
-}
-#today #personalNightCard > .personalHeroSurface {
-  padding: 15px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 18%, var(--unified-border)) !important;
-  border-radius: 26px !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,.13) !important;
-}
-#today .personalAssignmentHeroCompact { min-height: 62px !important; margin-bottom: 9px !important; }
-#today .personalRoleIcon { width: 48px !important; min-width: 48px !important; height: 48px !important; min-height: 48px !important; border-radius: 14px !important; }
-#today .personalRoleCopy b { font-size: clamp(23px, 6vw, 28px) !important; line-height: 1.03 !important; }
-#today .personalHeroFactGrid { gap: 0 !important; }
-#today .personalHeroFact { min-height: 84px !important; padding: 11px !important; }
-#today .teamOverviewGroup { margin-top: var(--unified-space-3) !important; }
-#today .nightSignalPrimary,
-#today .nightTeamDetails,
-#today .recentActivityPanel {
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-card) !important;
-  box-shadow: none !important;
-}
-
-/* --------------------------------------------------------------------------
-   Changes: one clear workflow, no card-on-card competition
-   -------------------------------------------------------------------------- */
-#changes .changePanel {
-  margin-top: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-}
-#changes .ctop {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  margin: 0 0 8px !important;
-  padding: 0 2px !important;
-}
-#changes .ctop h2 {
-  margin: 0 !important;
-  font-size: 21px !important;
-  font-weight: 800 !important;
-  letter-spacing: -.025em !important;
-}
-#changes .ctop .time {
-  max-width: 360px;
-  margin-top: 3px !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 10.5px !important;
-  line-height: 1.25 !important;
-}
-#changes .liveStatus {
-  flex: 0 0 auto;
-  min-height: 28px !important;
-  padding: 4px 9px !important;
-  border-radius: 999px !important;
-  background: var(--unified-soft) !important;
-}
-#changes .workflowSteps,
-#changes .changesWorkflowTabs {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
-  gap: 3px !important;
-  margin: 0 0 8px !important;
-  padding: 4px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 17px !important;
-  background: var(--unified-soft) !important;
-  box-shadow: none !important;
-}
-#changes .workflowSteps button,
-#changes .changesWorkflowTabs button {
-  min-width: 0 !important;
-  min-height: 46px !important;
-  padding: 5px 4px !important;
-  border: 0 !important;
-  border-radius: 13px !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#changes .workflowSteps button.active,
-#changes .changesWorkflowTabs button.active,
-#changes .changesWorkflowTabs button[aria-selected="true"] {
-  background: var(--unified-accent-soft) !important;
-  color: var(--liquid-accent-strong) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
-}
-#changes .changesWorkflowTabs button small { display: none !important; }
-#changes .changesWorkflowState,
-#changes .workflowGuidance {
-  margin: 0 0 8px !important;
-  padding: 7px 9px !important;
-  border: 0 !important;
-  border-radius: 14px !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#changes .staffingSection {
-  margin: 0 !important;
-  padding: 13px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 0 !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-#changes .absenceSection { border-radius: var(--unified-radius-card) var(--unified-radius-card) 0 0 !important; }
-#changes .overtimeSection { border-top: 0 !important; border-radius: 0 0 var(--unified-radius-card) var(--unified-radius-card) !important; }
-#changes .stepHeader { margin-bottom: 10px !important; }
-#changes .stepHeader > span {
-  width: 26px !important;
-  height: 26px !important;
-  border-radius: 9px !important;
-  background: var(--unified-accent-soft) !important;
-  color: var(--liquid-accent-strong) !important;
-}
-#changes .changeList,
-#changes .overtimeList { border-radius: 14px !important; }
-#changes .continueWorkflowBtn {
-  margin-top: 12px !important;
-  min-height: 46px !important;
-  border-radius: var(--unified-radius-control) !important;
-}
-#changes .historyBox {
-  margin-top: 14px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 17px !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-#changes .historyBox > summary { min-height: 60px !important; padding: 10px 12px !important; }
-
-/* --------------------------------------------------------------------------
-   Breaks: context first, personal break second, grouped plan third
-   -------------------------------------------------------------------------- */
-#breaks .breaksContextPanel {
-  margin-top: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#breaks .nightContextMetaRow {
-  margin: 0 0 5px !important;
-  padding-inline: 1px !important;
-}
-#breaks .nightTeamIdentityContext {
-  margin-bottom: 7px !important;
-  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 5%, var(--unified-surface)) !important;
-}
-#breaks .nightContextDateLabel {
-  margin-bottom: 12px !important;
-}
-#breaks .personalBreakSummary {
-  margin: 0 0 10px !important;
-  padding: 14px !important;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: 0 7px 20px rgba(0,0,0,.04) !important;
-}
-#breaks .breakSummaryRow {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
-  gap: 0 !important;
-  margin: 0 0 10px !important;
-  padding: 0 !important;
-  overflow: hidden;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 16px !important;
-  background: var(--unified-surface) !important;
-}
-#breaks .breakSummaryItem {
-  min-width: 0 !important;
-  min-height: 54px !important;
-  padding: 8px 6px !important;
-  border-right: 1px solid var(--unified-border) !important;
-  text-align: center !important;
-}
-#breaks .breakSummaryItem:last-child { border-right: 0 !important; }
-#breaks .breakPlanTitle {
-  margin: 0 2px 6px !important;
-  align-items: center !important;
-}
-#breaks .breakPlanTools {
-  display: flex !important;
-  justify-content: flex-end !important;
-  margin: 0 2px 7px !important;
-}
-#breaks .jumpToMeButton,
-#today .nightContextLine button {
-  min-height: 32px !important;
-  padding: 4px 10px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 999px !important;
-  background: var(--unified-soft) !important;
-  color: var(--liquid-accent-strong) !important;
-  box-shadow: none !important;
-  font-size: 10.5px !important;
-  font-weight: 700 !important;
-}
-#breaks .breakScheduleBoard {
-  overflow: hidden;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-#breaks .breakNurseRow { min-height: 55px !important; }
-#breaks .breakNurseRow.isMe,
-#breaks .breakNurseRow.me {
-  background: var(--unified-accent-soft) !important;
-  box-shadow: inset 3px 0 0 var(--liquid-accent-strong) !important;
-}
-
-/* --------------------------------------------------------------------------
-   Chat: context, safety, conversations, then settings
-   -------------------------------------------------------------------------- */
-#chat .chatRosterContext {
-  display: grid !important;
-  grid-template-columns: minmax(0,1fr) auto !important;
-  gap: 7px 9px !important;
-  align-items: center !important;
-  margin-bottom: 8px !important;
-  padding: 9px !important;
-}
-#chat .chatShiftIdentity { grid-column: 1 / -1; margin: 0 !important; }
-#chat .chatRosterContextCopy {
-  min-width: 0 !important;
-  padding: 2px 4px 3px !important;
-}
-#chat .chatRosterContextCopy > span {
-  color: var(--liquid-secondary) !important;
-  font-size: 9.5px !important;
-  font-weight: 760 !important;
-  letter-spacing: .05em !important;
-  text-transform: uppercase;
-}
-#chat .chatRosterContextCopy strong { font-size: 15px !important; }
-#chat .chatRosterContextCopy small { color: var(--liquid-secondary) !important; }
-#chat .chatShiftNameButton {
-  width: 40px !important;
-  min-width: 40px !important;
-  height: 40px !important;
-  min-height: 40px !important;
-  padding: 0 !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 13px !important;
-  background: var(--unified-soft) !important;
-  box-shadow: none !important;
-}
-#chat .chatShiftNameButton span { display: none !important; }
-
-#chat .appSafetyBanner {
-  display: flex !important;
-  width: 100% !important;
-  min-height: 52px !important;
-  align-items: center !important;
-  gap: 10px !important;
-  margin: 0 0 14px !important;
-  padding: 9px 12px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-warning, #b7791f) 18%, var(--unified-border)) !important;
-  border-radius: 16px !important;
-  background: color-mix(in srgb, var(--liquid-warning, #b7791f) 5%, var(--unified-surface)) !important;
-  box-shadow: none !important;
-  text-align: left !important;
-}
-#chat .appSafetyBanner svg { width: 22px !important; height: 22px !important; flex: 0 0 22px; }
-#chat .appSafetyBanner span { min-width: 0; }
-#chat .appSafetyBanner b { font-size: 12px !important; }
-#chat .appSafetyBanner small {
-  overflow: hidden;
-  display: block;
-  margin-top: 1px !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 9.7px !important;
-  line-height: 1.2 !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#chat .chatWorkspace { margin-top: 0 !important; }
-#chat .chatInboxTeamRow {
-  min-height: 92px !important;
-  margin: 0 0 18px !important;
-  padding: 12px 14px !important;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-surface)) !important;
-  box-shadow: 0 7px 20px rgba(0,0,0,.045) !important;
-}
-#chat .chatInboxSectionLabel {
-  margin: 0 4px 8px !important;
-  color: var(--liquid-secondary) !important;
-}
-#chat .chatConversationList {
-  margin: 0 0 14px !important;
-  overflow: hidden;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-#chat .chatConversationRow { min-height: 74px !important; padding: 11px 12px !important; }
-
-#chat .chatSettingsCompact {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#chat .chatSettingsCompact > .chatUtilityHeading { display: none !important; }
-#chat .chatNotificationDisclosure {
-  margin: 0 !important;
-  overflow: hidden;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 17px !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-#chat .chatNotificationDisclosure > summary {
-  min-height: 58px !important;
-  padding: 9px 12px !important;
-}
-#chat .chatNotificationCard {
-  border-top: 1px solid var(--unified-border) !important;
-  background: var(--unified-soft) !important;
-}
-
-/* --------------------------------------------------------------------------
-   Actions, Account, Admin and status language
-   -------------------------------------------------------------------------- */
-.quickActionsExperience { gap: var(--unified-space-3) !important; }
-.quickActionsContextBar,
-.quickPrimaryAction,
-.quickReviewAction,
-.quickCompactAction,
-.personalisationGroup,
-.accountGroup,
-#admin .panel,
-#admin .adminPanel,
-#admin .adminGroup,
-#admin .historyItem,
-#admin .contentSurface {
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-.quickActionsContextBar { background: var(--unified-soft) !important; }
-.quickPrimaryAction,
-.quickCompactAction { min-height: 68px !important; }
-.quickReviewAction { min-height: 72px !important; }
-.personalisationGroup,
-.accountGroup { padding: 15px !important; }
-.accountSheetHeader {
-  border-color: var(--unified-border) !important;
-  border-radius: var(--unified-radius-card) !important;
-  box-shadow: none !important;
-}
-
-.headerLiveChip,
-.liveStatus,
-#breakPlanLive,
-.primaryConnectionLine,
-.appLiveStatus {
-  color: var(--liquid-secondary) !important;
-  font-variant-numeric: tabular-nums;
-}
-.headerLiveDot,
-.liveDot,
-.chatLiveDot,
-#breakPlanLive i {
-  width: 7px !important;
-  height: 7px !important;
-  box-shadow: none !important;
-}
-
-#updateBanner {
-  padding: 10px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-card) !important;
-  background: var(--unified-glass) !important;
-}
-
-/* --------------------------------------------------------------------------
-   One bottom dock everywhere
-   -------------------------------------------------------------------------- */
-.bottom.reactTabs,
-.bottom.reactTabs.appDock {
-  width: min(calc(100vw - 16px - var(--app-safe-left, 0px) - var(--app-safe-right, 0px)), 520px) !important;
-  min-height: 72px !important;
-  padding: 5px !important;
-  border: 1px solid var(--unified-edge) !important;
-  border-radius: 24px !important;
-  background: var(--unified-glass) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
-  backdrop-filter: blur(22px) saturate(145%) !important;
-  box-shadow: 0 12px 30px rgba(0,0,0,.14) !important;
-}
-.bottom.reactTabs button:not(.quickRudder) {
-  min-height: 60px !important;
-  border-radius: 17px !important;
-}
-body[data-view] .bottom.reactTabs .tabSlidingIndicator {
-  border: 0 !important;
-  border-radius: 17px !important;
-  background: var(--unified-accent-soft) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 18%, var(--unified-border)) !important;
-  transition: transform var(--unified-base) var(--unified-ease), width var(--unified-base) var(--unified-ease) !important;
-}
-.bottom.reactTabs .quickRudder { min-width: 58px !important; }
-.bottom.reactTabs .quickRudderDisc {
-  width: 42px !important;
-  height: 42px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 24%, var(--unified-border)) !important;
-  border-radius: 14px !important;
-  background: var(--unified-accent-soft) !important;
-  color: var(--liquid-accent-strong) !important;
-  box-shadow: none !important;
-}
-.bottom.reactTabs .quickRudderDisc::before,
-.bottom.reactTabs .quickRudderDisc::after { opacity: 0 !important; }
-.bottom.reactTabs .quickRudderLabel,
-.bottom.reactTabs button:not(.quickRudder) span {
-  font-size: 10px !important;
-  font-weight: 690 !important;
-}
-
-/* --------------------------------------------------------------------------
-   Purposeful motion and interaction
-   -------------------------------------------------------------------------- */
-@keyframes unified-view-enter {
-  from { opacity: .72; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.view:not(.hidden) { animation: unified-view-enter var(--unified-base) var(--unified-ease) both; }
-:is(button, [role="button"], summary) { -webkit-tap-highlight-color: transparent; }
-:is(button, [role="button"], summary):focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-.rosterDateText:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--liquid-accent) 38%, transparent) !important;
-  outline-offset: 2px !important;
-}
-@media (hover:hover) and (pointer:fine) {
-  :is(button, [role="button"], summary) {
-    transition: background-color var(--unified-fast) var(--unified-ease), border-color var(--unified-fast) var(--unified-ease), color var(--unified-fast) var(--unified-ease), opacity var(--unified-fast) var(--unified-ease), transform var(--unified-fast) var(--unified-ease) !important;
-  }
-  :is(button, [role="button"], summary):hover { transform: translateY(-1px); }
-}
-
-/* --------------------------------------------------------------------------
-   Small phones
-   -------------------------------------------------------------------------- */
+  --unified-border: color-mix(in srgb, var(--liquid-separator) 70%, transparent);
+  --unified-surface: var(--liquid-surface);
+  --unified-soft: color-mix(in srgb, var(--liquid-secondary) 6%, var(--liquid-surface));
+  --unified-accent-soft: color-mix(in srgb, var(--liquid-accent) 10%, var(--liquid-surface));
+  --unified-glass: color-mix(in srgb, var(--liquid-surface) 88%, transparent);
+  --unified-shadow: 0 8px 24px rgb(18 30 46 / .10);
+  --liquid-text: var(--liquid-label);
+  --text: var(--liquid-label);
+  --muted: var(--liquid-secondary);
+  --card: var(--liquid-surface);
+  --bg: var(--liquid-bg);
+  --account-paper: var(--liquid-bg);
+  --account-surface: var(--liquid-surface);
+  --account-ink: var(--liquid-label);
+  --account-muted: var(--liquid-secondary);
+  --account-rule: var(--unified-border);
+  --account-accent: var(--liquid-accent);
+}
+body[data-text-scale="large"] { --unified-type-scale: 1.0625; }
+body[data-text-scale="xlarge"] { --unified-type-scale: 1.125; }
+body.personalMotionReduced { --unified-fast: 0ms; --unified-base: 0ms; }
+body.personalMotionReduced .bottom.reactTabs *, body.personalMotionReduced *, body.personalMotionReduced *::before, body.personalMotionReduced *::after { transition: none; animation: none; scroll-behavior: auto; }
+body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--liquid-label); background: var(--liquid-bg); font-size: var(--unified-type-lead); line-height: 1.45; }
+*, *::before, *::after { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; }
+button, [role="button"], summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button, [role="button"] { min-height: 44px; }
+button { border-radius: var(--unified-radius-control); box-shadow: none; }
+button.primary { background: var(--liquid-accent); color: white; border: 0; }
+button.soft, button.quietAction { background: var(--unified-accent-soft); color: var(--liquid-accent-strong); border: 0; }
+button:disabled { cursor: default; }
+:is(button, [role="button"], summary, input, select, textarea):focus-visible { outline: 3px solid color-mix(in srgb, var(--liquid-accent) 45%, transparent); outline-offset: 2px; }
+:is(input, select, textarea) { min-width: 0; max-width: 100%; min-height: 44px; border-radius: var(--unified-radius-control); }
+h1, h2, h3, p { overflow-wrap: break-word; }
+h1, h2, h3 { color: inherit; letter-spacing: -.025em; }
+.uiSurface { overflow: hidden; border-radius: var(--unified-radius-card); background: var(--unified-surface); }
+.view { animation: screen-enter var(--unified-base) var(--unified-ease); }
+@keyframes screen-enter { from { opacity: .8; } to { opacity: 1; } }
+main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc(96px + var(--app-safe-bottom)); }
+#today, #changes, #breaks, #chat, #roster, #admin {
+  width: min(100%, var(--unified-content-width)); margin-inline: auto;
+  padding: max(12px, var(--app-safe-top)) max(var(--unified-gutter), var(--app-safe-right)) 24px max(var(--unified-gutter), var(--app-safe-left));
+}
+#today > * + *, #changes > * + *, #breaks > * + *, #chat .chatScreen > * + * { margin-top: var(--unified-space-3); }
+.panel { padding: 16px; border: 0; border-radius: var(--unified-radius-card); background: var(--unified-surface); box-shadow: none; }
+.rosterRowPeople { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.sectionTitle, .sectionHeadingRow h2, .breakPlanTitle, .staffingSection h3 { font-size: var(--unified-type-section); font-weight: 700; line-height: 1.3; }
+/* The shared header is in flow; only scroll chrome floats above content. */
+.appShellHeader, .appScreenHeader, #appHeader { display: block; width: 100%; min-width: 0; position: relative; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+.appShellHeader::before, .appShellHeader::after, .nightUnifiedHero::before, .nightUnifiedHero::after { content: none; }
+.primaryInstitution, .hospitalStrip { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin: 0 0 12px; padding: 0; border: 0; background: transparent; }
+.hospitalStrip .headActions { margin: 0; padding: 0; }
+.primaryInstitutionBrand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.primaryInstitutionBrand img, .hospitalStrip img { width: 104px; height: 30px; max-width: 104px; max-height: 30px; object-fit: contain; object-position: left center; }
+.primaryInstitutionBrand > span, .hospitalStrip > span { color: var(--liquid-secondary); font-size: var(--unified-type-micro); line-height: 1.3; font-weight: 650; letter-spacing: .025em; padding: 0; border: 0; border-radius: 0; background: transparent; white-space: normal; }
+.primaryHeaderActions, .hospitalStrip .headActions { display: flex; gap: 8px; }
+.primaryHeaderAction, #accountBtn { width: 44px; height: 44px; min-width: 44px; padding: 0; border-radius: 50%; background: var(--unified-surface); border: 1px solid var(--unified-border); color: var(--liquid-label); box-shadow: none; }
+.primaryHeaderAccountAvatar, #accountBtn img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.primaryHeaderAccountInitial, .accountInitial { display: grid; place-items: center; font-size: var(--unified-type-caption); font-weight: 700; }
+.primaryHeaderAdmin { display: none; }
+.primaryScreenTitleRow, .nightSectionIdentity { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 0; }
+.primaryScreenTitleRow > div, .nightSectionIdentity > div { min-width: 0; flex: 1; }
+.primaryScreenTitleRow h1, .nightSectionIdentity h1 { margin: 0; font-size: calc(clamp(24px, 6.6vw, 28px) * var(--unified-type-scale)); font-weight: 750; line-height: 1.18; letter-spacing: -.035em; white-space: normal; overflow: visible; }
+.primaryScreenTitleRow p { margin: 4px 0 0; font-size: var(--unified-type-body); font-weight: 450; color: var(--liquid-secondary); line-height: 1.4; }
+.screenEyebrow { display: none; }
+.screenInfoButton, .chatHeaderCompose { width: 44px; min-width: 44px; height: 44px; padding: 10px; border: 0; border-radius: var(--unified-radius-control); color: var(--liquid-accent-strong); background: var(--unified-accent-soft); }
+.chatHeaderCompose span { display: none; }
+.chatHeaderCompose svg { width: 24px; height: 24px; }
+.nightUnifiedHero { margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.nightSectionIdentity p:empty { display: none; }
+/* One compact context contract, with count and identity in the same lane. */
+.nightDateShell, .changesDatePanel, .breaksContextPanel { margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.selectedNightContext { display: grid; gap: 4px; padding: 8px 12px; border: 0; border-radius: var(--unified-radius-card); background: var(--unified-surface); }
+.selectedNightIdentity { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 12px; min-height: 44px; }
+.selectedNightCount { color: var(--liquid-secondary); font-size: var(--unified-type-caption); font-weight: 650; white-space: nowrap; }
+.nightTeamIdentityContext { display: grid; grid-template-columns: 36px minmax(0,1fr); align-items: center; gap: 8px; width: auto; min-width: 0; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--liquid-label); }
+.nightTeamIdentityContext::before, .nightTeamIdentityContext::after { content: none; }
+.shiftIdentityMark { display: grid; place-items: center; width: 36px; min-width: 36px; height: 36px; min-height: 36px; padding: 0; overflow: hidden; border: 0; border-radius: 10px; color: white; background: var(--shift-identity-accent, var(--liquid-accent)); font-size: var(--unified-type-title); box-shadow: none; }
+.shiftIdentityMark img { width: 100%; height: 100%; object-fit: cover; }
+.shiftIdentityCopy { min-width: 0; padding: 0; border: 0; }
+.shiftIdentityCopy strong { display: block; font-size: var(--unified-type-section); font-weight: 700; line-height: 1.25; color: var(--liquid-label); white-space: normal; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; }
+.shiftIdentityCopy small { display: block; margin-top: 2px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); line-height: 1.35; overflow-wrap: anywhere; }
+#changes .shiftIdentityCopy small, #breaks .shiftIdentityCopy small { display: none; }
+#today .shiftIdentityMark { width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: 12px; }
+#today .nightTeamIdentityContext { grid-template-columns: 44px minmax(0,1fr); }
+#today .shiftIdentityCopy strong { font-size: var(--unified-type-section); }
+.rosterDateControl { position: relative; display: grid; grid-template-columns: 44px minmax(0,1fr) 44px; gap: 0; align-items: center; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: var(--unified-radius-control); background: transparent; box-shadow: none; }
+.rosterDateControl::before, .rosterDateControl::after { content: none; }
+.rosterDateControl > button { grid-row: 1; width: 44px; min-width: 44px; height: 44px; margin: 0; padding: 0; border: 0; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-title); box-shadow: none; }
+.rosterDateControl > button:first-child { grid-column: 1; }
+.rosterDateControl > button:last-child { grid-column: 3; }
+.rosterDateControl > input[type="date"] { position: static; inset: auto; transform: none; grid-column: 2; grid-row: 1; width: 100%; min-width: 0; max-width: 100%; height: 44px; margin: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.rosterDateText { grid-column: 2; grid-row: 1; z-index: 1; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 0 4px; color: var(--liquid-label); -webkit-text-fill-color: currentColor; font-size: var(--unified-type-body); font-weight: 650; line-height: 1.3; white-space: nowrap; cursor: pointer; }
+.dateResetBtn { justify-self: center; margin: 0; padding: 4px 8px; border: 0; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-caption); }
+/* A single strong allocation surface, with spacing rather than nested borders. */
+.nightOverviewPanel, .changePanel { margin: 12px 0 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.personalNight { margin: 0; padding: 0; border: 0; background: transparent; }
+.personalNightHeading, #personalNightHeading { display: none; }
+#personalNightCard { margin: 0; padding: 0; border: 0; background: transparent; }
+#today #personalNightCard > .personalHeroSurface { position: relative; display: block; margin: 0; padding: 16px; overflow: visible; border: 0; border-radius: var(--unified-radius-card); background: #101821; color: #f7f9fc; box-shadow: none; }
+.personalHeroSurface::before, .personalHeroSurface::after { content: none; }
+.personalIdentityAssistive { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.personalAssignmentStage { margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.personalAssignmentHero { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.personalRoleIcon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; border: 0; background: #28466f; color: #cce1ff; font-size: var(--unified-type-body); }
+.personalRole-second .personalRoleIcon { background: #403961; color: #e0d7ff; }
+.personalRoleCopy { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.personalRoleCopy b { color: #f7f9fc; font-size: var(--unified-type-title); line-height: 1.2; white-space: normal; overflow: visible; }
+.personalRoleCopy > span { color: #b8c3d2; font-size: var(--unified-type-body); line-height: 1.35; }
+.personalHeroMeta { margin: 0 0 8px; }
+.personalHeroFactGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid #ffffff1f; border-radius: 0; background: transparent; box-shadow: none; }
+.personalHeroFact { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; min-width: 0; min-height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; text-align: left; }
+.personalHeroFact small { color: #b8c3d2; font-size: var(--unified-type-micro); font-weight: 600; text-transform: uppercase; }
+.personalHeroFact b { margin: 4px 0; color: #f7f9fc; font-size: var(--unified-type-body); line-height: 1.35; white-space: normal; overflow: visible; }
+.personalHeroFact > span { color: #b8c3d2; font-size: var(--unified-type-caption); line-height: 1.3; }
+.nightTimeline { display: block; margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid #ffffff1f; border-radius: 0; background: transparent; box-shadow: none; }
+.nightTimelineHead { display: flex; align-items: start; justify-content: space-between; gap: 8px; margin: 0 0 8px; }
+.nightTimelineHead > span { display: grid; gap: 2px; }
+.nightTimelineHead small { font-size: var(--unified-type-micro); color: #b8c3d2; }
+.nightTimelineHead b { font-size: var(--unified-type-caption); color: #f7f9fc; }
+.nightTimelineHead em { font-size: var(--unified-type-caption); color: #bdd8ff; font-style: normal; }
+.nightTimelineTrackShell { position: relative; display: block; width: 100%; height: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; overflow: visible; opacity: 1; }
+.nightTimelineBase, .nightTimelineOwnBand, .nightTimelineFill { position: absolute; top: 20px; height: 4px; border-radius: 4px; }
+.nightTimelineBase { inset-inline: 0; background: #354354; }
+.nightTimelineOwnBand.mine { background: #65a1ed; }
+.nightTimelineOwnBand:not(.mine) { background: #354354; }
+.nightTimelineFill { left: 0; background: #84b9ff; }
+.nightTimelineHandover, .nightTimelineNow { position: absolute; top: 13px; transform: translateX(-50%); }
+.nightTimelineHandover i { display: block; height: 18px; width: 1px; background: #d5deec; }
+.nightTimelineNow i { display: block; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; border: 2px solid #fff; background: #409cff; box-shadow: 0 0 0 3px #409cff33; }
+.nightTimelinePhaseLabels { display: flex; margin: 0; padding: 0; color: #b8c3d2; font-size: var(--unified-type-caption); line-height: 1.3; }
+.nightTimelinePhaseLabels > span { display: block; min-width: 0; text-align: left; }
+.nightTimelinePhaseLabels > span:last-child { text-align: right; }
+.nightTimelinePhaseLabels .mine { color: #9cc7ff; }
+.nightTimelineScale { position: relative; height: 24px; margin: 4px 0 0; color: #b8c3d2; font-size: var(--unified-type-micro); line-height: 1.3; }
+.nightTimelineScale > span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.nightTimelineScale .timelineStart { left: 0; transform: none; }
+.nightTimelineScale .timelineEnd { right: 0; left: auto; transform: none; }
+.nightTimelineScale.back, .nightTimelineScale.forward { height: 44px; }
+.nightTimelineScale .dstMark, .nightTimelineScale .dstJumpMark { top: 20px; font-size: var(--unified-type-micro); }
+.nightTimelineHandover b { position: absolute; bottom: 22px; left: 0; width: 70px; transform: translateX(-50%); font-size: var(--unified-type-micro); color: #d7e6fc; }
+.nightTimelineTransition { position: absolute; top: 12px; transform: translateX(-50%); }
+.nightTimelineTransition b { position: absolute; top: 25px; left: 0; transform: translateX(-50%); white-space: nowrap; font-size: var(--unified-type-micro); }
+.nightTimelineExplain { display: grid; gap: 4px; margin-top: 8px; color: #b8c3d2; font-size: var(--unified-type-caption); }
+.personalClockException, .personalClockNow { margin-top: 12px; border-radius: 12px; }
+.personalClockNowCopy strong { color: inherit; }
+html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activitySection, html.nightCalmMode #today .nightTeamSection, html.nightCalmMode #today .nightSecondaryActions { display: none; }
+.nightOverviewBoard { width: 100%; min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.teamOverviewGroup { margin-top: 24px; }
+/* Changes: the fallback and React workflow replace the same host. */
+.ctop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 0; }
+.ctop h2 { margin: 0; font-size: var(--unified-type-section); font-weight: 700; }
+.liveStatus, .headerLiveChip, .appLiveStatus, .primaryConnectionLine { display: inline-flex; align-items: center; gap: 4px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); font-weight: 500; }
+.liveDot, .headerLiveDot, .chatLiveDot { width: 6px; height: 6px; border-radius: 50%; box-shadow: none; }
+.workflowExperience { margin: 0 0 12px; padding: 0; border: 0; background: transparent; }
+.workflowSteps, .changesWorkflowTabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); align-items: stretch; gap: 4px; padding: 4px; border: 0; border-radius: 12px; background: var(--unified-soft); }
+.workflowStep, .changesWorkflowTabs > button { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; margin: 0; padding: 8px 4px; border: 0; border-radius: 8px; background: transparent; color: var(--liquid-secondary); }
+.workflowSelection { position: absolute; z-index: -1; inset: 0; border: 0; border-radius: 8px; background: var(--unified-surface); box-shadow: 0 1px 3px rgb(0 0 0 / .06); }
+.workflowStep.active { color: var(--liquid-accent-strong); }
+.workflowStepNumber, .changesWorkflowTabs > button > span { color: inherit; flex: 0 0 16px; display: grid; place-items: center; width: 16px; height: 20px; border: 0; background: transparent; font-size: var(--unified-type-caption); font-weight: 650; }
+.workflowStepCopy { min-width: 0; text-align: center; }
+.workflowStepCopy b, .changesWorkflowTabs b { font-size: var(--unified-type-caption); line-height: 1.3; white-space: nowrap; }
+.workflowStepCopy small, .changesWorkflowTabs small { display: none; }
+.workflowGuidance { display: flex; gap: 8px; align-items: start; padding: 12px 0; margin: 0; border: 0; border-radius: 0; background: transparent; }
+.workflowGuidanceMark { display: none; }
+.workflowGuidanceSummary { min-width: 0; }
+.workflowGuidanceSummary strong { display: block; font-size: var(--unified-type-body); font-weight: 650; }
+.workflowGuidanceSummary > small { display: block; margin-top: 4px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.workflowGuidance-attention { color: var(--liquid-warning); }
+.workflowWhy summary { min-height: 44px; display: flex; align-items: center; font-size: var(--unified-type-caption); }
+.workflowProgress { margin-bottom: 8px; }
+.workflowProgressCopy { display: flex; gap: 8px; justify-content: space-between; font-size: var(--unified-type-caption); }
+.workflowProgressTrack { height: 3px; margin-top: 4px; background: var(--unified-soft); border-radius: 3px; overflow: hidden; }
+.workflowProgressFill { display: block; height: 100%; background: var(--liquid-accent); }
+.staffingSection { margin: 0; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.staffingSection + .staffingSection { margin-top: 12px; }
+.stepHeader { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 0; border: 0; }
+.stepHeader h3 { margin: 0; }
+.stepHeader > span { display: none; }
+.personalTaskCard { display: flex; flex-direction: column; width: 100%; min-height: 44px; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-accent-soft); color: var(--liquid-label); text-align: left; }
+.personalTaskCard > span { display: grid; gap: 4px; width: 100%; min-width: 0; }
+.personalTaskCard b { font-size: var(--unified-type-body); }
+.personalTaskCard small { color: var(--liquid-secondary); font-size: var(--unified-type-body); white-space: normal; }
+.personalTaskCard strong { color: var(--liquid-accent-strong); font-size: var(--unified-type-body); }
+.continueWorkflowBtn { margin-top: 12px; }
+.historyBox { margin-top: 16px; padding: 0; border: 0; border-radius: 16px; background: var(--unified-surface); }
+.historyBox > summary { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; color: var(--liquid-label); }
+.historySummaryCopy { flex: 1; min-width: 0; }
+.historySummaryCopy strong, .historySummaryCopy small { display: block; }
+.historySummaryCopy strong { font-size: var(--unified-type-body); }
+.historySummaryCopy small { margin-top: 2px; font-size: var(--unified-type-caption); color: var(--liquid-secondary); }
+.historySummaryIcon { color: var(--liquid-accent); }
+.historySummaryChevron { color: var(--liquid-secondary); }
+#changeHistory { padding: 0 16px 12px; }
+/* Breaks: personal answer first; schedule and coverage are supporting surfaces. */
+.personalBreakSummary { margin: 0; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.personalBreakEyebrow { color: var(--liquid-secondary); font-size: var(--unified-type-caption); font-weight: 650; }
+.personalBreakMain { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; }
+.personalBreakMain > div { min-width: 0; }
+.personalBreakMain h2 { margin: 0; font-size: var(--unified-type-title); line-height: 1.2; color: var(--liquid-label); }
+.personalBreakMain p { margin: 4px 0 0; font-size: var(--unified-type-body); color: var(--liquid-secondary); }
+.personalBreakMark { flex: 0 0 44px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--unified-accent-soft); color: var(--liquid-accent-strong); }
+.personalBreakSummary > small { display: block; margin-top: 12px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.breakSummaryRow { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; padding: 0; border: 0; background: transparent; }
+.breakSummaryItem { min-width: 0; padding: 8px 0; border: 0; border-radius: 0; background: transparent; }
+.breakSummaryItem b { font-size: var(--unified-type-body); }
+.breakSummaryItem small { font-size: var(--unified-type-caption); }
+.breakScheduleBoard { padding: 0; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; overflow: hidden; }
+.breakScheduleHeader { padding: 12px 16px; }
+.breakScheduleGroups { display: grid; grid-template-columns: 1fr; gap: 0; }
+.breakScheduleGroup { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.breakScheduleGroup + .breakScheduleGroup { border-top: 1px solid var(--unified-border); }
+.breakScheduleGroupHead, .breakSchedulePerson { padding-inline: 16px; }
+.breakAdditionalCoverage { margin-top: 24px; }
+.breakCoverageBoard { border: 0; border-radius: 16px; background: var(--unified-surface); }
+/* Chat: date/count, compact safety, conversations. Shared identity appears once. */
+.chatScreen { margin: 0; padding: 0; border: 0; background: transparent; }
+.chatRosterContext { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; padding: 0; min-height: 44px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.chatRosterContextCopy { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.chatRosterContextCopy strong { color: var(--liquid-label); font-size: var(--unified-type-body); font-weight: 650; }
+.chatRosterContextCopy small { color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.chatShiftNameButton { flex: 0 0 44px; width: 44px; height: 44px; margin: 0; padding: 10px; border: 0; border-radius: 12px; background: transparent; color: var(--liquid-accent-strong); }
+.chatShiftNameButton span { display: none; }
+.chatShiftNameButton svg { width: 20px; height: 20px; }
+.appSafetyBanner, .chatSafetyNotice { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; padding: 8px 0; border: 0; border-radius: 0; background: transparent; color: var(--liquid-secondary); box-shadow: none; text-align: left; }
+.appSafetyBanner svg { width: 16px; height: 16px; flex: 0 0 16px; padding: 0; border: 0; border-radius: 0; background: transparent; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.appSafetyBanner span { min-width: 0; font-size: var(--unified-type-caption); line-height: 1.4; }
+.appSafetyBanner i { display: none; }
+.chatWorkspace, .chatHome, .chatInboxSection { margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.chatInboxTeamRow, .chatInboxRow { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; min-height: 84px; margin: 0; padding: 12px; border: 0; border-radius: 16px; background: var(--unified-surface); color: var(--liquid-label); text-align: left; box-shadow: none; }
+.chatTeamAvatar, .chatInboxAvatar { display: grid; place-items: center; width: 44px; height: 44px; min-width: 44px; flex: 0 0 44px; border-radius: 12px; overflow: hidden; background: var(--unified-accent-soft); color: var(--liquid-accent-strong); font-size: var(--unified-type-section); }
+.chatTeamAvatar img { width: 100%; height: 100%; object-fit: cover; }
+.chatInboxTeamCopy, .chatInboxRowCopy { min-width: 0; flex: 1; }
+.chatInboxTeamTop { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.chatInboxTeamTop b, .chatInboxRowCopy strong { color: var(--liquid-label); font-size: var(--unified-type-section); line-height: 1.3; font-weight: 700; white-space: normal; }
+.chatInboxTeamTop time, .chatInboxMeta time { color: var(--liquid-secondary); font-size: var(--unified-type-micro); white-space: nowrap; }
+.chatTeamMeta { display: block; margin: 2px 0; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.chatInboxTeamPreview, .chatInboxRowCopy small { display: block; color: var(--liquid-secondary); font-size: var(--unified-type-body); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chatInboxSectionLabel { display: flex; justify-content: space-between; gap: 8px; margin: 24px 0 8px; font-size: var(--unified-type-body); font-weight: 650; }
+.chatInboxSectionLabel small { font-size: var(--unified-type-caption); font-weight: 450; color: var(--liquid-secondary); }
+.chatConversationList, .reactConversationGroup { padding: 0; border: 0; border-radius: 16px; background: var(--unified-surface); overflow: hidden; box-shadow: none; }
+.chatInboxRow { border-radius: 0; }
+.chatInboxListItem + .chatInboxListItem { border-top: 1px solid var(--unified-border); }
+.chatInboxMeta { display: grid; justify-items: end; gap: 8px; }
+.chatInboxUnread, .chatConversationBadge { display: grid; place-items: center; min-width: 22px; height: 22px; margin: 0; padding: 0 6px; border: 0; border-radius: 11px; background: var(--liquid-accent); color: white; font-size: var(--unified-type-caption); font-style: normal; }
+.chatUtilityGroup { margin-top: 16px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.chatNotificationShortcut { width: 100%; text-align: left; background: transparent; color: var(--liquid-accent-strong); border: 0; font-size: var(--unified-type-body); }
+.chatThreadHeader { min-height: 64px; border-radius: 16px 16px 0 0; }
+.chatThreadSafety { padding: 8px 12px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+/* Account is a page stack in one outlet, not a menu preceding every page. */
+.accountSheet[open] { position: fixed; inset: max(0px,var(--app-safe-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-safe-top)); max-height: calc(100dvh - var(--app-safe-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); animation: account-enter var(--unified-base) var(--unified-ease); }
+@keyframes account-enter { from { opacity: .8; } to { opacity: 1; } }
+.accountSheet::backdrop { background: rgb(10 18 30 / .3); }
+.accountSheet > .sheetGrabber { display: none; }
+.accountSheetHeader { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-height: 64px; margin: 0; padding: 8px max(16px,var(--app-safe-right)) 8px max(16px,var(--app-safe-left)); border: 0; border-bottom: 1px solid var(--unified-border); border-radius: 0; background: var(--unified-surface); box-shadow: none; }
+.accountSheetHeader > div { flex: 1; min-width: 0; }
+.accountSheetHeader > div > span { color: var(--liquid-secondary); font-size: var(--unified-type-micro); font-weight: 550; text-transform: none; letter-spacing: 0; }
+.accountSheetHeader h2 { margin: 0; font-size: var(--unified-type-title); font-weight: 700; line-height: 1.2; }
+.accountSheetHeader button { flex: 0 0 auto; min-width: 44px; height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-body); }
+.accountBackBtn { width: 44px; padding: 0; font-size: var(--unified-type-display); }
+.accountSheetScroll { flex: 1; min-height: 0; height: auto; max-height: none; margin: 0; padding: 16px max(16px,var(--app-safe-right)) calc(24px + var(--app-safe-bottom)) max(16px,var(--app-safe-left)); overflow-y: auto; overscroll-behavior: contain; background: var(--liquid-bg); }
+.accountPageOutlet { min-width: 0; }
+.accountPage { animation: screen-enter var(--unified-base) var(--unified-ease); }
+.accountHomeHub { display: grid; gap: 16px; }
+.accountHomeIdentity { display: flex; align-items: center; gap: 12px; margin: 0; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.accountHomeIdentity > div { min-width: 0; }
+.accountHomeIdentity h3 { margin: 0; font-size: var(--unified-type-section); line-height: 1.3; }
+.accountHomeIdentity p { margin: 2px 0; font-size: var(--unified-type-body); color: var(--liquid-secondary); }
+.accountHomeIdentity small { display: block; color: var(--liquid-secondary); font-size: var(--unified-type-caption); overflow-wrap: anywhere; }
+.accountHomeAvatar { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--unified-accent-soft); color: var(--liquid-accent-strong); font-size: var(--unified-type-lead); }
+.accountHubList { overflow: hidden; padding: 0; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.accountHubRow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; border: 0; border-radius: 0; background: transparent; color: var(--liquid-label); text-align: left; }
+.accountHubRow + .accountHubRow { border-top: 1px solid var(--unified-border); }
+.accountHubIcon { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 8px; background: var(--unified-accent-soft); color: var(--liquid-accent-strong); }
+.accountHubRow > span:nth-child(2) { flex: 1; min-width: 0; }
+.accountHubRow b { display: block; font-size: var(--unified-type-body); font-weight: 650; }
+.accountHubRow small { display: block; margin-top: 2px; font-size: var(--unified-type-caption); color: var(--liquid-secondary); }
+.accountHubRow i { font-style: normal; color: var(--liquid-secondary); }
+.accountSignOut { width: 100%; min-height: 44px; margin: 0; border: 0; border-radius: 12px; background: color-mix(in srgb,var(--liquid-critical) 6%,var(--unified-surface)); color: var(--liquid-critical); font-size: var(--unified-type-body); }
+.accountVersion { margin: 0; text-align: center; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.accountGroup, .personalisationGroup { margin: 0 0 16px; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.accountGroup h3, .personalisationGroup h3 { margin: 0; font-size: var(--unified-type-section); }
+.accountGroupDescription, .accountSectionHeading p { margin: 4px 0 16px; color: var(--liquid-secondary); font-size: var(--unified-type-body); }
+.accountProfilePanel, .personalisationStudio { margin: 0; padding: 0; border: 0; background: transparent; }
+.personalisationStudioHeading { display: none; }
+.personalisationTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 16px; padding: 4px; border: 0; border-radius: 12px; background: var(--unified-soft); }
+.personalisationTabs button { min-height: 44px; border: 0; border-radius: 8px; background: transparent; font-size: var(--unified-type-body); }
+.personalisationTabs .active { background: var(--unified-surface); color: var(--liquid-accent-strong); }
+.personalisationPreviewCard { margin: 0 0 16px; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.personalisationPreviewGlow { display: none; }
+.personalisationPreviewCopy strong { font-size: var(--unified-type-title); color: var(--liquid-label); }
+.personalisationSwatches, .shiftSymbolChoices { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.personalisationSwatches button span { font-size: var(--unified-type-caption); white-space: normal; }
+.personalisationSwatches button, .shiftSymbolChoices button { min-width: 44px; min-height: 44px; }
+.accountProfileInput { min-height: 44px; padding: 12px; font-size: var(--unified-type-lead); border: 1px solid var(--unified-border); border-radius: 12px; }
+.appearanceControl { display: block; width: 100%; }
+.appearanceControl button strong, .appearanceControl button small { white-space: normal; overflow: visible; }
+.accountNotificationPage .chatNotificationCard { margin: 0; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.accountNotificationPage .chatNotificationTop { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.accountNotificationPage .chatNotificationCopy { flex: 1; min-width: 120px; }
+.chatNotificationCopy { display: grid; gap: 4px; }
+.chatNotificationCopy b, .pushPreferenceRows b, .pushDeviceCopy b { font-size: var(--unified-type-lead); font-weight: 650; }
+.chatNotificationCopy span, .pushPreferenceRows small, .pushBlockedHelp, .pushDeviceCopy small, .pushDeviceEmpty { color: var(--liquid-secondary); font-size: var(--unified-type-caption); line-height: 1.4; }
+.chatNotificationIcon { display: none; }
+.chatNotificationEnable { min-height: 44px; padding: 8px 12px; border: 0; background: var(--liquid-accent); color: white; font-size: var(--unified-type-body); }
+.pushStateBadge { padding: 4px 8px; border-radius: 8px; background: var(--unified-soft); color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.pushStateBadge.active, .settingsSwitchState.on { color: var(--liquid-accent-strong); }
+.pushStateBadge.blocked { color: var(--liquid-critical); }
+.pushPreferenceRows { margin-top: 16px; }
+.pushPreferenceRows > label { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 8px; min-height: 72px; padding: 12px 0; border-top: 1px solid var(--unified-border); }
+.pushPreferenceRows > label > span:first-child { display: grid; min-width: 0; gap: 4px; }
+.settingsSwitchControl { display: flex; align-items: center; gap: 8px; }
+.settingsSwitchState { color: var(--liquid-secondary); font-size: var(--unified-type-caption); font-style: normal; }
+.settingsSwitchState.muted { color: var(--liquid-warning); }
+.settingsSwitchControl input { appearance: none; -webkit-appearance: none; width: 54px; min-width: 54px; height: 44px; margin: 0; padding: 9px 3px; border: 0; border-radius: 22px; background: color-mix(in srgb,var(--liquid-secondary) 22%,var(--unified-surface)); cursor: pointer; transition: background-color var(--unified-fast) var(--unified-ease); }
+.settingsSwitchControl input::before { content: ''; display: block; width: 26px; height: 26px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgb(0 0 0 / .18); transition: transform var(--unified-fast) var(--unified-ease); }
+.settingsSwitchControl input:checked { background: var(--liquid-accent); }
+.settingsSwitchControl input:checked::before { transform: translateX(22px); }
+.pushMuteActions { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 16px; }
+.pushMuteLabel { width: 100%; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+.pushMuteActions button, .pushDeviceRemove { min-height: 44px; padding: 8px; border: 0; background: var(--unified-soft); color: var(--liquid-accent-strong); font-size: var(--unified-type-caption); }
+.pushDeviceDetails summary { min-height: 44px; padding: 12px 0; font-size: var(--unified-type-body); }
+.pushDeviceRow { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 12px 0; border-top: 1px solid var(--unified-border); }
+.pushDeviceCopy { display: grid; min-width: 0; gap: 4px; overflow-wrap: anywhere; }
+.pushDisableBtn { min-height: 44px; margin-top: 12px; padding: 8px 0; border: 0; background: transparent; color: var(--liquid-critical); font-size: var(--unified-type-body); }
+#nightCalmToggle { grid-column: 2; grid-row: 1; min-width: 72px; min-height: 44px; padding: 0 8px; border: 0; background: transparent; color: var(--liquid-secondary); font-size: 0; }
+#nightCalmToggle::before { content: '☾'; margin-right: 4px; font-size: var(--unified-type-lead); }
+#nightCalmToggle::after { content: 'Focus'; font-size: var(--unified-type-caption); font-weight: 650; }
+html.nightCalmMode #nightCalmToggle::before { content: '☀'; }
+html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
+/* Sheets, launch and update use the same radius, text and motion contracts. */
+.quickActionsSheet, .appDialog, .onboardingDialog, .releaseDialog { border-radius: 16px; color: var(--liquid-label); background: var(--unified-surface); }
+.quickActionsExperience { margin: 0; padding: 0; }
+.quickActionsContextBar { padding: 12px; border: 0; border-radius: 12px; background: var(--unified-soft); }
+.quickPrimaryAction, .quickReviewAction, .quickCompactAction { min-height: 68px; border: 0; border-radius: 12px; background: var(--unified-surface); box-shadow: none; }
+.quickPrimaryCopy strong, .quickReviewCopy strong, .quickCompactAction strong { font-size: var(--unified-type-body); white-space: normal; }
+.quickPrimaryCopy small, .quickReviewCopy > span, .quickCompactAction small { font-size: var(--unified-type-caption); }
+.updateBanner { border-radius: 16px; background: var(--unified-surface); box-shadow: var(--unified-shadow); }
+.launchMotto { font-size: var(--unified-type-body); }
+.scrollChrome { border-radius: 0; }
 @media (max-width: 430px) {
-  #today, #changes, #breaks, #chat, #roster {
-    padding-inline: max(10px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
-  }
-  #today .nightUnifiedHero { padding-inline: 9px !important; border-radius: 24px !important; }
-  #changes .appScreenHeader,
-  #breaks .appScreenHeader,
-  #chat .appScreenHeader { border-radius: 23px !important; padding-inline: 10px !important; }
-  #today .hospitalStrip img,
-  #changes .primaryInstitutionBrand img,
-  #breaks .primaryInstitutionBrand img,
-  #chat .primaryInstitutionBrand img { max-width: 104px !important; max-height: 24px !important; }
-  #today .hospitalStrip > span,
-  #changes .primaryInstitutionBrand > span,
-  #breaks .primaryInstitutionBrand > span,
-  #chat .primaryInstitutionBrand > span {
-    max-width: 150px !important;
-    padding-inline: 7px !important;
-    font-size: 8px !important;
-  }
-  #today .nightTeamIdentityContext {
-    min-height: 76px !important;
-    grid-template-columns: 56px minmax(0,1fr) !important;
-    gap: 9px !important;
-    padding: 7px 34px 7px 7px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityMark {
-    width: 56px !important;
-    min-width: 56px !important;
-    height: 56px !important;
-    min-height: 56px !important;
-    border-radius: 16px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityCopy { padding-left: 10px !important; }
-  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: clamp(21px, 6.4vw, 25px) !important; }
-  #today .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 10px !important; }
-  #today .nightUnifiedHero .nightSectionIdentity h1 { font-size: clamp(27px, 7.8vw, 31px) !important; }
-  #changes .primaryScreenTitleRow h1,
-  #breaks .primaryScreenTitleRow h1,
-  #chat .primaryScreenTitleRow h1 { font-size: 28px !important; }
-  .rosterDateText { font-size: 12.5px !important; }
-  #chat .appSafetyBanner small { font-size: 9.2px !important; }
+  :root { --unified-gutter: 12px; }
+  .primaryInstitutionBrand > span, .hospitalStrip > span { max-width: 130px; font-size: var(--unified-type-micro); }
+  .personalHeroFactGrid { gap: 8px; }
 }
-
 @media (max-width: 370px) {
-  :root { --unified-gutter: 10px; }
-  #today .hospitalStrip,
-  #changes .primaryInstitution,
-  #breaks .primaryInstitution,
-  #chat .primaryInstitution { gap: 6px !important; }
-  #today .hospitalStrip img,
-  #changes .primaryInstitutionBrand img,
-  #breaks .primaryInstitutionBrand img,
-  #chat .primaryInstitutionBrand img { max-width: 94px !important; }
-  #today .hospitalStrip > span,
-  #changes .primaryInstitutionBrand > span,
-  #breaks .primaryInstitutionBrand > span,
-  #chat .primaryInstitutionBrand > span { max-width: 130px !important; font-size: 7.4px !important; }
-  #today .nightTeamIdentityContext { grid-template-columns: 57px minmax(0,1fr) !important; }
-  #today .nightTeamIdentityContext .shiftIdentityMark { width: 57px !important; min-width: 57px !important; height: 57px !important; min-height: 57px !important; }
-  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: 20px !important; }
-  #changes .nightTeamIdentityContext,
-  #breaks .nightTeamIdentityContext,
-  #chat .chatShiftIdentity { grid-template-columns: 44px minmax(0,1fr) !important; }
-  #changes .nightTeamIdentityContext .shiftIdentityMark,
-  #breaks .nightTeamIdentityContext .shiftIdentityMark,
-  #chat .chatShiftIdentity .shiftIdentityMark { width: 44px !important; min-width: 44px !important; height: 44px !important; min-height: 44px !important; }
-  #breaks .breakSummaryItem b { font-size: 12px !important; }
-  #breaks .breakSummaryItem small { font-size: 9px !important; }
+  .primaryInstitutionBrand { gap: 8px; }
+  .primaryInstitutionBrand img, .hospitalStrip img { width: 88px; max-width: 88px; }
+  .primaryInstitutionBrand > span, .hospitalStrip > span { max-width: 112px; font-size: var(--unified-type-micro); }
+  .selectedNightContext { padding-inline: 8px; }
+  .selectedNightCount { font-size: var(--unified-type-caption); }
+  .shiftIdentityCopy strong { font-size: var(--unified-type-body); }
+  #today .shiftIdentityCopy strong { font-size: var(--unified-type-section); }
+  .rosterDateText { font-size: var(--unified-type-caption); }
+  .workflowStep { gap: 3px; }
+  .workflowStepCopy b { font-size: var(--unified-type-caption); }
+  .personalRoleCopy b { font-size: var(--unified-type-section); }
+  .personalHeroFact b { font-size: var(--unified-type-caption); }
+  .personalHeroFact > span { font-size: var(--unified-type-micro); }
+  .accountSheet { border-radius: 0; }
 }
-
-@media (prefers-reduced-transparency: reduce) {
-  #today .nightUnifiedHero,
-  #changes .appScreenHeader,
-  #breaks .appScreenHeader,
-  #chat .appScreenHeader,
-  .bottom.reactTabs,
-  .accountSheetHeader {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    background: var(--unified-surface) !important;
-    box-shadow: none !important;
-  }
-}
-
+@media (prefers-reduced-transparency: reduce) { .bottom.reactTabs { background: var(--unified-surface); backdrop-filter: none; -webkit-backdrop-filter: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .view:not(.hidden),
-  :is(button, [role="button"], summary),
-  .bottom.reactTabs,
-  .bottom.reactTabs * {
-    transition: none !important;
-    animation: none !important;
-    transform: none !important;
-  }
+  .view, .accountPage, .accountSheet[open] { animation: none; }
+  .bottom.reactTabs *, button { transition: none; }
 }
+@media (prefers-contrast: more) { .uiSurface, .personalHeroSurface, .personalBreakSummary, .staffingSection, .accountGroup { outline: 1px solid currentColor; } }
 
-@media (prefers-contrast: more) {
-  #today .nightUnifiedHero,
-  #changes .appScreenHeader,
-  #breaks .appScreenHeader,
-  #chat .appScreenHeader,
-  #today #personalNightCard > .personalHeroSurface,
-  #changes .staffingSection,
-  #breaks .personalBreakSummary,
-  #breaks .breakScheduleBoard,
-  #chat .chatRosterContext,
-  #chat .chatInboxTeamRow,
-  #chat .chatConversationList,
-  .quickActionsContextBar,
-  .quickPrimaryAction,
-  .quickReviewAction,
-  .quickCompactAction,
-  .personalisationGroup,
-  .accountGroup { border-color: currentColor !important; }
-}
+.accountSheetHeader h2:focus { outline: none; }

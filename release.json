@@ -1,12 +1,13 @@
 {
-  "version": "50.9",
+  "version": "51.0",
   "date": "7 October 2026",
-  "title": "Make personalised greetings automatic and safe",
-  "summary": "Uses the user-selected name when valid and automatically falls back to the imported roster identity.",
+  "title": "One coherent Night Roster",
+  "summary": "A shared mobile layout for the night plan, staffing, breaks, conversations and account pages.",
   "changes": [
-    "Uses a valid name entered in Personalise first, then the imported roster name, then the approved account display name.",
-    "Rejects sentence-like or malformed personal-name values so phrases cannot appear in the Night greeting.",
-    "Applies the same automatic behaviour to existing staff and future users without hard-coding individual names."
+    "Uses one compact selected-night context and persistent five-control dock across operational screens.",
+    "Replaces duplicate staffing steps with one workflow and puts your break and conversations first.",
+    "Opens Personalise, Preferences, Notifications, Security and App & Help as separate Account pages with Back.",
+    "Flattens the dark allocation card and separates timeline labels, including clock-change nights."
   ],
   "update_policy": "normal"
 }

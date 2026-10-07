@@ -157,7 +157,7 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
 
   await page.evaluate(() => {
     window.currentUserProfile = { display_name: 'Test Nurse', user_role: 'member' };
-    localStorage.setItem('anaes_education_state_v1', JSON.stringify({ main: 2, changes: 1, breaks: 1, chat: 1 }));
+    localStorage.setItem('anaes_education_state_v1', JSON.stringify(window.educationVersions()));
     window.showClockChangeEducation('2026-10-24', true);
   });
   await expect(page.locator('#onboardingDialog')).toHaveAttribute('open', '');
@@ -267,7 +267,7 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
     const style = getComputedStyle(el);
     return { height: el.getBoundingClientRect().height, background: style.backgroundColor };
   });
-  expect(railVisual.height).toBeLessThanOrEqual(34);
+  expect(railVisual.height).toBe(44);
   expect(railVisual.background).toBe('rgba(0, 0, 0, 0)');
   const exceptionBackground = await clockException.evaluate(el => getComputedStyle(el).backgroundColor);
   expect(exceptionBackground).not.toBe('rgb(255, 255, 255)');
@@ -347,23 +347,12 @@ test('Chat opens as an inbox and promotes conversations into a dedicated thread 
   expect(newPrivateChatSizing.scrollWidth).toBeLessThanOrEqual(newPrivateChatSizing.clientWidth + 1);
   await expect(page.locator('#chatTeamThread')).toHaveClass(/hidden/);
   await expect(page.locator('#chatSafetyInfo')).toContainText('Staff coordination only');
-  await expect(page.locator('.chatUtilityHeading')).toContainText('Chat essentials');
+  await expect(page.locator('.chatUtilityHeading')).toHaveCount(0);
+  await expect(page.locator('.chatSafetyNotice')).toBeVisible();
   await expect(page.locator('#chatTeamUnread')).toHaveClass(/hidden/);
   await expect(page.locator('#chatTeamUnread')).toHaveText('');
-  const chatPolishMetrics = await page.evaluate(() => {
-    const utility = document.querySelector('.chatUtilityGroup');
-    const safetyTitle = document.querySelector('.chatSafetyNotice b');
-    const identity = document.querySelector('.nightTeamIdentityContext');
-    if (identity) { identity.textContent = 'Night Owls'; identity.classList.remove('hidden'); }
-    return {
-      utilityRadius: utility ? parseFloat(getComputedStyle(utility).borderRadius) : 0,
-      safetyTitleSize: safetyTitle ? parseFloat(getComputedStyle(safetyTitle).fontSize) : 0,
-      identitySize: identity ? parseFloat(getComputedStyle(identity).fontSize) : 0
-    };
-  });
-  expect(chatPolishMetrics.utilityRadius).toBeGreaterThanOrEqual(20);
-  expect(chatPolishMetrics.safetyTitleSize).toBeGreaterThanOrEqual(15);
-  expect(chatPolishMetrics.identitySize).toBeGreaterThanOrEqual(14);
+  const safetyHeight = await page.locator('.chatSafetyNotice').evaluate(el=>el.getBoundingClientRect().height);
+  expect(safetyHeight).toBeLessThanOrEqual(56);
 
   await page.evaluate(() => {
     const chat = document.getElementById('chat');
@@ -407,10 +396,10 @@ test('shared shift nickname editor is concise and patient-safe', async ({ page }
 
 test('notification settings use readable rows and explicit switch states', async ({ page }) => {
   await openShell(page);
+  await page.evaluate(() => { currentUserProfile={display_name:'Review Nurse',email:'review@example.test',user_role:'member'}; window.show('chat'); });
+  await page.locator('.chatNotificationShortcut').click();
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Notifications');
   await page.evaluate(() => {
-    window.show && window.show('chat');
-    const disclosure = document.querySelector('.chatNotificationDisclosure');
-    if (disclosure) disclosure.open = true;
     const settings = document.getElementById('pushPreferenceRows');
     if (settings) settings.classList.remove('hidden');
     const badge = document.getElementById('pushStateBadge');
@@ -421,7 +410,8 @@ test('notification settings use readable rows and explicit switch states', async
     if (state) { state.textContent = 'On'; state.classList.add('on'); }
   });
 
-  await expect(page.locator('.chatNotificationDisclosure')).toHaveAttribute('open', '');
+  await expect(page.locator('.chatNotificationDisclosure')).toHaveCount(0);
+  await expect(page.locator('#accountHomeHub')).toHaveCount(0);
   await expect(page.locator('[data-switch-state-for="pushTeamToggle"]')).toHaveText('On');
   await expect(page.locator('#pushTeamToggle')).toBeChecked();
 
@@ -549,12 +539,9 @@ test('bottom-tab taps change views without staging full application pages', asyn
   await expect(page.locator('#today')).toHaveClass(/hidden/);
   await expect(page.locator('main')).not.toHaveClass(/viewSwipeStage|viewSwipeSettling/);
   await expect(page.locator('body')).not.toHaveClass(/viewTransitioning/);
-  await expect.poll(async () => {
-    const activeIndicator = await page.locator('.tabSlidingIndicator').boundingBox();
-    const changesTab = await page.locator('.bottom button[data-v="changes"]').boundingBox();
-    if (!activeIndicator || !changesTab) return Number.POSITIVE_INFINITY;
-    return Math.abs(activeIndicator.x - changesTab.x);
-  }, { timeout: 1200, intervals: [40, 80, 120, 180] }).toBeLessThan(4);
+  await expect(page.locator('.bottom button[data-v="changes"]')).toHaveClass(/active/);
+  await expect(page.locator('.bottom button[data-v="changes"]')).toHaveAttribute('aria-current','page');
+  await expect(page.locator('.tabSlidingIndicator')).toHaveCount(0);
   await expect(page.locator('#changes')).toBeVisible();
 });
 
@@ -637,35 +624,30 @@ test('dragging across the dock chooses a destination only when the gesture ends'
   const bar = await page.locator('.bottom').boundingBox();
   const nightTab = await page.locator('.bottom button[data-v="today"]').boundingBox();
   const chatTab = await page.locator('.bottom button[data-v="chat"]').boundingBox();
-  const indicatorBefore = await page.locator('.tabSlidingIndicator').boundingBox();
+  const dockBefore = await page.locator('.bottom').boundingBox();
 
   await realTouchSwipe(page,
     { x: nightTab.x + nightTab.width / 2, y: bar.y + bar.height / 2 },
     { x: chatTab.x + chatTab.width / 2, y: bar.y + bar.height / 2 },
     async () => {
-      const indicatorDuring = await page.locator('.tabSlidingIndicator').boundingBox();
-      expect(Math.abs(indicatorDuring.x - indicatorBefore.x)).toBeLessThan(4);
+      expect(await page.locator('.bottom').boundingBox()).toEqual(dockBefore);
+      await expect(page.locator('.bottom button[data-v="today"]')).toHaveClass(/active/);
       await expect(page.locator('#today')).toBeVisible();
     });
 
   await expect(page.locator('#chat')).toBeVisible();
-  await expect.poll(async () => Math.abs((await page.locator('.tabSlidingIndicator').boundingBox()).x - chatTab.x)).toBeLessThan(4);
+  await expect(page.locator('.bottom button[data-v="chat"]')).toHaveClass(/active/);
   await expect(page.locator('.bottom')).not.toHaveAttribute('data-glass-touching');
 });
 
-test('reduced motion keeps the selected lens aligned without a spring', async ({ page }) => {
+test('reduced motion keeps dock selection immediate without a sliding lens', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openShell(page);
-  await expect(page.locator('.tabSlidingIndicator')).toBeVisible();
+  await expect(page.locator('.tabSlidingIndicator')).toHaveCount(0);
   await page.locator('.bottom button[data-v="breaks"]').click();
-  const distance = () => page.evaluate(() => {
-    const indicator = document.querySelector('.tabSlidingIndicator').getBoundingClientRect();
-    const tab = document.querySelector('.bottom button[data-v="breaks"]').getBoundingClientRect();
-    return Math.abs(indicator.left - tab.left);
-  });
-  await page.waitForTimeout(80);
-  expect(await distance()).toBeLessThan(3);
+  await expect(page.locator('.bottom button[data-v="breaks"]')).toHaveClass(/active/);
   await expect(page.locator('#breaks')).toBeVisible();
+  expect(await page.locator('#breaks').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
 });
 
 test('navigation stays usable if the lazy React chunk fails', async ({ page }) => {
@@ -859,7 +841,6 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await openShell(page);
   await page.evaluate(() => {
     document.getElementById('datePick').value = '2026-09-26';
-    document.getElementById('headerLiveText').textContent = 'Live';
     window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: {
       date: '2026-09-26', displayName: 'André Bartolo', jobTitle: 'Anaesthetic Nurse', avatarUrl: '', initial: 'A',
       assignmentLabel: 'Tonight’s assignment', title: 'Pager', detail: 'Labour Ward first part',
@@ -929,7 +910,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   const dock = await page.locator('.bottom').boundingBox();
   const actionDisc = await page.locator('.bottom .quickRudderDisc').boundingBox();
   expect(dock).not.toBeNull();
-  expect(dock.height).toBeLessThanOrEqual(66);
+  expect(dock.height).toBe(68);
   expect(actionDisc).not.toBeNull();
   expect(actionDisc.width).toBeLessThanOrEqual(38);
   expect(actionDisc.height).toBeLessThanOrEqual(38);
@@ -954,14 +935,14 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   }));
   expect(breakDateButtons.every(item => item.width >= 43 && item.height >= 43)).toBe(true);
   const breakSummaryTargets = await page.locator('#breakSummaryRow .breakSummaryItem').evaluateAll(items => items.map(item => item.getBoundingClientRect().height));
-  expect(breakSummaryTargets.every(height => height >= 60)).toBe(true);
+  expect(breakSummaryTargets.every(height => height >= 44)).toBe(true);
   await expect(page.locator('#breakNotesTitle')).toContainText('Labour Ward / Pager');
   await expect(page.locator('#breaks .breakNotesHeading')).toContainText('Additional coverage');
   const breakBoardStyle = await page.locator('#breakList .breakScheduleBoard').evaluate(el => {
     const style = getComputedStyle(el);
     return { background: style.backgroundColor, borderWidth: parseFloat(style.borderTopWidth), gap: parseFloat(style.gap) };
   });
-  expect(breakBoardStyle.borderWidth).toBeGreaterThanOrEqual(1);
+  expect(breakBoardStyle.borderWidth).toBe(0);
   expect(breakBoardStyle.gap).toBe(0);
   await expect(page.locator('#breakList .jumpToMeButton')).toHaveText(/Jump to me/);
   await expect(page.locator('#breakList .coverageRow')).toHaveCount(1);
@@ -1129,22 +1110,26 @@ test('@iphone iPhone PWA shell remains contained across common portrait sizes', 
       expect(geometry.dockHeight).toBeLessThanOrEqual(70);
     }
 
+    await page.evaluate(()=>document.getElementById('accountSheet').showModal());
     const accountSafeArea = await page.evaluate(() => {
       const header = document.querySelector('.accountSheetHeader');
       const scroll = document.querySelector('.accountSheetScroll');
       const headerStyle = header ? getComputedStyle(header) : null;
       const scrollStyle = scroll ? getComputedStyle(scroll) : null;
       return {
-        paddingTop: headerStyle ? parseFloat(headerStyle.paddingTop) : 0,
+        headerTop: header.getBoundingClientRect().top,
+        headerHeight: header.getBoundingClientRect().height,
         paddingLeft: headerStyle ? parseFloat(headerStyle.paddingLeft) : 0,
         paddingRight: headerStyle ? parseFloat(headerStyle.paddingRight) : 0,
         paddingBottom: scrollStyle ? parseFloat(scrollStyle.paddingBottom) : 0
       };
     });
-    expect(accountSafeArea.paddingTop).toBeGreaterThanOrEqual(size.top + 9);
+    expect(accountSafeArea.headerTop).toBeGreaterThanOrEqual(size.top);
+    expect(accountSafeArea.headerHeight).toBeLessThanOrEqual(80);
     expect(accountSafeArea.paddingLeft).toBeGreaterThanOrEqual(16);
     expect(accountSafeArea.paddingRight).toBeGreaterThanOrEqual(16);
-    expect(accountSafeArea.paddingBottom).toBeGreaterThanOrEqual(size.bottom + 25);
+    expect(accountSafeArea.paddingBottom).toBeGreaterThanOrEqual(size.bottom + 24);
+    await page.evaluate(()=>document.getElementById('accountSheet').close());
   }
 });
 
@@ -1213,7 +1198,7 @@ test('Night hero keeps assignment facts readable across Android phone widths', a
     }
     if (width === 360) {
       expect(geometry.factTops[0]).toBe(geometry.factTops[1]);
-      expect(geometry.factTops[2]).toBeGreaterThan(geometry.factTops[0]);
+      expect(geometry.factTops[2]).toBe(geometry.factTops[0]);
     }
   }
 });
@@ -1758,7 +1743,7 @@ test('one quiet glossy scroll bar appears consistently after page headers leave 
   });
   expect(bottomMaterial).toBeTruthy();
   expect(bottomMaterial.backdrop).not.toBe('none');
-  expect(bottomMaterial.alpha).toBeLessThanOrEqual(0.4);
+  expect(bottomMaterial.alpha).toBeGreaterThanOrEqual(0.8);
 });
 
 test('typed Chat overview renders private conversations and registered members', async ({ page }) => {

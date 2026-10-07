@@ -1,10 +1,12 @@
+import { composeOperationalContexts } from './selected-night';
 const formatRosterDate = (value: string) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
   const date = new Date(`${value}T12:00:00`);
   return new Intl.DateTimeFormat('en-GB', {
-    weekday: 'long',
+    weekday: 'short',
     day: 'numeric',
-    month: 'long'
+    month: 'short',
+    year: 'numeric'
   }).format(date);
 };
 
@@ -49,7 +51,7 @@ function enhanceRosterDateControl(control: HTMLElement) {
 
   const sync = () => {
     const supplied = control.getAttribute('data-date-label') || '';
-    const nextLabel = supplied || formatRosterDate(input.value) || 'Choose night';
+    const nextLabel = formatRosterDate(input.value) || supplied || 'Choose night';
     if (control.getAttribute('data-date-label') !== nextLabel) control.setAttribute('data-date-label', nextLabel);
     if (text && text.textContent !== nextLabel) text.textContent = nextLabel;
     if (text) text.setAttribute('aria-label', `Choose roster night, ${nextLabel}`);
@@ -84,24 +86,6 @@ function addClass(selector: string, className: string) {
   document.querySelectorAll<HTMLElement>(selector).forEach((element) => element.classList.add(className));
 }
 
-function consolidateTaskNightContext(screen: 'changes' | 'breaks') {
-  const panel = document.querySelector<HTMLElement>(`#${screen} .nightContextPanel`);
-  const identity = panel?.querySelector<HTMLElement>('.nightTeamIdentityContext');
-  const staffing = panel?.querySelector<HTMLElement>('.nightContextStaffing');
-  const meta = panel?.querySelector<HTMLElement>('.nightContextMetaRow');
-  if (!panel || !identity || !staffing) return;
-
-  let row = panel.querySelector<HTMLElement>(':scope > .appShiftContextRow');
-  if (!row) {
-    row = document.createElement('div');
-    row.className = 'appShiftContextRow';
-    identity.insertAdjacentElement('beforebegin', row);
-    row.append(identity);
-  }
-  if (staffing.parentElement !== row) row.append(staffing);
-  meta?.classList.add('hidden');
-}
-
 function normaliseProductShell() {
   // These classes are the common structural contract used by the final product stylesheet.
   addClass('#today #appHeader, #changes .appScreenHeader, #breaks .appScreenHeader, #chat .appScreenHeader', 'appShellHeader');
@@ -113,8 +97,7 @@ function normaliseProductShell() {
   addClass('.liveStatus, #breakPlanLive, .primaryConnectionLine, .headerLiveChip', 'appLiveStatus');
   addClass('.bottom.reactTabs', 'appDock');
 
-  consolidateTaskNightContext('changes');
-  consolidateTaskNightContext('breaks');
+  composeOperationalContexts();
 
   const chatRosterContext = document.querySelector<HTMLElement>('#chat .chatRosterContext');
   const chatSafety = document.querySelector<HTMLElement>('#chat .chatSafetyNotice');
@@ -134,7 +117,7 @@ function normaliseProductShell() {
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
   normaliseProductShell();
-  document.documentElement.dataset.productShell = '50.8';
+  document.documentElement.dataset.productShell = '51.0';
 }
 
 if (document.readyState === 'loading') {

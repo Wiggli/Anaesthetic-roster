@@ -15,7 +15,7 @@ var pushState={
   busy:false
 };
 
-function pushEl(id){return document.getElementById(id)}
+function pushEl(id){return document.getElementById(id)||(window.accountPresentationElement?window.accountPresentationElement(id):null)}
 function pushClient(){return typeof supa!=='undefined'?supa:null}
 function pushUser(){return typeof currentUser!=='undefined'?currentUser:null}
 function pushProfile(){return typeof currentUserProfile!=='undefined'?currentUserProfile:null}
@@ -37,7 +37,7 @@ function pushSetStatus(text,error){
 function pushSetBusy(busy){
   pushState.busy=!!busy;
   ['pushEnableBtn','pushDisableBtn','pushTeamToggle','pushPrivateToggle','pushMentionToggle','pushRosterToggle','pushAccessRequestToggle'].forEach(function(id){var el=pushEl(id);if(el)el.disabled=!!busy});
-  Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(button){button.disabled=!!busy});
+  Array.prototype.forEach.call((pushEl('pushNotificationCard')||document).querySelectorAll('[data-push-mute]'),function(button){button.disabled=!!busy});
 }
 function pushPromptKey(){return'anaes_push_prompt_v37_25'}
 function pushValueSeenKey(){return'anaes_push_value_seen_v37_94'}
@@ -178,7 +178,7 @@ function pushRender(){
     pushSetSwitchState(roster);
     pushSetSwitchState(access);
     if(muteStatus){var summary=pushMuteSummary();muteStatus.textContent=summary||'Alerts are on';muteStatus.classList.toggle('muted',!!summary)}
-    Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(muteButton){
+    Array.prototype.forEach.call((pushEl('pushNotificationCard')||document).querySelectorAll('[data-push-mute]'),function(muteButton){
       var unmute=muteButton.getAttribute('data-push-mute')==='off';
       muteButton.classList.toggle('hidden',teamMuted?!unmute:unmute);
     });
@@ -369,7 +369,7 @@ function pushBind(){
   var mention=pushEl('pushMentionToggle');if(mention)mention.onchange=function(){pushSavePreference('mentions_enabled',mention.checked)};
   var roster=pushEl('pushRosterToggle');if(roster)roster.onchange=function(){pushSavePreference('roster_enabled',roster.checked)};
   var access=pushEl('pushAccessRequestToggle');if(access)access.onchange=function(){pushSavePreference('access_request_enabled',access.checked)};
-  Array.prototype.forEach.call(document.querySelectorAll('[data-push-mute]'),function(button){button.onclick=function(){pushMuteTeam(button.getAttribute('data-push-mute'))}});
+  Array.prototype.forEach.call((pushEl('pushNotificationCard')||document).querySelectorAll('[data-push-mute]'),function(button){button.onclick=function(){pushMuteTeam(button.getAttribute('data-push-mute'))}});
   if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',function(event){
     if(!event.data)return;
     if(event.data.type==='OPEN_APP_NOTIFICATION')pushOpenNotification(event.data);

@@ -17,6 +17,10 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - `src/domain-logic.ts` and `src/runtime-foundation.ts` are TypeScript source. Their root JavaScript counterparts are generated compatibility files.
 - React/TypeScript regions under `src/` are used for progressively migrated interaction and presentation areas.
 
+## Presentation ownership
+
+Release 51.0 replaces the product override stack with one canonical system in `src/product-unified.css` and dock geometry in `src/rudder-navigation.css`. The selected-night context is shared by Night, Changes and Breaks; Chat uses a compact date/count row and one identity on its team conversation. Account mounts exactly one page in `accountPageOutlet`, retaining inactive control nodes and their listeners. Changes uses a single workflow host for React or its fallback. Domain calculations and the schema-53 backend contract remain unchanged.
+
 ## Development state
 
 Development uses a fast inner loop and a single deterministic release gate. Ordinary iterations use `npm run verify:fast`, while `npm run verify:ci` is the exact routine CI gate for consequential changes and combines the complete deterministic regression suite, TypeScript validation, one Vite build and build-artifact verification.
