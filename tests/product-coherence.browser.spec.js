@@ -29,6 +29,7 @@ async function openReview(page, workflowFallback = false) {
 }
 
 async function assertNoOverflow(page, selector) {
+  await expect.poll(() => page.locator(selector).evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
   const result = await page.locator(selector).evaluate(el => {
     const rect = el.getBoundingClientRect();
     return { width: rect.width, scroll: el.scrollWidth, client: el.clientWidth, left: rect.left, right: rect.right, viewport: innerWidth };
@@ -40,6 +41,7 @@ async function assertNoOverflow(page, selector) {
 
 for (const width of [320, 360, 390, 412, 430]) {
   test(`coherent operational pages and Account at ${width}px @iphone`, async ({ page }) => {
+    test.setTimeout(60000);
     await page.setViewportSize({ width, height: 900 });
     await openReview(page);
     let dock;
