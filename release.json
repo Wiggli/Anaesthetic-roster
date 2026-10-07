@@ -1,12 +1,13 @@
 {
-  "version": "50.5",
+  "version": "50.6",
   "date": "7 October 2026",
-  "title": "Make shift identity the shared app shell",
-  "summary": "Turns the compact branded Night concept into one coherent product system across Night, Changes, Breaks, Chat, Actions, Account and administrator surfaces without changing roster logic.",
+  "title": "Bring the Night hero up to the premium mock-up",
+  "summary": "Refines the 50.5 shared identity shell so the real phone UI carries the scale, depth and hierarchy of the approved premium Night mock-up without changing roster behaviour.",
   "changes": [
-    "Rebuilds the Night opening as one compact branded hero where Mater Dei, Main Operating Theatres, the account control, the customizable shift logo, shift name, motto, selected night and personalised greeting read as one composition instead of stacked competing rows.",
-    "Moves Main Operating Theatres into a compact top-row pill, removes the redundant Your night label, enlarges the shared shift identity and gives the greeting deliberate breathing room while keeping the selected-night date control visible and usable.",
-    "Carries the same institutional and team identity into Changes, Breaks and Chat at a deliberately lower visual intensity, while keeping each screen's workflow, break plan or conversation as the dominant task surface and giving Actions, Account and administrator utilities the restrained version of the same surface language.",
+    "Rebuilds the Night hero presentation around the approved mock-up: larger Mater Dei branding, a compact Main Operating Theatres pill, a stronger integrated shift card, a deeper blue-black atmosphere and a more visible but restrained medical-cross watermark.",
+    "Promotes the customizable shift logo, shift name and motto as the hero focal point with larger proportions, clearer internal hierarchy, a subtle divider and controlled blue illumination instead of several equally weighted stacked cards.",
+    "Reduces the selected-night control into a quieter glass rail and gives the personalised greeting deliberate breathing room below the team identity so the opening composition feels premium rather than cramped.",
+    "Carries the same visual DNA into Changes, Breaks and Chat at lower intensity while keeping Actions, Account, Admin and the bottom dock restrained, task-first and consistent.",
     "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, offline safety, clinical state colours, accessibility states and guarded mutation paths."
   ],
   "update_policy": "normal"
