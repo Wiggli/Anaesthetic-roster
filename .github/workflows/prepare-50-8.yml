@@ -36,7 +36,7 @@ jobs:
         run: python scripts/prepare-50-8.py
       - name: Keep release history compact
         run: >-
-          node -e "const fs=require('fs'); const r={version:'50.8',date:'7 October 2026',title:'Consolidate the operational layout',summary:'Removes duplicate workflow chrome and unifies the compact night context across task screens.',changes:['One visible Changes workflow, a shared compact shift and staffing context, tighter Night and Breaks spacing, with roster behaviour unchanged.'],update_policy:'normal'}; fs.writeFileSync('release.json',JSON.stringify(r,null,2)+'\n');"
+          node -e "const fs=require('fs'); const r={version:'50.8',date:'7 October 2026',title:'Consolidate the operational layout',summary:'Unifies the operational layout with less repetition.',changes:['One visible Changes workflow.','Shared compact shift and staffing context.','Tighter Night and Breaks spacing.'],update_policy:'normal'}; fs.writeFileSync('release.json',JSON.stringify(r,null,2)+'\n');"
       - name: Synchronise release artifacts
         run: node scripts/release.mjs
       - name: Run fast product gate
