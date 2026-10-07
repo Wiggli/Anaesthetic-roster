@@ -15,4 +15,17 @@ assert.doesNotMatch(read('src/clinical-experience.tsx'),/Your break · \{model.f
 assert.match(read('src/clinical-experience.tsx'),/className="timelineEnd"/,'timeline endpoint has its own layout anchor');
 const sync=read('src/legacy-ui/sync.js');
 assert.match(sync,/waitingWorkerIsRedundant\(\)/,'same-version waiting workers remain safely dismissed');
-console.log('Single workflow host, Account outlet, selected-night context and timeline endpoint contracts passed');
+// Exercise the production sign-in/offline-resume shell, rather than bypassing it.
+const vm=require('node:vm');
+const shell=read('src/legacy-ui/foundation.js').match(/function prepareAuthorisedShell\(profile\)\{[\s\S]*?\n\}/)[0];
+for(const user_role of ['member','admin']){
+  const classes=()=>({add(){},remove(){},toggle(){}});
+  const nodes=Object.fromEntries(['authGate','adminSettingsBtn','accountBtn','accountInitial'].map(id=>[id,{classList:classes()}]));
+  const dock={style:{}};
+  const sandbox={byId:id=>nodes[id],document:{body:{classList:classes()},querySelector:()=>dock},syncPrimaryHeaderActions(){}};
+  vm.runInNewContext(shell,sandbox);
+  sandbox.prepareAuthorisedShell({display_name:'Review Nurse',email:'review@example.test',user_role});
+  assert.equal(dock.style.gridTemplateColumns,undefined,'sign-in must leave all five dock columns to the canonical stylesheet');
+  assert.equal(sandbox.currentUserProfile.user_role,user_role);
+}
+console.log('Single workflow host, Account outlet, selected-night context, timeline endpoint and authorised dock contracts passed');

@@ -1,13 +1,12 @@
 {
-  "version": "51.1",
+  "version": "51.2",
   "date": "7 October 2026",
-  "title": "Restore navigation, Actions and the welcome",
-  "summary": "Repairs the Chat dock, Actions layout, onboarding controls and visible welcome animation.",
+  "title": "Keep Chat visible after signing in",
+  "summary": "Fixes the sign-in layout override that hid Chat from the bottom bar.",
   "changes": [
-    "Keeps Night, Changes, Actions, Breaks and Chat visible in both the normal and fallback dock.",
-    "Restores the Actions sheet layout, readable labels and correctly sized icons.",
-    "Separates onboarding progress from Skip and keeps Continue reachable on small phones.",
-    "Plays the personal greeting when Night becomes visible, without restarting during background refreshes."
+    "Restores Chat at the far right of the five-control bottom bar after signing in.",
+    "Preserves the same five controls when opening a saved offline roster.",
+    "Verifies the sign-in setup for members and administrators, plus normal and fallback navigation."
   ],
   "update_policy": "normal"
 }
