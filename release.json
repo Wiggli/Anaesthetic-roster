@@ -1,13 +1,14 @@
 {
-  "version": "50.6",
+  "version": "50.7",
   "date": "7 October 2026",
-  "title": "Bring the Night hero up to the premium mock-up",
-  "summary": "Refines the 50.5 shared identity shell so the real phone UI carries the scale, depth and hierarchy of the approved premium Night mock-up without changing roster behaviour.",
+  "title": "Make the whole app visibly coherent",
+  "summary": "Replaces the accumulated surface-polish generations with one shared shell and makes Night, Changes, Breaks and Chat visibly behave like one product on real phones.",
   "changes": [
-    "Rebuilds the Night hero presentation around the approved mock-up: larger Mater Dei branding, a compact Main Operating Theatres pill, a stronger integrated shift card, a deeper blue-black atmosphere and a more visible but restrained medical-cross watermark.",
-    "Promotes the customizable shift logo, shift name and motto as the hero focal point with larger proportions, clearer internal hierarchy, a subtle divider and controlled blue illumination instead of several equally weighted stacked cards.",
-    "Reduces the selected-night control into a quieter glass rail and gives the personalised greeting deliberate breathing room below the team identity so the opening composition feels premium rather than cramped.",
-    "Carries the same visual DNA into Changes, Breaks and Chat at lower intensity while keeping Actions, Account, Admin and the bottom dock restrained, task-first and consistent.",
+    "Replaces the stacked 50.1, 50.4, 50.5 and 50.6 product-wide override generations in product-unified.css with one canonical spacing, typography, radius, surface, motion and navigation system instead of adding another polish layer.",
+    "Normalises the existing Night, Changes, Breaks and Chat markup into shared shell, institution, title, shift identity, date rail, live-state and dock contracts at runtime while preserving the underlying roster IDs, event listeners and mutation paths.",
+    "Makes the shift identity and selected-night controls use the same proportions and hierarchy across screens, keeps the Night hero as the expanded brand expression, and reduces nested card-on-card presentation on task screens.",
+    "Restructures Chat so the existing staff-coordination safety notice sits beside roster context as a compact safety banner, conversations remain primary, and notification controls become a quieter secondary settings row.",
+    "Tightens Changes into a clearer Staffing to Allocation to Confirm workflow, groups Breaks around personal rest information and the plan, and standardises the fixed bottom dock and short view-transition motion across operational screens.",
     "Preserves roster calculations, staffing rules, First and Second Part semantics, Malta and DST timing, authentication, database writes, offline safety, clinical state colours, accessibility states and guarded mutation paths."
   ],
   "update_policy": "normal"

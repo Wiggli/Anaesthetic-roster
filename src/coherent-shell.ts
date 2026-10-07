@@ -35,8 +35,7 @@ function enhanceRosterDateControl(control: HTMLElement) {
   if (!input) return;
 
   // The legacy date enhancer can run after the modern shell and re-wrap this input.
-  // Always normalise first, even when this control was already enhanced, so the two
-  // generations of date UI can never coexist on Android, iPhone or desktop browsers.
+  // Always normalise first so Android, iPhone and desktop never render two date controls.
   removeLegacyDatePresentation(control, input);
 
   let text = control.querySelector<HTMLElement>(':scope > .rosterDateText');
@@ -51,9 +50,6 @@ function enhanceRosterDateControl(control: HTMLElement) {
   const sync = () => {
     const supplied = control.getAttribute('data-date-label') || '';
     const nextLabel = supplied || formatRosterDate(input.value) || 'Choose night';
-    // Keep a product-owned label on the control as a CSS fallback and for diagnostics.
-    // Only mutate when the value genuinely changes so the global child-list observer
-    // cannot retrigger itself in a startup feedback loop.
     if (control.getAttribute('data-date-label') !== nextLabel) control.setAttribute('data-date-label', nextLabel);
     if (text && text.textContent !== nextLabel) text.textContent = nextLabel;
     if (text) text.setAttribute('aria-label', `Choose roster night, ${nextLabel}`);
@@ -84,9 +80,40 @@ function enhanceRosterDateControl(control: HTMLElement) {
   sync();
 }
 
+function addClass(selector: string, className: string) {
+  document.querySelectorAll<HTMLElement>(selector).forEach((element) => element.classList.add(className));
+}
+
+function normaliseProductShell() {
+  // These classes are the common structural contract used by the final product stylesheet.
+  addClass('#today #appHeader, #changes .appScreenHeader, #breaks .appScreenHeader, #chat .appScreenHeader', 'appShellHeader');
+  addClass('#today .hospitalStrip, #changes .primaryInstitution, #breaks .primaryInstitution, #chat .primaryInstitution', 'appInstitutionRow');
+  addClass('#today .nightSectionIdentity, #changes .primaryScreenTitleRow, #breaks .primaryScreenTitleRow, #chat .primaryScreenTitleRow', 'appTitleBlock');
+  addClass('#today .nightDateShell, #changes .changesDatePanel, #breaks .breaksContextPanel, #chat .chatRosterContext', 'appNightContext');
+  addClass('#today .nightTeamIdentityContext, #changes .nightTeamIdentityContext, #breaks .nightTeamIdentityContext, #chat .chatShiftIdentity', 'appShiftIdentity');
+  addClass('#today .dateNav.rosterDateControl, #changes .dateNav.rosterDateControl, #breaks .dateNav.rosterDateControl', 'appDateRail');
+  addClass('.liveStatus, #breakPlanLive, .primaryConnectionLine, .headerLiveChip', 'appLiveStatus');
+  addClass('.bottom.reactTabs', 'appDock');
+
+  const chatRosterContext = document.querySelector<HTMLElement>('#chat .chatRosterContext');
+  const chatSafety = document.querySelector<HTMLElement>('#chat .chatSafetyNotice');
+  const chatUtility = document.querySelector<HTMLElement>('#chat .chatUtilityGroup');
+
+  // Safety belongs beside chat context, not inside a second large settings card.
+  // Moving the existing node preserves its ID, listeners, semantics and content.
+  if (chatRosterContext && chatSafety) {
+    chatSafety.classList.add('appSafetyBanner');
+    if (chatSafety.previousElementSibling !== chatRosterContext) {
+      chatRosterContext.insertAdjacentElement('afterend', chatSafety);
+    }
+  }
+  if (chatUtility) chatUtility.classList.add('chatSettingsCompact');
+}
+
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
-  document.documentElement.dataset.productShell = '50.4';
+  normaliseProductShell();
+  document.documentElement.dataset.productShell = '50.7';
 }
 
 if (document.readyState === 'loading') {

@@ -1,32 +1,39 @@
-/* 50.1 single design language.
-   This is the final product-wide presentation authority. Earlier presentation layers
-   provide compatibility and component detail; this file owns the visible shell,
-   hierarchy, spacing, shared night context and navigation across the app. */
+/* 50.7 coherent product system.
+   This file is the single final product-wide presentation authority. It deliberately
+   replaces the accumulated 50.1/50.4/50.5/50.6 override generations with one shared
+   shell, one spacing rhythm, one selected-night language and one navigation system. */
 
 :root {
   --liquid-text: var(--liquid-label);
   --unified-content-width: 720px;
-  --unified-gutter: clamp(12px, 3.6vw, 16px);
-  --unified-space-1: 4px;
-  --unified-space-2: 8px;
-  --unified-space-3: 12px;
-  --unified-space-4: 16px;
+  --unified-gutter: clamp(12px, 3.5vw, 16px);
+  --unified-space-1: 6px;
+  --unified-space-2: 10px;
+  --unified-space-3: 14px;
+  --unified-space-4: 18px;
   --unified-space-5: 24px;
-  --unified-radius-sm: 12px;
-  --unified-radius-md: 17px;
-  --unified-radius-lg: 22px;
-  --unified-border: color-mix(in srgb, var(--liquid-separator) 76%, transparent);
+  --unified-radius-control: 14px;
+  --unified-radius-card: 20px;
+  --unified-radius-shell: 26px;
+  --unified-border: color-mix(in srgb, var(--liquid-separator) 74%, transparent);
+  --unified-edge: color-mix(in srgb, var(--liquid-accent) 25%, var(--unified-border));
+  --unified-edge-strong: color-mix(in srgb, var(--liquid-accent) 42%, var(--unified-border));
   --unified-surface: var(--liquid-surface);
-  --unified-soft: color-mix(in srgb, var(--liquid-secondary) 6%, var(--liquid-surface));
-  --unified-soft-strong: color-mix(in srgb, var(--liquid-secondary) 10%, var(--liquid-surface));
+  --unified-soft: color-mix(in srgb, var(--liquid-secondary) 5%, var(--liquid-surface));
+  --unified-soft-strong: color-mix(in srgb, var(--liquid-secondary) 9%, var(--liquid-surface));
   --unified-accent-soft: color-mix(in srgb, var(--liquid-accent) 10%, var(--liquid-surface));
-  --unified-glass: color-mix(in srgb, var(--liquid-surface) 88%, transparent);
+  --unified-glass: color-mix(in srgb, var(--liquid-surface) 89%, transparent);
+  --unified-shell-bg:
+    radial-gradient(circle at 91% 8%, color-mix(in srgb, var(--liquid-accent) 13%, transparent), transparent 33%),
+    linear-gradient(145deg, color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-surface)), var(--unified-surface));
   --unified-fast: 180ms;
-  --unified-base: 240ms;
+  --unified-base: 220ms;
   --unified-ease: cubic-bezier(.2,.8,.2,1);
 }
 
-/* One canvas, one width and one spacing rhythm. */
+/* --------------------------------------------------------------------------
+   Canvas and shared rhythm
+   -------------------------------------------------------------------------- */
 #today,
 #changes,
 #breaks,
@@ -37,74 +44,138 @@
   margin-inline: auto !important;
   padding-inline: max(var(--unified-gutter), var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
 }
+
 #today .panel,
 #changes .panel,
 #breaks .panel,
 #chat .panel { box-shadow: none !important; }
 
+#today > * + *,
+#changes > * + *,
+#breaks > * + *,
+#chat .chatScreen > * + * { margin-top: var(--unified-space-3); }
+
 /* --------------------------------------------------------------------------
-   Shared institution shell
+   One institution/header grammar
    -------------------------------------------------------------------------- */
-#today .nightUnifiedHero {
-  overflow: visible !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+#today .nightUnifiedHero,
+#changes .appScreenHeader,
+#breaks .appScreenHeader,
+#chat .appScreenHeader {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  box-sizing: border-box;
+  border: 1px solid var(--unified-edge) !important;
+  border-radius: var(--unified-radius-shell) !important;
+  background: var(--unified-shell-bg) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.085) !important;
 }
+
+#today .nightUnifiedHero::after,
+#changes .appScreenHeader::after,
+#breaks .appScreenHeader::after,
+#chat .appScreenHeader::after {
+  content: '+';
+  position: absolute;
+  z-index: -1;
+  right: -30px;
+  top: 54px;
+  color: color-mix(in srgb, var(--liquid-accent) 5%, transparent);
+  font-size: 190px;
+  font-weight: 850;
+  line-height: .75;
+  pointer-events: none;
+  transform: rotate(-2deg);
+}
+
 #today #appHeader,
 #changes .appScreenHeader,
 #breaks .appScreenHeader,
 #chat .appScreenHeader {
   box-sizing: border-box;
+}
+
+#today #appHeader {
+  position: relative !important;
+  z-index: 2;
   margin: 0 !important;
-  padding: calc(var(--app-safe-top, 0px) + 7px) 2px 0 !important;
+  padding: 0 !important;
   border: 0 !important;
-  border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
 }
+
+#changes .appScreenHeader,
+#breaks .appScreenHeader,
+#chat .appScreenHeader {
+  margin: 0 0 var(--unified-space-3) !important;
+  padding: calc(var(--app-safe-top, 0px) + 8px) 12px 12px !important;
+}
+
 #today .hospitalStrip,
 #changes .primaryInstitution,
 #breaks .primaryInstitution,
 #chat .primaryInstitution {
   display: flex !important;
-  min-height: 46px !important;
+  min-height: 52px !important;
   align-items: center !important;
+  gap: 10px !important;
   margin: 0 !important;
-  padding: 0 2px 7px !important;
-  border-bottom: 1px solid var(--unified-border) !important;
+  padding: 5px 2px 7px !important;
+  border: 0 !important;
+  background: transparent !important;
 }
+
+#changes .primaryInstitutionBrand,
+#breaks .primaryInstitutionBrand,
+#chat .primaryInstitutionBrand {
+  display: flex !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  align-items: center !important;
+  gap: 9px !important;
+}
+
 #today .hospitalStrip img,
 #changes .primaryInstitutionBrand img,
 #breaks .primaryInstitutionBrand img,
 #chat .primaryInstitutionBrand img {
   width: auto !important;
-  max-width: 112px !important;
-  max-height: 24px !important;
+  max-width: 118px !important;
+  max-height: 28px !important;
   object-fit: contain !important;
 }
-#today .hospitalStrip span,
+
+#today .hospitalStrip > span,
 #changes .primaryInstitutionBrand > span,
 #breaks .primaryInstitutionBrand > span,
 #chat .primaryInstitutionBrand > span {
   overflow: hidden;
-  max-width: min(58vw, 300px);
-  color: var(--liquid-secondary) !important;
-  font-size: 10px !important;
-  font-weight: 720 !important;
-  line-height: 1.15 !important;
-  letter-spacing: .035em !important;
+  display: inline-flex !important;
+  width: auto !important;
+  max-width: 174px !important;
+  min-height: 28px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: auto !important;
+  padding: 4px 10px !important;
+  border: 1px solid color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-surface)) !important;
+  color: var(--liquid-text) !important;
+  font-size: 8.7px !important;
+  font-weight: 760 !important;
+  line-height: 1.05 !important;
+  letter-spacing: .025em !important;
+  text-align: center;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
+
+#today .hospitalStrip { padding-right: 52px !important; }
+#today .hospitalStrip > span { margin-left: auto !important; }
 #today .head { min-height: 0 !important; padding: 0 !important; }
 #today .headerIdentity,
 #today .headerBrand,
@@ -116,22 +187,24 @@
   position: absolute !important;
   z-index: 4;
   top: calc(var(--app-safe-top, 0px) + 10px) !important;
-  right: 2px !important;
+  right: 3px !important;
 }
+
 #today .accountBtn,
 #changes .primaryHeaderAccount,
 #breaks .primaryHeaderAccount,
 #chat .primaryHeaderAccount {
-  width: 38px !important;
-  min-width: 38px !important;
-  height: 38px !important;
-  min-height: 38px !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
   padding: 0 !important;
-  border: 1px solid var(--unified-border) !important;
+  border: 1px solid var(--unified-edge) !important;
   border-radius: 50% !important;
-  background: var(--unified-soft-strong) !important;
-  box-shadow: none !important;
+  background: color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-soft-strong)) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent) !important;
 }
+
 #today .accountAvatar,
 #changes .primaryHeaderAccountAvatar,
 #breaks .primaryHeaderAccountAvatar,
@@ -141,6 +214,7 @@
   border-radius: inherit !important;
   object-fit: cover !important;
 }
+
 #today .accountInitial,
 #changes .primaryHeaderAccountInitial,
 #breaks .primaryHeaderAccountInitial,
@@ -148,217 +222,245 @@
   font-size: 11px !important;
   font-weight: 800 !important;
 }
+
 #changes .primaryHeaderAdmin,
 #breaks .primaryHeaderAdmin,
 #chat .primaryHeaderAdmin,
 #changes .screenInfoButton,
 #breaks .screenInfoButton,
 #chat .chatHeaderCompose {
-  width: 38px !important;
-  min-width: 38px !important;
-  height: 38px !important;
-  min-height: 38px !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  border: 1px solid var(--unified-border) !important;
   border-radius: 13px !important;
+  background: color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface)) !important;
   box-shadow: none !important;
 }
 
-/* One title system. Night's greeting is its title. */
-#today .nightSectionIdentity {
-  margin: 0 !important;
-  padding: 14px 2px 10px !important;
-}
-#today .nightWelcomeEyebrow {
-  margin: 0 0 4px !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 10px !important;
-  font-weight: 760 !important;
-  line-height: 1.2 !important;
-  letter-spacing: .06em !important;
-  text-transform: uppercase !important;
-}
-#today .nightUnifiedHero .nightSectionIdentity h1,
-#changes .primaryScreenTitleRow h1,
-#breaks .primaryScreenTitleRow h1,
-#chat .primaryScreenTitleRow h1 {
-  margin: 0 !important;
-  color: var(--liquid-text) !important;
-  font-size: clamp(29px, 7.4vw, 34px) !important;
-  font-weight: 820 !important;
-  line-height: 1.01 !important;
-  letter-spacing: -.045em !important;
-}
-#today #nightWelcomeSubtitle { display: none !important; }
+/* One title hierarchy. */
 #changes .primaryScreenTitleRow,
 #breaks .primaryScreenTitleRow,
 #chat .primaryScreenTitleRow {
   min-height: 0 !important;
   align-items: center !important;
   margin: 0 !important;
-  padding: 14px 2px 10px !important;
+  padding: 8px 2px 2px !important;
 }
+
 #changes .screenEyebrow,
 #breaks .screenEyebrow,
 #chat .screenEyebrow { display: none !important; }
+
+#today .nightUnifiedHero .nightSectionIdentity h1,
+#changes .primaryScreenTitleRow h1,
+#breaks .primaryScreenTitleRow h1,
+#chat .primaryScreenTitleRow h1 {
+  margin: 0 !important;
+  color: var(--liquid-text) !important;
+  font-size: clamp(29px, 7.5vw, 35px) !important;
+  font-weight: 830 !important;
+  line-height: 1 !important;
+  letter-spacing: -.045em !important;
+}
+
 #changes .primaryScreenTitleRow p,
 #breaks .primaryScreenTitleRow p,
 #chat .primaryScreenTitleRow p {
   margin: 5px 0 0 !important;
   color: var(--liquid-secondary) !important;
   font-size: 12px !important;
-  font-weight: 540 !important;
-  line-height: 1.3 !important;
+  font-weight: 560 !important;
+  line-height: 1.25 !important;
 }
 
 /* --------------------------------------------------------------------------
-   One selected-night component across Night, Changes and Breaks
+   Night: one branded hero, then the nurse's allocation
    -------------------------------------------------------------------------- */
-#today .nightDateShell,
-#changes .changesDatePanel,
-#breaks .breaksContextPanel {
-  box-sizing: border-box;
-  margin: 0 0 12px !important;
-  padding: 8px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-lg) !important;
-  background: var(--unified-soft-strong) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,.045) !important;
-}
-#today .nightDateShell > .grid2 { display: block !important; margin: 0 !important; }
-#today .nightDateContext { display: none !important; }
-#today .staffingCount { display: none !important; }
-#changes .nightContextMetaRow,
-#breaks .nightContextMetaRow {
+#today .nightUnifiedHero {
   display: flex !important;
-  min-height: 26px !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin: 0 2px 4px !important;
-  padding: 0 !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  margin: 0 0 var(--unified-space-3) !important;
+  padding: calc(var(--app-safe-top, 0px) + 2px) 11px 13px !important;
+  border-color: var(--unified-edge-strong) !important;
+  background:
+    radial-gradient(circle at 88% 5%, color-mix(in srgb, var(--liquid-accent) 18%, transparent), transparent 30%),
+    radial-gradient(circle at 9% 48%, color-mix(in srgb, var(--liquid-accent) 7%, transparent), transparent 38%),
+    linear-gradient(145deg, color-mix(in srgb, var(--liquid-accent) 9%, var(--unified-surface)), var(--unified-surface) 60%, color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface))) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,.14) !important;
 }
-#changes .nightContextMetaRow h2,
-#breaks .nightContextMetaRow h2 {
-  margin: 0 !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 9.5px !important;
-  font-weight: 760 !important;
-  line-height: 1.2 !important;
-  letter-spacing: .055em !important;
-  text-transform: uppercase !important;
-}
-#changes .nightContextStaffing,
-#breaks .nightContextStaffing {
-  display: inline-flex !important;
-  width: auto !important;
-  min-width: 0 !important;
-  min-height: 24px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  padding: 3px 9px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 999px !important;
-  background: var(--unified-soft) !important;
-  box-shadow: none !important;
-}
-#changes .nightContextStaffing span,
-#changes .nightContextStaffing small,
-#breaks .nightContextStaffing span,
-#breaks .nightContextStaffing small { display: none !important; }
-#changes .nightContextStaffing strong,
-#breaks .nightContextStaffing strong {
-  color: var(--liquid-text) !important;
-  font-size: 11.5px !important;
-  font-weight: 760 !important;
-  line-height: 1 !important;
-  white-space: nowrap;
-}
-#today .nightDateLabel,
-#changes .nightContextDateLabel,
-#breaks .nightContextDateLabel {
-  display: block !important;
-  min-width: 0 !important;
-  margin: 0 !important;
+
+#today #appHeader { order: 1; }
+#today .nightDateShell { order: 2; }
+#today .nightSectionIdentity { order: 3; }
+
+#today .nightDateShell {
+  box-sizing: border-box;
+  margin: 3px 0 0 !important;
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: transparent !important;
-  font-size: 0 !important;
-}
-.nightTeamIdentityContext,
-#today .nightTeamIdentityContext,
-#changes .nightTeamIdentityContext,
-#breaks .nightTeamIdentityContext {
-  box-sizing: border-box;
-  min-width: 0 !important;
-  min-height: 54px !important;
-  grid-template-columns: 42px minmax(0, 1fr) !important;
-  gap: 10px !important;
-  margin: 0 0 6px !important;
-  padding: 5px 6px !important;
-  border: 0 !important;
-  border-radius: 13px !important;
-  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 5%, transparent) !important;
   box-shadow: none !important;
 }
-.nightTeamIdentityContext .shiftIdentityMark {
-  width: 42px !important;
-  min-width: 42px !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  border-radius: 13px !important;
+#today .nightDateShell > .grid2 { display: block !important; margin: 0 !important; }
+#today .nightDateContext,
+#today .staffingCount { display: none !important; }
+#today .nightDateLabel { display: block !important; margin: 0 !important; padding: 0 !important; color: transparent !important; font-size: 0 !important; }
+
+/* --------------------------------------------------------------------------
+   One shift identity component, expanded on Night and compact everywhere else
+   -------------------------------------------------------------------------- */
+.nightTeamIdentityContext,
+.appShiftIdentity {
+  box-sizing: border-box;
+  min-width: 0 !important;
+  align-items: center !important;
 }
-.nightTeamIdentityContext .shiftIdentityCopy { min-width: 0 !important; }
-.nightTeamIdentityContext .shiftIdentityCopy strong {
+
+#today .nightTeamIdentityContext {
+  position: relative !important;
+  min-height: 94px !important;
+  grid-template-columns: 70px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  margin: 0 1px 9px !important;
+  padding: 10px 40px 10px 10px !important;
+  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 42%, var(--unified-border)) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 11%, var(--unified-surface)), color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface))) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent), 0 8px 22px color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 8%, transparent) !important;
+}
+#today .nightTeamIdentityContext::after {
+  content: '›';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  color: color-mix(in srgb, var(--liquid-accent) 42%, var(--liquid-secondary));
+  font-size: 30px;
+  font-weight: 420;
+  transform: translateY(-53%);
+}
+#today .nightTeamIdentityContext .shiftIdentityMark {
+  width: 70px !important;
+  min-width: 70px !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  border-radius: 19px !important;
+  box-shadow: 0 7px 19px rgba(0,0,0,.18) !important;
+}
+#today .nightTeamIdentityContext .shiftIdentityCopy {
+  min-width: 0 !important;
+  padding-left: 12px !important;
+  border-left: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 22%, var(--unified-border));
+}
+#today .nightTeamIdentityContext .shiftIdentityCopy strong {
   overflow: hidden;
   display: block;
   color: var(--liquid-text) !important;
-  font-size: 17px !important;
-  font-weight: 800 !important;
-  line-height: 1.08 !important;
-  letter-spacing: -.018em !important;
+  font-size: clamp(23px, 6.6vw, 29px) !important;
+  font-weight: 840 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.038em !important;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nightTeamIdentityContext .shiftIdentityCopy small {
-  overflow: hidden;
-  display: block;
-  margin-top: 2px !important;
+#today .nightTeamIdentityContext .shiftIdentityCopy small {
+  display: -webkit-box !important;
+  margin-top: 5px !important;
+  overflow: hidden !important;
   color: var(--liquid-secondary) !important;
-  font-size: 10px !important;
-  line-height: 1.15 !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 10.8px !important;
+  font-weight: 570 !important;
+  line-height: 1.24 !important;
+  white-space: normal !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-/* Visible date text is owned by our product, never by the platform's segmented date renderer. */
+#changes .nightTeamIdentityContext,
+#breaks .nightTeamIdentityContext,
+#chat .chatShiftIdentity {
+  min-height: 64px !important;
+  grid-template-columns: 50px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin: 0 0 8px !important;
+  padding: 6px 9px !important;
+  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 22%, var(--unified-border)) !important;
+  border-radius: 17px !important;
+  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 5%, var(--unified-surface)) !important;
+  box-shadow: none !important;
+}
+#changes .nightTeamIdentityContext .shiftIdentityMark,
+#breaks .nightTeamIdentityContext .shiftIdentityMark,
+#chat .chatShiftIdentity .shiftIdentityMark {
+  width: 50px !important;
+  min-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  border-radius: 14px !important;
+}
+#changes .nightTeamIdentityContext .shiftIdentityCopy,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy,
+#chat .chatShiftIdentity .shiftIdentityCopy { min-width: 0 !important; }
+#changes .nightTeamIdentityContext .shiftIdentityCopy strong,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy strong,
+#chat .chatShiftIdentity .shiftIdentityCopy strong {
+  overflow: hidden;
+  display: block;
+  color: var(--liquid-text) !important;
+  font-size: 18.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.02em !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#changes .nightTeamIdentityContext .shiftIdentityCopy small,
+#breaks .nightTeamIdentityContext .shiftIdentityCopy small,
+#chat .chatShiftIdentity .shiftIdentityCopy small {
+  overflow: hidden;
+  display: block;
+  margin-top: 3px !important;
+  color: var(--liquid-secondary) !important;
+  font-size: 10px !important;
+  line-height: 1.18 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap !important;
+}
+
+/* --------------------------------------------------------------------------
+   One date rail
+   -------------------------------------------------------------------------- */
 #today .dateNav.rosterDateControl,
 #changes .nightContextPanel .dateNav.rosterDateControl,
 #breaks .nightContextPanel .dateNav.rosterDateControl {
   position: relative !important;
   display: grid !important;
-  grid-template-columns: 38px minmax(0, 1fr) 38px !important;
+  grid-template-columns: 40px minmax(0, 1fr) 40px !important;
   gap: 4px !important;
   width: 100% !important;
   min-width: 0 !important;
-  min-height: 46px !important;
+  min-height: 44px !important;
   align-items: center !important;
   margin: 0 !important;
   padding: 2px !important;
   border: 1px solid var(--unified-border) !important;
-  border-radius: 13px !important;
-  background: var(--unified-soft) !important;
-  box-shadow: none !important;
+  border-radius: 14px !important;
+  background: color-mix(in srgb, var(--liquid-secondary) 4%, var(--unified-surface)) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 7%, transparent) !important;
 }
+#today .dateNav.rosterDateControl { margin-inline: 3px !important; width: calc(100% - 6px) !important; }
+
 #today .dateNav.rosterDateControl::before,
 #changes .nightContextPanel .dateNav.rosterDateControl::before,
 #breaks .nightContextPanel .dateNav.rosterDateControl::before {
   content: attr(data-date-label);
   grid-column: 2;
   grid-row: 1;
-  align-self: center;
   overflow: hidden;
   color: var(--liquid-text);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 760;
   line-height: 1.1;
   letter-spacing: -.015em;
@@ -384,7 +486,7 @@
   color: var(--liquid-label) !important;
   -webkit-text-fill-color: var(--liquid-label) !important;
   font-size: 13.5px !important;
-  font-weight: 780 !important;
+  font-weight: 770 !important;
   line-height: 1.1 !important;
   letter-spacing: -.018em !important;
   text-align: center;
@@ -397,8 +499,8 @@
 #changes .nightContextPanel .dateNav.rosterDateControl button,
 #breaks .nightContextPanel .dateNav.rosterDateControl button {
   z-index: 3;
-  width: 38px !important;
-  min-width: 38px !important;
+  width: 40px !important;
+  min-width: 40px !important;
   height: 38px !important;
   min-height: 38px !important;
   margin: 0 !important;
@@ -449,6 +551,7 @@
 #today .dateNav.rosterDateControl input[type="date"]::-webkit-calendar-picker-indicator,
 #changes .nightContextPanel .dateNav.rosterDateControl input[type="date"]::-webkit-calendar-picker-indicator,
 #breaks .nightContextPanel .dateNav.rosterDateControl input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0 !important; }
+
 .dateResetBtn {
   display: block;
   width: 100%;
@@ -465,26 +568,109 @@
   white-space: nowrap !important;
 }
 
+/* Greeting belongs inside the Night hero but no longer consumes a second hero layer. */
+#today .nightSectionIdentity {
+  margin: 0 !important;
+  padding: 15px 6px 3px !important;
+}
+#today .nightWelcomeEyebrow,
+#today #nightWelcomeSubtitle { display: none !important; }
+#today .nightUnifiedHero .nightSectionIdentity h1 {
+  max-width: 100% !important;
+  font-size: clamp(30px, 8.5vw, 38px) !important;
+  line-height: 1 !important;
+}
+
 /* --------------------------------------------------------------------------
-   Night: allocation is the dominant surface
+   Selected-night context on task screens
    -------------------------------------------------------------------------- */
+#changes .changesDatePanel,
+#breaks .breaksContextPanel,
+#chat .chatRosterContext {
+  box-sizing: border-box;
+  margin: 0 0 var(--unified-space-3) !important;
+  padding: 10px !important;
+  border: 1px solid var(--unified-edge) !important;
+  border-radius: var(--unified-radius-card) !important;
+  background: color-mix(in srgb, var(--liquid-accent) 3%, var(--unified-surface)) !important;
+  box-shadow: 0 7px 20px rgba(0,0,0,.045) !important;
+}
+#changes .nightContextMetaRow,
+#breaks .nightContextMetaRow {
+  display: flex !important;
+  min-height: 26px !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  margin: 0 1px 5px !important;
+  padding: 0 !important;
+}
+#changes .nightContextMetaRow h2,
+#breaks .nightContextMetaRow h2 { display: none !important; }
+#changes .nightContextStaffing,
+#breaks .nightContextStaffing {
+  display: inline-flex !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 26px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 4px 9px !important;
+  border: 1px solid var(--unified-border) !important;
+  border-radius: 999px !important;
+  background: var(--unified-soft) !important;
+  box-shadow: none !important;
+}
+#changes .nightContextStaffing span,
+#changes .nightContextStaffing small,
+#breaks .nightContextStaffing span,
+#breaks .nightContextStaffing small { display: none !important; }
+#changes .nightContextStaffing strong,
+#breaks .nightContextStaffing strong {
+  color: var(--liquid-text) !important;
+  font-size: 11.5px !important;
+  font-weight: 760 !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+#changes .nightContextDateLabel,
+#breaks .nightContextDateLabel {
+  display: block !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Night operational content
+   -------------------------------------------------------------------------- */
+#today .nightOverviewPanel {
+  margin-top: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
 #today .nightContextCapsule,
 #today .nightSignalState { display: none !important; }
 #today .nightContextLine {
-  min-height: 32px !important;
+  min-height: 34px !important;
   justify-content: flex-end !important;
-  margin: 0 0 7px !important;
+  margin: 0 0 10px !important;
   padding: 0 1px !important;
 }
 #today .nightContextLine button {
-  min-height: 31px !important;
-  padding: 4px 11px !important;
+  min-height: 32px !important;
+  padding: 4px 12px !important;
   border-radius: 999px !important;
   font-size: 10.5px !important;
 }
 #today .personalNight { margin-top: 0 !important; }
 #today #personalNightHeading {
-  margin: 0 2px 6px !important;
+  margin: 0 2px 7px !important;
   color: var(--liquid-secondary) !important;
   font-size: 10px !important;
   font-weight: 760 !important;
@@ -493,22 +679,26 @@
 }
 #today #personalNightCard > .personalHeroSurface {
   padding: 15px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 14%, var(--unified-border)) !important;
-  border-radius: var(--unified-radius-lg) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
+  border: 1px solid color-mix(in srgb, var(--liquid-accent) 18%, var(--unified-border)) !important;
+  border-radius: 26px !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.13) !important;
 }
-#today .personalAssignmentHeroCompact { min-height: 62px !important; margin-bottom: 8px !important; }
+#today .personalAssignmentHeroCompact { min-height: 62px !important; margin-bottom: 9px !important; }
 #today .personalRoleIcon { width: 48px !important; min-width: 48px !important; height: 48px !important; min-height: 48px !important; border-radius: 14px !important; }
-#today .personalRoleCopy b { font-size: clamp(23px, 6vw, 27px) !important; line-height: 1.03 !important; }
+#today .personalRoleCopy b { font-size: clamp(23px, 6vw, 28px) !important; line-height: 1.03 !important; }
 #today .personalHeroFactGrid { gap: 0 !important; }
-#today .personalHeroFact { min-height: 88px !important; padding: 11px !important; }
-#today .teamOverviewGroup { margin-top: 12px !important; }
+#today .personalHeroFact { min-height: 84px !important; padding: 11px !important; }
+#today .teamOverviewGroup { margin-top: var(--unified-space-3) !important; }
 #today .nightSignalPrimary,
 #today .nightTeamDetails,
-#today .recentActivityPanel { border-radius: var(--unified-radius-md) !important; box-shadow: none !important; }
+#today .recentActivityPanel {
+  border: 1px solid var(--unified-border) !important;
+  border-radius: var(--unified-radius-card) !important;
+  box-shadow: none !important;
+}
 
 /* --------------------------------------------------------------------------
-   Changes: same shell, task-first workflow
+   Changes: one clear workflow, no card-on-card competition
    -------------------------------------------------------------------------- */
 #changes .changePanel {
   margin-top: 0 !important;
@@ -516,116 +706,305 @@
   border: 0 !important;
   background: transparent !important;
 }
-#changes .ctop { margin: 4px 0 12px !important; padding: 0 2px !important; }
-#changes .ctop h2 { font-size: 21px !important; letter-spacing: -.025em !important; }
+#changes .ctop {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin: 2px 0 12px !important;
+  padding: 0 2px !important;
+}
+#changes .ctop h2 {
+  margin: 0 !important;
+  font-size: 21px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.025em !important;
+}
+#changes .ctop .time {
+  max-width: 360px;
+  margin-top: 3px !important;
+  color: var(--liquid-secondary) !important;
+  font-size: 10.5px !important;
+  line-height: 1.25 !important;
+}
+#changes .liveStatus {
+  flex: 0 0 auto;
+  min-height: 28px !important;
+  padding: 4px 9px !important;
+  border-radius: 999px !important;
+  background: var(--unified-soft) !important;
+}
 #changes .workflowSteps,
 #changes .changesWorkflowTabs {
-  margin: 0 0 16px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  gap: 3px !important;
+  margin: 0 0 12px !important;
   padding: 4px !important;
   border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-md) !important;
+  border-radius: 17px !important;
   background: var(--unified-soft) !important;
   box-shadow: none !important;
 }
 #changes .workflowSteps button,
 #changes .changesWorkflowTabs button {
-  min-height: 50px !important;
-  border-radius: 12px !important;
+  min-width: 0 !important;
+  min-height: 52px !important;
+  padding: 6px 4px !important;
+  border: 0 !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
+#changes .workflowSteps button.active,
+#changes .changesWorkflowTabs button.active,
+#changes .changesWorkflowTabs button[aria-selected="true"] {
+  background: var(--unified-accent-soft) !important;
+  color: var(--liquid-accent-strong) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
+}
+#changes .changesWorkflowTabs button small { display: none !important; }
+#changes .changesWorkflowState,
 #changes .workflowGuidance {
   margin: 0 0 12px !important;
-  padding: 12px !important;
+  padding: 10px 12px !important;
   border: 0 !important;
-  border-radius: var(--unified-radius-md) !important;
+  border-radius: 14px !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 #changes .staffingSection {
   margin: 0 !important;
-  padding: 14px !important;
+  padding: 15px !important;
   border: 1px solid var(--unified-border) !important;
   border-radius: 0 !important;
   background: var(--unified-surface) !important;
   box-shadow: none !important;
 }
-#changes .absenceSection { border-radius: var(--unified-radius-lg) var(--unified-radius-lg) 0 0 !important; }
-#changes .overtimeSection { border-top: 0 !important; border-radius: 0 0 var(--unified-radius-lg) var(--unified-radius-lg) !important; }
-#changes .continueWorkflowBtn { margin-top: 12px !important; border-radius: 14px !important; }
-#changes .activityPanel,
-#changes .changesActivityPanel { border-radius: var(--unified-radius-md) !important; box-shadow: none !important; }
-
-/* --------------------------------------------------------------------------
-   Breaks: personal summary first, plan second
-   -------------------------------------------------------------------------- */
-#breaks .personalBreakSummary {
-  margin: 0 0 12px !important;
-  padding: 14px !important;
+#changes .absenceSection { border-radius: var(--unified-radius-card) var(--unified-radius-card) 0 0 !important; }
+#changes .overtimeSection { border-top: 0 !important; border-radius: 0 0 var(--unified-radius-card) var(--unified-radius-card) !important; }
+#changes .stepHeader { margin-bottom: 10px !important; }
+#changes .stepHeader > span {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 9px !important;
+  background: var(--unified-accent-soft) !important;
+  color: var(--liquid-accent-strong) !important;
+}
+#changes .changeList,
+#changes .overtimeList { border-radius: 14px !important; }
+#changes .continueWorkflowBtn {
+  margin-top: 12px !important;
+  min-height: 46px !important;
+  border-radius: var(--unified-radius-control) !important;
+}
+#changes .historyBox {
+  margin-top: 14px !important;
   border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-lg) !important;
+  border-radius: 17px !important;
   background: var(--unified-surface) !important;
   box-shadow: none !important;
+}
+#changes .historyBox > summary { min-height: 60px !important; padding: 10px 12px !important; }
+
+/* --------------------------------------------------------------------------
+   Breaks: context first, personal break second, grouped plan third
+   -------------------------------------------------------------------------- */
+#breaks .breaksContextPanel {
+  margin-top: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#breaks .nightContextMetaRow {
+  margin: 0 0 5px !important;
+  padding-inline: 1px !important;
+}
+#breaks .nightTeamIdentityContext {
+  margin-bottom: 7px !important;
+  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 5%, var(--unified-surface)) !important;
+}
+#breaks .nightContextDateLabel {
+  margin-bottom: 12px !important;
+}
+#breaks .personalBreakSummary {
+  margin: 0 0 12px !important;
+  padding: 15px !important;
+  border: 1px solid var(--unified-edge) !important;
+  border-radius: var(--unified-radius-card) !important;
+  background: var(--unified-surface) !important;
+  box-shadow: 0 7px 20px rgba(0,0,0,.04) !important;
 }
 #breaks .breakSummaryRow {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0,1fr)) !important;
   gap: 0 !important;
-  margin-top: 12px !important;
-  border-top: 1px solid var(--unified-border) !important;
+  margin: 0 0 13px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--unified-border) !important;
+  border-radius: 16px !important;
+  background: var(--unified-surface) !important;
 }
-#breaks .breakSummaryItem { min-width: 0 !important; padding: 10px 8px 0 !important; text-align: center !important; }
-#breaks .breakScheduleBoard { border: 1px solid var(--unified-border) !important; border-radius: var(--unified-radius-lg) !important; box-shadow: none !important; }
-#breaks .breakNurseRow { min-height: 54px !important; }
+#breaks .breakSummaryItem {
+  min-width: 0 !important;
+  min-height: 54px !important;
+  padding: 8px 6px !important;
+  border-right: 1px solid var(--unified-border) !important;
+  text-align: center !important;
+}
+#breaks .breakSummaryItem:last-child { border-right: 0 !important; }
+#breaks .breakPlanTitle {
+  margin: 0 2px 8px !important;
+  align-items: center !important;
+}
+#breaks .breakScheduleBoard {
+  overflow: hidden;
+  border: 1px solid var(--unified-edge) !important;
+  border-radius: var(--unified-radius-card) !important;
+  background: var(--unified-surface) !important;
+  box-shadow: none !important;
+}
+#breaks .breakNurseRow { min-height: 55px !important; }
 #breaks .breakNurseRow.isMe,
-#breaks .breakNurseRow.me { background: var(--unified-accent-soft) !important; }
+#breaks .breakNurseRow.me {
+  background: var(--unified-accent-soft) !important;
+  box-shadow: inset 3px 0 0 var(--liquid-accent-strong) !important;
+}
 
 /* --------------------------------------------------------------------------
-   Chat: conversation first, safety/settings deliberately quieter
+   Chat: context, safety, conversations, then settings
    -------------------------------------------------------------------------- */
 #chat .chatRosterContext {
-  margin: 0 0 10px !important;
-  padding: 10px 12px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-md) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) auto !important;
+  gap: 7px 9px !important;
+  align-items: center !important;
+  margin-bottom: 8px !important;
+  padding: 9px !important;
 }
-#chat .chatInboxTeamRow {
-  min-height: 94px !important;
-  margin: 0 0 18px !important;
-  padding: 12px 14px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 18%, var(--unified-border)) !important;
-  border-radius: var(--unified-radius-lg) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-surface)) !important;
-  box-shadow: none !important;
+#chat .chatShiftIdentity { grid-column: 1 / -1; margin: 0 !important; }
+#chat .chatRosterContextCopy {
+  min-width: 0 !important;
+  padding: 2px 4px 3px !important;
 }
-#chat .chatConversationList {
-  margin: 0 0 18px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-lg) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
+#chat .chatRosterContextCopy > span {
+  color: var(--liquid-secondary) !important;
+  font-size: 9.5px !important;
+  font-weight: 760 !important;
+  letter-spacing: .05em !important;
+  text-transform: uppercase;
 }
-#chat .chatConversationRow { min-height: 76px !important; padding: 12px !important; }
-#chat .chatEssentials,
-#chat .chatSafetyPanel,
-#chat .chatSettingsPanel {
-  opacity: .82;
+#chat .chatRosterContextCopy strong { font-size: 15px !important; }
+#chat .chatRosterContextCopy small { color: var(--liquid-secondary) !important; }
+#chat .chatShiftNameButton {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 !important;
   border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-md) !important;
+  border-radius: 13px !important;
   background: var(--unified-soft) !important;
   box-shadow: none !important;
 }
+#chat .chatShiftNameButton span { display: none !important; }
+
+#chat .appSafetyBanner {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 52px !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 0 14px !important;
+  padding: 9px 12px !important;
+  border: 1px solid color-mix(in srgb, var(--liquid-warning, #b7791f) 18%, var(--unified-border)) !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--liquid-warning, #b7791f) 5%, var(--unified-surface)) !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+#chat .appSafetyBanner svg { width: 22px !important; height: 22px !important; flex: 0 0 22px; }
+#chat .appSafetyBanner span { min-width: 0; }
+#chat .appSafetyBanner b { font-size: 12px !important; }
+#chat .appSafetyBanner small {
+  overflow: hidden;
+  display: block;
+  margin-top: 1px !important;
+  color: var(--liquid-secondary) !important;
+  font-size: 9.7px !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#chat .chatWorkspace { margin-top: 0 !important; }
+#chat .chatInboxTeamRow {
+  min-height: 92px !important;
+  margin: 0 0 18px !important;
+  padding: 12px 14px !important;
+  border: 1px solid var(--unified-edge) !important;
+  border-radius: var(--unified-radius-card) !important;
+  background: color-mix(in srgb, var(--liquid-accent) 6%, var(--unified-surface)) !important;
+  box-shadow: 0 7px 20px rgba(0,0,0,.045) !important;
+}
+#chat .chatInboxSectionLabel {
+  margin: 0 4px 8px !important;
+  color: var(--liquid-secondary) !important;
+}
+#chat .chatConversationList {
+  margin: 0 0 14px !important;
+  overflow: hidden;
+  border: 1px solid var(--unified-border) !important;
+  border-radius: var(--unified-radius-card) !important;
+  background: var(--unified-surface) !important;
+  box-shadow: none !important;
+}
+#chat .chatConversationRow { min-height: 74px !important; padding: 11px 12px !important; }
+
+#chat .chatSettingsCompact {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#chat .chatSettingsCompact > .chatUtilityHeading { display: none !important; }
+#chat .chatNotificationDisclosure {
+  margin: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--unified-border) !important;
+  border-radius: 17px !important;
+  background: var(--unified-surface) !important;
+  box-shadow: none !important;
+}
+#chat .chatNotificationDisclosure > summary {
+  min-height: 58px !important;
+  padding: 9px 12px !important;
+}
+#chat .chatNotificationCard {
+  border-top: 1px solid var(--unified-border) !important;
+  background: var(--unified-soft) !important;
+}
 
 /* --------------------------------------------------------------------------
-   Actions, Account and status language
+   Actions, Account, Admin and status language
    -------------------------------------------------------------------------- */
 .quickActionsExperience { gap: var(--unified-space-3) !important; }
 .quickActionsContextBar,
 .quickPrimaryAction,
 .quickReviewAction,
-.quickCompactAction {
+.quickCompactAction,
+.personalisationGroup,
+.accountGroup,
+#admin .panel,
+#admin .adminPanel,
+#admin .adminGroup,
+#admin .historyItem,
+#admin .contentSurface {
   border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-lg) !important;
+  border-radius: var(--unified-radius-card) !important;
   background: var(--unified-surface) !important;
   box-shadow: none !important;
 }
@@ -633,53 +1012,68 @@
 .quickPrimaryAction,
 .quickCompactAction { min-height: 68px !important; }
 .quickReviewAction { min-height: 72px !important; }
-#accountSheet,
-.accountSheetHeader,
-.personalisationGroup,
-.accountGroup {
-  border-color: var(--unified-border) !important;
-  border-radius: var(--unified-radius-lg) !important;
-  box-shadow: none !important;
-}
 .personalisationGroup,
 .accountGroup { padding: 15px !important; }
+.accountSheetHeader {
+  border-color: var(--unified-border) !important;
+  border-radius: var(--unified-radius-card) !important;
+  box-shadow: none !important;
+}
+
 .headerLiveChip,
 .liveStatus,
 #breakPlanLive,
-.primaryConnectionLine {
+.primaryConnectionLine,
+.appLiveStatus {
   color: var(--liquid-secondary) !important;
   font-variant-numeric: tabular-nums;
 }
 .headerLiveDot,
 .liveDot,
 .chatLiveDot,
-#breakPlanLive i { width: 7px !important; height: 7px !important; box-shadow: none !important; }
+#breakPlanLive i {
+  width: 7px !important;
+  height: 7px !important;
+  box-shadow: none !important;
+}
+
+#updateBanner {
+  padding: 10px !important;
+  border: 1px solid var(--unified-border) !important;
+  border-radius: var(--unified-radius-card) !important;
+  background: var(--unified-glass) !important;
+}
 
 /* --------------------------------------------------------------------------
-   One bottom navigation geometry everywhere
+   One bottom dock everywhere
    -------------------------------------------------------------------------- */
-.bottom.reactTabs {
+.bottom.reactTabs,
+.bottom.reactTabs.appDock {
   width: min(calc(100vw - 16px - var(--app-safe-left, 0px) - var(--app-safe-right, 0px)), 520px) !important;
-  min-height: 70px !important;
-  padding: 4px !important;
-  border: 1px solid var(--unified-border) !important;
+  min-height: 72px !important;
+  padding: 5px !important;
+  border: 1px solid var(--unified-edge) !important;
   border-radius: 24px !important;
   background: var(--unified-glass) !important;
   -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
   backdrop-filter: blur(22px) saturate(145%) !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,.12) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.14) !important;
 }
-.bottom.reactTabs button:not(.quickRudder) { min-height: 58px !important; border-radius: 17px !important; }
+.bottom.reactTabs button:not(.quickRudder) {
+  min-height: 60px !important;
+  border-radius: 17px !important;
+}
 body[data-view] .bottom.reactTabs .tabSlidingIndicator {
   border: 0 !important;
   border-radius: 17px !important;
   background: var(--unified-accent-soft) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 16%, var(--unified-border)) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--liquid-accent) 18%, var(--unified-border)) !important;
+  transition: transform var(--unified-base) var(--unified-ease), width var(--unified-base) var(--unified-ease) !important;
 }
 .bottom.reactTabs .quickRudder { min-width: 58px !important; }
 .bottom.reactTabs .quickRudderDisc {
-  width: 40px !important;
-  height: 40px !important;
+  width: 42px !important;
+  height: 42px !important;
   border: 1px solid color-mix(in srgb, var(--liquid-accent) 24%, var(--unified-border)) !important;
   border-radius: 14px !important;
   background: var(--unified-accent-soft) !important;
@@ -689,9 +1083,19 @@ body[data-view] .bottom.reactTabs .tabSlidingIndicator {
 .bottom.reactTabs .quickRudderDisc::before,
 .bottom.reactTabs .quickRudderDisc::after { opacity: 0 !important; }
 .bottom.reactTabs .quickRudderLabel,
-.bottom.reactTabs button:not(.quickRudder) span { font-size: 10px !important; font-weight: 690 !important; }
+.bottom.reactTabs button:not(.quickRudder) span {
+  font-size: 10px !important;
+  font-weight: 690 !important;
+}
 
-/* Consistent interaction state. */
+/* --------------------------------------------------------------------------
+   Purposeful motion and interaction
+   -------------------------------------------------------------------------- */
+@keyframes unified-view-enter {
+  from { opacity: .72; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.view:not(.hidden) { animation: unified-view-enter var(--unified-base) var(--unified-ease) both; }
 :is(button, [role="button"], summary) { -webkit-tap-highlight-color: transparent; }
 :is(button, [role="button"], summary):focus-visible,
 input:focus-visible,
@@ -705,57 +1109,113 @@ textarea:focus-visible,
   :is(button, [role="button"], summary) {
     transition: background-color var(--unified-fast) var(--unified-ease), border-color var(--unified-fast) var(--unified-ease), color var(--unified-fast) var(--unified-ease), opacity var(--unified-fast) var(--unified-ease), transform var(--unified-fast) var(--unified-ease) !important;
   }
+  :is(button, [role="button"], summary):hover { transform: translateY(-1px); }
 }
 
+/* --------------------------------------------------------------------------
+   Small phones
+   -------------------------------------------------------------------------- */
 @media (max-width: 430px) {
   #today, #changes, #breaks, #chat, #roster {
     padding-inline: max(10px, var(--app-safe-left, 0px), var(--app-safe-right, 0px)) !important;
   }
+  #today .nightUnifiedHero { padding-inline: 9px !important; border-radius: 24px !important; }
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader { border-radius: 23px !important; padding-inline: 10px !important; }
   #today .hospitalStrip img,
   #changes .primaryInstitutionBrand img,
   #breaks .primaryInstitutionBrand img,
-  #chat .primaryInstitutionBrand img { max-width: 102px !important; max-height: 22px !important; }
-  #today .hospitalStrip span,
+  #chat .primaryInstitutionBrand img { max-width: 104px !important; max-height: 24px !important; }
+  #today .hospitalStrip > span,
   #changes .primaryInstitutionBrand > span,
   #breaks .primaryInstitutionBrand > span,
-  #chat .primaryInstitutionBrand > span { font-size: 9.5px !important; }
-  #today .nightDateShell,
-  #changes .changesDatePanel,
-  #breaks .breaksContextPanel { padding: 9px !important; }
-  .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 9.5px !important; }
-  .rosterDateText { font-size: 12.5px !important; }
-}
-
-@media (max-width: 390px) {
-  :root { --unified-gutter: 10px; }
-  #today .nightUnifiedHero .nightSectionIdentity h1,
+  #chat .primaryInstitutionBrand > span {
+    max-width: 150px !important;
+    padding-inline: 7px !important;
+    font-size: 8px !important;
+  }
+  #today .nightTeamIdentityContext {
+    min-height: 84px !important;
+    grid-template-columns: 62px minmax(0,1fr) !important;
+    gap: 10px !important;
+    padding: 9px 36px 9px 9px !important;
+  }
+  #today .nightTeamIdentityContext .shiftIdentityMark {
+    width: 62px !important;
+    min-width: 62px !important;
+    height: 62px !important;
+    min-height: 62px !important;
+    border-radius: 17px !important;
+  }
+  #today .nightTeamIdentityContext .shiftIdentityCopy { padding-left: 10px !important; }
+  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: clamp(21px, 6.4vw, 25px) !important; }
+  #today .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 10px !important; }
+  #today .nightUnifiedHero .nightSectionIdentity h1 { font-size: clamp(28px, 8.3vw, 34px) !important; }
   #changes .primaryScreenTitleRow h1,
   #breaks .primaryScreenTitleRow h1,
-  #chat .primaryScreenTitleRow h1 { font-size: 27px !important; }
-  #today .dateNav.rosterDateControl,
-  #changes .nightContextPanel .dateNav.rosterDateControl,
-  #breaks .nightContextPanel .dateNav.rosterDateControl { grid-template-columns: 38px minmax(0, 1fr) 38px !important; }
+  #chat .primaryScreenTitleRow h1 { font-size: 28px !important; }
+  .rosterDateText { font-size: 12.5px !important; }
+  #chat .appSafetyBanner small { font-size: 9.2px !important; }
+}
+
+@media (max-width: 370px) {
+  :root { --unified-gutter: 10px; }
+  #today .hospitalStrip,
+  #changes .primaryInstitution,
+  #breaks .primaryInstitution,
+  #chat .primaryInstitution { gap: 6px !important; }
+  #today .hospitalStrip img,
+  #changes .primaryInstitutionBrand img,
+  #breaks .primaryInstitutionBrand img,
+  #chat .primaryInstitutionBrand img { max-width: 94px !important; }
+  #today .hospitalStrip > span,
+  #changes .primaryInstitutionBrand > span,
+  #breaks .primaryInstitutionBrand > span,
+  #chat .primaryInstitutionBrand > span { max-width: 130px !important; font-size: 7.4px !important; }
+  #today .nightTeamIdentityContext { grid-template-columns: 57px minmax(0,1fr) !important; }
+  #today .nightTeamIdentityContext .shiftIdentityMark { width: 57px !important; min-width: 57px !important; height: 57px !important; min-height: 57px !important; }
+  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: 20px !important; }
+  #changes .nightTeamIdentityContext,
+  #breaks .nightTeamIdentityContext,
+  #chat .chatShiftIdentity { grid-template-columns: 44px minmax(0,1fr) !important; }
+  #changes .nightTeamIdentityContext .shiftIdentityMark,
+  #breaks .nightTeamIdentityContext .shiftIdentityMark,
+  #chat .chatShiftIdentity .shiftIdentityMark { width: 44px !important; min-width: 44px !important; height: 44px !important; min-height: 44px !important; }
   #breaks .breakSummaryItem b { font-size: 12px !important; }
   #breaks .breakSummaryItem small { font-size: 9px !important; }
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  #today .nightUnifiedHero,
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader,
   .bottom.reactTabs,
   .accountSheetHeader {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background: var(--unified-surface) !important;
+    box-shadow: none !important;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
+  .view:not(.hidden),
   :is(button, [role="button"], summary),
   .bottom.reactTabs,
-  .bottom.reactTabs * { transition: none !important; animation: none !important; }
+  .bottom.reactTabs * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
 }
+
 @media (prefers-contrast: more) {
-  #today .nightDateShell,
-  #changes .changesDatePanel,
-  #breaks .breaksContextPanel,
+  #today .nightUnifiedHero,
+  #changes .appScreenHeader,
+  #breaks .appScreenHeader,
+  #chat .appScreenHeader,
   #today #personalNightCard > .personalHeroSurface,
   #changes .staffingSection,
   #breaks .personalBreakSummary,
@@ -769,700 +1229,4 @@ textarea:focus-visible,
   .quickCompactAction,
   .personalisationGroup,
   .accountGroup { border-color: currentColor !important; }
-}
-
-
-/* 50.4 targeted real-device and product-coherence finish. */
-#today #personalNightCard > .personalHeroSurface {
-  border-radius: 26px !important;
-}
-#changes .staffingSection,
-#breaks .personalBreakSummary,
-#breaks .breakScheduleBoard,
-#chat .chatRosterContext,
-#chat .chatConversationList,
-.quickActionsContextBar,
-.quickPrimaryAction,
-.quickReviewAction,
-.quickCompactAction,
-.accountSheetHeader,
-.personalisationGroup,
-.accountGroup {
-  border-color: var(--unified-border) !important;
-  box-shadow: none !important;
-}
-#chat .chatRosterContext,
-.quickActionsContextBar {
-  background: var(--unified-soft) !important;
-}
-#admin .panel,
-#admin .adminPanel,
-#admin .adminGroup,
-#admin .historyItem,
-#admin .contentSurface {
-  border: 1px solid var(--unified-border) !important;
-  border-radius: var(--unified-radius-md) !important;
-  background: var(--unified-surface) !important;
-  box-shadow: none !important;
-}
-#updateBanner {
-  padding: 10px !important;
-  border: 1px solid var(--unified-border) !important;
-  border-radius: 20px !important;
-  background: var(--unified-glass) !important;
-}
-
-
-/* 50.5 shared branded identity system. */
-:root {
-  --identity-edge: color-mix(in srgb, var(--liquid-accent) 22%, var(--unified-border));
-  --identity-edge-strong: color-mix(in srgb, var(--liquid-accent) 38%, var(--unified-border));
-  --identity-surface: linear-gradient(145deg,
-    color-mix(in srgb, var(--liquid-accent) 8%, var(--unified-surface)) 0%,
-    color-mix(in srgb, var(--liquid-secondary) 3%, var(--unified-surface)) 58%,
-    var(--unified-surface) 100%);
-  --identity-glow: 0 16px 42px color-mix(in srgb, var(--liquid-accent) 10%, transparent);
-}
-
-#today .nightUnifiedHero,
-#changes .appScreenHeader,
-#breaks .appScreenHeader,
-#chat .appScreenHeader {
-  position: relative !important;
-  isolation: isolate;
-  overflow: hidden !important;
-  border: 1px solid var(--identity-edge) !important;
-  border-radius: 26px !important;
-  background: var(--identity-surface) !important;
-  box-shadow: var(--identity-glow) !important;
-}
-#today .nightUnifiedHero::after,
-#changes .appScreenHeader::after,
-#breaks .appScreenHeader::after,
-#chat .appScreenHeader::after {
-  content: '+';
-  position: absolute;
-  z-index: -1;
-  right: -20px;
-  top: 42px;
-  color: color-mix(in srgb, var(--liquid-accent) 6%, transparent);
-  font-size: 190px;
-  font-weight: 900;
-  line-height: .72;
-  pointer-events: none;
-  transform: rotate(-1deg);
-}
-#today .nightUnifiedHero {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0 !important;
-  margin: 0 0 12px !important;
-  padding: 0 10px 12px !important;
-}
-#today #appHeader { order: 1; position: relative !important; z-index: 2; }
-#today .nightDateShell { order: 2; }
-#today .nightSectionIdentity { order: 3; }
-
-#today .hospitalStrip,
-#changes .primaryInstitution,
-#breaks .primaryInstitution,
-#chat .primaryInstitution {
-  min-height: 48px !important;
-  padding: 0 2px 4px !important;
-  border-bottom: 0 !important;
-}
-#changes .primaryInstitutionBrand,
-#breaks .primaryInstitutionBrand,
-#chat .primaryInstitutionBrand {
-  display: flex !important;
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-#today .hospitalStrip img,
-#changes .primaryInstitutionBrand img,
-#breaks .primaryInstitutionBrand img,
-#chat .primaryInstitutionBrand img {
-  max-width: 118px !important;
-  max-height: 26px !important;
-}
-#today .hospitalStrip > span,
-#changes .primaryInstitutionBrand > span,
-#breaks .primaryInstitutionBrand > span,
-#chat .primaryInstitutionBrand > span {
-  display: inline-flex !important;
-  width: auto !important;
-  max-width: 172px !important;
-  min-height: 27px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin-left: auto !important;
-  padding: 4px 9px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
-  border-radius: 999px !important;
-  background: color-mix(in srgb, var(--liquid-accent) 7%, var(--unified-surface)) !important;
-  color: var(--liquid-text) !important;
-  font-size: 8.8px !important;
-  font-weight: 760 !important;
-  line-height: 1.05 !important;
-  letter-spacing: .025em !important;
-  text-align: center;
-}
-#today .hospitalStrip > span { margin-right: 48px !important; }
-#today .headActions { top: calc(var(--app-safe-top, 0px) + 9px) !important; right: 2px !important; }
-#today .accountBtn,
-#changes .primaryHeaderAccount,
-#breaks .primaryHeaderAccount,
-#chat .primaryHeaderAccount {
-  width: 40px !important;
-  min-width: 40px !important;
-  height: 40px !important;
-  min-height: 40px !important;
-  border-color: var(--identity-edge) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 8%, var(--unified-soft-strong)) !important;
-}
-
-#today .nightDateShell {
-  margin: 5px 0 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-#today .nightTeamIdentityContext {
-  position: relative !important;
-  min-height: 82px !important;
-  grid-template-columns: 62px minmax(0, 1fr) !important;
-  gap: 12px !important;
-  align-items: center !important;
-  margin: 0 0 8px !important;
-  padding: 9px 36px 9px 10px !important;
-  border: 1px solid var(--identity-edge-strong) !important;
-  border-radius: 20px !important;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 12%, var(--unified-surface)),
-    color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-surface))) !important;
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 10%, transparent) !important;
-}
-#today .nightTeamIdentityContext::after {
-  content: '›';
-  position: absolute;
-  right: 13px;
-  top: 50%;
-  color: var(--liquid-secondary);
-  font-size: 28px;
-  font-weight: 400;
-  transform: translateY(-52%);
-}
-#today .nightTeamIdentityContext .shiftIdentityMark {
-  width: 62px !important;
-  min-width: 62px !important;
-  height: 62px !important;
-  min-height: 62px !important;
-  border-radius: 17px !important;
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy strong {
-  font-size: clamp(22px, 6.3vw, 28px) !important;
-  line-height: 1.02 !important;
-  letter-spacing: -.03em !important;
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy small {
-  display: -webkit-box !important;
-  margin-top: 5px !important;
-  overflow: hidden !important;
-  color: var(--liquid-secondary) !important;
-  font-size: 11px !important;
-  font-weight: 570 !important;
-  line-height: 1.22 !important;
-  white-space: normal !important;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-#today .dateNav.rosterDateControl {
-  min-height: 42px !important;
-  border-color: color-mix(in srgb, var(--liquid-accent) 12%, var(--unified-border)) !important;
-  background: color-mix(in srgb, var(--liquid-secondary) 4%, transparent) !important;
-}
-#today .nightSectionIdentity {
-  margin: 0 !important;
-  padding: 14px 4px 3px !important;
-}
-#today .nightWelcomeEyebrow { display: none !important; }
-#today .nightUnifiedHero .nightSectionIdentity h1 {
-  max-width: 100% !important;
-  font-size: clamp(29px, 8vw, 36px) !important;
-  line-height: 1.02 !important;
-  letter-spacing: -.045em !important;
-}
-
-#changes .appScreenHeader,
-#breaks .appScreenHeader,
-#chat .appScreenHeader {
-  margin: 0 0 10px !important;
-  padding: calc(var(--app-safe-top, 0px) + 7px) 10px 10px !important;
-}
-#changes .primaryScreenTitleRow,
-#breaks .primaryScreenTitleRow,
-#chat .primaryScreenTitleRow { padding: 7px 2px 3px !important; }
-#changes .primaryScreenTitleRow h1,
-#breaks .primaryScreenTitleRow h1,
-#chat .primaryScreenTitleRow h1 { font-size: clamp(28px, 7.2vw, 33px) !important; }
-#changes .changesDatePanel,
-#breaks .breaksContextPanel,
-#chat .chatRosterContext {
-  border-color: var(--identity-edge) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface)) !important;
-  box-shadow: 0 9px 24px rgba(0,0,0,.055) !important;
-}
-#changes .nightContextMetaRow h2,
-#breaks .nightContextMetaRow h2 { display: none !important; }
-#changes .nightContextMetaRow,
-#breaks .nightContextMetaRow {
-  min-height: 23px !important;
-  justify-content: flex-end !important;
-  margin-bottom: 4px !important;
-}
-#changes .nightTeamIdentityContext,
-#breaks .nightTeamIdentityContext,
-#chat .chatShiftIdentity {
-  min-height: 60px !important;
-  grid-template-columns: 48px minmax(0, 1fr) !important;
-  gap: 10px !important;
-  padding: 6px 8px !important;
-  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 18%, var(--unified-border)) !important;
-  border-radius: 16px !important;
-  background: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 6%, transparent) !important;
-}
-#changes .nightTeamIdentityContext .shiftIdentityMark,
-#breaks .nightTeamIdentityContext .shiftIdentityMark,
-#chat .chatShiftIdentity .shiftIdentityMark {
-  width: 48px !important;
-  min-width: 48px !important;
-  height: 48px !important;
-  min-height: 48px !important;
-  border-radius: 14px !important;
-}
-#changes .nightTeamIdentityContext .shiftIdentityCopy strong,
-#breaks .nightTeamIdentityContext .shiftIdentityCopy strong,
-#chat .chatShiftIdentity .shiftIdentityCopy strong { font-size: 18px !important; }
-#changes .nightTeamIdentityContext .shiftIdentityCopy small,
-#breaks .nightTeamIdentityContext .shiftIdentityCopy small,
-#chat .chatShiftIdentity .shiftIdentityCopy small {
-  margin-top: 3px !important;
-  font-size: 10px !important;
-  white-space: normal !important;
-}
-#chat .chatRosterContext {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  gap: 7px 9px !important;
-  align-items: center !important;
-  padding: 8px !important;
-}
-#chat .chatShiftIdentity { grid-column: 1 / -1; margin: 0 !important; }
-#chat .chatRosterContextCopy { min-width: 0 !important; padding: 2px 4px 3px !important; }
-#chat .chatShiftNameButton {
-  width: 38px !important;
-  min-width: 38px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  padding: 0 !important;
-  border-radius: 12px !important;
-}
-#chat .chatShiftNameButton span { display: none !important; }
-
-#today #personalNightCard > .personalHeroSurface,
-#changes .staffingSection,
-#breaks .personalBreakSummary,
-#breaks .breakScheduleBoard,
-#chat .chatInboxTeamRow,
-#chat .chatConversationList,
-.quickPrimaryAction,
-.quickReviewAction,
-.quickCompactAction,
-.personalisationGroup,
-.accountGroup,
-#admin .panel,
-#admin .adminPanel,
-#admin .adminGroup,
-#admin .historyItem,
-#admin .contentSurface { border-color: var(--identity-edge) !important; }
-.quickActionsContextBar {
-  border-color: var(--identity-edge) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-soft)) !important;
-}
-.bottom.reactTabs {
-  border-color: var(--identity-edge) !important;
-  box-shadow: 0 12px 30px rgba(0,0,0,.14) !important;
-}
-
-@media (max-width: 430px) {
-  #today .nightUnifiedHero { padding-inline: 8px !important; border-radius: 23px !important; }
-  #today .hospitalStrip > span,
-  #changes .primaryInstitutionBrand > span,
-  #breaks .primaryInstitutionBrand > span,
-  #chat .primaryInstitutionBrand > span {
-    max-width: 150px !important;
-    padding-inline: 7px !important;
-    font-size: 8.1px !important;
-  }
-  #today .hospitalStrip img,
-  #changes .primaryInstitutionBrand img,
-  #breaks .primaryInstitutionBrand img,
-  #chat .primaryInstitutionBrand img { max-width: 105px !important; max-height: 23px !important; }
-  #today .nightTeamIdentityContext {
-    min-height: 76px !important;
-    grid-template-columns: 56px minmax(0, 1fr) !important;
-    gap: 10px !important;
-    padding-left: 8px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityMark {
-    width: 56px !important;
-    min-width: 56px !important;
-    height: 56px !important;
-    min-height: 56px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: clamp(21px, 6.2vw, 25px) !important; }
-  #today .nightUnifiedHero .nightSectionIdentity h1 { font-size: clamp(28px, 8vw, 34px) !important; }
-}
-@media (max-width: 370px) {
-  #today .hospitalStrip > span,
-  #changes .primaryInstitutionBrand > span,
-  #breaks .primaryInstitutionBrand > span,
-  #chat .primaryInstitutionBrand > span { max-width: 128px !important; font-size: 7.6px !important; }
-  #today .hospitalStrip img,
-  #changes .primaryInstitutionBrand img,
-  #breaks .primaryInstitutionBrand img,
-  #chat .primaryInstitutionBrand img { max-width: 96px !important; }
-  #today .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 10px !important; }
-}
-
-
-/* 50.6 premium mock-up hero refinement. */
-:root {
-  --hero-edge: color-mix(in srgb, var(--liquid-accent) 44%, var(--unified-border));
-  --hero-edge-soft: color-mix(in srgb, var(--liquid-accent) 24%, var(--unified-border));
-  --hero-glow: color-mix(in srgb, var(--liquid-accent) 14%, transparent);
-}
-
-/* Night is the full brand expression. */
-#today .nightUnifiedHero {
-  overflow: hidden !important;
-  margin-bottom: 14px !important;
-  padding: 0 12px 14px !important;
-  border: 1px solid var(--hero-edge) !important;
-  border-radius: 28px !important;
-  background:
-    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--liquid-accent) 24%, transparent), transparent 31%),
-    radial-gradient(circle at 12% 38%, color-mix(in srgb, var(--liquid-accent) 9%, transparent), transparent 38%),
-    linear-gradient(145deg,
-      color-mix(in srgb, var(--liquid-accent) 12%, var(--unified-surface)) 0%,
-      color-mix(in srgb, var(--liquid-secondary) 2%, var(--unified-surface)) 48%,
-      color-mix(in srgb, var(--liquid-accent) 7%, var(--unified-surface)) 100%) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--liquid-accent) 10%, transparent),
-    0 18px 46px rgba(0,0,0,.22),
-    0 0 34px var(--hero-glow) !important;
-}
-#today .nightUnifiedHero::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background:
-    linear-gradient(115deg, transparent 0 58%, color-mix(in srgb, var(--liquid-accent) 5%, transparent) 58% 59%, transparent 59% 100%);
-  pointer-events: none;
-}
-#today .nightUnifiedHero::after {
-  content: '✚';
-  right: -34px;
-  top: 86px;
-  color: color-mix(in srgb, var(--liquid-accent) 9%, transparent);
-  font-size: 238px;
-  font-weight: 700;
-  line-height: .72;
-  text-shadow: 0 0 28px color-mix(in srgb, var(--liquid-accent) 8%, transparent);
-  transform: rotate(-1deg);
-}
-
-/* One premium top row: hospital identity, department pill and account. */
-#today .hospitalStrip {
-  display: grid !important;
-  grid-template-columns: minmax(118px, 1fr) auto !important;
-  gap: 8px !important;
-  min-height: 66px !important;
-  align-items: center !important;
-  padding: 10px 54px 7px 6px !important;
-}
-#today .hospitalStrip img {
-  justify-self: start;
-  max-width: 146px !important;
-  max-height: 42px !important;
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--liquid-accent) 12%, transparent));
-}
-#today .hospitalStrip > span {
-  position: relative;
-  gap: 6px;
-  max-width: 176px !important;
-  min-height: 32px !important;
-  margin: 0 !important;
-  padding: 5px 10px 5px 29px !important;
-  border-color: color-mix(in srgb, var(--liquid-accent) 34%, var(--unified-border)) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 8%, var(--unified-surface)) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
-  font-size: 8.9px !important;
-  letter-spacing: .02em !important;
-}
-#today .hospitalStrip > span::before {
-  content: '';
-  position: absolute;
-  left: 10px;
-  width: 13px;
-  height: 13px;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M4 21V8h5V3h6v5h5v13h-7v-5h-2v5H4Zm2-2h3v-5h6v5h3V10h-5V5h-2v5H6v9Zm6-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm0-4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M4 21V8h5V3h6v5h5v13h-7v-5h-2v5H4Zm2-2h3v-5h6v5h3V10h-5V5h-2v5H6v9Zm6-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm0-4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E") center/contain no-repeat;
-}
-#today .headActions {
-  top: calc(var(--app-safe-top, 0px) + 13px) !important;
-  right: 7px !important;
-}
-#today .accountBtn {
-  width: 46px !important;
-  min-width: 46px !important;
-  height: 46px !important;
-  min-height: 46px !important;
-  border: 1px solid color-mix(in srgb, var(--liquid-accent) 25%, var(--unified-border)) !important;
-  box-shadow:
-    0 0 0 7px color-mix(in srgb, var(--liquid-accent) 7%, transparent),
-    inset 0 1px 0 color-mix(in srgb, white 10%, transparent) !important;
-}
-
-/* The shift identity is the focal point, as in the approved mock-up. */
-#today .nightDateShell {
-  margin-top: 2px !important;
-}
-#today .nightTeamIdentityContext {
-  min-height: 104px !important;
-  grid-template-columns: 78px minmax(0, 1fr) !important;
-  gap: 0 !important;
-  margin: 0 2px 9px !important;
-  padding: 11px 42px 11px 11px !important;
-  border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 48%, var(--unified-border)) !important;
-  border-radius: 24px !important;
-  background:
-    radial-gradient(circle at 12% 48%, color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 13%, transparent), transparent 35%),
-    linear-gradient(135deg,
-      color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 12%, var(--unified-surface)),
-      color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-surface))) !important;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 8%, transparent),
-    0 0 24px color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 11%, transparent) !important;
-}
-#today .nightTeamIdentityContext .shiftIdentityMark {
-  width: 78px !important;
-  min-width: 78px !important;
-  height: 78px !important;
-  min-height: 78px !important;
-  border-radius: 20px !important;
-  box-shadow: 0 8px 22px rgba(0,0,0,.22);
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy {
-  min-width: 0 !important;
-  margin-left: 13px !important;
-  padding-left: 14px !important;
-  border-left: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 26%, var(--unified-border));
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy strong {
-  font-size: clamp(24px, 7vw, 31px) !important;
-  font-weight: 840 !important;
-  line-height: 1 !important;
-  letter-spacing: -.04em !important;
-  text-shadow: 0 0 18px color-mix(in srgb, var(--liquid-accent) 8%, transparent);
-}
-#today .nightTeamIdentityContext .shiftIdentityCopy small {
-  margin-top: 7px !important;
-  color: color-mix(in srgb, var(--liquid-text) 68%, var(--liquid-secondary)) !important;
-  font-size: 11.5px !important;
-  font-weight: 570 !important;
-  line-height: 1.3 !important;
-}
-#today .nightTeamIdentityContext::after {
-  right: 15px !important;
-  color: color-mix(in srgb, var(--liquid-accent) 45%, var(--liquid-secondary)) !important;
-  font-size: 31px !important;
-}
-
-/* Keep date functionality visible, but make it a quiet rail rather than a third hero card. */
-#today .dateNav.rosterDateControl {
-  min-height: 43px !important;
-  margin: 0 6px !important;
-  border-color: color-mix(in srgb, var(--liquid-accent) 18%, var(--unified-border)) !important;
-  border-radius: 15px !important;
-  background: color-mix(in srgb, var(--liquid-secondary) 5%, transparent) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 6%, transparent) !important;
-}
-#today .rosterDateText,
-#today .dateNav.rosterDateControl::before {
-  font-size: 13.5px !important;
-  font-weight: 760 !important;
-}
-
-/* Greeting belongs to the hero, but should breathe below the team identity. */
-#today .nightSectionIdentity {
-  padding: 18px 7px 6px !important;
-}
-#today .nightUnifiedHero .nightSectionIdentity h1 {
-  max-width: 100% !important;
-  font-size: clamp(31px, 8.8vw, 39px) !important;
-  font-weight: 850 !important;
-  line-height: .99 !important;
-  letter-spacing: -.05em !important;
-  text-shadow: 0 3px 18px rgba(0,0,0,.16);
-}
-
-/* Other primary screens inherit the same DNA at lower intensity. */
-#changes .appScreenHeader,
-#breaks .appScreenHeader,
-#chat .appScreenHeader {
-  border-color: var(--hero-edge-soft) !important;
-  background:
-    radial-gradient(circle at 90% 5%, color-mix(in srgb, var(--liquid-accent) 12%, transparent), transparent 34%),
-    linear-gradient(145deg,
-      color-mix(in srgb, var(--liquid-accent) 7%, var(--unified-surface)),
-      var(--unified-surface)) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,.10) !important;
-}
-#changes .primaryInstitutionBrand img,
-#breaks .primaryInstitutionBrand img,
-#chat .primaryInstitutionBrand img {
-  max-width: 116px !important;
-  max-height: 28px !important;
-}
-#changes .primaryInstitutionBrand > span,
-#breaks .primaryInstitutionBrand > span,
-#chat .primaryInstitutionBrand > span {
-  border-color: color-mix(in srgb, var(--liquid-accent) 24%, var(--unified-border)) !important;
-  background: color-mix(in srgb, var(--liquid-accent) 5%, var(--unified-surface)) !important;
-}
-#changes .nightTeamIdentityContext,
-#breaks .nightTeamIdentityContext,
-#chat .chatShiftIdentity {
-  border-color: color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 24%, var(--unified-border)) !important;
-  box-shadow: 0 8px 20px rgba(0,0,0,.055) !important;
-}
-
-/* Restraint outside the hero keeps operational content dominant. */
-.quickPrimaryAction,
-.quickReviewAction,
-.quickCompactAction,
-.personalisationGroup,
-.accountGroup,
-#admin .panel,
-#admin .adminPanel,
-#admin .adminGroup,
-#admin .historyItem,
-#admin .contentSurface {
-  box-shadow: 0 7px 20px rgba(0,0,0,.045) !important;
-}
-.bottom.reactTabs {
-  border-color: color-mix(in srgb, var(--liquid-accent) 20%, var(--unified-border)) !important;
-  box-shadow: 0 14px 34px rgba(0,0,0,.16) !important;
-}
-
-@media (max-width: 430px) {
-  #today .nightUnifiedHero {
-    padding-inline: 9px !important;
-    border-radius: 25px !important;
-  }
-  #today .hospitalStrip {
-    grid-template-columns: minmax(102px, 1fr) auto !important;
-    min-height: 60px !important;
-    padding: 8px 51px 5px 5px !important;
-  }
-  #today .hospitalStrip img {
-    max-width: 126px !important;
-    max-height: 36px !important;
-  }
-  #today .hospitalStrip > span {
-    max-width: 158px !important;
-    min-height: 30px !important;
-    padding: 4px 8px 4px 26px !important;
-    font-size: 8.1px !important;
-  }
-  #today .hospitalStrip > span::before { left: 9px; width: 12px; height: 12px; }
-  #today .accountBtn {
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--liquid-accent) 7%, transparent) !important;
-  }
-  #today .nightTeamIdentityContext {
-    min-height: 92px !important;
-    grid-template-columns: 68px minmax(0,1fr) !important;
-    padding: 10px 38px 10px 10px !important;
-    border-radius: 21px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityMark {
-    width: 68px !important;
-    min-width: 68px !important;
-    height: 68px !important;
-    min-height: 68px !important;
-    border-radius: 18px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityCopy {
-    margin-left: 11px !important;
-    padding-left: 11px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityCopy strong {
-    font-size: clamp(22px, 6.8vw, 27px) !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityCopy small {
-    margin-top: 5px !important;
-    font-size: 10.7px !important;
-  }
-  #today .nightSectionIdentity { padding: 16px 6px 5px !important; }
-  #today .nightUnifiedHero .nightSectionIdentity h1 {
-    font-size: clamp(29px, 8.6vw, 35px) !important;
-  }
-}
-
-@media (max-width: 370px) {
-  #today .hospitalStrip {
-    grid-template-columns: 94px minmax(0,1fr) !important;
-    gap: 5px !important;
-    padding-right: 46px !important;
-  }
-  #today .hospitalStrip img { max-width: 98px !important; max-height: 31px !important; }
-  #today .hospitalStrip > span {
-    max-width: 142px !important;
-    padding-left: 23px !important;
-    font-size: 7.5px !important;
-  }
-  #today .hospitalStrip > span::before { left: 7px; width: 11px; height: 11px; }
-  #today .nightTeamIdentityContext {
-    grid-template-columns: 61px minmax(0,1fr) !important;
-    padding-right: 34px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityMark {
-    width: 61px !important;
-    min-width: 61px !important;
-    height: 61px !important;
-    min-height: 61px !important;
-  }
-  #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: 21px !important; }
-  #today .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 9.8px !important; }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #today .nightUnifiedHero,
-  #changes .appScreenHeader,
-  #breaks .appScreenHeader,
-  #chat .appScreenHeader {
-    background: var(--unified-surface) !important;
-    box-shadow: none !important;
-  }
 }
