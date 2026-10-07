@@ -185,3 +185,50 @@ const viteConfig = fs.readFileSync(path.join(root, 'vite.config.mts'), 'utf8');
 for (const asset of ['chat.css', 'chat.js', 'push.js']) assert.ok(viteConfig.includes(`'${asset}'`), `${asset} must be included in the Pages artifact`);
 
 console.log('Group transcript, roster-based private list, privacy and pagination checks passed.');
+
+// Execute the production adapter with an isolated transport. Short threads must not
+// depend on browser scroll events; failed writes and unseen threads retain unread.
+async function checkReadReceipts() {
+  const frames = [], calls = [], badge = { textContent: '', classList: { toggle() {}, contains() { return false; } }, setAttribute() {} };
+  const host = { scrollHeight: 200, clientHeight: 400, scrollTop: 0 };
+  let view = 'chat', fail = false, refreshResolve, refreshes = 0, badgeSyncs = 0;
+  const context = vm.createContext({
+    navigator: { onLine: true }, document: { visibilityState: 'visible', body: { getAttribute: () => view }, getElementById: id => id === 'chatUnreadBadge' ? badge : ['chatTeamMessages','chatMessages'].includes(id) ? host : null },
+    window: { rosterCapabilities: () => ({ monotonicChatRead: true }), syncAppBadge: () => badgeSyncs++ },
+    currentUserProfile: {}, requestAnimationFrame: fn => frames.push(fn), setTimeout, clearTimeout,
+    supa: { rpc: async (name, args) => { if (name === 'chat_unread_counts') return new Promise(resolve => { refreshResolve = resolve; }); calls.push(args); return { data: args.p_message_id, error: fail ? { code: 'offline' } : null }; } }
+  });
+  const instrumented = chat.replace(/try\{chatInit\(\)\}catch\(error\)\{[^\n]+\}/, `
+    chatRenderHome=function(){};chatTeamConversation=function(){return{id:'team'}};
+    chatScheduleOverviewRefresh=function(){refreshRequested()};
+    window.receipts={state:chatState,team:chatReadTeamIfAtBottom,private:chatReadPrivateIfAtBottom,schedule:chatScheduleReadCheck,refresh:chatRefreshUnreadCounts};
+  `);
+  context.refreshRequested = () => refreshes++;
+  vm.runInContext(instrumented, context);
+  const { state, team, private: direct, schedule, refresh } = context.window.receipts;
+  state.teamMessages = [1, 2, 3, 4].map(id => ({ id })); state.messages = [5, 6, 7, 8].map(id => ({ id }));
+  state.unreadByConversation = { team: 4, direct: 4 }; state.activeThreadKind = 'team';
+  schedule(); frames.shift()(); frames.shift()(); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(state.unreadByConversation.team, 0, 'a fully visible team transcript clears without a scroll event');
+  assert.equal(state.unreadByConversation.direct, 4, 'reading the team does not clear private messages');
+  assert.equal(badge.textContent, '4'); assert.equal(badgeSyncs, 1, 'successful receipts synchronise the installed app badge');
+  state.activeThreadKind = 'private'; state.activeConversationId = 'direct';
+  host.scrollHeight = 1000; await direct(); assert.equal(state.unreadByConversation.direct, 4, 'messages below the viewport remain unread');
+  host.scrollHeight = 200; view = 'today'; await direct(); assert.equal(calls.length, 1, 'background chat preloads never mark messages read');
+  view = 'chat'; context.document.visibilityState = 'hidden'; await direct(); assert.equal(calls.length, 1, 'a hidden app never marks messages read');
+  context.document.visibilityState = 'visible'; fail = true; await direct(); assert.equal(state.unreadByConversation.direct, 4, 'failed receipts retain unread counts');
+  fail = false; const pending = refresh(); await direct();
+  assert.equal(state.unreadByConversation.direct, 0, 'a fully visible private transcript clears without scrolling');
+  assert.equal(badge.textContent, '0');
+  refreshResolve({ data: [{ conversation_id: 'direct', unread_count: 4 }] }); await pending;
+  assert.equal(state.unreadByConversation.direct, 0, 'an older refresh cannot restore acknowledged unread');
+  assert.equal(refreshes, 1, 'discarding an old response schedules a fresh server overview');
+  const before = calls.length; await direct(); assert.equal(calls.length, before, 'repeated layout checks do not resend an acknowledged receipt');
+  state.activeThreadKind = null; state.unreadByConversation.team = 4; await team(); assert.equal(state.unreadByConversation.team, 4, 'the inbox does not mark its team preview read');
+
+  let cleared = 0; const badgeContext = vm.createContext({ navigator: { clearAppBadge: () => { cleared++; } }, window: {}, currentUserProfile: null, byId: () => ({ textContent: '0', classList: { contains: () => true } }) });
+  vm.runInContext(core.slice(core.indexOf('function appBadgeCount('), core.indexOf('window.syncAppBadge=syncAppBadge;')), badgeContext);
+  badgeContext.syncAppBadge(); assert.equal(cleared, 1, 'zero unread clears the installed badge even on a clear-only browser');
+  console.log('Visible chat receipts, refresh races and installed badge checks passed.');
+}
+checkReadReceipts().catch(error => { console.error(error); process.exitCode = 1; });
