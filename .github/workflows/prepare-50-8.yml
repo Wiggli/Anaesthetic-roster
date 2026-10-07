@@ -1,0 +1,54 @@
+name: Prepare 50.8 layout consolidation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prepare-50-8-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    if: github.event.pull_request.head.ref == 'fix/50-8-layout-consolidation' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Use Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Apply 50.8 layout consolidation
+        run: python scripts/prepare-50-8.py
+      - name: Synchronise release artifacts
+        run: node scripts/release.mjs
+      - name: Run fast product gate
+        run: npm run verify:fast
+      - name: Run full deterministic gate
+        run: npm run verify:ci
+      - name: Commit synchronised 50.8 artifacts
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "50.8 artifacts are already synchronised."
+          else
+            git commit -m "50.8 Consolidate the operational layout"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
