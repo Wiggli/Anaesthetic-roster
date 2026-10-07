@@ -28,9 +28,8 @@ assert.match(client,/GREETING_CHAR_MS=50/,'The greeting itself must remain calml
 assert.match(client,/typingDelay\(index,parts\)/,'Typing cadence must distinguish greeting and nurse name');
 assert.doesNotMatch(client,/Andre|André|Michael/,'Welcome must never hard-code an individual nurse name');
 assert.match(css,/nightWelcomeTitle/,'Welcome must have a dedicated visual hierarchy');
-assert.match(css,/#today #personalNightHeading\{position:absolute!important/,'The duplicate visible Your night heading must be visually collapsed while remaining accessible');
 assert.match(css,/@media\(max-width:520px\)\{#today #nightWelcomeSubtitle\{display:none\}\}/,'Phone layouts must remove the redundant orientation subtitle');
-assert.match(css,/#today #nightIntelligenceCentre\{margin-top:0!important;margin-bottom:8px!important\}/,'Night status must hand off tightly into the allocation');
+assert.doesNotMatch(index,/nightWelcomeEyebrow/, 'welcome must not repeat a redundant Your night heading');
 assert.match(vite,/night-welcome\.js/,'Build must ship the welcome runtime');
 assert.match(vite,/night-welcome\.css/,'Build must ship the welcome styles');
 assert.match(worker,/night-welcome\.js\?v=/,'Installed PWA must cache the welcome runtime');

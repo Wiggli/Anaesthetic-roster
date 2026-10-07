@@ -1,3 +1,4 @@
+@layer welcome-components {
 /* Personal Night welcome: compact identity and context before the nurse's allocation. */
 #today .nightSectionIdentity{margin:0;padding:10px 20px 3px;position:relative;z-index:2}
 #today .nightWelcomeHero{position:relative;min-width:0;padding:1px 2px 3px}
@@ -11,9 +12,9 @@
 #today .nightUnifiedHero::after{content:'';position:absolute;left:14px;right:14px;top:calc(var(--app-safe-top,0px) + 68px);height:112px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 15%,color-mix(in srgb,var(--personal-accent,#6bc7c7) 7%,transparent),transparent 67%);filter:blur(8px)}
 #today .nightDateShell.nightUnifiedContext{margin-top:0;margin-bottom:8px}
 #today .nightDateShell.nightUnifiedContext .dateNav>button,#today .nightDateShell.nightUnifiedContext .prettyDateButton{height:44px;min-height:44px}
-#today #nightIntelligenceCentre{margin-top:0!important;margin-bottom:8px!important}
+#today #nightIntelligenceCentre{margin-top:0;margin-bottom:8px}
 #today>.nightOverviewPanel{padding-top:3px}
-#today #personalNightHeading{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+#today #personalNightHeading{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 #today #personalNight{margin-top:0;margin-bottom:0}
 body.dark #today .nightWelcomeTitle{color:#f7f9fc}
 body.dark #today #nightWelcomeSubtitle{color:#9ca9ba}
@@ -21,6 +22,8 @@ body.dark #today #nightWelcomeSubtitle{color:#9ca9ba}
 @keyframes nightWelcomeSettle{from{opacity:.84;transform:translateY(2px)}to{opacity:1;transform:none}}
 @media(max-width:520px){#today #nightWelcomeSubtitle{display:none}}
 @media(max-width:430px){#today .nightSectionIdentity{padding:9px 16px 3px}#today .nightWelcomeTitle{font-size:clamp(27px,7.8vw,33px)}#today .nightWelcomeEyebrow{margin-bottom:4px}#today .nightDateShell.nightUnifiedContext{margin-bottom:7px}#today>.nightOverviewPanel{padding-top:2px}}
-@media(prefers-reduced-motion:reduce){#today .nightWelcomeCursor{display:none!important}#today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none!important}}
-body.personalMotionReduced #today .nightWelcomeCursor{display:none!important}
-body.personalMotionReduced #today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none!important}
+@media(prefers-reduced-motion:reduce){#today .nightWelcomeCursor{display:none}#today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none}}
+body.personalMotionReduced #today .nightWelcomeCursor{display:none}
+body.personalMotionReduced #today .nightWelcomeHero.is-ready .nightWelcomeTitle{animation:none}
+
+}

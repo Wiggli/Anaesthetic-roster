@@ -4,7 +4,7 @@ var ORIGINAL_SEVENTH = ["James", "Michael G", "Andre", "Michael D", "Yentl", "Sh
 var SUPABASE_URL = 'https://voaygfleqceqacvqixxp.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_48wg5ZJVSDakxO-95B0DLQ_0b2nNVB8';
 var APP_URL = 'https://wiggli.github.io/Anaesthetic-roster/';
-var APP_VERSION = '50.9';
+var APP_VERSION = '51.0';
 var EXPECTED_SCHEMA_VERSION = 53;
 var supa = window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{experimental:{passkey:true}}}) : null;
 var appStorage=window.AnaestheticRuntime&&window.AnaestheticRuntime.storage?window.AnaestheticRuntime.storage:localStorage;
@@ -62,7 +62,7 @@ function professionalNames(value){return String(value||'').split(' + ').map(prof
 function canonicalNurseName(name){var value=String(name||'').trim().toLowerCase(),match=Object.keys(PROFESSIONAL_ROSTER_NAMES).find(function(key){return key.toLowerCase()===value||PROFESSIONAL_ROSTER_NAMES[key].toLowerCase()===value||(key==='Andre'&&value==='andre bartolo')});return(match||String(name||'').trim()).toLowerCase()}
 var idx = 0;
 var viewScrollPositions={today:0,changes:0,breaks:0,chat:0,roster:0,admin:0};
-function byId(id){return document.getElementById(id)}
+function byId(id){return document.getElementById(id)||(window.accountPresentationElement?window.accountPresentationElement(id):null)}
 function esc(v){return String(v == null ? '' : v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
 function withTimeout(promise,ms,message){
   return new Promise(function(resolve,reject){

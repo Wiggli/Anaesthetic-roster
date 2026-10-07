@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 
 type Destination = 'today' | 'changes' | 'breaks' | 'chat';
 type Badge = { text: string; hidden: boolean };
@@ -31,16 +31,10 @@ function badgeFrom(id: string): Badge {
 
 function Navigation({ badges }: { badges: Badges }) {
   const reducedMotion = useReducedMotion();
-  const indicatorX = useMotionValue(0);
-  const indicatorRef = useRef<HTMLSpanElement | null>(null);
-  const positions = useRef<number[]>([]);
-
   useEffect(() => {
     const bar = document.querySelector<HTMLElement>('.bottom');
-    const indicator = indicatorRef.current;
-    if (!bar || !indicator) return;
+    if (!bar) return;
 
-    let indicatorAnimation: ReturnType<typeof animate> | undefined;
     let clickSuppressed = false;
     let clickTimer: number | undefined;
 
@@ -49,44 +43,11 @@ function Navigation({ badges }: { badges: Badges }) {
       return destinations.includes(value) ? value : 'today';
     };
 
-    const moveTo = (view: string, immediate = false) => {
-      const left = positions.current[destinations.indexOf(view as Destination)];
-      if (left === undefined) return;
-      indicatorAnimation?.stop();
-      if (reducedMotion || immediate) {
-        indicatorX.set(left);
-        return;
-      }
-      indicatorAnimation = animate(indicatorX, left, {
-        type: 'spring',
-        stiffness: 560,
-        damping: 46,
-        mass: 0.54
-      });
-    };
-
-    const measure = () => {
-      const buttons = destinations.map(view => bar.querySelector<HTMLElement>(`button[data-v="${view}"]`));
-      if (buttons.some(button => !button)) return;
-      const barRect = bar.getBoundingClientRect();
-      const rects = buttons.map(button => button!.getBoundingClientRect());
-      positions.current = rects.map(rect => rect.left - barRect.left);
-      indicator.style.top = `${rects[0].top - barRect.top}px`;
-      indicator.style.width = `${rects[0].width}px`;
-      indicator.style.height = `${rects[0].height}px`;
-      moveTo(currentView(), true);
-    };
-
     const navigate = (view: Destination) => {
       if (view === currentView()) return;
       navigationHaptic();
       window.show?.(view);
       if (view === 'chat') window.openChatView?.();
-    };
-
-    const sync = (event: Event) => {
-      const view = (event as CustomEvent<{ view?: string }>).detail?.view || currentView();
-      moveTo(view);
     };
 
     const quickDialog = document.getElementById('quickActionsSheet');
@@ -217,12 +178,8 @@ function Navigation({ badges }: { badges: Badges }) {
       clickSuppressed = false;
     };
 
-    const resizeObserver = new ResizeObserver(measure);
     bar.classList.add('reactTabs', 'liquidTabBar');
-    resizeObserver.observe(bar);
-    measure();
 
-    window.addEventListener('roster:viewchange', sync);
     document.addEventListener('touchstart', onStart, { passive: true });
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend', onEnd, { passive: true });
@@ -230,11 +187,8 @@ function Navigation({ badges }: { badges: Badges }) {
     document.addEventListener('click', onClickCapture, true);
 
     return () => {
-      indicatorAnimation?.stop();
-      resizeObserver.disconnect();
       quickObserver?.disconnect();
       window.clearTimeout(clickTimer);
-      window.removeEventListener('roster:viewchange', sync);
       document.removeEventListener('touchstart', onStart);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onEnd);
@@ -242,7 +196,7 @@ function Navigation({ badges }: { badges: Badges }) {
       document.removeEventListener('click', onClickCapture, true);
       bar.classList.remove('reactTabs', 'liquidTabBar');
     };
-  }, [indicatorX, reducedMotion]);
+  }, []);
 
   const navigate = (view: Destination) => {
     if (document.body.getAttribute('data-view') !== view) navigationHaptic();
@@ -255,7 +209,6 @@ function Navigation({ badges }: { badges: Badges }) {
   }
 
   return <div className="tw:contents" data-react-navigation="ready">
-    <motion.span ref={indicatorRef} className="tabSlidingIndicator" aria-hidden="true" style={{ x: indicatorX }} />
     <motion.button type="button" data-v="today" className={document.body.getAttribute('data-view') === 'today' ? 'active' : ''}
       aria-current={document.body.getAttribute('data-view') === 'today' ? 'page' : undefined}
       whileTap={reducedMotion ? undefined : { scale: 0.97 }} onClick={() => navigate('today')}>

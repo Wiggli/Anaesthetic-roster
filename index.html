@@ -34,15 +34,15 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="preload" href="icon-192.png?v=50.9" as="image" vite-ignore />
-    <script src="theme-bootstrap.js?v=50.9" vite-ignore></script>
-    <script src="night-welcome.js?v=50.9" defer vite-ignore></script>
-    <link rel="manifest" href="manifest.webmanifest?v=50.9" vite-ignore />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=50.9" vite-ignore />
+    <link rel="preload" href="icon-192.png?v=51.0" as="image" vite-ignore />
+    <script src="theme-bootstrap.js?v=51.0" vite-ignore></script>
+    <script src="night-welcome.js?v=51.0" defer vite-ignore></script>
+    <link rel="manifest" href="manifest.webmanifest?v=51.0" vite-ignore />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=51.0" vite-ignore />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=50.9" vite-ignore />
-    <link rel="stylesheet" href="chat.css?v=50.9" vite-ignore />
-    <link rel="stylesheet" href="night-welcome.css?v=50.9" vite-ignore />
+    <link rel="stylesheet" href="styles.css?v=51.0" vite-ignore />
+    <link rel="stylesheet" href="chat.css?v=51.0" vite-ignore />
+    <link rel="stylesheet" href="night-welcome.css?v=51.0" vite-ignore />
   </head>
   <body class="authPending">
     <section
@@ -58,12 +58,12 @@
       </div>
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=50.9" alt="SPTAR Mater Dei" vite-ignore />
+          <img src="mater-dei-logo.png?v=51.0" alt="SPTAR Mater Dei" vite-ignore />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
           <div class="launchMark" aria-hidden="true">
-            <span><img src="icon-192.png?v=50.9" alt="" vite-ignore /></span>
+            <span><img src="icon-192.png?v=51.0" alt="" vite-ignore /></span>
             <i></i>
           </div>
           <span>Anaesthetic Night Roster</span>
@@ -87,7 +87,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=50.9"
+              src="mater-dei-logo.png?v=51.0"
               alt="Mater Dei Hospital"
             vite-ignore /><span>Main Operating Theatres</span>
           </div>
@@ -210,39 +210,12 @@
       <section id="today" class="view">
         <div class="nightUnifiedHero">
           <header id="appHeader">
-          <div class="clinicalBackdrop" aria-hidden="true"></div>
           <div class="hospitalStrip">
-            <img src="mater-dei-logo.png?v=50.9" alt="Mater Dei Hospital" vite-ignore /><span
+            <div class="primaryInstitutionBrand">
+            <img src="mater-dei-logo.png?v=51.0" alt="Mater Dei Hospital" vite-ignore /><span
               >Main Operating Theatres</span
             >
           </div>
-          <div class="head">
-            <div class="headerIdentity">
-              <div class="headerBrand">
-                <div class="headerBrandMark" aria-hidden="true">
-                  <svg viewBox="0 0 32 32">
-                    <path d="M8 6v7a8 8 0 0 0 16 0V6"></path>
-                    <path d="M5 6h6M21 6h6"></path>
-                    <circle cx="16" cy="23" r="3"></circle>
-                    <path d="M16 26v3"></path>
-                  </svg>
-                </div>
-                <h1 class="headerTitle">
-                  <span class="fullTitle">Anaesthetic Night Roster</span
-                  ><span class="compactTitle">Night Roster</span>
-                </h1>
-              </div>
-              <p class="motto">
-                Fair by design. Flexible under pressure. Safe in practice.
-              </p>
-              <div id="nightCompactContext" class="nightCompactContext" aria-hidden="true">
-                <span>
-                  <b>Night</b>
-                  <small id="nightCompactAssignment">Selected night</small>
-                </span>
-                <strong id="nightCompactDate"></strong>
-              </div>
-            </div>
             <div class="headActions">
               <button
                 class="installBtn hidden"
@@ -285,29 +258,20 @@
 
             </div>
           </div>
-          <div class="headerChips" aria-label="Selected roster summary">
-            <span id="headerDateChip" class="headerChip headerDateChip"></span
-            ><span id="headerModeChip" class="headerChip headerModeChip"></span
-            ><span id="headerLiveChip" class="headerChip headerLiveChip"
-              ><span class="headerLiveDot"></span
-              ><span id="headerLiveText">Connecting</span></span
-            >
-          </div>
           </header>
           <div class="nightSectionIdentity" aria-labelledby="nightSectionTitle">
             <div id="nightWelcomeHero" class="nightWelcomeHero">
-              <span class="nightWelcomeEyebrow"><i aria-hidden="true"></i>Your night</span>
               <h1 id="nightSectionTitle" class="nightWelcomeTitle" aria-label="Night">
                 <span id="nightWelcomeText" aria-hidden="true">Night</span><span id="nightWelcomeCursor" class="nightWelcomeCursor" aria-hidden="true" hidden></span>
               </h1>
-              <p id="nightWelcomeSubtitle">Your allocation, break and team plan in one clear view.</p>
+              <p id="nightWelcomeSubtitle"></p>
             </div>
           </div>
           <div class="nightDateShell nightUnifiedContext">
             <h2 class="srOnly">Selected night</h2>
             <div class="grid2">
               <label class="nightDateLabel">
-                <span class="nightDateContext">Selected night</span>
+
                 <span class="nightTeamIdentityContext hidden" data-night-team-identity></span>
                 <div class="dateNav rosterDateControl">
                   <button type="button" id="prevNightBtn" aria-label="Previous roster night">‹</button>
@@ -316,7 +280,7 @@
                 </div>
               </label>
               <div class="staffingCount" aria-live="polite">
-                <span>Staffing</span><strong id="modeStatus">6 nurses</strong><small>Calculated automatically</small>
+                <strong id="modeStatus">6 nurses</strong>
               </div>
             </div>
           </div>
@@ -382,7 +346,7 @@
       <section id="changes" class="view hidden">
         <div class="primaryScreenHeader appScreenHeader changesScreenHeader">
           <div class="primaryInstitution">
-            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=50.9" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
+            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=51.0" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
             <div class="primaryHeaderActions" aria-label="App controls">
               <button type="button" class="primaryHeaderAction primaryHeaderAdmin hidden" data-shell-settings aria-label="Roster management">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path></svg>
@@ -397,7 +361,7 @@
             <div>
               <span class="screenEyebrow">Anaesthetic Night Roster</span>
               <h1>Changes</h1>
-              <p>Staffing, allocation and confirmation <span id="changesHeaderLive" class="srOnly">Up to date</span></p>
+              <p>Staffing, allocation and confirmation <span id="changesHeaderLive" class="srOnly">Plan up to date</span></p>
             </div>
             <button type="button" class="screenInfoButton" id="changesInfoBtn" aria-label="Staffing changes information">i</button>
           </div>
@@ -416,22 +380,21 @@
         <div class="panel changePanel">
           <div class="ctop">
             <div>
-              <h2>Manage this night</h2>
-              <div class="time">
-                Record staffing changes first, then resolve only the decisions that remain
-              </div>
+              <h2>Tonight’s staffing</h2>
+
             </div>
             <div class="liveStatus" id="syncStatus">
               <span class="liveDot"></span><span id="syncText">Connecting</span>
             </div>
           </div>
-          <div id="changesWorkflowExperience"></div>
+          <div id="changesWorkflowExperience">
           <div class="changesWorkflowTabs" role="tablist" aria-label="Changes steps">
             <button type="button" class="active" data-changes-step="staffing" role="tab" aria-selected="true"><span>1</span><b>Staffing</b><small id="staffingStepState">Record people</small></button>
             <button type="button" data-changes-step="allocation" role="tab" aria-selected="false"><span>2</span><b>Allocation</b><small id="allocationStepState">Review roles</small></button>
             <button type="button" data-changes-step="confirm" role="tab" aria-selected="false"><span>3</span><b>Confirm</b><small id="confirmStepState">Review plan</small></button>
           </div>
           <div id="changesWorkflowState" class="changesWorkflowState" role="status" aria-live="polite"></div>
+          </div>
           <div id="changesStaffingPane" class="changesStepPane" role="tabpanel" aria-label="Staffing">
           <div class="staffingSection absenceSection">
             <div class="stepHeader">
@@ -510,7 +473,7 @@
       <section id="breaks" class="view hidden">
         <div class="primaryScreenHeader appScreenHeader breaksScreenHeader">
           <div class="primaryInstitution">
-            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=50.9" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
+            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=51.0" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
             <div class="primaryHeaderActions" aria-label="App controls">
               <button type="button" class="primaryHeaderAction primaryHeaderAdmin hidden" data-shell-settings aria-label="Roster management">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path></svg>
@@ -549,7 +512,7 @@
           <div id="breakClockChange"></div>
           <div id="breakSummaryRow" class="breakSummaryRow"></div>
           <div id="breakDate" class="notice"></div>
-          <div class="breakPlanTitle"><h2>Break plan</h2><span id="breakPlanLive"><i></i>Up to date</span></div>
+          <div class="breakPlanTitle"><h2>Break plan</h2><span id="breakPlanLive"><i></i>Plan up to date</span></div>
           <div id="breakList"></div>
         </div>
       </section>
@@ -557,7 +520,7 @@
         <div class="chatScreen">
           <div class="primaryScreenHeader appScreenHeader chatScreenHeader">
             <div class="primaryInstitution">
-              <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=50.9" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
+              <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=51.0" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
               <div class="primaryHeaderActions" aria-label="App controls">
                 <button type="button" class="primaryHeaderAction primaryHeaderAdmin hidden" data-shell-settings aria-label="Roster management">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path></svg>
@@ -571,7 +534,7 @@
             <div class="primaryScreenTitleRow chatTitleRow">
               <div>
                 <h1 id="chatTitle">Chat</h1>
-                <p class="primaryConnectionLine"><i class="chatLiveDot" aria-hidden="true"></i><span id="chatLiveStatus">Connecting</span><span aria-hidden="true">·</span><span>Tonight’s roster</span></p>
+                <p class="primaryConnectionLine"><i class="chatLiveDot" aria-hidden="true"></i><span id="chatLiveStatus">Connecting</span><span aria-hidden="true">·</span><span>Staff coordination</span></p>
               </div>
               <button type="button" id="chatNewPrivateBtn" class="chatHeaderCompose" aria-label="Start a new private chat">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18.5 4 20v-4.5A8 8 0 1 1 8.5 19H7Z"></path><path d="M12 8v6M9 11h6"></path></svg>
@@ -586,11 +549,10 @@
           </div>
 
           <div class="chatRosterContext" aria-label="Tonight's chat roster">
-            <span class="nightTeamIdentityContext hidden chatShiftIdentity" data-night-team-identity></span>
+
             <div class="chatRosterContextCopy">
-              <span>Tonight</span>
               <strong id="chatRosterContextDate">Selected roster night</strong>
-              <small id="chatRosterContextMeta">Team chat · Live</small>
+              <small id="chatRosterContextMeta">6 nurses</small>
             </div>
             <button type="button" id="chatShiftNameBtn" class="chatShiftNameButton" aria-label="Name tonight's shift">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10-3.5-3.5-10 10L4 20Z"></path><path d="m13.8 6.7 3.5 3.5"></path></svg>
@@ -623,10 +585,10 @@
               </section>
 
               <div class="chatUtilityGroup" aria-label="Chat information and settings">
-                <div class="chatUtilityHeading" aria-hidden="true"><span>Chat essentials</span><small>Safety &amp; alerts</small></div>
+
                 <button type="button" class="chatSafetyNotice" id="chatSafetyInfo" aria-label="Chat safety information">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3.5 19h17L12 3Z"></path><path d="M12 9v4M12 16.5h.01"></path></svg>
-                  <span><b>Staff coordination only</b><small>No patient information · Messages removed after 14 days</small></span>
+                  <span>Staff coordination only · No patient information</span>
                   <i aria-hidden="true">›</i>
                 </button>
 
@@ -1114,7 +1076,18 @@
         <button type="button" id="closeAccountSheet">Done</button>
       </div>
       <div class="accountSheetScroll">
-        <p class="accountSheetIntro">Your profile, app preferences and sign-in settings.</p>
+<section id="accountHomeHub" class="accountHomeHub">
+<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div>
+<div class="accountHubList">
+<button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Personalise</b><small>Your profile and shared shift identity</small></span><i aria-hidden="true">›</i></button>
+<button type="button" class="accountHubRow" data-account-shortcut="notifications"><span class="accountHubIcon" aria-hidden="true">◌</span><span><b>Notifications</b><small>Message and roster alerts</small></span><i aria-hidden="true">›</i></button>
+<button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button>
+<button type="button" class="accountHubRow hidden" id="accountAdminHubRow" data-account-shortcut="admin"><span class="accountHubIcon" aria-hidden="true">⚙</span><span><b>Roster management</b><small>Administrator controls</small></span><i aria-hidden="true">›</i></button>
+<button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button>
+<button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button>
+</div>
+</section>
+
         <div id="profileExperience"></div>
 
         <section class="accountGroup" aria-labelledby="appearanceHeading">
@@ -1458,12 +1431,12 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="domain-logic.js?v=50.9" vite-ignore></script>
-    <script src="runtime-foundation.js?v=50.9" vite-ignore></script>
-    <script src="app-core.js?v=50.9" vite-ignore></script>
-    <script src="app-ui.js?v=50.9" vite-ignore></script>
-    <script src="push.js?v=50.9" vite-ignore></script>
-    <script src="chat.js?v=50.9" vite-ignore></script>
+    <script src="domain-logic.js?v=51.0" vite-ignore></script>
+    <script src="runtime-foundation.js?v=51.0" vite-ignore></script>
+    <script src="app-core.js?v=51.0" vite-ignore></script>
+    <script src="app-ui.js?v=51.0" vite-ignore></script>
+    <script src="push.js?v=51.0" vite-ignore></script>
+    <script src="chat.js?v=51.0" vite-ignore></script>
     <script type="module" src="/src/launch.tsx"></script>
   </body>
 </html>

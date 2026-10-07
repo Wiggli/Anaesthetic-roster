@@ -100,40 +100,60 @@ function profileDraftSignature(){return JSON.stringify([(byId('profileName')&&by
 
 function updateProfileSaveState(){var button=byId('saveProfileBtn');if(!button)return;var changed=!!pendingProfilePhoto||profileDraftSignature()!==profileSavedSignature;button.classList.toggle('hidden',!changed);if(changed&&byId('profileMessage').classList.contains('success')&&!pendingProfilePhoto)showProfileMessage('')}
 
+var accountPresentationPages={};
+function accountElement(id){
+  var node=document.getElementById(id);if(node)return node;
+  var pages=Object.keys(accountPresentationPages);
+  for(var i=0;i<pages.length;i++){var page=accountPresentationPages[pages[i]];if(page.id===id)return page;node=page.querySelector('[id="'+id+'"]');if(node)return node}
+  return null
+}
+window.accountPresentationElement=accountElement;
 function prepareAccountInformationArchitecture(){
   var dialog=byId('accountSheet'),scroll=dialog&&dialog.querySelector('.accountSheetScroll'),header=dialog&&dialog.querySelector('.accountSheetHeader');
   if(!dialog||!scroll||!header)return;
-  var intro=scroll.querySelector('.accountSheetIntro');if(intro)intro.classList.add('hidden');
+  if(accountPresentationPages.home)return;
   var profile=byId('profileExperience'),appearance=byId('appearanceExperience'),actions=byId('accountActionsExperience'),passkeys=byId('passkeyList');
   var panes={profile:profile,preferences:appearance&&appearance.closest('.accountGroup'),help:actions&&actions.closest('.accountGroup'),security:passkeys&&passkeys.closest('.accountGroup')};
-  Object.keys(panes).forEach(function(key){var pane=panes[key];if(pane){pane.classList.add('accountDetailPane','hidden');pane.setAttribute('data-account-pane',key)}});
+  Object.keys(panes).forEach(function(key){var pane=panes[key];if(pane){pane.classList.add('accountDetailPane','accountPage');pane.classList.remove('hidden');pane.setAttribute('data-account-pane',key);accountPresentationPages[key]=pane}});
   var home=byId('accountHomeHub');
-  if(!home){
-    home=document.createElement('section');home.id='accountHomeHub';home.className='accountHomeHub';
-    home.innerHTML='<div class="accountHomeIdentity"><span class="accountHomeAvatar" id="accountHomeAvatar" aria-hidden="true">?</span><div><h3 id="accountHomeName">Your account</h3><p id="accountHomeRole">Anaesthetic team member</p><small id="accountHomeEmail"></small></div></div><div class="accountHubList"><button type="button" class="accountHubRow" data-account-section="profile"><span class="accountHubIcon" aria-hidden="true">◯</span><span><b>Personalise</b><small>Your profile and shared shift identity</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-shortcut="notifications"><span class="accountHubIcon" aria-hidden="true">◌</span><span><b>Notifications</b><small>Message and roster alerts</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="preferences"><span class="accountHubIcon" aria-hidden="true">◐</span><span><b>Preferences</b><small>Appearance on this device</small></span><i aria-hidden="true">›</i></button><button type="button" id="accountAdminHubRow" class="accountHubRow hidden" data-account-shortcut="admin"><span class="accountHubIcon" aria-hidden="true">⚙</span><span><b>Roster management</b><small>Administrator controls and system tools</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="help"><span class="accountHubIcon" aria-hidden="true">?</span><span><b>App &amp; Help</b><small>Guide, updates, install and share</small></span><i aria-hidden="true">›</i></button><button type="button" class="accountHubRow" data-account-section="security"><span class="accountHubIcon" aria-hidden="true">⌁</span><span><b>Security</b><small>Passkeys and sign-in</small></span><i aria-hidden="true">›</i></button></div>';
-    scroll.insertBefore(home,scroll.firstChild);
+  if(home){
     var signOut=byId('accountSignOutBtn'),version=byId('accountVersion');if(signOut)home.appendChild(signOut);if(version)home.appendChild(version);
     Array.prototype.forEach.call(home.querySelectorAll('[data-account-section]'),function(button){button.onclick=function(){showAccountSection(button.getAttribute('data-account-section'))}});
     Array.prototype.forEach.call(home.querySelectorAll('[data-account-shortcut]'),function(button){button.onclick=function(){
-      var action=button.getAttribute('data-account-shortcut'),account=byId('accountSheet');
-      if(account&&account.open)account.close();
-      if(action==='admin'){var admin=byId('adminSettingsBtn');if(admin)admin.click();return}
-      if(action==='notifications'){
-        show('chat');
-        setTimeout(function(){var disclosure=document.querySelector('#chat .chatNotificationDisclosure');if(disclosure){disclosure.open=true;disclosure.scrollIntoView({behavior:cinematicMotionAllowed()?'smooth':'auto',block:'center'})}},80)
+      var action=button.getAttribute('data-account-shortcut');
+      if(action==='notifications'){showAccountSection('notifications');return}
+      if(action==='admin'){
+        var account=byId('accountSheet');if(account&&account.open)account.close();
+        var admin=byId('adminSettingsBtn');if(admin)admin.click();
+        var close=byId('closeAdminBtn');if(close){close.textContent='Back to Account';close.onclick=function(){show('today');showAccountSheet()}}
       }
     }});
   }
+  accountPresentationPages.home=home;
+  var notifications=document.createElement('section');notifications.className='accountPage accountNotificationPage';notifications.setAttribute('data-account-pane','notifications');
+  var card=document.getElementById('pushNotificationCard');if(card)notifications.appendChild(card);
+  accountPresentationPages.notifications=notifications;
+  var disclosure=document.querySelector('#chat .chatNotificationDisclosure');
+  if(disclosure){var shortcut=document.createElement('button');shortcut.type='button';shortcut.className='chatNotificationShortcut';shortcut.textContent='Notification settings';shortcut.onclick=function(){showAccountSheet();showAccountSection('notifications')};disclosure.replaceWith(shortcut)}
+  var outlet=document.createElement('div');outlet.id='accountPageOutlet';outlet.className='accountPageOutlet';
+  scroll.replaceChildren(outlet);outlet.appendChild(home);
   if(!byId('accountBackBtn')){
     var back=document.createElement('button');back.type='button';back.id='accountBackBtn';back.className='accountBackBtn hidden';back.setAttribute('aria-label','Back to Account');back.textContent='‹';back.onclick=function(){showAccountSection('home')};header.insertBefore(back,header.firstChild)
   }
 }
 function showAccountSection(section){
-  prepareAccountInformationArchitecture();var home=byId('accountHomeHub'),back=byId('accountBackBtn'),title=byId('accountSheetTitle'),eyebrow=byId('accountSheetEyebrow')||document.querySelector('#accountSheet .accountSheetHeader>div>span');
-  var labels={profile:'Personalise',preferences:'Preferences',security:'Security',help:'App & Help'},target=section&&section!=='home'?document.querySelector('[data-account-pane="'+section+'"]'):null;
-  if(home)home.classList.toggle('hidden',!!target);Array.prototype.forEach.call(document.querySelectorAll('#accountSheet [data-account-pane]'),function(pane){pane.classList.toggle('hidden',pane!==target)});
-  if(back)back.classList.toggle('hidden',!target);if(title)title.textContent=target?labels[section]:'Account';if(eyebrow)eyebrow.textContent=target?'Account':'App & settings';
-  var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0
+  prepareAccountInformationArchitecture();
+  var labels={profile:'Personalise',preferences:'Preferences',notifications:'Notifications',security:'Security',help:'App & Help'},key=accountPresentationPages[section]?section:'home';
+  var target=accountPresentationPages[key],outlet=byId('accountPageOutlet'),back=byId('accountBackBtn'),close=byId('closeAccountSheet'),title=byId('accountSheetTitle'),eyebrow=document.querySelector('#accountSheet .accountSheetHeader>div>span');
+  if(outlet&&target)outlet.replaceChildren(target);
+  var dialog=byId('accountSheet');if(dialog)dialog.dataset.accountPage=key;
+  if(back)back.classList.toggle('hidden',key==='home');
+  if(close)close.classList.toggle('hidden',key!=='home');
+  if(title)title.textContent=key==='home'?'Account':labels[key];
+  if(eyebrow)eyebrow.textContent=key==='home'?'Night Roster':'Account';
+  var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0;
+  if(key==='notifications'&&window.refreshPushSettings)window.refreshPushSettings();
+  if(key!=='home'&&title){title.setAttribute('tabindex','-1');title.focus({preventScroll:true})}
 }
 
 function populateAccountSheet(){

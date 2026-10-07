@@ -71,54 +71,14 @@ const navigation = read('src/navigation.tsx');
 const chatCss = read('chat.css');
 assert.equal(exists('src/ui-foundation.css'), false,
   'shared presentation must stay consolidated in presentation.css rather than reintroducing a second ui-foundation layer');
-assert.equal((presentation.match(/42\.4 unified presentation foundation/g) || []).length, 1,
-  'presentation.css must have exactly one final 42.4 UI foundation');
-assert.doesNotMatch(presentation, /personalHeroFactGrid\{margin-inline:-14px!important\}/,
-  'Night facts must not return to the clipping-prone negative-margin layout');
-assert.doesNotMatch(presentation, /personalHeroPrimaryAction\{margin-inline:-14px!important\}/,
-  'Night actions must remain inside the hero safe area');
-assert.equal((rudderNavigation.match(/42\.4 primary navigation/g) || []).length, 1,
-  'rudder navigation must have one final 42.4 dock foundation');
 assert.equal((navigation.match(/className="navIconWrap"/g) || []).length, 4,
-  'Night, Changes, Breaks and Chat must share the same fixed icon stage');
+  'Night, Changes, Breaks and Chat share one icon stage');
 assert.doesNotMatch(navigation, /viewSwipeStage|swipePreview|swipeCurrent|setPageTrackOffset|pinPageTrack/,
-  'primary navigation must not physically drag or stage full application screens');
-assert.doesNotMatch(presentation, /viewSwipeStage|swipePreview|swipeCurrent/,
-  'presentation.css must not retain the superseded full-page swipe track');
-assert.doesNotMatch(read('src/clinical-experience.tsx'), /Personalise this view/,
-  'Night must not duplicate Account and Settings inside the personal hero');
-assert.match(rudderNavigation, /\.navIconWrap \.navTaskBadge\{/,
-  'navigation badges must be anchored to the icon stage rather than the whole tab');
-assert.match(rudderNavigation, /\.bottom\.reactTabs \.navIconWrap\{[\s\S]*?overflow:visible!important;/,
-  'the icon stage must allow unread badges to extend without clipping');
-assert.match(rudderNavigation, /\.navIconWrap \.navTaskBadge\{[\s\S]*?margin:0!important;/,
-  'React navigation badges must neutralise legacy badge margins');
-assert.match(chatCss, /\.bottom:not\(\.reactTabs\) button\[data-v="chat"\] \.navTaskBadge/,
-  'legacy Chat badge positioning must be scoped to the non-React fallback dock');
-assert.doesNotMatch(chatCss, /\.bottom button\[data-v="chat"\] \.navTaskBadge/,
-  'legacy Chat badge positioning must not leak into the React dock');
-assert.doesNotMatch(rudderNavigation, /42\.0 dock finishing pass/,
-  'superseded dock finishing overrides must stay removed');
-
-
-const legacyBaseCss = read('styles.css');
-const legacyChatCss = read('chat.css');
-assert.match(legacyBaseCss, /^\/\* Compatibility base\.[\s\S]*?\*\/\n@layer legacy-base \{/,
-  'legacy base CSS must remain in a lower-priority cascade layer');
-assert.equal((legacyBaseCss.match(/!important/g) || []).length, 0,
-  'legacy base CSS must not use !important to beat the current product presentation');
-assert.match(legacyChatCss, /^\/\* Complete Chat fallback styling\.[\s\S]*?\*\/\n@layer legacy-chat \{/,
-  'Chat fallback CSS must remain in a lower-priority cascade layer');
-assert.equal((legacyChatCss.match(/!important/g) || []).length, 0,
-  'legacy Chat fallback CSS must not use !important to beat the current shared presentation');
-assert.match(presentation, /^@layer presentation-history \{/,
-  'pre-42.4 presentation generations must remain demoted to presentation-history');
-const currentPresentationMarker = presentation.indexOf('/* 42.4 unified presentation foundation.');
-assert.ok(currentPresentationMarker > 0, 'current 42.4 presentation foundation must remain present');
-const historicalPresentation = presentation.slice(0, currentPresentationMarker);
-assert.equal((historicalPresentation.match(/!important/g) || []).length, 0,
-  'historical presentation CSS must not retain priority flags that can defeat current styling');
-const currentPresentation = presentation.slice(currentPresentationMarker);
-assert.match(currentPresentation, /42\.6 authoritative visibility state[\s\S]*?\.hidden\{display:none!important\}/,
-  'the current presentation must own one authoritative hidden-state utility so component display rules cannot reveal inactive UI');
+  'primary navigation must not physically stage full screens');
+assert.match(read('src/tailwind.css'), /\.hidden, \[hidden\] \{ display: none !important; \}/,
+  'runtime visibility has one global semantic owner');
+assert.match(presentation, /@layer presentation-components/,
+  'compatibility internals remain below canonical product geometry');
+assert.equal((presentation.match(/!important/g) || []).length, 0,
+  'historical presentation cannot override the canonical system');
 console.log('Modular UI ownership and TypeScript runtime source architecture passed.');

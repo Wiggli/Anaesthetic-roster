@@ -30,19 +30,7 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
   const reduced = useReducedMotion();
   useLayoutEffect(() => {
     const host = document.getElementById('changesWorkflowExperience');
-    const fallback = document.querySelector<HTMLElement>('#changes .changesWorkflowTabs');
-    const legacyState = document.getElementById('changesWorkflowState');
     host?.setAttribute('data-react-ready', 'true');
-    fallback?.classList.add('hidden');
-    fallback?.setAttribute('aria-hidden', 'true');
-    legacyState?.classList.add('hidden');
-    legacyState?.setAttribute('aria-hidden', 'true');
-    return () => {
-      fallback?.classList.remove('hidden');
-      fallback?.removeAttribute('aria-hidden');
-      legacyState?.classList.remove('hidden');
-      legacyState?.removeAttribute('aria-hidden');
-    };
   }, []);
 
   const moveFocus = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {

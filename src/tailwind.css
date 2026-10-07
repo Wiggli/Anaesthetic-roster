@@ -4,19 +4,16 @@
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
-
 @import "./presentation.css";
 
 @import "./account-admin-polish.css";
 
 @import "./rudder-navigation.css";
 
-@import "./product-polish.css";
 
 
-
-/* 49.0 single product-wide presentation authority. */
+/* Canonical product geometry and materials. */
 @import "./product-unified.css";
 
-/* The long-lived presentation token is --liquid-bg. Keep the unified canvas wired to it. */
-:root { --coherence-canvas: var(--liquid-bg); }
+/* Semantic visibility, the only important declaration in the product system. */
+.hidden, [hidden] { display: none !important; }

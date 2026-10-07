@@ -331,12 +331,12 @@ function chatRenderTeamHeader(){
     else{teamAvatar.textContent=window.shiftSymbolGlyph?window.shiftSymbolGlyph(identity.symbol):identity.initials||'AT';teamAvatar.classList.remove('hasPhoto')}
   }
   if(teamName){teamName.textContent=displayName;teamName.classList.toggle('shiftIdentityTitle',nickname)}
-  if(teamMeta)teamMeta.textContent=nickname?(identity.tagline?identity.tagline+' · '+nurseLabel:'Anaesthetic Team · '+nurseLabel):nurseLabel+' · Team chat';
+  if(teamMeta)teamMeta.textContent='Team conversation';
   if(threadTitle){threadTitle.textContent=displayName;threadTitle.classList.toggle('shiftIdentityTitle',nickname)}
   if(teamEntry){teamEntry.classList.toggle('hasShiftIdentity',nickname);teamEntry.dataset.shiftAccent=identity.accentKey||'teal'}
   if(threadCount)threadCount.textContent=(nickname?'Anaesthetic Team · ':'')+nurseLabel+' · '+live;
   if(contextDate)contextDate.textContent=chatRosterDateLabel(date);
-  if(contextMeta)contextMeta.textContent=nurseLabel+' · Team chat '+String(live).toLowerCase();
+  if(contextMeta)contextMeta.textContent=nurseLabel;
   if(nameAction)nameAction.textContent=nickname?'Rename':'Name shift';
   if(teamEntry)teamEntry.setAttribute('aria-label','Open '+displayName+' team chat with everyone on tonight\'s roster');
   if(team){

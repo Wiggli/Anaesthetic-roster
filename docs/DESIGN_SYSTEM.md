@@ -24,7 +24,9 @@ Use only three ordinary elevation levels: page canvas, stable content surface an
 
 Use the established spacing, radius, typography, surface and motion variables already defined in the stylesheets. New durable values should be introduced as shared custom properties rather than copied numeric literals across unrelated selectors.
 
-The active product system uses a 6, 10, 14, 18 and 24 pixel spacing rhythm, 12 to 15 pixel control radii and a 20 pixel content-card radius. Ordinary transitions use the shared 180 to 240 millisecond motion range. These values are owned by `product-unified.css`, so new screens should consume the same tokens rather than introduce another local scale.
+The active product system uses a 4, 8, 12, 16, 24 and 32 pixel spacing rhythm, 12 pixel control radii and a 16 pixel content-card radius. Ordinary transitions use the shared 180 to 200 millisecond motion range. These values are owned by `product-unified.css`, so new screens should consume the same tokens rather than introduce another local scale.
+
+Typography uses one 10, 12, 14, 16, 18, 22 and 28 pixel scale, adjusted by the saved reading-size preference. Date rails show an abbreviated weekday and month with the year, keeping the selected date readable at 320 pixels.
 
 Colour is semantic before it is decorative. Strong app accent colour means selection or action. Green means healthy, live or confirmed state, amber means attention, and red means destructive or urgent state. Personal and shift accent colours may identify people or the team but must never replace clinical state colours.
 
@@ -40,14 +42,16 @@ For whole-app polish, review the complete path Night → Changes → Actions →
 
 The production cascade has one final product-wide presentation owner. Older compatibility layers may provide component internals, but they are not allowed to define a second competing coherence system.
 
-- `styles.css` remains the compatibility base inside `@layer legacy-base`.
-- `chat.css` remains the Chat fallback inside `@layer legacy-chat`.
-- Historical presentation generations remain compatibility history and should continue shrinking.
-- `account-admin-polish.css` owns account and administrator component internals.
-- `rudder-navigation.css` owns low-level primary dock geometry.
-- `product-polish.css` owns established safety-sensitive compatibility polish that has not yet been retired.
-- `product-unified.css` is the single final product-wide presentation authority. It owns shared spacing, typography hierarchy, surfaces, radii, shift identity, live-state language, Actions presentation, navigation appearance, motion, focus treatment and small-phone adaptation across Night, Changes, Actions, Breaks, Chat, Account and Personalisation.
-- `product-coherence.css`, `product-coherence-bridge.css` and `product-coherence-correction.css` are retained only as historical migration references and are not imported into the production cascade.
+- `styles.css` holds compatibility internals in `@layer legacy-base` and `legacy-components`.
+- `chat.css`, `night-welcome.css`, and `night-intelligence.css` keep feature internals inside explicit compatibility layers.
+- `src/presentation.css` holds deduplicated component compatibility rules in `presentation-history` and `presentation-components`. Shared geometry no longer belongs to historical generations.
+- `src/account-admin-polish.css` contains retained administrator internals in `account-components`.
+- `src/rudder-navigation.css` owns the persistent five-column dock, icon stages, badges and safe-area geometry. Selection is a state of the destination button, with no sliding indicator element.
+- `src/product-unified.css` is the canonical presentation authority for page gutters, spacing, typography, surfaces, radii, identity, date rails, forms, sheets, Account pages and shared motion. It uses normal cascade ownership without priority flags.
+- The superseded `product-polish.css`, `product-coherence.css`, `product-coherence-bridge.css` and `product-coherence-correction.css` files are deleted.
+- `src/selected-night.ts` composes one context from the original identity, count and native date controls. It retains the original nodes and listeners and moves Breaks content outside that compact context.
+- Changes mounts its React workflow into the same host that contains the functional HTML fallback. React replaces that fallback rather than rendering beside it.
+- Account has one `accountPageOutlet`. Inactive pages are detached and retained, preserving controls and drafts; only the current page is mounted. `accountPresentationElement` resolves retained controls for existing presentation adapters, including notifications.
 
 A new whole-app visual rule belongs in `product-unified.css`. A component-specific rule belongs in its owning component stylesheet. Do not create another final override stylesheet. If an older compatibility rule prevents the product system from taking effect, retire or demote that older rule rather than adding another coherence layer.
 

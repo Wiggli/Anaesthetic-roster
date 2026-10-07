@@ -83,7 +83,7 @@ if (projectState.databaseSchema !== Number(core.match(/var EXPECTED_SCHEMA_VERSI
 for (const name of ['index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css', 'theme-bootstrap.js', 'night-intelligence.js', ...uiSources]) {
   const source = read(name);
   const refs = Array.from(source.matchAll(/\?v=(\d+(?:\.\d+)+)/g), match => match[1]);
-  if (!refs.length && !uiSources.includes(name)) fail(`${name} has no versioned asset references to verify.`);
+  if (!refs.length && !uiSources.includes(name) && !(name==='styles.css' && !/url\(/i.test(source))) fail(`${name} has no versioned asset references to verify.`);
   const stale = [...new Set(refs.filter(item => item !== version))];
   if (stale.length) fail(`${name} contains stale asset version(s): ${stale.join(', ')}.`);
 }

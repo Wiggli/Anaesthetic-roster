@@ -1,6 +1,4 @@
-/* Account + Administrator calm-hierarchy pass, 41.3.
-   Keeps personal settings and administrator tools deliberately separate. */
-
+@layer account-components {
 .accountSheet.accountHubSheet,
 .accountSheet{
   --settings-row-height:68px;
@@ -50,7 +48,7 @@
   line-height:1;
   box-shadow:none;
 }
-#accountSheet .accountBackBtn.hidden{visibility:hidden;display:grid!important;pointer-events:none}
+#accountSheet .accountBackBtn.hidden{visibility:hidden;display:grid;pointer-events:none}
 #accountSheet .accountHomeHub{
   display:grid;
   gap:18px;
@@ -159,11 +157,11 @@
 #accountSheet .accountSignOut{
   margin-top:0;
   min-height:48px;
-  border:0!important;
-  border-radius:14px!important;
-  background:color-mix(in srgb,#d84a55 8%,var(--liquid-surface))!important;
-  color:#b72f3b!important;
-  box-shadow:none!important;
+  border:0;
+  border-radius:14px;
+  background:color-mix(in srgb,#d84a55 8%,var(--liquid-surface));
+  color:#b72f3b;
+  box-shadow:none;
 }
 #accountSheet .accountVersion{
   margin:0;
@@ -205,7 +203,7 @@
   margin:0;
 }
 
-#admin .adminLegacyTabs{display:none!important}
+#admin .adminLegacyTabs{display:none}
 #admin>.adminHeader{
   margin:0 0 14px;
   padding:12px 2px 4px;
@@ -322,11 +320,11 @@
   display:grid;
   place-items:center;
   padding:0;
-  border:0!important;
-  border-radius:50%!important;
-  background:transparent!important;
-  color:var(--liquid-accent-strong)!important;
-  box-shadow:none!important;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:var(--liquid-accent-strong);
+  box-shadow:none;
   font-size:32px;
   font-weight:300;
   line-height:1;
@@ -405,12 +403,12 @@
 #admin .adminSystemSummary b{color:var(--liquid-label);font-size:13px}
 #admin .adminSystemSummary span{color:var(--liquid-secondary);font-size:10.5px;text-align:right}
 #admin .adminHealthPanel{
-  margin:0!important;
-  padding:13px!important;
-  border:var(--liquid-hairline) solid var(--liquid-separator)!important;
-  border-radius:16px!important;
-  background:var(--liquid-surface)!important;
-  box-shadow:none!important;
+  margin:0;
+  padding:13px;
+  border:var(--liquid-hairline) solid var(--liquid-separator);
+  border-radius:16px;
+  background:var(--liquid-surface);
+  box-shadow:none;
 }
 #admin .adminSystemDisclosure{
   margin-top:9px;
@@ -432,8 +430,8 @@
 #admin .adminSystemDisclosure[open]>summary{border-bottom:var(--liquid-hairline) solid var(--liquid-separator)}
 #admin .adminSystemDisclosure #adminHealthGrid,
 #admin .adminSystemDisclosure #adminAuditTimeline{margin-top:10px}
-#admin #adminTeam details:has(#appDiagnostics){display:none!important}
-#admin #adminData details:has(#appDiagnostics){display:block!important}
+#admin #adminTeam details:has(#appDiagnostics){display:none}
+#admin #adminData details:has(#appDiagnostics){display:block}
 
 @media (min-width:760px){
   #accountSheet .accountHubList{max-width:560px;margin-inline:auto;width:100%}
@@ -452,4 +450,6 @@
   #admin .adminHubCard,
   #admin .adminChoiceList,
   #admin .adminDetailPanel{border-width:1px}
+}
+
 }

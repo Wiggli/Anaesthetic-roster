@@ -314,9 +314,6 @@ function ClockChangeNotice({ info, context }: { info?: ClockChangeInfo | null; c
 
 function BreakSummaryItems({ model }: { model: BreakSummary }) {
   return <>
-    <button type="button" className="breakSummaryItem staffing" onClick={() => goToChanges('staffing')}>
-      <b>{model.nurseCount}</b><small>Nurses</small>
-    </button>
     <button type="button" className={`breakSummaryItem ${model.absenceCount ? 'absence' : 'ready'}`} onClick={() => goToChanges('staffing')}>
       <b>{model.absenceCount || 'No'}</b><small>{model.absenceCount === 1 ? 'Absence' : 'Absences'}</small>
     </button>
@@ -424,7 +421,7 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
   const second = model.second.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
   const assignment = model.pending ? 'Awaiting allocation' : first ? 'First break' : second ? 'Second break' : 'Check the plan';
   return <section className="personalBreakSummary" aria-label="Your break">
-    <span className="personalBreakEyebrow">Your break · {model.formattedDate}</span>
+    <span className="personalBreakEyebrow">Your break</span>
     <div className="personalBreakMain">
       <div><h2>{assignment}</h2><p>{model.pending ? model.pendingReason : mine || 'Choose your name in Account to highlight your break.'}</p></div>
       <span className="personalBreakMark" aria-hidden="true">{model.pending ? '…' : first ? '1' : second ? '2' : '·'}</span>
@@ -595,14 +592,14 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
     </div>
 
     <div className={'nightTimelineScale ' + (model.clockChange?.direction || 'normal')}>
-      <span style={{ left: '0%' }}>00:00</span>
+      <span className="timelineStart">00:00</span>
       {model.clockChange?.direction === 'back' && <>
         <span className="dstMark" style={{ left: '25%' }}>02:00¹</span>
         <span className="dstMark" style={{ left: (transitionPct || 37.5) + '%' }}>02:00²</span>
       </>}
       {model.clockChange?.direction === 'forward' && <span className="dstJumpMark" style={{ left: (transitionPct || 33.33) + '%' }}>02:00 → 03:00</span>}
       <span className="handoverScale" style={{ left: handoverPct + '%' }}>{model.clockChange?.handover || model.handoverLabel || '03:30'}</span>
-      <span style={{ left: '100%' }}>07:00</span>
+      <span className="timelineEnd">07:00</span>
     </div>
 
     {model.clockChange?.direction === 'back' && <div className="nightTimelineExplain">

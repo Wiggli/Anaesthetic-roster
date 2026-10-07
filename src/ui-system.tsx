@@ -25,7 +25,7 @@ export function Pressable({
   return <motion.button
     {...props}
     whileTap={props.disabled || reduced ? undefined : { scale: 0.98 }}
-    transition={{ type: 'spring', stiffness: 520, damping: 44, mass: 0.48 }}
+    transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
     className={cx('tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-blue-500/42 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
   >{children}</motion.button>;
 }
@@ -38,7 +38,7 @@ export function Surface({
   return <div
     {...props}
     className={cx(
-      'tw:@container tw:overflow-hidden tw:rounded-[22px] tw:border tw:border-black/[0.055] tw:bg-[var(--card)] tw:shadow-[0_7px_24px_rgba(15,23,42,0.045)] tw:dark:border-white/[0.075]',
+      'uiSurface tw:@container',
       className
     )}
   >{children}</div>;
@@ -184,7 +184,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(option.value)}
           className={cx(
             'tw:relative tw:isolate tw:min-w-0 tw:rounded-[14px] tw:bg-transparent tw:px-2 tw:text-center',
-            compact ? 'tw:min-h-10 tw:py-2' : 'tw:min-h-13 tw:py-2.5',
+            compact ? 'tw:min-h-11 tw:py-2' : 'tw:min-h-13 tw:py-2.5',
             selected ? 'tw:text-[var(--text)]' : 'tw:text-[var(--muted)]'
           )}
         >
@@ -195,9 +195,9 @@ export function SegmentedControl<T extends string>({
           /> : null}
           <span className="tw:flex tw:items-center tw:justify-center tw:gap-1.5">
             {option.icon}
-            <strong className="tw:truncate tw:text-[0.8rem] tw:font-bold">{option.label}</strong>
+            <strong className="tw:whitespace-normal tw:text-[0.8rem] tw:font-bold">{option.label}</strong>
           </span>
-          {!compact && option.detail ? <small className="tw:mt-1 tw:block tw:truncate tw:text-[0.7rem] tw:leading-tight tw:opacity-75">{option.detail}</small> : null}
+          {!compact && option.detail ? <small className="tw:mt-1 tw:block tw:whitespace-normal tw:text-[0.7rem] tw:leading-tight tw:opacity-75">{option.detail}</small> : null}
         </Pressable>;
       })}
     </div>
