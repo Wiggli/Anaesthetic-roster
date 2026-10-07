@@ -1,16 +1,16 @@
 const {test,expect}=require('@playwright/test');
 test.use({serviceWorkers:'block'});
-async function ready(page,fallback=false){
+async function ready(page,fallback=false,userRole='member'){
  if(fallback)await page.route('**/navigation-*.js',route=>route.abort());
  await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'application/javascript',body:'window.supabase={createClient(){return null}}'}));
  await page.goto('/index.html');
- await page.evaluate(()=>{
- document.body.classList.remove('authPending');document.getElementById('launchScreen').style.display='none';
+ await page.evaluate(user_role=>{
+ prepareAuthorisedShell({display_name:'Review Nurse',email:'review@example.test',user_role});document.getElementById('launchScreen').style.display='none';
  document.getElementById('authGate').classList.add('hidden');document.querySelector('main').style.display='block';
- document.querySelector('.bottom').style.display='grid';currentUserProfile={display_name:'Review Nurse',email:'review@example.test',user_role:'member'};
+ document.querySelector('.bottom').style.display='grid';
  currentPrivateProfile={profile_name:'Review Nurse'};localStorage.setItem('anaes_my_name','Andre');schemaVersion=53;
  supa={rpc:async()=>({data:[],error:null})};appCompatibility={write_allowed:true,write_status:'allowed'};rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-08');render();show('today');
- });
+ },userRole);
  if(!fallback)await expect(page.locator('[data-react-navigation]')).toBeVisible();
 }
 for(const width of [320,360,390,412,430])for(const dark of [false,true]){
@@ -43,4 +43,16 @@ test('fallback dock keeps every destination visible @iphone',async({page})=>{
  const rects=await page.locator('.bottom button').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect();return{y:r.y,right:r.right,w:r.width}}));
  expect(rects).toHaveLength(5);expect(rects[4].right).toBeLessThanOrEqual(320);expect(rects.every(r=>r.y===rects[0].y&&r.w>44)).toBe(true);
  await page.locator('.bottom [data-v="chat"]').click();await expect(page.locator('#chat')).toBeVisible();
+});
+test('administrator sign-in keeps Chat visible from every screen @iphone',async({page},testInfo)=>{
+ const width=testInfo.project.name==='desktop-chromium'?1280:390;
+ await page.setViewportSize({width,height:844});await ready(page,false,'admin');
+ await page.evaluate(()=>{document.body.classList.add('dark');document.documentElement.dataset.theme='dark'});
+ for(const view of ['today','changes','breaks','chat']){
+  await page.locator('.bottom [data-v="'+view+'"]').click();
+  await expect(page.locator('#'+view)).toBeVisible();
+  const boxes=await page.locator('.bottom button').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return{y:r.y,right:r.right,width:r.width}}));
+  expect(boxes).toHaveLength(5);expect(boxes.every(r=>r.y===boxes[0].y&&r.width>44&&r.right<=width)).toBe(true);
+  if(view==='breaks')await page.screenshot({path:testInfo.outputPath('breaks-chat-visible.png')});
+ }
 });
