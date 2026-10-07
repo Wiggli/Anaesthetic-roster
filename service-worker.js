@@ -1,27 +1,27 @@
-const CACHE_NAME = 'anaesthetic-night-roster-v50-5';
+const CACHE_NAME = 'anaesthetic-night-roster-v50-6';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=50.5',
-  './pwa-safe-area.css?v=50.5',
-  './night-intelligence.css?v=50.5',
-  './night-ai.css?v=50.5',
-  './night-welcome.css?v=50.5',
-  './theme-bootstrap.js?v=50.5',
-  './domain-logic.js?v=50.5',
-  './runtime-foundation.js?v=50.5',
-  './app-core.js?v=50.5',
-  './app-ui.js?v=50.5',
-  './night-intelligence.js?v=50.5',
-  './night-ai.js?v=50.5',
-  './night-welcome.js?v=50.5',
-  './manifest.webmanifest?v=50.5',
+  './styles.css?v=50.6',
+  './pwa-safe-area.css?v=50.6',
+  './night-intelligence.css?v=50.6',
+  './night-ai.css?v=50.6',
+  './night-welcome.css?v=50.6',
+  './theme-bootstrap.js?v=50.6',
+  './domain-logic.js?v=50.6',
+  './runtime-foundation.js?v=50.6',
+  './app-core.js?v=50.6',
+  './app-ui.js?v=50.6',
+  './night-intelligence.js?v=50.6',
+  './night-ai.js?v=50.6',
+  './night-welcome.js?v=50.6',
+  './manifest.webmanifest?v=50.6',
   './release.json',
-  './icon-192.png?v=50.5',
-  './icon-512.png?v=50.5',
-  './apple-touch-icon.png?v=50.5',
-  './anaesthesia-header.jpg?v=50.5',
-  './mater-dei-logo.png?v=50.5'
+  './icon-192.png?v=50.6',
+  './icon-512.png?v=50.6',
+  './apple-touch-icon.png?v=50.6',
+  './anaesthesia-header.jpg?v=50.6',
+  './mater-dei-logo.png?v=50.6'
 ];
 
 // Vite injects the fingerprinted React/CSS assets here at build time.
@@ -187,8 +187,8 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Night Roster';
     const options = {
       body: payload.body || (type === 'chat' ? 'New chat message' : 'Night Roster has an update'),
-      icon: new URL('./icon-192.png?v=50.5', self.registration.scope).href,
-      badge: new URL('./icon-192.png?v=50.5', self.registration.scope).href,
+      icon: new URL('./icon-192.png?v=50.6', self.registration.scope).href,
+      badge: new URL('./icon-192.png?v=50.6', self.registration.scope).href,
       tag: payload.tag || 'night-roster',
       renotify: true,
       data: {
