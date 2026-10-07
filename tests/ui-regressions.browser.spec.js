@@ -89,3 +89,19 @@ for (const fallback of [false, true]) test(`short unread threads clear after ope
  if(!fallback)await expect(page.locator('#chatMessages .chatMessageSequence')).toBeVisible();
  await page.screenshot({path:testInfo.outputPath('read-chat.png')});
 });
+
+for(const fallback of [false,true])for(const dark of [false,true])test(`startup dock stays centred ${fallback?'fallback':'React'} ${dark?'dark':'light'} @iphone`,async({page},testInfo)=>{
+ await page.setViewportSize({width:testInfo.project.name==='desktop-chromium'?1280:390,height:844});await ready(page,fallback);
+ const frames=await page.evaluate(dark=>{
+  document.body.classList.toggle('dark',dark);document.body.classList.remove('appRevealing');
+  const bar=document.querySelector('.bottom');void bar.offsetWidth;document.body.classList.add('appRevealing');
+  const animation=bar.getAnimations().find(a=>a.animationName==='operationalDockReveal');
+  if(!animation)throw new Error('Startup dock animation missing');animation.pause();
+  return [0,120,300,600,880].map(time=>{animation.currentTime=time;const r=bar.getBoundingClientRect();return{time,centre:r.x+r.width/2,viewport:innerWidth,left:r.x,right:r.right}});
+ },dark);
+ for(const frame of frames){expect(Math.abs(frame.centre-frame.viewport/2),`dock centre at ${frame.time}ms`).toBeLessThan(1);expect(frame.left).toBeGreaterThanOrEqual(0);expect(frame.right).toBeLessThanOrEqual(frame.viewport);}
+ await page.screenshot({path:testInfo.outputPath('centred-startup-dock.png')});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ const reduced=await page.locator('.bottom').evaluate(el=>{const r=el.getBoundingClientRect();return{centre:r.x+r.width/2,viewport:innerWidth,animation:getComputedStyle(el).animationName}});
+ expect(Math.abs(reduced.centre-reduced.viewport/2)).toBeLessThan(1);expect(reduced.animation).toBe('none');
+});

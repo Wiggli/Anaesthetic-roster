@@ -29,3 +29,6 @@ for(const user_role of ['member','admin']){
   assert.equal(sandbox.currentUserProfile.user_role,user_role);
 }
 console.log('Single workflow host, Account outlet, selected-night context, timeline endpoint and authorised dock contracts passed');
+
+const dockCss=read('src/rudder-navigation.css');
+assert.match(dockCss,/@keyframes operationalDockReveal[\s\S]*from \{ opacity: 0; transform: translate\(-50%,16px\); \} to \{ opacity: 1; transform: translate\(-50%,0\); \}/,'launch animation must preserve horizontal dock centring throughout');
