@@ -1,7 +1,7 @@
-/* 50.7 coherent product system.
-   This file is the single final product-wide presentation authority. It deliberately
-   replaces the accumulated 50.1/50.4/50.5/50.6 override generations with one shared
-   shell, one spacing rhythm, one selected-night language and one navigation system. */
+/* 50.8 consolidated operational layout.
+   This remains the single final product-wide presentation authority. The 50.8 pass
+   removes duplicate workflow chrome, consolidates task-screen context and reduces
+   vertical repetition instead of adding another competing polish generation. */
 
 :root {
   --liquid-text: var(--liquid-label);
@@ -9,7 +9,7 @@
   --unified-gutter: clamp(12px, 3.5vw, 16px);
   --unified-space-1: 6px;
   --unified-space-2: 10px;
-  --unified-space-3: 14px;
+  --unified-space-3: 12px;
   --unified-space-4: 18px;
   --unified-space-5: 24px;
   --unified-radius-control: 14px;
@@ -283,7 +283,7 @@
   flex-direction: column !important;
   gap: 0 !important;
   margin: 0 0 var(--unified-space-3) !important;
-  padding: calc(var(--app-safe-top, 0px) + 2px) 11px 13px !important;
+  padding: calc(var(--app-safe-top, 0px) + 2px) 11px 9px !important;
   border-color: var(--unified-edge-strong) !important;
   background:
     radial-gradient(circle at 88% 5%, color-mix(in srgb, var(--liquid-accent) 18%, transparent), transparent 30%),
@@ -293,6 +293,7 @@
 }
 
 #today #appHeader { order: 1; }
+#today .hospitalStrip { min-height: 48px !important; }
 #today .nightDateShell { order: 2; }
 #today .nightSectionIdentity { order: 3; }
 
@@ -321,11 +322,11 @@
 
 #today .nightTeamIdentityContext {
   position: relative !important;
-  min-height: 94px !important;
-  grid-template-columns: 70px minmax(0, 1fr) !important;
-  gap: 12px !important;
-  margin: 0 1px 9px !important;
-  padding: 10px 40px 10px 10px !important;
+  min-height: 86px !important;
+  grid-template-columns: 64px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin: 0 1px 7px !important;
+  padding: 8px 38px 8px 8px !important;
   border: 1px solid color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 42%, var(--unified-border)) !important;
   border-radius: 22px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--shift-identity-accent, var(--liquid-accent)) 11%, var(--unified-surface)), color-mix(in srgb, var(--liquid-accent) 4%, var(--unified-surface))) !important;
@@ -342,11 +343,11 @@
   transform: translateY(-53%);
 }
 #today .nightTeamIdentityContext .shiftIdentityMark {
-  width: 70px !important;
-  min-width: 70px !important;
-  height: 70px !important;
-  min-height: 70px !important;
-  border-radius: 19px !important;
+  width: 64px !important;
+  min-width: 64px !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  border-radius: 17px !important;
   box-shadow: 0 7px 19px rgba(0,0,0,.18) !important;
 }
 #today .nightTeamIdentityContext .shiftIdentityCopy {
@@ -450,7 +451,7 @@
   background: color-mix(in srgb, var(--liquid-secondary) 4%, var(--unified-surface)) !important;
   box-shadow: inset 0 1px 0 color-mix(in srgb, white 7%, transparent) !important;
 }
-#today .dateNav.rosterDateControl { margin-inline: 3px !important; width: calc(100% - 6px) !important; }
+#today .dateNav.rosterDateControl { min-height: 40px !important; margin-inline: 3px !important; width: calc(100% - 6px) !important; }
 
 #today .dateNav.rosterDateControl::before,
 #changes .nightContextPanel .dateNav.rosterDateControl::before,
@@ -571,13 +572,13 @@
 /* Greeting belongs inside the Night hero but no longer consumes a second hero layer. */
 #today .nightSectionIdentity {
   margin: 0 !important;
-  padding: 15px 6px 3px !important;
+  padding: 10px 6px 1px !important;
 }
 #today .nightWelcomeEyebrow,
 #today #nightWelcomeSubtitle { display: none !important; }
 #today .nightUnifiedHero .nightSectionIdentity h1 {
   max-width: 100% !important;
-  font-size: clamp(30px, 8.5vw, 38px) !important;
+  font-size: clamp(28px, 7.8vw, 34px) !important;
   line-height: 1 !important;
 }
 
@@ -594,6 +595,33 @@
   border-radius: var(--unified-radius-card) !important;
   background: color-mix(in srgb, var(--liquid-accent) 3%, var(--unified-surface)) !important;
   box-shadow: 0 7px 20px rgba(0,0,0,.045) !important;
+}
+#changes .changesDatePanel,
+#breaks .breaksContextPanel {
+  margin-bottom: 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#changes .appShiftContextRow,
+#breaks .appShiftContextRow {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+  align-items: center !important;
+  margin: 0 0 8px !important;
+}
+#changes .appShiftContextRow .nightTeamIdentityContext,
+#breaks .appShiftContextRow .nightTeamIdentityContext {
+  width: 100% !important;
+  margin: 0 !important;
+}
+#changes .appShiftContextRow .nightContextStaffing,
+#breaks .appShiftContextRow .nightContextStaffing {
+  min-height: 30px !important;
+  padding: 4px 9px !important;
+  background: var(--unified-accent-soft) !important;
 }
 #changes .nightContextMetaRow,
 #breaks .nightContextMetaRow {
@@ -711,7 +739,7 @@
   align-items: center !important;
   justify-content: space-between !important;
   gap: 12px !important;
-  margin: 2px 0 12px !important;
+  margin: 0 0 8px !important;
   padding: 0 2px !important;
 }
 #changes .ctop h2 {
@@ -739,7 +767,7 @@
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0,1fr)) !important;
   gap: 3px !important;
-  margin: 0 0 12px !important;
+  margin: 0 0 8px !important;
   padding: 4px !important;
   border: 1px solid var(--unified-border) !important;
   border-radius: 17px !important;
@@ -749,8 +777,8 @@
 #changes .workflowSteps button,
 #changes .changesWorkflowTabs button {
   min-width: 0 !important;
-  min-height: 52px !important;
-  padding: 6px 4px !important;
+  min-height: 46px !important;
+  padding: 5px 4px !important;
   border: 0 !important;
   border-radius: 13px !important;
   background: transparent !important;
@@ -766,8 +794,8 @@
 #changes .changesWorkflowTabs button small { display: none !important; }
 #changes .changesWorkflowState,
 #changes .workflowGuidance {
-  margin: 0 0 12px !important;
-  padding: 10px 12px !important;
+  margin: 0 0 8px !important;
+  padding: 7px 9px !important;
   border: 0 !important;
   border-radius: 14px !important;
   background: transparent !important;
@@ -775,7 +803,7 @@
 }
 #changes .staffingSection {
   margin: 0 !important;
-  padding: 15px !important;
+  padding: 13px !important;
   border: 1px solid var(--unified-border) !important;
   border-radius: 0 !important;
   background: var(--unified-surface) !important;
@@ -829,8 +857,8 @@
   margin-bottom: 12px !important;
 }
 #breaks .personalBreakSummary {
-  margin: 0 0 12px !important;
-  padding: 15px !important;
+  margin: 0 0 10px !important;
+  padding: 14px !important;
   border: 1px solid var(--unified-edge) !important;
   border-radius: var(--unified-radius-card) !important;
   background: var(--unified-surface) !important;
@@ -840,7 +868,7 @@
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0,1fr)) !important;
   gap: 0 !important;
-  margin: 0 0 13px !important;
+  margin: 0 0 10px !important;
   padding: 0 !important;
   overflow: hidden;
   border: 1px solid var(--unified-border) !important;
@@ -856,8 +884,25 @@
 }
 #breaks .breakSummaryItem:last-child { border-right: 0 !important; }
 #breaks .breakPlanTitle {
-  margin: 0 2px 8px !important;
+  margin: 0 2px 6px !important;
   align-items: center !important;
+}
+#breaks .breakPlanTools {
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin: 0 2px 7px !important;
+}
+#breaks .jumpToMeButton,
+#today .nightContextLine button {
+  min-height: 32px !important;
+  padding: 4px 10px !important;
+  border: 1px solid var(--unified-border) !important;
+  border-radius: 999px !important;
+  background: var(--unified-soft) !important;
+  color: var(--liquid-accent-strong) !important;
+  box-shadow: none !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
 }
 #breaks .breakScheduleBoard {
   overflow: hidden;
@@ -1136,22 +1181,22 @@ textarea:focus-visible,
     font-size: 8px !important;
   }
   #today .nightTeamIdentityContext {
-    min-height: 84px !important;
-    grid-template-columns: 62px minmax(0,1fr) !important;
-    gap: 10px !important;
-    padding: 9px 36px 9px 9px !important;
+    min-height: 76px !important;
+    grid-template-columns: 56px minmax(0,1fr) !important;
+    gap: 9px !important;
+    padding: 7px 34px 7px 7px !important;
   }
   #today .nightTeamIdentityContext .shiftIdentityMark {
-    width: 62px !important;
-    min-width: 62px !important;
-    height: 62px !important;
-    min-height: 62px !important;
-    border-radius: 17px !important;
+    width: 56px !important;
+    min-width: 56px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    border-radius: 16px !important;
   }
   #today .nightTeamIdentityContext .shiftIdentityCopy { padding-left: 10px !important; }
   #today .nightTeamIdentityContext .shiftIdentityCopy strong { font-size: clamp(21px, 6.4vw, 25px) !important; }
   #today .nightTeamIdentityContext .shiftIdentityCopy small { font-size: 10px !important; }
-  #today .nightUnifiedHero .nightSectionIdentity h1 { font-size: clamp(28px, 8.3vw, 34px) !important; }
+  #today .nightUnifiedHero .nightSectionIdentity h1 { font-size: clamp(27px, 7.8vw, 31px) !important; }
   #changes .primaryScreenTitleRow h1,
   #breaks .primaryScreenTitleRow h1,
   #chat .primaryScreenTitleRow h1 { font-size: 28px !important; }
