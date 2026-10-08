@@ -1,13 +1,12 @@
 {
-  "version": "52.4",
+  "version": "52.5",
   "date": "8 October 2026",
-  "title": "A compact team section beneath your night",
-  "summary": "Keeps the hero unchanged while bringing team staffing and optional details into one compact section.",
+  "title": "Remove inactive glass from the page header",
+  "summary": "Keeps the top of the page sharp by removing scroll glass until it is actually visible.",
   "changes": [
-    "Combines staffing count and plan status beneath Tonight\u2019s team, without the repeated arrangement chip.",
-    "Moves Night brief and allocation explanations behind the information button.",
-    "Keeps Team allocation and recorded Changes tonight expandable, with full roster and history details still available.",
-    "Updates the Night guide for the simplified team section."
+    "Unmounts the inactive blur surface instead of keeping it transparent over the masthead.",
+    "Hides the entire scroll header at the top of the page and when a conversation owns its header.",
+    "Restores the compact glass title only after the page heading scrolls away."
   ],
   "update_policy": "normal"
 }
