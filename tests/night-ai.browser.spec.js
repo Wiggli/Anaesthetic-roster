@@ -188,6 +188,7 @@ test('@iphone Chat thread owns its header without a glass overlay', async ({ pag
 
 test('@iphone Inactive scroll glass cannot blur or cover the masthead', async ({ page }, testInfo) => {
   await openShell(page);
+  await expect(page.locator('.appStatusBarBacking')).toBeHidden();
   await page.evaluate(() => {
     document.documentElement.style.setProperty('--app-safe-top', '59px');
     window.scrollTo(0, 0);
@@ -211,4 +212,30 @@ test('@iphone Inactive scroll glass cannot blur or cover the masthead', async ({
     await page.evaluate(theme => { document.documentElement.dataset.theme = theme; document.body.classList.toggle('dark', theme === 'dark'); }, theme);
     await page.screenshot({ path: testInfo.outputPath(`clear-masthead-${theme}.png`) });
   }
+});
+
+test('@iphone Installed iOS status bar has a solid fixed backing without covering controls', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'standalone', { get: () => true });
+    Object.defineProperty(navigator, 'userAgent', { get: () => 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 Mobile Safari/604.1' });
+  });
+  await openShell(page);
+  await page.evaluate(() => document.documentElement.style.setProperty('--app-safe-top', '62px'));
+  const backing = page.locator('.appStatusBarBacking');
+  await expect(backing).toBeVisible();
+  await expect(backing).toHaveCSS('position', 'fixed');
+  await expect(backing).toHaveCSS('pointer-events', 'none');
+  await expect(backing).toHaveCSS('height', '62px');
+  const bounds = await backing.boundingBox();
+  expect(bounds.y).toBe(0);
+  expect(bounds.width).toBe(page.viewportSize().width);
+  const account = page.locator('#accountBtn');
+  expect((await account.boundingBox()).y).toBeGreaterThanOrEqual(62);
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(theme => { document.documentElement.dataset.theme = theme; document.body.classList.toggle('dark', theme === 'dark'); }, theme);
+    await expect(backing).toHaveCSS('background-color', theme === 'dark' ? 'rgb(14, 20, 30)' : 'rgb(243, 245, 248)');
+    await page.screenshot({ path: testInfo.outputPath(`installed-status-bar-${theme}.png`) });
+  }
+  await page.evaluate(() => window.scrollTo(0, 300));
+  expect((await backing.boundingBox()).y).toBe(0);
 });

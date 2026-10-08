@@ -179,6 +179,13 @@ body.personalMotionReduced { --unified-fast: 0ms; --unified-base: 0ms; }
 body.personalMotionReduced .bottom.reactTabs *, body.personalMotionReduced *, body.personalMotionReduced *::before, body.personalMotionReduced *::after { transition: none; animation: none; scroll-behavior: auto; }
 html, body { min-height: 100dvh; }
 body { --personal-accent-readable: var(--personal-accent,var(--accent-primary)); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--liquid-label); background: radial-gradient(ellipse 100% 260px at 50% 0,var(--ambient-glow),transparent), var(--surface-primary); background-repeat: no-repeat; font-size: var(--unified-type-lead); line-height: 1.45; }
+/* A real fixed opaque element lets iOS sample a solid status-bar colour,
+   avoiding its installed-web-app edge blur over the in-flow masthead. */
+.appStatusBarBacking { display: none; }
+html[data-ios-standalone] .appStatusBarBacking {
+  display: block; position: fixed; inset: 0 0 auto; height: max(6px,var(--app-safe-top));
+  z-index: 200; background-color: var(--surface-primary); pointer-events: none;
+}
 *, *::before, *::after { box-sizing: border-box; }
 button, input, select, textarea { font: inherit; }
 button, [role="button"], summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
