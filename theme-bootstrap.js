@@ -14,7 +14,7 @@
     if(document.querySelector('link[data-pwa-safe-area]'))return;
     var link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='pwa-safe-area.css?v=52.2';
+    link.href='pwa-safe-area.css?v=52.3';
     link.setAttribute('data-pwa-safe-area','');
     document.head.appendChild(link);
   }
@@ -23,13 +23,13 @@
     if(!document.querySelector('link[data-night-intelligence-style]')){
       var style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='night-intelligence.css?v=52.2';
+      style.href='night-intelligence.css?v=52.3';
       style.setAttribute('data-night-intelligence-style','');
       document.head.appendChild(style);
     }
     if(!document.querySelector('script[data-night-intelligence]')){
       var script=document.createElement('script');
-      script.src='night-intelligence.js?v=52.2';
+      script.src='night-intelligence.js?v=52.3';
       script.setAttribute('data-night-intelligence','');
       document.head.appendChild(script);
     }
@@ -39,13 +39,13 @@
     if(!document.querySelector('link[data-night-ai-style]')){
       var style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='night-ai.css?v=52.2';
+      style.href='night-ai.css?v=52.3';
       style.setAttribute('data-night-ai-style','');
       document.head.appendChild(style);
     }
     if(!document.querySelector('script[data-night-ai]')){
       var script=document.createElement('script');
-      script.src='night-ai.js?v=52.2';
+      script.src='night-ai.js?v=52.3';
       script.setAttribute('data-night-ai','');
       document.head.appendChild(script);
     }

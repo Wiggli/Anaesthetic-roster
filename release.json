@@ -1,12 +1,13 @@
 {
-  "version": "52.2",
+  "version": "52.3",
   "date": "8 October 2026",
-  "title": "Keep iPhone chat controls reachable",
-  "summary": "Keeps conversation controls above the transcript and within the visible iPhone screen.",
+  "title": "A clearer Night screen and stable iPhone header",
+  "summary": "Keeps the Night screen focused on assignments and staffing, with explanations available on demand.",
   "changes": [
-    "Bounds mobile conversations to the visible viewport and respects iPhone safe areas.",
-    "Keeps Back, conversation title and composer outside the scrolling transcript.",
-    "Adapts conversation height and position when the on-screen keyboard moves the viewport."
+    "Keeps the compact header below the iPhone safe area and removes the glass overlay from open chat conversations.",
+    "Collapses Night brief until opened and removes repeated staffing text.",
+    "Shows Changes tonight only when changes exist, with full detail available by tapping an entry.",
+    "Updates the Night guide for the simpler layout."
   ],
   "update_policy": "normal"
 }

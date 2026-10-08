@@ -56,6 +56,7 @@ function readModel(): ChromeModel {
   }
   if (view === 'breaks') return { view, title: 'Breaks', subtitle: 'Your break and the team plan', mode: 'compact' };
   if (view === 'chat') {
+    if (document.body.classList.contains('chatThreadMode')) return { view, title: 'Chat', mode: 'off' };
     const unread = count('chatUnreadBadge');
     return { view, title: 'Chat', subtitle: unread ? `${unread} unread` : 'Team and private messages', mode: 'compact' };
   }
@@ -88,12 +89,13 @@ function rawScrollProgress(model: ChromeModel) {
   const source = sourceElement(model.view);
   if (!source) return clamp((Math.max(0, window.scrollY) - 52) / 56);
   const rect = source.getBoundingClientRect();
+  const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--app-safe-top')) || 0;
   if (model.mode === 'rail') {
     // The replacement rail starts forming only as the original rail reaches the top edge.
-    return clamp((64 - rect.top) / 48);
+    return clamp((safeTop + 64 - rect.top) / 48);
   }
   // Compact navigation forms continuously as the large page heading leaves the viewport.
-  return clamp((72 - rect.bottom) / 48);
+  return clamp((safeTop + 72 - rect.bottom) / 48);
 }
 
 function activateAdminRailItem(key: string) {
@@ -137,7 +139,7 @@ function ScrollGlassChrome() {
       root.style.setProperty('--chrome-glass-saturate', Math.round(150 + progress * 30) + '%');
       root.style.setProperty('--chrome-glass-contrast', (1.005 + progress * 0.015).toFixed(3));
       root.style.opacity = String(progress);
-      root.style.transform = `translate3d(0,${((1 - progress) * -8).toFixed(2)}px,0)`;
+      root.style.transform = 'none';
       root.toggleAttribute('data-visible', progress > 0.02);
       root.toggleAttribute('data-collapsed', progress > 0.72);
       root.setAttribute('data-mode', model.mode);
@@ -179,9 +181,9 @@ function ScrollGlassChrome() {
     window.addEventListener('resize', scheduleScroll, { passive: true });
     const observer = new MutationObserver(() => {
       const nextView = document.body.getAttribute('data-view') || 'today';
-      if (nextView !== model.view) refresh();
+      if (nextView !== model.view || readModel().mode !== model.mode) refresh();
     });
-    observer.observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-view', 'class'] });
     updateModel();
     updateScroll();
     return () => {

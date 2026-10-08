@@ -67,8 +67,8 @@ async function aiRequest(mode,question){
 function aiSourceText(result){if(result&&result.ai)return'AI';if(result&&result.reason==='offline')return'Offline roster summary';if(result&&result.reason==='not_configured')return'AI not connected · roster summary';return'Roster-grounded summary'}
 function aiEnsureBrief(){
   if(aiEl('nightAiBrief'))return aiEl('nightAiBrief');var personal=aiEl('personalNightCard');if(!personal||!personal.parentNode)return null;
-  var section=aiMake('section','nightAiBrief');section.id='nightAiBrief';section.setAttribute('aria-labelledby','nightAiBriefTitle');
-  var head=aiMake('div','nightAiBriefHead'),titleWrap=aiMake('div',''),spark=aiMake('span','nightAiSpark','✦'),title=aiMake('strong','', 'Night brief'),source=aiMake('span','nightAiSource','Preparing');title.id='nightAiBriefTitle';titleWrap.appendChild(spark);titleWrap.appendChild(title);head.appendChild(titleWrap);head.appendChild(source);
+  var section=aiMake('details','nightAiBrief');section.id='nightAiBrief';section.setAttribute('aria-labelledby','nightAiBriefTitle');
+  var head=aiMake('summary','nightAiBriefHead'),titleWrap=aiMake('div',''),spark=aiMake('span','nightAiSpark','✦'),title=aiMake('strong','', 'Night brief'),source=aiMake('span','nightAiSource','Preparing');title.id='nightAiBriefTitle';titleWrap.appendChild(spark);titleWrap.appendChild(title);head.appendChild(titleWrap);head.appendChild(source);
   var text=aiMake('p','nightAiBriefText','Preparing a roster-grounded summary…');text.id='nightAiBriefText';
   var actions=aiMake('div','nightAiBriefActions'),ask=aiMake('button','nightAiAskButton','Ask Night Roster'),why=aiMake('button','nightAiWhyButton','Why this allocation?');ask.type='button';why.type='button';ask.onclick=function(){aiOpenAssistant()};why.onclick=function(){aiExplainAllocation()};actions.appendChild(ask);actions.appendChild(why);
   section.appendChild(head);section.appendChild(text);section.appendChild(actions);personal.parentNode.insertBefore(section,personal.nextSibling);return section

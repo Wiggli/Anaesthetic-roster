@@ -63,6 +63,9 @@ test('@iphone Night AI shows a compact AI brief and change summary', async ({ pa
   const brief = page.locator('#nightAiBrief');
   await expect(brief).toBeVisible();
   await expect(brief).toContainText('Night brief');
+  await expect(page.locator('#nightAiBriefText')).toBeHidden();
+  await brief.locator('summary').click();
+  await expect(page.locator('#nightAiBriefText')).toBeVisible();
   await expect(brief).toContainText('Second Part Theatre');
   await expect(brief).toContainText('AI');
 
@@ -74,6 +77,7 @@ test('@iphone Night AI shows a compact AI brief and change summary', async ({ pa
 
 test('Ask Night Roster answers from the supplied roster context', async ({ page }) => {
   await openShell(page);
+  await page.locator('#nightAiBrief summary').click();
   await page.locator('#nightAiBrief .nightAiAskButton').click();
   const dialog = page.locator('#nightAiDialog');
   await expect(dialog).toHaveAttribute('open', '');
@@ -85,8 +89,80 @@ test('Ask Night Roster answers from the supplied roster context', async ({ page 
 
 test('Explain allocation keeps the deterministic roster engine authoritative', async ({ page }) => {
   await openShell(page);
+  await page.locator('#nightAiBrief summary').click();
   await page.locator('#nightAiBrief .nightAiWhyButton').click();
   await expect(page.locator('#nightAiDialog')).toHaveAttribute('open', '');
   await expect(page.locator('#nightAiMessages')).toContainText('deterministic roster engine');
   await expect(page.locator('#nightAiMessages')).toContainText('AI is only explaining');
+});
+
+test('@iphone Night keeps the header below the safe area and omits empty activity', async ({ page }, testInfo) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--app-safe-top', '59px');
+    window.dispatchEvent(new CustomEvent('roster:recent-activity', { detail: { updated: false, updatedCount: 0, items: [] } }));
+  });
+  await expect(page.locator('#today .recentActivityPanel')).toBeHidden();
+  await page.evaluate(() => {
+    const spacer = document.createElement('div');
+    spacer.style.height = '900px';
+    document.getElementById('today').appendChild(spacer);
+    window.scrollTo(0, 300);
+  });
+  const chrome = page.locator('.scrollGlassHeader');
+  await expect.poll(() => chrome.evaluate(el => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.98);
+  const metrics = await chrome.evaluate(el => ({
+    titleTop: el.querySelector('.scrollGlassCompactTitle').getBoundingClientRect().top,
+    transform: getComputedStyle(el).transform,
+    backdrop: getComputedStyle(el).backdropFilter,
+    stackOpacity: getComputedStyle(el.querySelector('.scrollGlassStack')).opacity
+  }));
+  expect(metrics.titleTop).toBeGreaterThanOrEqual(59);
+  expect(metrics.transform).toBe('none');
+  expect(metrics.backdrop).toBe('none');
+  expect(metrics.stackOpacity).toBe('1');
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(theme => {
+      document.documentElement.dataset.theme = theme;
+      document.body.classList.toggle('dark', theme === 'dark');
+    }, theme);
+    await page.screenshot({ path: testInfo.outputPath(`night-header-${theme}.png`) });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: testInfo.outputPath(`night-summary-${theme}.png`), fullPage: true });
+    await page.evaluate(() => window.scrollTo(0, 300));
+  }
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:recent-activity', { detail: {
+    updated: true, updatedCount: 1, items: [{ type: 'absence', label: 'Absence', title: 'Shaun Galea absent', detail: 'Recorded absence', meta: 'André · 20:00' }]
+  } })));
+  await expect(page.locator('#today .recentActivityPanel')).toBeVisible();
+  await expect(page.locator('#recentActivityList')).toContainText('Shaun Galea absent');
+});
+
+
+test('@iphone Chat thread owns its header without a glass overlay', async ({ page }, testInfo) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    window.show('chat');
+    document.documentElement.style.setProperty('--app-safe-top', '59px');
+    document.body.classList.add('chatThreadMode');
+    document.getElementById('chat').classList.add('chat-thread-open', 'chat-team-open');
+    document.getElementById('chatTeamThread').classList.remove('hidden');
+    const messages = document.getElementById('chatTeamMessages');
+    for (let i = 0; i < 80; i++) {
+      const row = document.createElement('p'); row.textContent = 'Long transcript message ' + i; messages.appendChild(row);
+    }
+  });
+  const chrome = page.locator('.scrollGlassHeader');
+  await expect(chrome).toHaveAttribute('data-mode', 'off');
+  await expect(page.locator('.scrollGlassMaterial')).toHaveCount(0);
+  await expect.poll(() => chrome.evaluate(el => Number(getComputedStyle(el).opacity))).toBe(0);
+  if (page.viewportSize().width < 760) {
+    const back = page.locator('#chatTeamBackBtn');
+    await expect(back).toBeVisible();
+    expect((await back.boundingBox()).y).toBeGreaterThanOrEqual(59);
+    expect(await back.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('chat-safe-header.png') });
+  }
+  await page.evaluate(() => document.body.classList.remove('chatThreadMode'));
+  await expect(chrome).toHaveAttribute('data-mode', 'compact');
 });
