@@ -160,6 +160,29 @@ assert.equal(plan.coverageKey, 'pager', 'a Pager vacancy must select automatic f
 assert.equal(effective.fullLW, base.reliever, 'the Reliever must cover full-night Labour Ward / Pager');
 assert.equal(context.planIsProvisional(base), false, 'an automatic valid five-nurse plan must be complete');
 
+// The rendered full-night cover must use the canonical staffing count, including
+// complete five-person plans that have no understaffedCount property.
+const clinicalSource = fs.readFileSync(path.join(__dirname, '..', 'src/legacy-ui/clinical.js'), 'utf8');
+const fivePersonExpression = clinicalSource.match(/fivePerson=(.*?),nightDetail=/)[1];
+function fivePersonFor(night) {
+  context.r = context.applyChanges(night);
+  context.count = context.staffingPlan(night).count;
+  return vm.runInContext(fivePersonExpression, context);
+}
+assert.equal(fivePersonFor(base).name, context.professionalName(base.reliever), 'one absence must retain visible full-night cover');
+const missingPagerNight = context.rawBaseForDate('2026-10-08');
+context.nightChanges = { [missingPagerNight.date]: [
+  { id: 'absence-james', absent_name: 'James', reason: 'Test absence' },
+  { id: 'absence-yentl', absent_name: 'Yentl', reason: 'Test absence' }
+] };
+context.nightOvertime = { [missingPagerNight.date]: [{ id: 'ot-daniel', nurse_name: 'Test Overtime', allocation_key: 'first2' }] };
+assert.equal(context.staffingPlan(missingPagerNight).count, 5);
+assert.equal(fivePersonFor(missingPagerNight).name, 'Michael Debono', 'two absences plus overtime must show Michael Debono as full-night Labour Ward / Pager');
+context.nightOvertime = {};
+assert.equal(fivePersonFor(missingPagerNight), null, 'four-person incomplete staffing must not show resolved full-night cover');
+context.nightChanges = {};
+assert.equal(fivePersonFor(missingPagerNight), null, 'six-person staffing keeps separate Pager and Reliever roles');
+
 context.nightChanges = { [base.date]: [
   { id: 'absence-1', absent_name: base.first1, reason: 'Leave' },
   { id: 'absence-2', absent_name: base.second1, reason: 'Leave' }
