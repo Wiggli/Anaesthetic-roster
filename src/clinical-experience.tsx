@@ -487,7 +487,6 @@ function NightStatus({ model }: { model: NightSummary }) {
   useEffect(() => { previousReady.current = {ready: !provisional, date: model.date}; }, [provisional,model.date]);
   const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
   const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
-  const overtimeNames = (model.overtimeNames || []).filter(Boolean);
   const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
 
   return <section className={'nightSignal ' + (provisional ? 'needsReview' : '')} aria-label="Tonight at a glance">
@@ -495,17 +494,14 @@ function NightStatus({ model }: { model: NightSummary }) {
       <span className={'nightContextCapsule ' + (provisional ? 'review' : model.clockChange ? 'clock' : 'standard')}>
         <i aria-hidden="true" />{model.contextLabel || 'Standard night'}
       </span>
-      <small>{provisional ? 'Shared plan needs attention' : model.clockChange ? 'Equal-duty timing active' : 'Calculated shared plan'}</small>
     </div>
     <div className="nightSignalPrimary">
       <span className="nightOverviewIcon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M2.5 20c.4-4 2.7-6 6-6s5.6 2 6 6" /><path d="M16.5 10a3 3 0 1 0 0-6" /><path d="M16.5 14c2.8 0 4.5 1.6 5 4.5" /></svg>
       </span>
       <span className="nightSignalLeadCopy">
-        <small>Team tonight</small>
         <strong>{model.nurseCount} nurses</strong>
         <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : undefined}>{feedback || `${absenceLabel} · ${overtimeLabel}`}</span>
-        {overtimeNames.length > 0 && <span className="nightSignalStaffingNames">Overtime: {overtimeNames.join(', ')}</span>}
         <span className="nightSignalState">
           <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
           <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
@@ -840,9 +836,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
       >
         <span className={`activityTimelineMark ${item.type}`} aria-hidden="true">{glyph}</span>
         <span className="recentActivityCopy">
-          <small className="recentActivityKicker">{item.label}</small>
           <b>{item.title}</b>
-          {item.detail && <small className="recentActivityDetail">{item.detail}</small>}
           <small className="recentActivityMeta">{item.meta}</small>
         </span>
         <i aria-hidden="true">›</i>
@@ -857,6 +851,9 @@ export function renderPersonalNightExperience(model: PersonalNight) {
 }
 
 export function renderRecentActivityExperience(model: RecentActivity) {
+  const list = document.getElementById('recentActivityList');
+  const panel = list?.closest<HTMLElement>('.recentActivityPanel');
+  if (panel) panel.hidden = model.items.length === 0;
   rootFor('recentActivityList')?.render(<RecentActivityList model={model} />);
   const chip = document.getElementById('changedSinceChip');
   if (chip) {

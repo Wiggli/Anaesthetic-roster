@@ -677,3 +677,28 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 @media (prefers-contrast: more) { .uiSurface, .personalHeroSurface, .personalBreakSummary, .staffingSection, .accountGroup { outline: 1px solid currentColor; } }
 
 .accountSheetHeader h2:focus { outline: none; }
+
+/* Keep one glass plane and a stable title below the device status area. */
+.scrollGlassHeader.scrollGlassMode-compact {
+  padding-top: var(--app-safe-top);
+  height: calc(58px + var(--app-safe-top));
+  min-height: calc(58px + var(--app-safe-top));
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.scrollGlassHeader.scrollGlassMode-compact::after { content: none; }
+.scrollGlassMode-compact .scrollGlassStack,
+.scrollGlassMode-compact .scrollGlassCompactTitle { opacity: 1; }
+#nightAiBrief { background: var(--surface-secondary); }
+#nightAiBrief > summary { cursor: pointer; list-style: none; min-height: 44px; }
+#nightAiBrief > summary::-webkit-details-marker { display: none; }
+#nightAiBrief > summary::after { content: '›'; font-size: 24px; color: var(--text-secondary); }
+#nightAiBrief[open] > summary::after { transform: rotate(90deg); }
+#nightAiBrief > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+#nightAiBrief .nightAiSource { margin-left: auto; }
+#today .recentActivityPanel[hidden] { display: none; }
+
+#today .nightSignalPrimary { min-height: 64px; }
+#today .nightSignalLeadCopy { gap: 4px; }
+#today .nightSignalLeadCopy > span:not(.nightSignalState) { font-size: var(--unified-type-caption); }
