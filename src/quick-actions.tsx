@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react';
+import { useProductReducedMotion } from './product-motion';
+import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, Pressable } from './ui-system';
 
@@ -58,7 +59,7 @@ function CompactAction({ action, icon, title, detail }: {
 }
 
 function QuickActions({ model }: { model: QuickActionsModel }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   const blocked = !model.canEdit;
   const editReason = model.editReason || 'Shared editing is temporarily unavailable.';
   const contextAria = model.contextLabel + ', ' + model.dateLabel + ', ' + model.staffingLabel + ', ' + model.planLabel;

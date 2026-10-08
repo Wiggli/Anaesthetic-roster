@@ -1,6 +1,7 @@
+import { productHaptic, useProductReducedMotion } from './product-motion';
 import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 
 type Destination = 'today' | 'changes' | 'breaks' | 'chat';
 type Badge = { text: string; hidden: boolean };
@@ -16,13 +17,7 @@ declare global {
   }
 }
 
-function navigationHaptic() {
-  try {
-    if ('vibrate' in navigator && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(7);
-  } catch {
-    // Optional enhancement only.
-  }
-}
+const navigationHaptic = productHaptic;
 
 function badgeFrom(id: string): Badge {
   const element = document.getElementById(id);
@@ -30,7 +25,7 @@ function badgeFrom(id: string): Badge {
 }
 
 function Navigation({ badges }: { badges: Badges }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useProductReducedMotion();
   useEffect(() => {
     const bar = document.querySelector<HTMLElement>('.bottom');
     if (!bar) return;
@@ -55,6 +50,7 @@ function Navigation({ badges }: { badges: Badges }) {
     const syncQuick = () => {
       const open = Boolean(quickDialog?.hasAttribute('open'));
       quickButton?.classList.toggle('open', open);
+      bar.classList.toggle('actionsOpen', open);
       quickButton?.setAttribute('aria-expanded', open ? 'true' : 'false');
     };
     const quickObserver = quickDialog ? new MutationObserver(syncQuick) : undefined;

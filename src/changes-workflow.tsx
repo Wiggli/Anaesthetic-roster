@@ -1,6 +1,7 @@
+import { useProductReducedMotion } from './product-motion';
 import { useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { Pressable } from './ui-system';
 
 type StepId = 'staffing' | 'allocation' | 'confirm';
@@ -27,7 +28,7 @@ function chooseStep(id: StepId) {
 }
 
 function Workflow({ model }: { model: ChangesWorkflowModel }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   useLayoutEffect(() => {
     const host = document.getElementById('changesWorkflowExperience');
     host?.setAttribute('data-react-ready', 'true');

@@ -1,5 +1,6 @@
+import { productHaptic, scrollToProductElement, useProductReducedMotion } from './product-motion';
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, ListRow, Pressable } from './ui-system';
 
@@ -37,6 +38,9 @@ type BreakSummary = {
   firstDutyPeriod: string;
   secondDutyPeriod: string;
   clockChange?: ClockChangeInfo | null;
+  dutyStartUtc?: number;
+  handoverUtc?: number;
+  dutyEndUtc?: number;
 };
 
 type NightRole = {
@@ -49,6 +53,7 @@ type NightRole = {
 };
 
 type NightSummary = {
+  date?: string;
   nurseCount: number;
   absenceCount: number;
   overtimeCount: number;
@@ -110,6 +115,7 @@ type RecentActivity = {
   updated: boolean;
   updatedCount: number;
   sinceLabel: string;
+  summary?: string[];
   items: ActivityItem[];
 };
 
@@ -117,18 +123,14 @@ declare global {
   interface Window {
     show?: (view: string) => void;
     openChatView?: () => void;
+    appNowMs?: () => number;
   }
 }
 
 const roots = new Map<string, Root>();
 
-function softHaptic() {
-  try {
-    if ('vibrate' in navigator && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(8);
-  } catch {
-    // Haptics are an optional enhancement only.
-  }
-}
+const softHaptic = productHaptic;
+const productNowMs = () => window.appNowMs?.() ?? Date.now();
 
 function rootFor(id: string) {
   const host = document.getElementById(id);
@@ -277,7 +279,7 @@ function openAccount() {
 }
 
 function ClockChangeNotice({ info, context }: { info?: ClockChangeInfo | null; context: 'night' | 'breaks' }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   if (!info) return null;
   return <motion.section
     className={`clockChangeNotice clockChange-${info.direction} clockChange-${context}`}
@@ -388,7 +390,7 @@ function coverageRow(note: string) {
 function jumpToBreak() {
   softHaptic();
   const target = document.querySelector<HTMLElement>('#breakList .breakPerson.mine');
-  target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  scrollToProductElement(target);
   target?.classList.add('focusPulse');
   window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
 }
@@ -416,6 +418,14 @@ function BreakPlan({ model }: { model: BreakSummary }) {
 }
 
 function PersonalBreak({ model }: { model: BreakSummary }) {
+  const [now,setNow] = useState(productNowMs);
+  useEffect(() => {
+    let timer: number | undefined;
+    const update = () => { clearInterval(timer); if (document.visibilityState === 'visible' && document.body.dataset.view === 'breaks') { setNow(productNowMs()); timer = window.setInterval(() => setNow(productNowMs()),30000); } };
+    window.addEventListener('roster:viewchange',update); document.addEventListener('visibilitychange',update); update();
+    return () => { clearInterval(timer); window.removeEventListener('roster:viewchange',update); document.removeEventListener('visibilitychange',update); };
+  },[]);
+  const current = model.dutyStartUtc && model.handoverUtc && model.dutyEndUtc && now >= model.dutyStartUtc && now < model.dutyEndUtc ? (now < model.handoverUtc ? 'first' : 'second') : '';
   const mine = model.highlightedName;
   const first = model.first.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
   const second = model.second.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
@@ -426,6 +436,11 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
       <div><h2>{assignment}</h2><p>{model.pending ? model.pendingReason : mine || 'Choose your name in Account to highlight your break.'}</p></div>
       <span className="personalBreakMark" aria-hidden="true">{model.pending ? '…' : first ? '1' : second ? '2' : '·'}</span>
     </div>
+    {!model.pending && (first || second) && <p className="breakTogether">With {(first ? model.first : model.second).filter(name => name.toLocaleLowerCase() !== mine.toLocaleLowerCase()).join(', ') || 'your allocated group'}</p>}
+    {!model.pending && <div className="breakCompactRail" aria-label="Night break periods">
+      <span className={current === 'first' ? 'current' : ''}><b>First break</b><small>{model.firstDutyPeriod}</small><small>{current === 'first' ? 'Current period' : current === 'second' ? 'Earlier period' : 'First Part'}</small></span>
+      <span className={current === 'second' ? 'current' : ''}><b>Second break</b><small>{model.secondDutyPeriod}</small><small>{current === 'second' ? 'Current period' : current === 'first' ? 'Upcoming period' : 'Second Part'}</small></span>
+    </div>}
     {!model.pending && !first && !second && <small>For full-night Labour Ward cover, coordinate your break when clinical cover allows.</small>}
   </section>;
 }
@@ -441,7 +456,35 @@ export function renderBreaksExperience(model: BreakSummary) {
 }
 
 function NightStatus({ model }: { model: NightSummary }) {
+  const [feedback,setFeedback] = useState('');
+  const previous = useRef(model);
+  const feedbackTimer = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    const before = previous.current; previous.current = model;
+    if (before.date !== model.date) { setFeedback(''); clearTimeout(feedbackTimer.current); return; }
+    const changedRole = model.roles.find(role => before.roles.find(old => old.key === role.key)?.names !== role.names);
+    const oldRole = changedRole && before.roles.find(role => role.key === changedRole.key);
+    const message = before.nurseCount !== model.nurseCount ? `${before.nurseCount} nurses → ${model.nurseCount} nurses`
+      : oldRole && changedRole ? `${oldRole.names} → ${changedRole.names}`
+      : before.currentPart && model.currentPart && before.currentPart !== model.currentPart ? 'First Part → Second Part'
+      : before.overtimeCount < model.overtimeCount ? 'Overtime nurse added'
+      : before.breakLabel && before.breakLabel !== model.breakLabel ? 'Break allocation updated' : '';
+    if (message) { setFeedback(message); clearTimeout(feedbackTimer.current); feedbackTimer.current = window.setTimeout(() => setFeedback(''),4500); }
+  },[model]);
+  useEffect(() => () => clearTimeout(feedbackTimer.current),[]);
+  useEffect(() => {
+    const onPhase = (event: Event) => {
+      if ((event as CustomEvent).detail?.date !== model.date) return;
+      setFeedback('First Part → Second Part'); clearTimeout(feedbackTimer.current);
+      feedbackTimer.current = window.setTimeout(() => setFeedback(''),4500);
+    };
+    window.addEventListener('roster:phase-transition',onPhase);
+    return () => window.removeEventListener('roster:phase-transition',onPhase);
+  },[model.date]);
   const provisional = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
+  const previousReady = useRef({ready: !provisional, date: model.date});
+  const completed = !provisional && !previousReady.current.ready && previousReady.current.date === model.date;
+  useEffect(() => { previousReady.current = {ready: !provisional, date: model.date}; }, [provisional,model.date]);
   const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
   const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
   const overtimeNames = (model.overtimeNames || []).filter(Boolean);
@@ -461,10 +504,10 @@ function NightStatus({ model }: { model: NightSummary }) {
       <span className="nightSignalLeadCopy">
         <small>Team tonight</small>
         <strong>{model.nurseCount} nurses</strong>
-        <span>{absenceLabel} · {overtimeLabel}</span>
+        <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : undefined}>{feedback || `${absenceLabel} · ${overtimeLabel}`}</span>
         {overtimeNames.length > 0 && <span className="nightSignalStaffingNames">Overtime: {overtimeNames.join(', ')}</span>}
         <span className="nightSignalState">
-          <i className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : '✓'}</i>
+          <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
           <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
         </span>
       </span>
@@ -523,7 +566,7 @@ function personalMark(tone: string) {
 }
 
 function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   const progress = nightProgress(model, value);
   const start = model.dutyStartUtc || 0;
   const end = model.dutyEndUtc || 0;
@@ -566,7 +609,8 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
         className="nightTimelineFill"
         aria-hidden="true"
         initial={false}
-        animate={{ width: progress + '%' }}
+        style={{ width: '100%', transformOrigin: 'left center' }}
+        animate={{ scaleX: progress / 100 }}
         transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 150, damping: 26, mass: 0.72 }}
       />}
       <span className="nightTimelineHandover" style={{ left: handoverPct + '%' }}>
@@ -581,7 +625,8 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
         className="nightTimelineNow"
         aria-hidden="true"
         initial={false}
-        animate={{ left: progress + '%' }}
+        style={{ left: progress + '%' }}
+        animate={{ opacity: 1 }}
         transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 160, damping: 28, mass: 0.7 }}
       ><i /></motion.span>}
     </button>
@@ -613,17 +658,25 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
 }
 
 function PersonalNightCard({ model }: { model: PersonalNight }) {
-  const reducedMotion = useReducedMotion();
-  const [now, setNow] = useState(() => Date.now());
+  const reducedMotion = useProductReducedMotion();
+  const [now, setNow] = useState(productNowMs);
   const previousNow = useRef(now);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 30000);
-    return () => window.clearInterval(timer);
+    let timer: number | undefined;
+    const update = () => {
+      window.clearInterval(timer);
+      if (document.visibilityState !== 'visible' || document.body.dataset.view !== 'today') return;
+      setNow(productNowMs()); timer = window.setInterval(() => setNow(productNowMs()), 30000);
+    };
+    document.addEventListener('visibilitychange', update); window.addEventListener('roster:viewchange', update); update();
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', update); window.removeEventListener('roster:viewchange', update); };
   }, []);
 
   useEffect(() => {
-    if (model.handoverUtc && previousNow.current < model.handoverUtc && now >= model.handoverUtc && document.visibilityState === 'visible') softHaptic();
+    if (model.handoverUtc && previousNow.current < model.handoverUtc && now >= model.handoverUtc && now < (model.dutyEndUtc || 0) && document.visibilityState === 'visible') {
+      softHaptic(); window.dispatchEvent(new CustomEvent('roster:phase-transition',{detail:{date:model.date}}));
+    }
     previousNow.current = now;
   }, [now, model.handoverUtc]);
 
@@ -659,14 +712,14 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     details?.setAttribute('open', '');
     const rows = Array.from(document.querySelectorAll<HTMLElement>('#roles .rosterRow'));
     const target = rows.find(row => scanContext && row.textContent?.toLocaleLowerCase().includes(scanContext.toLocaleLowerCase())) || rows.find(row => row.classList.contains('mine')) || details;
-    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollToProductElement(target);
     target?.classList.add('focusPulse');
     window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
   };
   const openDutyTiming = () => {
     softHaptic();
     if (model.clockChange) window.dispatchEvent(new CustomEvent('roster:clock-change-guide'));
-    else document.querySelector<HTMLElement>('#personalNightCard .nightTimeline')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    else scrollToProductElement(document.querySelector<HTMLElement>('#personalNightCard .nightTimeline'));
   };
   const openClockGuide = () => {
     softHaptic();
@@ -771,9 +824,9 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
     </div>;
   }
   return <div className="activityTimeline">
-    {model.updated && model.updatedCount > 0 && <div className="recentActivityDigest">
+    {model.updated && model.updatedCount > 0 && <div className="recentActivityDigest" role="status">
       <span className="recentActivityDigestMark" aria-hidden="true">↻</span>
-      <span><b>{model.updatedCount} {model.updatedCount === 1 ? 'change' : 'changes'} since {model.sinceLabel || 'you last opened Night'}</b><small>Review the latest shared staffing and allocation updates below.</small></span>
+      <span><b>{model.updatedCount} {model.updatedCount === 1 ? 'change' : 'changes'} since {model.sinceLabel || 'you last opened Night'}</b><small>{model.summary?.join(' · ') || 'Review the latest shared staffing and allocation updates below.'}</small><span className="returnSummaryActions"><Pressable type="button" onClick={() => { window.dispatchEvent(new CustomEvent('roster:activity-acknowledge')); goToChanges('staffing'); }}>Review updates</Pressable><Pressable type="button" onClick={() => window.dispatchEvent(new CustomEvent('roster:activity-acknowledge'))}>Got it</Pressable></span></span>
     </div>}
     {model.items.map((item, index) => {
       const type = item.type.toLocaleLowerCase();
@@ -833,7 +886,7 @@ function NightRoles({ model }: { model: NightSummary }) {
   const jumpToMine = () => {
     softHaptic();
     const target = document.querySelector<HTMLElement>('#roles .rosterRow.mine,#fiveArrangement .fiveNurseSurface.mine');
-    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollToProductElement(target);
     target?.classList.add('focusPulse');
     window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
   };
@@ -842,8 +895,8 @@ function NightRoles({ model }: { model: NightSummary }) {
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => {
         const liveState = roleLiveState(role, model.currentPart);
-        return <Pressable
-          key={role.key}
+        return <div className="rosterRoleLine" key={role.key}><Pressable
+          data-colleague-names={role.names}
           type="button"
           onClick={openRoleEditor}
           className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
@@ -860,7 +913,7 @@ function NightRoles({ model }: { model: NightSummary }) {
             {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
             {liveState && <Badge tone={liveState === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{liveState}</Badge>}
           </span>}
-        </Pressable>;
+        </Pressable><Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable></div>;
       })}
     </div>
     {model.extras.length > 0 && <div className="additionalStaff">

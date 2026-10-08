@@ -1,12 +1,15 @@
 {
-  "version": "51.4",
-  "date": "7 October 2026",
-  "title": "Read receipts and startup",
-  "summary": "Fixes stuck unread badges and the startup dock.",
+  "version": "52.0",
+  "date": "8 October 2026",
+  "title": "One Night Roster experience",
+  "summary": "A calmer shared design in Light and Dark, with connected navigation and clearer night updates.",
   "changes": [
-    "Saves read receipts using the signed-in-user default.",
-    "Clears viewed chat and app badges.",
-    "Keeps the dock centred while opening."
+    "Unifies screen spacing, surfaces, typography and Light/Dark status colours.",
+    "Connects the dock selection and Actions sheet with restrained motion.",
+    "Keeps the live night rail and compact break periods tied to the shared clock.",
+    "Shows brief change feedback and return updates that clear when acknowledged.",
+    "Improves Chat arrival, loading and scroll behaviour, with colleague shortcuts.",
+    "Adds a live Personalise preview and installed-app pull to refresh."
   ],
   "update_policy": "normal"
 }

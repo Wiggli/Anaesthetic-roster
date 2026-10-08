@@ -1,4 +1,6 @@
-import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { useProductReducedMotion } from './product-motion';
+import { GlassSurface } from './ui-system';
+import { LayoutGroup, motion } from 'motion/react';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
@@ -101,7 +103,7 @@ function activateAdminRailItem(key: string) {
 }
 
 function ScrollGlassChrome() {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useProductReducedMotion();
   const barRef = useRef<HTMLElement>(null);
   const frame = useRef<number | null>(null);
   const [model, setModel] = useState<ChromeModel>(() => readModel());
@@ -210,7 +212,7 @@ function ScrollGlassChrome() {
     className={'scrollGlassHeader scrollGlass-' + model.view + ' scrollGlassMode-' + model.mode}
     aria-hidden="true"
   >
-    {model.mode !== 'off' && <div className="scrollGlassMaterial" aria-hidden="true" />}
+    {model.mode !== 'off' && <GlassSurface className="scrollGlassMaterial" aria-hidden="true" />}
     <div className="scrollGlassStack">
       {model.mode === 'compact' && <div className="scrollGlassContent">
         <motion.span

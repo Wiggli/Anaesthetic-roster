@@ -1,16 +1,53 @@
 /* Night Roster presentation system. Component state is owned by the runtime;
    geometry, hierarchy and materials have one owner here, without override stacks. */
 :root {
+  /* Semantic materials. Personal accents never recolour clinical statuses. */
+  --surface-primary: #f3f5f8;
+  --surface-secondary: #ffffff;
+  --surface-elevated: #eaf0f7;
+  --surface-floating: rgb(255 255 255 / .88);
+  --text-primary: #172333;
+  --text-secondary: #536174;
+  --text-muted: #5c6a7d;
+  --border-subtle: #d9e0e9;
+  --accent-primary: #0066cc;
+  --status-success: #23713a;
+  --status-warning: #895000;
+  --status-danger: #c11a29;
+  --status-danger-fill: #c11a29;
+  --status-info: #1766a5;
+  --shadow-card: 0 1px 2px rgb(18 30 46 / .035);
+  --shadow-floating: 0 12px 32px rgb(18 30 46 / .14);
+  --ambient-glow: rgb(0 102 204 / .045);
+  --overlay-dim: rgb(16 27 44 / .28);
+  --on-accent: #ffffff;
+  --control-primary: #0066cc;
+  --hero-surface: #ffffff;
+  --hero-text: var(--text-primary);
+  --hero-secondary: var(--text-secondary);
+  --hero-border: var(--border-subtle);
+  --rail-base: #cbd6e5;
+  --rail-active: #1769ba;
+  --rail-own: #80ade0;
+  --duty-first-surface: #e5effc;
+  --duty-first-text: #20589c;
+  --duty-second-surface: #eeeafa;
+  --duty-second-text: #6149a0;
+  --chat-incoming: var(--surface-elevated);
+  --chat-outgoing: #e6effa;
+  --chat-outgoing-text: #153b6a;
+  --skeleton-base: #e7ecf2;
+  --skeleton-highlight: #f6f8fb;
   --unified-content-width: 720px;
   --unified-gutter: 16px;
   --unified-type-scale: 1;
-  --unified-type-micro: calc(10px * var(--unified-type-scale));
-  --unified-type-caption: calc(12px * var(--unified-type-scale));
-  --unified-type-body: calc(14px * var(--unified-type-scale));
-  --unified-type-lead: calc(16px * var(--unified-type-scale));
-  --unified-type-section: calc(18px * var(--unified-type-scale));
-  --unified-type-title: calc(22px * var(--unified-type-scale));
-  --unified-type-display: calc(28px * var(--unified-type-scale));
+  --unified-type-micro: calc(0.75rem * var(--unified-type-scale));
+  --unified-type-caption: calc(0.8125rem * var(--unified-type-scale));
+  --unified-type-body: calc(0.9375rem * var(--unified-type-scale));
+  --unified-type-lead: calc(1rem * var(--unified-type-scale));
+  --unified-type-section: calc(1.125rem * var(--unified-type-scale));
+  --unified-type-title: calc(1.375rem * var(--unified-type-scale));
+  --unified-type-display: calc(1.75rem * var(--unified-type-scale));
 
   --unified-space-1: 4px;
   --unified-space-2: 8px;
@@ -20,21 +57,21 @@
   --unified-space-6: 32px;
   --unified-radius-control: 12px;
   --unified-radius-card: 16px;
-  --unified-radius-shell: 16px;
+  --unified-radius-shell: 24px;
   --unified-fast: 180ms;
   --unified-base: 200ms;
   --unified-ease: cubic-bezier(.2,.8,.2,1);
-  --unified-border: color-mix(in srgb, var(--liquid-separator) 70%, transparent);
-  --unified-surface: var(--liquid-surface);
-  --unified-soft: color-mix(in srgb, var(--liquid-secondary) 6%, var(--liquid-surface));
+  --unified-border: var(--border-subtle);
+  --unified-surface: var(--surface-secondary);
+  --unified-soft: var(--surface-elevated);
   --unified-accent-soft: color-mix(in srgb, var(--liquid-accent) 10%, var(--liquid-surface));
-  --unified-glass: color-mix(in srgb, var(--liquid-surface) 88%, transparent);
-  --unified-shadow: 0 8px 24px rgb(18 30 46 / .10);
+  --unified-glass: var(--surface-floating);
+  --unified-shadow: var(--shadow-floating);
   --liquid-text: var(--liquid-label);
-  --text: var(--liquid-label);
-  --muted: var(--liquid-secondary);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
   --card: var(--liquid-surface);
-  --bg: var(--liquid-bg);
+  --bg: var(--surface-primary);
   --account-paper: var(--liquid-bg);
   --account-surface: var(--liquid-surface);
   --account-ink: var(--liquid-label);
@@ -42,17 +79,112 @@
   --account-rule: var(--unified-border);
   --account-accent: var(--liquid-accent);
 }
+html[data-theme="dark"], body.dark {
+  --personal-accent-readable: color-mix(in srgb,var(--personal-accent,var(--control-primary)) 35%,var(--on-accent));
+  --surface-primary: #0e141e;
+  --surface-secondary: #1a2330;
+  --surface-elevated: #253141;
+  --surface-floating: rgb(26 35 48 / .88);
+  --text-primary: #f2f5fa;
+  --text-secondary: #b6c2d2;
+  --text-muted: #a5b2c4;
+  --border-subtle: #354254;
+  --accent-primary: #91bfff;
+  --status-success: #85d9a0;
+  --status-warning: #f5c374;
+  --status-danger: #ff9da4;
+  --status-danger-fill: #c11a29;
+  --status-info: #90c9ff;
+  --shadow-card: 0 1px 0 rgb(255 255 255 / .025);
+  --shadow-floating: 0 14px 36px rgb(0 0 0 / .36);
+  --ambient-glow: rgb(112 164 255 / .055);
+  --overlay-dim: rgb(0 0 0 / .48);
+  --hero-surface: #1a2330;
+  --rail-base: #465872;
+  --rail-active: #96c5ff;
+  --rail-own: #3e699b;
+  --duty-first-surface: #29466b;
+  --duty-first-text: #c8ddff;
+  --duty-second-surface: #3c345b;
+  --duty-second-text: #e3d7ff;
+  --chat-outgoing: #273f61;
+  --chat-outgoing-text: #edf4ff;
+  --skeleton-base: #263243;
+  --skeleton-highlight: #334256;
+}
+/* Existing components consume aliases until their typed regions are migrated. */
+:root, html[data-theme="dark"], body.dark {
+  --liquid-bg: var(--surface-primary);
+  --liquid-bg-alt: var(--surface-primary);
+  --liquid-surface: var(--surface-secondary);
+  --liquid-surface-muted: var(--surface-elevated);
+  --liquid-label: var(--text-primary);
+  --liquid-secondary: var(--text-secondary);
+  --liquid-tertiary: var(--text-muted);
+  --liquid-accent: var(--control-primary);
+  --liquid-accent-strong: var(--accent-primary);
+  --liquid-separator: var(--border-subtle);
+  --accent-strong: var(--accent-primary);
+  --surface: var(--surface-secondary);
+  --scene-bg: var(--surface-primary);
+  --scene-surface: var(--surface-secondary);
+  --scene-ink: var(--text-primary);
+  --scene-secondary: var(--text-secondary);
+  --scene-line: var(--border-subtle);
+  --scene-accent: var(--accent-primary);
+  --scene-shadow: var(--shadow-card);
+  --accent: var(--control-primary);
+  --ios-bg: var(--surface-primary);
+  --ios-surface: var(--surface-secondary);
+  --ios-label: var(--text-primary);
+  --ios-secondary: var(--text-secondary);
+  --ios-separator: var(--border-subtle);
+  --apple-bg: var(--surface-primary);
+  --night-paper: var(--surface-primary);
+  --night-surface: var(--surface-secondary);
+  --night-ink: var(--text-primary);
+  --night-muted: var(--text-secondary);
+  --night-rule: var(--border-subtle);
+  --night-accent: var(--accent-primary);
+  --night-accent-strong: var(--accent-primary);
+  --night-accent-soft: var(--unified-accent-soft);
+  --night-control: var(--surface-elevated);
+  --night-control-pressed: color-mix(in srgb,var(--accent-primary) 12%,var(--surface-elevated));
+  --night-hero: var(--hero-surface);
+  --night-hero-soft: var(--surface-elevated);
+  --night-hero-text: var(--hero-text);
+  --night-hero-muted: var(--hero-secondary);
+  --apple-surface: var(--surface-secondary);
+  --apple-surface-raised: var(--surface-elevated);
+  --apple-surface-muted: var(--surface-elevated);
+  --apple-label: var(--text-primary);
+  --apple-secondary: var(--text-secondary);
+  --apple-tertiary: var(--text-muted);
+  --apple-separator: var(--border-subtle);
+  --apple-accent: var(--accent-primary);
+  --apple-accent-soft: var(--unified-accent-soft);
+  --app-bg: var(--surface-primary);
+  --app-card: var(--surface-secondary);
+  --app-text: var(--text-primary);
+  --app-muted: var(--text-secondary);
+  --app-line: var(--border-subtle);
+  --liquid-radius-s: var(--unified-radius-control);
+  --liquid-radius-m: var(--unified-radius-card);
+  --liquid-radius-l: var(--unified-radius-shell);
+  --liquid-radius-xl: var(--unified-radius-shell);
+}
 body[data-text-scale="large"] { --unified-type-scale: 1.0625; }
 body[data-text-scale="xlarge"] { --unified-type-scale: 1.125; }
 body.personalMotionReduced { --unified-fast: 0ms; --unified-base: 0ms; }
 body.personalMotionReduced .bottom.reactTabs *, body.personalMotionReduced *, body.personalMotionReduced *::before, body.personalMotionReduced *::after { transition: none; animation: none; scroll-behavior: auto; }
-body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--liquid-label); background: var(--liquid-bg); font-size: var(--unified-type-lead); line-height: 1.45; }
+html, body { min-height: 100dvh; }
+body { --personal-accent-readable: var(--personal-accent,var(--accent-primary)); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--liquid-label); background: radial-gradient(ellipse 100% 260px at 50% 0,var(--ambient-glow),transparent), var(--surface-primary); background-repeat: no-repeat; font-size: var(--unified-type-lead); line-height: 1.45; }
 *, *::before, *::after { box-sizing: border-box; }
 button, input, select, textarea { font: inherit; }
 button, [role="button"], summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 button, [role="button"] { min-height: 44px; }
 button { border-radius: var(--unified-radius-control); box-shadow: none; }
-button.primary { background: var(--liquid-accent); color: white; border: 0; }
+button.primary { background: var(--control-primary); color: var(--on-accent); border: 0; }
 button.soft, button.quietAction { background: var(--unified-accent-soft); color: var(--liquid-accent-strong); border: 0; }
 button:disabled { cursor: default; }
 :is(button, [role="button"], summary, input, select, textarea):focus-visible { outline: 3px solid color-mix(in srgb, var(--liquid-accent) 45%, transparent); outline-offset: 2px; }
@@ -60,10 +192,11 @@ button:disabled { cursor: default; }
 h1, h2, h3, p { overflow-wrap: break-word; }
 h1, h2, h3 { color: inherit; letter-spacing: -.025em; }
 .uiSurface { overflow: hidden; border-radius: var(--unified-radius-card); background: var(--unified-surface); }
-.view { animation: screen-enter var(--unified-base) var(--unified-ease); }
-@keyframes screen-enter { from { opacity: .8; } to { opacity: 1; } }
-main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc(96px + var(--app-safe-bottom)); }
+main > .view.viewEntering { animation: screen-enter var(--unified-base) var(--unified-ease); }
+@keyframes screen-enter { from { opacity: .82; transform: translate3d(0,4px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
+main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc(96px + var(--app-safe-bottom)); background: transparent; color: var(--text-primary); }
 #today, #changes, #breaks, #chat, #roster, #admin {
+  background: transparent; color: var(--text-primary);
   width: min(100%, var(--unified-content-width)); margin-inline: auto;
   padding: max(12px, var(--app-safe-top)) max(var(--unified-gutter), var(--app-safe-right)) 24px max(var(--unified-gutter), var(--app-safe-left));
 }
@@ -101,7 +234,7 @@ main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc
 .selectedNightCount { color: var(--liquid-secondary); font-size: var(--unified-type-caption); font-weight: 650; white-space: nowrap; }
 .nightTeamIdentityContext { display: grid; grid-template-columns: 36px minmax(0,1fr); align-items: center; gap: 8px; width: auto; min-width: 0; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--liquid-label); }
 .nightTeamIdentityContext::before, .nightTeamIdentityContext::after { content: none; }
-.shiftIdentityMark { display: grid; place-items: center; width: 36px; min-width: 36px; height: 36px; min-height: 36px; padding: 0; overflow: hidden; border: 0; border-radius: 10px; color: white; background: var(--shift-identity-accent, var(--liquid-accent)); font-size: var(--unified-type-title); box-shadow: none; }
+.shiftIdentityMark { display: grid; place-items: center; width: 36px; min-width: 36px; height: 36px; min-height: 36px; padding: 0; overflow: hidden; border: 0; border-radius: 10px; color: white; background: var(--shift-identity-accent, var(--control-primary)); font-size: var(--unified-type-title); box-shadow: none; }
 .shiftIdentityMark img { width: 100%; height: 100%; object-fit: cover; }
 .shiftIdentityCopy { min-width: 0; padding: 0; border: 0; }
 .shiftIdentityCopy strong { display: block; font-size: var(--unified-type-section); font-weight: 700; line-height: 1.25; color: var(--liquid-label); white-space: normal; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; }
@@ -123,61 +256,62 @@ main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc
 .personalNight { margin: 0; padding: 0; border: 0; background: transparent; }
 .personalNightHeading, #personalNightHeading { display: none; }
 #personalNightCard { margin: 0; padding: 0; border: 0; background: transparent; }
-#today #personalNightCard > .personalHeroSurface { position: relative; display: block; margin: 0; padding: 16px; overflow: visible; border: 0; border-radius: var(--unified-radius-card); background: #101821; color: #f7f9fc; box-shadow: none; }
+#today #personalNightCard > .personalHeroSurface { position: relative; display: block; margin: 0; padding: 16px; overflow: visible; border-radius: var(--unified-radius-card); background: var(--hero-surface); color: var(--hero-text); box-shadow: var(--shadow-card); border: 1px solid var(--hero-border); }
 .personalHeroSurface::before, .personalHeroSurface::after { content: none; }
 .personalIdentityAssistive { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .personalAssignmentStage { margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .personalAssignmentHero { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-.personalRoleIcon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; border: 0; background: #28466f; color: #cce1ff; font-size: var(--unified-type-body); }
-.personalRole-second .personalRoleIcon { background: #403961; color: #e0d7ff; }
+.personalRoleIcon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; border: 0; background: var(--duty-first-surface); color: var(--duty-first-text); font-size: var(--unified-type-body); }
+.personalRole-second .personalRoleIcon { background: var(--duty-second-surface); color: var(--duty-second-text); }
 .personalRoleCopy { display: grid; gap: 4px; min-width: 0; flex: 1; }
-.personalRoleCopy b { color: #f7f9fc; font-size: var(--unified-type-title); line-height: 1.2; white-space: normal; overflow: visible; }
-.personalRoleCopy > span { color: #b8c3d2; font-size: var(--unified-type-body); line-height: 1.35; }
+.personalRoleCopy b { color: var(--hero-text); font-size: var(--unified-type-title); line-height: 1.2; white-space: normal; overflow: visible; }
+.personalRoleCopy > span { color: var(--hero-secondary); font-size: var(--unified-type-body); line-height: 1.35; }
 .personalHeroMeta { margin: 0 0 8px; }
-.personalHeroFactGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid #ffffff1f; border-radius: 0; background: transparent; box-shadow: none; }
+.personalHeroFactGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--hero-border); border-radius: 0; background: transparent; box-shadow: none; }
 .personalHeroFact { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; min-width: 0; min-height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; text-align: left; }
-.personalHeroFact small { color: #b8c3d2; font-size: var(--unified-type-micro); font-weight: 600; text-transform: uppercase; }
-.personalHeroFact b { margin: 4px 0; color: #f7f9fc; font-size: var(--unified-type-body); line-height: 1.35; white-space: normal; overflow: visible; }
-.personalHeroFact > span { color: #b8c3d2; font-size: var(--unified-type-caption); line-height: 1.3; }
-.nightTimeline { display: block; margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid #ffffff1f; border-radius: 0; background: transparent; box-shadow: none; }
+.personalHeroFact small { color: var(--hero-secondary); font-size: var(--unified-type-micro); font-weight: 600; text-transform: uppercase; }
+.personalHeroFact b { margin: 4px 0; color: var(--hero-text); font-size: var(--unified-type-body); line-height: 1.35; white-space: normal; overflow: visible; }
+.personalHeroFact > span { color: var(--hero-secondary); font-size: var(--unified-type-caption); line-height: 1.3; }
+.nightTimeline { display: block; margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--hero-border); border-radius: 0; background: transparent; box-shadow: none; }
 .nightTimelineHead { display: flex; align-items: start; justify-content: space-between; gap: 8px; margin: 0 0 8px; }
 .nightTimelineHead > span { display: grid; gap: 2px; }
-.nightTimelineHead small { font-size: var(--unified-type-micro); color: #b8c3d2; }
-.nightTimelineHead b { font-size: var(--unified-type-caption); color: #f7f9fc; }
-.nightTimelineHead em { font-size: var(--unified-type-caption); color: #bdd8ff; font-style: normal; }
+.nightTimelineHead small { font-size: var(--unified-type-micro); color: var(--hero-secondary); }
+.nightTimelineHead b { font-size: var(--unified-type-caption); color: var(--hero-text); }
+.nightTimelineHead em { font-size: var(--unified-type-caption); color: var(--rail-active); font-style: normal; }
 .nightTimelineTrackShell { position: relative; display: block; width: 100%; height: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; overflow: visible; opacity: 1; }
 .nightTimelineBase, .nightTimelineOwnBand, .nightTimelineFill { position: absolute; top: 20px; height: 4px; border-radius: 4px; }
-.nightTimelineBase { inset-inline: 0; background: #354354; }
-.nightTimelineOwnBand.mine { background: #65a1ed; }
-.nightTimelineOwnBand:not(.mine) { background: #354354; }
-.nightTimelineFill { left: 0; background: #84b9ff; }
+.nightTimelineBase { inset-inline: 0; background: var(--rail-base); }
+.nightTimelineOwnBand.mine { background: var(--rail-own); }
+.nightTimelineOwnBand:not(.mine) { background: var(--rail-base); }
+.nightTimelineFill { left: 0; background: var(--rail-active); }
 .nightTimelineHandover, .nightTimelineNow { position: absolute; top: 13px; transform: translateX(-50%); }
-.nightTimelineHandover i { display: block; height: 18px; width: 1px; background: #d5deec; }
-.nightTimelineNow i { display: block; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; border: 2px solid #fff; background: #409cff; box-shadow: 0 0 0 3px #409cff33; }
-.nightTimelinePhaseLabels { display: flex; margin: 0; padding: 0; color: #b8c3d2; font-size: var(--unified-type-caption); line-height: 1.3; }
+.nightTimelineHandover i { display: block; height: 18px; width: 1px; background: var(--hero-secondary); }
+.nightTimelineNow i { display: block; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; border: 2px solid var(--hero-surface); background: var(--rail-active); box-shadow: 0 0 0 3px color-mix(in srgb,var(--rail-active) 18%,transparent); }
+.nightTimelinePhaseLabels { display: flex; margin: 0; padding: 0; color: var(--hero-secondary); font-size: var(--unified-type-caption); line-height: 1.3; }
 .nightTimelinePhaseLabels > span { display: block; min-width: 0; text-align: left; }
 .nightTimelinePhaseLabels > span:last-child { text-align: right; }
-.nightTimelinePhaseLabels .mine { color: #9cc7ff; }
-.nightTimelineScale { position: relative; height: 24px; margin: 4px 0 0; color: #b8c3d2; font-size: var(--unified-type-micro); line-height: 1.3; }
+.nightTimelinePhaseLabels .mine { color: var(--rail-active); }
+.nightTimelineScale { position: relative; height: 24px; margin: 4px 0 0; color: var(--hero-secondary); font-size: var(--unified-type-micro); line-height: 1.3; }
 .nightTimelineScale > span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
 .nightTimelineScale .timelineStart { left: 0; transform: none; }
 .nightTimelineScale .timelineEnd { right: 0; left: auto; transform: none; }
 .nightTimelineScale.back, .nightTimelineScale.forward { height: 44px; }
 .nightTimelineScale .dstMark, .nightTimelineScale .dstJumpMark { top: 20px; font-size: var(--unified-type-micro); }
-.nightTimelineHandover b { position: absolute; bottom: 22px; left: 0; width: 70px; transform: translateX(-50%); font-size: var(--unified-type-micro); color: #d7e6fc; }
+.nightTimelineHandover b { position: absolute; bottom: 22px; left: 0; width: 70px; transform: translateX(-50%); font-size: var(--unified-type-micro); color: var(--rail-active); }
 .nightTimelineTransition { position: absolute; top: 12px; transform: translateX(-50%); }
 .nightTimelineTransition b { position: absolute; top: 25px; left: 0; transform: translateX(-50%); white-space: nowrap; font-size: var(--unified-type-micro); }
-.nightTimelineExplain { display: grid; gap: 4px; margin-top: 8px; color: #b8c3d2; font-size: var(--unified-type-caption); }
+.nightTimelineExplain { display: grid; gap: 4px; margin-top: 8px; color: var(--hero-secondary); font-size: var(--unified-type-caption); }
 .personalClockException, .personalClockNow { margin-top: 12px; border-radius: 12px; }
 .personalClockNowCopy strong { color: inherit; }
 html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activitySection, html.nightCalmMode #today .nightTeamSection, html.nightCalmMode #today .nightSecondaryActions { display: none; }
 .nightOverviewBoard { width: 100%; min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
 .teamOverviewGroup { margin-top: 24px; }
 /* Changes: the fallback and React workflow replace the same host. */
-.ctop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 0; }
+.ctop { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 0; }
 .ctop h2 { margin: 0; font-size: var(--unified-type-section); font-weight: 700; }
 .liveStatus, .headerLiveChip, .appLiveStatus, .primaryConnectionLine { display: inline-flex; align-items: center; gap: 4px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); font-weight: 500; }
-.liveDot, .headerLiveDot, .chatLiveDot { width: 6px; height: 6px; border-radius: 50%; box-shadow: none; }
+.liveDot, .headerLiveDot, .chatLiveDot { width: 6px; height: 6px; border-radius: 50%; box-shadow: none; animation: none; }
+.offlineNotice, .headerLiveChip.offline { color: var(--status-warning); }
 .workflowExperience { margin: 0 0 12px; padding: 0; border: 0; background: transparent; }
 .workflowSteps, .changesWorkflowTabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); align-items: stretch; gap: 4px; padding: 4px; border: 0; border-radius: 12px; background: var(--unified-soft); }
 .workflowStep, .changesWorkflowTabs > button { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; margin: 0; padding: 8px 4px; border: 0; border-radius: 8px; background: transparent; color: var(--liquid-secondary); }
@@ -271,12 +405,12 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .chatInboxUnread, .chatConversationBadge { display: grid; place-items: center; min-width: 22px; height: 22px; margin: 0; padding: 0 6px; border: 0; border-radius: 11px; background: var(--liquid-accent); color: white; font-size: var(--unified-type-caption); font-style: normal; }
 .chatUtilityGroup { margin-top: 16px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .chatNotificationShortcut { width: 100%; text-align: left; background: transparent; color: var(--liquid-accent-strong); border: 0; font-size: var(--unified-type-body); }
-.chatThreadHeader { min-height: 64px; border-radius: 16px 16px 0 0; }
+.chatThreadHeader { min-height: 64px; border-radius: 16px 16px 0 0; background: var(--surface-secondary); }
 .chatThreadSafety { padding: 8px 12px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
 /* Account is a page stack in one outlet, not a menu preceding every page. */
 .accountSheet[open] { position: fixed; inset: max(0px,var(--app-safe-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-safe-top)); max-height: calc(100dvh - var(--app-safe-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); animation: account-enter var(--unified-base) var(--unified-ease); }
-@keyframes account-enter { from { opacity: .8; } to { opacity: 1; } }
-.accountSheet::backdrop { background: rgb(10 18 30 / .3); }
+@keyframes account-enter { from { opacity: .7; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.accountSheet::backdrop { background: var(--overlay-dim); }
 .accountSheet > .sheetGrabber { display: none; }
 .accountSheetHeader { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-height: 64px; margin: 0; padding: 8px max(16px,var(--app-safe-right)) 8px max(16px,var(--app-safe-left)); border: 0; border-bottom: 1px solid var(--unified-border); border-radius: 0; background: var(--unified-surface); box-shadow: none; }
 .accountSheetHeader > div { flex: 1; min-width: 0; }
@@ -286,7 +420,7 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .accountBackBtn { width: 44px; padding: 0; font-size: var(--unified-type-display); }
 .accountSheetScroll { flex: 1; min-height: 0; height: auto; max-height: none; margin: 0; padding: 16px max(16px,var(--app-safe-right)) calc(24px + var(--app-safe-bottom)) max(16px,var(--app-safe-left)); overflow-y: auto; overscroll-behavior: contain; background: var(--liquid-bg); }
 .accountPageOutlet { min-width: 0; }
-.accountPage { animation: screen-enter var(--unified-base) var(--unified-ease); }
+
 .accountHomeHub { display: grid; gap: 16px; }
 .accountHomeIdentity { display: flex; align-items: center; gap: 12px; margin: 0; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
 .accountHomeIdentity > div { min-width: 0; }
@@ -312,12 +446,22 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .personalisationTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 16px; padding: 4px; border: 0; border-radius: 12px; background: var(--unified-soft); }
 .personalisationTabs button { min-height: 44px; border: 0; border-radius: 8px; background: transparent; font-size: var(--unified-type-body); }
 .personalisationTabs .active { background: var(--unified-surface); color: var(--liquid-accent-strong); }
-.personalisationPreviewCard { margin: 0 0 16px; padding: 16px; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
+.personalisationPreviewCard { --identity-accent-readable: var(--identity-accent,var(--accent-primary)); position: sticky; top: 60px; z-index: 3; margin: 0 0 16px; padding: 12px; border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-card); background: var(--unified-surface); box-shadow: var(--shadow-card); }
 .personalisationPreviewGlow { display: none; }
+body.dark .personalisationPreviewCard { --identity-accent-readable: color-mix(in srgb,var(--identity-accent) 35%,var(--on-accent)); }
+.personalisationPreviewCopy > span { color: var(--identity-accent-readable); font-size: var(--unified-type-micro); }
+.personalisationPreviewCopy small { color: var(--text-secondary); font-size: var(--unified-type-caption); }
 .personalisationPreviewCopy strong { font-size: var(--unified-type-title); color: var(--liquid-label); }
 .personalisationSwatches, .shiftSymbolChoices { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
 .personalisationSwatches button span { font-size: var(--unified-type-caption); white-space: normal; }
 .personalisationSwatches button, .shiftSymbolChoices button { min-width: 44px; min-height: 44px; }
+.personalisationGroupHeading > span { color: var(--personal-accent-readable); font-size: var(--unified-type-micro); }
+.personalisationSwatches button.active, .shiftSymbolChoices button.active, .personalisationChoiceRow button.active { border-color: var(--accent-primary); background: var(--unified-accent-soft); color: var(--accent-primary); }
+.personalisationSwatches button.active i { box-shadow: 0 0 0 2px var(--accent-primary); }
+.personalisationToggleRow.active > i { color: var(--accent-primary); background: var(--unified-accent-soft); }
+.personalisationIdentityImage { color: var(--identity-accent-readable,var(--text-primary)); border-color: var(--border-subtle); background: color-mix(in srgb,var(--identity-accent,var(--accent-primary)) 10%,var(--surface-elevated)); box-shadow: none; }
+.accountPhotoActions button { color: var(--accent-primary); }
+.accountPhotoActions #removeProfilePhoto { color: var(--status-danger); }
 .accountProfileInput { min-height: 44px; padding: 12px; font-size: var(--unified-type-lead); border: 1px solid var(--unified-border); border-radius: 12px; }
 .appearanceControl { display: block; width: 100%; }
 .appearanceControl button strong, .appearanceControl button small { white-space: normal; overflow: visible; }
@@ -355,10 +499,10 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 html.nightCalmMode #nightCalmToggle::before { content: '☀'; }
 html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
 /* Sheets, launch and update use the same radius, text and motion contracts. */
-.quickActionsSheet, .appDialog, .onboardingDialog, .releaseDialog { border-radius: 16px; color: var(--liquid-label); background: var(--unified-surface); }
+.quickActionsSheet, .appDialog, .onboardingDialog, .releaseDialog { border-radius: var(--unified-radius-shell); color: var(--liquid-label); background: var(--unified-surface); }
 /* Actions owns both typed and fallback content, including bounded line icons. */
-.quickActionsSheet[open] { position: fixed; inset: auto 0 max(8px,var(--app-safe-bottom)); width: min(calc(100% - 16px),520px); max-width: 520px; max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 24px); margin: 0 auto; padding: 8px 16px 16px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--unified-border); box-shadow: var(--unified-shadow); }
-.quickActionsSheet::backdrop { background: rgb(10 18 30 / .3); }
+.quickActionsSheet[open] { transform-origin: 50% 100%; animation: actions-enter 260ms var(--unified-ease); position: fixed; inset: auto 0 max(8px,var(--app-safe-bottom)); width: min(calc(100% - 16px),520px); max-width: 520px; max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 24px); margin: 0 auto; padding: 8px 16px 16px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--unified-border); box-shadow: var(--unified-shadow); }
+.quickActionsSheet::backdrop { background: var(--overlay-dim); }
 .quickActionsHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 16px; }
 .quickActionsHead > div { min-width: 0; }
 .quickActionsHead > div > span { color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
@@ -383,8 +527,13 @@ html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
 .quickActionGroup { margin: 0; }
 .quickActionGroupHeading { margin-bottom: 8px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
 .quickActionList { display: grid; gap: 8px; }
+@keyframes actions-enter { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+/* Native staffing dialogs keep focus and controls inside the active sheet. */
+#changes .staffingSheet[open] { inset: auto 0 0; width: min(560px,100%); margin: 0 auto; padding: 8px 16px calc(16px + var(--app-safe-bottom)); max-height: calc(var(--app-viewport-height,100dvh) - var(--app-safe-top) - 16px); border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-shell) var(--unified-radius-shell) 0 0; background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); }
+#changes .staffingSheet::backdrop { background: var(--overlay-dim); }
 /* Onboarding uses intrinsic header rows and respects installed-iPhone safe areas. */
-.onboardingDialog[open] { display: flex; flex-direction: column; inset: var(--app-safe-top) 0 var(--app-safe-bottom); width: min(540px,calc(100% - 16px)); height: min(760px,calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 16px)); max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 16px); margin: auto; padding: 0; }
+.onboardingDialog[open] { animation: dialog-enter var(--unified-base) var(--unified-ease); display: flex; flex-direction: column; inset: var(--app-safe-top) 0 var(--app-safe-bottom); width: min(540px,calc(100% - 16px)); height: min(760px,calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 16px)); max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 16px); margin: auto; padding: 0; }
+@keyframes dialog-enter { from { opacity: .8; } to { opacity: 1; } }
 .onboardingDialog .onboardingTop { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 12px; align-items: center; min-height: 64px; padding: 12px 16px; }
 .onboardingDialog .onboardingStepLabel { position: static; transform: none; min-width: 0; font-size: var(--unified-type-caption); line-height: 1.4; }
 .onboardingDialog .onboardingSkip { position: static; min-height: 44px; margin: 0; padding: 8px 0 8px 12px; white-space: nowrap; }
@@ -402,6 +551,73 @@ html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
 .updateBanner { border-radius: 16px; background: var(--unified-surface); box-shadow: var(--unified-shadow); }
 .launchMotto { font-size: var(--unified-type-body); }
 .scrollChrome { border-radius: 0; }
+/* Shared statuses, empty states, loading and transient feedback. */
+.statusBadge { --status-tone: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; min-height: 26px; padding: 4px 8px; border-radius: 999px; background: color-mix(in srgb,var(--status-tone) 9%,var(--surface-secondary)); color: var(--status-tone); font-size: var(--unified-type-caption); font-weight: 650; line-height: 1.25; }
+.statusBadge--accent { --status-tone: var(--accent-primary); }
+.statusBadge--success { --status-tone: var(--status-success); }
+.statusBadge--warning { --status-tone: var(--status-warning); }
+.statusBadge--danger { --status-tone: var(--status-danger); }
+.statusBadge--info { --status-tone: var(--status-info); }
+.liveStatus[data-status-tone="neutral"], [data-status-tone="neutral"] { color: var(--text-secondary); }
+.liveStatus[data-status-tone="info"], [data-status-tone="info"] { color: var(--status-info); }
+.liveStatus[data-status-tone="warning"], [data-status-tone="warning"] { color: var(--status-warning); }
+.liveStatus[data-status-tone="danger"], [data-status-tone="danger"] { color: var(--status-danger); }
+[data-status-tone] .liveDot, .chatLiveDot[data-status-tone] { background: currentColor; }
+.productEmptyState { display: flex; align-items: flex-start; gap: 12px; min-height: 64px; padding: 12px; }
+.productEmptyMark { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 8px; background: var(--surface-elevated); color: var(--text-secondary); }
+.productEmptyMark svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.productEmptyCopy { display: grid; min-width: 0; gap: 4px; }
+.productEmptyCopy strong { font-size: var(--unified-type-body); font-weight: 650; }
+.productEmptyCopy small { font-size: var(--unified-type-caption); color: var(--text-secondary); line-height: 1.4; }
+.productGlassSurface { border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-card); background: var(--surface-floating); box-shadow: var(--shadow-floating); -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%); }
+.scrollGlassMaterial { border-radius: 0; border-width: 0 0 1px; box-shadow: var(--shadow-card); }
+.scrollGlassMaterial::before, .scrollGlassMaterial::after { content: none; }
+.productUpdateText { color: var(--status-info); }
+.historyMeta, .historyDetail { display: block; }
+.historyComparison { display: grid; gap: 4px; margin-top: 8px; padding: 8px; border-radius: var(--unified-radius-control); background: var(--surface-elevated); }
+.historyComparison del { color: var(--text-secondary); text-decoration: none; }
+.historyComparison ins { color: var(--text-primary); text-decoration: none; font-weight: 650; }
+.staffingActionCopy .productEmptyState { padding: 0; }
+.productStatusCheck { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.productStatusCheck path { stroke-dasharray: 24; stroke-dashoffset: 0; }
+.productStatusCheck.justCompleted path { animation: product-check 340ms var(--unified-ease); }
+@keyframes product-check { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+.productSkeleton { height: 1em; border-radius: 6px; background: var(--skeleton-base); }
+.productSkeleton + .productSkeleton { margin-top: 8px; }
+.productSkeleton:last-child { width: 62%; }
+/* Thread materials belong to Night Roster and remain readable without glass. */
+.chatTeamBubble, .chatPrivateBubble { background: var(--chat-incoming); color: var(--text-primary); border: 0; border-radius: var(--unified-radius-card); padding: 10px 12px; box-shadow: none; }
+.chatTeamMessage.own .chatTeamBubble, .chatPrivateMessage.own .chatPrivateBubble { background: var(--chat-outgoing); color: var(--chat-outgoing-text); }
+.chatMessageText { font-size: var(--unified-type-lead); line-height: 1.45; overflow-wrap: anywhere; }
+.chatTeamSender, .chatPrivateSender { color: var(--accent-primary); font-size: var(--unified-type-caption); }
+.chatTeamMessageMeta, .chatPrivateMeta { color: var(--text-secondary); font-size: var(--unified-type-caption); }
+.chatDateSeparator, .chatUnreadMarker { color: var(--text-secondary); font-size: var(--unified-type-caption); }
+.chatComposerGlass { width: 100%; padding: 4px; border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-card); background: var(--surface-secondary); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.chatComposerGlass textarea { color: var(--text-primary); font-size: 1rem; }
+.chatThread, .chatTeamConsole, .chatMessages, .chatTeamMessages { background: var(--surface-secondary); color: var(--text-primary); box-shadow: none; }
+.chatSendBtn { min-width: 44px; min-height: 44px; background: var(--control-primary); color: var(--on-accent); box-shadow: none; }
+.breakCompactRail { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.breakCompactRail span { display: grid; gap: 4px; padding: 8px; border-top: 3px solid var(--border-subtle); color: var(--text-secondary); font-size: var(--unified-type-caption); }
+.breakCompactRail .current { border-color: var(--status-info); color: var(--status-info); }
+.breakCompactRail b { font-size: var(--unified-type-body); font-weight: 650; }
+.breakCompactRail small { font-size: inherit; }
+.breakTogether { margin: 8px 0 0; color: var(--text-secondary); font-size: var(--unified-type-body); }
+.returnSummaryActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.returnSummaryActions button { min-height: 44px; padding: 8px 12px; background: var(--surface-elevated); color: var(--accent-primary); border: 0; }
+.personalisationPreviewMini { display: grid; grid-column: 1 / -1; grid-template-columns: 1fr auto; gap: 4px 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: var(--unified-type-body); color: var(--text-primary); }
+.personalisationPreviewMini > small { grid-column: 1 / -1; color: var(--text-secondary); font-size: var(--unified-type-caption); }
+.productRefreshIndicator { position: fixed; z-index: 80; top: calc(var(--app-safe-top) + 8px); left: 50%; display: flex; align-items: center; gap: 8px; width: max-content; max-width: calc(100vw - 32px); padding: 8px 16px; border: 1px solid var(--border-subtle); border-radius: 999px; background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); transform: translate(-50%,0); font-size: var(--unified-type-caption); pointer-events: none; }
+.productRefreshIndicator > span { color: var(--accent-primary); font-size: var(--unified-type-section); }
+.productRefreshIndicator[data-state="refreshing"] > span { animation: refresh-turn 1.2s linear infinite; }
+@keyframes refresh-turn { to { transform: rotate(360deg); } }
+.productColleagueMenu[open] { padding: 16px; width: min(380px,calc(100% - 24px)); border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-card); background: var(--surface-secondary); color: var(--text-primary); }
+.productColleagueMenu::backdrop { background: var(--overlay-dim); }
+.productColleagueMenu h2 { margin: 0 0 12px; font-size: var(--unified-type-section); }
+.productColleagueMenu button { width: 100%; margin: 4px 0; padding: 12px; border: 0; background: var(--surface-elevated); color: var(--accent-primary); text-align: left; }
+.productColleagueMenu p { font-size: var(--unified-type-body); color: var(--text-secondary); }
+.roleShortcutButton { background: transparent; border: 0; color: var(--accent-primary); min-width: 44px; min-height: 44px; padding: 8px; }
+.rosterRoleLine { display: flex; align-items: center; border-bottom: 1px solid var(--border-subtle); }
+.rosterRoleLine .rosterRow { flex: 1; min-width: 0; border-bottom: 0; }
 @media (max-width: 430px) {
   :root { --unified-gutter: 12px; }
   .primaryInstitutionBrand > span, .hospitalStrip > span { max-width: 130px; font-size: var(--unified-type-micro); }
@@ -423,10 +639,12 @@ html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
   .personalHeroFact > span { font-size: var(--unified-type-micro); }
   .accountSheet { border-radius: 0; }
 }
-@media (prefers-reduced-transparency: reduce) { .bottom.reactTabs { background: var(--unified-surface); backdrop-filter: none; -webkit-backdrop-filter: none; } }
+@supports not (backdrop-filter: blur(1px)) { .productGlassSurface { background: var(--surface-secondary); } }
+@media (prefers-reduced-transparency: reduce) { .bottom.reactTabs { background: var(--unified-surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced .onboardingDialog[open], body.personalMotionReduced .accountSheet[open], body.personalMotionReduced .view.viewEntering, body.personalMotionReduced .productRefreshIndicator > span, body.personalMotionReduced .productStatusCheck.justCompleted path { animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  .view, .accountPage, .accountSheet[open] { animation: none; }
-  .bottom.reactTabs *, button { transition: none; }
+  .view, main > .view.viewEntering, .accountPage, .accountSheet[open], .onboardingDialog[open], .quickActionsSheet[open], .productRefreshIndicator > span, .productStatusCheck.justCompleted path { animation: none; }
+  .bottom.reactTabs *, .bottom::before, button { transition: none; }
 }
 @media (prefers-contrast: more) { .uiSurface, .personalHeroSurface, .personalBreakSummary, .staffingSection, .accountGroup { outline: 1px solid currentColor; } }
 

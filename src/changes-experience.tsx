@@ -1,5 +1,6 @@
+import { useProductReducedMotion } from './product-motion';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Badge, EmptyState, FieldShell, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
@@ -123,7 +124,7 @@ function History({ model }: { model: ChangesExperience }) {
           className="historyItem"
           leading={<Badge tone={item.type === 'absence' ? 'danger' : item.type === 'overtime' ? 'warning' : 'accent'}>{item.label}</Badge>}
           title={item.title}
-          subtitle={[item.detail, item.meta].filter(Boolean).join(' · ')}
+          subtitle={<><span className="historyMeta">{item.meta}</span>{item.detail.includes(' → ') ? <span className="historyComparison"><del>{item.detail.split(' → ')[0]}</del><span aria-hidden="true">→</span><ins>{item.detail.split(' → ').slice(1).join(' → ')}</ins></span> : item.detail && <span className="historyDetail">{item.detail}</span>}</>}
         />)
       : <EmptyState title="No staffing change history for this night" />}
     {(model.historyTotal > 15 || model.historyHasMore) && <div className="tw:p-2.5">
@@ -172,12 +173,13 @@ function AllocationList({ model }: { model: ChangesExperience }) {
 function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {
   const records = mode === 'absence' ? model.absences : model.overtime;
   const [open, setOpen] = useState(mode === 'absence' && model.forms.editing);
+  const sheet = useRef<HTMLDialogElement>(null);
   const previousCount = useRef(records.length);
   const previousEditing = useRef(model.forms.editing);
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
 
   useLayoutEffect(() => {
-    if (open) dispatchAction({ action: 'staffing-mounted' });
+    if (open) { if (sheet.current && !sheet.current.open) sheet.current.showModal(); dispatchAction({ action: 'staffing-mounted' }); }
   }, [model, mode, open]);
 
   useEffect(() => {
@@ -250,7 +252,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
 
   return <div className="staffingEditor">
     <div className="staffingActionRow">
-      <span className="staffingActionCopy"><strong>{summary}</strong><small>{detail}</small></span>
+      <span className="staffingActionCopy">{!records.length ? <EmptyState title={mode === 'absence' ? 'No absences tonight' : 'No overtime recorded'} detail={detail} /> : <><strong>{summary}</strong><small>{detail}</small></>}</span>
       <Pressable
         type="button"
         className="staffingAddButton"
@@ -260,15 +262,10 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
       >{records.length ? 'Add another' : 'Add'}</Pressable>
     </div>
     {open && <>
-      <motion.button
-        type="button"
-        className="staffingSheetBackdrop"
-        aria-label={`Close ${title}`}
-        onClick={close}
-        initial={reduced ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-      />
-      <motion.section
+      <motion.dialog
+        ref={sheet}
+        onCancel={event => { event.preventDefault(); close(); }}
+        onClick={event => { const box = event.currentTarget.getBoundingClientRect(); if (event.target === event.currentTarget && (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)) close(); }}
         className="staffingSheet"
         role="dialog"
         aria-modal="true"
@@ -288,7 +285,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
           >×</button>
         </div>
         <div className="staffingSheetBody">{form}</div>
-      </motion.section>
+      </motion.dialog>
     </>}
   </div>;
 }

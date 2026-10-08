@@ -4,26 +4,42 @@
   z-index: 60; width: min(calc(100vw - 16px - var(--app-safe-left) - var(--app-safe-right)),520px);
   height: 68px; min-height: 68px; display: grid; grid-template-columns: repeat(5,minmax(0,1fr));
   gap: 4px; align-items: stretch; margin: 0; padding: 4px; overflow: visible;
-  transform: translateX(-50%); border: 1px solid var(--unified-border); border-radius: 20px;
+  transform: translateX(-50%); border: 1px solid var(--unified-border); border-radius: var(--unified-radius-shell);
   background: var(--unified-glass); box-shadow: var(--unified-shadow);
-  backdrop-filter: blur(24px) saturate(145%); -webkit-backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%);
   isolation: isolate; touch-action: manipulation;
 }
-.bottom::before, .bottom::after { content: none; }
+/* One travelling selection plate, independent of React mounting and badge updates. */
+body[data-view="today"] { --dock-index: 0; }
+body[data-view="changes"] { --dock-index: 1; }
+body[data-view="breaks"] { --dock-index: 3; }
+body[data-view="chat"] { --dock-index: 4; }
+.bottom::before { content: ''; position: absolute; z-index: 0; left: 4px; top: 4px; width: calc((100% - 8px - 16px) / 5); height: 58px; border-radius: var(--unified-radius-control); background: var(--unified-accent-soft); transform: translateX(calc(var(--dock-index,0) * (100% + 4px))); transition: transform 260ms var(--unified-ease),opacity var(--unified-fast); pointer-events: none; }
+.bottom::after { content: none; }
+body[data-view="roster"] .bottom::before, body[data-view="admin"] .bottom::before { opacity: 0; }
+.bottom.actionsOpen::before { opacity: .35; }
+.bottom.actionsOpen button[data-v] { opacity: .55; }
 #reactNavigation, [data-react-navigation], .reactNavigationInner { position: relative; display: contents; }
-.bottom button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-width: 0; height: 60px; min-height: 60px; margin: 0; padding: 4px 0; border: 0; border-radius: 14px; background: transparent; color: var(--liquid-secondary); box-shadow: none; }
-.bottom button.active { color: var(--liquid-accent-strong); background: var(--unified-accent-soft); }
-.bottom button > span:last-child { font-size: 10px; font-weight: 650; line-height: 1.2; }
+.bottom button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-width: 0; height: 58px; min-height: 58px; margin: 0; padding: 4px 0; border: 0; border-radius: var(--unified-radius-control); background: transparent; color: var(--liquid-secondary); box-shadow: none; }
+.bottom button.active { color: var(--liquid-accent-strong); background: transparent; }
+.bottom button > span:last-child { font-size: 0.75rem; font-weight: 650; line-height: 1.2; }
 .navIconWrap, .quickRudderDisc { position: relative; display: grid; place-items: center; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; }
 .bottom svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.quickRudderDisc { background: var(--unified-accent-soft); color: var(--liquid-accent-strong); }
+/* Centre control is recognisable in both themes, without changing its column. */
+.bottom .quickRudderDisc { width: 34px; height: 34px; border-radius: 12px; background: var(--control-primary); color: var(--on-accent); transition: transform 260ms var(--unified-ease); }
+.quickRudder.open .quickRudderDisc { transform: rotate(45deg) scale(.96); }
+.bottom button.active .navIconWrap { transform: translateY(-1px); }
+.navIconWrap { transition: transform var(--unified-fast) var(--unified-ease); }
 .quickRudderDisc::before, .quickRudderDisc::after { content: none; }
-.bottom .navTaskBadge, .bottom .navBadge, .bottom .tabBadge, .bottom .quickRudderAttention { position: absolute; top: -4px; right: -7px; left: auto; display: grid; place-items: center; min-width: 16px; height: 16px; margin: 0; padding: 0 4px; border: 2px solid var(--unified-surface); border-radius: 9px; background: var(--liquid-critical); color: white; font-size: 9px; font-weight: 700; font-style: normal; line-height: 1; transform: none; }
+.bottom .navTaskBadge, .bottom .navBadge, .bottom .tabBadge, .bottom .quickRudderAttention { position: absolute; top: -4px; right: -7px; left: auto; display: grid; place-items: center; min-width: 16px; height: 16px; margin: 0; padding: 0 4px; border: 2px solid var(--unified-surface); border-radius: 9px; background: var(--status-danger-fill); color: var(--on-accent); font-size: 9px; font-weight: 700; font-style: normal; line-height: 1; transform: none; }
 .bottom .featureNewDot { position: absolute; right: 9px; top: 8px; width: 5px; height: 5px; padding: 0; border-radius: 50%; background: var(--liquid-accent); }
 .bottom button { transition: background var(--unified-fast) var(--unified-ease),color var(--unified-fast) var(--unified-ease); }
 @supports not (backdrop-filter: blur(1px)) { .bottom { background: var(--unified-surface); } }
 
+.keyboardVisible .bottom { opacity: 0; pointer-events: none; transform: translate(-50%,calc(100% + 28px)); }
 /* Keep the centring transform throughout the signed-in launch reveal. */
 body.appRevealing .bottom { animation: operationalDockReveal 760ms 120ms var(--cinematic-ease) both; }
 @keyframes operationalDockReveal { from { opacity: 0; transform: translate(-50%,16px); } to { opacity: 1; transform: translate(-50%,0); } }
 @media (prefers-reduced-motion: reduce) { body.appRevealing .bottom { animation: none; } }
+
+@media (prefers-reduced-motion: reduce) { .bottom::before, .bottom .quickRudderDisc, .navIconWrap { transition: none; } }

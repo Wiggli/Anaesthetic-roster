@@ -5,7 +5,7 @@ function setSharedSyncState(state,message){
     if(runtimeState==='starting'&&window.AnaestheticRuntime.state.sync.value!=='starting')runtimeState='reconnecting';
     window.AnaestheticRuntime.state.sync.set(runtimeState,{message:sharedSyncMessage});
   }
-  setSync(state==='live'?'':state==='reconnecting'?'error':state,message||'');renderDiagnostics();
+  setSync(state==='live'?'':state,message||'');renderDiagnostics();
 }
 async function syncServerClock(force){
   if(serverClockSyncInFlight||!navigator.onLine||!supa||!rosterCapabilities().serverClock)return false;
@@ -246,7 +246,6 @@ function subscribeToChanges(){
   changesChannel.subscribe(function(status){if(generation!==realtimeGeneration)return;if(status==='SUBSCRIBED'){realtimeSubscribed=true;realtimeRetryCount=0;setSharedSyncState('live','');checkSharedRevision()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){realtimeSubscribed=false;setSharedSyncState('reconnecting','Reconnecting live updates…');recordAppDiagnostic('realtime','roster',status);scheduleRealtimeReconnect()}});
 }
 
-function resumeSharedSync(){if(forcedOfflineSession||!currentUserProfile||!navigator.onLine)return;if(!realtimeSubscribed)subscribeToChanges();checkSharedRevision();if(Date.now()-new Date(lastSuccessfulSyncAt||0).getTime()>30000)scheduleSharedReload(true)}
 async function reconcileApplication(reason){
   applyThemePreference();
   if(!currentUserProfile)return false;

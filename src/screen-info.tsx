@@ -1,5 +1,6 @@
+import { useProductReducedMotion } from './product-motion';
 import { createRoot, type Root } from 'react-dom/client';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 
 type InfoItem = [title: string, description: string];
 
@@ -12,7 +13,7 @@ declare global {
 let root: Root | undefined;
 
 function ScreenInfo({ items }: { items: InfoItem[] }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useProductReducedMotion();
   return <>{items.map(([title, description], index) =>
     <motion.section className="infoSheetItem tw:min-w-0" key={title}
       initial={reducedMotion ? false : { opacity: 0.7, y: 4 }}

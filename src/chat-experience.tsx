@@ -1,7 +1,8 @@
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useProductReducedMotion } from './product-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Avatar, Badge, EmptyState, GroupedList, ListRow, Pressable, Surface } from './ui-system';
 
 type Conversation = { id: string; title: string; initial: string; time: string; preview: string; unread: number; active: boolean };
@@ -27,7 +28,7 @@ function conversationPreview(item: Conversation) {
 }
 
 function ConversationList({ items }: { items: Conversation[] }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   if (!items.length) return <Surface>
     <EmptyState title="No private chats yet" detail="Tap New private chat to message one colleague." />
   </Surface>;
@@ -88,8 +89,10 @@ function MemberPicker({ members }: { members: Member[] }) {
 }
 
 function MessageCard({ message, kind, groupStart, groupEnd }: { message: Message; kind: 'team' | 'private'; groupStart: boolean; groupEnd: boolean }) {
+  const reduced = useProductReducedMotion();
   const pointer = useRef<{ timer?: number; x: number; y: number }>({ x: 0, y: 0 });
   const cancel = () => { if (pointer.current.timer) window.clearTimeout(pointer.current.timer); pointer.current.timer = undefined; };
+  useEffect(() => cancel, []);
   const open = () => !message.failed && act('message', message.id, kind);
   const body = <>
     {message.replyBody && <span className="chatReplyInline"><b>{message.replySender}</b><small>{message.replyBody}</small></span>}
@@ -110,8 +113,7 @@ function MessageCard({ message, kind, groupStart, groupEnd }: { message: Message
     {message.unreadBefore && <div className="chatUnreadMarker" data-chat-unread="true"><span /><b>Unread messages</b><span /></div>}
     {kind === 'team' ? <motion.div
       {...handlers}
-      layout
-      whileTap={{ scale: 0.996 }}
+      whileTap={reduced ? undefined : { scale: 0.996 }}
       transition={{ type: 'spring', stiffness: 520, damping: 46, mass: 0.5 }}
       className={`chatTeamMessage ${message.own ? 'own' : ''} ${message.mentioned ? 'mentioned' : ''} ${groupClass}`}
       aria-label={`${message.own ? 'Your message' : `Message from ${message.sender}`}. Message actions available.`}
@@ -142,12 +144,21 @@ function sameMessageGroup(previous: Message | undefined, current: Message | unde
 }
 
 function Messages({ model, hostId }: { model: MessageExperience; hostId: string }) {
-  useLayoutEffect(() => { const host = document.getElementById(hostId); if (host) { host.scrollTop = Math.max(0, host.scrollHeight - host.clientHeight - model.bottomOffset); window.dispatchEvent(new CustomEvent('roster:chat-messages-mounted')); } }, [hostId, model]);
-  if (!model.items.length) return <div className="chatMessagesEmpty"><span><b>No messages yet</b><small>Start the conversation below.</small></span></div>;
+  const reduced = useProductReducedMotion();
+  const previous = useRef<{ ids: Set<string>; latest: number } | undefined>(undefined);
+  const prior = previous.current;
+  useLayoutEffect(() => {
+    previous.current = { ids: new Set(model.items.map(item => item.id)), latest: Math.max(0,...model.items.map(item => Date.parse(item.createdAt) || 0)) };
+    const host = document.getElementById(hostId);
+    // Reading older messages must not move the viewport when a new one arrives.
+    if (host) { if (model.bottomOffset <= 36) host.scrollTop = Math.max(0,host.scrollHeight-host.clientHeight); window.dispatchEvent(new CustomEvent('roster:chat-messages-mounted')); }
+  }, [hostId, model]);
+  if (!model.items.length) return <EmptyState title="No messages yet" detail="Start the conversation below." />;
   return <div className="chatMessageSequence">{model.items.map((item, index) => {
+    const arriving = prior && !prior.ids.has(item.id) && (Date.parse(item.createdAt) || 0) >= prior.latest;
     const groupStart = !sameMessageGroup(model.items[index - 1], item);
     const groupEnd = !sameMessageGroup(item, model.items[index + 1]);
-    return <MessageCard key={item.id} message={item} kind={model.kind} groupStart={groupStart} groupEnd={groupEnd} />;
+    return <motion.div key={item.id} initial={arriving && !reduced ? { opacity: 0.75, y: 4 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0 : 0.18 }}><MessageCard message={item} kind={model.kind} groupStart={groupStart} groupEnd={groupEnd} /></motion.div>;
   })}</div>;
 }
 
@@ -181,7 +192,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
       rows={1}
       placeholder={team ? 'Message the team…' : 'Write a message…'}
       aria-label={team ? 'Write a message to Anaesthetic Team' : 'Write a private chat message'}
-      className="tw:max-h-32 tw:min-h-10 tw:min-w-0 tw:flex-1 tw:resize-none tw:rounded-[16px] tw:border-0! tw:bg-transparent! tw:px-2.5 tw:py-2 tw:text-sm tw:leading-relaxed tw:shadow-none! tw:outline-none tw:ring-0! tw:placeholder:text-[var(--muted)] tw:focus:border-0! tw:focus:shadow-none! tw:focus:ring-0!"
+      className="tw:max-h-32 tw:min-h-10 tw:min-w-0 tw:flex-1 tw:resize-none tw:rounded-[16px] tw:border-0 tw:bg-transparent tw:px-2.5 tw:py-2 tw:text-base tw:leading-relaxed tw:shadow-none tw:outline-none tw:ring-0 tw:placeholder:text-[var(--muted)] tw:focus:border-0 tw:focus:shadow-none tw:focus:ring-0"
     />
     <span id={team ? 'chatTeamCharacterCount' : 'chatPrivateCharacterCount'} className="hidden tw:shrink-0 tw:self-center tw:px-1 tw:text-[0.62rem] tw:font-bold tw:text-[var(--muted)]" aria-live="polite" />
     <Pressable
@@ -189,7 +200,7 @@ function ChatComposer({ kind, initialValue }: { kind: 'team' | 'private'; initia
       id={team ? 'chatTeamSendBtn' : 'chatSendBtn'}
       aria-label={team ? 'Send group message' : 'Send private message'}
       title="Send · Command or Control + Enter"
-      className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-blue-600! tw:text-white tw:shadow-[0_4px_12px_rgba(0,113,227,0.20)] tw:disabled:opacity-40"
+      className="chatSendBtn tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:disabled:opacity-40"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" className="tw:h-5 tw:w-5 tw:fill-none tw:stroke-current tw:stroke-2"><path d="m21 3-8.5 18-2-7-7-2L21 3Z" /><path d="m10.5 14 4-4" /></svg>
     </Pressable>

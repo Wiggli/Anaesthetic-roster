@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react';
+import { useProductReducedMotion } from './product-motion';
+import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useState, type CSSProperties } from 'react';
 import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
@@ -87,12 +88,12 @@ const symbolChoices: { value: ShiftSymbol; glyph: string; label: string }[] = [
 
 function accentColour(key: AccentKey) {
   return ({
-    teal: '#0a8f88',
-    blue: '#3478f6',
-    violet: '#7c5ce5',
-    rose: '#d85d86',
-    amber: '#c77b16',
-    graphite: '#687078'
+    teal: '#087970',
+    blue: '#2563c4',
+    violet: '#6748c8',
+    rose: '#b33663',
+    amber: '#945b0b',
+    graphite: '#59616c'
   } as Record<AccentKey, string>)[key];
 }
 
@@ -108,6 +109,8 @@ function IdentityImage({ src, fallback, className = '' }: { src?: string; fallba
 
 function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: ShiftExperience }) {
   const [tab, setTab] = useState<'me' | 'shift'>('me');
+  const [previewName,setPreviewName] = useState(model.name);
+  const [previewRole,setPreviewRole] = useState(model.jobTitle);
   const [dirty, setDirty] = useState(!!model.changed);
   const [accent, setAccent] = useState<AccentKey>(model.accentKey || 'teal');
   const [textScale, setTextScale] = useState<TextScale>(model.textScale || 'standard');
@@ -119,11 +122,11 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   const [shiftAccent, setShiftAccent] = useState<AccentKey>(shift?.accentKey || 'teal');
   const [shiftSymbol, setShiftSymbol] = useState<ShiftSymbol>(shift?.symbol || 'spark');
   const [shiftDirty, setShiftDirty] = useState(false);
-  const reduced = useReducedMotion() || motionPref === 'reduced';
+  const reduced = useProductReducedMotion() || motionPref === 'reduced';
   const photoUrl = model.photoUrl || '';
   const initial = model.initial || '?';
-  const displayName = model.name.trim() || model.approvedName || 'Your profile';
-  const displayRole = model.jobTitle.trim() || 'Anaesthetic team member';
+  const displayName = previewName.trim() || model.approvedName || 'Your profile';
+  const displayRole = previewRole.trim() || 'Anaesthetic team member';
   const markDirty = () => { setDirty(true); act('profile-input'); };
   const markShiftDirty = () => setShiftDirty(true);
   const personalFallback = avatarStyle === 'spark' ? '✦' : initial;
@@ -143,9 +146,9 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
       <p>Personal styling stays yours. Shift identity is shared with the whole anaesthetic team.</p>
     </div>
 
-    <div className="personalisationTabs" role="tablist" aria-label="Personalisation">
-      <button type="button" className={tab === 'me' ? 'active' : ''} aria-selected={tab === 'me'} onClick={() => setTab('me')}>Me</button>
-      <button type="button" className={tab === 'shift' ? 'active' : ''} aria-selected={tab === 'shift'} onClick={() => setTab('shift')}>Our Shift</button>
+    <div className="personalisationTabs" role="group" aria-label="Personalisation">
+      <button type="button" className={tab === 'me' ? 'active' : ''} aria-pressed={tab === 'me'} onClick={() => setTab('me')}>Me</button>
+      <button type="button" className={tab === 'shift' ? 'active' : ''} aria-pressed={tab === 'shift'} onClick={() => setTab('shift')}>Our Shift</button>
     </div>
 
     {tab === 'me' ? <>
@@ -158,6 +161,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
           <small>{displayRole}</small>
         </div>
         <span className="personalisationPreviewPill">You</span>
+        <div className="personalisationPreviewMini"><b>Night</b><span>Your allocation</span><small>Preview · {textScale === 'standard' ? 'Standard text' : textScale === 'large' ? 'Larger text' : 'Largest text'} · {motionPref === 'reduced' ? 'Reduced motion' : 'System motion'}</small></div>
       </section>
 
       <section className="personalisationGroup">
@@ -212,10 +216,10 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <div className="accountProfileFields tw:@container">
           <div className="accountNameFields tw:@md:grid-cols-2">
             <FieldShell label="Preferred name">
-              <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={markDirty} className="accountProfileInput" />
+              <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={event => { setPreviewName(event.currentTarget.value); markDirty(); }} className="accountProfileInput" />
             </FieldShell>
             <FieldShell label="Professional title" hint="Optional">
-              <input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Senior Staff Nurse" onInput={markDirty} className="accountProfileInput" />
+              <input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Senior Staff Nurse" onInput={event => { setPreviewRole(event.currentTarget.value); markDirty(); }} className="accountProfileInput" />
             </FieldShell>
           </div>
           <FieldShell label="Your roster name" hint="Private device highlight">
@@ -306,6 +310,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
           <small>{shiftTagline.trim() || 'Anaesthetic Night Team'}</small>
         </div>
         <span className="personalisationPreviewPill">Shared</span>
+        <div className="personalisationPreviewMini"><span className="nightTeamIdentityContext"><span className="shiftIdentityMark" style={{ '--shift-identity-accent': accentColour(shiftAccent) } as CSSProperties}>{symbolGlyph(shiftSymbol)}</span><span className="shiftIdentityCopy"><strong>{shiftName.trim() || 'Anaesthetic Team'}</strong></span></span><small>Preview · Night, Changes, Breaks and Team Chat</small></div>
       </section>
 
       <section className="personalisationGroup">
@@ -449,7 +454,7 @@ function ShareQr() {
 }
 
 function ShareApp({ model }: { model: ShareExperience }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   const qrMatches = model.shareUrl === SHARE_QR_TARGET;
   return <motion.div
     className="shareAppExperience"

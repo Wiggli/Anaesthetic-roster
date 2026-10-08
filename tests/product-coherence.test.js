@@ -12,6 +12,7 @@ for(const file of ['src/presentation.css','src/account-admin-polish.css','styles
 assert.match(imports,/\.hidden, \[hidden\] \{ display: none !important; \}/,'visibility is one explicit semantic invariant');
 for(const value of ['--unified-space-1: 4px','--unified-space-2: 8px','--unified-space-3: 12px','--unified-space-4: 16px','--unified-space-5: 24px','--unified-space-6: 32px']) assert.ok(css.includes(value));
 assert.match(css,/prefers-reduced-motion/); assert.match(nav,/safe-bottom/);
+assert.doesNotMatch(css,/,\s*@keyframes/,'screen transition selectors must not swallow a keyframe rule');
 assert.doesNotMatch(css,/--liquid-(?:critical|success|warning):/,'presentation must not redefine clinical colours');
 assert.match(nav,/repeat\(5,minmax\(0,1fr\)\)/,'equal-width persistent dock');
 assert.match(nav,/\.navTaskBadge/,'badges use the shared icon stage');
