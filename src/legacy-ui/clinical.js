@@ -516,7 +516,7 @@ function renderRecentActivity(date){
   if(!activityOpenedThisSession[date]){var previous=Number(seenAt[date]||0),opened=typeof appNowMs==='function'?appNowMs():Date.now();activityOpenedThisSession[date]={previous:previous||opened,opened:opened};if(!previous)acknowledgeNightActivity(date)}
   var session=activityOpenedThisSession[date],all=staffingHistoryFor(date),items=all.slice(0,5),updatedItems=all.filter(function(item){return(new Date(item.changed_at).getTime()||0)>session.previous}),updatedCount=updatedItems.length,sinceLabel=new Date(session.previous).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Malta'});
   recentActivityItems=items;recentActivityDate=date;
-  var detail={updated:updatedCount>0,updatedCount:updatedCount,sinceLabel:sinceLabel,summary:updatedItems.slice(0,3).map(function(item){return item.title}),items:items.map(function(item){return{label:item.label,type:item.type,title:item.title,detail:item.detail||'',meta:(item.changed_by||'Roster member')+' · '+shortTime(item.changed_at)}})};
+  var detail={totalCount:all.length,updated:updatedCount>0,updatedCount:updatedCount,sinceLabel:sinceLabel,summary:updatedItems.slice(0,3).map(function(item){return item.title}),items:items.map(function(item){return{label:item.label,type:item.type,title:item.title,detail:item.detail||'',meta:(item.changed_by||'Roster member')+' · '+shortTime(item.changed_at)}})};
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:recent-activity',{detail:detail}));
 }
 

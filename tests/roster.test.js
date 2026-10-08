@@ -704,7 +704,7 @@ assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change r
 assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
 assert.match(clinicalExperience, /function nightVisualPhase[\s\S]*'upcoming'[\s\S]*'handover'[\s\S]*'first'[\s\S]*'second'[\s\S]*'complete'[\s\S]*host\.dataset\.shiftPhase = nightVisualPhase/, 'personal Night must still track the live stage of the shift without restoring a countdown or a duplicate handover block');
 assert.match(clinicalExperience, /function PersonalNightCard[\s\S]*const openBreak[\s\S]*const openColleague[\s\S]*const openDutyTiming[\s\S]*personalHeroFactGrid[\s\S]*onClick=\{openDutyTiming\}[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}/, 'Duty, Break and Colleague hero facts must remain directly actionable');
-assert.match(clinicalExperience, /nightContextCapsule[\s\S]*contextLabel/, 'Night overview must expose a compact routine-or-exception context');
+assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? 'Review needed' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share Night Roster[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
 assert.match(accountExperience, /function shareAct\(action:[\s\S]*roster:share-action/, 'share buttons must dispatch through the dedicated share event channel');
