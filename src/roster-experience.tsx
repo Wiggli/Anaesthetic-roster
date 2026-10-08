@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react';
+import { useProductReducedMotion } from './product-motion';
+import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 
 type RosterDetail = { label: string; values: string[]; tone?: 'first' | 'second' | 'pager' | 'reliever' | 'warning' };
@@ -25,7 +26,7 @@ function DetailRow({ detail }: { detail: RosterDetail }) {
 }
 
 function Cards({ cards }: { cards: RosterCard[] }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   if (!cards.length) return <div className="tw:rounded-2xl tw:border tw:border-dashed tw:border-black/12 tw:bg-[var(--surface)] tw:p-6 tw:text-center tw:text-sm tw:text-[var(--muted)] tw:dark:border-white/14">No roster nights match this search.</div>;
   return <div className="rosterExperienceShell tw:grid tw:gap-3" aria-label={`${cards.length} roster nights`}>
     <p className="tw:m-0 tw:text-xs tw:font-semibold tw:text-[var(--muted)]" role="status">{cards.length} {cards.length === 1 ? 'night' : 'nights'} shown · Select a night to open its live plan</p>

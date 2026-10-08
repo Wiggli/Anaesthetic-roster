@@ -83,7 +83,9 @@ function enhanceRosterDateControl(control: HTMLElement) {
 }
 
 function addClass(selector: string, className: string) {
-  document.querySelectorAll<HTMLElement>(selector).forEach((element) => element.classList.add(className));
+  document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+    if (!element.classList.contains(className)) element.classList.add(className);
+  });
 }
 
 function normaliseProductShell() {
@@ -117,7 +119,7 @@ function normaliseProductShell() {
 function enhanceProductShell() {
   document.querySelectorAll<HTMLElement>('.rosterDateControl').forEach(enhanceRosterDateControl);
   normaliseProductShell();
-  document.documentElement.dataset.productShell = '51.0';
+  document.documentElement.dataset.productShell = '52.0';
 }
 
 if (document.readyState === 'loading') {
@@ -126,7 +128,16 @@ if (document.readyState === 'loading') {
   enhanceProductShell();
 }
 
-new MutationObserver(enhanceProductShell).observe(document.documentElement, {
+// Message arrivals, clock ticks and input updates do not require a whole-app scan.
+// Normalisation is coalesced and only structural shell mutations qualify.
+let shellFrame = 0;
+const structural = '.rosterDateControl, .prettyDateControl, .prettyDateButton, .appScreenHeader, .nightDateShell, .changesDatePanel, .breaksContextPanel, .chatRosterContext';
+new MutationObserver(records => {
+  const needsShell = records.some(record => record.target instanceof Element && record.target.closest('.rosterDateControl') ||
+    Array.from(record.addedNodes).some(node => node instanceof Element && (node.matches(structural) || node.querySelector(structural))));
+  if (!needsShell || shellFrame) return;
+  shellFrame = requestAnimationFrame(() => { shellFrame = 0; enhanceProductShell(); });
+}).observe(document.documentElement, {
   childList: true,
   subtree: true
 });

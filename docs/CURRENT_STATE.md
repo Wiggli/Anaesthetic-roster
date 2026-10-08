@@ -19,7 +19,11 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 
 ## Presentation ownership
 
-Release 51.0 replaces the product override stack with one canonical system in `src/product-unified.css` and dock geometry in `src/rudder-navigation.css`. The selected-night context is shared by Night, Changes and Breaks; Chat uses a compact date/count row and one identity on its team conversation. Account mounts exactly one page in `accountPageOutlet`, retaining inactive control nodes and their listeners. Changes uses a single workflow host for React or its fallback. Domain calculations and the schema-53 backend contract remain unchanged.
+Release 52.0 extends the canonical system in `src/product-unified.css` and dock geometry in `src/rudder-navigation.css` with explicit Light/Dark semantic materials and compatibility aliases. `src/product-motion.ts` owns motion preferences and optional haptics; `src/product-interactions.ts` owns Actions dismissal, discoverable colleague shortcuts and installed-PWA refresh. The shell observer coalesces structural changes rather than scanning after every message or clock update.
+
+The selected-night context is shared by Night, Changes and Breaks; Chat uses a compact date/count row and one identity on its team conversation. Account mounts exactly one page in `accountPageOutlet`, retaining inactive control nodes and their listeners. Personalise uses live state and a compact preview. Changes uses a single workflow host for React or its fallback, with native modal staffing editors. Presentation clocks use the established `appNowMs()` source and suspend offscreen. Return-summary acknowledgement uses existing bounded, private-device activity keys and clears on sign-out. Domain calculations, write paths and the schema-53 backend contract remain unchanged.
+
+`docs/PRODUCT_COHERENCE_52.md` records implementation scope and verification limits.
 
 ## Development state
 

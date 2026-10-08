@@ -1,31 +1,23 @@
+import { productMotion, useProductReducedMotion } from './product-motion';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
-import { LayoutGroup, motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
+import { LayoutGroup, motion, type HTMLMotionProps } from 'motion/react';
 
 export function cx(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(' ');
 }
 
-const toneClasses = {
-  neutral: 'tw:bg-black/5 tw:text-[var(--muted)] tw:dark:bg-white/8',
-  accent: 'tw:bg-blue-500/12 tw:text-[var(--accent-strong)]',
-  success: 'tw:bg-emerald-500/12 tw:text-emerald-700 tw:dark:text-emerald-300',
-  warning: 'tw:bg-amber-500/14 tw:text-amber-700 tw:dark:text-amber-300',
-  danger: 'tw:bg-rose-500/12 tw:text-rose-700 tw:dark:text-rose-300',
-  info: 'tw:bg-sky-500/12 tw:text-sky-700 tw:dark:text-sky-300'
-} as const;
-
-type UiTone = keyof typeof toneClasses;
+export type UiTone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
 
 export function Pressable({
   children,
   className = '',
   ...props
 }: HTMLMotionProps<'button'> & { children: ReactNode }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   return <motion.button
     {...props}
     whileTap={props.disabled || reduced ? undefined : { scale: 0.98 }}
-    transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+    transition={productMotion.settle}
     className={cx('tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-blue-500/42 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
   >{children}</motion.button>;
 }
@@ -48,11 +40,11 @@ export function GlassSurface({
   children,
   className = '',
   ...props
-}: HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
+}: HTMLAttributes<HTMLDivElement> & { children?: ReactNode }) {
   return <div
     {...props}
     className={cx(
-      'liquidControlOverlay tw:rounded-[20px] tw:border tw:border-white/28 tw:bg-white/24 tw:shadow-[inset_0_1px_0_rgba(255,255,255,0.42),0_4px_14px_rgba(0,0,0,0.055)] tw:dark:border-white/10 tw:dark:bg-white/7',
+      'productGlassSurface',
       className
     )}
   >{children}</div>;
@@ -81,11 +73,7 @@ export function Badge({ children, tone = 'neutral', className = '' }: {
   tone?: UiTone;
   className?: string;
 }) {
-  return <span className={cx(
-    'tw:inline-flex tw:min-h-6 tw:items-center tw:justify-center tw:rounded-full tw:px-2.5 tw:py-1 tw:text-[0.72rem] tw:font-bold tw:leading-none',
-    toneClasses[tone],
-    className
-  )}>{children}</span>;
+  return <span className={cx('statusBadge', `statusBadge--${tone}`, className)}>{children}</span>;
 }
 
 export function Avatar({ initial, src, size = 'md', className = '' }: {
@@ -109,12 +97,9 @@ export function Avatar({ initial, src, size = 'md', className = '' }: {
 }
 
 export function EmptyState({ title, detail, icon }: { title: string; detail?: string; icon?: ReactNode }) {
-  return <div className="tw:flex tw:min-h-16 tw:items-start tw:gap-2.5 tw:px-3 tw:py-4 tw:text-left">
-    {icon ? <div className="tw:mt-0.5 tw:grid tw:h-7 tw:w-7 tw:shrink-0 tw:place-items-center tw:rounded-lg tw:bg-black/5 tw:text-xs tw:text-[var(--muted)] tw:dark:bg-white/8">{icon}</div> : null}
-    <div className="tw:min-w-0">
-      <strong className="tw:block tw:text-[0.9rem] tw:font-semibold">{title}</strong>
-      {detail ? <span className="tw:mt-0.5 tw:block tw:text-[0.76rem] tw:leading-relaxed tw:text-[var(--muted)]">{detail}</span> : null}
-    </div>
+  return <div className="productEmptyState">
+    <span className="productEmptyMark" aria-hidden="true">{icon || <svg viewBox="0 0 24 24"><path d="M8 12l3 3 5-6" /><circle cx="12" cy="12" r="9" /></svg>}</span>
+    <span className="productEmptyCopy"><strong>{title}</strong>{detail && <small>{detail}</small>}</span>
   </div>;
 }
 
@@ -142,7 +127,7 @@ export function ListRow({
   const content = <>
     {leading ? <span className="tw:shrink-0">{leading}</span> : null}
     <span className="tw:min-w-0 tw:flex-1">
-      <strong className="tw:block tw:truncate tw:text-[0.96rem] tw:font-semibold tw:tracking-[-0.012em]">{title}</strong>
+      <strong className="tw:block tw:break-words tw:text-[0.96rem] tw:font-semibold tw:tracking-[-0.012em]">{title}</strong>
       {subtitle ? <small className="tw:mt-0.5 tw:block tw:text-[0.8rem] tw:leading-relaxed tw:text-[var(--muted)]">{subtitle}</small> : null}
     </span>
     {trailing ? <span className="tw:ml-auto tw:shrink-0">{trailing}</span> : null}
@@ -167,7 +152,7 @@ export function SegmentedControl<T extends string>({
   ariaLabel: string;
   compact?: boolean;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   return <LayoutGroup id={ariaLabel}>
     <div
       role="group"
@@ -190,7 +175,7 @@ export function SegmentedControl<T extends string>({
         >
           {selected ? <motion.span
             layoutId="selection"
-            transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 42, mass: 0.55 }}
+            transition={reduced ? { duration: 0 } : productMotion.selection}
             className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[12px] tw:border tw:border-black/[0.045] tw:bg-[var(--card)] tw:shadow-[0_1px_2px_rgba(0,0,0,0.035)] tw:dark:border-white/[0.07]"
           /> : null}
           <span className="tw:flex tw:items-center tw:justify-center tw:gap-1.5">

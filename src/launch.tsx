@@ -1,11 +1,13 @@
+import { useProductReducedMotion } from './product-motion';
 import { createRoot } from 'react-dom/client';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import './tailwind.css';
 import './coherent-shell';
+import './product-interactions';
 import { onRosterEvent } from './contracts';
 
 function LaunchMotto() {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useProductReducedMotion();
   return (
     <motion.p
       className="launchMotto tw:text-center"

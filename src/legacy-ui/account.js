@@ -1,6 +1,6 @@
 /* Account and Personalisation Studio source. Generated into app-ui.js by scripts/generate-runtime.mjs. */
 
-var PERSONAL_ACCENT_COLOURS={teal:'#0a8f88',blue:'#3478f6',violet:'#7c5ce5',rose:'#d85d86',amber:'#c77b16',graphite:'#687078'};
+var PERSONAL_ACCENT_COLOURS={teal:'#087970',blue:'#2563c4',violet:'#6748c8',rose:'#b33663',amber:'#945b0b',graphite:'#59616c'};
 function normaliseAccentKey(value){value=String(value||'teal').toLowerCase();return PERSONAL_ACCENT_COLOURS[value]?value:'teal'}
 function accentColourFor(value){return PERSONAL_ACCENT_COLOURS[normaliseAccentKey(value)]}
 function shiftSymbolGlyph(value){return{spark:'✦',moon:'☾',cross:'✚',diamond:'◆',dot:'●',star:'★'}[String(value||'spark')]||'✦'}

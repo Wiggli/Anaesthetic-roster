@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V51.4 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V52.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -94,6 +94,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  ["52.0","8 October 2026","One Night Roster experience",["Unifies screen spacing, surfaces, typography and Light/Dark status colours.","Connects the dock selection and Actions sheet with restrained motion.","Keeps the live night rail and compact break periods tied to the shared clock.","Shows brief change feedback and return updates that clear when acknowledged.","Improves Chat arrival, loading and scroll behaviour, with colleague shortcuts.","Adds a live Personalise preview and installed-app pull to refresh."],"normal"],
   ["51.4","7 October 2026","Read receipts and startup",["Saves read receipts using the signed-in-user default.","Clears viewed chat and app badges.","Keeps the dock centred while opening."],"normal"],
   ["51.3","7 October 2026","Clear read chat notifications",["Marks visible team and private messages as read even when no scrolling is needed.","Prevents an older background refresh from restoring a cleared unread count.","Clears the installed app badge when no unread messages or attention items remain."],"normal"],
   ["51.2","7 October 2026","Keep Chat visible after signing in",["Restores Chat at the far right of the five-control bottom bar after signing in.","Preserves the same five controls when opening a saved offline roster.","Verifies the sign-in setup for members and administrators, plus normal and fallback navigation."],"normal"],
@@ -506,7 +507,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=51.4" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=52.0" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}

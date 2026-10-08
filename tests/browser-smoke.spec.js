@@ -879,7 +879,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#personalNightCard > .personalHeroSurface > .personalIdentity')).toHaveCount(1);
   await expect(page.locator('#roles')).toContainText('André Bartolo');
   await expect(page.locator('#roles > .nightSituationTimeline')).toHaveCount(1);
-  await expect(page.locator('#roles .nightSituationTimeline > .rosterRow')).toHaveCount(2);
+  await expect(page.locator('#roles .nightSituationTimeline > .rosterRoleLine > .rosterRow')).toHaveCount(2);
   await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
   await expect(page.locator('#nightStatusRow > .nightSignal')).toContainText('6 nurses');
   await expect(page.locator('#nightStatusRow .nightQuickStrip')).toHaveCount(0);
@@ -1714,7 +1714,8 @@ test('one quiet glossy scroll bar appears consistently after page headers leave 
     };
   });
   expect(compactMaterial.backdrop).not.toBe('none');
-  expect(compactMaterial.alpha).toBeLessThanOrEqual(0.5);
+  expect(compactMaterial.alpha).toBeGreaterThanOrEqual(0.8);
+  expect(compactMaterial.alpha).toBeLessThan(1);
   expect(compactMaterial.radius).toBeLessThanOrEqual(1);
 
   await page.evaluate(() => {
@@ -1808,8 +1809,8 @@ test('typed Chat overview renders private conversations and registered members',
       radius: parseFloat(style.borderRadius)
     };
   });
-  expect(composerMaterial.backdrop).not.toBe('none');
-  expect(composerMaterial.radius).toBeGreaterThanOrEqual(24);
+  expect(composerMaterial.backdrop).toBe('none');
+  expect(composerMaterial.radius).toBe(16);
   await expect(page.locator('#chatTeamComposer .liquidControlOverlay')).toHaveCount(0);
   await expect(page.locator('#chatTeamInput')).toHaveCSS('border-top-width', '0px');
   await expect(page.locator('#chatTeamInput')).toHaveAttribute('placeholder', 'Message the team…');
@@ -1935,8 +1936,11 @@ test('worker keeps private backend traffic out of caches and navigates offline',
   expect(cachedUrls.some(url => url.includes('supabase.co'))).toBe(false);
   expect(cachedUrls.some(url => url.includes('/assets/index-') && url.endsWith('.js'))).toBe(true);
   await context.setOffline(true);
-  await page.reload();
-  await expect(page.locator('#launchScreen')).toBeVisible();
+  const offlineShell = await page.reload();
+  expect(offlineShell.ok()).toBe(true);
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/authPending/);
+  await expect(page.locator('main')).toBeHidden();
   await context.setOffline(false);
 });
 

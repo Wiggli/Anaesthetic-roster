@@ -1,4 +1,5 @@
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useProductReducedMotion } from './product-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useMemo, useState } from 'react';
 
@@ -60,7 +61,7 @@ function PendingRequests({ requests, online }: { requests: AccessRequest[]; onli
 function AccountList({ items, online }: { items: Account[]; online: boolean }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const reduced = useReducedMotion();
+  const reduced = useProductReducedMotion();
   const visible = useMemo(() => {
     const search = query.trim().toLocaleLowerCase();
     return items.filter(item => (filter === 'all' || (filter === 'active') === item.active) && (!search || item.name.toLocaleLowerCase().includes(search) || item.email.toLocaleLowerCase().includes(search)));

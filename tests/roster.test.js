@@ -329,7 +329,7 @@ vm.runInNewContext(themeBootstrap, {
   }
 });
 assert.equal(bootTheme.root['data-theme'], 'dark', 'saved appearance must be applied to the root before the stylesheet paints');
-assert.equal(bootTheme.colour.content, '#000000', 'pre-paint appearance must update the browser chrome colour');
+assert.equal(bootTheme.colour.content, '#0e141e', 'pre-paint appearance must update the browser chrome colour');
 for (const [file, source] of Object.entries({ 'index.html': html, 'styles.css': css, 'manifest.webmanifest': manifest, 'service-worker.js': sw })) {
   const versions = Array.from(source.matchAll(/[?&]v=([0-9]+(?:\.[0-9]+)+)/g), match => match[1]);
   if (file === 'styles.css' && !/url\(/i.test(source)) { assert.equal(versions.length, 0, 'obsolete decorative image references must be removed'); continue; }
@@ -356,7 +356,8 @@ assert.doesNotMatch(navigation, /viewMorphing|style\.opacity|scale\(/, 'navigati
 
 assert.match(css, /--apple-control-gap:10px/, 'Apple controls must share one canonical spacing token');
 assert.match(html, /class="launchAtmosphere"[\s\S]*class="launchMark"/, 'cold launch must retain its cinematic atmosphere and focal app mark');
-assert.match(css, /body\.appRevealing #appHeader[\s\S]*body\.appRevealing main[\s\S]*body\.appRevealing \.bottom/, 'cold launch must hand off into the app with one-time chrome and content reveal');
+assert.match(css, /body\.appRevealing #appHeader[\s\S]*body\.appRevealing main/, 'cold launch must hand off into header and content');
+assert.match(rudderCss, /body\.appRevealing \.bottom[\s\S]*operationalDockReveal/, 'canonical dock owns the centred launch reveal');
 assert.match(css, /\.view:not\(\.hidden\)\{animation:none\}/, 'ordinary tab switching must not animate the whole view');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*launchAtmosphere[\s\S]*onboardingContentIn/, 'cinematic launch and onboarding must provide reduced-motion fallbacks');
 assert.match(css, /--apple-section-gap:14px/, 'Apple sections must share one canonical spacing token');
@@ -371,7 +372,8 @@ assert.match(ui, /bindStaffingTarget\('data-go-absence','\.absenceSection'\)[\s\
 assert.doesNotMatch(html, /historyStep">4/, 'activity history must not appear as a fourth workflow step');
 assert.match(html, /Activity for this night/, 'staffing history must have a clear non-step label');
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
-assert.match(ui, /roleAssignmentsDiffer[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'role-save controls must appear only for a genuine draft change');
+assert.match(ui, /dirty=!!\(draft&&roleAssignmentsDiffer/, 'role adapter requires a genuine changed draft');
+assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'active typed role-save controls only appear for a changed draft');
 assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
 assert.match(ui, /changesSmartDefaultDate!==base\.date[\s\S]*activeChangesStep=smartChangesStep\(base\)/, 'the smart Changes default must apply once per selected night rather than fighting manual navigation');
 assert.match(changesWorkflowExperience, /workflowProgress[\s\S]*role="progressbar"[\s\S]*aria-valuenow=\{model\.progressValue\}/, 'Changes must expose real completion progress instead of decorative steps only');
@@ -470,10 +472,10 @@ assert.match(css, /\.updateBannerSummary[^{]*\{[^}]*min-height:44px/, 'the updat
 assert.match(css, /body:not\(\[data-view="today"\]\) \.updateBanner\{display:none\}/, 'the passive update notice must stay out of Changes and Breaks workflows');
 assert.match(css, /\.updateSheetActions button\{[^}]*min-height:50px/, 'update-sheet decisions must have comfortable touch targets');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)[^{]*\{[^}]*\.updateBanner:not\(\.hidden\),\.updateSheet\[open\]\{animation:none\}/, 'the update experience must respect reduced-motion preferences');
-assert.match(css, /\.bottom\{[\s\S]*backdrop-filter:saturate\(210%\) blur\(30px\)/, 'primary navigation must retain the reviewed glass material');
+assert.match(rudderCss, /backdrop-filter: blur\(24px\) saturate\(145%\)/, 'canonical navigation retains bounded glass material');
 assert.match(css, /#changes \.staffingSection[^{]*\{[^}]*background:var\(--ios-surface\)/, 'clinical staffing surfaces must remain solid');
-assert.match(css, /@supports not \(\(-webkit-backdrop-filter:[\s\S]*\.bottom\{background:#f8f8fa\}/, 'glass chrome must retain an opaque fallback');
-assert.match(css, /@media\(prefers-reduced-motion:reduce\)[\s\S]*\.bottom button\.active\{animation:none\}/, 'tab selection motion must respect reduced-motion preferences');
+assert.match(rudderCss, /@supports not \(backdrop-filter:[\s\S]*\.bottom \{ background: var\(--unified-surface\)/, 'canonical chrome retains an opaque fallback');
+assert.match(rudderCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.bottom::before[\s\S]*transition: none/, 'dock selection respects reduced motion');
 assert.match(ui, /function undoAddedAbsence[\s\S]*remove_night_absence_v49/, 'absence Undo must use the versioned database function');
 assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v49/, 'overtime Undo must use the versioned database function');
 assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',[\s\S]*realtimeSubscribed&&sharedSyncState==='live'\?60000:15000/, 'active clients must check the shared revision through the adaptive central scheduler');
@@ -585,10 +587,10 @@ assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 
 assert.match(ui, /function openActivityDetail\(item,date\)[\s\S]*No additional reason was recorded/, 'activity detail sheet must show saved context without inventing a reason');
 assert.match(ui, /roster:activity-open[\s\S]*openActivityDetail/, 'recent activity rows must open their corresponding detail safely');
 assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.indexOf('\nfunction openScreenInfo')), /appendChild|insertBefore|insertAdjacentElement/, 'primary screen structure must not be moved at runtime');
-assert.match(css, /\.mini,.screenInfoButton[\s\S]*min-width:44px;min-height:44px/, 'important compact controls must meet the 44 pixel touch target');
+assert.match(fs.readFileSync(path.join(__dirname,'../src/product-unified.css'),'utf8'), /button, \[role="button"\] \{ min-height: 44px/, 'canonical buttons retain a minimum 44 pixel touch target');
 const productCss = fs.readFileSync(path.join(__dirname, '..', 'src/product-unified.css'), 'utf8');
 const dockCss = fs.readFileSync(path.join(__dirname, '..', 'src/rudder-navigation.css'), 'utf8');
-assert.match(dockCss, /button[\s\S]*height: 60px; min-height: 60px/, 'dock controls must retain consistent touch targets');
+assert.match(dockCss, /button[\s\S]*height: 58px; min-height: 58px/, 'dock controls must retain consistent touch targets');
 assert.match(dockCss, /color: var\(--liquid-secondary\)/, 'inactive dock labels use the readable shared secondary token');
 assert.match(dockCss, /var\(--app-safe-bottom\)/, 'dock must preserve device safe area');
 assert.match(productCss, /--unified-base: 200ms/, 'primary navigation uses restrained shared motion');
@@ -657,7 +659,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:4[\s\S]*changes:3[\s\S]*breaks:3[\s\S]*chat:3/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:5[\s\S]*changes:3[\s\S]*breaks:4[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');
