@@ -1,5 +1,5 @@
 /* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
-/* Anaesthetic Night Roster V52.5 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V52.6 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -95,6 +95,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  ["52.6","8 October 2026","Clear the Night masthead material",["Removed legacy backdrop filters from the in-flow Night masthead and account button.","Kept floating scroll chrome separate from the clear page header.","Added computed-style checks for the masthead material in the iPhone browser regression."],"normal"],
   ["52.5","8 October 2026","Remove inactive glass from the page header",["Unmounts the inactive blur surface instead of keeping it transparent over the masthead.","Hides the entire scroll header at the top of the page and when a conversation owns its header.","Restores the compact glass title only after the page heading scrolls away."],"normal"],
   ["52.4","8 October 2026","A compact team section beneath your night",["Combines staffing count and plan status beneath Tonight’s team, without the repeated arrangement chip.","Moves Night brief and allocation explanations behind the information button.","Keeps Team allocation and recorded Changes tonight expandable, with full roster and history details still available.","Updates the Night guide for the simplified team section."],"normal"],
   ["52.3","8 October 2026","A clearer Night screen and stable iPhone header",["Keeps the compact header below the iPhone safe area without upward motion or stacked blur.","Collapses Night brief until opened and removes repeated staffing text.","Shows Changes tonight only when changes exist, with full detail available by tapping an entry.","Updates the Night guide for the simpler layout."],"normal"],
@@ -513,7 +514,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=52.5" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=52.6" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
