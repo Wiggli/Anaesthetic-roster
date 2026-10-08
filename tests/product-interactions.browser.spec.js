@@ -95,3 +95,34 @@ test('Chat arrival preserves an older reading position and follows the latest wh
  await page.evaluate(()=>{const el=document.getElementById('chatTeamMessages');el.scrollTop=el.scrollHeight;window.__testMessages.push({...window.__testMessages.at(-1),id:'arrival-41',body:'Newest message at the end'});window.dispatchEvent(new CustomEvent('roster:chat-messages',{detail:{kind:'team',items:window.__testMessages,bottomOffset:0}}))});
  await expect(page.locator('#chatTeamMessages')).toContainText('Newest message at the end');await expect.poll(()=>page.locator('#chatTeamMessages').evaluate(el=>el.scrollHeight-el.clientHeight-el.scrollTop)).toBeLessThan(2);
 });
+
+for (const theme of ['light','dark']) test(`Chat controls stay reachable with a long transcript ${theme} @iphone`,async({page},testInfo)=>{
+ await page.setViewportSize({width:390,height:844});await openReview(page);
+ await page.evaluate(theme=>{
+  applyTheme(theme==='dark');show('chat');
+  const style=document.documentElement.style;style.setProperty('--app-safe-top','59px');style.setProperty('--app-safe-bottom','34px');
+  style.setProperty('--app-viewport-height','844px');style.setProperty('--app-viewport-offset-top','0px');
+  document.getElementById('chat').classList.add('chat-thread-open','chat-team-open');document.body.classList.add('chatThreadMode');
+  document.getElementById('chatTeamThread').classList.remove('hidden');
+  document.getElementById('chatTeamMessages').innerHTML=Array.from({length:100},(_,i)=>`<div>Example message ${i}</div>`).join('');
+ },theme);
+ const back=page.locator('#chatTeamBackBtn');await expect(back).toBeVisible();
+ await expect.poll(async()=> (await back.boundingBox()).y).toBeGreaterThanOrEqual(59);
+ const dock=await page.locator('.bottom').boundingBox(),pane=await page.locator('#chat .chatConversationPane').boundingBox();
+ expect(pane.y+pane.height).toBeLessThanOrEqual(dock.y);
+ await back.click({trial:true});const initial=await back.boundingBox();
+ await page.locator('#chatTeamMessages').evaluate(el=>el.scrollTop=el.scrollHeight);
+ expect((await back.boundingBox()).y).toBe(initial.y);
+ // Safari may pan the visual viewport while the keyboard is open.
+ await page.evaluate(()=>{document.body.classList.add('keyboardVisible');document.documentElement.style.setProperty('--app-viewport-height','460px');document.documentElement.style.setProperty('--app-viewport-offset-top','80px')});
+ await expect.poll(async()=> (await back.boundingBox()).y).toBeGreaterThanOrEqual(139);
+ const keyboardPane=await page.locator('#chat .chatConversationPane').boundingBox();expect(keyboardPane.y+keyboardPane.height).toBeLessThanOrEqual(540);
+ await back.click({trial:true});await page.screenshot({path:testInfo.outputPath(`chat-${theme}-keyboard.png`)});
+ await page.evaluate(()=>{
+  document.body.classList.remove('keyboardVisible');document.documentElement.style.setProperty('--app-viewport-height','844px');document.documentElement.style.setProperty('--app-viewport-offset-top','0px');
+  document.getElementById('chatTeamThread').classList.add('hidden');document.getElementById('chatThread').classList.remove('hidden');document.getElementById('chat').classList.remove('chat-team-open');
+  document.getElementById('chatMessages').innerHTML=Array.from({length:100},(_,i)=>`<div>Example private message ${i}</div>`).join('');
+ });
+ await page.locator('#chatBackBtn').click({trial:true});expect((await page.locator('#chatBackBtn').boundingBox()).y).toBeGreaterThanOrEqual(59);
+ await page.screenshot({path:testInfo.outputPath(`chat-${theme}-private.png`)});
+});

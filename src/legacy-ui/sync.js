@@ -470,6 +470,7 @@ function setupViewportState(){
   function update(){
     var viewport=window.visualViewport,active=document.activeElement,editable=!!(active&&/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)),height=viewport?viewport.height:window.innerHeight;
     document.documentElement.style.setProperty('--app-viewport-height',Math.round(height)+'px');
+    document.documentElement.style.setProperty('--app-viewport-offset-top',Math.round(viewport?viewport.offsetTop||0:0)+'px');
     var keyboard=!!(viewport&&editable&&window.innerHeight-viewport.height>120);
     document.body.classList.toggle('keyboardVisible',keyboard);
   }
