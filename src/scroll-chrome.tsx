@@ -108,6 +108,8 @@ function ScrollGlassChrome() {
   const reducedMotion = useProductReducedMotion();
   const barRef = useRef<HTMLElement>(null);
   const frame = useRef<number | null>(null);
+  const visibleRef = useRef(false);
+  const [visible, setVisible] = useState(false);
   const [model, setModel] = useState<ChromeModel>(() => readModel());
   const modelKey = useMemo(
     () => model.view + ':' + model.mode + ':' + model.title + ':' + (model.subtitle || '') + ':' +
@@ -140,7 +142,13 @@ function ScrollGlassChrome() {
       root.style.setProperty('--chrome-glass-contrast', (1.005 + progress * 0.015).toFixed(3));
       root.style.opacity = String(progress);
       root.style.transform = 'none';
-      root.toggleAttribute('data-visible', progress > 0.02);
+      const shown = progress > 0.02;
+      root.hidden = !shown;
+      if (visibleRef.current !== shown) {
+        visibleRef.current = shown;
+        setVisible(shown);
+      }
+      root.toggleAttribute('data-visible', shown);
       root.toggleAttribute('data-collapsed', progress > 0.72);
       root.setAttribute('data-mode', model.mode);
 
@@ -213,8 +221,9 @@ function ScrollGlassChrome() {
     ref={barRef}
     className={'scrollGlassHeader scrollGlass-' + model.view + ' scrollGlassMode-' + model.mode}
     aria-hidden="true"
+    hidden={!visible}
   >
-    {model.mode !== 'off' && <GlassSurface className="scrollGlassMaterial" aria-hidden="true" />}
+    {visible && model.mode !== 'off' && <GlassSurface className="scrollGlassMaterial" aria-hidden="true" />}
     <div className="scrollGlassStack">
       {model.mode === 'compact' && <div className="scrollGlassContent">
         <motion.span

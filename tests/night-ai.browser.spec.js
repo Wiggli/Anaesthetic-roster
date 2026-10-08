@@ -117,6 +117,8 @@ test('@iphone Night keeps the header below the safe area and omits empty activit
     window.scrollTo(0, 300);
   });
   const chrome = page.locator('.scrollGlassHeader');
+  await expect(chrome).toBeVisible();
+  await expect(page.locator('.scrollGlassMaterial')).toHaveCount(1);
   await expect.poll(() => chrome.evaluate(el => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.98);
   const metrics = await chrome.evaluate(el => ({
     titleTop: el.querySelector('.scrollGlassCompactTitle').getBoundingClientRect().top,
@@ -135,6 +137,9 @@ test('@iphone Night keeps the header below the safe area and omits empty activit
     }, theme);
     await page.screenshot({ path: testInfo.outputPath(`night-header-${theme}.png`) });
     await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(chrome).toBeHidden();
+    await expect(page.locator('.scrollGlassMaterial')).toHaveCount(0);
+    await expect(chrome).toHaveCSS('display', 'none');
     await page.screenshot({ path: testInfo.outputPath(`night-summary-${theme}.png`), fullPage: true });
     await page.evaluate(() => window.scrollBy(0, document.querySelector('.teamOverviewGroup').getBoundingClientRect().top - 130));
     await page.locator('.teamOverviewGroup').screenshot({ path: testInfo.outputPath(`night-team-${theme}.png`) });
@@ -178,4 +183,24 @@ test('@iphone Chat thread owns its header without a glass overlay', async ({ pag
   }
   await page.evaluate(() => document.body.classList.remove('chatThreadMode'));
   await expect(chrome).toHaveAttribute('data-mode', 'compact');
+});
+
+
+test('@iphone Inactive scroll glass cannot blur or cover the masthead', async ({ page }, testInfo) => {
+  await openShell(page);
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--app-safe-top', '59px');
+    window.scrollTo(0, 0);
+  });
+  const chrome = page.locator('.scrollGlassHeader');
+  await expect(chrome).toBeHidden();
+  await expect(chrome).toHaveCSS('display', 'none');
+  await expect(page.locator('.scrollGlassMaterial')).toHaveCount(0);
+  const account = page.locator('#accountBtn');
+  await expect(account).toBeVisible();
+  expect(await account.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(theme => { document.documentElement.dataset.theme = theme; document.body.classList.toggle('dark', theme === 'dark'); }, theme);
+    await page.screenshot({ path: testInfo.outputPath(`clear-masthead-${theme}.png`) });
+  }
 });
