@@ -32,3 +32,18 @@ console.log('Single workflow host, Account outlet, selected-night context, timel
 
 const dockCss=read('src/rudder-navigation.css');
 assert.match(dockCss,/@keyframes operationalDockReveal[\s\S]*from \{ opacity: 0; transform: translate\(-50%,16px\); \} to \{ opacity: 1; transform: translate\(-50%,0\); \}/,'launch animation must preserve horizontal dock centring throughout');
+
+// Safari pans its visual viewport independently when focusing a chat composer.
+const viewportSource=read('src/legacy-ui/sync.js').match(/function setupViewportState\(\)\{[\s\S]*?\n\}/)[0];
+const viewportProperties={},keyboardStates=[];
+const viewportSandbox={
+ window:{innerHeight:844,visualViewport:{height:460,offsetTop:80,addEventListener(){}},addEventListener(){}},
+ document:{activeElement:{tagName:'TEXTAREA'},documentElement:{style:{setProperty:(key,value)=>viewportProperties[key]=value}},body:{classList:{toggle:(key,value)=>keyboardStates.push([key,value])}},addEventListener(){}},
+ setTimeout:fn=>fn(),Math
+};
+vm.runInNewContext(viewportSource,viewportSandbox);viewportSandbox.setupViewportState();
+assert.equal(viewportProperties['--app-viewport-height'],'460px');
+assert.equal(viewportProperties['--app-viewport-offset-top'],'80px');
+assert.equal(keyboardStates.at(-1)[1],true);
+viewportSandbox.window.visualViewport.height=844;viewportSandbox.window.visualViewport.offsetTop=0;viewportSandbox.document.activeElement={tagName:'BODY'};viewportSandbox.setupViewportState();
+assert.equal(viewportProperties['--app-viewport-offset-top'],'0px');assert.equal(keyboardStates.at(-1)[1],false);

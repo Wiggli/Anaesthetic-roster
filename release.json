@@ -1,12 +1,12 @@
 {
-  "version": "52.1",
+  "version": "52.2",
   "date": "8 October 2026",
-  "title": "Keep full-night cover visible",
-  "summary": "Restores the full-night Labour Ward / Pager card on complete five-nurse nights.",
+  "title": "Keep iPhone chat controls reachable",
+  "summary": "Keeps conversation controls above the transcript and within the visible iPhone screen.",
   "changes": [
-    "Restores the full-night Labour Ward / Pager card on complete five-nurse nights.",
-    "Uses the shared staffing count so overtime cover does not hide the full-night nurse.",
-    "Preserves the existing staffing allocations and break rules."
+    "Bounds mobile conversations to the visible viewport and respects iPhone safe areas.",
+    "Keeps Back, conversation title and composer outside the scrolling transcript.",
+    "Adapts conversation height and position when the on-screen keyboard moves the viewport."
   ],
   "update_policy": "normal"
 }

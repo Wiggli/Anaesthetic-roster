@@ -407,6 +407,33 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .chatNotificationShortcut { width: 100%; text-align: left; background: transparent; color: var(--liquid-accent-strong); border: 0; font-size: var(--unified-type-body); }
 .chatThreadHeader { min-height: 64px; border-radius: 16px 16px 0 0; background: var(--surface-secondary); }
 .chatThreadSafety { padding: 8px 12px; color: var(--liquid-secondary); font-size: var(--unified-type-caption); }
+/* Mobile conversations own a bounded visual viewport; only the transcript scrolls. */
+@media (max-width: 759px) {
+  body.chatThreadMode[data-view="chat"] main > #chat {
+    animation: none;
+    transform: none;
+    contain: none;
+  }
+  #chat.chat-thread-open .chatConversationPane {
+    inset: auto 0 auto 0;
+    top: calc(var(--app-viewport-offset-top,0px) + var(--app-safe-top));
+    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-safe-top) - 84px - var(--app-safe-bottom)));
+    overflow: hidden;
+  }
+  body.keyboardVisible #chat.chat-thread-open .chatConversationPane {
+    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-safe-top)));
+  }
+  #chat.chat-thread-open .chatThread { height: 100%; min-height: 0; }
+  #chat.chat-thread-open .chatThreadHeader {
+    flex: 0 0 auto;
+    min-height: 64px;
+    padding: 8px max(12px,var(--app-safe-right)) 8px max(12px,var(--app-safe-left));
+  }
+  #chat.chat-thread-open :is(.chatThreadSafety,.chatLoadOlder,.chatComposerWrap,.chatTeamComposerWrap) { flex: 0 0 auto; }
+  #chat.chat-thread-open .chatMessageViewport { flex: 1 1 0; min-height: 0; }
+  #chat.chat-thread-open :is(.chatMessages,.chatTeamMessages) { height: 100%; min-height: 0; overflow-y: auto; }
+}
+
 /* Account is a page stack in one outlet, not a menu preceding every page. */
 .accountSheet[open] { position: fixed; inset: max(0px,var(--app-safe-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-safe-top)); max-height: calc(100dvh - var(--app-safe-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); animation: account-enter var(--unified-base) var(--unified-ease); }
 @keyframes account-enter { from { opacity: .7; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
