@@ -597,7 +597,7 @@ assert.match(html, /id="recentActivityList"/, 'Night must retain recent activity
 assert.doesNotMatch(html, /copyBriefingBtn|copyBreaksBtn|emailRosterBtn|briefingActionsReason|breakActionsReason/, 'Night and Breaks must not restore redundant copy or email action controls');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /function prepareAdminInformationArchitecture\(\)[\s\S]*What do you need to manage\?[\s\S]*People & Access[\s\S]*Roster Management[\s\S]*System/, 'Admin must open from one four-area management hub');
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'app-core.js'), 'utf8'), /adminLegacyTabs/, 'the superseded five-tab administrator rail must be retired from the active interface');
-assert.match(html, /id="accountHomeHub"[\s\S]*Personalise[\s\S]*Preferences[\s\S]*App &amp; Help[\s\S]*Security/, 'Account must use progressive disclosure instead of one long settings sheet');
+assert.match(html, /id="accountHomeHub"[\s\S]*Profile &amp; shift[\s\S]*Appearance[\s\S]*Help &amp; sharing[\s\S]*Sign-in &amp; security/, 'Account must use progressive disclosure instead of one long settings sheet');
 assert.match(html, /id="quickActionsSheet"[\s\S]*data-quick-action="absence"[\s\S]*data-quick-action="overtime"[\s\S]*data-quick-action="review"/, 'Quick Actions must retain a usable HTML fallback for the core night actions');
 assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.showQuickActions/, 'the React navigation must expose one central Quick Actions rudder rather than a fifth destination');
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');

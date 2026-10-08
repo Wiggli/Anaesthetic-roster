@@ -2,6 +2,7 @@
    geometry, hierarchy and materials have one owner here, without override stacks. */
 :root {
   /* Semantic materials. Personal accents never recolour clinical statuses. */
+  --app-header-top: var(--app-safe-top);
   --surface-primary: #f3f5f8;
   --surface-secondary: #ffffff;
   --surface-elevated: #eaf0f7;
@@ -181,6 +182,7 @@ html, body { min-height: 100dvh; }
 body { --personal-accent-readable: var(--personal-accent,var(--accent-primary)); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--liquid-label); background: radial-gradient(ellipse 100% 260px at 50% 0,var(--ambient-glow),transparent), var(--surface-primary); background-repeat: no-repeat; font-size: var(--unified-type-lead); line-height: 1.45; }
 /* A real fixed opaque element lets iOS sample a solid status-bar colour,
    avoiding its installed-web-app edge blur over the in-flow masthead. */
+html[data-ios-standalone] { --app-header-top: calc(var(--app-safe-top) + 24px); }
 .appStatusBarBacking { display: none; }
 html[data-ios-standalone] .appStatusBarBacking {
   display: block; position: fixed; inset: 0 0 auto; height: max(6px,var(--app-safe-top));
@@ -205,7 +207,7 @@ main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc
 #today, #changes, #breaks, #chat, #roster, #admin {
   background: transparent; color: var(--text-primary);
   width: min(100%, var(--unified-content-width)); margin-inline: auto;
-  padding: max(12px, var(--app-safe-top)) max(var(--unified-gutter), var(--app-safe-right)) 24px max(var(--unified-gutter), var(--app-safe-left));
+  padding: max(12px, var(--app-header-top)) max(var(--unified-gutter), var(--app-safe-right)) 24px max(var(--unified-gutter), var(--app-safe-left));
 }
 #today > * + *, #changes > * + *, #breaks > * + *, #chat .chatScreen > * + * { margin-top: var(--unified-space-3); }
 .panel { padding: 16px; border: 0; border-radius: var(--unified-radius-card); background: var(--unified-surface); box-shadow: none; }
@@ -429,12 +431,12 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
   }
   #chat.chat-thread-open .chatConversationPane {
     inset: auto 0 auto 0;
-    top: calc(var(--app-viewport-offset-top,0px) + var(--app-safe-top));
-    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-safe-top) - 84px - var(--app-safe-bottom)));
+    top: calc(var(--app-viewport-offset-top,0px) + var(--app-header-top));
+    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-header-top) - 84px - var(--app-safe-bottom)));
     overflow: hidden;
   }
   body.keyboardVisible #chat.chat-thread-open .chatConversationPane {
-    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-safe-top)));
+    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-header-top)));
   }
   #chat.chat-thread-open .chatThread { height: 100%; min-height: 0; }
   #chat.chat-thread-open .chatThreadHeader {
@@ -448,13 +450,13 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 }
 
 /* Account is a page stack in one outlet, not a menu preceding every page. */
-.accountSheet[open] { position: fixed; inset: max(0px,var(--app-safe-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-safe-top)); max-height: calc(100dvh - var(--app-safe-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); animation: account-enter var(--unified-base) var(--unified-ease); }
+.accountSheet[open] { position: fixed; inset: max(0px,var(--app-header-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-header-top)); max-height: calc(100dvh - var(--app-header-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); animation: account-enter var(--unified-base) var(--unified-ease); }
 @keyframes account-enter { from { opacity: .7; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 .accountSheet::backdrop { background: var(--overlay-dim); }
 .accountSheet > .sheetGrabber { display: none; }
 .accountSheetHeader { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-height: 64px; margin: 0; padding: 8px max(16px,var(--app-safe-right)) 8px max(16px,var(--app-safe-left)); border: 0; border-bottom: 1px solid var(--unified-border); border-radius: 0; background: var(--unified-surface); box-shadow: none; }
 .accountSheetHeader > div { flex: 1; min-width: 0; }
-.accountSheetHeader > div > span { color: var(--liquid-secondary); font-size: var(--unified-type-micro); font-weight: 550; text-transform: none; letter-spacing: 0; }
+.accountSheetHeader > div > span { display: none; color: var(--liquid-secondary); font-size: var(--unified-type-micro); font-weight: 550; text-transform: none; letter-spacing: 0; }
 .accountSheetHeader h2 { margin: 0; font-size: var(--unified-type-title); font-weight: 700; line-height: 1.2; }
 .accountSheetHeader button { flex: 0 0 auto; min-width: 44px; height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-body); }
 .accountBackBtn { width: 44px; padding: 0; font-size: var(--unified-type-display); }
@@ -469,9 +471,10 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .accountHomeIdentity small { display: block; color: var(--liquid-secondary); font-size: var(--unified-type-caption); overflow-wrap: anywhere; }
 .accountHomeAvatar { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--unified-accent-soft); color: var(--liquid-accent-strong); font-size: var(--unified-type-lead); }
 .accountHubList { overflow: hidden; padding: 0; border: 0; border-radius: 16px; background: var(--unified-surface); box-shadow: none; }
-.accountHubRow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; border: 0; border-radius: 0; background: transparent; color: var(--liquid-label); text-align: left; }
+.accountHubRow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0; padding: 10px 16px; border: 0; border-radius: 0; background: transparent; color: var(--liquid-label); text-align: left; }
 .accountHubRow + .accountHubRow { border-top: 1px solid var(--unified-border); }
 .accountHubIcon { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 8px; background: var(--unified-accent-soft); color: var(--liquid-accent-strong); }
+.accountHubIcon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .accountHubRow > span:nth-child(2) { flex: 1; min-width: 0; }
 .accountHubRow b { display: block; font-size: var(--unified-type-body); font-weight: 650; }
 .accountHubRow small { display: block; margin-top: 2px; font-size: var(--unified-type-caption); color: var(--liquid-secondary); }
@@ -542,7 +545,7 @@ html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
 /* Sheets, launch and update use the same radius, text and motion contracts. */
 .quickActionsSheet, .appDialog, .onboardingDialog, .releaseDialog { border-radius: var(--unified-radius-shell); color: var(--liquid-label); background: var(--unified-surface); }
 /* Actions owns both typed and fallback content, including bounded line icons. */
-.quickActionsSheet[open] { transform-origin: 50% 100%; animation: actions-enter 260ms var(--unified-ease); position: fixed; inset: auto 0 max(8px,var(--app-safe-bottom)); width: min(calc(100% - 16px),520px); max-width: 520px; max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 24px); margin: 0 auto; padding: 8px 16px 16px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--unified-border); box-shadow: var(--unified-shadow); }
+.quickActionsSheet[open] { transform-origin: 50% 100%; animation: actions-enter 260ms var(--unified-ease); position: fixed; inset: auto 0 max(8px,var(--app-safe-bottom)); width: min(calc(100% - 16px),520px); max-width: 520px; max-height: calc(100dvh - var(--app-header-top) - var(--app-safe-bottom) - 24px); margin: 0 auto; padding: 8px 16px 16px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--unified-border); box-shadow: var(--unified-shadow); }
 .quickActionsSheet::backdrop { background: var(--overlay-dim); }
 .quickActionsHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 16px; }
 .quickActionsHead > div { min-width: 0; }
@@ -570,10 +573,10 @@ html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
 .quickActionList { display: grid; gap: 8px; }
 @keyframes actions-enter { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 /* Native staffing dialogs keep focus and controls inside the active sheet. */
-#changes .staffingSheet[open] { inset: auto 0 0; width: min(560px,100%); margin: 0 auto; padding: 8px 16px calc(16px + var(--app-safe-bottom)); max-height: calc(var(--app-viewport-height,100dvh) - var(--app-safe-top) - 16px); border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-shell) var(--unified-radius-shell) 0 0; background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); }
+#changes .staffingSheet[open] { inset: auto 0 0; width: min(560px,100%); margin: 0 auto; padding: 8px 16px calc(16px + var(--app-safe-bottom)); max-height: calc(var(--app-viewport-height,100dvh) - var(--app-header-top) - 16px); border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-shell) var(--unified-radius-shell) 0 0; background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); }
 #changes .staffingSheet::backdrop { background: var(--overlay-dim); }
 /* Onboarding uses intrinsic header rows and respects installed-iPhone safe areas. */
-.onboardingDialog[open] { animation: dialog-enter var(--unified-base) var(--unified-ease); display: flex; flex-direction: column; inset: var(--app-safe-top) 0 var(--app-safe-bottom); width: min(540px,calc(100% - 16px)); height: min(760px,calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 16px)); max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 16px); margin: auto; padding: 0; }
+.onboardingDialog[open] { animation: dialog-enter var(--unified-base) var(--unified-ease); display: flex; flex-direction: column; inset: var(--app-header-top) 0 var(--app-safe-bottom); width: min(540px,calc(100% - 16px)); height: min(760px,calc(100dvh - var(--app-header-top) - var(--app-safe-bottom) - 16px)); max-height: calc(100dvh - var(--app-header-top) - var(--app-safe-bottom) - 16px); margin: auto; padding: 0; }
 @keyframes dialog-enter { from { opacity: .8; } to { opacity: 1; } }
 .onboardingDialog .onboardingTop { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 12px; align-items: center; min-height: 64px; padding: 12px 16px; }
 .onboardingDialog .onboardingStepLabel { position: static; transform: none; min-width: 0; font-size: var(--unified-type-caption); line-height: 1.4; }
@@ -647,7 +650,7 @@ html.nightCalmMode #nightCalmToggle::after { content: 'Full view'; }
 .returnSummaryActions button { min-height: 44px; padding: 8px 12px; background: var(--surface-elevated); color: var(--accent-primary); border: 0; }
 .personalisationPreviewMini { display: grid; grid-column: 1 / -1; grid-template-columns: 1fr auto; gap: 4px 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: var(--unified-type-body); color: var(--text-primary); }
 .personalisationPreviewMini > small { grid-column: 1 / -1; color: var(--text-secondary); font-size: var(--unified-type-caption); }
-.productRefreshIndicator { position: fixed; z-index: 80; top: calc(var(--app-safe-top) + 8px); left: 50%; display: flex; align-items: center; gap: 8px; width: max-content; max-width: calc(100vw - 32px); padding: 8px 16px; border: 1px solid var(--border-subtle); border-radius: 999px; background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); transform: translate(-50%,0); font-size: var(--unified-type-caption); pointer-events: none; }
+.productRefreshIndicator { position: fixed; z-index: 80; top: calc(var(--app-header-top) + 8px); left: 50%; display: flex; align-items: center; gap: 8px; width: max-content; max-width: calc(100vw - 32px); padding: 8px 16px; border: 1px solid var(--border-subtle); border-radius: 999px; background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); transform: translate(-50%,0); font-size: var(--unified-type-caption); pointer-events: none; }
 .productRefreshIndicator > span { color: var(--accent-primary); font-size: var(--unified-type-section); }
 .productRefreshIndicator[data-state="refreshing"] > span { animation: refresh-turn 1.2s linear infinite; }
 @keyframes refresh-turn { to { transform: rotate(360deg); } }
@@ -693,9 +696,9 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 
 /* Keep one glass plane and a stable title below the device status area. */
 .scrollGlassHeader.scrollGlassMode-compact {
-  padding-top: var(--app-safe-top);
-  height: calc(58px + var(--app-safe-top));
-  min-height: calc(58px + var(--app-safe-top));
+  padding-top: var(--app-header-top);
+  height: calc(58px + var(--app-header-top));
+  min-height: calc(58px + var(--app-header-top));
   background: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -729,7 +732,7 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 #today .recentActivityPanel[open] .nightActivityChevron { transform: rotate(90deg); }
 #today .recentActivityPanel .recentActivityList { padding: 0 0 12px; }
 #today .nightRecentLimit { display: block; color: var(--text-secondary); margin-bottom: 8px; }
-#nightAiBrief { width: min(520px,calc(100% - 32px)); max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 32px); padding: 16px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-shell); background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); }
+#nightAiBrief { width: min(520px,calc(100% - 32px)); max-height: calc(100dvh - var(--app-header-top) - var(--app-safe-bottom) - 32px); padding: 16px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-shell); background: var(--surface-secondary); color: var(--text-primary); box-shadow: var(--shadow-floating); }
 #nightAiBrief::backdrop { background: var(--overlay-dim); }
 #nightAiBrief .nightAiBriefHead { margin-bottom: 8px; }
 #nightAiBrief h2 { margin: 0; font-size: var(--unified-type-section); }

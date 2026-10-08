@@ -1568,13 +1568,13 @@ test('typed account controls preserve appearance and app actions', async ({ page
   });
 
   await expect(page.locator('#accountSheetTitle')).toHaveText('Account');
-  await expect(page.locator('#accountHomeHub')).toContainText('Personalise');
-  await expect(page.locator('#accountHomeHub')).toContainText('Preferences');
-  await expect(page.locator('#accountHomeHub')).toContainText('Security');
-  await expect(page.locator('#accountHomeHub')).toContainText('App & Help');
+  await expect(page.locator('#accountHomeHub')).toContainText('Profile & shift');
+  await expect(page.locator('#accountHomeHub')).toContainText('Appearance');
+  await expect(page.locator('#accountHomeHub')).toContainText('Sign-in & security');
+  await expect(page.locator('#accountHomeHub')).toContainText('Help & sharing');
   await expect(page.locator('#profileExperience')).toBeHidden();
   await page.locator('#accountHomeHub [data-account-section="profile"]').click();
-  await expect(page.locator('#accountSheetTitle')).toHaveText('Personalise');
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Profile & shift');
   await expect(page.locator('#accountSheet')).toContainText('Shared roster actions continue to use this approved identity.');
   await expect(page.locator('#profileExperience')).toContainText('Personalisation Studio');
   await expect(page.locator('#profileName')).toHaveValue('Andre');
