@@ -462,6 +462,7 @@ body.dark .personalisationPreviewCard { --identity-accent-readable: color-mix(in
 .personalisationIdentityImage { color: var(--identity-accent-readable,var(--text-primary)); border-color: var(--border-subtle); background: color-mix(in srgb,var(--identity-accent,var(--accent-primary)) 10%,var(--surface-elevated)); box-shadow: none; }
 .accountPhotoActions button { color: var(--accent-primary); }
 .accountPhotoActions #removeProfilePhoto { color: var(--status-danger); }
+.accountPhotoButton { color: var(--accent-primary); background: var(--surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-card); box-shadow: none; }
 .accountProfileInput { min-height: 44px; padding: 12px; font-size: var(--unified-type-lead); border: 1px solid var(--unified-border); border-radius: 12px; }
 .appearanceControl { display: block; width: 100%; }
 .appearanceControl button strong, .appearanceControl button small { white-space: normal; overflow: visible; }

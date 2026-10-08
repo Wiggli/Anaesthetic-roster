@@ -14,6 +14,9 @@ for(const theme of ['light','dark'])for(const width of [320,390,430])test(`share
  for(const view of ['today','changes','breaks','chat']){
   await page.evaluate(view=>show(view),view);await expect(page.locator('#'+view)).toBeVisible();
   expect(await page.locator('#'+view).evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+  const header=page.locator(view==='today'?'#appHeader':'#'+view+' .appShellHeader');
+  expect(await header.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+  expect(await header.evaluate(el=>getComputedStyle(el).position)).toBe('relative');
   expect(await page.locator('#'+view).evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
   const geo=await page.locator('.bottom').boundingBox();expect(Math.abs(geo.x+geo.width/2-width/2)).toBeLessThan(1);
   if(width===390)await page.screenshot({path:testInfo.outputPath(view+'.png')});
@@ -23,6 +26,7 @@ for(const theme of ['light','dark'])for(const width of [320,390,430])test(`share
  expect(await page.locator('#absenceFormExperience .staffingSheet').evaluate(el=>el.contains(document.activeElement))).toBe(true);
  await page.keyboard.press('Escape');await expect(page.locator('#absenceFormExperience .staffingSheet')).toHaveCount(0);
  await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();
+ expect(await page.locator('#profilePhotoInitial').evaluate(el=>getComputedStyle(el).color)).toBe(theme==='dark'?'rgb(145, 191, 255)':'rgb(0, 102, 204)');
  await page.locator('#profileName').fill('Preview Nurse');await expect(page.locator('.personalisationPreviewCopy strong')).toHaveText('Preview Nurse');
  await page.getByRole('button',{name:'Our Shift',exact:true}).click();await page.locator('#shiftStudioName').fill('The Night Team');
  await expect(page.locator('.shiftPreviewCard .shiftIdentityCopy strong')).toHaveText('The Night Team');

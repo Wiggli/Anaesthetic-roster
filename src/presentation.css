@@ -617,7 +617,7 @@ dialog.appDialog,.updateDetailsSheet{
   }
 }
 .changesScreenHeader,
-.breaksScreenHeader{margin:0 -12px;padding:max(13px,env(safe-area-inset-top)) 14px 10px;background:transparent;color:var(--liquid-label)}
+.breaksScreenHeader{color:var(--liquid-label)}
 .changesScreenHeader .screenEyebrow,
 .breaksScreenHeader .screenEyebrow{color:var(--liquid-secondary);font-size:9px;font-weight:670;letter-spacing:.06em}
 .changesScreenHeader h1,
@@ -861,9 +861,6 @@ body{
 #today #roles .rosterRow:focus-visible{outline:3px solid var(--scene-accent);outline-offset:-3px}
 #today .recentActivityPanel .sectionHeadingRow{margin-bottom:12px}
 #today .recentActivityRow{min-height:64px}
-#changes .changesScreenHeader,
-#breaks .breaksScreenHeader,
-#chat .chatScreenHeader{padding:14px 0 20px;margin:0}
 #changes #allocationFormMessage[data-react-ready="true"]{min-height:0;padding:0;background:none;color:inherit}
 #changes #allocationFormMessage[data-react-ready="true"]::before{display:none}
 .changesFeedback{display:flex;align-items:flex-start;gap:12px;padding:15px 16px;border:1px solid var(--scene-line);border-radius:16px;background:var(--scene-soft);color:var(--scene-ink)}
@@ -1181,7 +1178,6 @@ html[data-theme="dark"] #changes>.changePanel{
 #breakSummaryRow .breakSummaryItem.labour small{margin:0;white-space:normal}
 
 /* Changes opens on the decision at hand while retaining the linked date and live state. */
-#changes .changesScreenHeader{position:relative;top:auto;z-index:1;padding:4px 0 12px}
 #changes .changesScreenHeader h1{font-size:clamp(27px,5vw,34px)}
 #changes .changesScreenHeader .screenEyebrow{font-size:10px}
 #changes .changesScreenHeader p{margin-top:5px}
@@ -1219,7 +1215,7 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface);
 /* Account uses a short profile introduction and grouped native-style controls. */
 #profileExperience>.accountProfilePanel{display:grid;border:1px solid var(--scene-line);border-radius:var(--scene-radius);background:var(--scene-surface);box-shadow:var(--scene-shadow);gap:16px;padding:18px}
 .accountProfileHero{display:flex;align-items:center;gap:16px}
-.accountPhotoButton{position:relative;display:grid;place-items:center;padding:0;overflow:visible;border:3px solid var(--scene-surface);border-radius:50%;background:var(--scene-soft);color:var(--scene-accent);box-shadow:0 0 0 1px var(--scene-line);font-weight:750;width:64px;height:64px;min-width:64px;font-size:24px}
+.accountPhotoButton{position:relative;display:grid;place-items:center;padding:0;overflow:visible;font-weight:750;width:64px;height:64px;min-width:64px;font-size:24px}
 .accountPhotoControls{display:grid;flex:none;justify-items:center;gap:2px}
 .accountPhotoActions button{padding:4px 6px;border:0;background:none;font-weight:700;box-shadow:none;min-height:36px;font-size:11px}
 .accountProfileIntro h3{color:var(--scene-ink);letter-spacing:-.025em;margin:2px 0 4px;font-size:19px}
@@ -1252,7 +1248,6 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface);
 }
 
 /* Breaks keeps the personal answer and the shared plan in one scan path. */
-#breaks .breaksScreenHeader{padding:4px 0 12px}
 #breaks .breaksScreenHeader h1{font-size:clamp(27px,5vw,34px)}
 #breaks>.panel>.grid2>label{font-size:0}
 #breaks>.panel>.grid2 .staffingCount span{font-size:10px}
@@ -1268,9 +1263,7 @@ html[data-theme="dark"] #today .nightMetricRail{background:var(--scene-surface);
 
 /* Chat gives the composer a clear place above the floating navigation. */
 #chat .chatScreenHeader{
-  border:0;
-  background:transparent;
-  color:var(--liquid-label);padding:4px 0 10px;margin:0 0 8px}
+  color:var(--liquid-label)}
 #chat .chatScreenHeader h1{
   color:var(--liquid-label);
   font-weight:740;
@@ -2017,17 +2010,8 @@ html[data-theme="dark"] #today .nightSignal.needsReview .nightSignalGlyph{
   place-items:center;
   padding:0;
   overflow:visible;
-  border:4px solid var(--account-surface);
-  border-radius:50%;
-  background:var(--account-surface-subtle);
-  color:var(--account-accent);
-  box-shadow:0 0 0 1px var(--account-rule),0 10px 28px rgba(0,0,0,.08);
   font-size:34px;
   font-weight:760;
-}
-body.dark .accountHeroPhoto.accountPhotoButton,
-html[data-theme="dark"] .accountHeroPhoto.accountPhotoButton{
-  box-shadow:0 0 0 1px var(--account-rule),0 12px 30px rgba(0,0,0,.34);
 }
 .accountHeroPhoto img{
   width:100%;
@@ -2721,9 +2705,7 @@ main>.view{
   border-color:transparent;
 }
 @media(max-width:520px){
-  #changes .screenHeader,
-#breaks .screenHeader,
-#chat .chatScreenHeader{
+  #changes .screenHeader, #breaks .screenHeader{
     padding-top:calc(9px + env(safe-area-inset-top));
   }
   #changes>.changesDatePanel .grid2,
@@ -2848,9 +2830,12 @@ html[data-theme="dark"] body{background:var(--scene-bg);
 }
 
 /* Shared page-header rhythm for the three operational destinations. */
-#changes .screenHeader,
-#breaks .screenHeader,
 #chat .chatScreenHeader{
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-end;
+}
+#changes .screenHeader, #breaks .screenHeader{
   display:flex;
   justify-content:space-between;
   gap:14px;
@@ -5599,11 +5584,7 @@ html[data-theme="dark"] #breaks .breakScheduleBoard{
     min-height:0;
     padding-bottom:0;
   }
-  #chat.chat-thread-open .chatScreenHeader,
-#chat.chat-thread-open>#chatStatus,
-#chat.chat-thread-open .chatScreen>#chatStatus,
-#chat.chat-thread-open .chatModuleFallback,
-#chat.chat-thread-open #chatHome{
+  #chat.chat-thread-open>#chatStatus, #chat.chat-thread-open .chatScreen>#chatStatus, #chat.chat-thread-open .chatModuleFallback, #chat.chat-thread-open #chatHome{
     display:none;
   }
   #chat.chat-thread-open .chatWorkspace{
@@ -9649,11 +9630,6 @@ html[data-theme="dark"] #today .nightOverviewBoard{
   min-height:calc(100dvh - 150px);
   gap:0;
 }
-#chat .chatScreenHeader{
-  margin-bottom:12px;
-  margin:0 0 10px;
-  padding-bottom:0;
-}
 #chat .chatTitleRow{
   align-items:center;
   gap:12px;
@@ -10280,9 +10256,7 @@ body.personalMotionReduced *,body.personalMotionReduced *::before,body.personalM
   gap:12px;
   align-items:center;
 }
-.personalisationAvatarEditor .accountHeroPhoto{width:68px;height:68px;border-radius:22px;
-  border-color:color-mix(in srgb,var(--identity-accent,var(--personal-accent)) 28%,var(--liquid-separator));
-  box-shadow:0 8px 23px color-mix(in srgb,var(--identity-accent,var(--personal-accent)) 14%,transparent);
+.personalisationAvatarEditor .accountHeroPhoto{width:68px;height:68px;
 }
 .personalisationAvatarStyles{
   display:grid;
