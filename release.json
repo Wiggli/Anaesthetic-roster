@@ -1,12 +1,12 @@
 {
-  "version": "52.7",
-  "date": "8 October 2026",
-  "title": "Solid iPhone status bar backing",
-  "summary": "Adds an opaque status-bar backing for installed iOS web apps to avoid the system edge blur over the masthead.",
+  "version": "52.8",
+  "date": "9 October 2026",
+  "title": "Clearer Account menu and iPhone header spacing",
+  "summary": "Clearer settings labels and icons, with more room below the iPhone status bar.",
   "changes": [
-    "Installed iOS apps use a solid status-bar backing to avoid system edge blur.",
-    "The backing follows appearance and never intercepts taps.",
-    "Browser checks cover safe-area bounds and scrolling."
+    "Account uses clearer labels and line icons.",
+    "Generic profile text and database detail are removed from Account home.",
+    "Installed iOS headers reserve extra space below the status bar."
   ],
   "update_policy": "normal"
 }

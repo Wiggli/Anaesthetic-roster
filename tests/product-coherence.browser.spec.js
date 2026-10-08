@@ -108,3 +108,32 @@ test('Changes keeps one functional fallback rail when its optional React module 
 });
 
 module.exports = {openReview};
+
+test('Account menu and headers stay below the installed iPhone status-bar edge @iphone', async ({page}, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'standalone', {get:()=>true});
+    Object.defineProperty(navigator, 'userAgent', {get:()=> 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15'});
+  });
+  await openReview(page);
+  await page.evaluate(() => document.documentElement.style.setProperty('--app-safe-top','62px'));
+  expect((await page.locator('#appHeader').boundingBox()).y).toBeGreaterThanOrEqual(86);
+  await page.evaluate(() => showAccountSheet());
+  await expect(page.locator('#accountHomeHub')).toContainText('Profile & shift');
+  await expect(page.locator('#accountHomeHub')).toContainText('Appearance');
+  await expect(page.locator('#accountHomeHub')).toContainText('Help & sharing');
+  await expect(page.locator('.accountHubIcon svg')).toHaveCount(6);
+  await expect(page.locator('.accountSheetHeader > div > span')).toBeHidden();
+  await expect(page.locator('#accountVersion')).not.toContainText('Database');
+  const title = await page.locator('#accountSheetTitle').boundingBox();
+  expect(title.y).toBeGreaterThanOrEqual(86);
+  const close=page.locator('#closeAccountSheet');
+  expect(await close.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
+  for(const theme of ['light','dark']) {
+    await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;document.body.classList.toggle('dark',theme==='dark');},theme);
+    await page.screenshot({path:testInfo.outputPath(`account-menu-${theme}.png`)});
+  }
+  await page.locator('[data-account-section="profile"]').click();
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Profile & shift');
+  await page.locator('#accountBackBtn').click();
+  await close.click();
+});

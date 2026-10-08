@@ -143,7 +143,7 @@ function prepareAccountInformationArchitecture(){
 }
 function showAccountSection(section){
   prepareAccountInformationArchitecture();
-  var labels={profile:'Personalise',preferences:'Preferences',notifications:'Notifications',security:'Security',help:'App & Help'},key=accountPresentationPages[section]?section:'home';
+  var labels={profile:'Profile & shift',preferences:'Appearance',notifications:'Notifications',security:'Sign-in & security',help:'Help & sharing'},key=accountPresentationPages[section]?section:'home';
   var target=accountPresentationPages[key],outlet=byId('accountPageOutlet'),back=byId('accountBackBtn'),close=byId('closeAccountSheet'),title=byId('accountSheetTitle'),eyebrow=document.querySelector('#accountSheet .accountSheetHeader>div>span');
   if(outlet&&target)outlet.replaceChildren(target);
   var dialog=byId('accountSheet');if(dialog)dialog.dataset.accountPage=key;
@@ -160,10 +160,10 @@ function populateAccountSheet(){
   prepareAccountInformationArchitecture();
   var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName(),shift=shiftIdentityModel(cur&&cur().date);
   profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'',profile.accent_key||'teal',profile.text_scale||'standard',profile.motion_pref||'system',profile.avatar_style||'photo',profile.greeting_enabled===false?'0':'1']);
-  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION+' · Database '+(schemaVersion||'legacy');
+  var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION;
   var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar'),adminRow=byId('accountAdminHubRow');
   if(adminRow)adminRow.classList.toggle('hidden',!(currentUserProfile&&currentUserProfile.user_role==='admin'));
-  if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole)homeRole.textContent=(profile.job_title||'Anaesthetic team member');if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=profile.avatar_style==='spark'?'✦':profileInitialText(name||currentUserProfile.display_name||currentUserProfile.email||'?');
+  if(homeName)homeName.textContent=name||currentUserProfile.display_name||'Your account';if(homeRole){homeRole.textContent=profile.job_title||'';homeRole.hidden=!profile.job_title;}if(homeEmail)homeEmail.textContent=currentUserProfile.email||'';if(homeAvatar)homeAvatar.textContent=profile.avatar_style==='spark'?'✦':profileInitialText(name||currentUserProfile.display_name||currentUserProfile.email||'?');
   showProfileMessage(profileFeatureAvailable?'':'Personal profile storage is not available yet.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{
     theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,
