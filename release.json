@@ -1,12 +1,12 @@
 {
-  "version": "52.6",
+  "version": "52.7",
   "date": "8 October 2026",
-  "title": "Clear the Night masthead material",
-  "summary": "Removes the remaining nested glass effects from the logo and account row for a clear iPhone header.",
+  "title": "Solid iPhone status bar backing",
+  "summary": "Adds an opaque status-bar backing for installed iOS web apps to avoid the system edge blur over the masthead.",
   "changes": [
-    "Removed legacy backdrop filters from the in-flow Night masthead and account button.",
-    "Kept floating scroll chrome separate from the clear page header.",
-    "Added computed-style checks for the masthead material in the iPhone browser regression."
+    "Installed iOS apps use a solid status-bar backing to avoid system edge blur.",
+    "The backing follows appearance and never intercepts taps.",
+    "Browser checks cover safe-area bounds and scrolling."
   ],
   "update_policy": "normal"
 }
