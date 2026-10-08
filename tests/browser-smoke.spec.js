@@ -889,7 +889,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#today .nightOverviewBoard')).toContainText('Changes tonight');
   const nightSurfaces = await page.evaluate(() => {
     const hero = document.querySelector('#personalNightCard > article');
-    const board = document.querySelector('#today .nightOverviewBoard');
+    const board = document.querySelector('#today .teamOverviewGroup');
     if (!hero || !board) return null;
     const h = hero.getBoundingClientRect();
     const b = board.getBoundingClientRect();
@@ -1234,7 +1234,7 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
   await captureReview(page, 'changes-shared');
 });
 
-test('unresolved seventh-nurse decision still names recorded overtime without clipping it', async ({ page }) => {
+test('unresolved seventh-nurse decision keeps recorded overtime in team information', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.dispatchEvent(new CustomEvent('roster:night', { detail: {
@@ -1247,8 +1247,10 @@ test('unresolved seventh-nurse decision still names recorded overtime without cl
   });
   await expect(page.locator('#nightStatusRow')).toContainText('Review needed');
   await expect(page.locator('#nightStatusRow')).toContainText('2 overtime');
-  const names = page.locator('#nightStatusRow .nightSignalStaffingNames');
-  await expect(names).toContainText('Overtime: Dani Ilieva, Alexandra Constantinou');
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: { date: '2026-10-08', title: 'Second Part Theatre' } })));
+  await page.locator('#nightTeamInfoBtn').click();
+  const names = page.locator('#nightAiBriefText');
+  await expect(names).toContainText('Dani Ilieva, Alexandra Constantinou');
   const geometry = await names.evaluate(element => {
     const style = getComputedStyle(element);
     return { whiteSpace: style.whiteSpace, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
@@ -1313,8 +1315,9 @@ test('confirmed seven-nurse context stays Plan ready instead of forcing review',
   });
   await expect(page.locator('#nightStatusRow')).toContainText('Plan ready');
   await expect(page.locator('#nightStatusRow')).not.toContainText('Review needed');
-  await expect(page.locator('#alerts .compactNotice')).toHaveClass(/informational/);
-  await expect(page.locator('#alerts .compactNotice')).not.toHaveClass(/warn/);
+  await expect(page.locator('#alerts .compactNotice')).toHaveCount(0);
+  await page.locator('#nightTeamInfoBtn').click();
+  await expect(page.locator('#nightAiAllocationNote')).toContainText('Overtime fills the vacated role.');
 });
 
 test('update banner obeys hidden and Night-only visibility states', async ({ page }) => {

@@ -58,17 +58,24 @@ async function openShell(page) {
   });
 }
 
-test('@iphone Night AI shows a compact AI brief and change summary', async ({ page }) => {
+test('@iphone Night AI opens from team information and keeps changes collapsed', async ({ page }, testInfo) => {
   await openShell(page);
   const brief = page.locator('#nightAiBrief');
-  await expect(brief).toBeVisible();
+  await expect(brief).toBeHidden();
   await expect(brief).toContainText('Night brief');
   await expect(page.locator('#nightAiBriefText')).toBeHidden();
-  await brief.locator('summary').click();
+  await page.locator('#nightTeamInfoBtn').click();
+  await expect(brief).toBeVisible();
   await expect(page.locator('#nightAiBriefText')).toBeVisible();
   await expect(brief).toContainText('Second Part Theatre');
   await expect(brief).toContainText('AI');
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(theme => { document.documentElement.dataset.theme = theme; document.body.classList.toggle('dark', theme === 'dark'); }, theme);
+    await page.screenshot({ path: testInfo.outputPath(`night-information-${theme}.png`) });
+  }
 
+  await page.getByRole('button', { name: 'Close night brief' }).click();
+  await page.locator('.recentActivityPanel > summary').click();
   const changes = page.locator('#nightAiChangesSummary');
   await expect(changes).toBeVisible();
   await expect(changes).toContainText('AI change summary');
@@ -77,7 +84,7 @@ test('@iphone Night AI shows a compact AI brief and change summary', async ({ pa
 
 test('Ask Night Roster answers from the supplied roster context', async ({ page }) => {
   await openShell(page);
-  await page.locator('#nightAiBrief summary').click();
+  await page.locator('#nightTeamInfoBtn').click();
   await page.locator('#nightAiBrief .nightAiAskButton').click();
   const dialog = page.locator('#nightAiDialog');
   await expect(dialog).toHaveAttribute('open', '');
@@ -89,7 +96,7 @@ test('Ask Night Roster answers from the supplied roster context', async ({ page 
 
 test('Explain allocation keeps the deterministic roster engine authoritative', async ({ page }) => {
   await openShell(page);
-  await page.locator('#nightAiBrief summary').click();
+  await page.locator('#nightTeamInfoBtn').click();
   await page.locator('#nightAiBrief .nightAiWhyButton').click();
   await expect(page.locator('#nightAiDialog')).toHaveAttribute('open', '');
   await expect(page.locator('#nightAiMessages')).toContainText('deterministic roster engine');
@@ -129,12 +136,18 @@ test('@iphone Night keeps the header below the safe area and omits empty activit
     await page.screenshot({ path: testInfo.outputPath(`night-header-${theme}.png`) });
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: testInfo.outputPath(`night-summary-${theme}.png`), fullPage: true });
+    await page.evaluate(() => window.scrollBy(0, document.querySelector('.teamOverviewGroup').getBoundingClientRect().top - 130));
+    await page.locator('.teamOverviewGroup').screenshot({ path: testInfo.outputPath(`night-team-${theme}.png`) });
     await page.evaluate(() => window.scrollTo(0, 300));
   }
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('roster:recent-activity', { detail: {
     updated: true, updatedCount: 1, items: [{ type: 'absence', label: 'Absence', title: 'Shaun Galea absent', detail: 'Recorded absence', meta: 'André · 20:00' }]
   } })));
   await expect(page.locator('#today .recentActivityPanel')).toBeVisible();
+  await expect(page.locator('#nightActivityCount')).toHaveText(' · 1');
+  await expect(page.locator('#recentActivityList')).toBeHidden();
+  await page.locator('.recentActivityPanel > summary').click();
+  await expect(page.locator('#recentActivityList')).toBeVisible();
   await expect(page.locator('#recentActivityList')).toContainText('Shaun Galea absent');
 });
 

@@ -1,13 +1,13 @@
 {
-  "version": "52.3",
+  "version": "52.4",
   "date": "8 October 2026",
-  "title": "A clearer Night screen and stable iPhone header",
-  "summary": "Keeps the Night screen focused on assignments and staffing, with explanations available on demand.",
+  "title": "A compact team section beneath your night",
+  "summary": "Keeps the hero unchanged while bringing team staffing and optional details into one compact section.",
   "changes": [
-    "Keeps the compact header below the iPhone safe area and removes the glass overlay from open chat conversations.",
-    "Collapses Night brief until opened and removes repeated staffing text.",
-    "Shows Changes tonight only when changes exist, with full detail available by tapping an entry.",
-    "Updates the Night guide for the simpler layout."
+    "Combines staffing count and plan status beneath Tonight\u2019s team, without the repeated arrangement chip.",
+    "Moves Night brief and allocation explanations behind the information button.",
+    "Keeps Team allocation and recorded Changes tonight expandable, with full roster and history details still available.",
+    "Updates the Night guide for the simplified team section."
   ],
   "update_policy": "normal"
 }

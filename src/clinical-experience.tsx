@@ -112,6 +112,7 @@ type ActivityItem = {
 };
 
 type RecentActivity = {
+  totalCount?: number;
   updated: boolean;
   updatedCount: number;
   sinceLabel: string;
@@ -485,27 +486,19 @@ function NightStatus({ model }: { model: NightSummary }) {
   const previousReady = useRef({ready: !provisional, date: model.date});
   const completed = !provisional && !previousReady.current.ready && previousReady.current.date === model.date;
   useEffect(() => { previousReady.current = {ready: !provisional, date: model.date}; }, [provisional,model.date]);
-  const absenceLabel = model.absenceCount ? `${model.absenceCount} ${model.absenceCount === 1 ? 'absence' : 'absences'}` : 'No absences';
-  const overtimeLabel = model.overtimeCount ? `${model.overtimeCount} overtime` : 'No overtime';
+  const staffingLabel = [
+    `${model.nurseCount} nurses`,
+    model.absenceCount ? `${model.absenceCount} absent` : '',
+    model.overtimeCount ? `${model.overtimeCount} overtime` : ''
+  ].filter(Boolean).join(' · ');
   const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
 
   return <section className={'nightSignal ' + (provisional ? 'needsReview' : '')} aria-label="Tonight at a glance">
-    <div className="nightContextLine">
-      <span className={'nightContextCapsule ' + (provisional ? 'review' : model.clockChange ? 'clock' : 'standard')}>
-        <i aria-hidden="true" />{model.contextLabel || 'Standard night'}
-      </span>
-    </div>
-    <div className="nightSignalPrimary">
-      <span className="nightOverviewIcon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M2.5 20c.4-4 2.7-6 6-6s5.6 2 6 6" /><path d="M16.5 10a3 3 0 1 0 0-6" /><path d="M16.5 14c2.8 0 4.5 1.6 5 4.5" /></svg>
-      </span>
-      <span className="nightSignalLeadCopy">
-        <strong>{model.nurseCount} nurses</strong>
-        <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : undefined}>{feedback || `${absenceLabel} · ${overtimeLabel}`}</span>
-        <span className="nightSignalState">
-          <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
-          <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
-        </span>
+    <div className="nightTeamStatusLine">
+      <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : 'nightTeamStaffing'}>{feedback || staffingLabel}</span>
+      <span className="nightSignalState">
+        <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
+        <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
       </span>
     </div>
     {model.taskCount > 0 && !hasSpecificDecision && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
@@ -517,13 +510,8 @@ function NightStatus({ model }: { model: NightSummary }) {
 function NightAlerts({ model }: { model: NightSummary }) {
   const needsReview = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
   const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
-  const informationalParts = !needsReview && model.alert ? model.alert.split(':') : [];
-  const infoTitle = informationalParts.length > 1 ? informationalParts.shift()?.trim() : 'Night arrangement';
-  const infoDetail = informationalParts.length ? informationalParts.join(':').trim() : model.alert;
   return <>
-    {model.alert && !hasSpecificDecision && (needsReview
-      ? <div className="alert compactNotice warn">{model.alert}</div>
-      : <div className="alert compactNotice informational nightContextNotice"><span className="nightContextIcon" aria-hidden="true">i</span><span><b>{infoTitle}</b><small>{infoDetail}</small></span></div>)}
+    {model.alert && !hasSpecificDecision && needsReview && <div className="alert compactNotice warn">{model.alert}</div>}
     {model.firstTask && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
       <span className="decisionTaskMark" aria-hidden="true">!</span>
       <span className="decisionTaskCopy"><small>Allocation decision</small><b>{model.firstTask}</b><strong>Review allocation</strong></span>
@@ -820,6 +808,7 @@ function RecentActivityList({ model }: { model: RecentActivity }) {
     </div>;
   }
   return <div className="activityTimeline">
+    {(model.totalCount || 0) > model.items.length && <small className="nightRecentLimit">Latest {model.items.length} changes; open Changes for the full history.</small>}
     {model.updated && model.updatedCount > 0 && <div className="recentActivityDigest" role="status">
       <span className="recentActivityDigestMark" aria-hidden="true">↻</span>
       <span><b>{model.updatedCount} {model.updatedCount === 1 ? 'change' : 'changes'} since {model.sinceLabel || 'you last opened Night'}</b><small>{model.summary?.join(' · ') || 'Review the latest shared staffing and allocation updates below.'}</small><span className="returnSummaryActions"><Pressable type="button" onClick={() => { window.dispatchEvent(new CustomEvent('roster:activity-acknowledge')); goToChanges('staffing'); }}>Review updates</Pressable><Pressable type="button" onClick={() => window.dispatchEvent(new CustomEvent('roster:activity-acknowledge'))}>Got it</Pressable></span></span>
@@ -854,6 +843,8 @@ export function renderRecentActivityExperience(model: RecentActivity) {
   const list = document.getElementById('recentActivityList');
   const panel = list?.closest<HTMLElement>('.recentActivityPanel');
   if (panel) panel.hidden = model.items.length === 0;
+  const count = document.getElementById('nightActivityCount');
+  if (count) count.textContent = ' · ' + (model.totalCount ?? model.items.length);
   rootFor('recentActivityList')?.render(<RecentActivityList model={model} />);
   const chip = document.getElementById('changedSinceChip');
   if (chip) {

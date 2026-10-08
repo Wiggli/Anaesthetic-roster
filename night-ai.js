@@ -66,13 +66,15 @@ async function aiRequest(mode,question){
 }
 function aiSourceText(result){if(result&&result.ai)return'AI';if(result&&result.reason==='offline')return'Offline roster summary';if(result&&result.reason==='not_configured')return'AI not connected · roster summary';return'Roster-grounded summary'}
 function aiEnsureBrief(){
-  if(aiEl('nightAiBrief'))return aiEl('nightAiBrief');var personal=aiEl('personalNightCard');if(!personal||!personal.parentNode)return null;
-  var section=aiMake('details','nightAiBrief');section.id='nightAiBrief';section.setAttribute('aria-labelledby','nightAiBriefTitle');
-  var head=aiMake('summary','nightAiBriefHead'),titleWrap=aiMake('div',''),spark=aiMake('span','nightAiSpark','✦'),title=aiMake('strong','', 'Night brief'),source=aiMake('span','nightAiSource','Preparing');title.id='nightAiBriefTitle';titleWrap.appendChild(spark);titleWrap.appendChild(title);head.appendChild(titleWrap);head.appendChild(source);
-  var text=aiMake('p','nightAiBriefText','Preparing a roster-grounded summary…');text.id='nightAiBriefText';
-  var actions=aiMake('div','nightAiBriefActions'),ask=aiMake('button','nightAiAskButton','Ask Night Roster'),why=aiMake('button','nightAiWhyButton','Why this allocation?');ask.type='button';why.type='button';ask.onclick=function(){aiOpenAssistant()};why.onclick=function(){aiExplainAllocation()};actions.appendChild(ask);actions.appendChild(why);
-  section.appendChild(head);section.appendChild(text);section.appendChild(actions);personal.parentNode.insertBefore(section,personal.nextSibling);return section
+  if(aiEl('nightAiBrief'))return aiEl('nightAiBrief');
+  var section=aiMake('dialog','nightAiBriefDialog');section.id='nightAiBrief';section.setAttribute('aria-labelledby','nightAiBriefTitle');
+  var head=aiMake('div','nightAiBriefHead'),title=aiMake('h2','', 'Night brief'),close=aiMake('button','nightAiClose','×');title.id='nightAiBriefTitle';close.type='button';close.setAttribute('aria-label','Close night brief');close.onclick=function(){section.close()};head.appendChild(title);head.appendChild(close);
+  var note=aiMake('p','nightAiAllocationNote');note.id='nightAiAllocationNote';note.hidden=true;var source=aiMake('small','nightAiSource','Preparing'),text=aiMake('p','nightAiBriefText','Preparing a roster-grounded summary…');text.id='nightAiBriefText';
+  var actions=aiMake('div','nightAiBriefActions'),ask=aiMake('button','nightAiAskButton','Ask Night Roster'),why=aiMake('button','nightAiWhyButton','Why this allocation?');ask.type='button';why.type='button';ask.onclick=function(){section.close();aiOpenAssistant()};why.onclick=function(){section.close();aiExplainAllocation()};actions.appendChild(ask);actions.appendChild(why);
+  section.appendChild(head);section.appendChild(note);section.appendChild(source);section.appendChild(text);section.appendChild(actions);document.body.appendChild(section);return section
 }
+function aiOpenBrief(){var dialog=aiEnsureBrief(),note=aiEl('nightAiAllocationNote');if(note){note.textContent=state.night&&state.night.alert||'';note.hidden=!note.textContent}if(dialog&&!dialog.open)dialog.showModal()}
+
 function aiRenderBrief(result){var host=aiEnsureBrief();if(!host)return;var text=aiEl('nightAiBriefText'),source=host.querySelector('.nightAiSource');if(text)text.textContent=result.text;if(source)source.textContent=aiSourceText(result);host.classList.toggle('isAi',!!result.ai)}
 function aiRefreshBrief(force){
   clearTimeout(state.briefTimer);state.briefTimer=setTimeout(async function(){if(!state.personal||!state.night||!aiSelectedDate())return;aiEnsureBrief();var request=++state.briefRequest;if(force){var ctx=aiContext(),key='brief:'+aiHash({ctx:ctx,q:''});delete state.cache[key]}var result=await aiRequest('brief','');if(request===state.briefRequest)aiRenderBrief(result)},180)
@@ -104,14 +106,14 @@ function aiEnsureQuickAction(){
 function aiObserveQuickActions(){var host=aiEl('quickActionsExperience');if(!host||state.observer)return;state.observer=new MutationObserver(function(){aiEnsureQuickAction()});state.observer.observe(host,{childList:true,subtree:true});aiEnsureQuickAction()}
 function aiClearPrivateData(){clearTimeout(state.briefTimer);clearTimeout(state.changesTimer);state.briefRequest++;state.changesRequest++;state.sessionGeneration++;state.cache={};state.conversation=[];var messages=aiEl('nightAiMessages');if(messages)messages.textContent='';var brief=aiEl('nightAiBrief');if(brief)brief.remove();var changes=aiEl('nightAiChangesSummary');if(changes)changes.remove()}
 function aiWatchAuth(){if(state.authSubscription||!window.supa||!supa.auth||!supa.auth.onAuthStateChange)return;try{var result=supa.auth.onAuthStateChange(function(event){if(event==='SIGNED_OUT'||event==='USER_DELETED')aiClearPrivateData()});state.authSubscription=result&&result.data&&result.data.subscription||null}catch(error){}}
-function aiResetForDate(date){if(date&&state.date&&date!==state.date){clearTimeout(state.briefTimer);clearTimeout(state.changesTimer);state.briefRequest++;state.changesRequest++;state.sessionGeneration++;state.cache={};state.conversation=[];var messages=aiEl('nightAiMessages');if(messages)messages.textContent=''}state.date=date||state.date}
-function aiStart(){aiEnsureDialog();aiObserveQuickActions();aiWatchAuth();if(state.personal&&state.night)aiRefreshBrief();if(state.activity)aiRefreshChanges()}
+function aiResetForDate(date){if(date&&state.date&&date!==state.date){clearTimeout(state.briefTimer);clearTimeout(state.changesTimer);state.briefRequest++;state.changesRequest++;state.sessionGeneration++;state.cache={};state.conversation=[];var brief=aiEl('nightAiBrief');if(brief&&brief.open)brief.close();var messages=aiEl('nightAiMessages');if(messages)messages.textContent=''}state.date=date||state.date}
+function aiStart(){var info=aiEl('nightTeamInfoBtn');if(info)info.onclick=aiOpenBrief;aiEnsureDialog();aiObserveQuickActions();aiWatchAuth();if(state.personal&&state.night)aiRefreshBrief();if(state.activity)aiRefreshChanges()}
 
 window.addEventListener('roster:personal-night',function(event){var detail=event&&event.detail||{};aiResetForDate(detail.date||aiSelectedDate());state.personal=detail;aiRefreshBrief()});
 window.addEventListener('roster:night',function(event){state.night=event&&event.detail||{};aiResetForDate(aiSelectedDate());aiRefreshBrief()});
 window.addEventListener('roster:recent-activity',function(event){state.activity=event&&event.detail||{};aiResetForDate(aiSelectedDate());aiRefreshChanges()});
 window.addEventListener('roster:quick-actions',function(){setTimeout(aiEnsureQuickAction,0)});
 window.addEventListener('online',function(){aiRefreshBrief();aiRefreshChanges()});
-window.NightRosterAI={openAssistant:aiOpenAssistant,ask:function(question){return aiAsk(question||'What should I know about this night?')},explainAllocation:aiExplainAllocation,refreshBrief:function(){aiRefreshBrief(true)},context:aiContext,clearPrivateData:aiClearPrivateData};
+window.NightRosterAI={openBrief:aiOpenBrief,openAssistant:aiOpenAssistant,ask:function(question){return aiAsk(question||'What should I know about this night?')},explainAllocation:aiExplainAllocation,refreshBrief:function(){aiRefreshBrief(true)},context:aiContext,clearPrivateData:aiClearPrivateData};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aiStart,{once:true});else aiStart();
 })();
