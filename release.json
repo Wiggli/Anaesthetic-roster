@@ -1,15 +1,12 @@
 {
-  "version": "52.0",
+  "version": "52.1",
   "date": "8 October 2026",
-  "title": "One Night Roster experience",
-  "summary": "A calmer shared design in Light and Dark, with connected navigation and clearer night updates.",
+  "title": "Keep full-night cover visible",
+  "summary": "Restores the full-night Labour Ward / Pager card on complete five-nurse nights.",
   "changes": [
-    "Unifies screen spacing, surfaces, typography and Light/Dark status colours.",
-    "Connects the dock selection and Actions sheet with restrained motion.",
-    "Keeps the live night rail and compact break periods tied to the shared clock.",
-    "Shows brief change feedback and return updates that clear when acknowledged.",
-    "Improves Chat arrival, loading and scroll behaviour, with colleague shortcuts.",
-    "Adds a live Personalise preview and installed-app pull to refresh."
+    "Restores the full-night Labour Ward / Pager card on complete five-nurse nights.",
+    "Uses the shared staffing count so overtime cover does not hide the full-night nurse.",
+    "Preserves the existing staffing allocations and break rules."
   ],
   "update_policy": "normal"
 }
