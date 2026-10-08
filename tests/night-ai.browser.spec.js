@@ -196,6 +196,14 @@ test('@iphone Inactive scroll glass cannot blur or cover the masthead', async ({
   await expect(chrome).toBeHidden();
   await expect(chrome).toHaveCSS('display', 'none');
   await expect(page.locator('.scrollGlassMaterial')).toHaveCount(0);
+  for (const selector of ['#appHeader', '#accountBtn']) {
+    const material = await page.locator(selector).evaluate(el => {
+      const s = getComputedStyle(el);
+      return { filter: s.filter, backdrop: s.backdropFilter, webkit: s.webkitBackdropFilter };
+    });
+    expect(material.filter).toBe('none');
+    expect(material.backdrop || material.webkit).toBe('none');
+  }
   const account = page.locator('#accountBtn');
   await expect(account).toBeVisible();
   expect(await account.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);

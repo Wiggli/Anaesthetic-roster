@@ -1,12 +1,12 @@
 {
-  "version": "52.5",
+  "version": "52.6",
   "date": "8 October 2026",
-  "title": "Remove inactive glass from the page header",
-  "summary": "Keeps the top of the page sharp by removing scroll glass until it is actually visible.",
+  "title": "Clear the Night masthead material",
+  "summary": "Removes the remaining nested glass effects from the logo and account row for a clear iPhone header.",
   "changes": [
-    "Unmounts the inactive blur surface instead of keeping it transparent over the masthead.",
-    "Hides the entire scroll header at the top of the page and when a conversation owns its header.",
-    "Restores the compact glass title only after the page heading scrolls away."
+    "Removed legacy backdrop filters from the in-flow Night masthead and account button.",
+    "Kept floating scroll chrome separate from the clear page header.",
+    "Added computed-style checks for the masthead material in the iPhone browser regression."
   ],
   "update_policy": "normal"
 }
