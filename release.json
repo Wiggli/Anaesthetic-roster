@@ -1,12 +1,14 @@
 {
-  "version": "52.8",
+  "version": "53.0",
   "date": "9 October 2026",
-  "title": "Clearer Account menu and iPhone header spacing",
-  "summary": "Clearer settings labels and icons, with more room below the iPhone status bar.",
+  "title": "Clear sign-in and safer account management",
+  "summary": "Clearer email and Google access, verified account changes and simpler administrator controls.",
   "changes": [
-    "Account uses clearer labels and line icons.",
-    "Generic profile text and database detail are removed from Account home.",
-    "Installed iOS headers reserve extra space below the status bar."
+    "Accounts have explicit member or administrator access for each approved sign-in email.",
+    "Account changes are verified on the server with saving, error and stale-change feedback.",
+    "Adding an existing email no longer resets its role or reactivates it.",
+    "The account search is unobstructed and account actions open from Manage.",
+    "Google asks which account to use, and deactivated accounts receive a clear explanation."
   ],
   "update_policy": "normal"
 }

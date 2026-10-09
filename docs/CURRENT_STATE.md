@@ -7,7 +7,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - The latest `main` branch is the source of truth.
 - `release.json` is the source of truth for the deployable app version and release notes.
 - `.project-state.json` contains machine-readable release, schema, verification and CI continuity data.
-- The current database contract is schema 53. Any later schema change must be a new forward-only migration and must update the machine-readable state.
+- The current database contract is schema 54. Any later schema change must be a new forward-only migration and must update the machine-readable state.
 - `AGENTS.md` contains the permanent product, clinical, security, design and deployment invariants.
 
 ## Runtime ownership
@@ -21,7 +21,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 
 Release 52.0 extends the canonical system in `src/product-unified.css` and dock geometry in `src/rudder-navigation.css` with explicit Light/Dark semantic materials and compatibility aliases. `src/product-motion.ts` owns motion preferences and optional haptics; `src/product-interactions.ts` owns Actions dismissal, discoverable colleague shortcuts and installed-PWA refresh. The shell observer coalesces structural changes rather than scanning after every message or clock update.
 
-The selected-night context is shared by Night, Changes and Breaks; Chat uses a compact date/count row and one identity on its team conversation. Account mounts exactly one page in `accountPageOutlet`, retaining inactive control nodes and their listeners. Personalise uses live state and a compact preview. Changes uses a single workflow host for React or its fallback, with native modal staffing editors. Presentation clocks use the established `appNowMs()` source and suspend offscreen. Return-summary acknowledgement uses existing bounded, private-device activity keys and clears on sign-out. Domain calculations, write paths and the schema-53 backend contract remain unchanged.
+The selected-night context is shared by Night, Changes and Breaks; Chat uses a compact date/count row and one identity on its team conversation. Account mounts exactly one page in `accountPageOutlet`, retaining inactive control nodes and their listeners. Personalise uses live state and a compact preview. Changes uses a single workflow host for React or its fallback, with native modal staffing editors. Presentation clocks use the established `appNowMs()` source and suspend offscreen. Return-summary acknowledgement uses existing bounded, private-device activity keys and clears on sign-out. Domain calculations and the schema-49 clinical write contract remain unchanged.
 
 `docs/PRODUCT_COHERENCE_52.md` records implementation scope and verification limits.
 
@@ -34,3 +34,5 @@ The routine GitHub Actions workflow now contains one `test` job, a conditional S
 ## Continuity rule
 
 Before starting substantial work in a fresh session, run `npm run context` and read this file plus `docs/DEVELOPMENT_WORKFLOW.md`. Update this note only when architecture, schema, workflow or durable project status changes. Do not use it as a running chat transcript.
+
+Release 53.0 adds guarded account access changes in set_account_access_v54, server protection for the current administrator and last active administrator, explicit role controls, verified save results, and clearer Google/email access guidance. No authentication identities are merged by name, and account deactivation does not alter the permanent rotation or historical roster records.

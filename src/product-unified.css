@@ -741,3 +741,28 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 #nightAiBrief .nightAiBriefActions button { min-height: 44px; }
 
 #today .nightTeamInfoBtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+/* Keep access controls legible and reachable on small phones. */
+.adminAccessIdentity { display: grid; gap: 4px; padding: 14px; border-radius: 16px; background: var(--surface); }
+.adminAccessIdentity span { overflow-wrap: anywhere; color: var(--muted); }
+.adminAccessIdentity small { font-weight: 700; }
+.adminAddAccount > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 700; }
+.adminAccountRow { flex-wrap: wrap; }
+.adminAccountControls { flex: 0 0 100%; display: grid; gap: 10px; }
+.adminAccountControls > button { justify-self: end; }
+.adminAccountEditor { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.adminAccountEditor label { display: grid; gap: 5px; font-size: .8rem; font-weight: 600; }
+.adminAccountEditor select, .adminAccountEditor button { min-height: 44px; }
+.adminAccountEditor select { width: 100%; }
+@media(min-width: 680px) { .adminAccountControls { flex-basis: auto; min-width: 230px; } }
+
+#admin:not([data-admin-section="home"]) .adminHeader { padding: 10px 14px; border-radius: 16px; margin-bottom: 12px; }
+#admin:not([data-admin-section="home"]) .adminHeader .ctop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
+#admin:not([data-admin-section="home"]) .adminHeader h2 { font-size: 1rem; }
+#admin:not([data-admin-section="home"]) .adminHeader p,
+#adminAccess .adminSectionIntro { display: none; }
+.adminAccountControls button { font-size: .8rem; font-weight: 700; }
+#adminAccountsExperience button[aria-pressed="false"],
+.adminAccountControls > button { background: var(--surface-elevated); color: var(--accent-primary); }
+.adminAccountEditor select { background: var(--surface-elevated); color: var(--text-primary); border: 1px solid var(--border-subtle); }
+.adminAccountEditor button.danger { background: var(--status-danger-fill); color: var(--on-accent); }

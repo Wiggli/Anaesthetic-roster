@@ -60,7 +60,7 @@ function readModel(): ChromeModel {
     const unread = count('chatUnreadBadge');
     return { view, title: 'Chat', subtitle: unread ? `${unread} unread` : 'Team and private messages', mode: 'compact' };
   }
-  if (view === 'admin') return { view, title: 'Roster management', mode: 'compact' };
+  if (view === 'admin') return { view, title: 'Roster management', mode: 'off' };
   if (view === 'roster') return { view, title: 'Full roster', subtitle: 'Published roster nights', mode: 'compact' };
   return { view, title: 'Night Roster', mode: 'off' };
 }

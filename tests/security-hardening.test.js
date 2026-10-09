@@ -35,7 +35,7 @@ assert.doesNotMatch(ui, /Current account:[^\n]*\.email/,
 
 assert.match(html, /id="authGoogleBtn"[\s\S]*?>[\s\S]*?Google/,
   'the sign-in screen must expose the Google provider control');
-assert.match(core, /signInWithOAuth\(\{provider:'google',options:\{redirectTo:APP_URL\}\}\)/,
+assert.match(core, /signInWithOAuth\(\{provider:'google',options:\{redirectTo:APP_URL,queryParams:\{prompt:'select_account'\}\}\}\)/,
   'Google sign-in must use the Supabase OAuth client and approved application URL');
 assert.doesNotMatch(html, /id="authMicrosoftBtn"/,
   'Microsoft sign-in must not be shown while Google is the only social provider');
