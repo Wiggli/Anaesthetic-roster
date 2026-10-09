@@ -11,6 +11,7 @@ const formatRosterDate = (value: string) => {
 };
 
 function openNativePicker(input: HTMLInputElement) {
+  if (input.disabled) return;
   try {
     const picker = input as HTMLInputElement & { showPicker?: () => void };
     if (typeof picker.showPicker === 'function') {

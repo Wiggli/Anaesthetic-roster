@@ -3,7 +3,7 @@ function prepareChangesView(){
   var required=['today','changes','breaks','roster','changesStaffingPane','changesAllocationPane','changesConfirmPane','personalNightCard','nightStatusRow'];
   if(required.some(function(id){return !byId(id)}))return;
   document.body.setAttribute('data-view','today');
-  ['datePick','changesDatePick','breakDatePick','teamEffectiveDate'].forEach(enhanceDatePicker);
+  ['datePick','changesDatePick','breakDatePick'].forEach(enhanceDatePicker);
   byId('viewRosterBtn').onclick=function(){show('roster')};
   byId('closeRosterBtn').onclick=function(){show('today')};
   byId('smartNightBtn').onclick=goToAutomaticNight;

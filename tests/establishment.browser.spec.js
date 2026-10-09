@@ -1,6 +1,8 @@
 const {test,expect}=require('@playwright/test');
 const {openReview}=require('./helpers/product-review');
 const periods=require('./fixtures/establishment-periods.json');
+test.beforeEach(async({page})=>{page.on('pageerror',error=>console.log('Roster review page error:',error.message))});
+test.afterEach(async({page},info)=>{if(info.status!==info.expectedStatus)console.log('Roster review state:',await page.evaluate(()=>({error:byId('teamPeriodError').textContent,date:byId('teamEffectiveDate').value,size:byId('teamBaseSize').value,names:Object.keys(TEAM_SLOT_INPUTS).map(k=>byId(TEAM_SLOT_INPUTS[k]).value),notes:byId('teamPeriodNotes').value,previewEnabled:!byId('saveTeamVersionBtn').disabled,previewHandler:typeof byId('saveTeamVersionBtn').onclick,dirty:teamEditorDirty})))})
 for(const theme of ['light','dark'])test(`effective establishment and future-period preview ${theme}`,async({page},testInfo)=>{
  await openReview(page);
  await page.evaluate(({periods,theme})=>{
@@ -18,8 +20,8 @@ for(const theme of ['light','dark'])test(`effective establishment and future-per
  await page.evaluate(()=>{show('admin');switchAdminTab('team',false)});
  await expect(page.locator('#teamBaseSize')).toHaveValue('5');
  await expect(page.locator('#teamEffectiveDate')).toHaveValue('2026-10-16');
- await expect(page.locator('#teamEffectiveDate').locator('..').locator('.prettyDateButton')).toBeVisible();
- await expect(page.locator('#teamEffectiveDate').locator('..').locator('.prettyDateButton')).toContainText('16');
+ await expect(page.locator('#teamEffectiveDate').locator('..').locator('.rosterDateText')).toBeVisible();
+ await expect(page.locator('#teamEffectiveDate').locator('..').locator('.rosterDateText')).toContainText('16');
  await page.locator('#teamBaseSize').selectOption('6');
  await page.locator('#teamSlotReliever').fill('New Nurse');
  await page.locator('#teamPeriodNotes').fill('New nurse joins the permanent team');

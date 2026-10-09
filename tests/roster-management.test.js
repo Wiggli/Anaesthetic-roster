@@ -12,13 +12,14 @@ c.byId('teamSlotFirst1').value='Joining Nurse';c.byId('teamPeriodNotes').value='
 c.byId('teamEffectiveDate').value='2026-10-20';c.selectTeamEffectiveDate();
 assert.equal(c.byId('teamSlotFirst1').value,'Joining Nurse');assert.equal(c.byId('teamPeriodNotes').value,'Nurse replacement');
 const previous=periods[1];
-const same={...previous,effective_from:'2026-10-20'};
+const same={...c.calculateNight('2026-10-20'),base_size:5,effective_from:'2026-10-20'};
 const unchanged=c.establishmentSeventhCycle(same,previous,same.effective_from);
 assert.deepEqual(clone(unchanged.cycle),previous.seventh_cycle);
 assert.equal(unchanged.anchor,c.calculateNight(same.effective_from).seventh);
 const replacement={...same,second1:'New Nurse'};
 const replaced=c.establishmentSeventhCycle(replacement,previous,replacement.effective_from);
-assert.deepEqual(clone(replaced.cycle),previous.seventh_cycle.map(n=>n===previous.second1?'New Nurse':n));
+assert.deepEqual(clone(replaced.cycle),previous.seventh_cycle.map(n=>n===same.second1?'New Nurse':n));
+const pair={...same,first1:'Joining One',pager:'Joining Two'};const paired=c.establishmentSeventhCycle(pair,previous,pair.effective_from);assert.deepEqual(clone(paired.cycle),previous.seventh_cycle.map(n=>n===same.first1?'Joining One':n===same.pager?'Joining Two':n));
 const six={...same,base_size:6,reliever:'Sixth Nurse'};
 const added=c.establishmentSeventhCycle(six,previous,six.effective_from);
 assert.deepEqual(clone(added.cycle),previous.seventh_cycle.slice(0,-1).concat(['Sixth Nurse','OT Nurse']));
