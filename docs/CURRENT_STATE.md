@@ -7,7 +7,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - The latest `main` branch is the source of truth.
 - `release.json` is the source of truth for the deployable app version and release notes.
 - `.project-state.json` contains machine-readable release, schema, verification and CI continuity data.
-- The current database contract is schema 54. Any later schema change must be a new forward-only migration and must update the machine-readable state.
+- The current database contract is schema 55. Any later schema change must be a new forward-only migration and must update the machine-readable state.
 - `AGENTS.md` contains the permanent product, clinical, security, design and deployment invariants.
 
 ## Runtime ownership
@@ -36,3 +36,5 @@ The routine GitHub Actions workflow now contains one `test` job, a conditional S
 Before starting substantial work in a fresh session, run `npm run context` and read this file plus `docs/DEVELOPMENT_WORKFLOW.md`. Update this note only when architecture, schema, workflow or durable project status changes. Do not use it as a running chat transcript.
 
 Release 53.0 adds guarded account access changes in set_account_access_v54, server protection for the current administrator and last active administrator, explicit role controls, verified save results, and clearer Google/email access guidance. No authentication identities are merged by name, and account deactivation does not alter the permanent rotation or historical roster records.
+
+Release 54.0 introduces `rotation_versions.base_size` (five or six), nullable Reliever only for five-person establishments, append-only future periods, guarded v49 administration and unchanged audit/realtime ownership. The 12 October 2026 period removes Yentl from future membership and starts André on Pager, with all earlier rows preserved. Five remains the minimum safe staffing threshold. Older engines receive a historical startup view capped before the first five-person period and must explicitly update before shared writes.

@@ -1,0 +1,92 @@
+// Isolated PostgreSQL-engine check; install PGlite temporarily, never as an app dependency.
+// PGLITE_MODULE=/absolute/path/to/@electric-sql/pglite/dist/index.js node scripts/verify-establishment-db.mjs
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const {PGlite}=await import(process.env.PGLITE_MODULE||'@electric-sql/pglite');
+const db=new PGlite();
+const source=fs.readFileSync('supabase/migrations/20261009070210_effective_roster_establishment_v55.sql','utf8');
+const block=(file,name)=>{const s=fs.readFileSync(file,'utf8');const a=s.indexOf('create or replace function public.'+name+'(');const b=s.indexOf('\n$$;',a);return s.slice(a,b+4);};
+// Auth service and shared-operation dependencies are test doubles; the migration,
+// period constraints, guarded v49 endpoint, clinical validator and RLS are real SQL.
+await db.exec(`
+create role anon; create role authenticated; create role service_role;
+create schema auth;
+create function auth.uid() returns uuid language sql as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+create function public.is_roster_admin() returns boolean language sql as $$select current_setting('test.admin',true)='true'$$;
+create function public.is_shift_member() returns boolean language sql as $$select auth.uid() is not null$$;
+create function public.current_roster_actor_name_v49() returns text language sql as $$select 'Verified test actor'::text$$;
+create function public.assert_app_write_compatible_v49(text) returns void language plpgsql as $$begin if $1 <> '54.0' then raise exception 'CLIENT_UPDATE_REQUIRED'; end if; if auth.uid() is null then raise exception 'PERMISSION_DENIED'; end if; end$$;
+create function public.claim_roster_operation_v48(uuid,text,date,bigint) returns boolean language sql as $$select true$$;
+create function public.assert_roster_fresh_v48(bigint) returns void language plpgsql as $$begin if $1<>0 then raise exception 'ROSTER_REVISION_CONFLICT'; end if; end$$;
+create function public.app_version_at_least_v49(text,text) returns boolean language sql as $$select $1::numeric >= $2::numeric$$;
+create function public.get_app_compatibility_v49(text) returns jsonb language sql as $$select '{}'::jsonb$$;
+create table public.rotation_versions(id uuid default gen_random_uuid() primary key,effective_from date unique not null,first1 text not null,first2 text not null,second1 text not null,second2 text not null,pager text not null,reliever text not null,seventh_anchor text not null,seventh_cycle jsonb not null,notes text,updated_by text,updated_at timestamptz not null default now());
+create table public.roster_settings(id integer primary key,published_until date);
+insert into public.roster_settings values(1,'2027-12-30');
+create table public.app_schema_version(id integer primary key,version integer,updated_at timestamptz);
+insert into public.app_schema_version values(1,54,now());
+create table public.app_compatibility(id integer primary key,minimum_write_version text,recommended_version text,updated_at timestamptz);
+insert into public.app_compatibility values(1,'41.0','53.0',now());
+create table public.app_access_signal(id integer,access_epoch bigint);
+create table public.night_team_identity(roster_date date,nickname text,tagline text,avatar_path text,accent_key text,symbol text,updated_by text,updated_by_user_id uuid,updated_at timestamptz);
+create table public.night_changes(id uuid default gen_random_uuid(),roster_date date,absent_name text,replacement_name text);
+create table public.night_overtime(id uuid default gen_random_uuid(),roster_date date,nurse_name text,allocation_key text);
+create table public.night_role_overrides(roster_date date primary key,assignments jsonb,reason text,updated_by text,updated_at timestamptz);
+create table public.night_role_override_history(roster_date date,action text,assignments jsonb,reason text,changed_by text,changed_at timestamptz);
+create table public.night_labour_order(roster_date date,first_part_name text,second_part_name text);
+create table public.night_plan_status(roster_date date,revision bigint);
+create table public.roster_operation_log(user_id uuid);
+create table public.roster_audit_events(actor_display_name text);
+create function public.get_roster_startup_v37() returns jsonb language sql as $$select jsonb_build_object('rotation_versions',(select jsonb_agg(to_jsonb(r) order by effective_from) from public.rotation_versions r),'roster_settings',(select to_jsonb(s) from public.roster_settings s limit 1))$$;
+-- Existing production grants and member read policy, including revoked internal functions.
+alter default privileges in schema public revoke execute on functions from public;
+grant usage on schema public,auth to authenticated;
+grant select on public.rotation_versions to authenticated;
+create policy member_read on public.rotation_versions for select to authenticated using(public.is_shift_member());
+`);
+const original=require('../tests/fixtures/establishment-periods.json')[0];
+await db.query('insert into rotation_versions(effective_from,first1,first2,second1,second2,pager,reliever,seventh_anchor,seventh_cycle) values($1,$2,$3,$4,$5,$6,$7,$8,$9)',[original.effective_from,original.first1,original.first2,original.second1,original.second2,original.pager,original.reliever,original.seventh_anchor,JSON.stringify(original.seventh_cycle)]);
+await db.exec(block('supabase/migrations/20261002153000_reliability_architecture_v48.sql','upsert_rotation_version_v48'));
+await db.exec(block('supabase/migrations/20261002180000_trust_boundary_v49.sql','upsert_rotation_version_v49'));
+await db.exec('grant execute on function public.upsert_rotation_version_v49(date,text,text,text,text,text,text,text,jsonb,text,uuid,bigint,text) to authenticated;');
+await db.exec(source);
+const c=require('../tests/helpers/roster-context.js');c.rotationVersions=require('../tests/fixtures/establishment-periods.json');
+for(let date='2026-06-30';date<='2027-12-30';date=c.addDays(date,4)){
+ const sql=(await db.query('select calculated_roster_v55($1) as night',[date])).rows[0].night;
+ const js=c.calculateNight(date);
+ for(const key of Object.keys(sql))assert.equal(sql[key],js[key],`${date} ${key}: server/client parity`);
+}
+const prior=(await db.query('select to_jsonb(r) as row from rotation_versions r where effective_from=$1',['2026-06-30'])).rows[0].row;
+assert.equal(prior.pager,'Yentl');assert.equal(prior.base_size,6);
+assert.equal((await db.query('select version from app_schema_version')).rows[0].version,55);
+await db.exec("select set_config('test.uid','00000000-0000-4000-8000-000000000001',false); select set_config('test.admin','true',false);");
+const oldSnapshot=(await db.query("select get_roster_startup_v49('53.0') as snapshot")).rows[0].snapshot;
+assert.equal(oldSnapshot.roster_settings.published_until,'2026-10-08');assert.equal(oldSnapshot.rotation_versions.length,1);
+assert.equal((await db.query("select get_roster_startup_v49('54.0') as snapshot")).rows[0].snapshot.rotation_versions.length,2);
+await db.query('select validate_night_plan_v48($1,$2)',['2026-10-12','{}']);
+await db.query('insert into night_changes(roster_date,absent_name) values($1,$2)',['2026-10-12','Shaun']);
+await assert.rejects(db.query('select validate_night_plan_v48($1,$2)',['2026-10-12','{}']),/PLAN_INCOMPLETE/);
+await db.query('insert into night_overtime(roster_date,nurse_name,allocation_key) values($1,$2,$3)',['2026-10-12','Cover Nurse','first1']);
+await db.query('select validate_night_plan_v48($1,$2)',['2026-10-12','{}']);
+await db.exec('delete from night_changes; delete from night_overtime;');
+await assert.rejects(db.exec("update rotation_versions set pager='Other' where effective_from='2026-06-30'"),/ROTATION_PERIOD_IMMUTABLE/);
+await assert.rejects(db.exec("delete from rotation_versions where effective_from='2026-10-12'"),/ROTATION_PERIOD_IMMUTABLE/);
+const args=['2026-11-01','Shaun','James','Michael G','Michael D','Andre','New Nurse','Andre',JSON.stringify(['Shaun','James','Michael G','Michael D','Andre','New Nurse','OT Nurse']),'Six-person period','00000000-0000-4000-8000-000000000002',0,'54.0'];
+const rpc='select upsert_rotation_version_v49('+args.map((_,i)=>'$'+(i+1)).join(',')+')';
+await db.exec("select set_config('test.admin','false',false);");
+await assert.rejects(db.query(rpc,args),/PERMISSION_DENIED/);
+await db.exec("select set_config('test.admin','true',false);");
+await assert.rejects(db.query(rpc,[...args.slice(0,-1),'53.0']),/CLIENT_UPDATE_REQUIRED/);
+await assert.rejects(db.query(rpc,args.map((value,i)=>i===11?1:value)),/ROSTER_REVISION_CONFLICT/);
+await db.exec('set role authenticated;');
+await assert.rejects(db.exec("update rotation_versions set pager='Other'"),/permission denied/);
+await db.query(rpc,args);
+await db.exec('reset role;');
+assert.equal((await db.query("select calculated_roster_v55('2026-11-01') as night")).rows[0].night.reliever,'New Nurse');
+assert.equal((await db.query("select calculated_roster_v55('2026-10-12') as night")).rows[0].night.pager,'Andre');
+await assert.rejects(db.query(rpc,args),/ROTATION_VERSION_EXISTS/);
+await db.exec('set role anon;');await assert.rejects(db.exec('select * from rotation_versions'),/permission denied/);await db.exec('reset role;');
+console.log('PostgreSQL migration, 138-night client/server parity, old-client view, clinical staffing, period immutability, admin/member/anon permissions and 5-to-6 RPC checks passed.');
+await db.close();

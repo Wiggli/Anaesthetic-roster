@@ -1,7 +1,7 @@
 {
   "name": "anaesthetic-night-roster",
   "private": true,
-  "version": "53.0",
+  "version": "54.0",
   "engines": {
     "node": "22.x"
   },
@@ -9,7 +9,7 @@
     "context": "node scripts/project-context.mjs",
     "release": "node scripts/release.mjs",
     "verify:release": "node --check scripts/release.mjs && node --check scripts/generate-runtime.mjs && node --check scripts/verify-release.mjs && node --check scripts/project-context.mjs && node scripts/verify-release.mjs",
-    "verify:fast": "npm run generate:runtime && npm run verify:release && tsc --noEmit && node tests/account-access.test.js && node tests/roster.test.js && node tests/logic-foundation.test.js && node tests/concurrency-contract.test.js && node tests/safety-coverage.test.js && node tests/night-intelligence.test.js && node tests/night-ai.test.js && node tests/night-welcome.test.js && node tests/source-architecture.test.js && node tests/product-coherence.test.js && node tests/product-interactions.test.js && node tests/product-layout-contract.test.js && vite build && node tests/build-artifact.test.js",
+    "verify:fast": "npm run generate:runtime && npm run verify:release && tsc --noEmit && node tests/account-access.test.js && node tests/roster.test.js && node tests/establishment.test.js && node tests/logic-foundation.test.js && node tests/concurrency-contract.test.js && node tests/safety-coverage.test.js && node tests/night-intelligence.test.js && node tests/night-ai.test.js && node tests/night-welcome.test.js && node tests/source-architecture.test.js && node tests/product-coherence.test.js && node tests/product-interactions.test.js && node tests/product-layout-contract.test.js && vite build && node tests/build-artifact.test.js",
     "verify:ci": "npm test && tsc --noEmit && vite build && npm run verify:build",
     "verify:browser": "npx playwright test --config=playwright.config.js",
     "verify:resilience": "npx playwright test --config=playwright.resilience.config.js",
@@ -17,7 +17,7 @@
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1",
     "verify:build": "node tests/build-artifact.test.js",
-    "test": "npm run verify:release && node tests/roster.test.js && node tests/logic-foundation.test.js && node tests/concurrency-contract.test.js && node tests/reliability-runtime.test.mjs && node tests/property-invariants.test.js && node tests/chaos-contract.test.js && node tests/safety-coverage.test.js && node tests/night-intelligence.test.js && node tests/night-ai.test.js && node tests/night-welcome.test.js && node tests/startup-recovery.test.js && node tests/account-access.test.js && node tests/security-hardening.test.js && node tests/chat.test.js && node tests/push.test.js && node tests/health-smoke.test.js && node tests/recovery-longevity.test.js && node tests/backup-restore-drill.test.js && node tests/performance-budget.test.js && node tests/source-architecture.test.js && node tests/product-coherence.test.js && node tests/product-interactions.test.js && node tests/product-layout-contract.test.js && node tests/development-workflow.test.js",
+    "test": "npm run verify:release && node tests/roster.test.js && node tests/establishment.test.js && node tests/logic-foundation.test.js && node tests/concurrency-contract.test.js && node tests/reliability-runtime.test.mjs && node tests/property-invariants.test.js && node tests/chaos-contract.test.js && node tests/safety-coverage.test.js && node tests/night-intelligence.test.js && node tests/night-ai.test.js && node tests/night-welcome.test.js && node tests/startup-recovery.test.js && node tests/account-access.test.js && node tests/security-hardening.test.js && node tests/chat.test.js && node tests/push.test.js && node tests/health-smoke.test.js && node tests/recovery-longevity.test.js && node tests/backup-restore-drill.test.js && node tests/performance-budget.test.js && node tests/source-architecture.test.js && node tests/product-coherence.test.js && node tests/product-interactions.test.js && node tests/product-layout-contract.test.js && node tests/development-workflow.test.js",
     "generate:runtime": "node scripts/generate-runtime.mjs",
     "verify:generated": "node scripts/generate-runtime.mjs --check"
   },

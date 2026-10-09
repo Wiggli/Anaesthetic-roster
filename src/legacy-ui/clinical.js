@@ -69,7 +69,7 @@ function quickActionsModel(){
   var base=cur(),plan=staffingPlan(base),tasks=workflowTaskDetails(base,plan),copy=selectedNightCopy(base.date),count=Number(plan.count||0),blocked=sharedWritesBlocked(),offline=!navigator.onLine||forcedOfflineSession,canEdit=!blocked&&!offline,planLabel='';
   if(count<5)planLabel='Cover required before the plan can be finalised';
   else if(tasks.length)planLabel=tasks.length+' decision'+(tasks.length===1?'':'s')+' still to resolve';
-  else if(count===6)planLabel='Standard plan ready';
+  else if(count===baseEstablishmentSize(base))planLabel='Standard plan ready';
   else planLabel='Plan ready';
   return{contextLabel:copy.label,dateLabel:fmt(base.date),staffingLabel:count+' nurse'+(count===1?'':'s'),planLabel:planLabel,attentionCount:tasks.length,canEdit:canEdit,editReason:offline?'Reconnect to edit the shared roster.':blocked?sharedWriteNotice():''};
 }
@@ -294,11 +294,11 @@ function renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction
 }
 
 function cur(){
-  var base=Object.assign({},localCur());base.mode='6';return applyNightRoleOverride(base);
+  var base=Object.assign({},localCur());base.mode=String(baseEstablishmentSize(base));return applyNightRoleOverride(base);
 }
 
 function rawBaseForDate(date){
-  var original=R.find(function(r){return r.date===date})||localCur();var base=Object.assign({},original);base.mode='6';return base;
+  var original=R.find(function(r){return r.date===date})||localCur();var base=Object.assign({},original);base.mode=String(baseEstablishmentSize(base));return base;
 }
 
 function roleAssignmentKeys(assignments){return assignments&&assignments.mode==='5'?FIVE_NIGHT_ROLE_KEYS:assignments&&assignments.mode==='7'?SEVEN_NIGHT_ROLE_KEYS:CORE_ALLOCATION_KEYS}
@@ -307,9 +307,9 @@ var SEVEN_NIGHT_ROLE_KEYS=['first1','first2','second1','second2','pager','reliev
 function validRoleAssignments(assignments){if(!assignments||typeof assignments!=='object'||Array.isArray(assignments))return false;var keys=roleAssignmentKeys(assignments),custom=assignments.mode==='5'||assignments.mode==='7',expected=(custom?keys.concat(['mode']):keys).slice().sort(),supplied=Object.keys(assignments).sort();if(expected.length!==supplied.length||expected.some(function(key,index){return supplied[index]!==key}))return false;var values=keys.map(function(key){return String(assignments[key]||'').trim()});return values.every(Boolean)&&new Set(values.map(function(name){return canonicalNurseName(name)})).size===keys.length}
 function sameNightNameSet(left,right){if(left.length!==right.length)return false;var wanted=left.map(function(name){return canonicalNurseName(name)}).sort(),actual=right.map(function(name){return canonicalNurseName(name)}).sort();return wanted.every(function(name,index){return name===actual[index]})}
 function nightWorkingNames(base){var raw=rawBaseForDate(base.date),changes=changesFor(base.date),overtime=overtimeFor(base.date),absent=changes.map(function(change){return canonicalNurseName(change.absent_name)}),names=[];function add(name){name=String(name||'').trim();if(name&&!names.some(function(saved){return canonicalNurseName(saved)===canonicalNurseName(name)}))names.push(name)}CORE_ALLOCATION_KEYS.forEach(function(key){if(absent.indexOf(canonicalNurseName(raw[key]))<0)add(raw[key])});changes.forEach(function(change){add(change.replacement_name)});overtime.forEach(function(entry){add(entry.nurse_name)});return names}
-function validRoleAssignmentsForNight(base,assignments){if(!validRoleAssignments(assignments))return false;var working=nightWorkingNames(base),assigned;if(assignments.mode==='5'){assigned=FIVE_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===5&&sameNightNameSet(working,assigned)}if(assignments.mode==='7'){assigned=SEVEN_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===7&&sameNightNameSet(working,assigned)}return true}
+function validRoleAssignmentsForNight(base,assignments){if(!validRoleAssignments(assignments))return false;var working=nightWorkingNames(base),assigned;if(assignments.mode==='5'){assigned=FIVE_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===5&&sameNightNameSet(working,assigned)}if(assignments.mode==='7'){assigned=SEVEN_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===7&&sameNightNameSet(working,assigned)}if(baseEstablishmentSize(base)===5){assigned=CORE_ALLOCATION_KEYS.map(function(key){return assignments[key]});return working.length===6&&sameNightNameSet(working,assigned)}return true}
 function customFiveAssignmentsFor(base){var stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;return validRoleAssignmentsForNight(base,assignments)&&assignments.mode==='5'?Object.assign({},assignments):null}
-function applyNightRoleOverride(base){var copy=Object.assign({},base),stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;if(validRoleAssignments(assignments)&&assignments.mode!=='5'){CORE_ALLOCATION_KEYS.forEach(function(key){copy[key]=assignments[key]});if(assignments.mode==='7'){copy.seventh=assignments.seventh;copy.mode='7'}}return copy}
+function applyNightRoleOverride(base){var copy=Object.assign({},base),stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;if(validRoleAssignments(assignments)&&assignments.mode!=='5'&&(baseEstablishmentSize(base)===6||validRoleAssignmentsForNight(base,assignments))){CORE_ALLOCATION_KEYS.forEach(function(key){copy[key]=assignments[key]});if(assignments.mode==='7'){copy.seventh=assignments.seventh;copy.mode='7'}else copy.mode='6'}return copy}
 function baseForDate(date){return applyNightRoleOverride(rawBaseForDate(date))}
 
 function seventhRotationChoice(base,changes){
@@ -333,11 +333,13 @@ function seventhRotationChoice(base,changes){
 function staffingPlan(base){
   base=applyNightRoleOverride(base);var changes=changesFor(base.date),overtime=overtimeFor(base.date),absentKeys=[],openKeys=[],legacyCover=0;
   changes.forEach(function(c){var key=allocationKeyForName(base,c.absent_name);if(!key)return;if(absentKeys.indexOf(key)<0)absentKeys.push(key);if(c.replacement_name)legacyCover++;else if(openKeys.indexOf(key)<0)openKeys.push(key)});
-  var count=6-absentKeys.length+legacyCover+overtime.length,customFive=customFiveAssignmentsFor(base);
+  var size=baseEstablishmentSize(base),count=size-absentKeys.length+legacyCover+overtime.length,customFive=customFiveAssignmentsFor(base);
   if(count===5&&customFive){var assignedNames=FIVE_NIGHT_ROLE_KEYS.map(function(key){return customFive[key]}),usedOvertime=overtime.filter(function(entry){return assignedNames.some(function(name){return canonicalNurseName(name)===canonicalNurseName(entry.nurse_name)})});return{changes:changes,overtime:overtime,absentKeys:absentKeys,openKeys:openKeys,availableKeys:[],count:count,coverageKey:'custom',coverageChoices:[],coverageSource:'night-only',requiresCoverageChoice:false,requiresSeventhDecision:false,seventhDecision:null,validAssignments:usedOvertime,unassigned:[],unresolved:[],coreComplete:true,extraCount:0,complete:true,seventhChoice:null,seventhNurse:null,seventhVacatedKey:null,customFiveAssignments:customFive}}
+  if(size===5&&count>=6&&!base.reliever&&openKeys.indexOf('reliever')<0)openKeys.push('reliever');
+  var customSix=nightRoleOverrides[base.date]&&nightRoleOverrides[base.date].assignments;if(size===5&&count===6&&customSix&&!customSix.mode&&validRoleAssignmentsForNight(base,customSix)){var customUsed=overtime.filter(function(entry){return CORE_ALLOCATION_KEYS.some(function(key){return sameNurse(customSix[key],entry.nurse_name)})});return{changes:changes,overtime:overtime,absentKeys:absentKeys,openKeys:[],availableKeys:[],count:count,coverageKey:null,coverageChoices:[],coverageSource:'night-only',requiresCoverageChoice:false,requiresSeventhDecision:false,seventhDecision:null,validAssignments:customUsed.map(function(entry){var copy=Object.assign({},entry);copy.allocation_key=CORE_ALLOCATION_KEYS.find(function(key){return sameNurse(customSix[key],entry.nurse_name)});return copy}),unassigned:[],unresolved:[],coreComplete:true,extraCount:0,complete:true,seventhChoice:null,seventhNurse:null,seventhVacatedKey:null}}
   var seventhChoice=null,seventhDecision=null,requiresSeventhDecision=false;
   if(count>=7){seventhChoice=seventhRotationChoice(base,changes);if(seventhChoice.source==='overtime')seventhDecision='overtime';else{var savedRotation=overtime.some(function(o){return o.allocation_key===seventhChoice.vacatedKey}),savedOvertime=overtime.some(function(o){return o.allocation_key==='seventh'});seventhDecision=seventhDecisionDrafts[base.date]||(savedOvertime?'overtime':savedRotation?'rotation':null);requiresSeventhDecision=!seventhDecision}seventhChoice.decision=seventhDecision;if(seventhDecision){var seventhOpenKey=seventhDecision==='rotation'?seventhChoice.vacatedKey:'seventh';if(openKeys.indexOf(seventhOpenKey)<0)openKeys.push(seventhOpenKey)}}
-  var coverageKey=null,coverageChoices=[],coverageSource='';if(count===5&&openKeys.length){if(openKeys.indexOf('reliever')>=0){coverageKey='reliever';coverageSource='automatic'}else if(openKeys.indexOf('pager')>=0){coverageKey='pager';coverageSource='automatic'}else{coverageChoices=openKeys.filter(function(key){return['first1','first2','second1','second2'].indexOf(key)>=0});var stored=fiveCoverFor(base.date);if(coverageChoices.length===1){coverageKey=coverageChoices[0];coverageSource='automatic'}else if(stored&&coverageChoices.indexOf(stored.coverage_key)>=0){coverageKey=stored.coverage_key;coverageSource='saved'}}}
+  var coverageKey=null,coverageChoices=[],coverageSource='';if(size===6&&count===5&&openKeys.length){if(openKeys.indexOf('reliever')>=0){coverageKey='reliever';coverageSource='automatic'}else if(openKeys.indexOf('pager')>=0){coverageKey='pager';coverageSource='automatic'}else{coverageChoices=openKeys.filter(function(key){return['first1','first2','second1','second2'].indexOf(key)>=0});var stored=fiveCoverFor(base.date);if(coverageChoices.length===1){coverageKey=coverageChoices[0];coverageSource='automatic'}else if(stored&&coverageChoices.indexOf(stored.coverage_key)>=0){coverageKey=stored.coverage_key;coverageSource='saved'}}}
   var requiresCoverageChoice=count===5&&coverageChoices.length>1&&!coverageKey,availableKeys=requiresCoverageChoice?[]:openKeys.filter(function(key){return key!==coverageKey}),usedAllocationKeys={},usedOvertimeIds={};var validAssignments=overtime.filter(function(o){var valid=availableKeys.indexOf(o.allocation_key)>=0&&!usedAllocationKeys[o.allocation_key]&&!usedOvertimeIds[o.id];if(valid){usedAllocationKeys[o.allocation_key]=true;usedOvertimeIds[o.id]=true}return valid}),assignedIds=validAssignments.map(function(o){return o.id}),unassigned=overtime.filter(function(o){return assignedIds.indexOf(o.id)<0}),unresolved=availableKeys.filter(function(key){return !validAssignments.some(function(o){return o.allocation_key===key})}),coreComplete=!requiresCoverageChoice&&!requiresSeventhDecision&&unresolved.length===0&&count>=5;
   return{changes:changes,overtime:overtime,absentKeys:absentKeys,openKeys:openKeys,availableKeys:availableKeys,count:count,coverageKey:coverageKey,coverageChoices:coverageChoices,coverageSource:coverageSource,requiresCoverageChoice:requiresCoverageChoice,requiresSeventhDecision:requiresSeventhDecision,seventhDecision:seventhDecision,validAssignments:validAssignments,unassigned:unassigned,unresolved:unresolved,coreComplete:coreComplete,extraCount:Math.max(0,count-7),complete:coreComplete,seventhChoice:seventhChoice,seventhNurse:seventhChoice?seventhChoice.nurse:null,seventhVacatedKey:seventhChoice?seventhChoice.vacatedKey:null};
 }
@@ -353,7 +355,7 @@ function planIsProvisional(base){
 
 function applyChanges(r){
   r=applyNightRoleOverride(r);var copy=Object.assign({},r),fields=['first1','first2','second1','second2','pager','reliever','fullLW','seventh'];
-  copy.mode='6';
+  copy.mode=String(baseEstablishmentSize(r));
   var changes=changesFor(r.date),plan=staffingPlan(copy);
   if(plan.customFiveAssignments){FIVE_NIGHT_ROLE_KEYS.forEach(function(key){copy[key]=plan.customFiveAssignments[key]});copy.mode='5';copy.staffingAdjusted=true;copy.pendingAllocations=[];copy.additionalStaff=[];return copy}
   var customSeven=nightRoleOverrides[r.date]&&nightRoleOverrides[r.date].assignments;
@@ -366,6 +368,7 @@ function applyChanges(r){
     fields.forEach(function(k){if(copy[k]===change.absent_name)copy[k]=change.replacement_name});
   });
   plan.validAssignments.forEach(function(o){copy[o.allocation_key]=o.nurse_name});
+  if(baseEstablishmentSize(r)===5){copy.fullLW=copy.pager;if(plan.count===6&&nightRoleOverrides[r.date]&&validRoleAssignmentsForNight(r,nightRoleOverrides[r.date].assignments)&&!nightRoleOverrides[r.date].assignments.mode)copy.mode='6'}
   if(plan.requiresCoverageChoice){
     plan.openKeys.forEach(function(key){copy[key]='Reliever allocation must be chosen first'});
     copy.mode='5';copy.staffingAdjusted=true;copy.relieverChoiceRequired=true;copy.pendingAllocations=plan.openKeys.slice();
@@ -382,7 +385,7 @@ function applyChanges(r){
     return copy;
   }
   if(plan.count===5&&plan.coverageKey){applyFiveVacancy(copy,plan.coverageKey);copy.staffingAdjusted=true;copy.pendingAllocations=[];return copy}
-  if(plan.unresolved.length>1){
+  if(plan.count<5||plan.unresolved.length>1){
     plan.unresolved.forEach(function(key){copy[key]='Uncovered • additional cover required'});
     copy.mode='5';copy.staffingAdjusted=true;copy.understaffedCount=plan.count;copy.fullLW='';copy.pendingAllocations=plan.unresolved.slice();
   }
@@ -640,7 +643,7 @@ function allocationPreview(base){
 }
 
 function suggestedFiveRoleAssignments(base){var raw=rawBaseForDate(base.date),names=nightWorkingNames(base);if(names.length!==5)return null;var assignments={mode:'5'},used=[],full=[raw.pager,raw.reliever].find(function(name){return names.some(function(active){return canonicalNurseName(active)===canonicalNurseName(name)})});assignments.fullLW=full||names[0];used.push(assignments.fullLW);['first1','first2','second1','second2'].forEach(function(key){var rostered=raw[key];if(names.some(function(active){return canonicalNurseName(active)===canonicalNurseName(rostered)})&&!used.some(function(name){return canonicalNurseName(name)===canonicalNurseName(rostered)})){assignments[key]=rostered;used.push(rostered)}});['first1','first2','second1','second2'].forEach(function(key){if(assignments[key])return;var next=names.find(function(name){return !used.some(function(saved){return canonicalNurseName(saved)===canonicalNurseName(name)})});assignments[key]=next;used.push(next)});return validRoleAssignmentsForNight(base,assignments)?assignments:null}
-function currentRoleAssignments(base){var stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;if(validRoleAssignmentsForNight(base,assignments))return Object.assign({},assignments);var working=nightWorkingNames(base);if(working.length===5)return suggestedFiveRoleAssignments(base);var current=baseForDate(base.date),normal={};CORE_ALLOCATION_KEYS.forEach(function(key){normal[key]=current[key]});if(working.length===7){var extra=working.find(function(name){return !CORE_ALLOCATION_KEYS.some(function(key){return sameNurse(current[key],name)})});normal.mode='7';normal.seventh=extra||working[6]}return normal}
+function currentRoleAssignments(base){var stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;if(validRoleAssignmentsForNight(base,assignments))return Object.assign({},assignments);var working=nightWorkingNames(base);if(working.length===5)return suggestedFiveRoleAssignments(base);var current=applyChanges(baseForDate(base.date)),normal={};CORE_ALLOCATION_KEYS.forEach(function(key){normal[key]=current[key]});if(working.length===7){var extra=working.find(function(name){return !CORE_ALLOCATION_KEYS.some(function(key){return sameNurse(current[key],name)})});normal.mode='7';normal.seventh=extra||working[6]}return normal}
 function roleEditorAssignments(base){var draft=nightRoleOverrideDrafts[base.date];if(draft&&validRoleAssignmentsForNight(base,draft.assignments))return Object.assign({},draft.assignments);return currentRoleAssignments(base)}
 function roleAssignmentsDiffer(left,right){if(!left||!right||String(left.mode||'6')!==String(right.mode||'6'))return true;return roleAssignmentKeys(left).some(function(key){return String(left[key]||'')!==String(right[key]||'')})}
 
@@ -794,7 +797,7 @@ function renderRoster(){
   byId('range').innerHTML='<b>'+R.length+'</b> published nights • '+fmt(R[0].date)+' to '+fmt(R[R.length-1].date);
   var cards=[];
   R.forEach(function(original,i){
-    var base=Object.assign({},original);base.mode='6';
+    var base=Object.assign({},original);base.mode=String(baseEstablishmentSize(base));
     var r=applyChanges(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),plan=staffingPlan(base),count=plan.count,extras=additionalNurses(plan),liveCount=changes.length+overtime.length,labourPending=r.mode!=='5'&&!labourOrderFor(r),dutyTiming=nightDutyTiming(base.date);
     var status=planIsProvisional(base)?'Provisional • staffing decision required':labourPending?'Labour Ward order still required':liveCount?liveCount+' live staffing update'+(liveCount>1?'s':''):dutyTiming.isClockChange?'Clock change night • equal handover '+dutyTiming.handoverDisplay:'Standard calculated rotation';
     var displayMode=String(Math.max(5,Math.min(7,count)));
