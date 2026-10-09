@@ -1,14 +1,15 @@
 {
-  "version": "53.0",
+  "version": "54.0",
   "date": "9 October 2026",
-  "title": "Clear sign-in and safer account management",
-  "summary": "Clearer email and Google access, verified account changes and simpler administrator controls.",
+  "title": "Five-person establishment and future roster periods",
+  "summary": "Five permanent nurses from 12 October, with one-night Pager rotation and configurable future team periods.",
   "changes": [
-    "Accounts have explicit member or administrator access for each approved sign-in email.",
-    "Account changes are verified on the server with saving, error and stale-change feedback.",
-    "Adding an existing email no longer resets its role or reactivates it.",
-    "The account search is unobstructed and account actions open from Manage.",
-    "Google asks which account to use, and deactivated accounts receive a clear explanation."
+    "From 12 October 2026 the permanent roster has two First Part nurses, two Second Part nurses and one full-night Pager, starting with André Bartolo.",
+    "Pager advances once on each four-day roster night; all nights through 8 October remain unchanged.",
+    "Yentl leaves future permanent rostering while historical records and account access remain separate.",
+    "Administrators can preview and schedule future five- or six-person periods, joins, leaves and starting positions in Roster Management.",
+    "Absences, overtime, Labour Ward sharing and breaks follow the effective establishment, while five remains the minimum safe staffing threshold.",
+    "The tutorial explains normal five-person nights and future roster periods; older clients must update before editing the shared roster."
   ],
   "update_policy": "normal"
 }
