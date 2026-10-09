@@ -1638,6 +1638,8 @@ test('typed administrator accounts separate pending access and support fast filt
     } }));
     document.getElementById('today').classList.add('hidden');
     document.getElementById('admin').classList.remove('hidden');
+    document.body.setAttribute('data-view', 'admin');
+    window.dispatchEvent(new CustomEvent('roster:viewchange'));
     window.switchAdminTab('home', false);
   });
 
@@ -1649,8 +1651,12 @@ test('typed administrator accounts separate pending access and support fast filt
   await expect(page.locator('#adminAccountsExperience')).toContainText('Pending access');
   await captureReview(page, 'administrator');
   await expect(page.locator('#adminAccountsExperience')).toContainText('Current account');
+  await page.locator('.adminAddAccount > summary').click();
   await expect(page.locator('#accountName')).toHaveAttribute('placeholder', 'Nurse name');
-  await expect(page.locator('#adminAccountsExperience button', { hasText: 'Deactivate' }).first()).toBeDisabled();
+  await expect(page.locator('#adminAccountsExperience button', { hasText: 'Your account' })).toBeDisabled();
+  await page.locator('.adminAccountRow').filter({ hasText: 'Maria Borg' }).getByRole('button', { name: 'Manage', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: 'Access level for Maria Borg' })).toBeVisible();
+  await expect(page.locator('.adminAccountRow').filter({ hasText: 'Maria Borg' }).getByRole('button', { name: 'Deactivate', exact: true })).toBeEnabled();
   await expect(page.locator('#adminAccess')).toBeVisible();
   await expect(page.locator('#adminAccess .adminDetailNav')).toContainText('People & Access');
   if (test.info().project.name === 'mobile-chromium') {
@@ -1663,9 +1669,21 @@ test('typed administrator accounts separate pending access and support fast filt
     expect(bounds.actionRight).toBeLessThanOrEqual(bounds.cardRight);
     expect(bounds.actionBottom).toBeLessThanOrEqual(bounds.cardBottom);
   }
+  await page.evaluate(() => { window.__adminAccessActions = []; window.addEventListener('roster:admin-account-action', event => window.__adminAccessActions.push(event.detail)); });
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('combobox', { name: 'Access level for Maria Borg' }).selectOption('admin');
+  await expect.poll(() => page.evaluate(() => window.__adminAccessActions.at(-1))).toEqual({ action: 'role', value: 'maria@example.test', role: 'admin' });
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('.adminAccountRow').filter({ hasText: 'Maria Borg' }).getByRole('button', { name: 'Deactivate', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.__adminAccessActions.at(-1)?.action)).toBe('toggle');
+  await captureReview(page, 'administrator-manage');
+  await page.evaluate(() => window.setThemePreference('dark'));
+  await captureReview(page, 'administrator-manage-dark');
+  await page.locator('#adminAccountsExperience input[type="search"]').scrollIntoViewIfNeeded();
+  await expect(page.locator('#reactScrollChrome .scrollGlassHeader')).toBeHidden();
   await page.locator('#adminAccountsExperience input[type="search"]').fill('Inactive');
   await expect(page.locator('#adminAccountsExperience')).toContainText('Inactive Member');
-  await expect(page.locator('#adminAccountsExperience')).not.toContainText('Andre Bartolo');
+  await expect(page.locator('#adminAccountsExperience .adminAccountRow').filter({ hasText: 'Andre Bartolo' })).toHaveCount(0);
 });
 
 test('one quiet glossy scroll bar appears consistently after page headers leave the viewport', async ({ page }) => {
