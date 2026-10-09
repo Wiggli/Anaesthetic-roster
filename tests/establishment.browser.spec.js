@@ -5,10 +5,11 @@ for(const theme of ['light','dark'])test(`effective establishment and future-per
  await openReview(page);
  await page.evaluate(({periods,theme})=>{
   appNow=()=>new Date('2026-10-09T08:00:00Z');
-  rotationVersions=periods;schemaVersion=55;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-12');
+  rotationVersions=periods;schemaVersion=56;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-12');
   currentUserProfile.user_role='admin';setThemePreference(theme);render();
  },{periods,theme});
  await expect(page.locator('#modeStatus')).toHaveText('5 nurses');
+ expect(await page.evaluate(()=>Array.from({length:6},(_,i)=>calculateNight(addDays('2026-10-12',i*4)).pager))).toEqual(['Andre','Michael G','James','Shaun','Michael D','Andre']);
  await expect(page.locator('#personalNightCard')).toContainText('Full-night cover');
  await page.evaluate(()=>show('changes'));
  expect(await page.evaluate(()=>workflowNeedsConfirmation(cur(),0))).toBe(false);

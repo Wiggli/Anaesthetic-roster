@@ -1,15 +1,12 @@
 {
-  "version": "54.0",
+  "version": "54.1",
   "date": "9 October 2026",
-  "title": "Five-person establishment and future roster periods",
-  "summary": "Five permanent nurses from 12 October, with one-night Pager rotation and configurable future team periods.",
+  "title": "Preserve Pager continuity at the five-person transition",
+  "summary": "The 12 October establishment now preserves the existing Pager queue with Yentl removed.",
   "changes": [
-    "From 12 October 2026 the permanent roster has two First Part nurses, two Second Part nurses and one full-night Pager, starting with André Bartolo.",
-    "Pager advances once on each four-day roster night; all nights through 8 October remain unchanged.",
-    "Yentl leaves future permanent rostering while historical records and account access remain separate.",
-    "Administrators can preview and schedule future five- or six-person periods, joins, leaves and starting positions in Roster Management.",
-    "Absences, overtime, Labour Ward sharing and breaks follow the effective establishment, while five remains the minimum safe staffing threshold.",
-    "The tutorial explains normal five-person nights and future roster periods; older clients must update before editing the shared roster."
+    "Corrected the future starting positions so Pager follows Andr\u00e9, Michael Galea, James, Shaun, Michael Debono, then Andr\u00e9 again, advancing on each four-day roster night.",
+    "The original six-person period, all nights through 8 October, clinical records and historical records remain unchanged.",
+    "Future five- and six-person period management, staffing, Labour Ward, breaks and account access retain their existing behavior."
   ],
   "update_policy": "normal"
 }

@@ -16,7 +16,13 @@ for(const before of published.filter(row=>row.date<='2026-10-08'))assert.deepEqu
 assert.equal(c.verifyReference().hash,'9f1d88bc');
 assert.equal(c.verifyReference().mismatches,0);
 assert.equal(c.R.length,138);
-const expected=['Andre','Michael D','Michael G','James','Shaun','Andre'];
+// Derive the queue from the original six-person history, independently of the new seed.
+const originalPager=step=>slots[(4-step%6+6)%6];
+const originalQueue=Array.from({length:7},(_,i)=>originalPager(october8Steps+i+1));
+assert.deepEqual(originalQueue,['Andre','Michael G','James','Shaun','Yentl','Michael D','Andre']);
+const expected=originalQueue.filter(name=>name!=='Yentl');
+assert.equal(expected[expected.length-2],c.calculateNight('2026-10-08').pager,'last previous Pager returns last before Andre repeats');
+assert.notEqual(expected[1],'Michael D','no premature Pager return at the boundary');
 expected.forEach((name,i)=>assert.equal(c.calculateNight(c.addDays('2026-10-12',i*4)).pager,name));
 for(const row of c.R.filter(row=>row.date>='2026-10-12')){
  assert.equal(row.mode,'5');assert.equal(row.reliever,null);
