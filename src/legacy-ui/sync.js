@@ -267,8 +267,9 @@ async function reconcileApplication(reason){
 }
 
 function updateOfflineControls(){
-  var offline=!navigator.onLine||forcedOfflineSession,writeBlocked=sharedWritesBlocked(),ids=['saveAllocationsBtn','saveNightRolesBtn','resetNightRolesBtn','saveTeamVersionBtn','previewExtendBtn','extendBtn'];
-  ids.forEach(function(id){var el=byId(id);if(el)el.disabled=offline||writeBlocked||el.dataset.workflowBlocked==='true'});
+  var offline=!navigator.onLine||forcedOfflineSession,writeBlocked=sharedWritesBlocked(),ids=['saveAllocationsBtn','saveNightRolesBtn','resetNightRolesBtn','saveTeamVersionBtn','confirmTeamVersionBtn','previewExtendBtn','extendBtn'];
+  ids.forEach(function(id){var el=byId(id);if(el)el.disabled=offline||writeBlocked||((id==='saveTeamVersionBtn'||id==='confirmTeamVersionBtn')&&teamPeriodSaving)||el.dataset.workflowBlocked==='true'});
+  updateTeamSavingControls();
   var addAccount=byId('addAccountBtn');if(addAccount)addAccount.disabled=offline;
   var cover=byId('saveFiveCoverBtn');if(cover)cover.disabled=offline||writeBlocked;
   var labour=byId('saveLabourOrderBtn');if(labour)labour.disabled=offline||writeBlocked;

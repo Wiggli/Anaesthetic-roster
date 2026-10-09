@@ -19,13 +19,13 @@ function prepareChangesView(){
 }
 function openScreenInfo(kind){
   var dialog=byId('screenInfoSheet'),title=byId('screenInfoTitle'),intro=byId('screenInfoIntro'),content=byId('screenInfoContent');if(!dialog||!title||!intro||!content)return;
-  var items=kind==='breaks'?[['What you see','The break plan always follows the selected night and its latest shared staffing.'],['What happens automatically','Changes to absences, overtime or roles update Night and Breaks together.'],['When the plan is provisional','Breaks cannot be finalised until every required staffing decision is complete.']]:[['Start with Staffing','Record only confirmed absences and overtime nurses.'],['Allocation is usually automatic','A standard six-nurse night uses the rostered roles, with Pager first and Reliever second in Labour Ward.'],['Confirm only changes','A final review is needed only after a staffing change or an agreed night-only role change.']];
+  var items=kind==='breaks'?[['What you see','The break plan always follows the selected night and its latest shared staffing.'],['What happens automatically','Changes to absences, overtime or roles update Night and Breaks together.'],['When the plan is provisional','Breaks cannot be finalised until every required staffing decision is complete.']]:[['Start with Staffing','Record only confirmed absences and overtime nurses.'],['Allocation is usually automatic','A standard five-person night has one full-night Pager. At six, Pager works First Part and Reliever works Second Part in Labour Ward.'],['Confirm only changes','A final review is needed only after a staffing change or an agreed night-only role change.']];
   title.textContent=kind==='breaks'?'About Breaks':'About Staffing changes';intro.textContent=kind==='breaks'?'A live view of the selected night’s breaks.':'A three-step path for exceptional changes.';if(typeof window.renderReactScreenInfo==='function')window.renderReactScreenInfo(items);else content.innerHTML=items.map(function(item){return'<section class="infoSheetItem"><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p></section>'}).join('');if(!dialog.open)dialog.showModal();if(typeof window.CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:screeninfo',{detail:{items:items}}));
 }
 
 function syncDateInputs(date){
   ['datePick','changesDatePick','breakDatePick'].forEach(function(id){var el=byId(id);if(!el)return;el.min=R[0].date;el.max=R[R.length-1].date;el.value=date;updatePrettyDate(el)});
-  var compactDateLabel=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});Array.prototype.forEach.call(document.querySelectorAll('.rosterDateControl'),function(control){control.setAttribute('data-date-label',compactDateLabel)});
+  var compactDateLabel=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});Array.prototype.forEach.call(document.querySelectorAll('#today .rosterDateControl,#changes .rosterDateControl,#breaks .rosterDateControl'),function(control){control.setAttribute('data-date-label',compactDateLabel)});
   ['prevNightBtn','changesPrevNightBtn','breakPrevNightBtn'].forEach(function(id){var el=byId(id);if(el)el.disabled=idx<=0});
   ['nextNightBtn','changesNextNightBtn','breakNextNightBtn'].forEach(function(id){var el=byId(id);if(el)el.disabled=idx>=R.length-1});
 }
@@ -200,7 +200,7 @@ function workflowTaskDetails(base,plan){
 
 function planNeedsConfirmation(base,decisionTasks){
   if(decisionTasks)return true;var status=nightPlanStatuses[base.date];if(!status||!status.published_at)return true;
-  var publishedAt=new Date(status.published_at).getTime(),latest=0;changesFor(base.date).concat(overtimeFor(base.date)).forEach(function(item){latest=Math.max(latest,new Date(item.updated_at||0).getTime()||0)});var storedOrder=labourOrders[base.date];if(storedOrder)latest=Math.max(latest,new Date(storedOrder.updated_at||0).getTime()||0);var roleOverride=nightRoleOverrides[base.date];if(roleOverride)latest=Math.max(latest,new Date(roleOverride.updated_at||0).getTime()||0);
+  var establishment=versionForDate(base.date),publishedAt=new Date(status.published_at).getTime(),latest=establishment.effective_from===rotationVersions[0].effective_from?0:(new Date(establishment.updated_at||0).getTime()||0);changesFor(base.date).concat(overtimeFor(base.date)).forEach(function(item){latest=Math.max(latest,new Date(item.updated_at||0).getTime()||0)});var storedOrder=labourOrders[base.date];if(storedOrder)latest=Math.max(latest,new Date(storedOrder.updated_at||0).getTime()||0);var roleOverride=nightRoleOverrides[base.date];if(roleOverride)latest=Math.max(latest,new Date(roleOverride.updated_at||0).getTime()||0);
   var draft=allocationDrafts[base.date]||{},plan=staffingPlan(base);if(Object.keys(draft).some(function(key){var saved=plan.validAssignments.find(function(item){return item.allocation_key===key});return(draft[key]||'')!==(saved?saved.id:'')}))return true;
   var labourDraft=labourOrderDrafts[base.date],preview=allocationPreview(base),savedLabour=labourOrderFor(preview);if(labourDraft&&(!savedLabour||labourDraft.first!==savedLabour.first_part_name||labourDraft.second!==savedLabour.second_part_name))return true;
   return latest>publishedAt;
@@ -718,7 +718,7 @@ function renderChanges(base,nightPlan){
   else if(!overtime.length)summary=workflowHasManualPlan(base)?'<b>No allocation decision needed</b><div class="time">This night’s roles are calculated. Review them before sharing the staffing change.</div>':'<b>No allocation changes</b><div class="time">This night’s roles are calculated automatically.</div>';
   else if(plan.unresolved.length)summary='<b>'+plan.count+' nurses working this night</b><div class="time">'+plan.unresolved.length+' required allocation'+(plan.unresolved.length===1?' remains':'s remain')+' to be decided.</div>';
   else if(extras.length)summary='<b>Core allocations finalised</b><div class="time">'+extras.length+' additional nurse'+(extras.length===1?' remains':'s remain')+' available as required.</div>';
-  else summary='<b>Required allocations finalised</b><div class="time">The reliever and overtime allocations are complete.</div>';
+  else summary='<b>Required allocations finalised</b><div class="time">The required overtime allocations are complete.</div>';
   byId('allocationSummary').innerHTML=summary+seventhInfo;
   var allocationDraft=allocationDrafts[base.date]||{};
   var allocationRows=overtime.length&&plan.availableKeys.length?plan.availableKeys.map(function(key){
@@ -761,7 +761,7 @@ function cancelAbsenceEdit(){editingAbsenceId=null;byId('absentName').value='';b
 
 function buildNightPlan(base){
   base=base||cur();var plan=staffingPlan(base),r=applyChanges(base),timing=nightDutyTiming(base.date),provisional=plan.count<5||plan.requiresCoverageChoice||plan.requiresSeventhDecision||plan.unresolved.length>0,labour=labourOrderFor(r),tasks=workflowTaskDetails(base,plan),status=nightPlanStatuses[base.date]||null;
-  return{date:base.date,base:base,effective:r,staffing:plan,timing:timing,provisional:provisional,labourOrder:labour,labourPending:r.mode!=='5'&&!provisional&&!labour,tasks:tasks,revision:status?Number(status.revision||0):0,confirmed:!!(status&&status.published_at)};
+  return{date:base.date,base:base,effective:r,staffing:plan,timing:timing,provisional:provisional,labourOrder:labour,labourPending:r.mode!=='5'&&!provisional&&!labour,tasks:tasks,revision:status?Number(status.revision||0):0,confirmed:!!(status&&status.published_at&&!planNeedsConfirmation(base,0))};
 }
 
 function breakData(r,nightPlan){
