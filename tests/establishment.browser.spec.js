@@ -43,7 +43,7 @@ for(const theme of ['light','dark'])test(`membership changes preserve history an
   appNow=()=>new Date('2026-10-09T08:00:00Z');rotationVersions=periods;schemaVersion=56;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-12');currentUserProfile.user_role='admin';setThemePreference(theme);render();show('admin');switchAdminTab('team',false);
   window.reviewCalls=[];window.reviewBefore=JSON.parse(JSON.stringify(R));
   runRosterMutation=async(key,execute)=>execute('review-operation',0);
-  supa.rpc=async(name,p)=>{window.reviewCalls.push({name,p});rotationVersions.push({effective_from:p.p_effective_from,base_size:p.p_reliever===null?5:6,first1:p.p_first1,first2:p.p_first2,second1:p.p_second1,second2:p.p_second2,pager:p.p_pager,reliever:p.p_reliever,seventh_anchor:p.p_seventh_anchor,seventh_cycle:p.p_seventh_cycle,notes:p.p_notes});return{error:null}};
+  supa.rpc=async(name,p)=>{if(name!=='upsert_rotation_version_v49')return{data:[],error:null};window.reviewCalls.push({name,p});rotationVersions.push({effective_from:p.p_effective_from,base_size:p.p_reliever===null?5:6,first1:p.p_first1,first2:p.p_first2,second1:p.p_second1,second2:p.p_second2,pager:p.p_pager,reliever:p.p_reliever,seventh_anchor:p.p_seventh_anchor,seventh_cycle:p.p_seventh_cycle,notes:p.p_notes});return{error:null}};
   loadSharedData=async()=>{rebuildCalculatedRoster();render();return true};
  },{periods,theme});
  expect(await page.locator('#teamRosterNames').innerHTML()).not.toContain('Yentl');
