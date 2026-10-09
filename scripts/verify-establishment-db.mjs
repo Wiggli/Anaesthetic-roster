@@ -52,6 +52,21 @@ await db.exec(block('supabase/migrations/20261002153000_reliability_architecture
 await db.exec(block('supabase/migrations/20261002180000_trust_boundary_v49.sql','upsert_rotation_version_v49'));
 await db.exec('grant execute on function public.upsert_rotation_version_v49(date,text,text,text,text,text,text,text,jsonb,text,uuid,bigint,text) to authenticated;');
 await db.exec(source);
+const correction=fs.readFileSync('supabase/migrations/20261009072739_correct_pager_continuity_v56.sql','utf8');
+await db.exec(`create table night_change_history(id integer,roster_date date); create table night_overtime_history(id integer,roster_date date); create table night_five_cover(roster_date date);
+insert into night_change_history values(1,'2026-10-08'); insert into night_overtime_history values(1,'2026-10-08');`);
+const originalBefore=(await db.query("select to_jsonb(r) as row from rotation_versions r where effective_from='2026-06-30'")).rows[0].row;
+// Expired corrections fail before any mutation, and a mismatched seed fails closed.
+await assert.rejects(db.exec(correction.replace("(now() at time zone 'Europe/Malta')::date", "date '2026-10-12'")),/TRANSITION_CORRECTION_NO_LONGER_FUTURE/);
+await db.exec('rollback');
+await assert.rejects(db.exec(correction.replace("array['Shaun','James','Michael G','Michael D','Andre']", "array['James','Shaun','Michael G','Michael D','Andre']")),/TRANSITION_CORRECTION_UNEXPECTED_SEED/);
+await db.exec('rollback');
+await db.exec(correction);
+assert.deepEqual((await db.query("select to_jsonb(r) as row from rotation_versions r where effective_from='2026-06-30'")).rows[0].row,originalBefore);
+assert.equal((await db.query('select count(*) as n from night_change_history')).rows[0].n,1);
+assert.equal((await db.query('select count(*) as n from night_overtime_history')).rows[0].n,1);
+assert.equal((await db.query("select tgenabled from pg_trigger where tgname='guard_rotation_period_v55'")).rows[0].tgenabled,'O');
+await assert.rejects(db.exec(correction),/TRANSITION_CORRECTION_SCHEMA_MISMATCH/);await db.exec('rollback');
 const c=require('../tests/helpers/roster-context.js');c.rotationVersions=require('../tests/fixtures/establishment-periods.json');
 for(let date='2026-06-30';date<='2027-12-30';date=c.addDays(date,4)){
  const sql=(await db.query('select calculated_roster_v55($1) as night',[date])).rows[0].night;
@@ -60,13 +75,13 @@ for(let date='2026-06-30';date<='2027-12-30';date=c.addDays(date,4)){
 }
 const prior=(await db.query('select to_jsonb(r) as row from rotation_versions r where effective_from=$1',['2026-06-30'])).rows[0].row;
 assert.equal(prior.pager,'Yentl');assert.equal(prior.base_size,6);
-assert.equal((await db.query('select version from app_schema_version')).rows[0].version,55);
+assert.equal((await db.query('select version from app_schema_version')).rows[0].version,56);
 await db.exec("select set_config('test.uid','00000000-0000-4000-8000-000000000001',false); select set_config('test.admin','true',false);");
 const oldSnapshot=(await db.query("select get_roster_startup_v49('53.0') as snapshot")).rows[0].snapshot;
 assert.equal(oldSnapshot.roster_settings.published_until,'2026-10-08');assert.equal(oldSnapshot.rotation_versions.length,1);
 assert.equal((await db.query("select get_roster_startup_v49('54.0') as snapshot")).rows[0].snapshot.rotation_versions.length,2);
 await db.query('select validate_night_plan_v48($1,$2)',['2026-10-12','{}']);
-await db.query('insert into night_changes(roster_date,absent_name) values($1,$2)',['2026-10-12','Shaun']);
+await db.query('insert into night_changes(roster_date,absent_name) values($1,$2)',['2026-10-12','Michael D']);
 await assert.rejects(db.query('select validate_night_plan_v48($1,$2)',['2026-10-12','{}']),/PLAN_INCOMPLETE/);
 await db.query('insert into night_overtime(roster_date,nurse_name,allocation_key) values($1,$2,$3)',['2026-10-12','Cover Nurse','first1']);
 await db.query('select validate_night_plan_v48($1,$2)',['2026-10-12','{}']);
