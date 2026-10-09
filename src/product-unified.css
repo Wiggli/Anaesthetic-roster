@@ -766,3 +766,7 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 .adminAccountControls > button { background: var(--surface-elevated); color: var(--accent-primary); }
 .adminAccountEditor select { background: var(--surface-elevated); color: var(--text-primary); border: 1px solid var(--border-subtle); }
 .adminAccountEditor button.danger { background: var(--status-danger-fill); color: var(--on-accent); }
+
+/* The future establishment date remains independent of the selected clinical night. */
+#admin .rosterDateControl > .prettyDateControl { grid-column: 2; grid-row: 1; min-width: 0; width: 100%; }
+#admin .rosterDateControl .prettyDateButton { width: 100%; min-width: 0; min-height: 44px; }

@@ -1,12 +1,16 @@
 {
-  "version": "54.1",
+  "version": "54.2",
   "date": "9 October 2026",
-  "title": "Preserve Pager continuity at the five-person transition",
-  "summary": "The 12 October establishment now preserves the existing Pager queue with Yentl removed.",
+  "title": "Clearer permanent team changes and safer previews",
+  "summary": "Roster Management keeps entered details, explains joins and leaves, and verifies future-period previews before saving.",
   "changes": [
-    "Corrected the future starting positions so Pager follows Andr\u00e9, Michael Galea, James, Shaun, Michael Debono, then Andr\u00e9 again, advancing on each four-day roster night.",
-    "The original six-person period, all nights through 8 October, clinical records and historical records remain unchanged.",
-    "Future five- and six-person period management, staffing, Labour Ward, breaks and account access retain their existing behavior."
+    "Permanent team suggestions use the applicable establishment, and changing the effective date preserves entered names and reason.",
+    "The effective-date calendar remains visible and independent of the selected clinical night, and five-person staffing guidance matches the current model.",
+    "The preview explicitly shows joining members, leaving members and Pager order; validation and save errors appear beside the form.",
+    "The separate seventh-nurse cycle keeps its existing order across period changes, with replacements inheriting the departing member\u2019s place.",
+    "Saving prevents double submissions and disables editing until complete; changed or expired previews require a fresh review.",
+    "A future manual night plan confirmed before a permanent team change requires fresh review; earlier approvals remain preserved.",
+    "All earlier nights, existing periods and the verified 12 October Pager sequence remain preserved."
   ],
   "update_policy": "normal"
 }
