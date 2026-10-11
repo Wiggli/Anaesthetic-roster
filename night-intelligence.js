@@ -22,8 +22,6 @@ var state={
   density:'auto',
   undo:null,
   conflict:null,
-  lastAttentionSignature:'',
-  lastNotifiedSignature:'',
   refreshTimer:null,
   observer:null,
   presence:null,
@@ -255,11 +253,6 @@ function niOpenHealth(){
   if(failed.length){var guide=niMake('div','nightTroubleshoot');guide.appendChild(niMake('h3','','Guided troubleshooting'));failed.forEach(function(check){var item=niMake('div','nightTroubleshootItem');item.appendChild(niMake('b','',check.label));item.appendChild(niMake('p','',niGuidance(check)));guide.appendChild(item)});host.appendChild(guide)}else host.appendChild(niMake('p','nightHealthGood','Everything needed for a safe shared roster session looks healthy.'));
   var actions=niMake('div','nightIntelligenceDialogActions'),refresh=niMake('button','primary','Refresh latest roster'),close=niMake('button','soft','Close');refresh.type=close.type='button';refresh.disabled=navigator.onLine===false;refresh.onclick=function(){if(typeof loadSharedData==='function')Promise.resolve(loadSharedData({background:false})).finally(function(){niOpenHealth()})};close.onclick=function(){niEl('nightHealthDialog').close()};actions.appendChild(refresh);actions.appendChild(close);host.appendChild(actions);niOpenDialog(dialog)
 }
-function niSmartNotify(items){
-  var critical=items.filter(niActionableAttention),signature=critical.map(function(item){return item.id}).sort().join('|');state.lastAttentionSignature=signature;if(!signature||signature===state.lastNotifiedSignature)return;
-  var toggle=niEl('pushRosterToggle');if(toggle&&toggle.checked===false)return;if(document.visibilityState!=='hidden'||!('Notification'in window)||Notification.permission!=='granted'||!navigator.serviceWorker)return;
-  state.lastNotifiedSignature=signature;var first=critical[0],date=niDate(),url='./?view=night'+(date?'&date='+encodeURIComponent(date):'');navigator.serviceWorker.ready.then(function(registration){if(registration&&registration.showNotification)return registration.showNotification('Night Roster needs attention',{body:first.title+(critical.length>1?' · '+critical.length+' items need review':''),icon:'icon-192.png?v=54.4',badge:'icon-192.png?v=54.4',tag:'night-intelligence-'+(date||'selected'),renotify:false,data:{type:'roster',url:url,rosterDate:date}})}).catch(function(){})
-}
 function niSyncBadge(){
   var count=niAttentionCount()+niChatUnread();if(!navigator.setAppBadge&&!navigator.clearAppBadge)return;try{if(count&&navigator.setAppBadge)navigator.setAppBadge(count);else if(navigator.clearAppBadge)navigator.clearAppBadge()}catch(error){}
 }
@@ -267,7 +260,7 @@ function niWrapBadge(){if(typeof window.syncAppBadge!=='function'||window.syncAp
 function niRenderCentre(){
   niEnsureCentre();var phase=niPhase(),phaseEl=niEl('nightPhaseSignal'),fresh=niEl('nightFreshnessSignal'),presence=niEl('nightPresenceSignal');document.documentElement.setAttribute('data-night-phase',phase.key);if(phaseEl)phaseEl.textContent=phase.label;if(fresh)fresh.textContent=niFreshnessLabel();if(presence)presence.textContent=niPresenceLabel();
   var summary=niEl('nightMyNightSummary');if(summary)summary.textContent=niPersonalSummary();var items=niAttentionItems(),important=items.filter(function(item){return item.severity==='critical'||item.severity==='warning'}),attentionSummary=niEl('nightAttentionSummary'),badge=niEl('nightAttentionBadge');if(attentionSummary)attentionSummary.textContent=important.length?important[0].title+(important.length>1?' · '+important.length+' items':''):'No unresolved roster decisions';if(badge){badge.textContent=String(important.length);badge.classList.toggle('hidden',!important.length)}
-  var recommendation=niRecommendedAction(),title=niEl('nightRecommendedTitle'),detail=niEl('nightRecommendedDetail'),button=niEl('nightRecommendedAction');state.recommendedAction=recommendation;if(title)title.textContent=recommendation.label;if(detail)detail.textContent=recommendation.detail;if(button)button.onclick=recommendation.run;var calm=niEl('nightCalmToggle');if(calm)calm.setAttribute('aria-pressed',state.calm?'true':'false');niSmartNotify(items);niSyncBadge()
+  var recommendation=niRecommendedAction(),title=niEl('nightRecommendedTitle'),detail=niEl('nightRecommendedDetail'),button=niEl('nightRecommendedAction');state.recommendedAction=recommendation;if(title)title.textContent=recommendation.label;if(detail)detail.textContent=recommendation.detail;if(button)button.onclick=recommendation.run;var calm=niEl('nightCalmToggle');if(calm)calm.setAttribute('aria-pressed',state.calm?'true':'false');niSyncBadge()
 }
 function niAccessibilityPass(){
   Array.prototype.forEach.call(document.querySelectorAll('dialog'),function(dialog){if(!dialog.hasAttribute('aria-label')&&!dialog.hasAttribute('aria-labelledby')){var heading=dialog.querySelector('h1,h2,h3');if(heading){if(!heading.id)heading.id='dialog-heading-'+Math.random().toString(36).slice(2);dialog.setAttribute('aria-labelledby',heading.id)}}});

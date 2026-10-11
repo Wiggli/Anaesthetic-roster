@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const vm = require('node:vm');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
@@ -22,8 +23,8 @@ assert.equal(syntax.status, 0, syntax.stderr || 'night-intelligence.js must pars
 
 for (const contract of [
   'Command centre', 'Attention inbox', 'My Night', 'niPhase', 'Undo last change',
-  'niConflictItems', 'nightRecommendedQuickAction', 'niBindLongPress', 'niSmartNotify',
-  'night-intelligence-', 'navigator.setAppBadge', 'anaes_safe_intent_v1', 'niFreshnessLabel',
+  'niConflictItems', 'nightRecommendedQuickAction', 'niBindLongPress',
+  'navigator.setAppBadge', 'anaes_safe_intent_v1', 'niFreshnessLabel',
   'Review concurrent changes', 'niShiftIdentity', 'privacy-preserving', 'Search & commands',
   'data-night-density', 'niAccessibilityPass', 'App health', 'Guided troubleshooting', 'Calm Mode'
 ]) {
@@ -40,8 +41,38 @@ assert.doesNotMatch(intelligence, /\.from\s*\(/, 'Night Intelligence must not cr
 assert.doesNotMatch(intelligence, /age>180000/, 'elapsed minutes alone must not create a stale-roster warning');
 assert.doesNotMatch(intelligence, /id:'stale'/, 'passive refresh age must not become an attention warning');
 assert.match(intelligence, /function niActionableAttention/, 'Night Intelligence must distinguish actionable roster issues from technical refresh notices');
-assert.match(intelligence, /item\.action!=='refresh'/, 'technical refresh items must not drive push notifications or app-badge attention');
-assert.match(intelligence, /items\.filter\(niActionableAttention\)/, 'smart notifications must use the actionable-attention filter');
+assert.match(intelligence, /item\.action!=='refresh'/, 'technical refresh items must not drive app-badge attention');
+assert.match(intelligence, /niAttentionItems\(\)\.filter\(niActionableAttention\)/, 'app-badge attention must retain actionable roster issues');
+
+// Pending decisions are in-app attention, never an independent OS notification path.
+assert.doesNotMatch(intelligence, /showNotification|niSmartNotify|lastNotifiedSignature/,
+  'passive attention renders must not send or re-send device notifications');
+const attentionFunctions = intelligence.slice(intelligence.indexOf('function niActionableAttention('), intelligence.indexOf('function niRecommendedAction('));
+const badgeFunction = intelligence.slice(intelligence.indexOf('function niSyncBadge('), intelligence.indexOf('function niWrapBadge('));
+const badgeCalls = [];
+const attentionContext = {
+  items: [
+    { id: 'task-allocation', severity: 'warning', action: 'review' },
+    { id: 'cover-critical', severity: 'critical', action: 'review' },
+    { id: 'sync', severity: 'warning', action: 'refresh' }
+  ],
+  unread: 0,
+  navigator: { setAppBadge: count => badgeCalls.push(count), clearAppBadge: () => badgeCalls.push(0) }
+};
+// VM globals are called without a receiver.
+attentionContext.niAttentionItems = () => attentionContext.items;
+attentionContext.niChatUnread = () => attentionContext.unread;
+vm.createContext(attentionContext);
+vm.runInContext(attentionFunctions + badgeFunction, attentionContext);
+for (let render = 0; render < 3; render++) vm.runInContext('niSyncBadge()', attentionContext);
+assert.deepEqual(badgeCalls, [2, 2, 2], 'repeated renders must preserve pending allocation and critical attention badges');
+attentionContext.items = [];
+attentionContext.unread = 1;
+vm.runInContext('niSyncBadge()', attentionContext);
+assert.equal(badgeCalls.at(-1), 1, 'chat unread counts remain on the badge');
+attentionContext.unread = 0;
+vm.runInContext('niSyncBadge()', attentionContext);
+assert.equal(badgeCalls.at(-1), 0, 'resolved attention clears the badge');
 
 assert.match(clinical, /label:'Undo'/, 'existing clinical mutations must retain supported Undo paths');
 assert.match(sync, /function runRosterMutation/);
@@ -56,7 +87,6 @@ assert.match(theme, new RegExp(`night-intelligence\\.js\\?v=${escapedVersion}`))
 assert.match(theme, /data-night-intelligence/);
 assert.ok(worker.includes(`./night-intelligence.css?v=${version}`));
 assert.ok(worker.includes(`./night-intelligence.js?v=${version}`));
-assert.match(intelligence, new RegExp(`icon-192\\.png\\?v=${escapedVersion}`));
 assert.match(vite, /'night-intelligence\.css'/);
 assert.match(vite, /'night-intelligence\.js'/);
 
