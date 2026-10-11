@@ -1,13 +1,12 @@
 {
-  "version": "54.3",
+  "version": "54.4",
   "date": "11 October 2026",
-  "title": "Reliable staffing activity and clearer allocation review",
-  "summary": "Activity refreshes with saved staffing changes, and the allocation review button remains readable.",
+  "title": "Readable Night allocation messages",
+  "summary": "Allocation prompts in Tonight\u2019s team now have clear spacing and text hierarchy.",
   "changes": [
-    "Refreshes selected-night activity after shared roster reloads, including saved overtime and absences, without depending on delivery of individual realtime history events.",
-    "Rejects outdated history responses when a newer staffing refresh arrives during loading.",
-    "Shows loading, offline and retry states instead of claiming there is no activity when history has not loaded.",
-    "Uses a readable neutral disabled Review changes button, with white text on the active blue action in both light and dark appearance."
+    "Separates the allocation label, nurse-selection instruction and Review allocation action into distinct left-aligned lines.",
+    "Keeps warning icons and chevrons in their own columns, with long role names wrapping cleanly on small phones.",
+    "Applies the same layout to Labour Ward decision prompts in light and dark appearance."
   ],
   "update_policy": "normal"
 }
