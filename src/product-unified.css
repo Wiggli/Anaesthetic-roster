@@ -196,6 +196,8 @@ button { border-radius: var(--unified-radius-control); box-shadow: none; }
 button.primary { background: var(--control-primary); color: var(--on-accent); border: 0; }
 button.soft, button.quietAction { background: var(--unified-accent-soft); color: var(--liquid-accent-strong); border: 0; }
 button:disabled { cursor: default; }
+#changes button.primary:disabled { background: var(--surface-elevated); color: var(--text-secondary); -webkit-text-fill-color: var(--text-secondary); border: 1px solid var(--border-subtle); opacity: 1; filter: none; }
+#changes button.primary:not(:disabled) { color: var(--on-accent); -webkit-text-fill-color: var(--on-accent); }
 :is(button, [role="button"], summary, input, select, textarea):focus-visible { outline: 3px solid color-mix(in srgb, var(--liquid-accent) 45%, transparent); outline-offset: 2px; }
 :is(input, select, textarea) { min-width: 0; max-width: 100%; min-height: 44px; border-radius: var(--unified-radius-control); }
 h1, h2, h3, p { overflow-wrap: break-word; }

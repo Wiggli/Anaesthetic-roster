@@ -105,3 +105,29 @@ for(const fallback of [false,true])for(const dark of [false,true])test(`startup 
  const reduced=await page.locator('.bottom').evaluate(el=>{const r=el.getBoundingClientRect();return{centre:r.x+r.width/2,viewport:innerWidth,animation:getComputedStyle(el).animationName}});
  expect(Math.abs(reduced.centre-reduced.viewport/2)).toBeLessThan(1);expect(reduced.animation).toBe('none');
 });
+
+for(const dark of [false,true])test('staffing activity refresh and review contrast '+(dark?'dark':'light')+' @iphone',async({page},testInfo)=>{
+ await ready(page);
+ await page.evaluate(dark=>{document.body.classList.toggle('dark',dark);document.documentElement.dataset.theme=dark?'dark':'light';show('changes');setChangesStep('allocation',false)},dark);
+ await page.evaluate(async()=>{
+   const date=cur().date;historyLoadedDates={};historyLoadingDates={};historyErrorDates={};
+   supa.rpc=async()=>({data:{items:[]},error:null});await loadNightHistory(date);
+ });
+ await expect(page.locator('#changeHistory')).toContainText('No staffing change history');
+ await page.evaluate(async()=>{
+   const date=cur().date;
+   supa.rpc=async()=>({data:{items:[{source:'overtime',payload:{action:'added',nurse_name:'Cover Nurse',changed_by:'Review Nurse',changed_at:'2026-10-08T14:45:00Z'}},{source:'absence',payload:{action:'added',absent_name:'Andre',reason:'Leave',changed_by:'Review Nurse',changed_at:'2026-10-08T14:46:00Z'}}]},error:null});
+   invalidateNightHistory();await loadNightHistory(date);
+ });
+ await expect(page.locator('#changeHistory')).toContainText('Added Cover Nurse for overtime');
+ await expect(page.locator('#changeHistory')).toContainText('Recorded absence for Andre');
+ await page.evaluate(()=>{const b=document.getElementById('continueToConfirmBtn');b.classList.remove('hidden');b.disabled=true});
+ const disabled=await page.locator('#continueToConfirmBtn').evaluate(el=>{const s=getComputedStyle(el);return{fill:s.backgroundColor,label:s.color,web:s.webkitTextFillColor}});
+ expect(disabled.label).toBe(disabled.web);expect(disabled.fill).not.toBe(disabled.label);
+ await page.locator('#continueToConfirmBtn').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath('activity-review.png')});
+ await page.evaluate(()=>document.getElementById('continueToConfirmBtn').disabled=false);
+ await expect.poll(()=>page.locator('#continueToConfirmBtn').evaluate(el=>getComputedStyle(el).color)).toBe('rgb(255, 255, 255)');expect(await page.locator('#continueToConfirmBtn').evaluate(el=>getComputedStyle(el).webkitTextFillColor)).toBe('rgb(255, 255, 255)');
+ await page.evaluate(async()=>{historyLoadedDates={};changeHistory={};overtimeHistory={};supa.rpc=async()=>({error:{code:'NETWORK'}});await loadNightHistory(cur().date)});
+ await expect(page.locator('#changeHistory')).toContainText('Activity could not be loaded');
+ await page.evaluate(()=>{document.querySelector('#changeHistory').closest('details').open=true;supa.rpc=async()=>({data:{items:[]},error:null})});await page.getByRole('button',{name:'Retry activity'}).click();await expect(page.locator('#changeHistory')).toContainText('No staffing change history');
+});
