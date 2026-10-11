@@ -54,6 +54,7 @@ export type ChangesExperience = {
   overtime: StaffingRecord[];
   history: HistoryRecord[];
   historyTotal: number;
+  historyStatus?: 'loading' | 'loaded' | 'offline' | 'error';
   historyExpanded: boolean;
   historyHasMore: boolean;
   allocations: AllocationRow[];
@@ -126,7 +127,8 @@ function History({ model }: { model: ChangesExperience }) {
           title={item.title}
           subtitle={<><span className="historyMeta">{item.meta}</span>{item.detail.includes(' → ') ? <span className="historyComparison"><del>{item.detail.split(' → ')[0]}</del><span aria-hidden="true">→</span><ins>{item.detail.split(' → ').slice(1).join(' → ')}</ins></span> : item.detail && <span className="historyDetail">{item.detail}</span>}</>}
         />)
-      : <EmptyState title="No staffing change history for this night" />}
+      : <EmptyState title={model.historyStatus === 'error' ? 'Activity could not be loaded' : model.historyStatus === 'offline' ? 'Reconnect to view activity' : model.historyStatus === 'loading' ? 'Loading activity…' : 'No staffing change history for this night'} />}
+    {model.historyStatus === 'error' && <div className="tw:p-2.5" role="status"><Pressable type="button" className="soft wide" onClick={() => dispatchAction({ action: 'history-retry' })}>Retry activity</Pressable></div>}
     {(model.historyTotal > 15 || model.historyHasMore) && <div className="tw:p-2.5">
       <Pressable
         type="button"

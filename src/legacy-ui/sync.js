@@ -153,7 +153,7 @@ async function loadSharedData(options){
       if(!initialNightChosen){nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx].date;initialNightChosen=true}
       else if(nightSelectionMode==='automatic'){idx=startingIndex(appNow());automaticSelectedDate=R[idx].date}
       else{var selected=appStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:Math.min(idx,R.length-1)}
-      lastSuccessfulSyncAt=new Date(appNowMs()).toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';sharedLoadFailureCode='';saveOfflineSnapshot();setSharedSyncState('live','');render();renderDiagnostics();return true;
+      invalidateNightHistory();lastSuccessfulSyncAt=new Date(appNowMs()).toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';sharedLoadFailureCode='';saveOfflineSnapshot();setSharedSyncState('live','');render();renderDiagnostics();return true;
     }catch(error){
       console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);recordAppDiagnostic('startup',sharedLoadFailureStage,error&&error.code||'error');
       sharedLoadFailureCode=String(error&&((error.status&&String(error.status))||error.code)||'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,32);
@@ -228,7 +228,7 @@ function subscribeToChanges(){
   changesChannel=supa.channel('roster-live-v41');
   tables.forEach(function(table){changesChannel.on('postgres_changes',{event:'*',schema:'public',table:table},function(payload){
     if(table==='night_change_history'||table==='night_overtime_history'||table==='night_role_override_history'){
-      var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){historyLoadedDates[date]=false;if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
+      var date=(payload.new&&payload.new.roster_date)||(payload.old&&payload.old.roster_date);if(date){invalidateNightHistory(date);if(currentUserProfile&&cur().date===date)ensureNightHistory(date)}
     }
     if(table==='app_access_signal'&&payload.new){
       var accessEpoch=Number(payload.new.access_epoch||0);

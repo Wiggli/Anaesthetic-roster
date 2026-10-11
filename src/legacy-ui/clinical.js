@@ -732,7 +732,7 @@ function renderChanges(base,nightPlan){
   var changeDetail={
     absences:changes.map(function(c){return{id:c.id,kind:'absence',name:professionalName(c.absent_name),status:'Absent',meta:(c.reason||'Absence')+' · Updated by '+(c.updated_by||'Shift member')+' at '+shortTime(c.updated_at)}}),
     overtime:overtime.map(function(o){var valid=plan.validAssignments.some(function(item){return item.id===o.id}),extra=extraIds.indexOf(o.id)>=0,added=earliestOvertimeAdd(base.date,o.nurse_name),when=added?added.changed_at:o.updated_at,who=added?added.changed_by:o.updated_by;return{id:o.id,kind:'overtime',name:o.nurse_name,status:extra?'Additional staff · as required':valid?allocationLabel(o.allocation_key):'Awaiting allocation',needsAllocation:!valid&&!extra,meta:'Added by '+(who||'Shift member')+' at '+shortTime(when)}}),
-    history:visible.map(function(h){return{label:h.label,type:h.type,title:h.title,detail:h.detail||'',meta:(h.changed_by||'Shift member')+' · '+shortTime(h.changed_at)}}),historyTotal:history.length,historyExpanded:expanded,historyHasMore:!!(historyPageState[base.date]&&historyPageState[base.date].has_more),allocations:allocationRows,allocationMessage:allocationMessage,forms:{names:names.map(function(n){return{value:n,label:professionalName(n)}}),editing:!!editingAbsenceId,overtimeSuggestions:recentOvertimeNames()},roleOverride:nightRoleOverrideModel(base)
+    history:visible.map(function(h){return{label:h.label,type:h.type,title:h.title,detail:h.detail||'',meta:(h.changed_by||'Shift member')+' · '+shortTime(h.changed_at)}}),historyTotal:history.length,historyStatus:historyErrorDates[base.date]?'error':historyLoadedDates[base.date]?'loaded':(!navigator.onLine||forcedOfflineSession)?'offline':'loading',historyExpanded:expanded,historyHasMore:!!(historyPageState[base.date]&&historyPageState[base.date].has_more),allocations:allocationRows,allocationMessage:allocationMessage,forms:{names:names.map(function(n){return{value:n,label:professionalName(n)}}),editing:!!editingAbsenceId,overtimeSuggestions:recentOvertimeNames()},roleOverride:nightRoleOverrideModel(base)
   };
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:changes',{detail:changeDetail}));
   Array.prototype.forEach.call(document.querySelectorAll('[data-final-allocation]'),function(select){select.onchange=function(){var date=base.date,key=select.getAttribute('data-final-allocation');if(!allocationDrafts[date])allocationDrafts[date]={};allocationDrafts[date][key]=select.value;updateAllocationSaveControl(base);updateChangesWorkflow(base,plan);formMessage('allocationFormMessage','Selections ready to review.','')}});
@@ -1004,13 +1004,20 @@ async function saveFinalAllocationsV2510(event){
   finally{allocationSaveInFlight=false;if(button&&button.isConnected){button.disabled=false;button.textContent='Confirm and share changes'}updateOfflineControls()}
 }
 
+function invalidateNightHistory(date){
+  var dates=date?[date]:Object.keys(historyLoadedDates).concat(Object.keys(historyLoadingDates));
+  dates.filter(function(value,index){return dates.indexOf(value)===index}).forEach(function(value){historyLoadedDates[value]=false;historyInvalidationVersions[value]=Number(historyInvalidationVersions[value]||0)+1;delete historyErrorDates[value]});
+}
+
 async function loadNightHistory(date,renderAfter,append){
   if(!date||historyLoadingDates[date])return;
-  historyLoadingDates[date]=true;
+  historyLoadingDates[date]=true;delete historyErrorDates[date];
+  var generation=Number(historyInvalidationVersions[date]||0),client=supa;
   try{
     if(Number(schemaVersion||0)>=50){
       var cursor=append&&historyPageState[date]?historyPageState[date]:{},page=await supa.rpc('night_history_page_v50',{p_roster_date:date,p_before_at:cursor.next_before_at||null,p_before_id:cursor.next_before_id||null,p_limit:50});
-      if(page.error)return;
+      if(page.error)throw page.error;
+      if(client!==supa||generation!==Number(historyInvalidationVersions[date]||0))return;
       var data=page.data||{},items=Array.isArray(data.items)?data.items:[],changes=[],overtime=[],roles=[];
       items.forEach(function(item){var payload=item&&item.payload;if(!plainSnapshotRecord(payload))return;if(item.source==='absence')changes.push(payload);else if(item.source==='overtime')overtime.push(payload);else if(item.source==='roles')roles.push(payload)});
       if(append){changeHistory[date]=(changeHistory[date]||[]).concat(changes);overtimeHistory[date]=(overtimeHistory[date]||[]).concat(overtime);roleOverrideHistory[date]=(roleOverrideHistory[date]||[]).concat(roles)}
@@ -1018,14 +1025,22 @@ async function loadNightHistory(date,renderAfter,append){
       historyPageState[date]={has_more:!!data.has_more,next_before_at:data.next_before_at||null,next_before_id:data.next_before_id||null};
     }else{
       var results=await Promise.all([supa.from('night_change_history').select('*').eq('roster_date',date).order('changed_at',{ascending:false}).limit(50),supa.from('night_overtime_history').select('*').eq('roster_date',date).order('changed_at',{ascending:false}).limit(50),nightRoleOverrideAvailable?supa.from('night_role_override_history').select('*').eq('roster_date',date).order('changed_at',{ascending:false}).limit(50):Promise.resolve({data:[],error:null})]);
-      if(results.some(function(x){return x.error}))return;
+      if(results.some(function(x){return x.error}))throw results.find(function(x){return x.error}).error;
+      if(client!==supa||generation!==Number(historyInvalidationVersions[date]||0))return;
       changeHistory[date]=results[0].data||[];overtimeHistory[date]=results[1].data||[];roleOverrideHistory[date]=results[2].data||[];historyPageState[date]={has_more:false,next_before_at:null,next_before_id:null};
     }
     historyLoadedDates[date]=true;
-    if(renderAfter!==false&&currentUserProfile&&cur().date===date){renderRecentActivity(date);renderChanges(cur())}
-  }finally{delete historyLoadingDates[date]}
+  }catch(error){
+    if(client===supa&&generation===Number(historyInvalidationVersions[date]||0)){historyErrorDates[date]=true;recordAppDiagnostic('history','load',error&&error.code||'error')}
+  }finally{
+    delete historyLoadingDates[date];
+    if(client===supa&&currentUserProfile&&cur().date===date){
+      if(generation!==Number(historyInvalidationVersions[date]||0))ensureNightHistory(date);
+      if(renderAfter!==false){renderRecentActivity(date);renderChanges(cur())}
+    }
+  }
 }
 
-function ensureNightHistory(date){if(!historyLoadedDates[date])loadNightHistory(date,true,false)}
+function ensureNightHistory(date){if(!historyLoadedDates[date]&&!historyErrorDates[date]&&navigator.onLine&&!forcedOfflineSession)loadNightHistory(date,true,false)}
 function loadMoreNightHistory(date){if(historyPageState[date]&&historyPageState[date].has_more)return loadNightHistory(date,true,true)}
 
