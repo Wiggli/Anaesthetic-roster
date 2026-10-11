@@ -116,7 +116,7 @@ for (const name of uiSources) {
   write(name, source.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`));
 }
 
-for (const name of ['index.html', 'manifest.webmanifest', 'styles.css', 'theme-bootstrap.js', 'night-intelligence.js']) {
+for (const name of ['index.html', 'manifest.webmanifest', 'styles.css', 'theme-bootstrap.js']) {
   const source = read(name);
   if (!/\?v=\d+(?:\.\d+)+/.test(source) && !(name==='styles.css' && !/url\(/i.test(source))) fail(`${name} has no versioned asset reference.`);
   write(name, source.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`));

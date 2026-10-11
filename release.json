@@ -1,12 +1,12 @@
 {
-  "version": "54.4",
+  "version": "54.5",
   "date": "11 October 2026",
-  "title": "Readable Night allocation messages",
-  "summary": "Allocation prompts in Tonight\u2019s team now have clear spacing and text hierarchy.",
+  "title": "Quieter roster notifications",
+  "summary": "Pending allocation decisions stay visible in the app without repeated device reminders.",
   "changes": [
-    "Separates the allocation label, nurse-selection instruction and Review allocation action into distinct left-aligned lines.",
-    "Keeps warning icons and chevrons in their own columns, with long role names wrapping cleanly on small phones.",
-    "Applies the same layout to Labour Ward decision prompts in light and dark appearance."
+    "Stops passive attention refreshes from sending device notifications for unresolved allocations or staffing warnings.",
+    "Keeps pending decisions, critical warnings and unread chat visible in the app and its badge.",
+    "Preserves notifications for saved roster changes and new chat messages."
   ],
   "update_policy": "normal"
 }
