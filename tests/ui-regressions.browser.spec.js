@@ -131,3 +131,20 @@ for(const dark of [false,true])test('staffing activity refresh and review contra
  await expect(page.locator('#changeHistory')).toContainText('Activity could not be loaded');
  await page.evaluate(()=>{document.querySelector('#changeHistory').closest('details').open=true;supa.rpc=async()=>({data:{items:[]},error:null})});await page.getByRole('button',{name:'Retry activity'}).click();await expect(page.locator('#changeHistory')).toContainText('No staffing change history');
 });
+
+for(const dark of [false,true])test('Night decision prompts separate label instruction and action '+(dark?'dark':'light')+' @iphone',async({page},testInfo)=>{
+ const width=testInfo.project.name==='desktop-chromium'?1280:320;
+ await page.setViewportSize({width,height:844});await ready(page);
+ await page.evaluate(dark=>{
+   document.body.classList.toggle('dark',dark);document.documentElement.dataset.theme=dark?'dark':'light';show('today');
+   window.formatReviewModel={date:cur().date,nurseCount:5,absenceCount:2,overtimeCount:2,taskCount:1,decisionTasks:1,confirmNeeded:true,alert:'',firstTask:'Choose a nurse for First Part theatre · position 2',labourPending:false,breakLabel:'',chatUnread:0,liveState:'Live',roles:[],extras:[]};
+   window.dispatchEvent(new CustomEvent('roster:night',{detail:window.formatReviewModel}));
+ },dark);
+ const card=page.locator('#alerts .decisionTaskCard');await expect(card).toBeVisible();await expect(card).toContainText('Choose a nurse for First Part theatre');
+ const geometry=await card.evaluate(el=>{const box=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom}},copy=el.querySelector('.decisionTaskCopy');return{card:box(el),mark:box(el.querySelector('.decisionTaskMark')),copy:box(copy),label:box(copy.children[0]),title:box(copy.children[1]),action:box(copy.children[2]),arrow:box(el.querySelector('i')),align:getComputedStyle(el).textAlign,overflow:el.scrollWidth>el.clientWidth+1}});
+ expect(geometry.align).toBe('left');expect(geometry.overflow).toBe(false);expect(geometry.card.right).toBeLessThanOrEqual(width);
+ expect(geometry.title.y).toBeGreaterThanOrEqual(geometry.label.bottom+3);expect(geometry.action.y).toBeGreaterThanOrEqual(geometry.title.bottom+3);expect(geometry.copy.x).toBeGreaterThanOrEqual(geometry.mark.right+8);expect(geometry.arrow.x).toBeGreaterThanOrEqual(geometry.copy.right+8);
+ await card.evaluate(el=>el.scrollIntoView({behavior:'instant',block:'center'}));await page.screenshot({path:testInfo.outputPath('night-allocation-format.png')});
+ await page.evaluate(()=>{window.dispatchEvent(new CustomEvent('roster:night',{detail:{...window.formatReviewModel,firstTask:'',labourPending:true}}))});
+ await expect(card).toContainText('Choose the Labour Ward order');await card.click();await expect(page.locator('#changes')).toBeVisible();
+});
