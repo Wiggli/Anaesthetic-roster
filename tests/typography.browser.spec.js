@@ -12,6 +12,7 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  await page.evaluate(({dark,enlarged})=>{
   prepareAuthorisedShell({...currentUserProfile,active:true});document.getElementById('launchScreen').style.display='none';document.querySelector('main').style.display='block';document.querySelector('.bottom').style.display='grid';
   schemaVersion=EXPECTED_SCHEMA_VERSION;forcedOfflineSession=false;appCompatibility={write_allowed:true,write_status:'allowed'};lastObservedSyncRevision=1;lastSuccessfulSyncAt=new Date().toISOString();clearUpdateNotice();
+  currentPrivateProfile.text_scale=enlarged?'xlarge':'standard';
   applyTheme(dark);document.body.dataset.textScale=enlarged?'xlarge':'normal';document.documentElement.style.fontSize=enlarged?'20px':'16px';
   show('today');render();
   window.addEventListener('roster:personal-night',e=>{window.typeReviewModel=e.detail},{once:true});render();
@@ -34,8 +35,8 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  expect(await page.locator('.rosterRolePill').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14);
  await page.locator('.rosterExperienceCard').first().screenshot({path:testInfo.outputPath('roster-reading.png'),style:'.bottom,#updateBanner{visibility:hidden!important}'});
  await page.evaluate(()=>{show('today');showQuickActions()});await expect(page.locator('#quickActionsSheet')).toBeVisible();await fits(page,'#quickActionsSheet');
- await page.locator('#quickActionsSheet').screenshot({path:testInfo.outputPath('actions-reading.png')});await page.keyboard.press('Escape');
+ await page.locator('#quickActionsSheet').screenshot({path:testInfo.outputPath('actions-reading.png')});await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).toBeHidden();
  await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();await fits(page,'#accountPageOutlet');
  expect(await page.locator('#profileName').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
- await page.screenshot({path:testInfo.outputPath('account-reading.png')});
+ await page.screenshot({path:testInfo.outputPath('account-reading.png'),animations:'disabled'});
 });
