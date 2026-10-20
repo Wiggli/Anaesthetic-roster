@@ -808,6 +808,9 @@ body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsRevi
 /* Reading sizes and intrinsic rows remain usable with larger text. */
 :is(#authGate,#accountSheet,#changes,#roster,#chat) :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) { font-size:max(16px,var(--unified-type-body)); line-height:1.4; }
 #today .personalHeroFact { overflow-wrap:anywhere; }
+#today .personalHeroFact small { font-size:var(--unified-type-micro); }
+#today .personalHeroFact b { font-size:var(--unified-type-body); line-height:1.4; white-space:normal; overflow:visible; text-overflow:clip; }
+#today .personalHeroFact > span { font-size:var(--unified-type-caption); line-height:1.4; }
 #today .personalClockExceptionCopy > span { white-space:normal; text-overflow:clip; overflow:visible; line-height:1.4; font-size:var(--unified-type-caption); }
 .rosterPageHeader { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin-bottom:12px; }
 .rosterPageHeader h2 { margin:0; font-size:var(--unified-type-title); line-height:1.25; }

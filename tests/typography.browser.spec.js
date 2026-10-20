@@ -19,6 +19,8 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  },{dark,enlarged});
  const hero=page.locator('#personalNightCard');await expect(hero).toContainText('Alexandra Maria Example');await fits(page,'#personalNightCard');
  expect(await hero.locator('.personalRoleCopy > span').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+ expect(await hero.locator('.personalHeroFact b').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+ expect(await hero.locator('.personalHeroFact > span').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14);
  const facts=await hero.locator('.personalHeroFact').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{top:r.top,bottom:r.bottom}}));
  expect(facts[2].top).toBeGreaterThanOrEqual(Math.max(facts[0].bottom,facts[1].bottom)-1);
  await hero.screenshot({path:testInfo.outputPath('hero-reading.png'),style:'.bottom,#updateBanner{visibility:hidden!important}'});
