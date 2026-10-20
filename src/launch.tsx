@@ -132,7 +132,8 @@ window.addEventListener('roster:changes-feedback', (event: Event) => {
 });
 
 window.addEventListener('roster:full-roster', (event: Event) => {
-  import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience((event as CustomEvent).detail.cards));
+  const model = (event as CustomEvent).detail;
+  import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience(model.cards, model.selectedMonth));
 });
 
 window.addEventListener('roster:account', (event: Event) => {

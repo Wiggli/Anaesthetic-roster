@@ -1,6 +1,8 @@
 name: Browser compatibility
 
 on:
+  push:
+    branches: [fix/complete-production-review]
   workflow_dispatch:
   schedule:
     - cron: '17 3 * * *'

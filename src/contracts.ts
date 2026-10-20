@@ -81,7 +81,7 @@ export type RosterEventMap = {
   'roster:changes-workflow': Record<string, unknown>;
   'roster:changes-confirmation': Record<string, unknown>;
   'roster:changes-feedback': Record<string, unknown>;
-  'roster:full-roster': { cards: unknown[] };
+  'roster:full-roster': { cards: unknown[]; selectedMonth?: string };
   'roster:account': Record<string, unknown>;
   'roster:share-app': Record<string, unknown>;
   'roster:passkeys': Record<string, unknown>;

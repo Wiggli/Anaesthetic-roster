@@ -776,3 +776,23 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 .adminAccountControls > button { background: var(--surface-elevated); color: var(--accent-primary); }
 .adminAccountEditor select { background: var(--surface-elevated); color: var(--text-primary); border: 1px solid var(--border-subtle); }
 .adminAccountEditor button.danger { background: var(--status-danger-fill); color: var(--on-accent); }
+
+/* Roster planning uses the same semantic materials as the clinical screens. */
+.rosterPeriodControls { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:8px; align-items:center; }
+.rosterPeriodControls button, .rosterPeriodControls input, .rosterEmpty button { min-height:44px; min-width:0; color:var(--liquid-text,var(--text)); background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px 12px; font:inherit; }
+.rosterPeriodControls button:last-child { grid-column:1 / -1; color:var(--accent-strong); }
+.rosterAllMonths { display:flex; gap:10px; align-items:center; min-height:44px; font-size:14px; }
+.rosterAllMonths input { width:20px; height:20px; }
+.rosterOverviewSummary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:14px 0; border-block:1px solid var(--line); }
+.rosterOverviewSummary span { font-size:13px; color:var(--muted); }
+.rosterOverviewSummary b { display:block; font-size:24px; color:var(--text); }
+.rosterWorkload { padding:14px; border-radius:16px; background:var(--card); }
+.rosterWorkload summary { cursor:pointer; min-height:32px; font-weight:650; }
+.rosterWorkload p, .rosterEmpty p { font-size:14px; color:var(--muted); line-height:1.5; }
+.rosterWorkload ul { list-style:none; padding:0; margin:0; }
+.rosterWorkload li { display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; padding:12px 0; border-top:1px solid var(--line); font-size:14px; }
+.rosterWorkload li span { color:var(--muted); }
+.rosterStaffingBadge { max-width:44%; flex-shrink:0; padding:6px 9px; border-radius:10px; background:var(--surface); color:var(--accent-strong); font-size:12px; font-weight:650; }
+.rosterStaffingBadge.isShort, .rosterStaffingBadge.needsReview { color:var(--warning-text,#8a4b05); background:var(--warning-bg,#fff3d6); }
+body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsReview { color:#ffd089; background:#392c19; }
+.rosterEmpty { padding:18px; border-radius:16px; background:var(--card); }
