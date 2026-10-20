@@ -6,7 +6,8 @@
   "changes": [
     "Keeps the hero\u2019s First Part, handover and Second Part visual state aligned with the selected working night after midnight.",
     "Preserves the clock-change handover, OLD/NEW clock cues and equal elapsed duty timing.",
-    "Shows eight actual hours for full-night Labour Ward/Pager cover, with four hours for each split duty on the autumn clock-change night."
+    "Shows eight actual hours for full-night Labour Ward/Pager cover, with four hours for each split duty on the autumn clock-change night.",
+    "Separates the repeated-hour timeline labels on narrow phones and removes overlapping duplicate captions."
   ],
   "update_policy": "normal"
 }

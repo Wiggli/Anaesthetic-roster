@@ -210,6 +210,14 @@ test('clock-back wake-up cue marks the second repeated 02:xx as NEW clock time',
 for (const dutyPart of ['first', 'second', 'full']) for (const width of [320, 440]) for (const dark of [false, true]) test(`clock-change hero stays readable after midnight ${dutyPart} ${width} ${dark ? 'dark' : 'light'} @iphone`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 956 });
   await openShell(page);
+  await page.waitForFunction(() => typeof launchFinished !== 'undefined' && launchFinished);
+  await page.evaluate(() => {
+    prepareAuthorisedShell({ display_name: 'Review Nurse', email: 'review@example.test', user_role: 'member' });
+    document.getElementById('launchScreen').style.display = 'none';
+    document.querySelector('main').style.display = 'block';
+    document.querySelector('.bottom').style.display = 'grid';
+    document.body.dataset.view = 'today';
+  });
   const model = clockBackPersonalModel();
   model.dutyPart = dutyPart;
   model.breakLabel = dutyPart === 'full' ? 'When clinical cover allows' : dutyPart === 'first' ? 'Second break' : 'First break';
@@ -229,7 +237,16 @@ for (const dutyPart of ['first', 'second', 'full']) for (const width of [320, 44
   await expect(hero.locator('.personalClockNowFlag')).toHaveText('NEW');
   await expect(hero.locator('.personalHeroFact').first()).toContainText(dutyPart === 'full' ? '8h actual' : '4h actual');
   expect(await hero.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
-  await hero.screenshot({ path: testInfo.outputPath('clock-change-hero.png') });
+  const overlaps = await hero.locator('.nightTimelineScale > span').evaluateAll(nodes => {
+    const rects = nodes.map(n => n.getBoundingClientRect());
+    return rects.some((a, i) => rects.slice(i + 1).some(b => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top));
+  });
+  expect(overlaps).toBe(false);
+  await expect(hero.locator('.nightTimelineHandover b')).toBeHidden();
+  await expect(hero.locator('.nightTimelineTransition b')).toBeHidden();
+  await expect(page.locator('#authGate')).toBeHidden();
+  // Capture the complete component without a fixed dock covering its lower facts.
+  await hero.screenshot({ path: testInfo.outputPath('clock-change-hero.png'), style: '.bottom { visibility: hidden !important; }' });
 });
 
 test('Night hero exposes the richer rail and Share Night Roster stays scan-first', async ({ page }) => {

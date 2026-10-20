@@ -114,6 +114,11 @@ for (const [instant, phase] of [
 ]) assert.equal(phaseContext.nightVisualPhase(clockHero, new Date(instant)), phase, 'hero phase at ' + instant);
 assert.equal(phaseContext.nightVisualPhase({ ...clockHero, pending: true }, new Date('2026-10-25T03:15:00Z')), 'selected', 'pending allocation must not imply active duty');
 
+const normalHero = { ...clockHero, date: '2026-10-20', dutyStartUtc: normalDutyTiming.startUtc, handoverUtc: normalDutyTiming.handoverUtc, dutyEndUtc: normalDutyTiming.endUtc };
+assert.equal(phaseContext.nightVisualPhase(normalHero, new Date('2026-10-21T00:15:00Z')), 'first', 'ordinary after-midnight hero remains on its working night');
+assert.equal(phaseContext.nightVisualPhase(normalHero, new Date('2026-10-21T03:15:00Z')), 'second', 'ordinary Second Part remains live after midnight');
+assert.equal(phaseContext.nightVisualPhase(normalHero, new Date('2026-10-22T00:15:00Z')), 'selected', 'an unrelated night must not look live');
+
 const clockDuty = { ...clockHero, clockChange: { partHoursLabel: '4h', totalHoursLabel: '8h' } };
 for (const [dutyPart, label] of [['first', '4h actual'], ['second', '4h actual'], ['full', '8h actual'], ['', 'See timeline']]) {
   assert.equal(phaseContext.clockDutyDuration({ ...clockDuty, dutyPart }), label, 'duration for ' + dutyPart);

@@ -797,3 +797,10 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsReview { color:#ffd089; background:#392c19; }
 .rosterEmpty { padding:18px; border-radius:16px; background:var(--card); }
 @media (max-width:560px) { #roster .toolbar { grid-template-columns:minmax(0,1fr); } }
+
+/* Clock-change markers keep separate rows on narrow phone timelines. */
+#today .nightTimeline.hasClockChange .nightTimelineHandover b,
+#today .nightTimeline.hasClockChange .nightTimelineTransition b { display:none; }
+#today .nightTimelineScale.back { height:64px; }
+#today .nightTimelineScale.back .dstMark { top:22px; }
+#today .nightTimelineScale.back .dstMark + .dstMark { top:42px; }
