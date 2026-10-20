@@ -488,8 +488,8 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .accountGroupDescription, .accountSectionHeading p { margin: 4px 0 16px; color: var(--liquid-secondary); font-size: var(--unified-type-body); }
 .accountProfilePanel, .personalisationStudio { margin: 0; padding: 0; border: 0; background: transparent; }
 .personalisationStudioHeading { display: none; }
-.personalisationTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 16px; padding: 4px; border: 0; border-radius: 12px; background: var(--unified-soft); }
-.personalisationTabs button { min-height: 44px; border: 0; border-radius: 8px; background: transparent; font-size: var(--unified-type-body); }
+.personalisationTabs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; margin-bottom: 16px; padding: 4px; border: 0; border-radius: 12px; background: var(--unified-soft); }
+.personalisationTabs button { min-width:0; padding:8px; white-space:normal; overflow-wrap:anywhere; line-height:1.4; min-height: 44px; border: 0; border-radius: 8px; background: transparent; font-size: var(--unified-type-body); }
 .personalisationTabs .active { background: var(--unified-surface); color: var(--liquid-accent-strong); }
 .personalisationPreviewCard { --identity-accent-readable: var(--identity-accent,var(--accent-primary)); position: sticky; top: 60px; z-index: 3; margin: 0 0 16px; padding: 12px; border: 1px solid var(--border-subtle); border-radius: var(--unified-radius-card); background: var(--unified-surface); box-shadow: var(--shadow-card); }
 .personalisationPreviewGlow { display: none; }
@@ -833,3 +833,8 @@ body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsRevi
   .quickPrimaryGrid,.quickCommunicationGrid { grid-template-columns:minmax(0,1fr); }
   .quickPrimaryAction,.quickCompactAction { flex-direction:row; align-items:center; }
 }
+
+#accountSheet .personalisationGroupHeading p { font-size:var(--unified-type-caption); line-height:1.5; }
+#accountSheet :is(.personalisationAvatarStyles,.personalisationChoiceRow) { display:flex; flex-wrap:wrap; gap:6px; }
+#accountSheet :is(.personalisationAvatarStyles,.personalisationChoiceRow) button { flex:1 1 5rem; min-width:0; min-height:44px; font-size:var(--unified-type-caption); white-space:normal; overflow-wrap:anywhere; }
+#accountSheet :is(.accountProfileFields,.accountNameFields) { min-width:0; }

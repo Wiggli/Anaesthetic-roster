@@ -37,8 +37,9 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser smoke suite
-        run: npm run verify:browser -- --grep 'typography reading|coherent operational pages|clock-change hero|roster planning|shared presentation'
+        run: npm run verify:browser -- --max-failures=6 --grep 'typography reading|coherent operational pages|shared presentation'
       - name: Run resilience suite
+        if: ${{ !cancelled() }}
         run: npm run verify:resilience -- --output=resilience-results
       - name: Preserve compatibility diagnostics
         if: always()

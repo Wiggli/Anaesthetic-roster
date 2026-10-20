@@ -2,6 +2,7 @@ const {test,expect}=require('@playwright/test');
 const {openReview}=require('./helpers/product-review');
 test.use({serviceWorkers:'block'});
 async function fits(page,selector){
+ await expect.poll(()=>page.locator(selector).evaluate(el=>el.scrollWidth-el.clientWidth),{message:selector+' must fit after transitions settle'}).toBeLessThanOrEqual(1);
  const r=await page.locator(selector).evaluate(el=>({scroll:el.scrollWidth,width:el.clientWidth,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right}));
  expect(r.scroll).toBeLessThanOrEqual(r.width+1);expect(r.left).toBeGreaterThanOrEqual(-1);expect(r.right).toBeLessThanOrEqual((await page.viewportSize()).width+1);
 }
