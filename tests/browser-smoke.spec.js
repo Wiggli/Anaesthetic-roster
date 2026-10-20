@@ -212,6 +212,9 @@ for (const dutyPart of ['first', 'second', 'full']) for (const width of [320, 44
   await openShell(page);
   const model = clockBackPersonalModel();
   model.dutyPart = dutyPart;
+  model.breakLabel = dutyPart === 'full' ? 'When clinical cover allows' : dutyPart === 'first' ? 'Second break' : 'First break';
+  model.detail = dutyPart === 'full' ? 'Full-night cover' : 'Position 1';
+  model.context = dutyPart === 'full' ? 'Sole Labour Ward / Pager cover' : 'With James Galea';
   model.title = dutyPart === 'full' ? 'Labour Ward / Pager' : dutyPart === 'first' ? 'First Part theatre' : 'Second Part theatre';
   model.period = dutyPart === 'full' ? '00:00–07:00' : dutyPart === 'first' ? '00:00–03:00 after clock change' : '03:00–07:00';
   model.clockChange.summary = 'The repeated hour makes the 00:00–07:00 duty window 8h. Handover moves to 03:00 after clock change so First Part and Second Part each work 4h of actual duty.';
