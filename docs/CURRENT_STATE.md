@@ -47,3 +47,5 @@ Release 54.2 strengthens Roster Management form and save handling. Future period
 Release 55.0 adds a month-based Full roster overview, shortage/absence/allocation filters, professional-name search, effective workload totals and manual date selection from roster cards. Schema 57 removes direct browser-role writes to clinical tables, retaining the guarded v49 RPC boundary, SELECT policies, realtime and server-owned history. The education layer explains the new overview.
 
 Release 55.1 corrects the personal hero's live phase after midnight, including the repeated October hour; clock-change timing and allocation rules remain unchanged.
+
+Release 55.2 improves shared typography and responsive phone layouts, including hero facts, roster names and form text, without changing roster calculations or saves.
