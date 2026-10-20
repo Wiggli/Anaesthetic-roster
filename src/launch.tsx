@@ -133,7 +133,17 @@ window.addEventListener('roster:changes-feedback', (event: Event) => {
 
 window.addEventListener('roster:full-roster', (event: Event) => {
   const model = (event as CustomEvent).detail;
-  import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience(model.cards, model.selectedMonth));
+  import('./roster-experience').then(({ renderRosterExperience }) => renderRosterExperience(model.cards, model.selectedMonth)).catch(() => {
+    const host = document.getElementById('cards');
+    if (!host) return;
+    const notice = document.createElement('p');
+    notice.textContent = 'The roster view could not be opened. Reload the app to try again.';
+    notice.setAttribute('role', 'alert');
+    const retry = document.createElement('button');
+    retry.type = 'button'; retry.textContent = 'Reload app'; retry.style.minHeight = '44px';
+    retry.onclick = () => window.location.reload();
+    host.replaceChildren(notice, retry);
+  });
 });
 
 window.addEventListener('roster:account', (event: Event) => {

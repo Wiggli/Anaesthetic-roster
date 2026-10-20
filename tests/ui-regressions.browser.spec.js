@@ -3,7 +3,6 @@ test.use({serviceWorkers:'block'});
 for(const width of [320,440])for(const theme of ['light','dark'])test(`roster planning stays readable and filters effective staffing ${width} ${theme} @iphone`,async({page},testInfo)=>{
  await page.setViewportSize({width,height:956});await ready(page);
  await page.evaluate(theme=>{applyTheme(theme==='dark');show('roster')},theme);
- const month=page.getByRole('textbox',{name:'Roster month'});
  const monthInput=page.locator('input[aria-label="Roster month"]');
  await expect(monthInput).toHaveValue('2026-10');
  expect(await page.locator('.rosterExperienceCard').count()).toBeLessThan(10);
@@ -19,6 +18,14 @@ for(const width of [320,440])for(const theme of ['light','dark'])test(`roster pl
  await expect(page.locator('.rosterStaffingBadge')).toContainText('Short');
  await page.locator('#search').fill('no such staff');await expect(page.locator('.rosterEmpty')).toBeVisible();
  await page.getByRole('button',{name:'Clear filters and show all nights'}).click();await expect(page.locator('.rosterExperienceCard')).toHaveCount(138);
+ await page.locator('[data-roster-date="2026-11-01"]').click();
+ expect(await page.evaluate(()=>nightSelectionMode)).toBe('manual');
+ expect(await page.evaluate(()=>{refreshAutomaticNightOnReturn();return cur().date})).toBe('2026-11-01');
+});
+test('roster module load failure offers an intentional recovery action @iphone',async({page})=>{
+ await page.route('**/roster-experience-*.js',route=>route.abort());await ready(page);await page.evaluate(()=>show('roster'));
+ await expect(page.locator('#cards')).toContainText('roster view could not be opened');
+ await expect(page.locator('#cards').getByRole('button',{name:'Reload app'})).toBeVisible();
 });
 async function ready(page,fallback=false,userRole='member'){
  if(fallback)await page.route('**/navigation-*.js',route=>route.abort());
