@@ -38,5 +38,8 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  await page.locator('#quickActionsSheet').screenshot({path:testInfo.outputPath('actions-reading.png')});await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).toBeHidden();
  await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();await fits(page,'#accountPageOutlet');
  expect(await page.locator('#profileName').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
- await page.screenshot({path:testInfo.outputPath('account-reading.png'),animations:'disabled'});
+ await page.locator('#accountSheet').evaluate(async el=>{await Promise.all(el.getAnimations().map(animation=>animation.finished));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))});
+ await page.screenshot({path:testInfo.outputPath('account-reading.png')});
+ await page.locator('#profileName').scrollIntoViewIfNeeded();await expect(page.locator('#profileName')).toBeInViewport();
+ await page.locator('#accountPageOutlet').screenshot({path:testInfo.outputPath('account-content-reading.png')});
 });

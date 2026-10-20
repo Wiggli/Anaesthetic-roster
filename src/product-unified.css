@@ -452,7 +452,7 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 }
 
 /* Account is a page stack in one outlet, not a menu preceding every page. */
-.accountSheet[open] { position: fixed; inset: max(0px,var(--app-header-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-header-top)); max-height: calc(100dvh - var(--app-header-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); animation: account-enter var(--unified-base) var(--unified-ease); }
+.accountSheet[open] { position: fixed; inset: max(0px,var(--app-header-top)) 0 0 auto; display: flex; flex-direction: column; width: min(100vw,430px); max-width: 430px; height: calc(100dvh - var(--app-header-top)); max-height: calc(100dvh - var(--app-header-top)); margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 16px 0 0 16px; background: var(--liquid-bg); color: var(--liquid-label); box-shadow: var(--unified-shadow); -webkit-backdrop-filter:none; backdrop-filter:none; animation: account-enter var(--unified-base) var(--unified-ease); }
 @keyframes account-enter { from { opacity: .7; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 .accountSheet::backdrop { background: var(--overlay-dim); }
 .accountSheet > .sheetGrabber { display: none; }
@@ -462,7 +462,7 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
 .accountSheetHeader h2 { margin: 0; font-size: var(--unified-type-title); font-weight: 700; line-height: 1.2; }
 .accountSheetHeader button { flex: 0 0 auto; min-width: 44px; height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-body); }
 .accountBackBtn { width: 44px; padding: 0; font-size: var(--unified-type-display); }
-.accountSheetScroll { flex: 1; min-height: 0; height: auto; max-height: none; margin: 0; padding: 16px max(16px,var(--app-safe-right)) calc(24px + var(--app-safe-bottom)) max(16px,var(--app-safe-left)); overflow-y: auto; overscroll-behavior: contain; background: var(--liquid-bg); }
+.accountSheetScroll { display:block; flex: 1; min-height: 0; height: auto; max-height: none; margin: 0; padding: 16px max(16px,var(--app-safe-right)) calc(24px + var(--app-safe-bottom)) max(16px,var(--app-safe-left)); overflow-y: auto; overscroll-behavior: contain; background: var(--liquid-bg); }
 .accountPageOutlet { min-width: 0; }
 
 .accountHomeHub { display: grid; gap: 16px; }
