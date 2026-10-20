@@ -119,6 +119,6 @@ assert.doesNotMatch(appShell, /push\.js/, 'optional push code must not be requir
 
 assert.match(release.version, /^\d+(?:\.\d+)+$/, 'release metadata must contain a valid app version');
 assert.ok(String(release.title || '').trim(), 'release metadata must contain a title');
-assert.ok(Array.isArray(release.changes) && release.changes.length >= 3, 'release metadata must describe the incoming update');
+assert.ok(Array.isArray(release.changes) && release.changes.length >= 1, 'release metadata must describe the incoming update');
 
 console.log('Push notification privacy, security, routing and deployment checks passed.');

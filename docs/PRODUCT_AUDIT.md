@@ -66,3 +66,14 @@ Validation completed 20 October 2026:
 Not implemented by this change: a separate leave request/approval service, staff-initiated swap approvals, batch writing across dates, a new draft/locked/archive lifecycle, or rest-rule validation against day duties that the app does not hold. These require defined business rules/data and, for consequential workflow changes, an owner decision under the standing brief. Existing publication/confirmation, absence, role override and history workflows remain authoritative.
 
 External verification/control: actual iPhone hardware, native VoiceOver and a nurse's signed-in production end-to-end session cannot be certified from browser fixtures. Supabase reports leaked-password protection disabled; no Auth configuration mutation capability is exposed in this session. It can be reviewed in the project Auth password-security settings without weakening existing account approval. This is an open external setting, not a claimed fix.
+
+
+## Release 55.1 clock-change hero review
+
+Found a presentation-only date error: `maltaClock()` already returns the operational night date, but `nightVisualPhase()` subtracted another day after midnight. Removed the second subtraction so the hero tracks First Part, handover and Second Part through both autumn 02:xx hours. Timing, allocations and backend data are unchanged. Added behavioural checks for the exact 24/25 October 2026 transition and mobile screenshot cases at 320/440 in light/dark. Education remains accurate for this narrow bug fix.
+
+Also corrected the hero duty-duration label for full-night Labour Ward/Pager cover: eight actual hours on the autumn night, rather than the four-hour split-duty label. Pending/unassigned cards no longer imply a known split duty duration. Browser cases now cover First Part, Second Part and full-night cover.
+
+Visual review exposed overlapping repeated-hour tick labels and duplicate floating captions at 320px. The clock-change rail now staggers repeated-hour labels and keeps the handover explanation in its existing prominent notice. Added geometry checks for tick collisions. Component screenshots hide only the fixed dock during capture so all hero facts can be inspected; viewport/safe-area checks remain separate.
+
+Final verification, 21 October 2026: local `npm run verify:ci` and GitHub Node 22 release gates pass. Focused compatibility run [39509334347](https://github.com/Wiggli/Anaesthetic-roster/actions/runs/39509334347) passes all 42 clock-change cases across mobile Chromium, desktop Chromium and iPhone WebKit; resilience passes nine with five platform-specific skips. Visually inspected 320/440 hero captures in light/dark, including full-night Labour Ward/Pager wording and separated repeated-hour ticks. Browser fixtures are not physical iPhone or signed-in production verification. The temporary branch trigger and diagnostic commands are removed before merge.
