@@ -211,6 +211,7 @@ for (const width of [320, 440]) for (const dark of [false, true]) test(`clock-ch
   await page.setViewportSize({ width, height: 956 });
   await openShell(page);
   const model = clockBackPersonalModel();
+  model.clockChange.summary = 'The repeated hour makes the 00:00–07:00 duty window 8h. Handover moves to 03:00 after clock change so First Part and Second Part each work 4h of actual duty.';
   await page.evaluate(({ model, dark }) => {
     applyTheme(dark);
     Date.now = () => Date.parse('2026-10-25T03:15:00Z');
