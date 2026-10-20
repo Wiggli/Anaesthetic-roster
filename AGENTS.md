@@ -2,6 +2,44 @@
 
 This file applies to the complete repository. Read it before making any change. It records the product invariants and operating practices embodied by the current application; treat them as requirements unless a task explicitly changes one of them.
 
+## Standing product ownership brief, 20 October 2026
+
+The owner has authorised autonomous, systematic improvement of the complete production app for current and future development. Act as product owner, lead product designer, iOS UX designer, frontend engineer and QA engineer. Inspect adjacent workflows and states, fix related defects, and continue to the next priority rather than treating one bug as completion. Use product judgement for routine improvements without repeatedly requesting approval. Escalate material changes to roster logic, staff data, permissions or established workflows when they require an owner decision. This is a standing development brief, not a claim of unattended background execution.
+
+GitHub main remains the source of truth. Preserve working authentication, accounts, staff and roster data, leave, allocations, notes, swaps, settings, Supabase and integrations. Improve incrementally rather than rebuilding. This brief does not authorise invented fairness rules, new backend roles, historical roster rewrites, or treating proposed features as already supported.
+
+### Priority order
+
+Work in this order: (1) data integrity and broken functionality; (2) roster correctness; (3) permissions and security; (4) duplicate prevention; (5) staffing visibility; (6) allocation speed; (7) leave and availability clashes; (8) fairness and workload visibility; (9) swaps and changes; (10) iPhone layout and safe areas; (11) mobile usability; (12) loading speed; (13) accessibility; (14) visual polish; (15) code cleanup.
+
+Maintain the review ledger in `docs/PRODUCT_AUDIT.md`, recording coverage, findings, evidence, outstanding work and verification limits as work proceeds. Resume from that ledger in later sessions. A passing build or deterministic suite does not establish visual quality, live RLS correctness, real-device behaviour or completion of the whole audit.
+
+### Product and workflow coverage
+
+- Make the roster overview a strong planning surface: staff per night, individual totals, vacancies, shortages, relevant excess staffing, leave/unavailability, swaps, manual overrides and actionable notes. Prioritise a staffing picture understood within seconds, including with many staff and long names. Retain quick access to the personal Night view and established operational destinations while improving the overview.
+- Distinguish assigned, unassigned, unavailable, leave, swapped, pending, overridden and locked/finalised states where supported. Use labels or icons in addition to colour; make provisional and unresolved states unmistakable.
+- Minimise taps for assignment, removal, replacement, notes, leave, availability and explicit overrides. Where useful, develop a clean Edit Mode for multiple dates/staff, assignment/removal, copy/paste, repeating patterns, bulk availability/leave and undo. Keep normal viewing simple and preserve guarded mutation paths, audit history and confirmations for consequential actions.
+- Expose workload imbalance through period and total nights, consecutive nights, weekends, applicable public holidays, recent allocations and difficult combinations. Explain any existing automatic balancing using verified rules; the manager retains judgement. Do not invent rest thresholds or silently change the permanent rotation to equalise counts.
+- Flag duplicates, overlaps, leave/unavailability clashes, impossible dates and excessive consecutive duties or inadequate rest where verified rules and data support them. Explain permitted manual overrides. Never imply that absent data or an unimplemented check proves an allocation safe.
+- Make required versus actual staffing and complete/short/overstaffed/unresolved status easy to scan by date and period. Support varying requirements only through explicit verified rules. Preserve the minimum-safe-staffing and provisional-plan invariants below.
+- Integrate supported leave categories and requested/approved status without visual overload. Keep swaps traceable from original to final allocation, initiator and approval, with exactly one correct resulting state. Do not label ordinary night-only role changes as a separate approval workflow unless one exists.
+- Present important change history in human-readable form, with actor, previous/new assignment, time and applicable reason. Keep technical logs restricted. Distinguish existing publication/confirmation states; add draft/review/lock/archive capabilities only with explicit backend enforcement and clear authorised amendment handling.
+- Make previous/next/current period and direct period selection fast, preserve context, and avoid unnecessary reloads. Give staff a clear personal view of their duties and relevant leave, swaps and notes. Give managers concise actionable summaries of gaps, workload outliers, pending changes and unresolved clashes.
+- Provide useful search and quick-to-clear filters for staff, dates, allocation, leave, vacancies, swaps, warnings and supported roster statuses. Review notifications for relevance and deduplication, with one coherent notification per meaningful change rather than repeated reminders for the same unresolved state.
+
+### Reliability, mobile experience and verification
+
+- Audit the complete read/write/realtime flow for missing or duplicate assignments, stale data, conflicting edits, accidental overwrites, duplicate staff, orphaned records and timezone date shifts. Repeating a save must not duplicate the change. Detect concurrent conflicts rather than silently losing another editor's work.
+- Audit authentication, backend role enforcement, RLS, queries, mutations, subscriptions, errors and relevant indexes before claiming security coverage. Preserve existing member/admin roles until a deliberate role-model change is justified. Never weaken policies or expose privileged secrets to simplify development.
+- Investigate launch, month navigation, allocation, save, tab, search, detail, leave and publication delays. Use safe optimistic feedback and local action loaders. Preserve read-only offline recovery, explicit saved/saving/offline/failed feedback, and edits during a failed save without introducing an unreviewed offline write queue.
+- Inspect intentional empty/loading/error states for no roster, staff, allocation or leave; complete and understaffed rosters; failed saves; offline/reconnect; expired authentication; insufficient permission; backend failure and first login. Offer a sensible next action.
+- Design iPhone first using realistic large Pro Max-class dimensions and safe areas. Inspect Dynamic Island/top spacing, home indicator, Safari chrome, installed standalone PWA, keyboards, fixed controls, navigation, sheets, dialogs, tables, scroll/viewport height and relevant landscape layouts. Eliminate unexplained gaps and obscured controls. Emulation must not be described as real-iPhone verification.
+- Use readable typography, obvious hierarchy, consistent spacing/selection, generous touch targets, native-feeling sheets and menus, restrained depth and motion, excellent dark mode and clear action feedback. Avoid excessive cards/borders, tiny text and clutter. Simplicity and obvious interaction take precedence over feature count or clever presentation.
+- Verify contrast, text scaling, VoiceOver labels, semantics, form labels, keyboard focus, reduced motion and non-colour status cues. Improve fragile code and reusable components only where justified; avoid broad cosmetic rewrites and remove dead code carefully.
+- After meaningful UI changes: run the app, inspect the affected phone-sized screen, check safe areas, interact with realistic data, inspect neighbouring screens, fix remaining problems and repeat. Include light/dark, calm/busy periods, many/long staff names, multiple months, consecutive/weekend nights, leave, shortages, swaps, overrides and mixed roles, using isolated fixtures rather than altering production data.
+- Functionally cover login/logout, account/staff loading, roster creation/editing, assignment/deletion, leave/availability, supported swaps/batch editing/publication/locking, permissions, duplicate prevention, refresh, offline recovery and simultaneous edits. Record unsupported or unverified capabilities honestly rather than marking them passed.
+- Commit clear, reviewed changes; run relevant tests before merging and do not strand important fixes only in temporary branches. Never commit privileged secrets, environment values, dependencies or build output. Preserve the live app, update user education for feature releases, and report concrete changes, evidence and remaining limits.
+
 ## Product and architecture
 
 ## Project continuity
