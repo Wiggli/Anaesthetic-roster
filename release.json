@@ -1,12 +1,14 @@
 {
-  "version": "54.5",
-  "date": "11 October 2026",
-  "title": "Quieter roster notifications",
-  "summary": "Pending allocation decisions stay visible in the app without repeated device reminders.",
+  "version": "54.6",
+  "date": "20 October 2026",
+  "title": "Safer shared roster recovery",
+  "summary": "Protects the loaded roster during failed refreshes and makes save conflicts clearer.",
   "changes": [
-    "Stops passive attention refreshes from sending device notifications for unresolved allocations or staffing warnings.",
-    "Keeps pending decisions, critical warnings and unread chat visible in the app and its badge.",
-    "Preserves notifications for saved roster changes and new chat messages."
+    "Rejects older or incomplete shared snapshots before they can replace staffing or allocations.",
+    "Keeps the last loaded roster visible and read-only when a refresh fails.",
+    "Prevents late roster responses from restoring private data after sign-out or access changes.",
+    "Verifies timed-out saves only against a successful online refresh and preserves safe retry identifiers.",
+    "Shows the affected night's changes after a save conflict and explains when the latest roster could not be loaded."
   ],
   "update_policy": "normal"
 }
