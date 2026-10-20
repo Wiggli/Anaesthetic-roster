@@ -5,6 +5,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 ## Canonical state
 
 - The latest `main` branch is the source of truth.
+- `docs/PRODUCT_AUDIT.md` tracks the standing production-improvement brief, verified findings and remaining audit work; resume from the earliest unresolved priority.
 - `release.json` is the source of truth for the deployable app version and release notes.
 - `.project-state.json` contains machine-readable release, schema, verification and CI continuity data.
 - The current database contract is schema 56. Any later schema change must be a new forward-only migration and must update the machine-readable state.

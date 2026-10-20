@@ -13,6 +13,53 @@ async function ready(page,fallback=false,userRole='member'){
  },userRole);
  if(!fallback)await expect(page.locator('[data-react-navigation]')).toBeVisible();
 }
+for(const dark of [false,true])test(`failed shared refresh preserves the roster and disables editing ${dark?'dark':'light'} @iphone`,async({page},testInfo)=>{
+ await page.setViewportSize({width:440,height:956});await ready(page);
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ const result=await page.evaluate(async dark=>{
+  applyTheme(dark);currentUser={id:'snapshot-review',email:'review@example.test'};
+  currentUserProfile={email:currentUser.email,display_name:'Review Nurse',active:true,user_role:'member'};
+  schemaVersion=56;lastObservedSyncRevision=20;lastSuccessfulSyncAt=new Date().toISOString();
+  nightOvertime[cur().date]=[{id:'review-overtime',roster_date:cur().date,nurse_name:'Example Nurse With A Long Display Name'}];
+  render();show('today');
+  const before=JSON.stringify([nightChanges,nightOvertime,rotationVersions]);
+  const snapshot={profile:currentUserProfile,schema_version:56,sync_revision:19,access_epoch:1,
+   night_changes:[],night_overtime:[],night_five_cover:[],night_labour_order:[],night_plan_status:[],night_role_overrides:[],
+   roster_settings:rosterSettings,rotation_versions:rotationVersions,compatibility:{write_allowed:true,write_status:'allowed'}};
+  preferCompatibilityStartup=()=>false;requestStartupWithSessionRecovery=async()=>snapshot;
+  const loaded=await loadSharedData({background:true});
+  return{loaded,preserved:JSON.stringify([nightChanges,nightOvertime,rotationVersions])===before,offline:forcedOfflineSession,revision:lastObservedSyncRevision};
+ },dark);
+ expect(result).toEqual({loaded:true,preserved:true,offline:true,revision:20});
+ await expect(page.locator('#syncStatus')).toContainText(/offline|saved|last loaded/i);
+ await expect(page.locator('#nightFreshnessSignal')).toContainText('Offline');
+ await expect(page.locator('#personalNightCard')).toBeVisible();
+ await expect(page.locator('#saveAllocationsBtn')).toBeDisabled();
+ expect(await page.locator('body').evaluate(el=>el.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.screenshot({path:testInfo.outputPath('preserved-offline-roster.png')});
+ await page.evaluate(()=>{
+  show('changes');rpcError({error:{code:'ROSTER_REVISION_CONFLICT'},conflictRefreshFailed:true},'allocationFormMessage');
+ });
+ await expect(page.locator('#allocationFormMessage')).toContainText('latest roster could not be loaded');
+ expect(await page.locator('#changes').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+ await page.screenshot({path:testInfo.outputPath('conflict-refresh-unavailable.png')});
+ expect(errors).toEqual([]);
+});
+test('failed conflict recovery offers a connection check instead of a stale plan @iphone',async({page},testInfo)=>{
+ await page.setViewportSize({width:440,height:956});await ready(page);
+ await page.evaluate(async()=>{
+  rosterCapabilities=()=>({freshnessBarrier:false});
+  timedRequest=request=>Promise.resolve(request);
+  loadSharedData=async()=>{forcedOfflineSession=true;setSharedSyncState('offline','Showing the last loaded roster');return true};
+  await runRosterMutation('plan:finalise:'+cur().date+':0',async()=>({error:{code:'ROSTER_REVISION_CONFLICT'}}));
+ });
+ await expect(page.locator('#nightConflictDialog')).toBeVisible();
+ await expect(page.locator('#nightConflictBody')).toContainText('latest roster could not be loaded');
+ await expect(page.locator('#nightConflictDialog').getByRole('button',{name:'Review latest plan'})).toHaveCount(0);
+ await page.screenshot({path:testInfo.outputPath('conflict-recovery-dialog.png')});
+ await page.locator('#nightConflictDialog').getByRole('button',{name:'Check connection'}).click();
+ await expect(page.locator('#nightHealthDialog')).toBeVisible();
+});
 for(const width of [320,360,390,412,430])for(const dark of [false,true]){
  test('dock, Actions and onboarding '+width+' '+(dark?'dark':'light')+' @iphone',async({page},testInfo)=>{
  await page.setViewportSize({width,height:844});await ready(page);

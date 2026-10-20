@@ -1,5 +1,5 @@
 /* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */
-/* Anaesthetic Night Roster V54.5 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V54.6 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -97,6 +97,7 @@ var cacheRepairInFlight=null;
 var lastCacheVerifyAt=0;
 
 var RELEASE_HISTORY=[
+  ["54.6","20 October 2026","Safer shared roster recovery",["Rejects older or incomplete shared snapshots before they can replace staffing or allocations.","Keeps the last loaded roster visible and read-only when a refresh fails.","Prevents late roster responses from restoring private data after sign-out or access changes.","Verifies timed-out saves only against a successful online refresh and preserves safe retry identifiers.","Shows the affected night's changes after a save conflict and explains when the latest roster could not be loaded."],"normal"],
   ["54.5","11 October 2026","Quieter roster notifications",["Stops passive attention refreshes from sending device notifications for unresolved allocations or staffing warnings.","Keeps pending decisions, critical warnings and unread chat visible in the app and its badge.","Preserves notifications for saved roster changes and new chat messages."],"normal"],
   ["54.4","11 October 2026","Readable Night allocation messages",["Separates the allocation label, nurse-selection instruction and Review allocation action into distinct left-aligned lines.","Keeps warning icons and chevrons in their own columns, with long role names wrapping cleanly on small phones.","Applies the same layout to Labour Ward decision prompts in light and dark appearance."],"normal"],
   ["54.3","11 October 2026","Reliable staffing activity and clearer allocation review",["Refreshes selected-night activity after shared roster reloads, including saved overtime and absences, without depending on delivery of individual realtime history events.","Rejects outdated history responses when a newer staffing refresh arrives during loading.","Shows loading, offline and retry states instead of claiming there is no activity when history has not loaded.","Uses a readable neutral disabled Review changes button, with white text on the active blue action in both light and dark appearance."],"normal"],
@@ -525,7 +526,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=54.5" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=54.6" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -1980,6 +1981,7 @@ function setSharedSyncState(state,message){
     window.AnaestheticRuntime.state.sync.set(runtimeState,{message:sharedSyncMessage});
   }
   setSync(state==='live'?'':state,message||'');renderDiagnostics();
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:sync-state',{detail:{state:sharedSyncState}}));
 }
 async function syncServerClock(force){
   if(serverClockSyncInFlight||!navigator.onLine||!supa||!rosterCapabilities().serverClock)return false;
@@ -2006,7 +2008,7 @@ function noteCompatibilityStartup(path){
 }
 function commandKey(value){return String(value||'command').replace(/[^A-Za-z0-9_.:-]/g,'').slice(0,120)}
 function rosterErrorCode(error){return window.AnaestheticRuntime&&window.AnaestheticRuntime.errors?window.AnaestheticRuntime.errors.code(error):String(error&&error.message||error&&error.code||'UNKNOWN')}
-function mutationDateFromKey(key){var match=String(key||'').match(/(20\\d{2}-\\d{2}-\\d{2})/);return match&&match[1]||null}
+function mutationDateFromKey(key){var match=String(key||'').match(/(?:^|:)(20\d{2}-\d{2}-\d{2})(?=:|$)/);return match&&match[1]||null}
 function conflictPlanSnapshot(date){try{var base=date&&baseForDate(date);if(!base)return null;var model=buildNightPlan(base);return{date:model.date,revision:model.revision,confirmed:model.confirmed,provisional:model.provisional,effective:model.effective,staffing:{count:model.staffing&&model.staffing.count,unresolved:model.staffing&&model.staffing.unresolved,assignments:model.staffing&&model.staffing.validAssignments},labourOrder:model.labourOrder}}catch(error){return null}}
 function conflictSummary(before,after){
   if(!before||!after)return[];
@@ -2024,6 +2026,7 @@ function conflictSummary(before,after){
   return changes.slice(0,8)
 }
 function conflictNotice(result){
+  if(result&&result.conflictRefreshFailed)return'This night changed on another device, but the latest roster could not be loaded. Reconnect and refresh before saving again.';
   var changes=result&&Array.isArray(result.conflictChanges)?result.conflictChanges:[];
   if(!changes.length)return'This night changed on another device. The latest version has been loaded, so review it before saving again.';
   var detail=changes.slice(0,3).map(function(change){return change.label+': '+change.before+' → '+change.after}).join('; ');
@@ -2037,8 +2040,8 @@ async function ensureFreshBeforeMutation(){
   var revision=Number(result.data.revision||0);
   if(lastObservedSyncRevision===null){lastObservedSyncRevision=revision;return{ok:true,revision:revision}}
   if(revision!==Number(lastObservedSyncRevision)){
-    await loadSharedData({background:true});
-    return{ok:false,error:{message:'ROSTER_REVISION_CONFLICT',code:'ROSTER_REVISION_CONFLICT'},revision:revision};
+    var refreshed=await loadSharedData({background:true}),refreshFailed=!(refreshed&&!forcedOfflineSession&&sharedSyncState==='live');
+    return{ok:false,error:{message:'ROSTER_REVISION_CONFLICT',code:'ROSTER_REVISION_CONFLICT'},revision:revision,conflictRefreshFailed:refreshFailed};
   }
   return{ok:true,revision:revision}
 }
@@ -2053,7 +2056,7 @@ function runRosterMutation(key,execute,verify){
       var freshness=await ensureFreshBeforeMutation();
       if(!freshness.ok){
         delete rosterCommandIds[key];
-        var staleResult={data:null,error:freshness.error,conflictChanges:conflictSummary(beforePlan,conflictPlanSnapshot(date))};
+        var staleResult={data:null,error:freshness.error,conflictRefreshFailed:!!freshness.conflictRefreshFailed,conflictChanges:freshness.conflictRefreshFailed?[]:conflictSummary(beforePlan,conflictPlanSnapshot(date))};
         recordAppDiagnostic('mutation',key,'stale-client');return staleResult
       }
       var expectedSyncRevision=Number(freshness.revision);
@@ -2061,7 +2064,7 @@ function runRosterMutation(key,execute,verify){
       if(result&&result.error){
         var code=rosterErrorCode(result.error);
         if(code==='ROSTER_REVISION_CONFLICT'||String(result.error.message||'').indexOf('ROSTER_REVISION_CONFLICT')>=0){
-          await loadSharedData({background:true});result.conflictChanges=conflictSummary(beforePlan,conflictPlanSnapshot(date));recordAppDiagnostic('mutation',key,'revision-conflict');
+          var refreshed=await loadSharedData({background:true});result.conflictRefreshFailed=!(refreshed&&!forcedOfflineSession&&sharedSyncState==='live');result.conflictChanges=result.conflictRefreshFailed?[]:conflictSummary(beforePlan,conflictPlanSnapshot(date));recordAppDiagnostic('mutation',key,'revision-conflict');
         }
         delete rosterCommandIds[key];
         return result
@@ -2073,8 +2076,8 @@ function runRosterMutation(key,execute,verify){
       recordAppDiagnostic('mutation',key,error&&error.code||(ambiguous?'timeout':'error'));
       if(typeof verify==='function'){
         try{
-          await loadSharedData({background:true});
-          if(await Promise.resolve(verify())){
+          var refreshed=await loadSharedData({background:true});
+          if(refreshed&&!forcedOfflineSession&&sharedSyncState==='live'&&await Promise.resolve(verify())){
             delete rosterCommandIds[key];
             recordAppDiagnostic('mutation',key,'verified-after-timeout');
             return{data:{verified:true,command_id:commandId},error:null,recovered:true}
@@ -2091,6 +2094,9 @@ function runRosterMutation(key,execute,verify){
 async function loadSharedData(options){
   var background=!!(options&&options.background),loadStarted=window.performance&&performance.now?performance.now():Date.now();
   if(sharedLoadPromise){sharedReloadPending=true;sharedReloadPendingBackground=sharedReloadPendingBackground&&background;return sharedLoadPromise}
+  var loadUser=currentUser,loadAttempt=startupAttempt,keepLoadedRoster=!!(currentUserProfile&&lastSuccessfulSyncAt&&R.length&&loadUser&&String(currentUserProfile.email||'').toLowerCase()===String(loadUser.email||'').toLowerCase());
+  function sessionUnchanged(){return !!loadUser&&currentUser===loadUser&&startupAttempt===loadAttempt}
+  if(!sessionUnchanged())return false;
   if(!background)document.body.classList.add('dataRefreshing');
   sharedLoadPromise=(async function(){
     try{
@@ -2109,9 +2115,15 @@ async function loadSharedData(options){
         console.warn('Protected startup snapshot was unavailable; using compatibility reads',snapshotError);noteCompatibilityStartup('snapshot-fallback');
         snapshot=await requestCompatibilityStartup()
       }
+      if(!sessionUnchanged())return false;
       var profile=snapshot&&snapshot.profile;
       if(!plainSnapshotRecord(snapshot)||!plainSnapshotRecord(profile)||!profile.active||!Array.isArray(snapshot.rotation_versions)||!snapshot.rotation_versions.length||!plainSnapshotRecord(snapshot.roster_settings))throw new Error('The shared roster returned incomplete information.');
+      var requiredRows=['night_changes','night_overtime','night_five_cover','night_labour_order','night_plan_status','night_role_overrides'];
+      if(requiredRows.some(function(key){return !Array.isArray(snapshot[key])}))throw new Error('The shared roster returned incomplete staffing or allocations.');
       if(currentUser&&String(profile.email||'').toLowerCase()!==String(currentUser.email||'').toLowerCase()){var accessError=new Error('The shared roster returned the wrong account.');accessError.code='42501';throw accessError}
+      var incomingRevision=Number(snapshot.sync_revision),incomingAccessEpoch=Number(snapshot.access_epoch||0);
+      if(!Number.isSafeInteger(incomingRevision)||incomingRevision<0||!Number.isSafeInteger(incomingAccessEpoch)||incomingAccessEpoch<0)throw new Error('The shared roster returned an invalid revision.');
+      if(lastObservedSyncRevision!==null&&incomingRevision<lastObservedSyncRevision){var staleError=new Error('An older roster snapshot was rejected.');staleError.code='STALE_SNAPSHOT';throw staleError}
       currentUserProfile=profile;try{appStorage.setItem('anaes_cached_profile',JSON.stringify(profile))}catch(error){}prepareAuthorisedShell(profile);
       nightChanges=rowsGroupedByDate(snapshot.night_changes);nightOvertime=rowsGroupedByDate(snapshot.night_overtime);fiveCoverChoices=rowsIndexedByDate(snapshot.night_five_cover);
       rosterSettings=snapshot.roster_settings;rotationVersions=snapshot.rotation_versions;
@@ -2120,19 +2132,20 @@ async function loadSharedData(options){
       nightRoleOverrideAvailable=true;nightRoleOverrides=rowsIndexedByDate(snapshot.night_role_overrides);
       nightTeamIdentities=rowsIndexedByDate(snapshot.night_team_identity||[]);
       if(plainSnapshotRecord(snapshot.app_settings)){appSettings=snapshot.app_settings}
-      schemaVersion=Number(snapshot.schema_version||0);setAppCompatibility(snapshot.compatibility);var incomingRevision=Number(snapshot.sync_revision||0),incomingAccessEpoch=Number(snapshot.access_epoch||0);
-      if(lastObservedSyncRevision!==null&&incomingRevision<lastObservedSyncRevision){var staleError=new Error('An older roster snapshot was rejected.');staleError.code='STALE_SNAPSHOT';throw staleError}
-      lastObservedSyncRevision=incomingRevision;lastObservedAccessEpoch=incomingAccessEpoch;if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:incomingRevision,accessEpoch:incomingAccessEpoch});await syncServerClock(false);if(typeof refreshShiftAvatar==='function')await refreshShiftAvatar();
+      schemaVersion=Number(snapshot.schema_version||0);setAppCompatibility(snapshot.compatibility);
+      lastObservedSyncRevision=incomingRevision;lastObservedAccessEpoch=incomingAccessEpoch;if(window.AnaestheticRuntime&&window.AnaestheticRuntime.coordinator)window.AnaestheticRuntime.coordinator.announce('sync-revision',{revision:incomingRevision,accessEpoch:incomingAccessEpoch});await syncServerClock(false);if(!sessionUnchanged())return false;if(typeof refreshShiftAvatar==='function')await refreshShiftAvatar();if(!sessionUnchanged())return false;
       rebuildCalculatedRoster();
       if(!initialNightChosen){nightSelectionMode='automatic';idx=startingIndex(appNow());automaticSelectedDate=R[idx].date;initialNightChosen=true}
       else if(nightSelectionMode==='automatic'){idx=startingIndex(appNow());automaticSelectedDate=R[idx].date}
       else{var selected=appStorage.getItem('anaes_selected_date'),selectedIdx=selected?R.findIndex(function(r){return r.date===selected}):-1;idx=selectedIdx>=0?selectedIdx:Math.min(idx,R.length-1)}
       invalidateNightHistory();lastSuccessfulSyncAt=new Date(appNowMs()).toISOString();forcedOfflineSession=false;sharedLoadFailureStage='';sharedLoadFailureCode='';saveOfflineSnapshot();setSharedSyncState('live','');render();renderDiagnostics();return true;
     }catch(error){
+      if(!sessionUnchanged())return false;
       console.error('Shared roster startup failed during '+sharedLoadFailureStage,error);recordAppDiagnostic('startup',sharedLoadFailureStage,error&&error.code||'error');
       sharedLoadFailureCode=String(error&&((error.status&&String(error.status))||error.code)||'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,32);
       if(error&&(error.startupSessionFailed||startupAuthError(error)))sharedLoadFailureStage='session';
       if(error&&error.code==='42501'){sharedLoadFailureStage='access';forcedOfflineSession=false;return false}
+      if(keepLoadedRoster){forcedOfflineSession=true;setSharedSyncState('offline','Showing the last loaded roster');updateOfflineControls();return true}
       var cached=currentUser&&cachedAllowedProfile(currentUser.email);if(!currentUserProfile&&cached)prepareAuthorisedShell(cached);
       forcedOfflineSession=true;if(cached&&restoreOfflineSnapshot()){updateOfflineControls();return true}forcedOfflineSession=false;
       setSharedSyncState('error','Shared data unavailable');return false
