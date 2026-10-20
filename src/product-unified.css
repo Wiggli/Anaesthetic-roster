@@ -796,3 +796,4 @@ body.personalMotionReduced .quickActionsSheet[open], body.personalMotionReduced 
 .rosterStaffingBadge.isShort, .rosterStaffingBadge.needsReview { color:var(--warning-text,#8a4b05); background:var(--warning-bg,#fff3d6); }
 body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsReview { color:#ffd089; background:#392c19; }
 .rosterEmpty { padding:18px; border-radius:16px; background:var(--card); }
+@media (max-width:560px) { #roster .toolbar { grid-template-columns:minmax(0,1fr); } }

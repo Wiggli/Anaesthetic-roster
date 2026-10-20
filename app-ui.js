@@ -1729,7 +1729,7 @@ function renderRoster(){
   R.forEach(function(original,i){
     var base=Object.assign({},original);base.mode=String(baseEstablishmentSize(base));
     var r=applyChanges(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),plan=staffingPlan(base),count=plan.count,extras=additionalNurses(plan),liveCount=changes.length+overtime.length,labourPending=r.mode!=='5'&&!labourOrderFor(r),dutyTiming=nightDutyTiming(base.date);
-    var status=planIsProvisional(base)?'Provisional • staffing decision required':labourPending?'Labour Ward order still required':liveCount?liveCount+' live staffing update'+(liveCount>1?'s':''):dutyTiming.isClockChange?'Clock change night • equal handover '+dutyTiming.handoverDisplay:'Standard calculated rotation';
+    var status=planIsProvisional(base)?'Provisional • staffing decision required':labourPending?'Labour Ward order still required':nightRoleOverrides[base.date]?'Agreed night-only role change':liveCount?liveCount+' live staffing update'+(liveCount>1?'s':''):dutyTiming.isClockChange?'Clock change night • equal handover '+dutyTiming.handoverDisplay:'Standard calculated rotation';
     var displayMode=String(Math.max(5,Math.min(7,count)));
     var members=nightWorkingNames(base).map(professionalName),pending=planIsProvisional(base),matchesFilter=f==='all'||f==='short'&&count<5||f==='review'&&pending||f==='absence'&&changes.length>0||displayMode===f;
     if(!matchesFilter||searchText(JSON.stringify(base)+' '+JSON.stringify(r)+' '+JSON.stringify(changes)+' '+JSON.stringify(overtime)+' '+members.join(' ')+' '+changes.map(function(change){return professionalName(change.absent_name)}).join(' ')+' '+fmt(base.date)).indexOf(q)<0)return;
@@ -1741,7 +1741,8 @@ function renderRoster(){
     if(extras.length)details.push({label:'Additional',values:extras.map(function(o){return o.nurse_name+' · as required'})});
     if(changes.length)details.push({label:'Absences',values:changes.map(function(c){return professionalName(c.absent_name)+' · '+(c.reason||'Unavailable')}),tone:'warning'});
     if(overtime.length)details.push({label:'Overtime',values:overtime.map(function(o){var allocated=plan.availableKeys.indexOf(o.allocation_key)>=0,extra=extras.some(function(x){return x.id===o.id});return o.nurse_name+' · '+(extra?'as required':allocated?allocationLabel(o.allocation_key):'allocation to decide')})});
-    if(r.notes)details.push({label:'Notes',values:[r.notes]});cards.push({index:i,date:fmt(r.date),isoDate:base.date,status:status,count:count,short:count<5,needsReview:pending,hasAbsence:changes.length>0,members:members,details:details});
+    var rosteredBase=rawBaseForDate(base.date),rosteredMembers=CORE_ALLOCATION_KEYS.map(function(key){return rosteredBase[key]}).filter(Boolean).map(professionalName);
+    if(nightRoleOverrides[base.date])details.push({label:'Role change',values:[nightRoleOverrides[base.date].reason||'Agreed night-only roles'],tone:'warning'});if(r.notes)details.push({label:'Notes',values:[r.notes]});cards.push({index:i,date:fmt(r.date),isoDate:base.date,status:status,count:count,short:count<5,needsReview:pending,hasAbsence:changes.length>0,members:members,rosteredMembers:rosteredMembers,details:details});
   });
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:full-roster',{detail:{cards:cards,selectedMonth:cur().date.slice(0,7)}}));
 }

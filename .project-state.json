@@ -71,6 +71,10 @@
       "feature education or release-numbering rules change"
     ]
   },
-  "pendingWork": [],
-  "knownIssues": []
+  "pendingWork": [
+    "Physical iPhone and native VoiceOver verification; signed-in production workflow review"
+  ],
+  "knownIssues": [
+    "Supabase Auth leaked-password protection is disabled; configuration requires the project Auth settings"
+  ]
 }

@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useState } from 'react';
 
 type RosterDetail = { label: string; values: string[]; tone?: 'first' | 'second' | 'pager' | 'reliever' | 'warning' };
-type RosterCard = { index: number; date: string; isoDate: string; status: string; count: number; short: boolean; needsReview: boolean; hasAbsence: boolean; members: string[]; details: RosterDetail[] };
+type RosterCard = { index: number; date: string; isoDate: string; status: string; count: number; short: boolean; needsReview: boolean; hasAbsence: boolean; members: string[]; rosteredMembers?: string[]; details: RosterDetail[] };
 
 let root: Root | undefined;
 function currentMonth() {
@@ -38,6 +38,7 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
   const totals = new Map<string, { nights: number; weekends: number }>();
   shown.forEach(card => {
     const day = new Date(card.isoDate + 'T12:00:00Z').getUTCDay();
+    (card.rosteredMembers || []).forEach(name => { if (!totals.has(name)) totals.set(name, { nights: 0, weekends: 0 }); });
     [...new Set(card.members || [])].forEach(name => {
       const total = totals.get(name) || { nights: 0, weekends: 0 };
       total.nights++; if (day === 0 || day === 6) total.weekends++;

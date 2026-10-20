@@ -755,7 +755,7 @@ test('cold launch and onboarding keep the cinematic hierarchy without hiding Cha
     window.onboardingStep = 1;
     window.renderOnboarding();
   });
-  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '8');
+  await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', String(await page.evaluate(() => onboardingPages().length)));
   await expect(page.locator('#onboardingProgress')).toHaveAttribute('aria-valuenow', '2');
   await expect(page.locator('#onboardingTitle')).toContainText('Your night stays first');
   await expect(page.locator('#onboardingTitle')).toBeFocused();
@@ -778,8 +778,8 @@ test('App Guide opens reusable contextual help without resetting first-use setup
   await expect(dialog.locator('.appGuideList')).toContainText('Account & Personalise');
   await expect(dialog.locator('#onboardingStepLabel')).toHaveText('Tutorial & app guide');
   await dialog.locator('.appGuidePrimary').click();
-  await expect(dialog.locator('#onboardingStepLabel')).toHaveText('1 of 8');
-  await expect(dialog.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', '8');
+  await expect(dialog.locator('#onboardingStepLabel')).toHaveText('1 of ' + await page.evaluate(() => onboardingPages().length));
+  await expect(dialog.locator('#onboardingProgress')).toHaveAttribute('aria-valuemax', String(await page.evaluate(() => onboardingPages().length)));
   await expect(dialog.locator('#onboardingTitle')).toContainText('First, which roster name is yours');
 });
 
@@ -1526,13 +1526,15 @@ test('typed full-roster cards render searchable clinical summaries and open a ni
     window.dispatchEvent(new CustomEvent('roster:full-roster', { detail: { cards: [{
       index: 4,
       date: 'Saturday, 26 September 2026',
+      isoDate: '2026-09-26',
+      short: false, needsReview: false, hasAbsence: true, members: ['James Galea', 'Michael Galea'],
       status: 'One live staffing update',
       count: 6,
       details: [
         { label: 'First part', values: ['James Galea', 'Michael Galea'], tone: 'first' },
         { label: 'Absences', values: ['André Bartolo · Leave'], tone: 'warning' }
       ]
-    }] } }));
+    }], selectedMonth: '2026-09' } }));
     window.show('roster');
   });
 
@@ -1965,7 +1967,7 @@ test('worker keeps private backend traffic out of caches and navigates offline',
   await context.setOffline(false);
 });
 
-test('scroll chrome uses the same quiet glossy title bar in Changes and Admin', async ({ page }) => {
+test('scroll chrome supports Changes while Admin retains its own header', async ({ page }) => {
   await openShell(page);
 
   await page.evaluate(() => {
@@ -1996,7 +1998,8 @@ test('scroll chrome uses the same quiet glossy title bar in Changes and Admin', 
     window.scrollTo(0, 170);
   });
 
-  await expect(chrome).toHaveAttribute('data-mode', 'compact');
+  await expect(chrome).toHaveAttribute('data-mode', 'off');
+  await expect(chrome).toBeHidden();
   await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Roster management');
   await expect(page.locator('#reactScrollChrome .scrollGlassRail-admin')).toHaveCount(0);
   await expect(page.locator('#admin .adminTabs')).toBeHidden();

@@ -56,7 +56,7 @@ for(const theme of ['light','dark'])test(`membership changes preserve history an
  const date=await page.locator('#teamEffectiveDate').inputValue();page.once('dialog',d=>d.accept());await page.locator('#confirmTeamVersionBtn').click();
  await expect(page.locator('#currentTeamSummary')).toContainText('New Nurse');
  expect(await page.evaluate(date=>window.reviewBefore.filter(r=>r.date<date).every(r=>JSON.stringify(r)===JSON.stringify(calculateNight(r.date))),date)).toBe(true);
- expect(await page.evaluate(()=>window.reviewCalls[0].p.p_client_version)).toBe('54.2');
+ expect(await page.evaluate(()=>window.reviewCalls[0].p.p_client_version)).toBe(require('../release.json').version);
  await page.locator('#teamBaseSize').selectOption('6');await page.locator('#teamSlotReliever').fill('Sixth Nurse');await page.locator('#teamPeriodNotes').fill('Sixth nurse joins');await page.locator('#saveTeamVersionBtn').click();
  await expect(page.locator('#teamChangePreview')).toContainText('Joining: Sixth Nurse');await expect(page.locator('#teamChangePreview')).toContainText('Leaving: None');
  page.once('dialog',d=>d.accept());await page.locator('#confirmTeamVersionBtn').click();await expect(page.locator('#currentTeamSummary')).toContainText('6 permanent nurses');

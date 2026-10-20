@@ -8,7 +8,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - `docs/PRODUCT_AUDIT.md` tracks the standing production-improvement brief, verified findings and remaining audit work; resume from the earliest unresolved priority.
 - `release.json` is the source of truth for the deployable app version and release notes.
 - `.project-state.json` contains machine-readable release, schema, verification and CI continuity data.
-- The current database contract is schema 56. Any later schema change must be a new forward-only migration and must update the machine-readable state.
+- The current database contract is schema 57. Any later schema change must be a new forward-only migration and must update the machine-readable state.
 - `AGENTS.md` contains the permanent product, clinical, security, design and deployment invariants.
 
 ## Runtime ownership
@@ -43,3 +43,5 @@ Release 54.0 introduces `rotation_versions.base_size` (five or six), nullable Re
 Release 54.1 corrects the future 12 October seed to preserve the original Pager queue with Yentl removed: André on 12 October, Michael Galea on 16 October, James on 20 October, Shaun on 24 October, Michael Debono on 28 October, then André on 1 November. Schema 56 changes only four starting slots in the exact known future period, retaining append-only administration and all earlier periods and clinical history.
 
 Release 54.2 strengthens Roster Management form and save handling. Future period previews show Pager order and retain the existing seventh cycle across membership changes; replacement nurses inherit the departing member’s cycle place. The schema remains 56 and existing periods remain append-only.
+
+Release 55.0 adds a month-based Full roster overview, shortage/absence/allocation filters, professional-name search, effective workload totals and manual date selection from roster cards. Schema 57 removes direct browser-role writes to clinical tables, retaining the guarded v49 RPC boundary, SELECT policies, realtime and server-owned history. The education layer explains the new overview.
