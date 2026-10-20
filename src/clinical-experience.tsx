@@ -235,6 +235,13 @@ function clockChangeNowCue(model: PersonalNight, value: Date) {
   };
 }
 
+function clockDutyDuration(model: PersonalNight) {
+  if (!model.clockChange || model.pending) return 'See timeline';
+  if (model.dutyPart === 'full') return model.clockChange.totalHoursLabel + ' actual';
+  if (model.dutyPart === 'first' || model.dutyPart === 'second') return model.clockChange.partHoursLabel + ' actual';
+  return 'See timeline';
+}
+
 function nightVisualPhase(model: PersonalNight, value = new Date()) {
   const clock = maltaClock(value);
   if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return 'selected';
@@ -764,7 +771,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openDutyTiming}>
           <small>Duty</small>
           <b>{dutyLabel}</b>
-          <span>{model.clockChange ? model.clockChange.partHoursLabel + ' actual' : 'See timeline'}</span>
+          <span>{clockDutyDuration(model)}</span>
         </Pressable>
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openBreak}>
           <small>Break</small>

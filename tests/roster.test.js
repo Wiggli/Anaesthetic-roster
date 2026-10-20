@@ -94,7 +94,7 @@ assert.match(autumnDutyTiming.handoverDisplay, /after clock change/, 'the repeat
 assert.equal(autumnDutyTiming.transitionUtc, Date.parse('2026-10-25T01:00:00Z'), 'the Malta rollback transition instant must be exposed for the repeated-hour rail');
 
 // Execute the presentation helpers through both occurrences of the autumn hour.
-const phaseSource = ['maltaClock', 'nightVisualPhase'].map(name => {
+const phaseSource = ['maltaClock', 'clockDutyDuration', 'nightVisualPhase'].map(name => {
   const start = clinicalExperience.indexOf('function ' + name + '(');
   return clinicalExperience.slice(start, clinicalExperience.indexOf('\nfunction ', start + 1));
 }).join('\n').replace(/: (?:Date|PersonalNight|Record<string, number>)/g, '');
@@ -113,6 +113,13 @@ for (const [instant, phase] of [
   ['2026-10-25T06:00:00Z', 'selected']
 ]) assert.equal(phaseContext.nightVisualPhase(clockHero, new Date(instant)), phase, 'hero phase at ' + instant);
 assert.equal(phaseContext.nightVisualPhase({ ...clockHero, pending: true }, new Date('2026-10-25T03:15:00Z')), 'selected', 'pending allocation must not imply active duty');
+
+const clockDuty = { ...clockHero, clockChange: { partHoursLabel: '4h', totalHoursLabel: '8h' } };
+for (const [dutyPart, label] of [['first', '4h actual'], ['second', '4h actual'], ['full', '8h actual'], ['', 'See timeline']]) {
+  assert.equal(phaseContext.clockDutyDuration({ ...clockDuty, dutyPart }), label, 'duration for ' + dutyPart);
+}
+assert.equal(phaseContext.clockDutyDuration({ ...clockDuty, dutyPart: 'full', pending: true }), 'See timeline');
+assert.equal(phaseContext.clockDutyDuration({ ...clockDuty, dutyPart: 'first', clockChange: null }), 'See timeline');
 
 const springDutyTiming = context.nightDutyTiming('2027-03-27');
 assert.equal(springDutyTiming.isClockChange, true, 'the night before the March 2027 Malta transition must detect the skipped hour');

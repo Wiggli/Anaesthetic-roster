@@ -207,10 +207,13 @@ test('clock-back wake-up cue marks the second repeated 02:xx as NEW clock time',
   await expect(page.locator('#personalNightCard .nightTimelineHead em')).toContainText('SECOND 02:15 · NEW clock');
 });
 
-for (const width of [320, 440]) for (const dark of [false, true]) test(`clock-change hero stays readable after midnight ${width} ${dark ? 'dark' : 'light'} @iphone`, async ({ page }, testInfo) => {
+for (const dutyPart of ['first', 'second', 'full']) for (const width of [320, 440]) for (const dark of [false, true]) test(`clock-change hero stays readable after midnight ${dutyPart} ${width} ${dark ? 'dark' : 'light'} @iphone`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 956 });
   await openShell(page);
   const model = clockBackPersonalModel();
+  model.dutyPart = dutyPart;
+  model.title = dutyPart === 'full' ? 'Labour Ward / Pager' : dutyPart === 'first' ? 'First Part theatre' : 'Second Part theatre';
+  model.period = dutyPart === 'full' ? '00:00–07:00' : dutyPart === 'first' ? '00:00–03:00 after clock change' : '03:00–07:00';
   model.clockChange.summary = 'The repeated hour makes the 00:00–07:00 duty window 8h. Handover moves to 03:00 after clock change so First Part and Second Part each work 4h of actual duty.';
   await page.evaluate(({ model, dark }) => {
     applyTheme(dark);
@@ -221,6 +224,7 @@ for (const width of [320, 440]) for (const dark of [false, true]) test(`clock-ch
   const hero = page.locator('#personalNightCard');
   await expect(hero.locator('.personalClockException')).toContainText('Handover 03:00 after clock change');
   await expect(hero.locator('.personalClockNowFlag')).toHaveText('NEW');
+  await expect(hero.locator('.personalHeroFact').first()).toContainText(dutyPart === 'full' ? '8h actual' : '4h actual');
   expect(await hero.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   await hero.screenshot({ path: testInfo.outputPath('clock-change-hero.png') });
 });

@@ -71,3 +71,5 @@ External verification/control: actual iPhone hardware, native VoiceOver and a nu
 ## Release 55.1 clock-change hero review
 
 Found a presentation-only date error: `maltaClock()` already returns the operational night date, but `nightVisualPhase()` subtracted another day after midnight. Removed the second subtraction so the hero tracks First Part, handover and Second Part through both autumn 02:xx hours. Timing, allocations and backend data are unchanged. Added behavioural checks for the exact 24/25 October 2026 transition and mobile screenshot cases at 320/440 in light/dark. Education remains accurate for this narrow bug fix.
+
+Also corrected the hero duty-duration label for full-night Labour Ward/Pager cover: eight actual hours on the autumn night, rather than the four-hour split-duty label. Pending/unassigned cards no longer imply a known split duty duration. Browser cases now cover First Part, Second Part and full-night cover.
