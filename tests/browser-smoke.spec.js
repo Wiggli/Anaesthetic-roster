@@ -179,6 +179,7 @@ test('clock-back wake-up cue marks the first repeated 02:xx as OLD clock time', 
 
   const cue = page.locator('#personalNightCard .personalClockNow');
   await expect(cue).toHaveClass(/personalClockNow-old/);
+  await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'first');
   await expect(cue.locator('.personalClockNowFlag')).toHaveText('OLD');
   await expect(cue.locator('.personalClockNowCopy')).toContainText('CURRENT TIME · FIRST 02:xx');
   await expect(cue.locator('.personalClockNowCopy strong')).toHaveText('02:15');
@@ -197,12 +198,30 @@ test('clock-back wake-up cue marks the second repeated 02:xx as NEW clock time',
 
   const cue = page.locator('#personalNightCard .personalClockNow');
   await expect(cue).toHaveClass(/personalClockNow-new/);
+  await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'first');
   await expect(cue.locator('.personalClockNowFlag')).toHaveText('NEW');
   await expect(cue.locator('.personalClockNowCopy')).toContainText('CURRENT TIME · SECOND 02:xx');
   await expect(cue.locator('.personalClockNowCopy strong')).toHaveText('02:15');
   await expect(cue).toContainText('Clocks have already gone back');
   await expect(cue).toContainText('new 02:xx hour now');
   await expect(page.locator('#personalNightCard .nightTimelineHead em')).toContainText('SECOND 02:15 · NEW clock');
+});
+
+for (const width of [320, 440]) for (const dark of [false, true]) test(`clock-change hero stays readable after midnight ${width} ${dark ? 'dark' : 'light'} @iphone`, async ({ page }, testInfo) => {
+  await page.setViewportSize({ width, height: 956 });
+  await openShell(page);
+  const model = clockBackPersonalModel();
+  await page.evaluate(({ model, dark }) => {
+    applyTheme(dark);
+    Date.now = () => Date.parse('2026-10-25T03:15:00Z');
+    window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: model }));
+  }, { model, dark });
+  await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'second');
+  const hero = page.locator('#personalNightCard');
+  await expect(hero.locator('.personalClockException')).toContainText('Handover 03:00 after clock change');
+  await expect(hero.locator('.personalClockNowFlag')).toHaveText('NEW');
+  expect(await hero.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await hero.screenshot({ path: testInfo.outputPath('clock-change-hero.png') });
 });
 
 test('Night hero exposes the richer rail and Share Night Roster stays scan-first', async ({ page }) => {

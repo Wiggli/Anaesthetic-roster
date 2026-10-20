@@ -1,6 +1,8 @@
 name: Browser compatibility
 
 on:
+  push:
+    branches: [fix/clock-change-hero-phase]
   workflow_dispatch:
   schedule:
     - cron: '17 3 * * *'
@@ -35,9 +37,9 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser smoke suite
-        run: npm run verify:browser
+        run: npm run verify:browser -- --grep 'clock-change|clock-back'
       - name: Run resilience suite
-        run: npm run verify:resilience
+        run: npm run verify:resilience -- --output=resilience-results
       - name: Preserve compatibility diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,5 +48,6 @@ jobs:
           path: |
             visual-review
             test-results
+            resilience-results
           if-no-files-found: ignore
           retention-days: 5

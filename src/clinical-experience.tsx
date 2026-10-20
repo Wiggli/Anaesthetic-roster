@@ -237,10 +237,7 @@ function clockChangeNowCue(model: PersonalNight, value: Date) {
 
 function nightVisualPhase(model: PersonalNight, value = new Date()) {
   const clock = maltaClock(value);
-  const operationalDate = clock.hour < 7
-    ? new Date(Date.parse(clock.date + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10)
-    : clock.date;
-  if (operationalDate !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return 'selected';
+  if (clock.date !== model.date || !(clock.hour < 7 || clock.hour >= 19)) return 'selected';
   if (model.pending || /absent/i.test(model.title)) return 'selected';
   const now = value.getTime();
   if (model.dutyStartUtc && now < model.dutyStartUtc) return 'upcoming';

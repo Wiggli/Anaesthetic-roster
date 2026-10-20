@@ -1,14 +1,11 @@
 {
-  "version": "55.0",
-  "date": "20 October 2026",
-  "title": "Clearer roster planning and protected saves",
-  "summary": "Review staffing and workload by month, with clearer shortages and stronger server-side write protection.",
+  "version": "55.1",
+  "date": "21 October 2026",
+  "title": "Keep the night hero live after midnight",
+  "summary": "Corrects the hero\u2019s live phase through midnight and the repeated clock-change hour.",
   "changes": [
-    "Adds month navigation, a current-month shortcut and an all-published-months view to Full roster.",
-    "Shows staffing shortages, unresolved allocations and effective staff workload with Saturday/Sunday counts.",
-    "Finds professional names and absence records with accent-insensitive roster search.",
-    "Closes direct clinical table writes so saves must use the guarded server functions.",
-    "Keeps existing rotation, historical allocations, authentication and change history intact."
+    "Keeps the hero\u2019s First Part, handover and Second Part visual state aligned with the selected working night after midnight.",
+    "Preserves the clock-change handover, OLD/NEW clock cues and equal elapsed duty timing."
   ],
   "update_policy": "normal"
 }
