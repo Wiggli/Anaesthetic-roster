@@ -2000,7 +2000,7 @@ test('scroll chrome supports Changes while Admin retains its own header', async 
 
   await expect(chrome).toHaveAttribute('data-mode', 'off');
   await expect(chrome).toBeHidden();
-  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveText('Roster management');
+  await expect(page.locator('#reactScrollChrome .scrollGlassCompactTitle')).toHaveCount(0);
   await expect(page.locator('#reactScrollChrome .scrollGlassRail-admin')).toHaveCount(0);
   await expect(page.locator('#admin .adminTabs')).toBeHidden();
 });
