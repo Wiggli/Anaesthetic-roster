@@ -13,21 +13,21 @@ Standing brief: `AGENTS.md`, accepted 20 October 2026. This ledger records evide
 
 | Priority | Area | Status | Evidence / next review |
 | --- | --- | --- | --- |
-| 1 | Data integrity and broken functionality | Partial, recovery fixes verified | Release 54.6 reviews snapshot admission and mutation recovery; see evidence below. Continue with remaining save callers and realtime reconciliation. |
-| 2 | Roster correctness | Pending audit | Check effective five/six-person periods, preserved earlier nights, seven/additional staffing, provisional states and Malta/DST arithmetic. |
-| 3 | Permissions and security | Partial, session response isolation verified | Late snapshots are discarded after sign-out or access invalidation. Backend member/admin boundaries and live RLS remain pending. |
-| 4 | Duplicate prevention | Partial, retry recovery verified | Ambiguous mutation retries retain operation IDs; failed/offline refreshes cannot confirm a save. Continue with assignment, overtime, cover and replacement paths. |
-| 5 | Staffing visibility | Pending audit | Inspect Night, overview and management summaries with shortages and unresolved allocations. |
-| 6 | Allocation speed | Pending audit | Measure assignment/removal/replacement taps and assess supported batch/undo paths. |
-| 7 | Leave and availability clashes | Pending audit | Establish supported categories and data sources before implementing warnings. |
-| 8 | Fairness and workload | Pending audit | Review existing counts/cycles and explain rules without changing them. |
-| 9 | Swaps and changes | Pending audit | Trace original/final state, role changes, confirmation and actor/time history. |
-| 10 | iPhone safe areas | Focused recovery screens checked | Chromium phone tests at 440 × 956 verify offline and conflict states; full Safari/standalone, keyboard and real-device review remains pending. |
-| 11 | Mobile usability | Pending audit | Review Night, Changes, Breaks, Chat, Quick actions, roster, Account, admin, onboarding and sheets. |
-| 12 | Perceived speed | Pending audit | Inspect startup, tab/date navigation, data refresh, saving and search. |
-| 13 | Accessibility | Pending audit | Check contrast, scaling, labels, focus, touch targets, reduced motion and non-colour states. |
-| 14 | Visual polish | Pending audit | Inspect light/dark, empty/loading/error/offline states and busy realistic fixtures. |
-| 15 | Code quality | Pending audit | Refactor only issues supported by preceding review evidence. |
+| 1 | Data integrity and broken functionality | Reviewed, fixes tested | Snapshot/retry/session recovery from 54.6; guarded-write migration and roster module recovery in 55.0. Live member writes must use v49 RPCs. |
+| 2 | Roster correctness | Reviewed with deterministic coverage | Reference fingerprint, earlier periods, five/six establishments, seven/additional staffing, provisional plans, Malta/DST timing and 1,600 staffing combinations pass. |
+| 3 | Permissions and security | Live metadata reviewed, write bypass fixed | All 34 public tables have RLS. Legacy mutation RPC execution is revoked. v49 membership/version guards and admin publication checks verified in live function definitions. Schema 57 revokes direct clinical table DML. Leaked-password setting remains an external control. |
+| 4 | Duplicate prevention | Reviewed, live duplicate checks clear | No duplicate absence or overtime groups in live data. Operation-ID, stale revision, duplicate submission and concurrent-edit deterministic coverage passes. |
+| 5 | Staffing visibility | Improved and covered | Month overview, short-staffed/allocation/absence filters and non-colour status labels use the effective plan. |
+| 6 | Allocation speed | Current workflows reviewed | Existing modal absence/overtime entry, named role decisions and guarded confirmation preserved. Independent bulk roster mutation is not implemented. |
+| 7 | Leave and availability clashes | Current model reviewed | Absence reasons flow into staffing and exclude absent nurses from effective workload; tests cover absent/unavailable assignments. No separate leave request/approval calendar exists. |
+| 8 | Fairness and workload | Improved and covered | Effective night and Saturday/Sunday counts for the displayed period; absence excluded, overtime included, established Pager/seventh order unchanged. No automatic rebalancing or invented rest thresholds. |
+| 9 | Swaps and changes | Current model reviewed | Night-only role overrides, explicit confirmation, revision protection, history invalidation/pagination and actor/time contracts inspected and tested. No separate staff swap approval system exists. |
+| 10 | iPhone safe areas | Automated browser verification complete | Phone Chromium/WebKit, keyboard, landscape and PWA resilience checks pass; physical-device inspection is separate. |
+| 11 | Mobile usability | Current workflows verified | Night, Changes, Breaks, Chat, Actions, roster, Account/admin and onboarding included in browser suite. Opening a roster night now records manual selection. |
+| 12 | Perceived speed | Budgets and source reviewed | Default roster DOM shows one month; all-published view remains available. TypeScript, built-asset budgets and low-end-browser resilience checks are retained. |
+| 13 | Accessibility | Source and contracts reviewed | Labelled semantic controls, non-colour staffing states, reduced motion, dark mode and 44px period controls; browser assertions cover layout/focus. Physical VoiceOver check remains separate. |
+| 14 | Visual polish | Screenshots visually reviewed | New overview checks at 320/440 widths and light/dark pass. Roster, Changes, Breaks, Chat, Account, management and onboarding screenshots inspected. |
+| 15 | Code quality | Reviewed, scoped changes | Typed roster presentation, existing domain calculation and mutation paths retained, generated runtime aligned, no new production dependencies or broad rewrite. |
 
 ## Evidence discipline
 
@@ -46,3 +46,23 @@ Resume with the earliest unresolved priority and continue to related defects; up
 - Verification: `npm run verify:ci` passed under Node 22.23.3 after runtime generation, including behavioural snapshot/retry/conflict tests, TypeScript, build and artifact checks. The source budget increases by 3 KiB for recovery validation and retained release history; built asset budgets remain unchanged.
 - Browser evidence: four focused mobile Chromium checks passed, covering light/dark offline preservation, the connection-check conflict dialog and navigation through Night, Changes, Breaks and Chat as an administrator. Screenshots were visually inspected at Pro Max-class dimensions. An earlier focused run also passed both Chromium project configurations.
 - Limits: browser fixtures simulate the shared backend without modifying production data. WebKit could not initially start because system libraries were unavailable; this is not real-iPhone, installed-PWA or live-RLS verification. Full product audit remains in progress. These are narrow recovery fixes, so the education layer does not require a new feature lesson.
+
+
+## Release 55.0 scope and boundaries
+
+The production audit reviewed the app's current model rather than treating a generic calendar feature list as existing functionality. Added month navigation/current month/all published months, staffing filters, professional-name search, effective workload totals, explicit manual selection from cards and roster-module recovery. The tutorial/onboarding generations are updated.
+
+The live permissions review found browser-role INSERT/UPDATE/DELETE grants on clinical tables that could bypass the version/freshness/audit boundary. Schema 57 revokes those grants from PUBLIC, anon and authenticated while preserving SELECT policies and guarded SECURITY DEFINER RPCs. No production roster rows were edited during the audit. Security advisor notices about authenticated SECURITY DEFINER RPCs were reviewed against their intended membership/administrator guards; app_compatibility deliberately has no direct-access policy. Performance advisor notices identify unused indexes, which remain intact because removing them without workload evidence would be speculative.
+
+Validation completed 20 October 2026:
+
+- Final local `npm run verify:ci` passes, including the deterministic suite, new search/shortage/workload-membership checks, TypeScript, Vite build, performance budgets and Pages artifact validation. GitHub Node 22 gates also pass.
+- Full Chromium phone/desktop and iPhone WebKit run [39430726015](https://github.com/Wiggli/Anaesthetic-roster/actions/runs/39430726015): 302 passed, six failed, five intentionally skipped by platform. The six failures were corrected test journeys: a hidden activity acknowledgement needed its disclosure opened, an intentionally absent admin glass title was still asserted, and a WebKit hit-test needed to await the opening animation.
+- Focused run [39432489944](https://github.com/Wiggli/Anaesthetic-roster/actions/runs/39432489944): all eight affected browser cases pass. Product code is identical between those runs; together they validate all 308 applicable browser cases. This is cumulative coverage, not a claim that the earlier full run was green.
+- WebKit iPhone/low-end Chromium resilience: nine passed in both runs, five intentionally skipped by platform. Includes saved startup, stale assets, viewport/keyboard changes, safe areas and landscape gutters.
+- Screenshots inspected from GitHub artifacts, including 320/440 light/dark roster planning from the initial run and final release roster, management, onboarding, Changes, Breaks, Chat and Account captures. Browser fixtures use realistic rotation/staffing data and do not edit production records.
+- Local browser execution is prevented by host Unix-socket restrictions. The temporary branch trigger and diagnostic commands have been removed, restoring the existing scheduled/manual compatibility workflow before merge.
+
+Not implemented by this change: a separate leave request/approval service, staff-initiated swap approvals, batch writing across dates, a new draft/locked/archive lifecycle, or rest-rule validation against day duties that the app does not hold. These require defined business rules/data and, for consequential workflow changes, an owner decision under the standing brief. Existing publication/confirmation, absence, role override and history workflows remain authoritative.
+
+External verification/control: actual iPhone hardware, native VoiceOver and a nurse's signed-in production end-to-end session cannot be certified from browser fixtures. Supabase reports leaked-password protection disabled; no Auth configuration mutation capability is exposed in this session. It can be reviewed in the project Auth password-security settings without weakening existing account approval. This is an open external setting, not a claimed fix.

@@ -52,7 +52,7 @@ test('Actions reconnects, selection travels and launch never moves the dock side
 
 test('Return updates acknowledge once and later updates still appear @iphone',async({page})=>{
  await openReview(page);await page.evaluate(()=>{const date=cur().date;activityOpenedThisSession[date]={previous:Date.now()-3600000,opened:Date.now()};overtimeHistory[date]=[{action:'added',nurse_name:'Example Nurse',changed_by:'Roster nurse',changed_at:new Date().toISOString()}];renderRecentActivity(date)});
- await expect(page.locator('.recentActivityDigest')).toContainText('1 change');await page.getByRole('button',{name:'Got it',exact:true}).click();await expect(page.locator('.recentActivityDigest')).toHaveCount(0);
+ await expect(page.locator('.recentActivityDigest')).toContainText('1 change');await page.locator('.recentActivityPanel > summary').click();await page.getByRole('button',{name:'Got it',exact:true}).click();await expect(page.locator('.recentActivityDigest')).toHaveCount(0);
  await page.evaluate(()=>{render();show('changes');show('today')});await expect(page.locator('.recentActivityDigest')).toHaveCount(0);
 });
 

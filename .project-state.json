@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "project": "Anaesthetic Night Roster",
-  "currentRelease": "54.6",
+  "currentRelease": "55.0",
   "lastReleaseDate": "20 October 2026",
-  "databaseSchema": 56,
+  "databaseSchema": 57,
   "sourceOfTruth": {
     "branch": "main",
     "releaseMetadata": "release.json",
@@ -71,6 +71,10 @@
       "feature education or release-numbering rules change"
     ]
   },
-  "pendingWork": [],
-  "knownIssues": []
+  "pendingWork": [
+    "Physical iPhone and native VoiceOver verification; signed-in production workflow review"
+  ],
+  "knownIssues": [
+    "Supabase Auth leaked-password protection is disabled; configuration requires the project Auth settings"
+  ]
 }

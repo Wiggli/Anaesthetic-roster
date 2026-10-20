@@ -178,7 +178,7 @@ test('@iphone Chat thread owns its header without a glass overlay', async ({ pag
     const back = page.locator('#chatTeamBackBtn');
     await expect(back).toBeVisible();
     expect((await back.boundingBox()).y).toBeGreaterThanOrEqual(59);
-    expect(await back.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await expect.poll(() => back.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('chat-safe-header.png') });
   }
   await page.evaluate(() => document.body.classList.remove('chatThreadMode'));
