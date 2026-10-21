@@ -11,6 +11,7 @@ const write = (name, value) => {
 };
 
 const uiSources = [
+  'src/legacy-ui/release-history.js',
   'src/legacy-ui/foundation.js',
   'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',

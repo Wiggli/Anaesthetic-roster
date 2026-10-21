@@ -646,7 +646,7 @@ assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.index
 assert.match(fs.readFileSync(path.join(__dirname,'../src/product-unified.css'),'utf8'), /button, \[role="button"\] \{ min-height: 44px/, 'canonical buttons retain a minimum 44 pixel touch target');
 const productCss = fs.readFileSync(path.join(__dirname, '..', 'src/product-unified.css'), 'utf8');
 const dockCss = fs.readFileSync(path.join(__dirname, '..', 'src/rudder-navigation.css'), 'utf8');
-assert.match(dockCss, /--app-dock-control-height:50px[\s\S]*button[\s\S]*height: var\(--app-dock-control-height\); min-height: var\(--app-dock-control-height\)/, 'dock controls must retain consistent touch targets');
+assert.match(dockCss, /--app-dock-control-height:58px[\s\S]*button[\s\S]*height: var\(--app-dock-control-height\); min-height: var\(--app-dock-control-height\)/, 'dock controls must retain consistent touch targets');
 assert.match(dockCss, /color: var\(--liquid-secondary\)/, 'inactive dock labels use the readable shared secondary token');
 assert.match(dockCss, /var\(--app-safe-bottom\)/, 'dock must preserve device safe area');
 assert.match(productCss, /--unified-base: 200ms/, 'primary navigation uses restrained shared motion');
@@ -715,7 +715,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:7[\s\S]*changes:4[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:8[\s\S]*changes:4[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');

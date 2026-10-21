@@ -1,12 +1,13 @@
 {
-  "version": "55.3",
+  "version": "56.0",
   "date": "21 October 2026",
-  "title": "A more compact bottom bar",
-  "summary": "Reclaims phone screen space while keeping the navigation clear and easy to tap.",
+  "title": "Navigation that makes room for the roster",
+  "summary": "A roomier bottom bar sits against the screen edge and moves out of the way while you read.",
   "changes": [
-    "Reduces the bottom bar from 68px to 56px while preserving 50px touch targets.",
-    "Keeps all five controls aligned and clear of the iPhone home indicator.",
-    "Adjusts page and chat spacing to match the smaller bar."
+    "Gives the five navigation controls more breathing room without leaving a floating gap below the bar.",
+    "Hides phone navigation while scrolling down, then brings it back on upward scroll or at the page end.",
+    "Keeps navigation available in Chat, for keyboard focus and when opening another screen.",
+    "Updates the tutorial with the new scrolling behaviour while preserving iPhone safe areas."
   ],
   "update_policy": "normal"
 }

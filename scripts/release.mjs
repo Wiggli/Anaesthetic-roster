@@ -12,6 +12,7 @@ const write = (name, value) => {
   if (current !== value) fs.writeFileSync(target, value);
 };
 const uiSources = [
+  'src/legacy-ui/release-history.js',
   'src/legacy-ui/foundation.js',
   'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
@@ -38,7 +39,7 @@ function compareVersions(a, b) {
 function releaseHistory(source) {
   const marker = 'var RELEASE_HISTORY=';
   const markerIndex = source.indexOf(marker);
-  if (markerIndex < 0) fail('src/legacy-ui/foundation.js is missing RELEASE_HISTORY.');
+  if (markerIndex < 0) fail('src/legacy-ui/release-history.js is missing RELEASE_HISTORY.');
   const start = source.indexOf('[', markerIndex + marker.length);
   let depth = 0;
   let quote = '';
@@ -85,8 +86,8 @@ if (!/var APP_VERSION = '[^']+';/.test(core)) fail('app-core.js is missing APP_V
 core = core.replace(/var APP_VERSION = '[^']+';/, `var APP_VERSION = '${version}';`);
 write('app-core.js', core);
 
-let foundation = read(uiSources[0]);
-const parsedHistory = releaseHistory(foundation);
+let historyText = read(uiSources[0]);
+const parsedHistory = releaseHistory(historyText);
 const latest = parsedHistory.entries[0];
 if (!latest) fail('RELEASE_HISTORY is empty.');
 if (latest.version !== version) {
@@ -103,15 +104,17 @@ if (latest.version !== version) {
   const entry = parsedHistory.compact
     ? JSON.stringify([entryData.version, entryData.date, entryData.title, entryData.changes, entryData.policy])
     : JSON.stringify(entryData);
-  foundation = foundation.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + foundation.slice(parsedHistory.start + 1);
+  historyText = historyText.slice(0, parsedHistory.start + 1) + `\n  ${entry},` + historyText.slice(parsedHistory.start + 1);
 } else if (latest.title !== release.title) {
   fail('release.json title does not match the existing newest release-history entry. Bump the version instead of rewriting released history.');
 }
+write(uiSources[0], historyText);
+let foundation = read('src/legacy-ui/foundation.js');
 foundation = foundation.replace(/\/\* Anaesthetic Night Roster V\d+(?:\.\d+)+ interface, staffing, allocation and PWA features\. \*\//,
   `/* Anaesthetic Night Roster V${version} interface, staffing, allocation and PWA features. */`);
-write(uiSources[0], foundation);
+write('src/legacy-ui/foundation.js', foundation);
 
-for (const name of uiSources) {
+for (const name of uiSources.slice(1)) {
   const source = read(name);
   write(name, source.replace(/\?v=\d+(?:\.\d+)+/g, `?v=${version}`));
 }

@@ -7,6 +7,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const exists = file => fs.existsSync(path.join(root, file));
 const header = '/* GENERATED FILE. Edit the source modules under src/, then run npm run generate:runtime. */\n';
 const uiSources = [
+  'src/legacy-ui/release-history.js',
   'src/legacy-ui/foundation.js',
   'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
@@ -16,7 +17,7 @@ const uiSources = [
 ];
 
 assert.equal(read('app-ui.js'), header + uiSources.map(read).join('\n'),
-  'app-ui.js must be generated from the six responsibility-specific source modules');
+  'app-ui.js must be generated from the responsibility-specific source modules');
 for (const source of uiSources) {
   const bytes = fs.statSync(path.join(root, source)).size;
   assert.ok(bytes < 220 * 1024, source + ' must stay below 220 KiB so the UI cannot collapse back into one monolith');
