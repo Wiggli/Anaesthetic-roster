@@ -56,11 +56,11 @@ for(const width of [320,440])for(const large of [false,true])test(`bottom naviga
   await page.evaluate(safe=>document.documentElement.style.setProperty('--app-safe-bottom',safe+'px'),safe);
   for(const view of ['today','changes','breaks','chat']){
    await page.locator(`.bottom [data-v="${view}"]`).click();await expect(page.locator('#'+view)).toBeVisible();
-   const geometry=await page.locator('.bottom').evaluate(el=>{const box=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};return{dock:box(el),buttons:[...el.querySelectorAll('button')].map(box),labels:[...el.querySelectorAll('button>span:last-child')].map(box),padding:parseFloat(getComputedStyle(document.querySelector('main')).paddingBottom)}});
+   const geometry=await page.locator('.bottom').evaluate(el=>{const box=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};return{dock:box(el),buttons:[...el.querySelectorAll('button')].map(box),labels:[...el.querySelectorAll('button>.navLabel')].map(box),padding:parseFloat(getComputedStyle(document.querySelector('main')).paddingBottom)}});
    expect(geometry.dock.height).toBe(64+safe);expect(geometry.dock.bottom).toBeCloseTo(956,0);
    expect(geometry.buttons).toHaveLength(5);expect(Math.max(...geometry.buttons.map(b=>b.width))-Math.min(...geometry.buttons.map(b=>b.width))).toBeLessThan(1);
    for(const b of geometry.buttons){expect(b.height).toBeGreaterThanOrEqual(44);expect(b.y).toBeGreaterThanOrEqual(geometry.dock.y);expect(b.bottom).toBeLessThanOrEqual(geometry.dock.bottom)}
-   for(const [i,label] of geometry.labels.entries()){expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);expect(label.x).toBeGreaterThanOrEqual(geometry.buttons[i].x-1);expect(label.right).toBeLessThanOrEqual(geometry.buttons[i].right+1)}
+   expect(geometry.labels).toHaveLength(5);for(const [i,label] of geometry.labels.entries()){expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);expect(label.x).toBeGreaterThanOrEqual(geometry.buttons[i].x-1);expect(label.right).toBeLessThanOrEqual(geometry.buttons[i].right+1)}
    expect(geometry.padding).toBeGreaterThanOrEqual(geometry.dock.height+16);
   }
   await page.locator('.bottom [data-v="today"]').click();await page.screenshot({path:testInfo.outputPath(`compact-dock-safe-${safe}.png`)});
@@ -100,4 +100,17 @@ for(const width of [320,440])for(const dark of [false,true])test(`scroll-aware n
  const controls=await dock.locator('button').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect();return{left:r.left,right:r.right,bottom:r.bottom}}));
  for(const r of controls){expect(r.left).toBeGreaterThanOrEqual(44);expect(r.right).toBeLessThanOrEqual(800);expect(r.bottom).toBeLessThanOrEqual(369)}
  expect(await dock.evaluate(el=>getComputedStyle(el).transitionDuration)).toBe('0s');
+});
+
+test('navigation fallback keeps all labels clear while its module is unavailable @iphone',async({page},testInfo)=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:320,height:956});
+ await page.route('**/assets/navigation-*.js',route=>route.abort());await openReview(page);
+ await page.evaluate(()=>{finishLaunch(false);prepareAuthorisedShell({...currentUserProfile,active:true});document.getElementById('launchScreen').style.display='none';document.querySelector('main').style.display='block';document.querySelector('.bottom').style.display='grid';document.documentElement.style.fontSize='20px';document.body.dataset.textScale='xlarge';show('today');render()});
+ await expect(page.locator('.bottom [data-react-navigation]')).toHaveCount(0);
+ for(const view of ['changes','breaks','chat','today']){
+  await page.locator(`.bottom [data-v="${view}"]`).click();await expect(page.locator('#'+view)).toBeVisible();
+  const labels=await page.locator('.bottom button').evaluateAll(ns=>ns.map(n=>{const label=n.querySelector('.navLabel'),a=label.getBoundingClientRect(),b=n.getBoundingClientRect();return{font:parseFloat(getComputedStyle(label).fontSize),left:a.left,right:a.right,slotLeft:b.left,slotRight:b.right}}));
+  expect(labels).toHaveLength(5);for(const label of labels){expect(label.font).toBe(12);expect(label.left).toBeGreaterThanOrEqual(label.slotLeft-1);expect(label.right).toBeLessThanOrEqual(label.slotRight+1)}
+ }
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-fallback.png')});
 });

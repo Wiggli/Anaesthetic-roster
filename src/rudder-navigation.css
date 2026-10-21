@@ -25,7 +25,7 @@ body[data-view="roster"] .bottom::before, body[data-view="admin"] .bottom::befor
 #reactNavigation, [data-react-navigation], .reactNavigationInner { position: relative; display: contents; }
 .bottom button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; min-width: 0; height: var(--app-dock-control-height); min-height: var(--app-dock-control-height); margin: 0; padding: 2px 0; border: 0; border-radius: var(--unified-radius-control); background: transparent; color: var(--liquid-secondary); box-shadow: none; }
 .bottom button.active { color: var(--liquid-accent-strong); background: transparent; }
-.bottom button > span:last-child { font-size: 12px; font-weight: 650; line-height: 1.2; }
+.bottom button > .navLabel { font-size: 12px; font-weight: 650; line-height: 1.2; }
 .navIconWrap, .quickRudderDisc { position: relative; display: grid; place-items: center; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; }
 .bottom svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 /* Centre control is recognisable in both themes, without changing its column. */
