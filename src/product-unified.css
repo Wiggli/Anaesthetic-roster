@@ -205,7 +205,7 @@ h1, h2, h3 { color: inherit; letter-spacing: -.025em; }
 .uiSurface { overflow: hidden; border-radius: var(--unified-radius-card); background: var(--unified-surface); }
 main > .view.viewEntering { animation: screen-enter var(--unified-base) var(--unified-ease); }
 @keyframes screen-enter { from { opacity: .82; transform: translate3d(0,4px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
-main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc(96px + var(--app-safe-bottom)); background: transparent; color: var(--text-primary); }
+main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc(var(--app-dock-height) + 24px + var(--app-safe-bottom)); background: transparent; color: var(--text-primary); }
 #today, #changes, #breaks, #chat, #roster, #admin {
   background: transparent; color: var(--text-primary);
   width: min(100%, var(--unified-content-width)); margin-inline: auto;
@@ -434,7 +434,7 @@ html.nightCalmMode #today .teamOverviewGroup, html.nightCalmMode #today .activit
   #chat.chat-thread-open .chatConversationPane {
     inset: auto 0 auto 0;
     top: calc(var(--app-viewport-offset-top,0px) + var(--app-header-top));
-    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-header-top) - 84px - var(--app-safe-bottom)));
+    height: max(0px,calc(var(--app-viewport-height,100dvh) - var(--app-header-top) - var(--app-dock-height) - 16px - var(--app-safe-bottom)));
     overflow: hidden;
   }
   body.keyboardVisible #chat.chat-thread-open .chatConversationPane {

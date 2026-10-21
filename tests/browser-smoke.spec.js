@@ -954,7 +954,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   const dock = await page.locator('.bottom').boundingBox();
   const actionDisc = await page.locator('.bottom .quickRudderDisc').boundingBox();
   expect(dock).not.toBeNull();
-  expect(dock.height).toBe(68);
+  expect(dock.height).toBe(56);
   expect(actionDisc).not.toBeNull();
   expect(actionDisc.width).toBeLessThanOrEqual(38);
   expect(actionDisc.height).toBeLessThanOrEqual(38);
@@ -962,7 +962,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('.bottom .quickRudder')).toHaveCount(1);
   await expect(page.locator('.bottom .quickRudderLabel')).toHaveText('Actions');
   const mainPaddingBottom = await page.locator('main').evaluate(el => parseFloat(getComputedStyle(el).paddingBottom));
-  expect(mainPaddingBottom).toBeGreaterThanOrEqual(90);
+  expect(mainPaddingBottom).toBeGreaterThanOrEqual(dock.height + 24);
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakList')).toContainText('First break');
   await expect(page.locator('#breakList')).toContainText('Second break');
