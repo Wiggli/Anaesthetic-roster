@@ -23,6 +23,7 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  expect(await hero.locator('.personalRoleCopy > span').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
  expect(await hero.locator('.personalHeroFact b').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
  expect(await hero.locator('.personalHeroFact > span').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14);
+ if(width===320){const label=hero.locator('.personalHeroFact').nth(2).locator('small');expect(await label.evaluate(el=>el.clientHeight-parseFloat(getComputedStyle(el).lineHeight))).toBeLessThanOrEqual(1)}
  const facts=await hero.locator('.personalHeroFact').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{top:r.top,bottom:r.bottom}}));
  expect(facts[2].top).toBeGreaterThanOrEqual(Math.max(facts[0].bottom,facts[1].bottom)-1);
  await hero.screenshot({path:testInfo.outputPath('hero-reading.png'),style:'.bottom,#updateBanner{visibility:hidden!important}'});
