@@ -47,6 +47,9 @@ body.appRevealing .bottom { animation: operationalDockReveal 760ms 120ms var(--c
 
 @media (prefers-reduced-motion: reduce) { .bottom::before, .bottom .quickRudderDisc, .navIconWrap { transition: none; } }
 
+@media (max-width:1023px) {
+  .bottom { background:var(--unified-surface); -webkit-backdrop-filter:none; backdrop-filter:none; }
+}
 /* The bar returns on upward scroll, page end, navigation or focus. */
 .bottom.dockScrollHidden { opacity:0; pointer-events:none; transform:translate(-50%,calc(100% + 2px)); animation:none; }
 @media (min-width:1024px) {

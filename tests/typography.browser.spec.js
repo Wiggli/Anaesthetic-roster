@@ -77,20 +77,21 @@ for(const width of [320,440])for(const dark of [false,true])test(`scroll-aware n
   document.documentElement.style.setProperty('--app-safe-bottom','34px');idx=R.findIndex(n=>n.date==='2026-10-24');show('today');render();document.querySelector('#today .nightTeamDetails').open=true;clearUpdateNotice();
  },dark);
  const dock=page.locator('.bottom');await expect(dock).toBeVisible();
+ expect(await dock.evaluate(el=>getComputedStyle(el).backgroundColor)).toMatch(/^rgb\(/);
  // Use the actual long published roster so the test has substantial scrollable content.
  await page.evaluate(()=>{show('roster');renderRoster()});await expect(page.locator('.rosterExperienceCard').first()).toBeVisible();
  await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,260)});await expect(dock).toHaveClass(/dockScrollHidden/);
  expect(await dock.evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
- await page.screenshot({path:testInfo.outputPath('navigation-reading-hidden.png')});
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-reading-hidden.png')});
  await page.evaluate(()=>scrollTo(0,240));await expect(dock).not.toHaveClass(/dockScrollHidden/);
- await page.screenshot({path:testInfo.outputPath('navigation-reading-returned.png')});
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-reading-returned.png')});
  await page.evaluate(()=>scrollTo(0,320));await expect(dock).toHaveClass(/dockScrollHidden/);
  await page.locator('.bottom [data-v="today"]').focus();await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.locator('.bottom [data-v="today"]').click();await expect(page.locator('#today')).toBeVisible();await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.evaluate(()=>{show('roster');renderRoster()});await expect(page.locator('.rosterExperienceCard').first()).toBeVisible();
  await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,window.scrollY+80)});await expect(dock).toHaveClass(/dockScrollHidden/);
  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await expect(dock).not.toHaveClass(/dockScrollHidden/);
- await page.screenshot({path:testInfo.outputPath('navigation-page-end.png')});
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-page-end.png')});
  await page.evaluate(()=>{show('chat');document.activeElement?.blur()});await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.evaluate(()=>scrollTo(0,260));await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.locator('[data-quick-rudder]').click();await expect(page.locator('#quickActionsSheet')).toBeVisible();await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).toBeHidden();

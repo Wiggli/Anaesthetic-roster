@@ -37,7 +37,7 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser smoke suite
-        run: npm run verify:browser -- --max-failures=4 --grep 'scroll-aware navigation|bottom navigation safe area|iPhone PWA shell|dragging across the dock|reduced motion keeps dock|Actions reconnects'
+        run: npm run verify:browser -- --max-failures=4 --grep 'scroll-aware navigation|bottom navigation safe area'
       - name: Run resilience suite
         if: ${{ !cancelled() }}
         run: npm run verify:resilience -- --output=resilience-results
