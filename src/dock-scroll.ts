@@ -18,6 +18,7 @@ export function setupDockScroll() {
   let state: DockScrollState = { y: window.scrollY, travel: 0, hidden: false };
   let frame = 0;
   let touchingDock = false;
+  let view = document.body.dataset.view;
   const reveal = () => {
     state = { y: window.scrollY, travel: 0, hidden: false };
     dock.classList.remove('dockScrollHidden');
@@ -40,5 +41,7 @@ export function setupDockScroll() {
   document.addEventListener('keydown', event => { if (event.key === 'Tab') reveal(); });
   dock.addEventListener('pointerdown', () => { touchingDock = true; reveal(); }, { passive: true });
   for (const event of ['pointerup', 'pointercancel']) window.addEventListener(event, () => { touchingDock = false; }, { passive: true });
-  new MutationObserver(reveal).observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+  new MutationObserver(() => {
+    if (view !== document.body.dataset.view) { view = document.body.dataset.view; reveal(); }
+  }).observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
 }

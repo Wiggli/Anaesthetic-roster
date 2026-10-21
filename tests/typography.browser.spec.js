@@ -88,7 +88,7 @@ for(const width of [320,440])for(const dark of [false,true])test(`scroll-aware n
  await page.locator('.bottom [data-v="today"]').focus();await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.locator('.bottom [data-v="today"]').click();await expect(page.locator('#today')).toBeVisible();await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.evaluate(()=>{show('roster');renderRoster()});await expect(page.locator('.rosterExperienceCard').first()).toBeVisible();
- await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,260)});await expect(dock).toHaveClass(/dockScrollHidden/);
+ await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,window.scrollY+80)});await expect(dock).toHaveClass(/dockScrollHidden/);
  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await expect(dock).not.toHaveClass(/dockScrollHidden/);
  await page.screenshot({path:testInfo.outputPath('navigation-page-end.png')});
  await page.evaluate(()=>{show('chat');document.activeElement?.blur()});await expect(dock).not.toHaveClass(/dockScrollHidden/);
