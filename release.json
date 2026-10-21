@@ -1,13 +1,12 @@
 {
-  "version": "55.2",
+  "version": "55.3",
   "date": "21 October 2026",
-  "title": "Clearer text and roomier phone layouts",
-  "summary": "Improves reading sizes, long-name layouts and larger-text controls across the phone interface.",
+  "title": "A more compact bottom bar",
+  "summary": "Reclaims phone screen space while keeping the navigation clear and easy to tap.",
   "changes": [
-    "Uses 16px body text and 14px supporting text in the shared interface type scale.",
-    "Gives hero duty and break details wider columns, with a separate full-width colleague or coverage row.",
-    "Makes roster names and allocation labels easier to read on narrow phones.",
-    "Keeps forms readable without focus zoom and replaces the clipped hero clock explanation with a concise timing summary."
+    "Reduces the bottom bar from 68px to 56px while preserving 50px touch targets.",
+    "Keeps all five controls aligned and clear of the iPhone home indicator.",
+    "Adjusts page and chat spacing to match the smaller bar."
   ],
   "update_policy": "normal"
 }

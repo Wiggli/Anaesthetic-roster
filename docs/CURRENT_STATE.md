@@ -49,3 +49,5 @@ Release 55.0 adds a month-based Full roster overview, shortage/absence/allocatio
 Release 55.1 corrects the personal hero's live phase after midnight, including the repeated October hour; clock-change timing and allocation rules remain unchanged.
 
 Release 55.2 improves shared typography and responsive phone layouts, including hero facts, roster names and form text, without changing roster calculations or saves.
+
+Release 55.3 compacts the bottom dock to 56px with 50px controls. `--app-dock-height` also owns the main-page padding and mobile chat transcript reserve; home-indicator clearance remains separate.

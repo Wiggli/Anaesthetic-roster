@@ -646,7 +646,7 @@ assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.index
 assert.match(fs.readFileSync(path.join(__dirname,'../src/product-unified.css'),'utf8'), /button, \[role="button"\] \{ min-height: 44px/, 'canonical buttons retain a minimum 44 pixel touch target');
 const productCss = fs.readFileSync(path.join(__dirname, '..', 'src/product-unified.css'), 'utf8');
 const dockCss = fs.readFileSync(path.join(__dirname, '..', 'src/rudder-navigation.css'), 'utf8');
-assert.match(dockCss, /button[\s\S]*height: 58px; min-height: 58px/, 'dock controls must retain consistent touch targets');
+assert.match(dockCss, /--app-dock-control-height:50px[\s\S]*button[\s\S]*height: var\(--app-dock-control-height\); min-height: var\(--app-dock-control-height\)/, 'dock controls must retain consistent touch targets');
 assert.match(dockCss, /color: var\(--liquid-secondary\)/, 'inactive dock labels use the readable shared secondary token');
 assert.match(dockCss, /var\(--app-safe-bottom\)/, 'dock must preserve device safe area');
 assert.match(productCss, /--unified-base: 200ms/, 'primary navigation uses restrained shared motion');

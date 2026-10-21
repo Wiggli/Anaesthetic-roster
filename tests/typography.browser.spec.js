@@ -44,3 +44,27 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  await page.locator('#profileName').scrollIntoViewIfNeeded();await expect(page.locator('#profileName')).toBeInViewport();
  await page.locator('#accountPageOutlet').screenshot({path:testInfo.outputPath('account-content-reading.png')});
 });
+
+for(const width of [320,440])for(const large of [false,true])test(`compact dock space and safe area ${width} ${large?'large dark':'normal light'} @iphone`,async({page},testInfo)=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width,height:956});await openReview(page);
+ await page.evaluate(large=>{
+  finishLaunch(false);prepareAuthorisedShell({...currentUserProfile,active:true});
+  document.getElementById('launchScreen').style.display='none';document.querySelector('main').style.display='block';document.querySelector('.bottom').style.display='grid';
+  currentPrivateProfile.text_scale=large?'xlarge':'standard';applyTheme(large);document.body.dataset.textScale=large?'xlarge':'normal';document.documentElement.style.fontSize=large?'20px':'16px';show('today');render();
+ },large);
+ for(const safe of [34,0]){
+  await page.evaluate(safe=>document.documentElement.style.setProperty('--app-safe-bottom',safe+'px'),safe);
+  for(const view of ['today','changes','breaks','chat']){
+   await page.locator(`.bottom [data-v="${view}"]`).click();await expect(page.locator('#'+view)).toBeVisible();
+   const geometry=await page.locator('.bottom').evaluate(el=>{const box=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};return{dock:box(el),buttons:[...el.querySelectorAll('button')].map(box),labels:[...el.querySelectorAll('button>span:last-child')].map(box),padding:parseFloat(getComputedStyle(document.querySelector('main')).paddingBottom)}});
+   expect(geometry.dock.height).toBe(56);expect(geometry.dock.bottom).toBeCloseTo(956-Math.max(safe,4),0);
+   expect(geometry.buttons).toHaveLength(5);expect(Math.max(...geometry.buttons.map(b=>b.width))-Math.min(...geometry.buttons.map(b=>b.width))).toBeLessThan(1);
+   for(const b of geometry.buttons){expect(b.height).toBeGreaterThanOrEqual(44);expect(b.y).toBeGreaterThanOrEqual(geometry.dock.y);expect(b.bottom).toBeLessThanOrEqual(geometry.dock.bottom)}
+   for(const [i,label] of geometry.labels.entries()){expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);expect(label.x).toBeGreaterThanOrEqual(geometry.buttons[i].x-1);expect(label.right).toBeLessThanOrEqual(geometry.buttons[i].right+1)}
+   expect(geometry.padding).toBeGreaterThanOrEqual(geometry.dock.height+safe+16);
+  }
+  await page.locator('.bottom [data-v="today"]').click();await page.screenshot({path:testInfo.outputPath(`compact-dock-safe-${safe}.png`)});
+ }
+ await page.locator('.bottom [data-quick-rudder]').click();await expect(page.locator('#quickActionsSheet')).toBeVisible();await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).toBeHidden();
+ await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));await page.screenshot({path:testInfo.outputPath('compact-dock-page-end.png')});
+});
