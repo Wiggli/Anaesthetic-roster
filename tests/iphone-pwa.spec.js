@@ -87,6 +87,6 @@ test('iPhone landscape keeps content and bottom navigation outside notch gutters
   expect(geometry.viewRight).toBeLessThanOrEqual(844 - 44);
   expect(geometry.firstLeft).toBeGreaterThanOrEqual(44);
   expect(geometry.lastRight).toBeLessThanOrEqual(844 - 44);
-  expect(geometry.dockLeft).toBeGreaterThanOrEqual(44);
-  expect(geometry.dockRight).toBeLessThanOrEqual(844 - 44);
+  expect(geometry.dockLeft).toBeCloseTo(0,0);
+  expect(geometry.dockRight).toBeCloseTo(844,0);
 });

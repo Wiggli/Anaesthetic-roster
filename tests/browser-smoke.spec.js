@@ -954,7 +954,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   const dock = await page.locator('.bottom').boundingBox();
   const actionDisc = await page.locator('.bottom .quickRudderDisc').boundingBox();
   expect(dock).not.toBeNull();
-  expect(dock.height).toBe(56);
+  expect(dock.height).toBe(64);
   expect(actionDisc).not.toBeNull();
   expect(actionDisc.width).toBeLessThanOrEqual(38);
   expect(actionDisc.height).toBeLessThanOrEqual(38);
@@ -1137,6 +1137,7 @@ test('@iphone iPhone PWA shell remains contained across common portrait sizes', 
           dockRight: dockRect?.right ?? 0,
           dockBottom: dockRect?.bottom ?? 0,
           dockHeight: dockRect?.height ?? 0,
+          dockControlsBottom: Math.max(...Array.from(dock.querySelectorAll("button")).map(button=>button.getBoundingClientRect().bottom)),
           safeTop: top,
           safeBottom: bottom
         };
@@ -1147,11 +1148,11 @@ test('@iphone iPhone PWA shell remains contained across common portrait sizes', 
       expect(geometry.activeRight).toBeLessThanOrEqual(geometry.innerWidth + 3);
       expect(geometry.accountTop).toBeGreaterThanOrEqual(size.top);
       expect(geometry.accountRight).toBeLessThanOrEqual(size.width + 1);
-      expect(geometry.dockLeft).toBeGreaterThanOrEqual(5);
-      expect(geometry.dockRight).toBeLessThanOrEqual(size.width - 5);
-      expect(geometry.dockBottom).toBeLessThanOrEqual(size.height - size.bottom + 1);
-      expect(geometry.dockHeight).toBeGreaterThanOrEqual(60);
-      expect(geometry.dockHeight).toBeLessThanOrEqual(70);
+      expect(geometry.dockLeft).toBeCloseTo(0,0);
+      expect(geometry.dockRight).toBeCloseTo(size.width,0);
+      expect(geometry.dockBottom).toBeLessThanOrEqual(size.height + 1);
+      expect(geometry.dockControlsBottom).toBeLessThanOrEqual(size.height - size.bottom);
+      expect(geometry.dockHeight).toBe(64 + size.bottom);
     }
 
     await page.evaluate(()=>document.getElementById('accountSheet').showModal());

@@ -51,3 +51,7 @@ Release 55.1 corrects the personal hero's live phase after midnight, including t
 Release 55.2 improves shared typography and responsive phone layouts, including hero facts, roster names and form text, without changing roster calculations or saves.
 
 Release 55.3 compacts the bottom dock to 56px with 50px controls. `--app-dock-height` also owns the main-page padding and mobile chat transcript reserve; home-indicator clearance remains separate.
+
+Release 56.0 uses an edge-attached phone navigation surface with internal bottom safe-area padding. `src/dock-scroll.ts` owns scroll direction/visibility and is mounted from `src/product-interactions.ts`; keyboard focus, screen changes, Chat and page ends restore navigation. Main/Night education generations are 8/6.
+
+Retained release-note data lives in `src/legacy-ui/release-history.js`, with presentation still in foundation. The release synchroniser and generator read the archive directly and retain all previous versions; the source module size guard remains unchanged.

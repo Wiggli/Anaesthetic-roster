@@ -47,3 +47,20 @@ assert.equal(viewportProperties['--app-viewport-offset-top'],'80px');
 assert.equal(keyboardStates.at(-1)[1],true);
 viewportSandbox.window.visualViewport.height=844;viewportSandbox.window.visualViewport.offsetTop=0;viewportSandbox.document.activeElement={tagName:'BODY'};viewportSandbox.setupViewportState();
 assert.equal(viewportProperties['--app-viewport-offset-top'],'0px');assert.equal(keyboardStates.at(-1)[1],false);
+
+// Exercise direction thresholds and bounce clamping independently of animation.
+const dockModule={};
+const dockScript=require('node:module').stripTypeScriptTypes(read('src/dock-scroll.ts')).replace(/^export /gm,'');
+vm.runInNewContext(dockScript,dockModule);
+const advance=dockModule.nextDockScroll;
+let dockState={y:0,travel:0,hidden:false};
+dockState=advance(dockState,200,1000,false);assert.equal(dockState.hidden,true);
+for(let y=199;y>=192;y--)dockState=advance(dockState,y,1000,false);
+assert.equal(dockState.hidden,false,'a small deliberate upward scroll returns navigation');
+for(const y of [193,192,193,192])dockState=advance(dockState,y,1000,false);
+assert.equal(dockState.hidden,false,'direction jitter must not hide the bar');
+dockState=advance(dockState,260,1000,false);assert.equal(dockState.hidden,true);
+assert.equal(advance(dockState,280,1000,true).hidden,false,'chat, focus, editing and dialogs pin navigation');
+assert.equal(advance(dockState,1100,1000,false).hidden,false,'page end and bottom bounce restore navigation');
+assert.equal(advance(dockState,-30,1000,false).hidden,false,'top bounce restores navigation');
+assert.equal(advance(dockState,80,80,false).hidden,false,'short screens need no hidden navigation');

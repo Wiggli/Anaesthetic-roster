@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "project": "Anaesthetic Night Roster",
-  "currentRelease": "55.3",
+  "currentRelease": "56.0",
   "lastReleaseDate": "21 October 2026",
   "databaseSchema": 57,
   "sourceOfTruth": {
@@ -10,6 +10,7 @@
     "repositoryRules": "AGENTS.md",
     "runtimeSources": [
       "app-core.js",
+      "src/legacy-ui/release-history.js",
       "src/legacy-ui/foundation.js",
       "src/legacy-ui/account.js",
       "src/legacy-ui/clinical.js",

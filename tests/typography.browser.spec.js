@@ -45,7 +45,7 @@ for(const width of [320,440])for(const dark of [false,true])for(const enlarged o
  await page.locator('#accountPageOutlet').screenshot({path:testInfo.outputPath('account-content-reading.png')});
 });
 
-for(const width of [320,440])for(const large of [false,true])test(`compact dock space and safe area ${width} ${large?'large dark':'normal light'} @iphone`,async({page},testInfo)=>{
+for(const width of [320,440])for(const large of [false,true])test(`bottom navigation safe area ${width} ${large?'large dark':'normal light'} @iphone`,async({page},testInfo)=>{
  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width,height:956});await openReview(page);
  await page.evaluate(large=>{
   finishLaunch(false);prepareAuthorisedShell({...currentUserProfile,active:true});
@@ -56,15 +56,61 @@ for(const width of [320,440])for(const large of [false,true])test(`compact dock 
   await page.evaluate(safe=>document.documentElement.style.setProperty('--app-safe-bottom',safe+'px'),safe);
   for(const view of ['today','changes','breaks','chat']){
    await page.locator(`.bottom [data-v="${view}"]`).click();await expect(page.locator('#'+view)).toBeVisible();
-   const geometry=await page.locator('.bottom').evaluate(el=>{const box=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};return{dock:box(el),buttons:[...el.querySelectorAll('button')].map(box),labels:[...el.querySelectorAll('button>span:last-child')].map(box),padding:parseFloat(getComputedStyle(document.querySelector('main')).paddingBottom)}});
-   expect(geometry.dock.height).toBe(56);expect(geometry.dock.bottom).toBeCloseTo(956-Math.max(safe,4),0);
+   const geometry=await page.locator('.bottom').evaluate(el=>{const box=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};return{dock:box(el),buttons:[...el.querySelectorAll('button')].map(box),labels:[...el.querySelectorAll('button>.navLabel')].map(box),padding:parseFloat(getComputedStyle(document.querySelector('main')).paddingBottom)}});
+   expect(geometry.dock.height).toBe(64+safe);expect(geometry.dock.bottom).toBeCloseTo(956,0);
    expect(geometry.buttons).toHaveLength(5);expect(Math.max(...geometry.buttons.map(b=>b.width))-Math.min(...geometry.buttons.map(b=>b.width))).toBeLessThan(1);
    for(const b of geometry.buttons){expect(b.height).toBeGreaterThanOrEqual(44);expect(b.y).toBeGreaterThanOrEqual(geometry.dock.y);expect(b.bottom).toBeLessThanOrEqual(geometry.dock.bottom)}
-   for(const [i,label] of geometry.labels.entries()){expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);expect(label.x).toBeGreaterThanOrEqual(geometry.buttons[i].x-1);expect(label.right).toBeLessThanOrEqual(geometry.buttons[i].right+1)}
-   expect(geometry.padding).toBeGreaterThanOrEqual(geometry.dock.height+safe+16);
+   expect(geometry.labels).toHaveLength(5);for(const [i,label] of geometry.labels.entries()){expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);expect(label.x).toBeGreaterThanOrEqual(geometry.buttons[i].x-1);expect(label.right).toBeLessThanOrEqual(geometry.buttons[i].right+1)}
+   expect(geometry.padding).toBeGreaterThanOrEqual(geometry.dock.height+16);
   }
   await page.locator('.bottom [data-v="today"]').click();await page.screenshot({path:testInfo.outputPath(`compact-dock-safe-${safe}.png`)});
  }
  await page.locator('.bottom [data-quick-rudder]').click();await expect(page.locator('#quickActionsSheet')).toBeVisible();await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).toBeHidden();
  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));await page.screenshot({path:testInfo.outputPath('compact-dock-page-end.png')});
+});
+
+for(const width of [320,440])for(const dark of [false,true])test(`scroll-aware navigation reading ${width} ${dark?'dark large':'light'} @iphone`,async({page},testInfo)=>{
+ test.setTimeout(60000);await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width,height:956});await openReview(page);
+ await page.evaluate(dark=>{
+  finishLaunch(false);prepareAuthorisedShell({...currentUserProfile,active:true});document.getElementById('launchScreen').style.display='none';document.querySelector('main').style.display='block';document.querySelector('.bottom').style.display='grid';
+  currentPrivateProfile.text_scale=dark?'xlarge':'standard';applyTheme(dark);document.body.dataset.textScale=dark?'xlarge':'normal';document.documentElement.style.fontSize=dark?'20px':'16px';
+  document.documentElement.style.setProperty('--app-safe-bottom','34px');idx=R.findIndex(n=>n.date==='2026-10-24');show('today');render();document.querySelector('#today .nightTeamDetails').open=true;clearUpdateNotice();
+ },dark);
+ const dock=page.locator('.bottom');await expect(dock).toBeVisible();
+ expect(await dock.evaluate(el=>getComputedStyle(el).backgroundColor)).toMatch(/^rgb\(/);
+ // Use the actual long published roster so the test has substantial scrollable content.
+ await page.evaluate(()=>{show('roster');renderRoster()});await expect(page.locator('.rosterExperienceCard').first()).toBeVisible();
+ await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,260)});await expect(dock).toHaveClass(/dockScrollHidden/);
+ expect(await dock.evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-reading-hidden.png')});
+ await page.evaluate(()=>scrollTo(0,240));await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-reading-returned.png')});
+ await page.evaluate(()=>scrollTo(0,320));await expect(dock).toHaveClass(/dockScrollHidden/);
+ await page.locator('.bottom [data-v="today"]').focus();await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ await page.locator('.bottom [data-v="today"]').click();await expect(page.locator('#today')).toBeVisible();await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ await page.evaluate(()=>{show('roster');renderRoster()});await expect(page.locator('.rosterExperienceCard').first()).toBeVisible();
+ await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,window.scrollY+80)});await expect(dock).toHaveClass(/dockScrollHidden/);
+ await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-page-end.png')});
+ await page.evaluate(()=>{show('chat');document.activeElement?.blur()});await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ await page.evaluate(()=>scrollTo(0,260));await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ await page.locator('[data-quick-rudder]').click();await expect(page.locator('#quickActionsSheet')).toBeVisible();await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).toBeHidden();
+ await page.setViewportSize({width:844,height:390});await page.evaluate(()=>{document.documentElement.style.setProperty('--app-safe-left','44px');document.documentElement.style.setProperty('--app-safe-right','44px');document.documentElement.style.setProperty('--app-safe-bottom','21px')});
+ await expect(dock).not.toHaveClass(/dockScrollHidden/);
+ const controls=await dock.locator('button').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect();return{left:r.left,right:r.right,bottom:r.bottom}}));
+ for(const r of controls){expect(r.left).toBeGreaterThanOrEqual(44);expect(r.right).toBeLessThanOrEqual(800);expect(r.bottom).toBeLessThanOrEqual(369)}
+ expect(await dock.evaluate(el=>getComputedStyle(el).transitionDuration)).toBe('0s');
+});
+
+test('navigation fallback keeps all labels clear while its module is unavailable @iphone',async({page},testInfo)=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:320,height:956});
+ await page.route('**/assets/navigation-*.js',route=>route.abort());await openReview(page);
+ await page.evaluate(()=>{finishLaunch(false);prepareAuthorisedShell({...currentUserProfile,active:true});document.getElementById('launchScreen').style.display='none';document.querySelector('main').style.display='block';document.querySelector('.bottom').style.display='grid';document.documentElement.style.fontSize='20px';document.body.dataset.textScale='xlarge';show('today');render()});
+ await expect(page.locator('.bottom [data-react-navigation]')).toHaveCount(0);
+ for(const view of ['changes','breaks','chat','today']){
+  await page.locator(`.bottom [data-v="${view}"]`).click();await expect(page.locator('#'+view)).toBeVisible();
+  const labels=await page.locator('.bottom button').evaluateAll(ns=>ns.map(n=>{const label=n.querySelector('.navLabel'),a=label.getBoundingClientRect(),b=n.getBoundingClientRect();return{font:parseFloat(getComputedStyle(label).fontSize),left:a.left,right:a.right,slotLeft:b.left,slotRight:b.right}}));
+  expect(labels).toHaveLength(5);for(const label of labels){expect(label.font).toBe(12);expect(label.left).toBeGreaterThanOrEqual(label.slotLeft-1);expect(label.right).toBeLessThanOrEqual(label.slotRight+1)}
+ }
+ await expect(page.locator('#toast')).toBeHidden({timeout:4000});await page.screenshot({path:testInfo.outputPath('navigation-fallback.png')});
 });

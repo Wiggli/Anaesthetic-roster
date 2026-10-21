@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const file = name => path.join(root, name);
 const read = name => fs.readFileSync(file(name), 'utf8');
 const uiSources = [
+  'src/legacy-ui/release-history.js',
   'src/legacy-ui/foundation.js',
   'src/legacy-ui/account.js',
   'src/legacy-ui/clinical.js',
@@ -22,7 +23,7 @@ function fail(message) {
 function releaseHistory(source) {
   const marker = 'var RELEASE_HISTORY=';
   const markerIndex = source.indexOf(marker);
-  if (markerIndex < 0) fail('src/legacy-ui/foundation.js is missing RELEASE_HISTORY.');
+  if (markerIndex < 0) fail('src/legacy-ui/release-history.js is missing RELEASE_HISTORY.');
   const start = source.indexOf('[', markerIndex + marker.length);
   let depth = 0;
   let quote = '';
@@ -80,7 +81,7 @@ const projectState = JSON.parse(read('.project-state.json'));
 if (projectState.currentRelease !== version) fail('.project-state.json currentRelease does not match release.json.');
 if (projectState.databaseSchema !== Number(core.match(/var EXPECTED_SCHEMA_VERSION = (\d+);/)?.[1])) fail('.project-state.json databaseSchema does not match EXPECTED_SCHEMA_VERSION.');
 
-for (const name of ['index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css', 'theme-bootstrap.js', ...uiSources]) {
+for (const name of ['index.html', 'manifest.webmanifest', 'service-worker.js', 'styles.css', 'theme-bootstrap.js', ...uiSources.slice(1)]) {
   const source = read(name);
   const refs = Array.from(source.matchAll(/\?v=(\d+(?:\.\d+)+)/g), match => match[1]);
   if (!refs.length && !uiSources.includes(name) && !(name==='styles.css' && !/url\(/i.test(source))) fail(`${name} has no versioned asset references to verify.`);

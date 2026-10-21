@@ -29,7 +29,7 @@ const personalisationMigration = fs.readFileSync(path.join(root, 'supabase', 'mi
 new vm.Script(chat, { filename: 'chat.js' });
 
 assert.match(html, /id="chat" class="view hidden"/, 'chat must remain an isolated app view');
-assert.match(html, /data-v="chat"[^>]*>[\s\S]*?<span>Chat<\/span>[\s\S]*?id="chatUnreadBadge"/, 'bottom navigation must expose Chat with an unread badge');
+assert.match(html, /data-v="chat"[^>]*>[\s\S]*?<span class="navLabel">Chat<\/span>[\s\S]*?id="chatUnreadBadge"/, 'bottom navigation must expose Chat with an unread badge');
 assert.match(html, /id="chatTeamEntry"[\s\S]*id="chatTeamName">Anaesthetic Team/, 'Anaesthetic Team must be pinned as the first inbox conversation');
 assert.match(html, /id="chatInboxHeading" class="srOnly">Team and direct messages</, 'the messaging home must expose one accessible Team and direct-message hierarchy');
 assert.match(html, /id="chatRosterContextDate"[\s\S]*id="chatShiftNameBtn"/, 'Chat must expose selected-night context and a shared shift-naming action');

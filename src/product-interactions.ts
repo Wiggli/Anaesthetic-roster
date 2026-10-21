@@ -1,4 +1,5 @@
 import { motionIsReduced, productHaptic } from './product-motion';
+import { setupDockScroll } from './dock-scroll';
 
 type Member = { personKey: string; displayName: string; available: boolean };
 let members: Member[] = [];
@@ -144,3 +145,5 @@ function setupRefresh() {
 
 setupActionsDismissal();
 setupRefresh();
+
+setupDockScroll();
