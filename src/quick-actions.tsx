@@ -64,7 +64,7 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
   const editReason = model.editReason || 'Shared editing is temporarily unavailable.';
   const contextAria = model.contextLabel + ', ' + model.dateLabel + ', ' + model.staffingLabel + ', ' + model.planLabel;
   const attentionDetail = model.attentionCount
-    ? model.attentionCount + ' item' + (model.attentionCount === 1 ? '' : 's') + ' need attention'
+    ? model.attentionCount + ' item' + (model.attentionCount === 1 ? ' needs' : 's need') + ' attention'
     : 'Staffing, allocation and confirmation';
 
   return <motion.div
@@ -98,7 +98,7 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
     <Pressable type="button" className="quickReviewAction" onClick={() => act('review')}>
       <span className="quickReviewIcon"><Icon kind="review" /></span>
       <span className="quickReviewCopy">
-        <small>{model.attentionCount ? 'Needs attention' : 'Tonight'}</small>
+        <small>{model.attentionCount ? 'Needs attention' : model.contextLabel}</small>
         <strong>{model.attentionCount ? 'Review changes' : 'Review this night'}</strong>
         <span>{attentionDetail}</span>
       </span>

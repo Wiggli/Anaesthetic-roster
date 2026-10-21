@@ -760,7 +760,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         <span className="personalClockExceptionCopy">
           <small>Clock-change night · equal duty</small>
           <strong>Handover {model.clockChange.handoverDisplay || model.clockChange.handover}</strong>
-          <span>{model.clockChange.summary}</span>
+          <span>{model.clockChange.partHoursLabel} per part · {model.clockChange.totalHoursLabel} from midnight</span>
         </span>
         <i aria-hidden="true">›</i>
       </Pressable>}

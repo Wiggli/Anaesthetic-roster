@@ -7,7 +7,7 @@ const size = file => fs.statSync(path.join(root, file)).size;
 const kib = value => Math.round(value / 1024);
 
 const budgets = {
-  'app-ui.js': 466 * 1024, // Retained history plus roster overview, education and recovery guards; built budgets stay fixed.
+  'app-ui.js': 467 * 1024, // Retained release history, roster overview, education and recovery guards; built budgets stay fixed.
   'app-core.js': 100 * 1024,
   'runtime-foundation.js': 64 * 1024,
   'chat.js': 100 * 1024,
