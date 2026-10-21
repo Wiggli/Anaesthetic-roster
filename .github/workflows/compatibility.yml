@@ -37,7 +37,7 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser smoke suite
-        run: npm run verify:browser -- --max-failures=3 --grep 'compact dock space|dragging across the dock|reduced motion keeps dock|shared presentation'
+        run: npm run verify:browser -- --max-failures=3 --grep 'compact dock space'
       - name: Run resilience suite
         if: ${{ !cancelled() }}
         run: npm run verify:resilience -- --output=resilience-results

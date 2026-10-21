@@ -60,7 +60,7 @@ for(const width of [320,440])for(const large of [false,true])test(`compact dock 
    expect(geometry.dock.height).toBe(56);expect(geometry.dock.bottom).toBeCloseTo(956-Math.max(safe,4),0);
    expect(geometry.buttons).toHaveLength(5);expect(Math.max(...geometry.buttons.map(b=>b.width))-Math.min(...geometry.buttons.map(b=>b.width))).toBeLessThan(1);
    for(const b of geometry.buttons){expect(b.height).toBeGreaterThanOrEqual(44);expect(b.y).toBeGreaterThanOrEqual(geometry.dock.y);expect(b.bottom).toBeLessThanOrEqual(geometry.dock.bottom)}
-   for(const label of geometry.labels)expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);
+   for(const [i,label] of geometry.labels.entries()){expect(label.bottom).toBeLessThanOrEqual(geometry.dock.bottom);expect(label.x).toBeGreaterThanOrEqual(geometry.buttons[i].x-1);expect(label.right).toBeLessThanOrEqual(geometry.buttons[i].right+1)}
    expect(geometry.padding).toBeGreaterThanOrEqual(geometry.dock.height+safe+16);
   }
   await page.locator('.bottom [data-v="today"]').click();await page.screenshot({path:testInfo.outputPath(`compact-dock-safe-${safe}.png`)});
