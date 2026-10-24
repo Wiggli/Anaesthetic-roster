@@ -16,6 +16,7 @@ async function fourNight(page,absence='James',saved=true){
 for(const width of [320,440])for(const theme of ['light','dark'])test(`four-nurse Pager arrangement ${width} ${theme} @iphone`,async({page},info)=>{
  await page.setViewportSize({width,height:956});await fourNight(page);await page.evaluate(theme=>setThemePreference(theme),theme);
  await expect(page.locator('#changesModeStatus')).toContainText('4');
+ await expect(page.locator('[data-night-role="first1"]')).toBeVisible();
  await expect(page.locator('#reactChangesTab-confirm')).toBeDisabled();
  const slots=page.locator('[data-shared-pager-index]');await expect(slots).toHaveCount(4);
  for(const [i,name] of ['Shaun','Michael G','Andre','Michael D'].entries())await page.locator(`[data-shared-pager-index="${i}"]`).selectOption(name);
@@ -30,6 +31,7 @@ for(const width of [320,440])for(const theme of ['light','dark'])test(`four-nurs
  await hero.scrollIntoViewIfNeeded();await page.screenshot({path:`/tmp/night-plan-${width}-${theme}.png`,fullPage:true});
  await page.evaluate(()=>performQuickAction('night-plan'));await expect(page.locator('#nightPlanSummaryDialog')).toContainText('PROVISIONAL · 4 present');await expect(page.locator('#nightPlanSummaryDialog')).toContainText('03:00–05:00');
  await page.locator('#nightPlanSummaryDialog [data-close]').click();
+ await hero.locator('[data-edit-theatre-positions]').click();await expect(page.locator('[data-night-role="first1"]')).toBeVisible();
  await page.evaluate(()=>show('breaks'));await expect(page.locator('#sharedPagerBreaks')).toContainText('André Bartolo');
 });
 test('Pager remains discoverable before theatre placement and when Pager nurse absent @iphone',async({page})=>{
@@ -53,8 +55,8 @@ test('failed theatre save retains choices and enables retry after entering reaso
 test('failed Pager save retains manual order and personal Pager opens its editor @iphone',async({page})=>{
  await fourNight(page);await page.evaluate(()=>{const save=supa.rpc;supa.rpc=async(name,p)=>{if(name==='set_night_shared_pager_order_v56'&&!window.retryPager){window.retryPager=true;return{error:{message:'Connection failed'}}}return save(name,p)}});
  for(const [i,name] of ['Shaun','Michael G','Andre','Michael D'].entries())await page.locator(`[data-shared-pager-index="${i}"]`).selectOption(name);
- await page.locator('[data-shared-pager-save]').click();await expect(page.locator('[data-shared-pager-index="2"]')).toHaveValue('Andre');
- await page.locator('[data-shared-pager-save]').click();await page.evaluate(()=>show('today'));
+ await page.locator('[data-shared-pager-save]').click();await expect(page.locator('#toast')).toContainText('Shared Pager order could not be saved');await expect(page.locator('[data-shared-pager-index="2"]')).toHaveValue('Andre');
+ await page.locator('[data-shared-pager-save]').click();await expect(page.locator('#toast')).toContainText('Shared Pager order saved for everyone');await page.evaluate(()=>show('today'));
  await expect(page.locator('.personalPagerBrief')).toContainText('Your Pager · turn 3');await expect(page.locator('.personalPagerBrief')).toContainText('03:00–05:00');
  await page.locator('.personalPagerBrief').click();await expect(page.locator('#sharedPagerEditor')).toBeVisible();
  await page.evaluate(()=>show('breaks'));await expect(page.locator('#breakPersonalSummary')).toContainText('First break · provisional');

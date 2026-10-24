@@ -303,9 +303,9 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
   }, [fourPending]);
   if (model.notice) return <div className="time">{model.notice}</div>;
 
-  return <details className="nightRoleEditor" open={model.open}>
+  return <details className="nightRoleEditor" open={model.mode === '4' || model.open}>
     <summary>
-      <span><b>{model.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}</b><small>{model.summary}</small></span>
+      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Change this night’s roles'}</b><small>{model.summary}</small></span>
       <span aria-hidden="true">›</span>
     </summary>
     <div className="nightRoleEditorBody">
