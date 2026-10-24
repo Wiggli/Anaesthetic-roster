@@ -62,3 +62,4 @@ jobs:
           git add src/legacy-ui/release-history.js release.json app-ui.js
           git commit -m "docs: focus release notes on four-nurse allocation [notes-done]"
           git push origin HEAD:chore/release-notes-four-nurse-focus
+# trigger
