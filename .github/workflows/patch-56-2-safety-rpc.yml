@@ -1,0 +1,34 @@
+name: Patch 56.2 safety RPC contract
+
+on:
+  push:
+    branches: [fix/four-nurse-role-reassignment]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[safety-rpc-patched]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/four-nurse-role-reassignment
+      - name: Update safety RPC assertion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/safety-coverage.test.js')
+          text = path.read_text()
+          old = "assert.match(source['app-ui.js'], /apply_night_role_override_v49/, 'night-only role changes must use the schema-49 guarded RPC');"
+          new = "assert.match(source['app-ui.js'], /apply_night_role_override_v57/, 'night-only role changes must use the guarded four-nurse-aware RPC');"
+          if old not in text:
+              raise SystemExit('old safety role RPC assertion not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/safety-coverage.test.js
+          git commit -m "test: recognise guarded v57 safety path [safety-rpc-patched]"
+          git push origin HEAD:fix/four-nurse-role-reassignment
