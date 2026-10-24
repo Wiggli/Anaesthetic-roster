@@ -15,11 +15,11 @@ export type QuickActionsModel = {
 
 let root: Root | undefined;
 
-function act(action: 'absence' | 'overtime' | 'review' | 'private-chat' | 'share' | 'night-plan') {
+function act(action: 'absence' | 'overtime' | 'roles' | 'breaks' | 'review' | 'private-chat' | 'share' | 'night-plan') {
   window.dispatchEvent(new CustomEvent('roster:quick-action', { detail: { action } }));
 }
 
-function Icon({ kind }: { kind: 'absence' | 'overtime' | 'review' | 'chat' | 'share' }) {
+function Icon({ kind }: { kind: 'absence' | 'overtime' | 'roles' | 'breaks' | 'review' | 'chat' | 'share' }) {
   if (kind === 'absence') return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M4.5 18c.6-3 2.2-4.5 4.5-4.5 1.1 0 2 .3 2.8.8M15 14l5 5M20 14l-5 5"/></svg>;
   if (kind === 'overtime') return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M4.5 18c.7-3 2.2-4.5 4.5-4.5S13 15 13.5 18M18 8v6M15 11h6"/></svg>;
   if (kind === 'review') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5z"/><path d="M8 9h8M8 13h5"/><path d="m14.5 16 1.5 1.5 3-3"/></svg>;
@@ -28,8 +28,8 @@ function Icon({ kind }: { kind: 'absence' | 'overtime' | 'review' | 'chat' | 'sh
 }
 
 function PrimaryAction({ action, icon, title, detail, disabled }: {
-  action: 'absence' | 'overtime';
-  icon: 'absence' | 'overtime';
+  action: 'absence' | 'overtime' | 'roles' | 'breaks';
+  icon: 'absence' | 'overtime' | 'review';
   title: string;
   detail: string;
   disabled?: boolean;
@@ -82,7 +82,7 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
       <PrimaryAction
         action="absence"
         icon="absence"
-        title="Report an absence"
+        title="Someone is absent"
         detail={blocked ? editReason : 'Leave or sickness'}
         disabled={blocked}
       />
@@ -93,6 +93,8 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
         detail={blocked ? editReason : 'Cover this night'}
         disabled={blocked}
       />
+      <PrimaryAction action="roles" icon="review" title="Swap assignments" detail={blocked ? editReason : 'Theatre and Pager roles'} disabled={blocked} />
+      <PrimaryAction action="breaks" icon="review" title="View break arrangement" detail="Follows the latest saved roles" />
     </section>
 
     <Pressable type="button" className="quickReviewAction" onClick={() => act('review')}>

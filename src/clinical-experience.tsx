@@ -259,6 +259,7 @@ function nightVisualPhase(model: PersonalNight, value = new Date()) {
 function goToChanges(target: 'staffing' | 'allocation') {
   softHaptic();
   window.show?.('changes');
+  window.dispatchEvent(new CustomEvent('roster:changes-step-request', { detail: { step: target } }));
   window.setTimeout(() => {
     const selector = target === 'staffing' ? '#changesStaffingPane' : '#changesAllocationPane';
     document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -492,7 +493,7 @@ function NightStatus({ model }: { model: NightSummary }) {
   const completed = !provisional && !previousReady.current.ready && previousReady.current.date === model.date;
   useEffect(() => { previousReady.current = {ready: !provisional, date: model.date}; }, [provisional,model.date]);
   const staffingLabel = [
-    `${model.nurseCount} nurses`,
+    `${model.nurseCount} present`,
     model.absenceCount ? `${model.absenceCount} absent` : '',
     model.overtimeCount ? `${model.overtimeCount} overtime` : ''
   ].filter(Boolean).join(' · ');
@@ -503,7 +504,7 @@ function NightStatus({ model }: { model: NightSummary }) {
       <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : 'nightTeamStaffing'}>{feedback || staffingLabel}</span>
       <span className="nightSignalState">
         <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
-        <b>{model.nurseCount < 5 ? 'Provisional cover' : provisional ? 'Review needed' : 'Plan ready'}</b>
+        <b>{model.nurseCount < 5 ? 'Provisional cover' : provisional ? model.decisionTasks || model.labourPending ? 'Decision needed' : 'Review changes' : 'Plan ready'}</b>
       </span>
     </div>
     {model.taskCount > 0 && !hasSpecificDecision && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
@@ -867,7 +868,7 @@ function NightRoles({ model }: { model: NightSummary }) {
     window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
   };
   return <>
-    {hasMine && <div className="nightRoleTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToMine}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
+    <div className="nightRoleTools"><Pressable type="button" className="jumpToMeButton" onClick={openRoleEditor}>Edit theatre / Pager</Pressable><Pressable type="button" className="jumpToMeButton" onClick={() => window.show?.('breaks')}>View breaks</Pressable>{hasMine && model.roles.length > 4 && <><Pressable type="button" className="jumpToMeButton" onClick={jumpToMine}>Jump to me <span aria-hidden="true">↓</span></Pressable></>}</div>
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => {
         const liveState = roleLiveState(role, model.currentPart);
@@ -908,9 +909,8 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
     onClick={openRoleEditor}
     aria-label={`Change the full-night Labour Ward or Pager allocation for ${arrangement.name}`}
   >
-    <span className="fiveNurseLabel">Five-nurse arrangement · Full night</span>
+    <span className="fiveNurseLabel">Labour Ward / Pager · Full night</span>
     <strong>{arrangement.name}</strong>
-    <p>{arrangement.reason}</p>
     <small>Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</small>
     <i aria-hidden="true">›</i>
   </Pressable>;

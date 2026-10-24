@@ -895,3 +895,22 @@ body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsRevi
 .rosterOverviewSummary>span,.rosterOverviewSummary>button{flex:1 1 110px;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .workloadSort{flex-wrap:wrap;min-width:0}
 .workloadSort select{min-width:0;flex:1 1 140px}
+
+/* Routine-night workflow: one visible plan and direct, wrapping actions. */
+.nightRoleTools{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;padding:8px 0}
+.nightRoleTools button{min-height:44px;white-space:normal}
+.nightTeamDetails[open]>summary{margin-bottom:4px}
+#today .nightSituationTimeline .rosterRow{min-height:76px;padding-block:12px}
+#today .fiveNurseSurface{padding:16px;margin-top:8px}
+#today .fiveNurseSurface small{display:block;white-space:normal}
+.roleDutyHint{display:block;font-size:.8rem;font-weight:500;color:var(--muted);line-height:1.5}
+.nightRoleEditor .editGrid label{min-width:0}
+.staffingActionRow{flex-wrap:wrap;gap:12px}
+.staffingAddButton{white-space:normal;min-height:44px}
+
+#today .nightSituationTimeline .rosterRow{grid-template-columns:44px minmax(0,1fr);gap:8px;padding:12px 8px 12px 12px}
+#today .nightSituationTimeline .rosterRow::after{display:none}
+#today .nightSituationTimeline .rosterRowBadges{grid-column:2;display:flex;flex-wrap:wrap;gap:6px}
+#today .nightSituationTimeline .rosterRowMeta{font-size:.875rem;line-height:1.45}
+#today .nightRoleTools{border:0;background:transparent;box-shadow:none}
+#today .nightRoleTools .jumpToMeButton{font-size:.875rem;padding:8px 12px}
