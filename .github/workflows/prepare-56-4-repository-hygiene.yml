@@ -1,0 +1,73 @@
+name: Prepare 56.4 repository hygiene
+
+on:
+  push:
+    branches: [chore/56-4-repository-hygiene]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: ${{ !contains(github.event.head_commit.message, '[hygiene-prepared]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: chore/56-4-repository-hygiene
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Remove stale version fallback and add regression guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          path = Path('src/shared-pager.ts')
+          text = path.read_text()
+          old = "p_client_version: String(g.APP_VERSION || '56.0')"
+          new = "p_client_version: String(g.APP_VERSION || 'unknown')"
+          if old not in text:
+              raise SystemExit('stale shared Pager version fallback not found')
+          path.write_text(text.replace(old, new, 1))
+
+          test = Path('tests/shared-pager.test.js')
+          t = test.read_text()
+          anchor = "assert.match(source, /set_night_shared_pager_order_v56/, 'frontend must save through the guarded RPC');"
+          addition = "\nassert.doesNotMatch(source, /APP_VERSION \\|\\| ['\"]56\\.[0-9]+['\"]/, 'shared Pager must not carry a hard-coded historical app-version fallback');\nassert.match(source, /APP_VERSION \\|\\| 'unknown'/, 'shared Pager must fail closed when runtime version metadata is unavailable');"
+          if anchor not in t:
+              raise SystemExit('shared Pager test anchor not found')
+          if 'hard-coded historical app-version fallback' not in t:
+              t = t.replace(anchor, anchor + addition, 1)
+          test.write_text(t)
+
+          release = {
+            'version': '56.4',
+            'date': '24 October 2026',
+            'title': 'Repository and version hygiene',
+            'summary': 'Keeps the deployed Night Roster release metadata and Shared Pager client version references internally consistent.',
+            'changes': [
+              'Removed the stale 56.0 Shared Pager client-version fallback.',
+              'Shared Pager now uses the live application version and fails closed if version metadata is unexpectedly unavailable.',
+              'Added a regression check preventing historical hard-coded app-version fallbacks from returning.',
+              'Regenerated release metadata, runtime assets and PWA cache references for one consistent 56.4 build.',
+              'No clinical allocation, Pager timing or roster behaviour was changed.'
+            ],
+            'update_policy': 'important'
+          }
+          Path('release.json').write_text(json.dumps(release, indent=2, ensure_ascii=False) + '\n')
+          PY
+      - name: Synchronise release artifacts
+        run: npm run release
+      - name: Verify full deterministic gate
+        run: npm run verify:fast
+      - name: Commit prepared release
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/shared-pager.ts tests/shared-pager.test.js release.json package.json package-lock.json app-ui.js app-core.js service-worker.js index.html manifest.webmanifest styles.css theme-bootstrap.js .project-state.json src/legacy-ui/release-history.js src/legacy-ui/foundation.js
+          git commit -m "chore: align repository version references for 56.4 [hygiene-prepared]"
+          git push origin HEAD:chore/56-4-repository-hygiene
