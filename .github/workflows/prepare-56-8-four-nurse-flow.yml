@@ -20,39 +20,48 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Fix four-nurse allocation messaging and release metadata
+      - name: Fix four-nurse Changes flow and release metadata
         run: |
           python - <<'PY'
           from pathlib import Path
           import json
 
-          p=Path('src/legacy-ui/clinical.js')
+          p=Path('src/changes-experience.tsx')
           s=p.read_text()
-          old="""  var extras=additionalNurses(plan),summary,seventhInfo=seventhDecisionCard(plan);\n  if(plan.requiresCoverageChoice)summary='<b>'+plan.count+' nurses working this night</b><div class=\"time\">Choose and save the Reliever’s theatre role first. The remaining positions will then appear for overtime nurses.</div>';\n  else if(plan.requiresSeventhDecision)summary='<b>Seventh-nurse decision required</b><div class=\"time\">Review the proposed move below. Your choice determines which allocation the overtime nurse will fill.</div>';\n  else if(!overtime.length)summary=workflowHasManualPlan(base)?'<b>No allocation decision needed</b><div class=\"time\">This night’s roles are calculated. Review them before sharing the staffing change.</div>':'<b>No allocation changes</b><div class=\"time\">This night’s roles are calculated automatically.</div>';\n"""
-          new="""  var extras=additionalNurses(plan),summary,seventhInfo=seventhDecisionCard(plan),r=nightRoleOverrideModel(base),fourPending=!!(r&&r.mode==='4'&&!r.stored);\n  if(plan.requiresCoverageChoice)summary='<b>'+plan.count+' nurses working this night</b><div class=\"time\">Choose and save the Reliever’s theatre role first. The remaining positions will then appear for overtime nurses.</div>';\n  else if(plan.requiresSeventhDecision)summary='<b>Seventh-nurse decision required</b><div class=\"time\">Review the proposed move below. Your choice determines which allocation the overtime nurse will fill.</div>';\n  else if(fourPending)summary='<b>Finish the four-nurse theatre arrangement</b><div class=\"time\">Assign all four theatre positions and save. Shared Pager order comes next.</div>';\n  else if(!overtime.length)summary=workflowHasManualPlan(base)?'<b>No allocation decision needed</b><div class=\"time\">This night’s roles are calculated. Review them before sharing the staffing change.</div>':'<b>No allocation changes</b><div class=\"time\">This night’s roles are calculated automatically.</div>';\n"""
-          if old not in s: raise SystemExit('allocation summary target not found')
+          old="""function AllocationList({ model }: { model: ChangesExperience }) {\n  useLayoutEffect(() => {\n    dispatchAction({ action: 'allocation-mounted' });\n  }, [model]);\n\n  if (!model.allocations.length) return <Surface className=\"tw:shadow-none\">\n"""
+          new="""function AllocationList({ model }: { model: ChangesExperience }) {\n  useLayoutEffect(() => {\n    dispatchAction({ action: 'allocation-mounted' });\n  }, [model]);\n\n  if (model.roleOverride?.mode === '4' && !model.roleOverride.stored) return null;\n  if (!model.allocations.length) return <Surface className=\"tw:shadow-none\">\n"""
+          if old not in s: raise SystemExit('AllocationList target not found')
           s=s.replace(old,new,1)
-          old2="""  var allocationMessage=plan.requiresCoverageChoice?'The overtime choices will appear after the reliever allocation is saved.':plan.requiresSeventhDecision?'Choose the seventh-nurse option above. The correct overtime allocation will then appear here.':'There are no required allocations to finalise.';\n"""
-          new2="""  var allocationMessage=fourPending?'Finish and save the theatre arrangement above first.':plan.requiresCoverageChoice?'The overtime choices will appear after the reliever allocation is saved.':plan.requiresSeventhDecision?'Choose the seventh-nurse option above. The correct overtime allocation will then appear here.':'There are no required allocations to finalise.';\n"""
-          if old2 not in s: raise SystemExit('allocation message target not found')
+
+          old2="""function RoleOverrideEditor({ model }: { model: RoleOverride }) {\n  if (model.notice) return <div className=\"time\">{model.notice}</div>;\n\n  return <details className=\"nightRoleEditor\" open={model.open}>\n"""
+          new2="""function RoleOverrideEditor({ model }: { model: RoleOverride }) {\n  const fourPending = model.mode === '4' && !model.stored;\n  useLayoutEffect(() => {\n    const summary = document.getElementById('allocationSummary');\n    if (summary) summary.hidden = fourPending;\n    return () => { if (summary) summary.hidden = false; };\n  }, [fourPending]);\n  if (model.notice) return <div className=\"time\">{model.notice}</div>;\n\n  return <details className=\"nightRoleEditor\" open={model.open}>\n"""
+          if old2 not in s: raise SystemExit('RoleOverrideEditor target not found')
           p.write_text(s.replace(old2,new2,1))
 
-          release={'version':'56.8','date':'24 October 2026','title':'Clear four-nurse allocation flow','summary':'Removes contradictory allocation messaging while the four-nurse theatre arrangement is incomplete.','changes':['Shows a clear theatre-arrangement task while a position is still unassigned.','Explains that shared Pager order comes after theatre positions are saved.','Stops no-allocation-needed messaging while Review changes is blocked.','Keeps staffing, Pager, DST, audit and sync logic unchanged.'],'update_policy':'normal'}
+          release={'version':'56.8','date':'24 October 2026','title':'Clear four-nurse allocation flow','summary':'Keeps the exceptional four-nurse Changes screen focused on the decision that actually remains.','changes':['Removes the no-allocation-needed panel while the four-nurse theatre arrangement is incomplete.','Keeps the theatre-position editor as the single active task until all four positions are saved.','Leaves Review changes blocked until that arrangement is complete, without contradictory messaging.','Keeps staffing, shared Pager, DST, audit and synchronisation logic unchanged.'],'update_policy':'normal'}
           Path('release.json').write_text(json.dumps(release,indent=2)+"\n")
 
           t=Path('tests/product-interactions.test.js')
           ts=t.read_text(); marker="const account=fs.readFileSync('src/account-experience.tsx','utf8');"
-          add="const clinicalFlow=fs.readFileSync('src/legacy-ui/clinical.js','utf8');assert.match(clinicalFlow,/fourPending[\\s\\S]*Finish the four-nurse theatre arrangement/,'incomplete four-nurse roles show the real next task');assert.match(clinicalFlow,/Finish and save the theatre arrangement above first/,'four-nurse empty allocation state is not contradictory');\n"
-          if marker in ts and 'incomplete four-nurse roles show the real next task' not in ts: t.write_text(ts.replace(marker,add+marker,1))
+          add="const changesExperience=fs.readFileSync('src/changes-experience.tsx','utf8');assert.match(changesExperience,/roleOverride\\?\\.mode === '4'[\\s\\S]*return null/,'four-nurse pending state hides the generic allocation empty state');assert.match(changesExperience,/allocationSummary[\\s\\S]*hidden = fourPending/,'four-nurse pending state hides contradictory legacy allocation summary');\n"
+          if marker in ts and 'four-nurse pending state hides the generic allocation empty state' not in ts: t.write_text(ts.replace(marker,add+marker,1))
           PY
-      - name: Build release and verify
+      - name: Build release, trim obsolete retained note and verify
         run: |
           npm run release
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('src/legacy-ui/release-history.js')
+          lines=p.read_text().splitlines()
+          lines=[line for line in lines if not line.lstrip().startswith('["50.7"')]
+          p.write_text('\n'.join(lines)+'\n')
+          PY
+          npm run generate:runtime
           npm run verify:ci
       - name: Commit prepared release
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
-          git commit -m "fix: clarify four-nurse allocation flow [56.8-ready]"
+          git commit -m "fix: remove contradictory four-nurse allocation state [56.8-ready]"
           git push origin HEAD:fix/four-nurse-flow
