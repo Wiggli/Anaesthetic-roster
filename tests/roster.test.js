@@ -490,7 +490,7 @@ assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow t
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
 assert.equal(checkedInMigrations.length, 32, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
-assert.ok(checkedInMigrations.includes('20261024173000_shared_pager_four_nurse.sql'), 'the four-nurse shared Pager migration must stay checked in');
+assert.ok(checkedInMigrations.includes('20261024153714_shared_pager_four_nurse.sql'), 'the four-nurse shared Pager migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004024500_night_team_identity_v51.sql'), 'the schema-51 shared night identity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004062000_global_shift_identity_v52.sql'), 'the schema-52 global shift identity migration must stay checked in');
