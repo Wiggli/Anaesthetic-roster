@@ -26,7 +26,7 @@ export function setupDockScroll() {
   const update = () => {
     frame = 0;
     const active = document.activeElement;
-    const pinned = !mobile.matches || touchingDock || document.body.dataset.view === 'chat'
+    const pinned = !mobile.matches || document.documentElement.hasAttribute('data-ios-standalone') || touchingDock || document.body.dataset.view === 'chat'
       || document.body.classList.contains('authPending') || dock.classList.contains('actionsOpen')
       || Boolean(document.querySelector('dialog[open]')) || Boolean(dock.querySelector(':focus-visible'))
       || Boolean(active?.matches('input,textarea,select,[contenteditable="true"]'));

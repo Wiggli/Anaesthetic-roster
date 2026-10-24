@@ -49,6 +49,10 @@ body.appRevealing .bottom { animation: operationalDockReveal 760ms 120ms var(--c
 
 @media (max-width:1023px) {
   .bottom { background:var(--unified-surface); -webkit-backdrop-filter:none; backdrop-filter:none; }
+  html[data-ios-standalone] .bottom { left:0; transform:none; transition:opacity 160ms var(--unified-ease); }
+  html[data-ios-standalone] body.appRevealing .bottom { animation:none; }
+  html[data-ios-standalone] .bottom.dockScrollHidden { opacity:1; pointer-events:auto; transform:none; }
+  html[data-ios-standalone] .keyboardVisible .bottom { opacity:0; pointer-events:none; transform:none; }
 }
 /* The bar returns on upward scroll, page end, navigation or focus. */
 .bottom.dockScrollHidden { opacity:0; pointer-events:none; transform:translate(-50%,calc(100% + 2px)); animation:none; }

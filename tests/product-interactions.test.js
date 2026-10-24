@@ -23,5 +23,7 @@ const tokens=block=>Object.fromEntries([...block.matchAll(/--([\w-]+):\s*(#[\da-
 function luminance(hex){const parts=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return parts[0]*.2126+parts[1]*.7152+parts[2]*.0722;}
 function contrast(a,b){const x=luminance(a),y=luminance(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
 for(const [mode,theme] of [['light',tokens(first)],['dark',tokens(dark)]])for(const surface of ['surface-primary','surface-secondary','surface-elevated'])for(const text of ['text-primary','text-secondary','text-muted','accent-primary','status-success','status-warning','status-danger','status-info'])assert.ok(contrast(theme[text],theme[surface])>=4.5,`${mode} ${text} on ${surface} must pass normal-text contrast`);
+const dockScroll=fs.readFileSync('src/dock-scroll.ts','utf8');assert.match(dockScroll,/data-ios-standalone/,'installed iPhone dock stays pinned instead of using scroll transforms');
+const dockCss=fs.readFileSync('src/rudder-navigation.css','utf8');assert.match(dockCss,/html\[data-ios-standalone\] \.bottom \{ left:0; transform:none/,'installed iPhone dock removes fixed-element transforms');
 const account=fs.readFileSync('src/account-experience.tsx','utf8');for(const hue of [...account.matchAll(/(teal|blue|violet|rose|amber|graphite): '(#[\da-f]{6})'/g)])assert.ok(contrast(hue[2],'#ffffff')>=4.5,`${hue[1]} identity glyph contrast`);
 console.log('Return summary lifecycle, bounded storage, dual-theme text and identity contrast passed.');
