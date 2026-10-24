@@ -20,7 +20,7 @@ function prepareChangesView(){
 function openScreenInfo(kind){
   var dialog=byId('screenInfoSheet'),title=byId('screenInfoTitle'),intro=byId('screenInfoIntro'),content=byId('screenInfoContent');if(!dialog||!title||!intro||!content)return;
   var items=kind==='breaks'?[['What you see','The break plan always follows the selected night and its latest shared staffing.'],['What happens automatically','Changes to absences, overtime or roles update Night and Breaks together.'],['When the plan is provisional','Breaks cannot be finalised until every required staffing decision is complete.']]:[['Start with Staffing','Record only confirmed absences and overtime nurses.'],['Allocation is usually automatic','A standard five-person night has one full-night Pager. At six, Pager works First Part and Reliever works Second Part in Labour Ward.'],['Confirm only changes','A final review is needed only after a staffing change or an agreed night-only role change.']];
-  title.textContent=kind==='breaks'?'About Breaks':'About Staffing changes';intro.textContent=kind==='breaks'?'A live view of the selected night’s breaks.':'A three-step path for exceptional changes.';if(typeof window.renderReactScreenInfo==='function')window.renderReactScreenInfo(items);else content.innerHTML=items.map(function(item){return'<section class="infoSheetItem"><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p></section>'}).join('');if(!dialog.open)dialog.showModal();if(typeof window.CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:screeninfo',{detail:{items:items}}));
+  title.textContent=kind==='breaks'?'About Breaks':'About Staffing changes';intro.textContent=kind==='breaks'?'A live view of the selected night’s breaks.':'Record people, resolve any missing role and review the updated plan.';if(typeof window.renderReactScreenInfo==='function')window.renderReactScreenInfo(items);else content.innerHTML=items.map(function(item){return'<section class="infoSheetItem"><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p></section>'}).join('');if(!dialog.open)dialog.showModal();if(typeof window.CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:screeninfo',{detail:{items:items}}));
 }
 
 function syncDateInputs(date){
@@ -88,9 +88,12 @@ function quickActionScroll(selector){
 }
 function performQuickAction(action){
   var dialog=byId('quickActionsSheet');if(dialog&&dialog.open)dialog.close();
+  if(action==='roles'){show('changes');setChangesStep('allocation',false);window.setTimeout(function(){var editor=document.querySelector('.nightRoleEditor');if(editor){editor.open=true;editor.scrollIntoView({behavior:'smooth',block:'start'})}},120);return}
+  if(action==='breaks'){show('breaks');return}
   if(action==='absence'||action==='overtime'||action==='review'){
     show('changes');
     var step=action==='review'?smartChangesStep(cur()):'staffing';setChangesStep(step,false);
+    if(action==='absence'||action==='overtime')window.setTimeout(function(){window.dispatchEvent(new CustomEvent('roster:open-staffing',{detail:{mode:action}}))},120);
     quickActionScroll(action==='absence'?'.absenceSection':action==='overtime'?'.overtimeSection':'#changes .changePanel');
     return;
   }
@@ -286,21 +289,21 @@ function updateChangesWorkflow(base,plan){
   state.classList.toggle('hidden',!tasks&&!confirmNeeded&&!hasManualPlan);
   state.classList.toggle('complete',!confirmNeeded);state.classList.toggle('ready',!tasks&&confirmNeeded);}
   var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.add('hidden');
-  var allocationAction=byId('continueToAllocationBtn');allocationAction.textContent=tasks?'Resolve allocations':'Adjust roles';allocationAction.classList.toggle('quietAction',!tasks&&!confirmNeeded);
+  var allocationAction=byId('continueToAllocationBtn');allocationAction.textContent=tasks?'Resolve allocations':'Swap assignments';allocationAction.classList.toggle('quietAction',!tasks&&!confirmNeeded);
   var changesPanel=document.querySelector('#changes .changePanel');if(changesPanel)changesPanel.classList.toggle('planShared',shared);
   var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent='Review changes';var confirmReason=byId('continueToConfirmReason');if(confirmReason){confirmReason.textContent=tasks?'Complete the allocation above before reviewing changes.':'';confirmReason.classList.toggle('hidden',!tasks)}
-  var allocationSection=document.querySelector('.allocationSection');if(allocationSection)allocationSection.classList.toggle('hidden',!tasks&&!hasManualPlan);
+  var allocationSection=document.querySelector('.allocationSection');if(allocationSection)allocationSection.classList.toggle('hidden',!tasks);
   var allocationHeading=document.querySelector('.allocationSection .stepHeader h3');if(allocationHeading)allocationHeading.textContent='Finalise selected-night allocations';
   var confirmationHeading=document.querySelector('#changesConfirmPane .stepHeader h3'),confirmationIntro=byId('confirmationIntro');if(confirmationHeading)confirmationHeading.textContent=confirmNeeded?'Confirm selected-night changes':shared?'Changes shared':'No changes to review';if(confirmationIntro)confirmationIntro.classList.toggle('hidden',!tasks&&!confirmNeeded);
   var progressValue=tasks?1:confirmNeeded?2:3,progressLabel=tasks?'1 of 3 resolved':confirmNeeded?'2 of 3 resolved':shared?'3 of 3 shared':'Automatic plan ready';
   lastChangesWorkflowModel={active:activeChangesStep,steps:[
-    {id:'staffing',label:'Staffing',detail:changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'Record people',complete:hasStaffingChanges,attention:false,quiet:false},
-    {id:'allocation',label:'Allocation',detail:tasks?tasks+' decision'+(tasks===1?'':'s'):'Review roles',complete:hasManualPlan&&!tasks,attention:!!tasks,quiet:!tasks},
-    {id:'confirm',label:shared?'Shared':'Confirm',detail:tasks?'After allocation':confirmNeeded?'Review changes':shared?'Published':'When needed',complete:shared,attention:!!confirmNeeded,quiet:confirmationNotNeeded}
-  ],headline:tasks?taskInstruction:confirmNeeded?'Ready to review':shared?'Plan shared':'Standard staffing applies',
-  guidance:tasks?(tasks>1?(tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.'):'Choose a nurse, then review the changes.'):confirmNeeded?'Check the selected night’s changes before sharing them with everyone.':shared?'Staffing and roles are up to date for everyone.':'Add only changes to tonight’s staffing.' ,
+    {id:'staffing',label:'People',detail:changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'Record people',complete:hasStaffingChanges,attention:false,quiet:false},
+    {id:'allocation',label:'Roles',detail:tasks?tasks+' decision'+(tasks===1?'':'s'):'Review roles',complete:hasManualPlan&&!tasks,attention:!!tasks,quiet:!tasks},
+    {id:'confirm',label:shared?'Shared':'Review',detail:tasks?'After allocation':confirmNeeded?'Review changes':shared?'Published':'When needed',complete:shared,attention:!!confirmNeeded,quiet:confirmationNotNeeded}
+  ],headline:tasks?taskInstruction:confirmNeeded?'Review the updated plan':shared?'Plan shared':'No changes needed',
+  guidance:tasks?(tasks>1?(tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.'):'Choose a nurse, then review the changes.'):confirmNeeded?'Check the selected night’s changes before sharing them with everyone.':shared?'Staffing and roles are up to date for everyone.':'Use the actions below if someone is absent, extra cover joins or roles are swapped.' ,
   tone:tasks?'attention':confirmNeeded?'ready':shared?'complete':'automatic',progressValue:progressValue,progressMax:3,progressLabel:progressLabel,draftLabel:draftLabel};
-  var fixed=fixedRolesHtml(base,plan),fixedList=byId('fixedAllocationList');fixedList.innerHTML=fixed||'<div class="time">Roles will appear after the staffing decisions are complete.</div>';byId('fixedAllocationSummary').textContent='Selected-night roles · '+(fixed.match(/fixedRoleRow/g)||[]).length;
+  var fixed=fixedRolesHtml(base,plan),fixedList=byId('fixedAllocationList');var fixedBox=fixedList.closest('.fixedAllocationBox');if(fixedBox)fixedBox.hidden=!tasks;fixedList.innerHTML=fixed||'<div class="time">Roles will appear after the staffing decisions are complete.</div>';byId('fixedAllocationSummary').textContent='Selected-night roles · '+(fixed.match(/fixedRoleRow/g)||[]).length;
   renderConfirmationPreview(base,plan,tasks,confirmNeeded,taskInstruction);updateConfirmationControls(confirmNeeded,tasks);
   setChangesStep(activeChangesStep,false);
 }
@@ -631,8 +634,8 @@ function render(){
   var labourPending=r.mode!=='5'&&!planIsProvisional(base)&&!labourOrderFor(r);
   var roles=[['bFirst','First Part',r.first1+' + '+r.first2,'Works '+dutyTiming.firstPeriodDisplay+(dutyTiming.isClockChange?' · '+formatDutyHours(dutyTiming.partHours)+' actual':'')+' • Second break'],['bSecond','Second Part',r.second1+' + '+r.second2,'Works '+dutyTiming.secondPeriod+(dutyTiming.isClockChange?' · '+formatDutyHours(dutyTiming.partHours)+' actual':'')+' • First break']];
   if(r.mode!=='5'){
-    roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
-    roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
+    if(count!==4)roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
+    if(count!==4)roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
   }
   syncDateInputs(base.date);renderNightTeamIdentityContext(base.date);renderMyName();var personal=renderPersonalNight(base,r);renderRecentActivity(base.date);updateSmartNightButtons();
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
@@ -708,7 +711,7 @@ function nightRoleOverrideModel(base){
   var working=nightWorkingNames(base);if(working.length<4)return{notice:'Custom roles are unavailable while fewer than four nurses are working. Restore enough cover for both theatre parts first.'};
   var stored=nightRoleOverrides[base.date],draft=nightRoleOverrideDrafts[base.date],current=roleEditorAssignments(base),baseline=currentRoleAssignments(base);if(!current||!baseline)return{notice:'Night roles are not available for this night yet.'};
   var keys=roleAssignmentKeys(current),fourMode=current.mode==='4',fiveMode=current.mode==='5',sevenMode=current.mode==='7',dirty=!!(draft&&roleAssignmentsDiffer(draft.assignments,baseline)),valid=validRoleAssignmentsForNight(base,current),labels={first1:'First Part · nurse 1',first2:'First Part · nurse 2',second1:'Second Part · nurse 1',second2:'Second Part · nurse 2',pager:'Pager',reliever:'Reliever',fullLW:'Full-night Labour Ward / Pager',seventh:'Seventh nurse'},names=(fourMode||fiveMode||sevenMode)?working:keys.map(function(key){return current[key]});
-  return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'Keep the existing theatre parts and choose who fills the vacancy, then save before agreeing the four Pager turns below.':fiveMode?'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.':sevenMode?'Arrange all seven nurses working this night across the theatre, Pager, Reliever and Seventh nurse roles. Each nurse is used once.':'Choose a different nurse in any role. The two people swap automatically, so no one is duplicated.',summary:stored?(fourMode?'Four-nurse theatre arrangement saved':fiveMode?'Custom five-nurse roles are active':sevenMode?'Custom seven-nurse roles are active':'Night-only roles are active'):(fourMode?'Choose who fills the vacant theatre position':fiveMode?'Optional custom five-nurse arrangement':sevenMode?'Optional custom seven-nurse arrangement':'Optional · roster rotation stays unchanged'),open:(fourMode&&!stored)||!!draft,stored:!!stored,dirty:dirty,reason:draft&&draft.reason||'',canSave:valid&&dirty&&!!normaliseNurseName(draft&&draft.reason||'')&&navigator.onLine,keys:keys.map(function(key){return{key:key,label:labels[key],fullWidth:key==='fullLW'||key==='seventh'}}),names:names.map(function(name){return{value:name,label:professionalName(name)}}),assignments:current};
+  return{periods:{first:nightDutyTiming(base.date).firstPeriodDisplay,second:nightDutyTiming(base.date).secondPeriod},mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'Keep the existing theatre parts and choose who fills the vacancy, then save before agreeing the four Pager turns below.':fiveMode?'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.':sevenMode?'Arrange all seven nurses working this night across the theatre, Pager, Reliever and Seventh nurse roles. Each nurse is used once.':'Choose a different nurse in any role. The two people swap automatically, so no one is duplicated.',summary:stored?(fourMode?'Four-nurse theatre arrangement saved':fiveMode?'Custom five-nurse roles are active':sevenMode?'Custom seven-nurse roles are active':'Night-only roles are active'):(fourMode?'Choose who fills the vacant theatre position':fiveMode?'Optional custom five-nurse arrangement':sevenMode?'Optional custom seven-nurse arrangement':'Optional · roster rotation stays unchanged'),open:(fourMode&&!stored)||!!draft,stored:!!stored,dirty:dirty,reason:draft&&draft.reason||'',canSave:valid&&dirty&&!!normaliseNurseName(draft&&draft.reason||'')&&navigator.onLine,keys:keys.map(function(key){return{key:key,label:labels[key],fullWidth:key==='fullLW'||key==='seventh'}}),names:names.map(function(name){return{value:name,label:professionalName(name)}}),assignments:current};
 }
 
 async function saveNightRoleOverride(base){

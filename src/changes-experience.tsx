@@ -49,6 +49,7 @@ type RoleOverride = {
   keys: { key: string; label: string; fullWidth: boolean }[];
   names: { value: string; label: string }[];
   assignments: Record<string, string>;
+  periods?: { first: string; second: string };
 };
 
 export type ChangesExperience = {
@@ -199,6 +200,12 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
     previousEditing.current = model.forms.editing;
   }, [mode, model.forms.editing, open, records.length]);
 
+  useEffect(() => {
+    const openStaffing = (event: Event) => { if ((event as CustomEvent).detail?.mode === mode) setOpen(true); };
+    window.addEventListener('roster:open-staffing', openStaffing);
+    return () => window.removeEventListener('roster:open-staffing', openStaffing);
+  }, [mode]);
+
   const inputClass = 'tw:min-h-12 tw:w-full tw:rounded-[14px] tw:border tw:border-black/[0.07] tw:bg-[var(--card)] tw:px-3.5 tw:text-sm tw:outline-none tw:focus:border-blue-500/45 tw:focus:ring-2 tw:focus:ring-blue-500/12 tw:dark:border-white/10';
   const title = mode === 'absence' ? (model.forms.editing ? 'Edit absence' : 'Add absence') : 'Add overtime nurse';
   const summary = records.length ? `${records.length} ${mode === 'absence' ? (records.length === 1 ? 'absence' : 'absences') : 'recorded'}` : 'None recorded';
@@ -264,7 +271,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
-      >{records.length ? 'Add another' : 'Add'}</Pressable>
+      >{records.length ? 'Add another' : mode === 'absence' ? 'Someone is absent' : 'Add overtime cover'}</Pressable>
     </div>
     {open && <>
       <motion.dialog
@@ -305,7 +312,7 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 
   return <details className="nightRoleEditor" open={model.mode === '4' || model.open}>
     <summary>
-      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Change this night’s roles'}</b><small>{model.summary}</small></span>
+      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Theatre and Pager assignments'}</b><small>{model.summary}</small></span>
       <span aria-hidden="true">›</span>
     </summary>
     <div className="nightRoleEditorBody">
@@ -313,7 +320,8 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
       <p className="time">{model.guidance}</p>
       <div className="editGrid">
         {model.keys.map(row => <label key={row.key} className={row.fullWidth ? 'fullWidth' : ''}>
-          {row.label}
+          <span>{row.label}</span>
+          {model.periods && /^(first|second)/.test(row.key) && <small className="roleDutyHint">{row.key.startsWith('first') ? model.periods.first + ' · Second break' : model.periods.second + ' · First break'}</small>}
           <select
             data-night-role={row.key}
             value={model.assignments[row.key] || ''}

@@ -454,7 +454,7 @@ assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReas
 assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*assignmentLabel:nightCopy\.assignment[\s\S]*period:assignment\.period,breakLabel:assignment\.breakLabel/, 'Your night must pass date-aware assignment wording, time and break separately');
 assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
 assert.doesNotMatch(clinicalExperience, /View full night/, 'Your night must not duplicate the Team allocation route with a second full-night CTA');
-assert.match(html, /class="nightTeamDetails"[\s\S]*<strong>Team allocation<\/strong>[\s\S]*id="viewRosterBtn"[\s\S]*View full roster/, 'Team allocation must remain the canonical current-night detail route with Full roster secondary inside it');
+assert.match(html, /class="nightTeamDetails" open[\s\S]*<strong>Theatre and Pager<\/strong>[\s\S]*id="viewRosterBtn"[\s\S]*View full roster/, 'Team allocation must remain the canonical current-night detail route with Full roster secondary inside it');
 assert.match(clinicalExperience, /model\.action === 'choose'[\s\S]*Choose your name/, 'Your night must keep the account setup action when the user has not chosen a roster identity');
 assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*<small>Duty<\/small>[\s\S]*<small>Break<\/small>[\s\S]*scanContextLabel/, 'Your night must keep Duty, Break and Colleague as the three scan-first facts');
 assert.match(clinicalExperience, /personalClockException[\s\S]*Clock-change night · equal duty[\s\S]*model\.clockChange\.partHoursLabel/, 'clock-change nights must keep their equal-duty exception prominent in the personal hero');
@@ -639,7 +639,7 @@ assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.sh
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');
 assert.match(ui, /function showQuickActions\(\)[\s\S]*roster:quick-actions/, 'Quick Actions must build its context from the live selected night before opening');
 assert.match(ui, /function performQuickAction\(action\)[\s\S]*show\('changes'\)[\s\S]*setChangesStep/, 'staffing Quick Actions must route into the existing Changes workflow instead of creating a mutation shortcut');
-assert.match(quickActionsExperience, /Report an absence[\s\S]*Add overtime cover[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
+assert.match(quickActionsExperience, /Someone is absent[\s\S]*Add overtime cover[\s\S]*Swap assignments[\s\S]*View break arrangement[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(ui, /function openActivityDetail[\s\S]*item\.detail\|\|'No additional reason was recorded\.'/ , 'the activity detail sheet must retain the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
@@ -718,7 +718,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:9[\s\S]*changes:5[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:10[\s\S]*changes:6[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');
@@ -740,7 +740,7 @@ assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change r
 assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
 assert.match(clinicalExperience, /function nightVisualPhase[\s\S]*'upcoming'[\s\S]*'handover'[\s\S]*'first'[\s\S]*'second'[\s\S]*'complete'[\s\S]*host\.dataset\.shiftPhase = nightVisualPhase/, 'personal Night must still track the live stage of the shift without restoring a countdown or a duplicate handover block');
 assert.match(clinicalExperience, /function PersonalNightCard[\s\S]*const openBreak[\s\S]*const openColleague[\s\S]*const openDutyTiming[\s\S]*personalHeroFactGrid[\s\S]*onClick=\{openDutyTiming\}[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}/, 'Duty, Break and Colleague hero facts must remain directly actionable');
-assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? 'Review needed' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
+assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? model.decisionTasks \|\| model.labourPending \? 'Decision needed' : 'Review changes' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share the app[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
 assert.match(accountExperience, /function shareAct\(action:[\s\S]*roster:share-action/, 'share buttons must dispatch through the dedicated share event channel');

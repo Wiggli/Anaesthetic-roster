@@ -4,7 +4,7 @@ const periods=require('./fixtures/establishment-periods.json');
 async function fourNight(page,absence='James',saved=true){
  await openReview(page);
  await page.evaluate(({periods,absence,saved})=>{
-  rotationVersions=periods;schemaVersion=57;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-24');
+  queueClockChangeAttention=()=>{};rotationVersions=periods;schemaVersion=57;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-24');
   appNow=()=>new Date('2026-10-24T19:40:00Z');nightChanges={'2026-10-24':[{id:1,absent_name:absence,replacement_name:'',reason:'Leave'}]};nightOvertime={};
   nightRoleOverrides=saved?{'2026-10-24':{assignments:{mode:'4',first1:'Shaun',first2:'Michael G',second1:'Andre',second2:'Michael D'},reason:'Leave'}}:{};
   window.testPagerRow=null;window.testPagerSaves=[];
@@ -60,4 +60,30 @@ test('failed Pager save retains manual order and personal Pager opens its editor
  await expect(page.locator('.personalPagerBrief')).toContainText('Your Pager · turn 3');await expect(page.locator('.personalPagerBrief')).toContainText('03:00–05:00');
  await page.locator('.personalPagerBrief').click();await expect(page.locator('#sharedPagerEditor')).toBeVisible();
  await page.evaluate(()=>show('breaks'));await expect(page.locator('#breakPersonalSummary')).toContainText('First break · provisional');
+});
+
+for(const count of [5,6,7])test(`normal ${count}-nurse night has one visible plan and direct actions @iphone`,async({page})=>{
+ await page.setViewportSize({width:390,height:844});await openReview(page);
+ await page.evaluate(({periods,count})=>{
+  rotationVersions=periods;schemaVersion=57;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-28');
+  appNow=()=>new Date('2026-10-28T23:30:00Z');nightChanges={};nightOvertime={};nightRoleOverrides={};
+  if(count>5)nightOvertime[cur().date]=Array.from({length:count-5},(_,i)=>({id:i+101,nurse_name:'Cover Nurse '+(i+1),allocation_key:i===0?'reliever':'seventh'}));
+  render();show('today');
+ },{periods,count});
+ const team=page.locator('.nightTeamDetails');await expect(team).toHaveAttribute('open','');
+ await expect(page.locator('#modeStatus')).toContainText(`${count} nurses`);
+ await expect(page.locator('#roles')).toContainText('00:00–03:30');await expect(page.locator('#roles')).toContainText('03:30–07:00');
+ await expect(page.locator('#roles')).toContainText('Second break');await expect(page.locator('#roles')).toContainText('First break');
+ await expect(page.locator('#nightClockChange')).toBeEmpty();
+ if(count===5){await expect(page.locator('#fiveArrangement')).toContainText('Full night');await expect(page.locator('#nightStatusRow')).toContainText('Plan ready')}
+ await page.getByRole('button',{name:'Edit theatre / Pager',exact:true}).click();
+ await expect(page.locator('.nightRoleEditor')).toHaveAttribute('open','');
+ await expect(page.locator('[data-night-role="first1"]')).toBeVisible();await expect(page.locator('.roleDutyHint').first()).toContainText('00:00–03:30');
+ await page.evaluate(()=>performQuickAction('absence'));await expect(page.getByRole('dialog',{name:'Add absence',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Close Add absence',exact:true}).click();
+ await page.evaluate(()=>performQuickAction('overtime'));await expect(page.getByRole('dialog',{name:'Add overtime nurse',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Close Add overtime nurse',exact:true}).click();
+ await page.evaluate(()=>performQuickAction('breaks'));await expect(page.locator('#breakList')).toContainText('First break');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.evaluate(()=>show('today'));await page.screenshot({path:`/tmp/unified-normal-${count}.png`,fullPage:true});
 });
