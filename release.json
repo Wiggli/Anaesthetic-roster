@@ -1,14 +1,14 @@
 {
-  "version": "56.3",
+  "version": "56.4",
   "date": "24 October 2026",
-  "title": "Manual four-person Pager order",
-  "summary": "Keeps the four-person Pager order completely manual instead of preselecting names from theatre parts.",
+  "title": "Repository and version hygiene",
+  "summary": "Keeps the deployed Night Roster release metadata and Shared Pager client version references internally consistent.",
   "changes": [
-    "A new four-person Shared Pager order now starts with four explicit Select nurse fields rather than prefilled names.",
-    "The app no longer assumes that Pager order should follow First Part or Second Part theatre order.",
-    "Each working nurse can be selected only once, and Save remains unavailable until all four Pager parts are assigned.",
-    "Existing saved Pager orders remain visible and editable, so previously agreed plans are not lost.",
-    "The theatre reassignment and shared Pager timing introduced in 56.2 remain unchanged."
+    "Removed the stale 56.0 Shared Pager client-version fallback.",
+    "Shared Pager now uses the live application version and fails closed if version metadata is unexpectedly unavailable.",
+    "Added a regression check preventing historical hard-coded app-version fallbacks from returning.",
+    "Regenerated release metadata, runtime assets and PWA cache references for one consistent 56.4 build.",
+    "No clinical allocation, Pager timing or roster behaviour was changed."
   ],
   "update_policy": "important"
 }

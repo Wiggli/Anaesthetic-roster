@@ -87,7 +87,7 @@ async function saveOrder(date: string, order: string[]) {
   const state = sharedPagerState(date); if (!state.eligible || order.length !== 4 || new Set(order.map(canonical)).size !== 4 || !sameSet(order, state.nurses)) { toast('Select all four working nurses, using each nurse once'); return; }
   if (!g.supa || !navigator.onLine) { toast('Reconnect to save the shared Pager order'); return; }
   const button = document.querySelector<HTMLButtonElement>('[data-shared-pager-save]'); if (button) { button.disabled = true; button.textContent = 'Saving…'; }
-  try { const result = await g.supa.rpc('set_night_shared_pager_order_v56', { p_roster_date: date, p_nurse_order: order, p_client_version: String(g.APP_VERSION || '56.0') }); if (result.error) throw result.error; orderCache.set(date, result.data as SharedPagerRow); drafts.delete(date); toast('Shared Pager order saved for everyone'); renderAll(date); }
+  try { const result = await g.supa.rpc('set_night_shared_pager_order_v56', { p_roster_date: date, p_nurse_order: order, p_client_version: String(g.APP_VERSION || 'unknown') }); if (result.error) throw result.error; orderCache.set(date, result.data as SharedPagerRow); drafts.delete(date); toast('Shared Pager order saved for everyone'); renderAll(date); }
   catch (error: any) { toast(String(error?.message || '').includes('SHARED_PAGER_') ? 'The four-nurse arrangement changed. Review staffing before saving Pager.' : 'Shared Pager order could not be saved'); }
   finally { if (button) { button.disabled = false; button.textContent = 'Save shared Pager order'; } }
 }
