@@ -1,3 +1,5 @@
+import './shared-pager';
+
 /** One selected-night layout, preserving the canonical date inputs and their listeners. */
 export function composeSelectedNight(panel: HTMLElement, staffingSelector: string) {
   if (panel.dataset.contextComposed === 'true') return;
