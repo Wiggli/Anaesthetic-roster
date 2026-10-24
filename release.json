@@ -1,14 +1,13 @@
 {
-  "version": "56.5",
+  "version": "56.6",
   "date": "24 October 2026",
-  "title": "Four-nurse night allocation",
-  "summary": "Explains how four nurses cover the two theatre parts and manually share Pager when a five-person night drops to four.",
+  "title": "Keep iPhone navigation anchored while scrolling",
+  "summary": "Keeps the installed iPhone bottom navigation fixed to the bottom of the screen during scrolling instead of letting iOS reposition the transformed dock.",
   "changes": [
-    "When a five-person night drops to four because one nurse is absent, the app shows the four nurses actually present and keeps the remaining theatre positions as rostered.",
-    "If a theatre position is vacant, the team explicitly chooses which of the four working nurses fills it; nobody is placed there automatically.",
-    "Once two nurses are confirmed in First Part and two in Second Part, the same four nurses manually agree the Pager order for 00:00–07:00.",
-    "If the normal Pager nurse is the absent nurse, the original four theatre nurses stay in place and only the Pager order needs to be agreed.",
-    "Pager is split equally by real elapsed time: 1h 45m each on ordinary nights and 2h each on the October clock-change night, with current and next cover shown live."
+    "Keeps the bottom navigation anchored to the bottom edge in the installed iPhone app while scrolling.",
+    "Removes the scroll transform used to hide the dock on iPhone, preventing the navigation from jumping into the middle of the roster.",
+    "Preserves the compact dock size, iPhone safe-area spacing and keyboard hiding behaviour.",
+    "Other platforms keep the existing hide-on-scroll behaviour."
   ],
   "update_policy": "normal"
 }
