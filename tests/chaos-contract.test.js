@@ -7,6 +7,7 @@ const ui=fs.readFileSync(path.join(root,'app-ui.js'),'utf8');
 const core=fs.readFileSync(path.join(root,'app-core.js'),'utf8');
 const runtime=fs.readFileSync(path.join(root,'runtime-foundation.js'),'utf8');
 const migration=fs.readFileSync(path.join(root,'supabase','migrations','20261002153000_reliability_architecture_v48.sql'),'utf8');
+const fourRoleMigration=fs.readFileSync(path.join(root,'supabase','migrations','20261024161000_four_nurse_role_override.sql'),'utf8');
 const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
 
 assert.match(runtime,/StateMachine\('sync','starting'/,'sync state must be explicit');
@@ -38,8 +39,9 @@ assert.doesNotMatch(ui,/offline mutation queue|pending offline mutation|flushOff
 
 for(const rpc of [
   'record_night_absence_v49','remove_night_absence_v49','add_night_overtime_v49','remove_night_overtime_v49',
-  'apply_staffing_allocations_v49','finalise_night_plan_v49','apply_night_role_override_v49'
+  'apply_staffing_allocations_v49','finalise_night_plan_v49','apply_night_role_override_v57'
 ]) assert.match(ui,new RegExp(rpc),'browser must use '+rpc);
+assert.match(fourRoleMigration,/perform public\.apply_night_role_override_v49/,'ordinary role mutations must remain delegated to the established guarded RPC');
 
 assert.match(core,/publish_roster_v49/,'publication must use the idempotent server command');
 assert.match(core,/upsert_rotation_version_v49/,'permanent team changes must use the idempotent server command');
