@@ -1,13 +1,13 @@
 {
-  "version": "56.6",
+  "version": "56.7",
   "date": "24 October 2026",
-  "title": "Keep iPhone navigation anchored while scrolling",
-  "summary": "Keeps the installed iPhone bottom navigation fixed to the bottom of the screen during scrolling instead of letting iOS reposition the transformed dock.",
+  "title": "Cleaner four-nurse changes screen",
+  "summary": "Keeps the mobile navigation fixed and simplifies the exceptional four-nurse allocation screen so it reads clearly on iPhone.",
   "changes": [
-    "Keeps the bottom navigation anchored to the bottom edge in the installed iPhone app while scrolling.",
-    "Removes the scroll transform used to hide the dock on iPhone, preventing the navigation from jumping into the middle of the roster.",
-    "Preserves the compact dock size, iPhone safe-area spacing and keyboard hiding behaviour.",
-    "Other platforms keep the existing hide-on-scroll behaviour."
+    "Keeps the bottom navigation fixed in one place on mobile with no scroll-driven translation.",
+    "Reflows the four-nurse theatre arrangement into a clean single-column mobile layout.",
+    "Turns the present-nurse list into compact readable chips and gives every theatre selector full width.",
+    "Reduces cramped side-by-side copy and improves spacing through the exceptional allocation flow."
   ],
   "update_policy": "normal"
 }

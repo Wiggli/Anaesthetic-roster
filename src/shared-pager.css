@@ -1,3 +1,4 @@
+@import './mobile-four-nurse-polish.css';
 .sharedPagerSurface{margin-top:14px;border:1px solid color-mix(in srgb,var(--accent) 18%,transparent);border-radius:20px;background:color-mix(in srgb,var(--card) 94%,var(--accent) 6%);padding:16px;box-shadow:0 10px 28px rgba(16,24,40,.06)}
 .sharedPagerHero{cursor:pointer;overflow:hidden}
 .sharedPagerHero:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 35%,transparent);outline-offset:3px}
