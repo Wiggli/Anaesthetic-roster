@@ -34,6 +34,9 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
   const reduced = useProductReducedMotion();
   const [month, setMonth] = useState(selectedMonth || currentMonth());
   const [allMonths, setAllMonths] = useState(false);
+  const [sort, setSort] = useState('name');
+  function filterBy(value: string) { const control = document.getElementById('filter') as HTMLSelectElement; if (control) { control.value = value; control.dispatchEvent(new Event('change', { bubbles: true })); } }
+  function clearFilters() { const search = document.getElementById('search') as HTMLInputElement; if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); } filterBy('all'); }
   const shown = allMonths ? cards : cards.filter(card => card.isoDate?.slice(0, 7) === month);
   const totals = new Map<string, { nights: number; weekends: number }>();
   shown.forEach(card => {
@@ -59,9 +62,10 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
     </div>
     <label className="rosterAllMonths"><input type="checkbox" checked={allMonths} onChange={event => setAllMonths(event.target.checked)} /> All published months</label>
     <div className="rosterOverviewSummary" role="status" aria-live="polite">
-      <span><b>{shown.length}</b> nights shown</span><span><b>{shown.filter(card => card.short).length}</b> short staffed</span><span><b>{shown.filter(card => card.needsReview).length}</b> need allocation</span>
+      <span><b>{shown.length}</b> nights shown</span><button type="button" onClick={() => filterBy('short')}><b>{shown.filter(card => card.short).length}</b> short staffed</button><button type="button" onClick={() => filterBy('review')}><b>{shown.filter(card => card.needsReview).length}</b> need allocation</button>
     </div>
-    {!!shown.length && <details className="rosterWorkload"><summary>Staff workload on shown nights</summary><p>Counts reflect the effective team after absences and overtime. Weekend means Saturday or Sunday; these totals inform review and do not rebalance the rotation.</p><ul>{[...totals].sort(([a], [b]) => a.localeCompare(b)).map(([name, total]) => <li key={name}><strong>{name}</strong><span>{total.nights} nights · {total.weekends} weekend</span></li>)}</ul></details>}
+    <button type="button" className="rosterClearFilters" onClick={clearFilters}>Clear filters</button>
+    {!!shown.length && <details className="rosterWorkload"><summary>Staff workload on shown nights</summary><p>Counts reflect the effective team after absences and overtime. Weekend means Saturday or Sunday; these totals inform review and do not rebalance the rotation.</p><label className="workloadSort">Sort workload<select aria-label="Sort staff workload" value={sort} onChange={event => setSort(event.target.value)}><option value="name">Name</option><option value="nights">Most nights</option><option value="weekends">Most weekends</option></select></label><ul>{[...totals].sort(([a,x], [b,y]) => (sort === 'nights' ? y.nights-x.nights : sort === 'weekends' ? y.weekends-x.weekends : 0) || a.localeCompare(b)).map(([name, total]) => <li key={name}><strong>{name}</strong><span>{total.nights} nights · {total.weekends} weekend</span></li>)}</ul></details>}
     {!shown.length && <div className="rosterEmpty" role="status"><strong>No nights match this view</strong><p>Try another month, clear the search and staffing filter, or show all published months.</p><button type="button" onClick={() => { const search = document.getElementById('search') as HTMLInputElement; const filter = document.getElementById('filter') as HTMLSelectElement; if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); } if (filter) { filter.value = 'all'; filter.dispatchEvent(new Event('change', { bubbles: true })); } setAllMonths(true); }}>Clear filters and show all nights</button></div>}
     <p className="tw:m-0 tw:text-xs tw:font-semibold tw:text-[var(--muted)]">Select a night to open its live plan</p>
     <div className="tw:grid tw:gap-3 tw:lg:grid-cols-2">

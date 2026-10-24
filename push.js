@@ -344,12 +344,15 @@ window.dispatchChatPush=function(messageId){
   var client=pushClient();if(!client||!messageId)return;
   client.functions.invoke('notify-chat-message',{body:{message_id:Number(messageId)}}).catch(function(){});
 };
+var rosterPushInFlight={};
 window.dispatchRosterPush=function(eventType,rosterDate){
   var client=pushClient();if(!client||!eventType||!rosterDate||!navigator.onLine)return;
-  client.rpc('queue_roster_push_event',{p_roster_date:rosterDate,p_event_type:eventType}).then(function(result){
+  var eventKey=String(rosterDate)+':'+String(eventType);if(rosterPushInFlight[eventKey])return rosterPushInFlight[eventKey];
+  rosterPushInFlight[eventKey]=client.rpc('queue_roster_push_event',{p_roster_date:rosterDate,p_event_type:eventType}).then(function(result){
     if(result.error||!result.data)return;
     return client.functions.invoke('notify-chat-message',{body:{kind:'roster_update',event_id:result.data}});
-  }).catch(function(){});
+  }).catch(function(){}).finally(function(){delete rosterPushInFlight[eventKey]});
+  return rosterPushInFlight[eventKey];
 };
 window.dispatchAccessRequestPush=function(userId){
   var client=pushClient();if(!client||!userId||!navigator.onLine)return Promise.resolve();

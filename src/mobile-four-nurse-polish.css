@@ -7,7 +7,7 @@
     transform: none !important;
     animation: none !important;
   }
-  .bottom.dockScrollHidden { opacity: 1 !important; pointer-events: auto !important; }
+  .bottom.dockScrollHidden { opacity: 0; pointer-events: none; }
   .keyboardVisible .bottom { opacity: 0 !important; pointer-events: none !important; transform: none !important; }
 }
 

@@ -24,6 +24,7 @@ type ClockChangeInfo = {
 };
 
 type BreakSummary = {
+  provisionalFour?: boolean;
   date: string;
   formattedDate: string;
   nurseCount: number;
@@ -434,7 +435,7 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
   const mine = model.highlightedName;
   const first = model.first.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
   const second = model.second.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
-  const assignment = model.pending ? 'Awaiting allocation' : first ? 'First break' : second ? 'Second break' : 'Check the plan';
+  const assignment = model.provisionalFour ? (first ? 'First break · provisional' : second ? 'Second break · provisional' : 'Coordinate your break') : model.pending ? 'Awaiting allocation' : first ? 'First break' : second ? 'Second break' : 'Check the plan';
   return <section className="personalBreakSummary" aria-label="Your break">
     <span className="personalBreakEyebrow">Your break</span>
     <div className="personalBreakMain">
@@ -502,7 +503,7 @@ function NightStatus({ model }: { model: NightSummary }) {
       <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : 'nightTeamStaffing'}>{feedback || staffingLabel}</span>
       <span className="nightSignalState">
         <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
-        <b>{provisional ? 'Review needed' : 'Plan ready'}</b>
+        <b>{model.nurseCount < 5 ? 'Provisional cover' : provisional ? 'Review needed' : 'Plan ready'}</b>
       </span>
     </div>
     {model.taskCount > 0 && !hasSpecificDecision && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
@@ -564,7 +565,8 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
   const firstMine = model.dutyPart === 'first';
   const secondMine = model.dutyPart === 'second';
   const liveLabel = liveClockLabel(model, value);
-  const currentSide = progress === null
+  const beforeMidnight = Boolean(start && value.getTime() < start);
+  const currentSide = beforeMidnight ? 'Theatre parts start at 00:00' : progress === null
     ? firstMine ? 'Your First Part' : secondMine ? 'Your Second Part' : 'Duty orientation'
     : progress < handoverPct ? 'First Part now' : 'Second Part now';
   const openClockHelp = () => { if (model.clockChange) window.dispatchEvent(new CustomEvent('roster:clock-change-guide')); };
@@ -649,6 +651,8 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   const reducedMotion = useProductReducedMotion();
   const [now, setNow] = useState(productNowMs);
   const previousNow = useRef(now);
+  const [, setPagerRevision] = useState(0);
+  useEffect(() => { const update = () => setPagerRevision(value => value + 1); window.addEventListener('roster:pager-updated', update); return () => window.removeEventListener('roster:pager-updated', update); }, []);
 
   useEffect(() => {
     let timer: number | undefined;
@@ -676,7 +680,8 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   }, [model.date, model.title, model.pending, model.dutyStartUtc, model.handoverUtc, model.dutyEndUtc, now]);
 
   const value = new Date(now);
-  const clockNowCue = clockChangeNowCue(model, value);
+  const pagerApi = window as unknown as { sharedPagerPersonal?: (date: string) => { eligible: boolean; title: string; label: string }; openSharedPagerEditor?: () => void };
+  const pager = pagerApi.sharedPagerPersonal?.(model.date);
   const tone = personalTone(model);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
   const scanContext = model.context.replace(/^With\s+/i, '');
@@ -740,31 +745,10 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </span>
       </div>
 
-      {clockNowCue && <div
-        className={'personalClockNow personalClockNow-' + clockNowCue.phase}
-        role="status"
-        aria-live="polite"
-        aria-label={clockNowCue.eyebrow + '. ' + clockNowCue.time + '. ' + clockNowCue.detail}
-      >
-        <span className="personalClockNowFlag">{clockNowCue.flag}</span>
-        <span className="personalClockNowCopy">
-          <small>{clockNowCue.eyebrow}</small>
-          <strong>{clockNowCue.time}</strong>
-          <span>{clockNowCue.detail}</span>
-        </span>
-        <span className="personalClockNowBadge">NOW</span>
-      </div>}
-
+      {pager?.eligible && <Pressable type="button" className="personalPagerBrief" onClick={() => pagerApi.openSharedPagerEditor?.()}><span><small>{pager.title}</small><b>{pager.label}</b></span><i aria-hidden="true">›</i></Pressable>}
       {model.clockChange && <Pressable type="button" className="personalClockException" onClick={openClockGuide}>
-        <span className="personalClockExceptionIcon" aria-hidden="true">{model.clockChange.direction === 'back' ? '↶' : '↗'}</span>
-        <span className="personalClockExceptionCopy">
-          <small>Clock-change night · equal duty</small>
-          <strong>Handover {model.clockChange.handoverDisplay || model.clockChange.handover}</strong>
-          <span>{model.clockChange.partHoursLabel} per part · {model.clockChange.totalHoursLabel} from midnight</span>
-        </span>
-        <i aria-hidden="true">›</i>
+        <span className="personalClockExceptionCopy"><small>Clock-change night · equal duty</small><strong>Handover {model.clockChange.handoverDisplay}</strong><span>{model.clockChange.partHoursLabel} per part · {model.clockChange.totalHoursLabel} from midnight</span></span><i aria-hidden="true">›</i>
       </Pressable>}
-
       <NightTimeline model={model} value={value} />
 
       <div className="personalHeroFactGrid" aria-label="Your night at a glance">
@@ -933,7 +917,7 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
 }
 
 export function renderNightExperience(model: NightSummary) {
-  rootFor('nightClockChange')?.render(<ClockChangeNotice info={model.clockChange} context="night" />);
+  rootFor('nightClockChange')?.render(null);
   rootFor('nightStatusRow')?.render(<NightStatus model={model} />);
   rootFor('alerts')?.render(<NightAlerts model={model} />);
   rootFor('roles')?.render(<NightRoles model={model} />);

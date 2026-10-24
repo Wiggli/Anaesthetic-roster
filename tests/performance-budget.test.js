@@ -7,7 +7,7 @@ const size = file => fs.statSync(path.join(root, file)).size;
 const kib = value => Math.round(value / 1024);
 
 const budgets = {
-  'app-ui.js': 474 * 1024, // 56.2–56.5 retain additional release history and four-nurse UI; built production budgets remain unchanged.
+  'app-ui.js': 486 * 1024, // 57.0 adds explicit provisional arrangement and night-plan sharing; built budgets remain unchanged.
   'app-core.js': 100 * 1024,
   'runtime-foundation.js': 64 * 1024,
   'chat.js': 100 * 1024,

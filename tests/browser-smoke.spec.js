@@ -177,13 +177,7 @@ test('clock-back wake-up cue marks the first repeated 02:xx as OLD clock time', 
     window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: model }));
   }, { model, fixedNow });
 
-  const cue = page.locator('#personalNightCard .personalClockNow');
-  await expect(cue).toHaveClass(/personalClockNow-old/);
   await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'first');
-  await expect(cue.locator('.personalClockNowFlag')).toHaveText('OLD');
-  await expect(cue.locator('.personalClockNowCopy')).toContainText('CURRENT TIME · FIRST 02:xx');
-  await expect(cue.locator('.personalClockNowCopy strong')).toHaveText('02:15');
-  await expect(cue).toContainText('Clocks have not gone back yet');
   await expect(page.locator('#personalNightCard .nightTimelineHead em')).toContainText('FIRST 02:15 · OLD clock');
 });
 
@@ -196,14 +190,7 @@ test('clock-back wake-up cue marks the second repeated 02:xx as NEW clock time',
     window.dispatchEvent(new CustomEvent('roster:personal-night', { detail: model }));
   }, { model, fixedNow });
 
-  const cue = page.locator('#personalNightCard .personalClockNow');
-  await expect(cue).toHaveClass(/personalClockNow-new/);
   await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'first');
-  await expect(cue.locator('.personalClockNowFlag')).toHaveText('NEW');
-  await expect(cue.locator('.personalClockNowCopy')).toContainText('CURRENT TIME · SECOND 02:xx');
-  await expect(cue.locator('.personalClockNowCopy strong')).toHaveText('02:15');
-  await expect(cue).toContainText('Clocks have already gone back');
-  await expect(cue).toContainText('new 02:xx hour now');
   await expect(page.locator('#personalNightCard .nightTimelineHead em')).toContainText('SECOND 02:15 · NEW clock');
 });
 
@@ -234,7 +221,7 @@ for (const dutyPart of ['first', 'second', 'full']) for (const width of [320, 44
   await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'second');
   const hero = page.locator('#personalNightCard');
   await expect(hero.locator('.personalClockException')).toContainText('Handover 03:00 after clock change');
-  await expect(hero.locator('.personalClockNowFlag')).toHaveText('NEW');
+  await expect(hero.locator('.nightTimelineHead em')).toContainText('NEW clock');
   await expect(hero.locator('.personalHeroFact').first()).toContainText(dutyPart === 'full' ? '8h actual' : '4h actual');
   expect(await hero.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   const overlaps = await hero.locator('.nightTimelineScale > span').evaluateAll(nodes => {
@@ -300,7 +287,7 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
   const clockException = page.locator('#personalNightCard .personalClockException');
   await expect(clockException).toContainText('Clock-change night · equal duty');
   await expect(clockException).toContainText('Handover 03:00 after clock change');
-  await expect(clockException).toContainText('Equal duty');
+  await expect(clockException).toContainText('4h per part');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00¹');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00²');
   await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Open Breaks');
@@ -1272,7 +1259,7 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
   await expect(journey.locator('.workflowExperience')).toHaveClass(/workflow-complete/);
   await expect(journey).toContainText('Plan shared');
   await expect(journey).toContainText('Shared');
-  await expect(journey.locator('.workflowProgress')).toContainText('3 of 3 shared');
+  await expect(journey.locator('.workflowProgress')).toHaveCount(0);
   const completedStepDetails = journey.locator('.workflowStepCopy small');
   await expect(completedStepDetails).toHaveCount(3);
   for (let index = 0; index < 3; index += 1) await expect(completedStepDetails.nth(index)).toBeHidden();
@@ -1466,9 +1453,9 @@ test('React Changes journey shows decisions and supports keyboard step selection
   const journey = page.locator('#changesWorkflowExperience');
   await expect(journey).toHaveAttribute('data-react-ready', 'true');
   await expect(journey.locator('[role="status"]')).toContainText('Choose a nurse for First Part 1');
-  await expect(journey.locator('.workflowProgress')).toContainText('1 of 3 resolved');
-  await expect(journey.locator('.workflowProgress')).toContainText('Unsaved allocation selections');
-  await expect(journey.locator('.workflowProgressTrack')).toHaveAttribute('aria-valuenow', '1');
+  await expect(journey.locator('.workflowGuidance')).toContainText('Choose a nurse');
+  await expect(journey.locator('.workflowDraft')).toContainText('Unsaved allocation selections');
+  await expect(journey.locator('.workflowProgressTrack')).toHaveCount(0);
   const activeWorkflow = journey.locator('[data-changes-step="staffing"]');
   const workflowMetrics = await activeWorkflow.evaluate(el => {
     const selection = el.querySelector('.workflowSelection');
