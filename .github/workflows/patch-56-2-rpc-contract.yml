@@ -1,0 +1,34 @@
+name: Patch 56.2 role RPC contract
+
+on:
+  push:
+    branches: [fix/four-nurse-role-reassignment]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[rpc-contract-patched]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/four-nurse-role-reassignment
+      - name: Update guarded role RPC assertion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/roster.test.js')
+          text = path.read_text()
+          old = "assert.match(ui, /apply_night_role_override_v49/, 'night-only role mutations must use the guarded schema-48 RPC');"
+          new = "assert.match(ui, /apply_night_role_override_v57/, 'night-only role mutations must use the guarded four-nurse-aware RPC');\nassert.match(fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261024161000_four_nurse_role_override.sql'), 'utf8'), /perform public\\.apply_night_role_override_v49/, 'the four-nurse-aware RPC must delegate ordinary role mutations to the established guarded RPC');"
+          if old not in text:
+              raise SystemExit('old role RPC assertion not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/roster.test.js
+          git commit -m "test: recognise guarded v57 role wrapper [rpc-contract-patched]"
+          git push origin HEAD:fix/four-nurse-role-reassignment
