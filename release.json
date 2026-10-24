@@ -1,14 +1,14 @@
 {
   "version": "56.5",
   "date": "24 October 2026",
-  "title": "Clear four-nurse theatre allocation",
-  "summary": "Separates who is present, theatre placement and shared Pager so no nurse appears assigned before the team chooses them.",
+  "title": "Four-nurse night allocation",
+  "summary": "Explains how four nurses cover the two theatre parts and manually share Pager when a five-person night drops to four.",
   "changes": [
-    "Shows the four nurses present tonight directly in the four-nurse theatre allocation editor.",
-    "Leaves a vacant theatre position visibly as Select nurse instead of allowing iOS to display the first nurse as if selected.",
-    "Removes the automatic suggestion that placed the normal Pager nurse into a vacant theatre role before confirmation.",
-    "Shared Pager now waits for the theatre arrangement to be explicitly saved when a theatre nurse is absent.",
-    "If the normal Pager nurse is the absent nurse, the four existing theatre nurses remain valid and can proceed to manual Pager ordering."
+    "When a five-person night drops to four because one nurse is absent, the app shows the four nurses actually present and keeps the remaining theatre positions as rostered.",
+    "If a theatre position is vacant, the team explicitly chooses which of the four working nurses fills it; nobody is placed there automatically.",
+    "Once two nurses are confirmed in First Part and two in Second Part, the same four nurses manually agree the Pager order for 00:00–07:00.",
+    "If the normal Pager nurse is the absent nurse, the original four theatre nurses stay in place and only the Pager order needs to be agreed.",
+    "Pager is split equally by real elapsed time: 1h 45m each on ordinary nights and 2h each on the October clock-change night, with current and next cover shown live."
   ],
-  "update_policy": "important"
+  "update_policy": "normal"
 }
