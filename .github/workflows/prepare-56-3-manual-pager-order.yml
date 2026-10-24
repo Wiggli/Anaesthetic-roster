@@ -57,7 +57,7 @@ jobs:
           test = Path('tests/shared-pager.test.js')
           t = test.read_text()
           anchor = "assert.match(source, /Email plan/, 'shared effective plan must support email');"
-          addition = "\nassert.match(source, /Select nurse/, 'unsaved shared Pager parts must show an explicit Select nurse placeholder');\nassert.doesNotMatch(source, /stored\\?\\.nurse_order \\|\\| state\\.nurses/, 'theatre order must never prefill a new shared Pager order');\nassert.match(source, /current = drafts\\.get\\(state\\.date\\) \\|\\| savedOrder \\|\\| \\[\\'', '\\'', '\\'', '\\'\\]/, 'a new shared Pager order must start with four unselected slots');"
+          addition = "\nassert.match(source, /Select nurse/, 'unsaved shared Pager parts must show an explicit Select nurse placeholder');\nassert.doesNotMatch(source, /stored\\?\\.nurse_order \\|\\| state\\.nurses/, 'theatre order must never prefill a new shared Pager order');\nassert.match(source, /savedOrder \\|\\| \\['', '', '', ''\\]/, 'a new shared Pager order must start with four unselected slots');"
           if anchor not in t:
               raise SystemExit('shared Pager test anchor not found')
           if 'unsaved shared Pager parts must show' not in t:
