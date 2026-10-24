@@ -24,16 +24,32 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import json
+
           p = Path('src/legacy-ui/release-history.js')
           s = p.read_text()
           old_565 = '["56.5","24 October 2026","Clear four-nurse theatre allocation",["Shows the four nurses present tonight directly in the four-nurse theatre allocation editor.","Leaves a vacant theatre position visibly as Select nurse instead of allowing iOS to display the first nurse as if selected.","Removes the automatic suggestion that placed the normal Pager nurse into a vacant theatre role before confirmation.","Shared Pager now waits for the theatre arrangement to be explicitly saved when a theatre nurse is absent.","If the normal Pager nurse is the absent nurse, the four existing theatre nurses remain valid and can proceed to manual Pager ordering."],"important"]'
-          new_565 = '["56.5","24 October 2026","Four-nurse night allocation",["When a five-person night drops to four because one nurse is absent, the app shows the four nurses actually present and keeps the remaining theatre positions as rostered.","If a theatre position is vacant, the team explicitly chooses which of the four working nurses fills it; nobody is placed there automatically.","Once two nurses are confirmed in First Part and two in Second Part, the same four nurses manually agree the Pager order for 00:00–07:00.","If the normal Pager nurse is the absent nurse, the original four theatre nurses stay in place and only the Pager order needs to be agreed.","Pager is split equally by real elapsed time: 1h 45m each on ordinary nights and 2h each on the October clock-change night, with current and next cover shown live."],"normal"]'
+          new_changes = [
+            'When a five-person night drops to four because one nurse is absent, the app shows the four nurses actually present and keeps the remaining theatre positions as rostered.',
+            'If a theatre position is vacant, the team explicitly chooses which of the four working nurses fills it; nobody is placed there automatically.',
+            'Once two nurses are confirmed in First Part and two in Second Part, the same four nurses manually agree the Pager order for 00:00–07:00.',
+            'If the normal Pager nurse is the absent nurse, the original four theatre nurses stay in place and only the Pager order needs to be agreed.',
+            'Pager is split equally by real elapsed time: 1h 45m each on ordinary nights and 2h each on the October clock-change night, with current and next cover shown live.'
+          ]
+          new_565 = '["56.5","24 October 2026","Four-nurse night allocation",[' + ','.join(json.dumps(x, ensure_ascii=False) for x in new_changes) + '],"normal"]'
           old_564 = '["56.4","24 October 2026","Repository and version hygiene",["Removed the stale 56.0 Shared Pager client-version fallback.","Shared Pager now uses the live application version and fails closed if version metadata is unexpectedly unavailable.","Added a regression check preventing historical hard-coded app-version fallbacks from returning.","Regenerated release metadata, runtime assets and PWA cache references for one consistent 56.4 build.","No clinical allocation, Pager timing or roster behaviour was changed."],"important"]'
           new_564 = '["56.4","24 October 2026","Maintenance update",["Internal maintenance only. No clinical allocation, Pager timing or roster behaviour changed."],"normal"]'
           if old_565 not in s: raise SystemExit('56.5 release note anchor missing')
           if old_564 not in s: raise SystemExit('56.4 release note anchor missing')
-          s = s.replace(old_565, new_565, 1).replace(old_564, new_564, 1)
-          p.write_text(s)
+          p.write_text(s.replace(old_565, new_565, 1).replace(old_564, new_564, 1))
+
+          r = Path('release.json')
+          data = json.loads(r.read_text())
+          data['title'] = 'Four-nurse night allocation'
+          data['summary'] = 'Explains how four nurses cover the two theatre parts and manually share Pager when a five-person night drops to four.'
+          data['changes'] = new_changes
+          data['update_policy'] = 'normal'
+          r.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
           PY
       - name: Regenerate runtime compatibility assets
         run: npm run generate:runtime
@@ -43,6 +59,6 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/legacy-ui/release-history.js app-ui.js
+          git add src/legacy-ui/release-history.js release.json app-ui.js
           git commit -m "docs: focus release notes on four-nurse allocation [notes-done]"
           git push origin HEAD:chore/release-notes-four-nurse-focus
