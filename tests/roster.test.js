@@ -489,8 +489,9 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 32, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 33, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 assert.ok(checkedInMigrations.includes('20261024153714_shared_pager_four_nurse.sql'), 'the four-nurse shared Pager migration must stay checked in');
+assert.ok(checkedInMigrations.includes('20261024161000_four_nurse_role_override.sql'), 'the four-nurse theatre reassignment migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004024500_night_team_identity_v51.sql'), 'the schema-51 shared night identity migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261004062000_global_shift_identity_v52.sql'), 'the schema-52 global shift identity migration must stay checked in');
@@ -538,7 +539,8 @@ assert.match(ui, /function undoAddedOvertime[\s\S]*remove_night_overtime_v49/, '
 assert.match(ui, /app_sync_state[\s\S]*scheduler\.every\('shared-revision',[\s\S]*realtimeSubscribed&&sharedSyncState==='live'\?60000:15000/, 'active clients must check the shared revision through the adaptive central scheduler');
 assert.match(ui, /CHANNEL_ERROR[\s\S]*TIMED_OUT[\s\S]*CLOSED[\s\S]*scheduleRealtimeReconnect/, 'realtime must recover from interrupted channels');
 assert.match(ui, /lifecycle\.setResumeHandler\(reconcileApplication\)/, 'returning to an open app must use the centralized resume reconciliation path');
-assert.match(ui, /apply_night_role_override_v49/, 'night-only role mutations must use the guarded schema-48 RPC');
+assert.match(ui, /apply_night_role_override_v57/, 'night-only role mutations must use the guarded four-nurse-aware RPC');
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261024161000_four_nurse_role_override.sql'), 'utf8'), /perform public\.apply_night_role_override_v49/, 'the four-nurse-aware RPC must delegate ordinary role mutations to the established guarded RPC');
 assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
 assert.doesNotMatch(ui, /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'staffing saves must never fall back to browser-side multi-step writes');
 assert.match(ui, /record_night_absence_v49[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
