@@ -10787,3 +10787,9 @@ body.personalMotionReduced *,body.personalMotionReduced *::before,body.personalM
 
 
 }
+
+/* 56.5 · four-nurse allocation clarity */
+.fourNursePresent{display:grid;gap:10px;padding:14px;border-radius:16px;background:color-mix(in srgb,var(--accent) 8%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 18%,transparent)}
+.fourNursePresent>strong{font-size:.78rem;letter-spacing:.02em;color:var(--text)}
+.fourNursePresentList{display:flex;flex-wrap:wrap;gap:8px}
+.fourNursePresentList span{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border-radius:999px;background:var(--card);border:1px solid color-mix(in srgb,var(--text) 10%,transparent);font-size:.78rem;font-weight:700;color:var(--text)}

@@ -37,6 +37,8 @@ type ChangesForms = {
 
 type RoleOverride = {
   notice?: string;
+  mode?: string;
+  present?: { value: string; label: string }[];
   guidance: string;
   summary: string;
   open: boolean;
@@ -296,10 +298,11 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 
   return <details className="nightRoleEditor" open={model.open}>
     <summary>
-      <span><b>Change this night’s roles</b><small>{model.summary}</small></span>
+      <span><b>{model.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}</b><small>{model.summary}</small></span>
       <span aria-hidden="true">›</span>
     </summary>
     <div className="nightRoleEditorBody">
+      {model.mode === '4' && model.present?.length ? <div className="fourNursePresent"><strong>Present tonight · {model.present.length} nurses</strong><div className="fourNursePresentList">{model.present.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}
       <p className="time">{model.guidance}</p>
       <div className="editGrid">
         {model.keys.map(row => <label key={row.key} className={row.fullWidth ? 'fullWidth' : ''}>
@@ -309,6 +312,7 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
             value={model.assignments[row.key] || ''}
             onChange={event => dispatchAction({ action: 'role-select', key: row.key, value: event.target.value })}
           >
+            {model.mode === '4' && !model.assignments[row.key] ? <option value="" disabled>Select nurse</option> : null}
             {model.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}
           </select>
         </label>)}
