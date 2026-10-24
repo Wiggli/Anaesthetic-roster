@@ -422,7 +422,7 @@ async function chatMarkRead(conversationId,messageId){
       if(inserted.error&&inserted.error.code==='23505')await client.from('chat_read_state').update({last_read_message_id:target}).eq('conversation_id',conversationId);
     }
   }
-  chatState.readRevision+=1;chatState.readStateByConversation[conversationId]=Math.max(current,target);chatState.unreadByConversation[conversationId]=0;chatUpdateNavBadge();chatRenderHome();
+  chatState.readRevision+=1;chatState.readStateByConversation[conversationId]=Math.max(current,target);var latest=chatState.latestByConversation[conversationId];if(!latest||Number(latest.id)<=target)chatState.unreadByConversation[conversationId]=0;else chatScheduleOverviewRefresh();chatUpdateNavBadge();chatRenderHome();
 }
 async function chatReadTeamIfAtBottom(){
   var team=chatTeamConversation(),host=chatEl('chatTeamMessages');if(!chatVisible()||document.visibilityState==='hidden'||chatState.activeThreadKind!=='team'||!team||!host||!chatNearBottom(host)||!chatState.teamMessages.length)return;

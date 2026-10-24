@@ -1,6 +1,6 @@
 /* Education, onboarding and reusable feature-guide ownership. */
 function educationVersions(){
-  return{main:8,night:6,changes:4,actions:2,breaks:5,chat:4,roster:4,account:5}
+  return{main:9,night:7,changes:5,actions:3,breaks:5,chat:4,roster:4,account:5}
 }
 function educationVersion(key){return Number(educationVersions()[key]||1)}
 function educationState(){
@@ -25,7 +25,7 @@ function onboardingWorkflowPreview(){
   return'<div class="onboardingProductPreview onboardingWorkflowPreview" aria-hidden="true"><div><span>1</span><b>Staffing</b><small>Who changed?</small></div><i></i><div><span>2</span><b>Allocation</b><small>Only if needed</small></div><i></i><div><span>3</span><b>Confirm</b><small>Share once</small></div></div>'
 }
 function onboardingActionsPreview(){
-  return'<div class="onboardingProductPreview onboardingActionsPreview" aria-hidden="true"><div><span>−</span><b>Report absence</b></div><div><span>+</span><b>Add overtime</b></div><div class="wide"><span>✓</span><b>Review this night</b><small>Only turns amber when something needs attention</small></div></div>'
+  return'<div class="onboardingProductPreview onboardingActionsPreview" aria-hidden="true"><div><span>−</span><b>Report absence</b></div><div><span>+</span><b>Add overtime</b></div><div class="wide"><span>✓</span><b>Review this night</b><small>Open the exact outstanding decision</small></div></div>'
 }
 function featureEducationLabel(key){
   return key==='clockchange'?'Clock change':key==='night'?'Night':key==='changes'?'Changes':key==='actions'?'Actions':key==='breaks'?'Breaks':key==='chat'?'Chat':key==='roster'?'Full roster':key==='account'?'Account & Personalise':'Guide'

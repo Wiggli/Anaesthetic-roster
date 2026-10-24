@@ -222,7 +222,7 @@ function Navigation({ badges }: { badges: Badges }) {
       onClick={() => { navigationHaptic(); window.showQuickActions?.(); }}>
       <span className="quickRudderDisc">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-        <em id="quickActionAttention" className={'quickRudderAttention' + (badges.changes.hidden ? ' hidden' : '')} aria-hidden="true">
+        <em id="quickActionAttention" className="quickRudderAttention hidden" aria-hidden="true">
           {badges.changes.hidden ? '' : badges.changes.text}
         </em>
       </span>

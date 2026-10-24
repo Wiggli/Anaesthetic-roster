@@ -14,7 +14,6 @@ export function nextDockScroll(state: DockScrollState, position: number, maximum
 export function setupDockScroll() {
   const dock = document.querySelector<HTMLElement>('.bottom');
   if (!dock) return;
-  const iosStandalone = document.documentElement.hasAttribute('data-ios-standalone');
   let state: DockScrollState = { y: window.scrollY, travel: 0, hidden: false };
   let frame = 0;
   let view = document.body.dataset.view;
@@ -25,11 +24,11 @@ export function setupDockScroll() {
   const update = () => {
     frame = 0;
     // Fixed mobile navigation must never translate with page scrolling. The
-    // iOS standalone flag remains explicit because installed iPhone PWAs are
-    // the most sensitive to transformed fixed-element compositing.
-    const pinned = true || iosStandalone;
+    // installed iPhone PWAs are sensitive to transformed fixed-element compositing;
+    // phone CSS hides with opacity while preserving fixed geometry.
+    const pinned = window.innerWidth >= 1024 || document.body.dataset.view === 'chat' || !!document.querySelector('dialog[open], input:focus, textarea:focus, select:focus') || document.body.classList.contains('authPending');
     state = nextDockScroll(state, window.scrollY, document.documentElement.scrollHeight - window.innerHeight, pinned);
-    dock.classList.remove('dockScrollHidden');
+    dock.classList.toggle('dockScrollHidden', state.hidden);
   };
   window.addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(update); }, { passive: true });
   window.addEventListener('resize', reveal, { passive: true });

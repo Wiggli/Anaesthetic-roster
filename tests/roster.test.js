@@ -432,7 +432,7 @@ assert.match(ui, /dirty=!!\(draft&&roleAssignmentsDiffer/, 'role adapter require
 assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'active typed role-save controls only appear for a changed draft');
 assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
 assert.match(ui, /changesSmartDefaultDate!==base\.date[\s\S]*activeChangesStep=smartChangesStep\(base\)/, 'the smart Changes default must apply once per selected night rather than fighting manual navigation');
-assert.match(changesWorkflowExperience, /workflowProgress[\s\S]*role="progressbar"[\s\S]*aria-valuenow=\{model\.progressValue\}/, 'Changes must expose real completion progress instead of decorative steps only');
+assert.match(changesWorkflowExperience, /role="status" aria-live="polite"[\s\S]*model.headline/, 'Changes must name the remaining decision in accessible live feedback');
 assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
 assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[\s\S]*nightRoleOverrideDrafts[\s\S]*protectLocalChangesDraft[\s\S]*beforeunload',protectLocalChangesDraft/, 'leaving or reloading must protect unfinished Changes work across selected nights');
 assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
@@ -639,7 +639,7 @@ assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.sh
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');
 assert.match(ui, /function showQuickActions\(\)[\s\S]*roster:quick-actions/, 'Quick Actions must build its context from the live selected night before opening');
 assert.match(ui, /function performQuickAction\(action\)[\s\S]*show\('changes'\)[\s\S]*setChangesStep/, 'staffing Quick Actions must route into the existing Changes workflow instead of creating a mutation shortcut');
-assert.match(quickActionsExperience, /Report an absence[\s\S]*Add overtime cover[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share Night Roster/, 'the typed Quick Actions sheet must keep the compact operational action set');
+assert.match(quickActionsExperience, /Report an absence[\s\S]*Add overtime cover[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(ui, /function openActivityDetail[\s\S]*item\.detail\|\|'No additional reason was recorded\.'/ , 'the activity detail sheet must retain the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
@@ -718,7 +718,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:8[\s\S]*changes:4[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:9[\s\S]*changes:5[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');
@@ -742,7 +742,7 @@ assert.match(clinicalExperience, /function nightVisualPhase[\s\S]*'upcoming'[\s\
 assert.match(clinicalExperience, /function PersonalNightCard[\s\S]*const openBreak[\s\S]*const openColleague[\s\S]*const openDutyTiming[\s\S]*personalHeroFactGrid[\s\S]*onClick=\{openDutyTiming\}[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}/, 'Duty, Break and Colleague hero facts must remain directly actionable');
 assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? 'Review needed' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
-assert.match(accountExperience, /Share Night Roster[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
+assert.match(accountExperience, /Share the app[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
 assert.match(accountExperience, /function shareAct\(action:[\s\S]*roster:share-action/, 'share buttons must dispatch through the dedicated share event channel');
 assert.match(accountExperience, /shareAct\('native'\)[\s\S]*shareAct\('copy'\)[\s\S]*shareAct\('install'\)/, 'Send, copy and install-help controls must all use the working share action channel');
 assert.doesNotMatch(accountExperience, /act\('share-(?:native|copy|install)'\)/, 'share controls must not accidentally dispatch account actions');

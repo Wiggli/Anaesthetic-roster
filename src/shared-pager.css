@@ -43,3 +43,18 @@
 .sharedPagerLegacyWarningHidden{display:none!important}
 @media(max-width:430px){.sharedPagerSurface{padding:14px}.sharedPagerOrderEditor,.sharedPagerMiniOrder{grid-template-columns:1fr}.sharedPagerSegments{gap:4px}.sharedPagerSegments>div{padding:7px 5px}.sharedPagerSegments b{font-size:.68rem}.sharedPagerSegments small{font-size:.58rem}.sharedPagerDuration{font-size:.67rem}.sharedPagerActions{display:grid;grid-template-columns:1fr 1fr}.sharedPagerActions .primary{grid-column:1/-1}}
 @media(prefers-reduced-motion:reduce){.sharedPagerTrack>span i{transition:none}}
+/* Pager turns stay readable as named rows; the thin rail retains live orientation. */
+.sharedPagerSegments{grid-template-columns:1fr;gap:0;border-top:1px solid var(--border-subtle);margin-top:12px}
+.sharedPagerSegments>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-radius:0;border-bottom:1px solid var(--border-subtle);background:transparent}
+.sharedPagerSegments span{grid-column:1/-1;font-size:var(--unified-type-caption);line-height:1.4}
+.sharedPagerSegments b{font-size:var(--unified-type-body);white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.sharedPagerSegments small{font-size:var(--unified-type-caption);line-height:1.5;text-align:right;max-width:13ch;margin-top:0}
+.sharedPagerSegments>div.mine{box-shadow:none;border-left:3px solid var(--accent-primary);padding-left:10px}
+.sharedPagerSegments>div.active{background:var(--surface-elevated)}
+.sharedPagerOrderEditor{grid-template-columns:1fr}
+.sharedPagerOrderEditor label>span,.sharedPagerOrderEditor small,.sharedPagerDuration,.sharedPagerMiniOrder small{font-size:var(--unified-type-caption);line-height:1.45}
+.sharedPagerOrderEditor label{padding:12px}
+.sharedPagerEditorStatus,.sharedPagerElapsed,.sharedPagerMine,.sharedPagerClock{font-size:var(--unified-type-caption)}
+.sharedPagerMiniOrder{grid-template-columns:1fr}
+.sharedPagerMiniOrder b{font-size:var(--unified-type-body)}
+.sharedPagerHeroTop{flex-wrap:wrap}

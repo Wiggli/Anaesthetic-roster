@@ -98,10 +98,33 @@ function performQuickAction(action){
     show('chat');if(typeof window.openChatView==='function')window.openChatView();
     window.setTimeout(function(){var button=byId('chatNewPrivateBtn');if(button)button.click()},120);return;
   }
+  if(action==='night-plan'){showNightPlanSummary();return}
   if(action==='share'){showShareApp();return}
 }
 window.showQuickActions=showQuickActions;
 window.performQuickAction=performQuickAction;
+
+function selectedNightSummary(date){
+  var model=buildNightPlan(baseForDate(date)),r=model.effective,t=model.timing,lines=['Anaesthetic Night Roster · '+fmt(date),(model.provisional?'PROVISIONAL':workflowNeedsConfirmation(model.base,model.tasks.length)?'Changes awaiting review':'Saved roster')+' · '+model.staffing.count+' present'];
+  ['first','second'].forEach(function(part){lines.push((part==='first'?'First Part':'Second Part')+': '+professionalName(r[part+'1'])+' + '+professionalName(r[part+'2'])+' · '+(part==='first'?t.firstPeriodDisplay:t.secondPeriod))});
+  if(model.staffing.count===4)lines.push(window.sharedPagerSummary?window.sharedPagerSummary(date):'Shared Pager order not loaded.');
+  else if(r.mode==='5')lines.push('Full-night Pager: '+professionalName(r.fullLW)+' · 00:00–07:00');
+  else{lines.push('Pager: '+professionalName(r.pager));lines.push('Reliever: '+professionalName(r.reliever))}
+  var b=breakData(r,model);if(!model.provisional){lines.push('First break: '+b.first.map(professionalName).join(', '));lines.push('Second break: '+b.second.map(professionalName).join(', '))}
+  changesFor(date).forEach(function(c){lines.push('Absent: '+professionalName(c.absent_name))});
+  if(model.provisional)lines.push('Below normal staffing or unresolved allocations. Breaks and handovers require clinical coordination.');
+  return lines.join('\n');
+}
+function showNightPlanSummary(){
+  var date=cur().date,dialog=byId('nightPlanSummaryDialog');
+  if(!dialog){dialog=document.createElement('dialog');dialog.id='nightPlanSummaryDialog';dialog.className='appDialog nightPlanSummaryDialog';dialog.setAttribute('aria-labelledby','nightPlanSummaryTitle');document.body.appendChild(dialog)}
+  dialog.innerHTML='<div class="dialogHeader"><h2 id="nightPlanSummaryTitle">This night’s plan</h2><button type="button" data-close aria-label="Close night plan">Close</button></div><p>Review the selected night before copying or opening your email app.</p><pre></pre><div class="nightPlanSummaryActions"><button type="button" class="primary" data-copy>Copy plan</button><button type="button" class="soft" data-email>Email plan</button></div><p role="status" data-status></p>';
+  dialog.querySelector('pre').textContent=selectedNightSummary(date);
+  dialog.querySelector('[data-close]').onclick=function(){dialog.close()};
+  dialog.querySelector('[data-copy]').onclick=async function(){try{await navigator.clipboard.writeText(selectedNightSummary(date));dialog.querySelector('[data-status]').textContent='Plan copied.'}catch(error){dialog.querySelector('[data-status]').textContent='Copy is unavailable. Select the plan text above.'}};
+  dialog.querySelector('[data-email]').onclick=function(){location.href='mailto:?subject='+encodeURIComponent('Night Roster · '+fmt(date))+'&body='+encodeURIComponent(selectedNightSummary(date));dialog.querySelector('[data-status]').textContent='Opening your email app. Review recipients before sending.'};
+  dialog.showModal();
+}
 
 function updateSmartNightButtons(){
   var state=automaticNightState();
@@ -138,6 +161,7 @@ function shadowNightPlanCheck(plan){
 
 var lastChangesWorkflowModel=null;
 function setChangesStep(step,scroll){
+  if(step==='confirm'&&R.length&&staffingPlan(cur()).count===4)step='allocation';
   activeChangesStep=step==='confirm'?'confirm':step==='allocation'?'allocation':'staffing';
   var staffing=byId('changesStaffingPane'),allocation=byId('changesAllocationPane'),confirmation=byId('changesConfirmPane');if(!staffing||!allocation||!confirmation)return;
   staffing.classList.toggle('hidden',activeChangesStep!=='staffing');allocation.classList.toggle('hidden',activeChangesStep!=='allocation');confirmation.classList.toggle('hidden',activeChangesStep!=='confirm');
@@ -154,6 +178,7 @@ function workflowTaskCount(base,plan,r){
 }
 
 function smartChangesStep(base){
+  if(staffingPlan(base).count===4)return'allocation';
   var plan=staffingPlan(base),tasks=workflowTaskDetails(base,plan).length;
   if(tasks)return'allocation';
   if(workflowNeedsConfirmation(base,tasks))return'confirm';
@@ -165,6 +190,7 @@ function localChangesDraftParts(base){
   if(Object.keys(draft).some(function(key){return String(draft[key]||'').trim().length>0}))parts.push('allocation selections');
   if(seventhDecisionDrafts[date])parts.push('seventh-nurse choice');
   if(nightRoleOverrideDrafts[date])parts.push('night-only roles');
+  if(window.sharedPagerDraftDates&&window.sharedPagerDraftDates().indexOf(date)>=0)parts.push('shared Pager order');
   if(cur().date===date){
     var absence=byId('absentName'),overtime=byId('overtimeName');
     if(editingAbsenceId||absence&&absence.value)parts.push('absence form');
@@ -180,7 +206,7 @@ function localChangesDraftSummary(base){
 }
 
 function allLocalChangesDraftParts(){
-  if(!R.length)return[];var currentDate=cur().date,dates=[currentDate];
+  if(!R.length)return[];var currentDate=cur().date,dates=[currentDate].concat(window.sharedPagerDraftDates?window.sharedPagerDraftDates():[]);
   [allocationDrafts,seventhDecisionDrafts,nightRoleOverrideDrafts].forEach(function(map){Object.keys(map||{}).forEach(function(date){if(dates.indexOf(date)<0)dates.push(date)})});
   var parts=[];dates.forEach(function(date){var base=R.find(function(item){return item.date===date});if(!base)return;localChangesDraftParts(base).forEach(function(part){parts.push({date:date,part:part})})});return parts;
 }
@@ -190,8 +216,31 @@ function protectLocalChangesDraft(event){
   event.preventDefault();event.returnValue='';
 }
 
+function fourNurseTheatreRoles(base){
+  if(nightWorkingNames(base).length!==4)return null;
+  var stored=nightRoleOverrides[base.date],a=stored&&stored.assignments;
+  if(a&&a.mode==='4'&&validRoleAssignmentsForNight(base,a))return a;
+  var raw=rawBaseForDate(base.date),working=nightWorkingNames(base);
+  return FOUR_NIGHT_ROLE_KEYS.every(function(key){return working.some(function(name){return sameNurse(name,raw[key])})})?Object.assign({mode:'4'},raw):null;
+}
+function fourNurseWorkflow(base,plan){
+  var roles=fourNurseTheatreRoles(base),pager=window.sharedPagerStatus&&window.sharedPagerStatus(base.date),ready=!!(roles&&pager&&pager.saved),headline=!roles?'Choose the vacant theatre position':!pager||!pager.saved?'Record the agreed Pager order':'Four-nurse arrangement recorded';
+  byId('changes').classList.add('fourNurseWorkflow');
+  byId('changesTaskBadge').textContent=ready?'':1;byId('changesTaskBadge').classList.toggle('hidden',ready);
+  byId('quickActionAttention').classList.add('hidden');
+  byId('allocationSummary').hidden=true;
+  byId('continueToConfirmBtn').classList.add('hidden');byId('continueToConfirmBtn').disabled=true;
+  byId('continueToConfirmReason').textContent='Four nurses remain below the normal staffing threshold. The agreed arrangement is saved separately; standard finalisation is unavailable.';
+  byId('continueToConfirmReason').classList.remove('hidden');
+  byId('confirmationPreview').innerHTML='';updateConfirmationControls(false,1);
+  lastChangesWorkflowModel={active:activeChangesStep,steps:[{id:'staffing',label:'Staffing',detail:'4 present',complete:true,attention:false,quiet:false},{id:'allocation',label:'Arrangement',detail:ready?'Recorded':'Theatre + Pager',complete:ready,attention:!ready,quiet:ready},{id:'confirm',label:'Review',detail:'Provisional',complete:false,attention:false,quiet:true,disabled:true}],headline:headline,guidance:'Save theatre positions, then the four agreed Pager turns. Four-person cover remains provisional.',tone:ready?'automatic':'attention',progressValue:ready?2:1,progressMax:3,progressLabel:headline};
+  if(activeChangesStep==='confirm')activeChangesStep='allocation';
+  setChangesStep(activeChangesStep,false);
+}
+
 function workflowTaskDetails(base,plan){
   var tasks=[];
+  if(plan.count===4)return fourNurseTheatreRoles(base)?[]:['Choose and save the four theatre positions'];
   if(plan.requiresCoverageChoice)tasks.push('Choose the theatre role the rostered Reliever will cover');
   if(plan.requiresSeventhDecision)tasks.push('Choose whether '+professionalName(plan.seventhNurse)+' moves to the seventh position');
   plan.availableKeys.forEach(function(key){if(!selectedAllocationId(base,key))tasks.push('Choose a nurse for '+allocationLabel(key))});
@@ -212,6 +261,7 @@ function workflowHasManualPlan(base){
 }
 
 function workflowNeedsConfirmation(base,decisionTasks){
+  if(staffingPlan(base).count<5)return false;
   if(decisionTasks)return true;
   return workflowHasManualPlan(base)&&planNeedsConfirmation(base,0);
 }
@@ -226,6 +276,8 @@ function fixedRolesHtml(base,plan){
 
 function updateChangesWorkflow(base,plan){
   if(!changesViewPrepared)return;
+  if(plan.count===4){fourNurseWorkflow(base,plan);return}
+  byId('changes').classList.remove('fourNurseWorkflow');byId('allocationSummary').hidden=false;
   var r=applyChanges(base),taskDetails=workflowTaskDetails(base,plan),tasks=taskDetails.length,taskInstruction=taskDetails[0]||'',confirmNeeded=workflowNeedsConfirmation(base,tasks),hasManualPlan=workflowHasManualPlan(base),changes=changesFor(base.date),overtime=overtimeFor(base.date),staffingState=byId('staffingStepState'),allocationState=byId('allocationStepState'),confirmState=byId('confirmStepState'),state=byId('changesWorkflowState'),badge=byId('changesTaskBadge'),draftLabel=localChangesDraftSummary(base);
   if(staffingState)staffingState.textContent=changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'No changes';
   var published=nightPlanStatuses[base.date];if(allocationState)allocationState.textContent=tasks?tasks+' task'+(tasks===1?'':'s')+' remaining':'Current roles';if(confirmState)confirmState.textContent=tasks?'Resolve tasks':confirmNeeded?'Review changes':published&&published.published_at&&hasManualPlan?'Shared':'Not needed';
@@ -233,7 +285,7 @@ function updateChangesWorkflow(base,plan){
   if(state){state.innerHTML=tasks?'<b>'+esc(taskInstruction)+'</b><span>'+(tasks>1?esc((tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.')):'Select the nurse, then review the changes.')+'</span>':confirmNeeded?'<b>Ready to review</b><span>Check the selected night’s changes before sharing them with everyone.</span>':published&&published.published_at&&hasManualPlan?'<b>Changes shared</b><span>Updated by '+esc(published.published_by||'a shift member')+' at '+esc(shortTime(published.published_at))+'.</span>':'';
   state.classList.toggle('hidden',!tasks&&!confirmNeeded&&!hasManualPlan);
   state.classList.toggle('complete',!confirmNeeded);state.classList.toggle('ready',!tasks&&confirmNeeded);}
-  var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.toggle('hidden',!badgeCount);
+  var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.add('hidden');
   var allocationAction=byId('continueToAllocationBtn');allocationAction.textContent=tasks?'Resolve allocations':'Adjust roles';allocationAction.classList.toggle('quietAction',!tasks&&!confirmNeeded);
   var changesPanel=document.querySelector('#changes .changePanel');if(changesPanel)changesPanel.classList.toggle('planShared',shared);
   var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent='Review changes';var confirmReason=byId('continueToConfirmReason');if(confirmReason){confirmReason.textContent=tasks?'Complete the allocation above before reviewing changes.':'';confirmReason.classList.toggle('hidden',!tasks)}
@@ -276,7 +328,7 @@ function confirmationPlanRows(r,order){
 function confirmationChangedRows(base,r,order){
   var rostered=rawBaseForDate(base.date),labels={first1:'First Part theatre · position 1',first2:'First Part theatre · position 2',second1:'Second Part theatre · position 1',second2:'Second Part theatre · position 2',pager:'Pager',reliever:'Reliever',seventh:'Seventh nurse'},rows=[];
   ['first1','first2','second1','second2'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeItem(labels[key],rostered[key],r[key],allocationBreak(key)))});
-  if(r.mode==='5'){var before=rostered.pager+' + '+rostered.reliever;if(canonicalNurseName(rostered.pager)!==canonicalNurseName(r.fullLW)||canonicalNurseName(rostered.reliever)!==canonicalNurseName(r.fullLW))rows.push(confirmationChangeItem('Full-night Labour Ward / Pager',before,r.fullLW,'00:00–07:00'))}
+  if(r.mode==='5'){var before=[rostered.pager,rostered.reliever].filter(Boolean).join(' + ');if(canonicalNurseName(rostered.pager)!==canonicalNurseName(r.fullLW)||canonicalNurseName(rostered.reliever)!==canonicalNurseName(r.fullLW))rows.push(confirmationChangeItem('Full-night Labour Ward / Pager',before,r.fullLW,'00:00–07:00'))}
   else ['pager','reliever'].forEach(function(key){if(canonicalNurseName(rostered[key])!==canonicalNurseName(r[key]))rows.push(confirmationChangeItem(labels[key],rostered[key],r[key],labourAssignmentDetail(r[key],order)))});
   if(r.mode==='7'&&canonicalNurseName(rostered.seventh)!==canonicalNurseName(r.seventh))rows.push(confirmationChangeItem(labels.seventh,rostered.seventh,r.seventh,'Break coordinated as required'));
   if(!rows.length){changesFor(base.date).forEach(function(change){rows.push(confirmationChangeItem('Absence',change.absent_name,change.replacement_name||'Not working',change.reason||'Unavailable'))});overtimeFor(base.date).forEach(function(entry){rows.push(confirmationChangeItem('Overtime','Not working',entry.nurse_name,entry.allocation_key?allocationLabel(entry.allocation_key):'Allocation to decide'))})}
@@ -310,7 +362,7 @@ function sameNightNameSet(left,right){if(left.length!==right.length)return false
 function nightWorkingNames(base){var raw=rawBaseForDate(base.date),changes=changesFor(base.date),overtime=overtimeFor(base.date),absent=changes.map(function(change){return canonicalNurseName(change.absent_name)}),names=[];function add(name){name=String(name||'').trim();if(name&&!names.some(function(saved){return canonicalNurseName(saved)===canonicalNurseName(name)}))names.push(name)}CORE_ALLOCATION_KEYS.forEach(function(key){if(absent.indexOf(canonicalNurseName(raw[key]))<0)add(raw[key])});changes.forEach(function(change){add(change.replacement_name)});overtime.forEach(function(entry){add(entry.nurse_name)});return names}
 function validRoleAssignmentsForNight(base,assignments){if(!validRoleAssignments(assignments))return false;var working=nightWorkingNames(base),assigned;if(assignments.mode==='4'){assigned=FOUR_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===4&&sameNightNameSet(working,assigned)}if(assignments.mode==='5'){assigned=FIVE_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===5&&sameNightNameSet(working,assigned)}if(assignments.mode==='7'){assigned=SEVEN_NIGHT_ROLE_KEYS.map(function(key){return assignments[key]});return working.length===7&&sameNightNameSet(working,assigned)}if(baseEstablishmentSize(base)===5){assigned=CORE_ALLOCATION_KEYS.map(function(key){return assignments[key]});return working.length===6&&sameNightNameSet(working,assigned)}return true}
 function customFiveAssignmentsFor(base){var stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;return validRoleAssignmentsForNight(base,assignments)&&assignments.mode==='5'?Object.assign({},assignments):null}
-function applyNightRoleOverride(base){var copy=Object.assign({},base),stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;if(validRoleAssignments(assignments)&&assignments.mode!=='5'&&(baseEstablishmentSize(base)===6||validRoleAssignmentsForNight(base,assignments))){CORE_ALLOCATION_KEYS.forEach(function(key){copy[key]=assignments[key]});if(assignments.mode==='7'){copy.seventh=assignments.seventh;copy.mode='7'}else copy.mode='6'}return copy}
+function applyNightRoleOverride(base){var copy=Object.assign({},base),stored=nightRoleOverrides[base.date],assignments=stored&&stored.assignments;if(validRoleAssignments(assignments)&&assignments.mode!=='5'&&assignments.mode!=='4'&&(baseEstablishmentSize(base)===6||validRoleAssignmentsForNight(base,assignments))){CORE_ALLOCATION_KEYS.forEach(function(key){copy[key]=assignments[key]});if(assignments.mode==='7'){copy.seventh=assignments.seventh;copy.mode='7'}else copy.mode='6'}return copy}
 function baseForDate(date){return applyNightRoleOverride(rawBaseForDate(date))}
 
 function seventhRotationChoice(base,changes){
@@ -332,8 +384,8 @@ function seventhRotationChoice(base,changes){
 }
 
 function staffingPlan(base){
-  base=applyNightRoleOverride(base);var changes=changesFor(base.date),overtime=overtimeFor(base.date),absentKeys=[],openKeys=[],legacyCover=0;
-  changes.forEach(function(c){var key=allocationKeyForName(base,c.absent_name);if(!key)return;if(absentKeys.indexOf(key)<0)absentKeys.push(key);if(c.replacement_name)legacyCover++;else if(openKeys.indexOf(key)<0)openKeys.push(key)});
+  var rostered=nightRoleOverrides[base.date]?rawBaseForDate(base.date):base;base=applyNightRoleOverride(base);var changes=changesFor(base.date),overtime=overtimeFor(base.date),absentKeys=[],openKeys=[],legacyCover=0;
+  changes.forEach(function(c){var key=allocationKeyForName(rostered,c.absent_name);if(!key)return;if(absentKeys.indexOf(key)<0)absentKeys.push(key);if(c.replacement_name)legacyCover++;else if(openKeys.indexOf(key)<0)openKeys.push(key)});
   var size=baseEstablishmentSize(base),count=size-absentKeys.length+legacyCover+overtime.length,customFive=customFiveAssignmentsFor(base);
   if(count===5&&customFive){var assignedNames=FIVE_NIGHT_ROLE_KEYS.map(function(key){return customFive[key]}),usedOvertime=overtime.filter(function(entry){return assignedNames.some(function(name){return canonicalNurseName(name)===canonicalNurseName(entry.nurse_name)})});return{changes:changes,overtime:overtime,absentKeys:absentKeys,openKeys:openKeys,availableKeys:[],count:count,coverageKey:'custom',coverageChoices:[],coverageSource:'night-only',requiresCoverageChoice:false,requiresSeventhDecision:false,seventhDecision:null,validAssignments:usedOvertime,unassigned:[],unresolved:[],coreComplete:true,extraCount:0,complete:true,seventhChoice:null,seventhNurse:null,seventhVacatedKey:null,customFiveAssignments:customFive}}
   if(size===5&&count>=6&&!base.reliever&&openKeys.indexOf('reliever')<0)openKeys.push('reliever');
@@ -655,16 +707,16 @@ function nightRoleOverrideModel(base){
   if(!nightRoleOverrideAvailable)return{notice:'Night-only role changes need the current database update. The normal calculated roster remains available.'};
   var working=nightWorkingNames(base);if(working.length<4)return{notice:'Custom roles are unavailable while fewer than four nurses are working. Restore enough cover for both theatre parts first.'};
   var stored=nightRoleOverrides[base.date],draft=nightRoleOverrideDrafts[base.date],current=roleEditorAssignments(base),baseline=currentRoleAssignments(base);if(!current||!baseline)return{notice:'Night roles are not available for this night yet.'};
-  var keys=roleAssignmentKeys(current),fourMode=current.mode==='4',fiveMode=current.mode==='5',sevenMode=current.mode==='7',dirty=!!(draft&&roleAssignmentsDiffer(draft.assignments,baseline)),valid=validRoleAssignmentsForNight(base,current),labels={first1:'First part · position 1',first2:'First part · position 2',second1:'Second part · position 1',second2:'Second part · position 2',pager:'Pager',reliever:'Reliever',fullLW:'Full-night Labour Ward / Pager',seventh:'Seventh nurse'},names=(fourMode||fiveMode||sevenMode)?working:keys.map(function(key){return current[key]});
-  return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'These are the four nurses present tonight. Keep the nurses already in their theatre positions and explicitly choose who fills any vacant theatre position. Nothing is assigned automatically. Set the shared Pager order only after the theatre arrangement is saved.':fiveMode?'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.':sevenMode?'Arrange all seven nurses working this night across the theatre, Pager, Reliever and Seventh nurse roles. Each nurse is used once.':'Choose a different nurse in any role. The two people swap automatically, so no one is duplicated.',summary:stored?(fourMode?'Four-nurse theatre arrangement saved':fiveMode?'Custom five-nurse roles are active':sevenMode?'Custom seven-nurse roles are active':'Night-only roles are active'):(fourMode?'Choose who fills the vacant theatre position':fiveMode?'Optional custom five-nurse arrangement':sevenMode?'Optional custom seven-nurse arrangement':'Optional · roster rotation stays unchanged'),open:(fourMode&&!stored)||!!draft,stored:!!stored,dirty:dirty,reason:draft&&draft.reason||'',canSave:valid&&dirty&&!!normaliseNurseName(draft&&draft.reason||'')&&navigator.onLine,keys:keys.map(function(key){return{key:key,label:labels[key],fullWidth:key==='fullLW'||key==='seventh'}}),names:names.map(function(name){return{value:name,label:professionalName(name)}}),assignments:current};
+  var keys=roleAssignmentKeys(current),fourMode=current.mode==='4',fiveMode=current.mode==='5',sevenMode=current.mode==='7',dirty=!!(draft&&roleAssignmentsDiffer(draft.assignments,baseline)),valid=validRoleAssignmentsForNight(base,current),labels={first1:'First Part · nurse 1',first2:'First Part · nurse 2',second1:'Second Part · nurse 1',second2:'Second Part · nurse 2',pager:'Pager',reliever:'Reliever',fullLW:'Full-night Labour Ward / Pager',seventh:'Seventh nurse'},names=(fourMode||fiveMode||sevenMode)?working:keys.map(function(key){return current[key]});
+  return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'Keep the existing theatre parts and choose who fills the vacancy, then save before agreeing the four Pager turns below.':fiveMode?'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.':sevenMode?'Arrange all seven nurses working this night across the theatre, Pager, Reliever and Seventh nurse roles. Each nurse is used once.':'Choose a different nurse in any role. The two people swap automatically, so no one is duplicated.',summary:stored?(fourMode?'Four-nurse theatre arrangement saved':fiveMode?'Custom five-nurse roles are active':sevenMode?'Custom seven-nurse roles are active':'Night-only roles are active'):(fourMode?'Choose who fills the vacant theatre position':fiveMode?'Optional custom five-nurse arrangement':sevenMode?'Optional custom seven-nurse arrangement':'Optional · roster rotation stays unchanged'),open:(fourMode&&!stored)||!!draft,stored:!!stored,dirty:dirty,reason:draft&&draft.reason||'',canSave:valid&&dirty&&!!normaliseNurseName(draft&&draft.reason||'')&&navigator.onLine,keys:keys.map(function(key){return{key:key,label:labels[key],fullWidth:key==='fullLW'||key==='seventh'}}),names:names.map(function(name){return{value:name,label:professionalName(name)}}),assignments:current};
 }
 
 async function saveNightRoleOverride(base){
   if(!requireOnline())return;var draft=nightRoleOverrideDrafts[base.date],reason=normaliseNurseName(draft&&draft.reason||'');
   if(!draft||!validRoleAssignmentsForNight(base,draft.assignments)||!roleAssignmentsDiffer(draft.assignments,currentRoleAssignments(base))){toast('Change a role before saving');return}if(!reason){toast('Add a short reason for the night-only change');var field=byId('nightRoleReason');if(field)field.focus();return}
   var previous=nightRoleOverrides[base.date]?JSON.parse(JSON.stringify(nightRoleOverrides[base.date])):null,button=byId('saveNightRolesBtn');if(button){button.disabled=true;button.textContent='Saving…'}setSync('saving','Saving night-only roles');
-  var expectedAssignments=JSON.parse(JSON.stringify(draft.assignments)),result=await runRosterMutation('roles:save:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v57',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_action:'save',p_assignments:expectedAssignments,p_override_reason:reason,p_history_reason:reason})},function(){var stored=nightRoleOverrides[base.date]&&nightRoleOverrides[base.date].assignments;return !!(stored&&JSON.stringify(stored)===JSON.stringify(expectedAssignments))});
-  if(missingRpc(result)){setSync('error','Database update required');toast('Seven-nurse night-only changes require the current database update. Nothing was changed.');if(button){button.disabled=false;button.textContent='Save night-only change'}return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Saved for this night only. The permanent rotation is unchanged.',{label:'Undo',run:function(){return undoNightRoleChange(base.date,previous)}});
+  try{var expectedAssignments=JSON.parse(JSON.stringify(draft.assignments)),result=await runRosterMutation('roles:save:'+base.date,function(commandId,expectedSyncRevision){return supa.rpc('apply_night_role_override_v57',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_action:'save',p_assignments:expectedAssignments,p_override_reason:reason,p_history_reason:reason})},function(){var stored=nightRoleOverrides[base.date]&&nightRoleOverrides[base.date].assignments;return !!(stored&&JSON.stringify(stored)===JSON.stringify(expectedAssignments))});
+  if(missingRpc(result)){setSync('error','Database update required');toast('Seven-nurse night-only changes require the current database update. Nothing was changed.');if(button){button.disabled=false;button.textContent='Save night-only change'}return}if(rpcError(result))return;delete nightRoleOverrideDrafts[base.date];await loadSharedData();notifyRosterUpdate('roles',base.date);toast('Saved for this night only. The permanent rotation is unchanged.',{label:'Undo',run:function(){return undoNightRoleChange(base.date,previous)}});}catch(error){toast('The role change could not be saved. Your selections are still here.')}finally{var retry=byId('saveNightRolesBtn');if(retry){retry.disabled=false;retry.textContent='Save night-only change'}}
 }
 
 async function resetNightRoleOverride(base){
@@ -791,8 +843,9 @@ function breakData(r,nightPlan){
 
 function renderBreaks(nightPlan){
   var model=nightPlan&&nightPlan.date===cur().date?nightPlan:buildNightPlan(cur()),base=model.base,r=model.effective,plan=model.staffing,staffingPending=model.provisional,labourPending=r.mode!=='5'&&!model.labourOrder,pending=staffingPending||labourPending,count=plan.count,b=staffingPending?{first:[],second:[],notes:['Breaks are pending until the required staffing and allocations are finalised.']}:breakData(r,model);
+  var fourRoles=plan.count===4&&fourNurseTheatreRoles(base);if(fourRoles)b={first:[fourRoles.second1,fourRoles.second2],second:[fourRoles.first1,fourRoles.first2],notes:['Provisional theatre-based groups. Coordinate breaks with the agreed Pager turns and available clinical cover.']};
   byId('breakDatePick').value=r.date;byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
-  var absenceCount=changesFor(base.date).length,timing=model.timing,detail={date:r.date,formattedDate:fmt(r.date),nurseCount:count,absenceCount:absenceCount,pending:pending,pendingReason:staffingPending?'Complete the remaining staffing allocation.':'Review the Labour Ward allocation.',labourPending:labourPending,first:b.first.map(professionalName),second:b.second.map(professionalName),notes:b.notes,highlightedName:professionalName(myName()),firstDutyPeriod:timing.firstPeriodDisplay,secondDutyPeriod:timing.secondPeriod,dutyStartUtc:timing.startUtc,handoverUtc:timing.handoverUtc,dutyEndUtc:timing.endUtc,clockChange:clockChangeDetailFor(r.date),revision:model.revision,confirmed:model.confirmed};
+  var absenceCount=changesFor(base.date).length,timing=model.timing,detail={date:r.date,formattedDate:fmt(r.date),nurseCount:count,absenceCount:absenceCount,pending:pending,pendingReason:fourRoles?'Four-person cover remains provisional. Coordinate breaks with Pager cover.':staffingPending?'Complete the remaining staffing allocation.':'Review the Labour Ward allocation.',labourPending:labourPending,provisionalFour:!!fourRoles,first:b.first.map(professionalName),second:b.second.map(professionalName),notes:b.notes,highlightedName:professionalName(myName()),firstDutyPeriod:timing.firstPeriodDisplay,secondDutyPeriod:timing.secondPeriod,dutyStartUtc:timing.startUtc,handoverUtc:timing.handoverUtc,dutyEndUtc:timing.endUtc,clockChange:clockChangeDetailFor(r.date),revision:model.revision,confirmed:model.confirmed};
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:breaks',{detail:detail}));
 }
 

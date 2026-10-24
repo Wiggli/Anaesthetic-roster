@@ -399,7 +399,7 @@ function AccountActions({ installed, newRelease, version }: { installed: boolean
     { action: 'guide', title: 'Tutorial & app guide', detail: 'Replay the full tutorial or jump to any feature', icon: '✦' },
     { action: 'whatsnew', title: 'What’s new', detail: newRelease ? `New in version ${version || ''}` : 'See the latest Night Roster improvements', icon: '●', isNew: !!newRelease },
     !installed && { action: 'install', title: 'Install Night Roster', detail: 'Add Night Roster to this device', icon: '↓' },
-    { action: 'share', title: 'Share Night Roster', detail: 'QR code, WhatsApp, Messages and more', icon: '↗' },
+    { action: 'share', title: 'Share the app', detail: 'QR code, WhatsApp, Messages and more', icon: '↗' },
     { action: 'versions', title: 'Version history', detail: 'Browse every release without losing the current update', icon: '↺' }
   ].filter(Boolean) as { action: string; title: string; detail: string; icon: string; isNew?: boolean }[];
   return <GroupedList>{actions.map(item => <ListRow key={item.action} leading={<span className="accountActionIcon" aria-hidden="true">{item.icon}</span>} title={item.title} subtitle={item.detail} trailing={item.isNew ? <Badge tone="info">New</Badge> : undefined} onClick={() => act(item.action)} />)}</GroupedList>;

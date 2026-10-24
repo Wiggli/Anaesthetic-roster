@@ -27,6 +27,7 @@ function legacyShell(): Plugin {
 export default defineConfig({
   base: './',
   publicDir: false,
+  build: { emptyOutDir: true },
   plugins: [
     react(),
     tailwindcss(),

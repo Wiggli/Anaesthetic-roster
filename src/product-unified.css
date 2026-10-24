@@ -840,3 +840,58 @@ body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsRevi
 #accountSheet :is(.personalisationAvatarStyles,.personalisationChoiceRow) { display:flex; flex-wrap:wrap; gap:6px; }
 #accountSheet :is(.personalisationAvatarStyles,.personalisationChoiceRow) button { flex:1 1 5rem; min-width:0; min-height:44px; font-size:var(--unified-type-caption); white-space:normal; overflow-wrap:anywhere; }
 #accountSheet :is(.accountProfileFields,.accountNameFields) { min-width:0; }
+
+/* One compact operating shell; detail belongs below the personal assignment. */
+.scrollGlassHeader.scrollGlassMode-compact{height:calc(44px + var(--app-header-top));min-height:calc(44px + var(--app-header-top));border-radius:0;overflow:hidden;background:var(--surface-primary)}
+.scrollGlassMode-compact .scrollGlassStack,.scrollGlassMode-compact .scrollGlassContent{min-height:44px;height:44px;padding-block:0}
+.scrollGlassMode-compact .scrollGlassMaterial{border-radius:0;background:var(--surface-primary);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+.scrollGlassHeader::before{display:none}
+#today .selectedNightContext,#changes .selectedNightContext,#breaks .selectedNightContext{padding:12px 14px;gap:8px}
+.selectedNightIdentity{min-height:36px}
+#today .nightDateShell{margin-bottom:12px}
+.workflowExperience{gap:12px}
+.workflowGuidance{padding:0;border:0;background:transparent}
+.workflowGuidanceMark{display:none}
+.workflowGuidanceSummary small{display:block;font-size:var(--unified-type-caption);line-height:1.5;margin-top:4px;color:var(--text-secondary)}
+#changes .changesStepPane{scroll-margin-top:calc(58px + var(--app-safe-top))}
+#changes.fourNurseWorkflow .fixedAllocationBox,#changes.fourNurseWorkflow .allocationSection{display:none}
+#changes.fourNurseWorkflow #continueToConfirmReason{display:block;margin-top:12px;color:var(--status-warning);font-size:var(--unified-type-caption);line-height:1.5}
+#changes .nightRoleEditorBody{padding:14px}
+#changes .nightRoleEditorBody>.time{margin-block:8px 14px;font-size:var(--unified-type-caption);line-height:1.5}
+#changes .nightRoleEditor .editGrid{gap:12px}
+#changes .nightRoleEditor select{min-height:48px}
+#changes .confirmationReady{display:none}
+#changes .confirmationCard{padding:16px}
+#changes .confirmationChangeRow{padding:12px 0}
+.rosterOverviewSummary button,.rosterClearFilters{min-height:44px;padding:8px 12px;background:var(--surface-elevated);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:12px;font:inherit}
+.rosterOverviewSummary{flex-wrap:wrap;gap:8px}
+.rosterClearFilters{justify-self:start;font-size:var(--unified-type-caption)}
+.workloadSort{display:flex;align-items:center;gap:12px;margin-block:12px;font-size:var(--unified-type-caption)}
+.workloadSort select{min-height:44px;max-width:100%;font-size:16px}
+.nightPlanSummaryDialog{width:min(600px,calc(100vw - 24px));max-height:calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 32px);overflow:auto;padding:20px;background:var(--surface-secondary);color:var(--text-primary)}
+.nightPlanSummaryDialog .dialogHeader{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.nightPlanSummaryDialog pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:var(--unified-type-caption);line-height:1.65;background:var(--surface-elevated);padding:14px;border-radius:12px;user-select:text}
+.nightPlanSummaryActions{display:flex;gap:12px;flex-wrap:wrap}
+.nightPlanSummaryActions button,.nightPlanSummaryDialog [data-close]{min-height:44px}
+@media(max-width:600px){
+ #today .nightSectionHead,#changes .changesHeader,#breaks .breaksHeader{margin-block:12px}
+ #today .clockChangeNotice{padding:12px;gap:10px}
+ #today .clockChangePeriods{display:none}
+ .personalHeroSurface.personalHeroCompact{padding:16px}
+ .personalAssignmentHeroCompact{margin-bottom:14px}
+ .personalHeroFactGrid{margin-top:14px}
+ .quickRudderDisc{width:36px;height:36px;box-shadow:none}
+}
+.personalHeroSurface .personalClockException{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;margin-block:12px;min-height:0}
+.personalHeroSurface .personalClockExceptionCopy{display:grid;flex:1;min-width:0;gap:3px}
+.personalHeroSurface .personalClockExceptionCopy small{font-size:var(--unified-type-caption);letter-spacing:0;white-space:normal}
+.personalHeroSurface .personalClockExceptionCopy strong{font-size:var(--unified-type-body);line-height:1.4;white-space:normal;overflow-wrap:normal}
+.personalHeroSurface .personalClockExceptionCopy>span{font-size:var(--unified-type-caption);line-height:1.5}
+.personalPagerBrief{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:12px;border:1px solid var(--border-subtle);border-radius:12px;background:var(--surface-elevated);color:var(--text-primary);margin-block:12px;min-height:56px}
+.personalPagerBrief span{display:grid;gap:4px;min-width:0}
+.personalPagerBrief small{font-size:var(--unified-type-caption);color:var(--text-secondary)}
+.personalPagerBrief b{font-size:var(--unified-type-body);line-height:1.4}
+.rosterOverviewSummary{display:flex;flex-wrap:wrap;min-width:0}
+.rosterOverviewSummary>span,.rosterOverviewSummary>button{flex:1 1 110px;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.workloadSort{flex-wrap:wrap;min-width:0}
+.workloadSort select{min-width:0;flex:1 1 140px}

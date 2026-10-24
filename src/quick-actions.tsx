@@ -15,7 +15,7 @@ export type QuickActionsModel = {
 
 let root: Root | undefined;
 
-function act(action: 'absence' | 'overtime' | 'review' | 'private-chat' | 'share') {
+function act(action: 'absence' | 'overtime' | 'review' | 'private-chat' | 'share' | 'night-plan') {
   window.dispatchEvent(new CustomEvent('roster:quick-action', { detail: { action } }));
 }
 
@@ -47,7 +47,7 @@ function PrimaryAction({ action, icon, title, detail, disabled }: {
 }
 
 function CompactAction({ action, icon, title, detail }: {
-  action: 'private-chat' | 'share';
+  action: 'private-chat' | 'share' | 'night-plan';
   icon: 'chat' | 'share';
   title: string;
   detail: string;
@@ -108,9 +108,10 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
 
     <div className="quickCommunicationGrid" aria-label="Communication">
       <CompactAction action="private-chat" icon="chat" title="New private message" detail="One colleague" />
-      <CompactAction action="share" icon="share" title="Share Night Roster" detail="QR or apps" />
+      <CompactAction action="share" icon="share" title="Share the app" detail="QR or apps" />
     </div>
 
+    <CompactAction action="night-plan" icon="share" title="Copy or email this night’s plan" detail="Preview names, times and saved Pager turns" />
     <p className="quickActionsPrivacy">Account and roster data stay private.</p>
   </motion.div>;
 }
