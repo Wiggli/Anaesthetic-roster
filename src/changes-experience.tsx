@@ -150,6 +150,7 @@ function AllocationList({ model }: { model: ChangesExperience }) {
     dispatchAction({ action: 'allocation-mounted' });
   }, [model]);
 
+  if (model.roleOverride?.mode === '4' && !model.roleOverride.stored) return null;
   if (!model.allocations.length) return <Surface className="tw:shadow-none">
     <EmptyState title={model.allocationMessage || 'No allocation decisions are waiting'} />
   </Surface>;
@@ -294,6 +295,12 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
   </div>;
 }
 function RoleOverrideEditor({ model }: { model: RoleOverride }) {
+  const fourPending = model.mode === '4' && !model.stored;
+  useLayoutEffect(() => {
+    const summary = document.getElementById('allocationSummary');
+    if (summary) summary.hidden = fourPending;
+    return () => { if (summary) summary.hidden = false; };
+  }, [fourPending]);
   if (model.notice) return <div className="time">{model.notice}</div>;
 
   return <details className="nightRoleEditor" open={model.open}>
