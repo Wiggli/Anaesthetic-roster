@@ -14,6 +14,8 @@ assert.match(source, /mode === '5'/, 'frontend must support the current five-per
 assert.match(source, /roles\[key\] = full/, 'the full-night Pager nurse must fill a vacant theatre role on a five-person base');
 assert.match(source, /sameSet\(working, nurses\)/, 'the exception must match the actual four working nurses');
 assert.match(source, /set_night_shared_pager_order_v56/, 'frontend must save through the guarded RPC');
+assert.doesNotMatch(source, /APP_VERSION \|\| ['"]56\.[0-9]+['"]/, 'shared Pager must not carry a hard-coded historical app-version fallback');
+assert.match(source, /APP_VERSION \|\| 'unknown'/, 'shared Pager must fail closed when runtime version metadata is unavailable');
 assert.match(source, /Number\(timing\.endUtc\) - Number\(timing\.startUtc\)\) \/ 4/, 'Pager segments must use elapsed time rather than clock labels');
 assert.match(source, /OLD.*NEW|OLD' : 'NEW'/, 'rollback labels must distinguish the repeated hour');
 assert.match(source, /Copy plan/, 'shared effective plan must support copy');
