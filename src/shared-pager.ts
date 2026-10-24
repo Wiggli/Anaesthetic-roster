@@ -49,9 +49,10 @@ function effectiveTheatreRoles(base: any, date: string): TheatreRoles | null {
     const relevant = changes.filter((change: any) => team.some(name => sameNurse(name, String(change?.absent_name || ''))));
     if (relevant.length !== 1) return null;
     const absent = String(relevant[0].absent_name || '');
-    const key = (Object.keys(roles) as (keyof TheatreRoles)[]).find(role => sameNurse(roles[role], absent));
-    if (key) roles[key] = full; else if (!sameNurse(full, absent)) return null;
-    return new Set(Object.values(roles).map(canonical)).size === 4 ? roles : null;
+    if (sameNurse(full, absent)) return new Set(Object.values(roles).map(canonical)).size === 4 ? roles : null;
+    const vacantTheatreRole = (Object.keys(roles) as (keyof TheatreRoles)[]).find(role => sameNurse(roles[role], absent));
+    if (vacantTheatreRole) return null; // wait for the team to explicitly save the theatre reassignment
+    return null;
   }
   if (mode === '6') {
     const pagerAbsent = changes.some((change: any) => sameNurse(String(base.pager || ''), String(change?.absent_name || '')));

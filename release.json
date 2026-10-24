@@ -1,14 +1,14 @@
 {
-  "version": "56.4",
+  "version": "56.5",
   "date": "24 October 2026",
-  "title": "Repository and version hygiene",
-  "summary": "Keeps the deployed Night Roster release metadata and Shared Pager client version references internally consistent.",
+  "title": "Clear four-nurse theatre allocation",
+  "summary": "Separates who is present, theatre placement and shared Pager so no nurse appears assigned before the team chooses them.",
   "changes": [
-    "Removed the stale 56.0 Shared Pager client-version fallback.",
-    "Shared Pager now uses the live application version and fails closed if version metadata is unexpectedly unavailable.",
-    "Added a regression check preventing historical hard-coded app-version fallbacks from returning.",
-    "Regenerated release metadata, runtime assets and PWA cache references for one consistent 56.4 build.",
-    "No clinical allocation, Pager timing or roster behaviour was changed."
+    "Shows the four nurses present tonight directly in the four-nurse theatre allocation editor.",
+    "Leaves a vacant theatre position visibly as Select nurse instead of allowing iOS to display the first nurse as if selected.",
+    "Removes the automatic suggestion that placed the normal Pager nurse into a vacant theatre role before confirmation.",
+    "Shared Pager now waits for the theatre arrangement to be explicitly saved when a theatre nurse is absent.",
+    "If the normal Pager nurse is the absent nurse, the four existing theatre nurses remain valid and can proceed to manual Pager ordering."
   ],
   "update_policy": "important"
 }

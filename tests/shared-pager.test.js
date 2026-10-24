@@ -11,7 +11,8 @@ const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '202
 assert.match(selectedNight, /import '\.\/shared-pager';/, 'selected-night shell must load the shared Pager feature');
 assert.match(source, /count.*4|!== 4/, 'shared Pager must remain limited to exactly four nurses');
 assert.match(source, /mode === '5'/, 'frontend must support the current five-person establishment');
-assert.match(source, /roles\[key\] = full/, 'the full-night Pager nurse must fill a vacant theatre role on a five-person base');
+assert.match(source, /wait for the team to explicitly save the theatre reassignment/, 'shared Pager must not auto-fill a vacant theatre role');
+assert.match(source, /sameNurse\(full, absent\)/, 'if the normal Pager nurse is absent the four theatre nurses must remain valid');
 assert.match(source, /sameSet\(working, nurses\)/, 'the exception must match the actual four working nurses');
 assert.match(source, /set_night_shared_pager_order_v56/, 'frontend must save through the guarded RPC');
 assert.doesNotMatch(source, /APP_VERSION \|\| ['"]56\.[0-9]+['"]/, 'shared Pager must not carry a hard-coded historical app-version fallback');
@@ -31,7 +32,7 @@ assert.match(css, /sharedPagerTrack/, 'hero must include the four-segment Pager 
 assert.match(migration, /cardinality\(nurse_order\)=4/, 'database must require four Pager names');
 assert.match(migration, /v_mode not in \('5','6'\)/, 'server must support only verified five- and six-person bases');
 assert.match(migration, /SHARED_PAGER_REQUIRES_ONE_FIVE_PERSON_ABSENCE/, 'five-person base must have exactly one absence for the four-nurse exception');
-assert.match(migration, /v_expected\[1\]:=v_full_lw/, 'server must move full-night Pager into a vacant theatre slot');
+assert.match(migration, /v_expected\[1\]:=v_full_lw/, 'server must validate the explicitly saved theatre arrangement against the four working nurses');
 assert.match(migration, /SHARED_PAGER_REQUIRES_PAGER_RELIEVER_ABSENCE/, 'six-person fallback must remain narrowly limited to Pager and Reliever vacancies');
 assert.match(migration, /current_roster_actor_name_v49/, 'shared Pager saves must use server-derived actor identity');
 assert.match(migration, /enable row level security/, 'shared Pager tables must use RLS');
