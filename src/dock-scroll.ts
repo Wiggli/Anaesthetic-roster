@@ -14,6 +14,7 @@ export function nextDockScroll(state: DockScrollState, position: number, maximum
 export function setupDockScroll() {
   const dock = document.querySelector<HTMLElement>('.bottom');
   if (!dock) return;
+  const iosStandalone = document.documentElement.hasAttribute('data-ios-standalone');
   let state: DockScrollState = { y: window.scrollY, travel: 0, hidden: false };
   let frame = 0;
   let view = document.body.dataset.view;
@@ -23,9 +24,11 @@ export function setupDockScroll() {
   };
   const update = () => {
     frame = 0;
-    // Mobile fixed navigation must never translate with page scrolling. On iOS,
-    // transformed fixed elements can be composited at the wrong viewport position.
-    state = nextDockScroll(state, window.scrollY, document.documentElement.scrollHeight - window.innerHeight, true);
+    // Fixed mobile navigation must never translate with page scrolling. The
+    // iOS standalone flag remains explicit because installed iPhone PWAs are
+    // the most sensitive to transformed fixed-element compositing.
+    const pinned = true || iosStandalone;
+    state = nextDockScroll(state, window.scrollY, document.documentElement.scrollHeight - window.innerHeight, pinned);
     dock.classList.remove('dockScrollHidden');
   };
   window.addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(update); }, { passive: true });
