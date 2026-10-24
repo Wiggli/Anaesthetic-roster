@@ -1,4 +1,16 @@
-/* Mobile-only polish for the exceptional four-nurse allocation flow. */
+/* Mobile stability and polish for the exceptional four-nurse allocation flow. */
+@media (max-width: 1023px) {
+  .bottom,
+  .bottom.dockScrollHidden,
+  body.appRevealing .bottom {
+    left: 0 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .bottom.dockScrollHidden { opacity: 1 !important; pointer-events: auto !important; }
+  .keyboardVisible .bottom { opacity: 0 !important; pointer-events: none !important; transform: none !important; }
+}
+
 @media (max-width: 600px) {
   .nightRoleEditor { overflow: hidden; border-radius: 18px; }
   .nightRoleEditor > summary { padding: 14px 16px; }
