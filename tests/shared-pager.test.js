@@ -6,7 +6,7 @@ const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'src', 'shared-pager.ts'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'src', 'shared-pager.css'), 'utf8');
 const selectedNight = fs.readFileSync(path.join(root, 'src', 'selected-night.ts'), 'utf8');
-const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261024173000_shared_pager_four_nurse.sql'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261024153714_shared_pager_four_nurse.sql'), 'utf8');
 
 assert.match(selectedNight, /import '\.\/shared-pager';/, 'selected-night shell must load the shared Pager feature');
 assert.match(source, /count.*4|!== 4/, 'shared Pager must remain limited to exactly four nurses');
