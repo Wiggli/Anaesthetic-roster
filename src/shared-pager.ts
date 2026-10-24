@@ -33,6 +33,12 @@ function changesFor(date: string) { return typeof g.changesFor === 'function' ? 
 function overtimeFor(date: string) { return typeof g.overtimeFor === 'function' ? (g.overtimeFor(date) || []) : []; }
 function effectiveTheatreRoles(base: any, date: string): TheatreRoles | null {
   const roles: TheatreRoles = { first1: String(base.first1 || ''), first2: String(base.first2 || ''), second1: String(base.second1 || ''), second2: String(base.second2 || '') };
+  const override = g.nightRoleOverrides?.[date]?.assignments;
+  if (override?.mode === '4') {
+    const saved: TheatreRoles = { first1: String(override.first1 || ''), first2: String(override.first2 || ''), second1: String(override.second1 || ''), second2: String(override.second2 || '') };
+    const working = typeof g.nightWorkingNames === 'function' ? g.nightWorkingNames(base).filter(Boolean).map(String) : Object.values(saved);
+    if (Object.values(saved).every(Boolean) && new Set(Object.values(saved).map(canonical)).size === 4 && sameSet(working, Object.values(saved))) return saved;
+  }
   if (Object.values(roles).some(name => !name) || overtimeFor(date).length) return null;
   const changes = changesFor(date);
   if (changes.some((change: any) => String(change?.replacement_name || '').trim())) return null;

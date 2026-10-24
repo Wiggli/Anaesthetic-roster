@@ -1,14 +1,14 @@
 {
-  "version": "56.1",
+  "version": "56.2",
   "date": "24 October 2026",
-  "title": "Four-nurse shared Pager and clock-change support",
-  "summary": "Adds the exceptional four-nurse Pager workflow with DST-aware timing and a live four-part Pager track.",
+  "title": "Move the Pager nurse into a vacant theatre position",
+  "summary": "Makes four-nurse nights fully editable by letting the remaining Pager nurse fill the absent theatre nurse’s position before Pager is shared.",
   "changes": [
-    "Adds a manual four-nurse shared Pager order when the roster drops to four nurses while maintaining two nurses in each theatre part.",
-    "Splits Pager by real elapsed time, giving 1h 45m each on ordinary nights and 2h each on the October clock-change night.",
-    "Shows current and next Pager cover, elapsed and remaining time, and each nurse’s own Pager part in the Night hero.",
-    "Synchronises the shared Pager order across devices and surfaces it in Changes, Breaks, Full roster, Copy and Email.",
-    "Distinguishes the repeated autumn 02:00 hour and keeps normal five, six and seven nurse behaviour unchanged."
+    "When one nurse is absent from the five-person establishment, Allocation now opens a four-nurse night-only role arrangement instead of leaving the theatre position unresolved.",
+    "The usual full-night Pager nurse is suggested automatically in the vacant theatre position, while all four working nurses remain available so the team can confirm the exact theatre arrangement.",
+    "The saved reassignment is shared, audited and used by Night, Full roster and the shared Pager display without changing the permanent rotation.",
+    "After theatre positions are confirmed, the four working nurses still choose their shared Pager order separately.",
+    "Clock-change timing remains based on real elapsed time, so tonight continues to use four two-hour Pager segments."
   ],
   "update_policy": "important"
 }
