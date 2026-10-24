@@ -20,15 +20,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Compact role model and release copy
+      - name: Compact role model and editor
         run: |
           python - <<'PY'
           from pathlib import Path
-          import json
 
           clinical = Path('src/legacy-ui/clinical.js')
           text = clinical.read_text()
-          text = text.replace("return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'These are the four nurses present tonight. Keep the nurses already in their theatre positions and explicitly choose who fills any vacant theatre position. Nothing is assigned automatically. Set the shared Pager order only after the theatre arrangement is saved.'", "return{guidance:fourMode?'Four nurses are present. Choose who fills the vacant theatre position. Pager is set separately.'", 1)
+          old = "return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'These are the four nurses present tonight. Keep the nurses already in their theatre positions and explicitly choose who fills any vacant theatre position. Nothing is assigned automatically. Set the shared Pager order only after the theatre arrangement is saved.'"
+          new = "return{guidance:fourMode?'Four nurses are present. Choose who fills the vacant theatre position. Pager is set separately.'"
+          if old not in text: raise SystemExit('role model compact anchor missing')
+          text = text.replace(old, new, 1)
           text = text.replace("stored?(fourMode?'Four-nurse theatre arrangement saved':", "stored?(fourMode?'Theatre arrangement saved':", 1)
           text = text.replace("(fourMode?'Choose who fills the vacant theatre position':", "(fourMode?'Choose the vacant theatre position':", 1)
           clinical.write_text(text)
@@ -36,28 +38,15 @@ jobs:
           ui = Path('src/changes-experience.tsx')
           text = ui.read_text()
           text = text.replace("  mode?: string;\n  present?: { value: string; label: string }[];\n", "", 1)
-          text = text.replace("{model.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}", "{model.assignments.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}", 1)
-          text = text.replace("{model.mode === '4' && model.present?.length ? <div className=\"fourNursePresent\"><strong>Present tonight · {model.present.length} nurses</strong><div className=\"fourNursePresentList\">{model.present.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}", "{model.assignments.mode === '4' ? <div className=\"fourNursePresent\"><strong>Present tonight · {model.names.length}</strong><div className=\"fourNursePresentList\">{model.names.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}", 1)
-          text = text.replace("{model.mode === '4' && !model.assignments[row.key] ? <option value=\"\" disabled>Select nurse</option> : null}", "{model.assignments.mode === '4' && !model.assignments[row.key] ? <option value=\"\" disabled>Select nurse</option> : null}", 1)
+          start = text.index('function RoleOverrideEditor')
+          end = text.index('\n\nexport function renderChangesExperience', start)
+          compact = '''function RoleOverrideEditor({model}:{model:RoleOverride}){if(model.notice)return <div className="time">{model.notice}</div>;const four=model.assignments.mode==='4';return <details className="nightRoleEditor" open={model.open}><summary><span><b>{four?'Arrange tonight’s 4 nurses':'Change this night’s roles'}</b><small>{model.summary}</small></span><span aria-hidden="true">›</span></summary><div className="nightRoleEditorBody">{four?<div className="fourNursePresent"><strong>Present tonight · {model.names.length}</strong><div className="fourNursePresentList">{model.names.map(name=><span key={name.value}>{name.label}</span>)}</div></div>:null}<p className="time">{model.guidance}</p><div className="editGrid">{model.keys.map(row=><label key={row.key} className={row.fullWidth?'fullWidth':''}>{row.label}<select data-night-role={row.key} value={model.assignments[row.key]||''} onChange={event=>dispatchAction({action:'role-select',key:row.key,value:event.target.value})}>{four&&!model.assignments[row.key]?<option value="" disabled>Select nurse</option>:null}{model.names.map(name=><option key={name.value} value={name.value}>{name.label}</option>)}</select></label>)}</div>{model.dirty&&<><div className="alert gold compactNotice">Unsaved night-only change</div><label>Reason for the change<input id="nightRoleReason" defaultValue={model.reason} maxLength={120} placeholder="For example, agreed role arrangement" onInput={event=>dispatchAction({action:'role-reason',value:event.currentTarget.value})}/></label><button type="button" id="saveNightRolesBtn" className="primary wide" disabled={!model.canSave} onClick={()=>dispatchAction({action:'role-save'})}>Save night-only change</button></>}{model.stored&&<button type="button" id="resetNightRolesBtn" className="soft wide" onClick={()=>dispatchAction({action:'role-reset'})}>Restore rostered roles</button>}</div></details>}'''
+          text = text[:start] + compact + text[end:]
           ui.write_text(text)
 
           test = Path('tests/four-nurse-role.test.js')
-          text = test.read_text().replace("/Present tonight · \\{model\\.present\\.length\\} nurses/", "/Present tonight · \\{model\\.names\\.length\\}/", 1)
-          test.write_text(text)
-
-          release = {
-            'version': '56.5',
-            'date': '24 October 2026',
-            'title': 'Clear four-nurse allocation',
-            'summary': 'Separates the four nurses present, theatre placement and manual Pager order.',
-            'changes': [
-              'Shows the four nurses present and leaves any vacant theatre position as Select nurse.',
-              'No theatre nurse is assigned automatically; Shared Pager waits for a saved theatre arrangement.',
-              'If the Pager nurse is absent, the four existing theatre nurses remain unchanged.'
-            ],
-            'update_policy': 'important'
-          }
-          Path('release.json').write_text(json.dumps(release, indent=2, ensure_ascii=False) + '\n')
+          t = test.read_text().replace("/Present tonight · \\{model\\.present\\.length\\} nurses/", "/Present tonight · \\{model\\.names\\.length\\}/", 1)
+          test.write_text(t)
           PY
       - name: Regenerate release artifacts
         run: npm run release
@@ -67,6 +56,6 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/legacy-ui/clinical.js src/changes-experience.tsx tests/four-nurse-role.test.js release.json app-ui.js app-core.js service-worker.js index.html manifest.webmanifest styles.css theme-bootstrap.js .project-state.json src/legacy-ui/release-history.js src/legacy-ui/foundation.js package.json package-lock.json
+          git add src/legacy-ui/clinical.js src/changes-experience.tsx tests/four-nurse-role.test.js app-ui.js app-core.js service-worker.js index.html manifest.webmanifest styles.css theme-bootstrap.js .project-state.json src/legacy-ui/release-history.js src/legacy-ui/foundation.js package.json package-lock.json
           git commit -m "perf: keep 56.5 within existing runtime budget [56.5-compact]"
           git push origin HEAD:fix/56-5-four-nurse-allocation-clarity
