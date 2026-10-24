@@ -1,0 +1,75 @@
+name: Prepare 56.6 iOS dock fix
+
+on:
+  push:
+    branches: [fix/56-6-ios-dock-scroll]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: ${{ !contains(github.event.head_commit.message, '[56.6-ready]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/56-6-ios-dock-scroll
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fix installed iPhone dock scrolling
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          p=Path('src/dock-scroll.ts')
+          s=p.read_text()
+          old="const pinned = !mobile.matches || touchingDock || document.body.dataset.view === 'chat'"
+          new="const pinned = !mobile.matches || document.documentElement.hasAttribute('data-ios-standalone') || touchingDock || document.body.dataset.view === 'chat'"
+          if old not in s: raise SystemExit('dock pin anchor missing')
+          p.write_text(s.replace(old,new,1))
+
+          p=Path('src/rudder-navigation.css')
+          s=p.read_text()
+          anchor="@media (max-width:1023px) {\n  .bottom { background:var(--unified-surface); -webkit-backdrop-filter:none; backdrop-filter:none; }\n}\n"
+          extra="@media (max-width:1023px) {\n  .bottom { background:var(--unified-surface); -webkit-backdrop-filter:none; backdrop-filter:none; }\n  html[data-ios-standalone] .bottom { left:0; transform:none; transition:opacity 160ms var(--unified-ease); }\n  html[data-ios-standalone] body.appRevealing .bottom { animation:none; }\n  html[data-ios-standalone] .bottom.dockScrollHidden { opacity:1; pointer-events:auto; transform:none; }\n  html[data-ios-standalone] .keyboardVisible .bottom { opacity:0; pointer-events:none; transform:none; }\n}\n"
+          if anchor not in s: raise SystemExit('mobile dock css anchor missing')
+          p.write_text(s.replace(anchor,extra,1))
+
+          p=Path('tests/product-interactions.test.js')
+          s=p.read_text()
+          marker="const account=fs.readFileSync('src/account-experience.tsx','utf8');"
+          addition="const dockScroll=fs.readFileSync('src/dock-scroll.ts','utf8');assert.match(dockScroll,/data-ios-standalone/,'installed iPhone dock stays pinned instead of using scroll transforms');\nconst dockCss=fs.readFileSync('src/rudder-navigation.css','utf8');assert.match(dockCss,/html\\[data-ios-standalone\\] \\.bottom \\{ left:0; transform:none/,'installed iPhone dock removes fixed-element transforms');\n"
+          if marker not in s: raise SystemExit('interaction test anchor missing')
+          p.write_text(s.replace(marker,addition+marker,1))
+
+          release={
+            'version':'56.6',
+            'date':'24 October 2026',
+            'title':'Keep iPhone navigation anchored while scrolling',
+            'summary':'Keeps the installed iPhone bottom navigation fixed to the bottom of the screen during scrolling instead of letting iOS reposition the transformed dock.',
+            'changes':[
+              'Keeps the bottom navigation anchored to the bottom edge in the installed iPhone app while scrolling.',
+              'Removes the scroll transform used to hide the dock on iPhone, preventing the navigation from jumping into the middle of the roster.',
+              'Preserves the compact dock size, iPhone safe-area spacing and keyboard hiding behaviour.',
+              'Other platforms keep the existing hide-on-scroll behaviour.'
+            ],
+            'update_policy':'normal'
+          }
+          Path('release.json').write_text(json.dumps(release,indent=2)+"\n")
+          PY
+      - name: Build release and verify
+        run: |
+          npm run release
+          npm run verify:ci
+      - name: Commit prepared release
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix: keep iPhone dock anchored while scrolling [56.6-ready]"
+          git push origin HEAD:fix/56-6-ios-dock-scroll
