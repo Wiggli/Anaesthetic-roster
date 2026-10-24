@@ -1,0 +1,55 @@
+name: Compact 56.5 runtime
+
+on:
+  push:
+    branches: [fix/56-5-four-nurse-allocation-clarity]
+
+permissions:
+  contents: write
+
+jobs:
+  compact:
+    if: ${{ !contains(github.event.head_commit.message, '[56.5-compact]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/56-5-four-nurse-allocation-clarity
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Remove duplicate role-model payload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          clinical = Path('src/legacy-ui/clinical.js')
+          text = clinical.read_text()
+          text = text.replace("return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'These are the four nurses present tonight. Keep the nurses already in their theatre positions and explicitly choose who fills any vacant theatre position. Nothing is assigned automatically. Set the shared Pager order only after the theatre arrangement is saved.'", "return{guidance:fourMode?'Four nurses are present. Keep existing theatre positions and choose who fills the vacancy. Nothing is assigned automatically. Save theatre roles before setting Pager.'", 1)
+          clinical.write_text(text)
+
+          ui = Path('src/changes-experience.tsx')
+          text = ui.read_text()
+          text = text.replace("  mode?: string;\n  present?: { value: string; label: string }[];\n", "", 1)
+          text = text.replace("{model.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}", "{model.assignments.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}", 1)
+          text = text.replace("{model.mode === '4' && model.present?.length ? <div className=\"fourNursePresent\"><strong>Present tonight · {model.present.length} nurses</strong><div className=\"fourNursePresentList\">{model.present.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}", "{model.assignments.mode === '4' ? <div className=\"fourNursePresent\"><strong>Present tonight · {model.names.length} nurses</strong><div className=\"fourNursePresentList\">{model.names.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}", 1)
+          text = text.replace("{model.mode === '4' && !model.assignments[row.key] ? <option value=\"\" disabled>Select nurse</option> : null}", "{model.assignments.mode === '4' && !model.assignments[row.key] ? <option value=\"\" disabled>Select nurse</option> : null}", 1)
+          ui.write_text(text)
+
+          test = Path('tests/four-nurse-role.test.js')
+          text = test.read_text().replace("/Present tonight · \\{model\\.present\\.length\\} nurses/", "/Present tonight · \\{model\\.names\\.length\\} nurses/", 1)
+          test.write_text(text)
+          PY
+      - name: Regenerate release artifacts
+        run: npm run release
+      - name: Verify full gate and performance budget
+        run: npm run verify:ci
+      - name: Commit compacted release
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/legacy-ui/clinical.js src/changes-experience.tsx tests/four-nurse-role.test.js app-ui.js app-core.js service-worker.js index.html manifest.webmanifest styles.css theme-bootstrap.js .project-state.json src/legacy-ui/release-history.js src/legacy-ui/foundation.js package.json package-lock.json
+          git commit -m "perf: keep 56.5 within existing runtime budget [56.5-compact]"
+          git push origin HEAD:fix/56-5-four-nurse-allocation-clarity
