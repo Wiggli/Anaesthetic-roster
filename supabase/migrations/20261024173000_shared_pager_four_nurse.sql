@@ -51,7 +51,11 @@ set search_path=''
 as $$
 declare
   v_base jsonb;
+  v_mode text;
   v_expected text[];
+  v_full_lw text;
+  v_absent text;
+  v_absence_count integer;
   v_actor text;
   v_existing public.night_shared_pager_order%rowtype;
   v_row public.night_shared_pager_order%rowtype;
@@ -64,7 +68,18 @@ begin
   if p_nurse_order is null or cardinality(p_nurse_order)<>4 then raise exception 'INVALID_SHARED_PAGER_ORDER'; end if;
 
   v_base:=public.calculated_roster_v55(p_roster_date);
-  if coalesce(v_base->>'mode','')<>'6' then raise exception 'SHARED_PAGER_NOT_AVAILABLE'; end if;
+  v_mode:=coalesce(v_base->>'mode','');
+  if v_mode not in ('5','6') then raise exception 'SHARED_PAGER_NOT_AVAILABLE'; end if;
+
+  if exists (
+    select 1 from public.night_overtime o where o.roster_date=p_roster_date
+  ) then raise exception 'SHARED_PAGER_NOT_AVAILABLE_WITH_OVERTIME'; end if;
+
+  if exists (
+    select 1 from public.night_changes c
+    where c.roster_date=p_roster_date
+      and coalesce(trim(c.replacement_name),'')<>''
+  ) then raise exception 'SHARED_PAGER_NOT_AVAILABLE_WITH_REPLACEMENT'; end if;
 
   v_expected:=array[
     v_base->>'first1',
@@ -73,34 +88,55 @@ begin
     v_base->>'second2'
   ];
 
-  if exists (
-    select 1 from public.night_overtime o where o.roster_date=p_roster_date
-  ) then raise exception 'SHARED_PAGER_NOT_AVAILABLE'; end if;
+  if v_mode='5' then
+    v_full_lw:=coalesce(v_base->>'fullLW',v_base->>'pager');
 
-  if exists (
-    select 1 from public.night_changes c
-    where c.roster_date=p_roster_date
-      and coalesce(trim(c.replacement_name),'')<>''
-  ) then raise exception 'SHARED_PAGER_NOT_AVAILABLE'; end if;
-
-  if not exists (
-    select 1 from public.night_changes c
-    where c.roster_date=p_roster_date
-      and lower(trim(c.absent_name))=lower(trim(v_base->>'pager'))
-  ) or not exists (
-    select 1 from public.night_changes c
-    where c.roster_date=p_roster_date
-      and lower(trim(c.absent_name))=lower(trim(v_base->>'reliever'))
-  ) then raise exception 'SHARED_PAGER_REQUIRES_PAGER_RELIEVER_ABSENCE'; end if;
-
-  if exists (
-    select 1 from public.night_changes c
+    select count(*), min(c.absent_name)
+    into v_absence_count, v_absent
+    from public.night_changes c
     where c.roster_date=p_roster_date
       and lower(trim(c.absent_name)) in (
         lower(trim(v_base->>'first1')), lower(trim(v_base->>'first2')),
-        lower(trim(v_base->>'second1')), lower(trim(v_base->>'second2'))
-      )
-  ) then raise exception 'SHARED_PAGER_REQUIRES_FOUR_THEATRE_NURSES'; end if;
+        lower(trim(v_base->>'second1')), lower(trim(v_base->>'second2')),
+        lower(trim(v_full_lw))
+      );
+
+    if v_absence_count<>1 then
+      raise exception 'SHARED_PAGER_REQUIRES_ONE_FIVE_PERSON_ABSENCE';
+    end if;
+
+    if lower(trim(v_absent))=lower(trim(v_base->>'first1')) then v_expected[1]:=v_full_lw;
+    elsif lower(trim(v_absent))=lower(trim(v_base->>'first2')) then v_expected[2]:=v_full_lw;
+    elsif lower(trim(v_absent))=lower(trim(v_base->>'second1')) then v_expected[3]:=v_full_lw;
+    elsif lower(trim(v_absent))=lower(trim(v_base->>'second2')) then v_expected[4]:=v_full_lw;
+    elsif lower(trim(v_absent))<>lower(trim(v_full_lw)) then
+      raise exception 'SHARED_PAGER_REQUIRES_FIVE_PERSON_TEAM_MEMBER';
+    end if;
+  else
+    if not exists (
+      select 1 from public.night_changes c
+      where c.roster_date=p_roster_date
+        and lower(trim(c.absent_name))=lower(trim(v_base->>'pager'))
+    ) or not exists (
+      select 1 from public.night_changes c
+      where c.roster_date=p_roster_date
+        and lower(trim(c.absent_name))=lower(trim(v_base->>'reliever'))
+    ) then raise exception 'SHARED_PAGER_REQUIRES_PAGER_RELIEVER_ABSENCE'; end if;
+
+    if exists (
+      select 1 from public.night_changes c
+      where c.roster_date=p_roster_date
+        and lower(trim(c.absent_name)) in (
+          lower(trim(v_base->>'first1')), lower(trim(v_base->>'first2')),
+          lower(trim(v_base->>'second1')), lower(trim(v_base->>'second2'))
+        )
+    ) then raise exception 'SHARED_PAGER_REQUIRES_FOUR_THEATRE_NURSES'; end if;
+  end if;
+
+  select count(distinct lower(trim(name))) into v_unique_count
+  from unnest(v_expected) name
+  where trim(coalesce(name,''))<>'';
+  if v_unique_count<>4 then raise exception 'SHARED_PAGER_REQUIRES_FOUR_DISTINCT_THEATRE_NURSES'; end if;
 
   select count(distinct lower(trim(name))) into v_unique_count
   from unnest(p_nurse_order) name
@@ -113,7 +149,7 @@ begin
     select 1 from unnest(v_expected) expected
     where lower(trim(expected))=lower(trim(supplied))
   );
-  if v_match_count<>4 then raise exception 'SHARED_PAGER_ORDER_MUST_USE_THEATRE_TEAM'; end if;
+  if v_match_count<>4 then raise exception 'SHARED_PAGER_ORDER_MUST_USE_EFFECTIVE_THEATRE_TEAM'; end if;
 
   select * into v_existing from public.night_shared_pager_order where roster_date=p_roster_date;
   if v_existing.roster_date is not null and v_existing.nurse_order=p_nurse_order then
