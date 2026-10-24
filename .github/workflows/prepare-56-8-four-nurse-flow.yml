@@ -1,0 +1,74 @@
+name: Prepare 56.8 four-nurse flow
+
+on:
+  push:
+    branches: [fix/four-nurse-flow]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: ${{ !contains(github.event.head_commit.message, '[56.8-ready]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/four-nurse-flow
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fix four-nurse allocation messaging and release metadata
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          p=Path('src/legacy-ui/clinical.js')
+          s=p.read_text()
+          old="""  var extras=additionalNurses(plan),summary,seventhInfo=seventhDecisionCard(plan);\n  if(plan.requiresCoverageChoice)summary='<b>'+plan.count+' nurses working this night</b><div class=\"time\">Choose and save the Reliever’s theatre role first. The remaining positions will then appear for overtime nurses.</div>';\n  else if(plan.requiresSeventhDecision)summary='<b>Seventh-nurse decision required</b><div class=\"time\">Review the proposed move below. Your choice determines which allocation the overtime nurse will fill.</div>';\n  else if(!overtime.length)summary=workflowHasManualPlan(base)?'<b>No allocation decision needed</b><div class=\"time\">This night’s roles are calculated. Review them before sharing the staffing change.</div>':'<b>No allocation changes</b><div class=\"time\">This night’s roles are calculated automatically.</div>';\n"""
+          new="""  var extras=additionalNurses(plan),summary,seventhInfo=seventhDecisionCard(plan),roleOverrideState=nightRoleOverrideModel(base),fourNurseRolesPending=!!(roleOverrideState&&roleOverrideState.mode==='4'&&!roleOverrideState.stored);\n  if(plan.requiresCoverageChoice)summary='<b>'+plan.count+' nurses working this night</b><div class=\"time\">Choose and save the Reliever’s theatre role first. The remaining positions will then appear for overtime nurses.</div>';\n  else if(plan.requiresSeventhDecision)summary='<b>Seventh-nurse decision required</b><div class=\"time\">Review the proposed move below. Your choice determines which allocation the overtime nurse will fill.</div>';\n  else if(fourNurseRolesPending)summary='<b>Complete the four-nurse theatre arrangement</b><div class=\"time\">Choose a nurse for every theatre position and save this night’s arrangement. The shared Pager order comes next.</div>';\n  else if(!overtime.length)summary=workflowHasManualPlan(base)?'<b>No further allocation decision needed</b><div class=\"time\">The theatre arrangement is complete. Continue to the shared Pager order or review the saved change.</div>':'<b>No allocation changes</b><div class=\"time\">This night’s roles are calculated automatically.</div>';\n"""
+          if old not in s:
+              raise SystemExit('allocation summary target not found')
+          s=s.replace(old,new,1)
+          old2="""  var allocationMessage=plan.requiresCoverageChoice?'The overtime choices will appear after the reliever allocation is saved.':plan.requiresSeventhDecision?'Choose the seventh-nurse option above. The correct overtime allocation will then appear here.':'There are no required allocations to finalise.';\n"""
+          new2="""  var allocationMessage=fourNurseRolesPending?'Complete and save the four-nurse theatre arrangement above first. There is no separate overtime allocation to finalise.':plan.requiresCoverageChoice?'The overtime choices will appear after the reliever allocation is saved.':plan.requiresSeventhDecision?'Choose the seventh-nurse option above. The correct overtime allocation will then appear here.':'There are no required allocations to finalise.';\n"""
+          if old2 not in s:
+              raise SystemExit('allocation message target not found')
+          p.write_text(s.replace(old2,new2,1))
+
+          release={
+            'version':'56.8',
+            'date':'24 October 2026',
+            'title':'One clear four-nurse allocation flow',
+            'summary':'Removes contradictory allocation messaging while the exceptional four-nurse theatre arrangement is still incomplete.',
+            'changes':[
+              'Shows a clear complete-the-theatre-arrangement state while one of the four theatre positions is still unassigned.',
+              'Explains that the shared Pager order comes only after the four theatre positions are saved.',
+              'Stops showing no-allocation-needed messaging while Review changes is correctly blocked by unfinished theatre roles.',
+              'Keeps the existing four-nurse staffing, Pager, DST, audit and synchronisation logic unchanged.'
+            ],
+            'update_policy':'normal'
+          }
+          Path('release.json').write_text(json.dumps(release,indent=2)+"\n")
+
+          t=Path('tests/product-interactions.test.js')
+          ts=t.read_text()
+          marker="const account=fs.readFileSync('src/account-experience.tsx','utf8');"
+          add="const clinicalFlow=fs.readFileSync('src/legacy-ui/clinical.js','utf8');assert.match(clinicalFlow,/fourNurseRolesPending[\\s\\S]*Complete the four-nurse theatre arrangement/,'incomplete four-nurse roles must not claim no allocation is needed');assert.match(clinicalFlow,/Complete and save the four-nurse theatre arrangement above first/,'four-nurse empty allocation state explains the actual next action');\n"
+          if marker in ts and 'incomplete four-nurse roles must not claim no allocation is needed' not in ts:
+              t.write_text(ts.replace(marker,add+marker,1))
+          PY
+      - name: Build release and verify
+        run: |
+          npm run release
+          npm run verify:ci
+      - name: Commit prepared release
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix: clarify four-nurse allocation flow [56.8-ready]"
+          git push origin HEAD:fix/four-nurse-flow
