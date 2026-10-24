@@ -1,13 +1,14 @@
 {
-  "version": "56.0",
-  "date": "21 October 2026",
-  "title": "Navigation that makes room for the roster",
-  "summary": "A roomier bottom bar sits against the screen edge and moves out of the way while you read.",
+  "version": "56.1",
+  "date": "24 October 2026",
+  "title": "Four-nurse shared Pager and clock-change support",
+  "summary": "Adds the exceptional four-nurse Pager workflow with DST-aware timing and a live four-part Pager track.",
   "changes": [
-    "Gives the five navigation controls more breathing room without leaving a floating gap below the bar.",
-    "Hides phone navigation while scrolling down, then brings it back on upward scroll or at the page end.",
-    "Keeps navigation available in Chat, for keyboard focus and when opening another screen.",
-    "Updates the tutorial with the new scrolling behaviour while preserving iPhone safe areas."
+    "Adds a manual four-nurse shared Pager order when the roster drops to four nurses while maintaining two nurses in each theatre part.",
+    "Splits Pager by real elapsed time, giving 1h 45m each on ordinary nights and 2h each on the October clock-change night.",
+    "Shows current and next Pager cover, elapsed and remaining time, and each nurse’s own Pager part in the Night hero.",
+    "Synchronises the shared Pager order across devices and surfaces it in Changes, Breaks, Full roster, Copy and Email.",
+    "Distinguishes the repeated autumn 02:00 hour and keeps normal five, six and seven nurse behaviour unchanged."
   ],
-  "update_policy": "normal"
+  "update_policy": "important"
 }
