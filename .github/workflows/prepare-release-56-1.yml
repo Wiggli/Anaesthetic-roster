@@ -1,0 +1,32 @@
+name: Prepare release 56.1
+
+on:
+  push:
+    branches:
+      - release/56.1-shared-pager
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: ${{ !contains(github.event.head_commit.message, '[release-56.1-prepared]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: release/56.1-shared-pager
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Synchronise release metadata and generated runtime
+        run: npm run release
+      - name: Commit synchronised release
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "release: synchronise 56.1 metadata [release-56.1-prepared]"
+          git push origin HEAD:release/56.1-shared-pager
