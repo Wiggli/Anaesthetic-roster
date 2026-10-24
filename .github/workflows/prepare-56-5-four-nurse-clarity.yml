@@ -1,0 +1,123 @@
+name: Prepare 56.5 four-nurse allocation clarity
+
+on:
+  push:
+    branches: [fix/56-5-four-nurse-allocation-clarity]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: ${{ !contains(github.event.head_commit.message, '[56.5-prepared]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/56-5-four-nurse-allocation-clarity
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Make four-nurse theatre allocation explicit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          clinical_path = Path('src/legacy-ui/clinical.js')
+          clinical = clinical_path.read_text()
+
+          old = "function suggestedFourRoleAssignments(base){var raw=rawBaseForDate(base.date),names=nightWorkingNames(base);if(names.length!==4)return null;var assignments={mode:'4'},used=[];FOUR_NIGHT_ROLE_KEYS.forEach(function(key){var rostered=raw[key];if(names.some(function(active){return canonicalNurseName(active)===canonicalNurseName(rostered)})&&!used.some(function(name){return canonicalNurseName(name)===canonicalNurseName(rostered)})){assignments[key]=rostered;used.push(rostered)}});FOUR_NIGHT_ROLE_KEYS.forEach(function(key){if(assignments[key])return;var next=names.find(function(name){return !used.some(function(saved){return canonicalNurseName(saved)===canonicalNurseName(name)})});assignments[key]=next;used.push(next)});return validRoleAssignmentsForNight(base,assignments)?assignments:null}"
+          new = "function suggestedFourRoleAssignments(base){var raw=rawBaseForDate(base.date),names=nightWorkingNames(base);if(names.length!==4)return null;var assignments={mode:'4'};/* Four-nurse theatre choices stay explicit; never auto-fill the vacant role. */FOUR_NIGHT_ROLE_KEYS.forEach(function(key){var rostered=raw[key];assignments[key]=names.some(function(active){return canonicalNurseName(active)===canonicalNurseName(rostered)})?rostered:''});return assignments}"
+          if old not in clinical:
+              raise SystemExit('suggestedFourRoleAssignments source not found')
+          clinical = clinical.replace(old, new, 1)
+
+          old = "function roleEditorAssignments(base){var draft=nightRoleOverrideDrafts[base.date];if(draft&&validRoleAssignmentsForNight(base,draft.assignments))return Object.assign({},draft.assignments);return currentRoleAssignments(base)}"
+          new = "function roleEditorAssignments(base){var draft=nightRoleOverrideDrafts[base.date];if(draft&&draft.assignments&&String(draft.assignments.mode)==='4')return Object.assign({},draft.assignments);if(draft&&validRoleAssignmentsForNight(base,draft.assignments))return Object.assign({},draft.assignments);return currentRoleAssignments(base)}"
+          if old not in clinical:
+              raise SystemExit('roleEditorAssignments source not found')
+          clinical = clinical.replace(old, new, 1)
+
+          old = "var keys=roleAssignmentKeys(current),fourMode=current.mode==='4',fiveMode=current.mode==='5',sevenMode=current.mode==='7',dirty=!!(draft&&roleAssignmentsDiffer(draft.assignments,baseline)),labels={first1:'First part · position 1',first2:'First part · position 2',second1:'Second part · position 1',second2:'Second part · position 2',pager:'Pager',reliever:'Reliever',fullLW:'Full-night Labour Ward / Pager',seventh:'Seventh nurse'},names=(fourMode||fiveMode||sevenMode)?working:keys.map(function(key){return current[key]});\n  return{guidance:fourMode?'Arrange the four nurses working this night across the four theatre positions. Move the usual Pager nurse into the vacant theatre position, then set the shared Pager order separately. Each nurse is used once.':fiveMode?'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.':sevenMode?'Arrange all seven nurses working this night across the theatre, Pager, Reliever and Seventh nurse roles. Each nurse is used once.':'Choose a different nurse in any role. The two people swap automatically, so no one is duplicated.',summary:stored?(fourMode?'Four-nurse theatre reassignment is active':fiveMode?'Custom five-nurse roles are active':sevenMode?'Custom seven-nurse roles are active':'Night-only roles are active'):(fourMode?'Resolve the vacant theatre position':fiveMode?'Optional custom five-nurse arrangement':sevenMode?'Optional custom seven-nurse arrangement':'Optional · roster rotation stays unchanged'),open:!!draft,stored:!!stored,dirty:dirty,reason:draft&&draft.reason||'',canSave:dirty&&!!normaliseNurseName(draft&&draft.reason||'')&&navigator.onLine,keys:keys.map(function(key){return{key:key,label:labels[key],fullWidth:key==='fullLW'||key==='seventh'}}),names:names.map(function(name){return{value:name,label:professionalName(name)}}),assignments:current};"
+          new = "var keys=roleAssignmentKeys(current),fourMode=current.mode==='4',fiveMode=current.mode==='5',sevenMode=current.mode==='7',dirty=!!(draft&&roleAssignmentsDiffer(draft.assignments,baseline)),valid=validRoleAssignmentsForNight(base,current),labels={first1:'First part · position 1',first2:'First part · position 2',second1:'Second part · position 1',second2:'Second part · position 2',pager:'Pager',reliever:'Reliever',fullLW:'Full-night Labour Ward / Pager',seventh:'Seventh nurse'},names=(fourMode||fiveMode||sevenMode)?working:keys.map(function(key){return current[key]});\n  return{mode:String(current.mode||'6'),present:names.map(function(name){return{value:name,label:professionalName(name)}}),guidance:fourMode?'These are the four nurses present tonight. Keep the nurses already in their theatre positions and explicitly choose who fills any vacant theatre position. Nothing is assigned automatically. Set the shared Pager order only after the theatre arrangement is saved.':fiveMode?'Arrange the five nurses working this night across four theatre roles and one full-night Labour Ward / Pager role. Each nurse is used once.':sevenMode?'Arrange all seven nurses working this night across the theatre, Pager, Reliever and Seventh nurse roles. Each nurse is used once.':'Choose a different nurse in any role. The two people swap automatically, so no one is duplicated.',summary:stored?(fourMode?'Four-nurse theatre arrangement saved':fiveMode?'Custom five-nurse roles are active':sevenMode?'Custom seven-nurse roles are active':'Night-only roles are active'):(fourMode?'Choose who fills the vacant theatre position':fiveMode?'Optional custom five-nurse arrangement':sevenMode?'Optional custom seven-nurse arrangement':'Optional · roster rotation stays unchanged'),open:(fourMode&&!stored)||!!draft,stored:!!stored,dirty:dirty,reason:draft&&draft.reason||'',canSave:valid&&dirty&&!!normaliseNurseName(draft&&draft.reason||'')&&navigator.onLine,keys:keys.map(function(key){return{key:key,label:labels[key],fullWidth:key==='fullLW'||key==='seventh'}}),names:names.map(function(name){return{value:name,label:professionalName(name)}}),assignments:current};"
+          if old not in clinical:
+              raise SystemExit('nightRoleOverrideModel body not found')
+          clinical = clinical.replace(old, new, 1)
+          clinical_path.write_text(clinical)
+
+          changes_path = Path('src/changes-experience.tsx')
+          changes = changes_path.read_text()
+          old = "type RoleOverride = {\n  notice?: string;\n  guidance: string;"
+          new = "type RoleOverride = {\n  notice?: string;\n  mode?: string;\n  present?: { value: string; label: string }[];\n  guidance: string;"
+          if old not in changes:
+              raise SystemExit('RoleOverride type anchor not found')
+          changes = changes.replace(old, new, 1)
+
+          old = "    <summary>\n      <span><b>Change this night’s roles</b><small>{model.summary}</small></span>"
+          new = "    <summary>\n      <span><b>{model.mode === '4' ? 'Arrange tonight’s 4 nurses' : 'Change this night’s roles'}</b><small>{model.summary}</small></span>"
+          if old not in changes:
+              raise SystemExit('role editor summary anchor not found')
+          changes = changes.replace(old, new, 1)
+
+          old = "    <div className=\"nightRoleEditorBody\">\n      <p className=\"time\">{model.guidance}</p>\n      <div className=\"editGrid\">"
+          new = "    <div className=\"nightRoleEditorBody\">\n      {model.mode === '4' && model.present?.length ? <div className=\"fourNursePresent\"><strong>Present tonight · {model.present.length} nurses</strong><div className=\"fourNursePresentList\">{model.present.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}\n      <p className=\"time\">{model.guidance}</p>\n      <div className=\"editGrid\">"
+          if old not in changes:
+              raise SystemExit('role editor body anchor not found')
+          changes = changes.replace(old, new, 1)
+
+          old = "          >\n            {model.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}\n          </select>"
+          new = "          >\n            {model.mode === '4' && !model.assignments[row.key] ? <option value=\"\" disabled>Select nurse</option> : null}\n            {model.names.map(name => <option key={name.value} value={name.value}>{name.label}</option>)}\n          </select>"
+          if old not in changes:
+              raise SystemExit('role select options anchor not found')
+          changes = changes.replace(old, new, 1)
+          changes_path.write_text(changes)
+
+          pager_path = Path('src/shared-pager.ts')
+          pager = pager_path.read_text()
+          old = "    const absent = String(relevant[0].absent_name || '');\n    const key = (Object.keys(roles) as (keyof TheatreRoles)[]).find(role => sameNurse(roles[role], absent));\n    if (key) roles[key] = full; else if (!sameNurse(full, absent)) return null;\n    return new Set(Object.values(roles).map(canonical)).size === 4 ? roles : null;"
+          new = "    const absent = String(relevant[0].absent_name || '');\n    if (sameNurse(full, absent)) return new Set(Object.values(roles).map(canonical)).size === 4 ? roles : null;\n    const vacantTheatreRole = (Object.keys(roles) as (keyof TheatreRoles)[]).find(role => sameNurse(roles[role], absent));\n    if (vacantTheatreRole) return null; // wait for the team to explicitly save the theatre reassignment\n    return null;"
+          if old not in pager:
+              raise SystemExit('shared Pager mode-5 derivation not found')
+          pager_path.write_text(pager.replace(old, new, 1))
+
+          css_path = Path('src/presentation.css')
+          css = css_path.read_text()
+          css += "\n/* 56.5 · four-nurse allocation clarity */\n.fourNursePresent{display:grid;gap:10px;padding:14px;border-radius:16px;background:color-mix(in srgb,var(--accent) 8%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 18%,transparent)}\n.fourNursePresent>strong{font-size:.78rem;letter-spacing:.02em;color:var(--text)}\n.fourNursePresentList{display:flex;flex-wrap:wrap;gap:8px}\n.fourNursePresentList span{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border-radius:999px;background:var(--card);border:1px solid color-mix(in srgb,var(--text) 10%,transparent);font-size:.78rem;font-weight:700;color:var(--text)}\n"
+          css_path.write_text(css)
+
+          test_path = Path('tests/four-nurse-role.test.js')
+          test = test_path.read_text()
+          test = test.replace("assert.match(clinical, /function suggestedFourRoleAssignments/, 'four-nurse role editor needs a suggested arrangement');", "assert.match(clinical, /Four-nurse theatre choices stay explicit; never auto-fill the vacant role/, 'four-nurse theatre vacancy must stay explicit');\nconst fourSuggestion = clinical.slice(clinical.indexOf('function suggestedFourRoleAssignments'), clinical.indexOf('function suggestedFiveRoleAssignments'));\nassert.doesNotMatch(fourSuggestion, /var next=names\\.find/, 'four-nurse theatre roles must never auto-fill the missing position');")
+          test += "\nassert.match(sharedPager, /wait for the team to explicitly save the theatre reassignment/, 'shared Pager must wait for a saved theatre arrangement when a theatre nurse is absent');\nconst changesUi = fs.readFileSync(path.join(root, 'src', 'changes-experience.tsx'), 'utf8');\nassert.match(changesUi, /Present tonight · \{model\.present\.length\} nurses/, 'four-nurse editor must show the nurses present tonight');\nassert.match(changesUi, /<option value=\\\"\\\" disabled>Select nurse<\\/option>/, 'vacant theatre select must show an explicit Select nurse placeholder');\n"
+          test_path.write_text(test)
+
+          release = {
+            'version': '56.5',
+            'date': '24 October 2026',
+            'title': 'Clear four-nurse theatre allocation',
+            'summary': 'Separates who is present, theatre placement and shared Pager so no nurse appears assigned before the team chooses them.',
+            'changes': [
+              'Shows the four nurses present tonight directly in the four-nurse theatre allocation editor.',
+              'Leaves a vacant theatre position visibly as Select nurse instead of allowing iOS to display the first nurse as if selected.',
+              'Removes the automatic suggestion that placed the normal Pager nurse into a vacant theatre role before confirmation.',
+              'Shared Pager now waits for the theatre arrangement to be explicitly saved when a theatre nurse is absent.',
+              'If the normal Pager nurse is the absent nurse, the four existing theatre nurses remain valid and can proceed to manual Pager ordering.'
+            ],
+            'update_policy': 'important'
+          }
+          Path('release.json').write_text(json.dumps(release, indent=2, ensure_ascii=False) + '\n')
+          PY
+      - name: Synchronise release artifacts
+        run: npm run release
+      - name: Verify deterministic release gate
+        run: npm run verify:fast
+      - name: Commit prepared release
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/legacy-ui/clinical.js src/changes-experience.tsx src/shared-pager.ts src/presentation.css tests/four-nurse-role.test.js release.json package.json package-lock.json app-ui.js app-core.js service-worker.js index.html manifest.webmanifest styles.css theme-bootstrap.js .project-state.json src/legacy-ui/release-history.js src/legacy-ui/foundation.js
+          git commit -m "fix: make four-nurse allocation explicit in 56.5 [56.5-prepared]"
+          git push origin HEAD:fix/56-5-four-nurse-allocation-clarity
