@@ -1,0 +1,16 @@
+/* Mobile-only polish for the exceptional four-nurse allocation flow. */
+@media (max-width: 600px) {
+  .nightRoleEditor { overflow: hidden; border-radius: 18px; }
+  .nightRoleEditor > summary { padding: 14px 16px; }
+  .nightRoleEditorBody { display: block !important; padding: 14px 16px 16px !important; }
+  .fourNursePresent { width: 100%; margin: 0 0 12px; padding: 12px; border-radius: 14px; }
+  .fourNursePresent > strong { display: block; margin-bottom: 8px; font-size: .82rem; }
+  .fourNursePresentList { display: flex !important; flex-wrap: wrap; gap: 7px; }
+  .fourNursePresentList > span { width: auto !important; max-width: 100%; padding: 7px 10px; border-radius: 999px; white-space: nowrap; }
+  .nightRoleEditorBody > .time { margin: 0 0 14px; font-size: .82rem; line-height: 1.45; }
+  .nightRoleEditorBody .editGrid { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; }
+  .nightRoleEditorBody .editGrid label,
+  .nightRoleEditorBody .editGrid label.fullWidth { width: 100% !important; grid-column: 1 !important; }
+  .nightRoleEditorBody .editGrid select { width: 100%; min-height: 48px; }
+  #changesAllocationPane .sharedPagerSurface { margin-top: 12px; }
+}
