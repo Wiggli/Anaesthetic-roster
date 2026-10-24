@@ -1,0 +1,21 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.join(__dirname, '..');
+const clinical = fs.readFileSync(path.join(root, 'src', 'legacy-ui', 'clinical.js'), 'utf8');
+const sharedPager = fs.readFileSync(path.join(root, 'src', 'shared-pager.ts'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261024161000_four_nurse_role_override.sql'), 'utf8');
+
+assert.match(clinical, /FOUR_NIGHT_ROLE_KEYS=\['first1','first2','second1','second2'\]/, 'four-nurse mode must contain only the four theatre positions');
+assert.match(clinical, /assignments\.mode==='4'/, 'role validation must recognise four-nurse mode');
+assert.match(clinical, /function suggestedFourRoleAssignments/, 'four-nurse role editor needs a suggested arrangement');
+assert.match(clinical, /working\.length===4/, 'four working nurses must open the night-only role editor');
+assert.match(clinical, /customFour/, 'effective plan must apply the saved four-nurse theatre arrangement');
+assert.match(clinical, /apply_night_role_override_v57/, 'four-nurse roles must save through the guarded v57 RPC');
+assert.match(sharedPager, /override\?\.mode === '4'/, 'shared Pager must consume the saved four-nurse theatre arrangement');
+assert.match(migration, /exactly one absence from the five-person team/i, 'server must keep the exception limited to one five-person absence');
+assert.match(migration, /Each theatre position must have a different nurse/, 'server must prevent duplicate theatre assignments');
+assert.match(migration, /Assignments must use only the four nurses working this night/, 'server must reject non-working names');
+
+console.log('Four-nurse theatre reassignment contract verified.');
