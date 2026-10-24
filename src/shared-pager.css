@@ -1,0 +1,44 @@
+.sharedPagerSurface{margin-top:14px;border:1px solid color-mix(in srgb,var(--accent) 18%,transparent);border-radius:20px;background:color-mix(in srgb,var(--card) 94%,var(--accent) 6%);padding:16px;box-shadow:0 10px 28px rgba(16,24,40,.06)}
+.sharedPagerHero{cursor:pointer;overflow:hidden}
+.sharedPagerHero:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 35%,transparent);outline-offset:3px}
+.sharedPagerHeading,.sharedPagerHeroTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.sharedPagerHeading h3,.sharedPagerHeroTop strong{margin:2px 0 0;font-size:1.03rem;line-height:1.25}
+.sharedPagerEyebrow{display:block;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong)}
+.sharedPagerDuration{flex:0 0 auto;border-radius:999px;background:color-mix(in srgb,var(--accent) 11%,transparent);padding:6px 9px;font-size:.72rem;font-weight:800;color:var(--accent-strong)}
+.sharedPagerIntro,.sharedPagerSurface>p{margin:10px 0 0;color:var(--muted);font-size:.9rem;line-height:1.48}
+.sharedPagerOrderEditor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.sharedPagerOrderEditor label{display:grid;gap:6px;border-radius:15px;background:var(--surface);padding:10px}
+.sharedPagerOrderEditor label>span{font-size:.72rem;font-weight:800;color:var(--muted)}
+.sharedPagerOrderEditor select{width:100%;min-height:44px;border:1px solid color-mix(in srgb,var(--text) 12%,transparent);border-radius:12px;background:var(--card);color:var(--text);padding:0 10px;font:inherit;font-weight:700}
+.sharedPagerOrderEditor small{font-size:.7rem;line-height:1.35;color:var(--muted)}
+.sharedPagerEditorStatus{margin-top:12px;border-radius:13px;background:color-mix(in srgb,var(--accent) 7%,transparent);padding:10px 12px;color:var(--muted);font-size:.78rem;line-height:1.4}
+.sharedPagerActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.sharedPagerActions button{min-height:44px}
+.sharedPagerTrack{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:14px}
+.sharedPagerTrack>span{position:relative;height:8px;overflow:hidden;border-radius:999px;background:color-mix(in srgb,var(--text) 9%,transparent)}
+.sharedPagerTrack>span i{display:block;width:calc(var(--shared-progress,0)*100%);height:100%;border-radius:inherit;background:var(--accent);transition:width .35s ease}
+.sharedPagerTrack>span.complete i{width:100%}
+.sharedPagerTrack>span.active{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)}
+.sharedPagerSegments{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:9px}
+.sharedPagerSegments>div{min-width:0;border-radius:12px;padding:8px 7px;background:color-mix(in srgb,var(--surface) 88%,transparent)}
+.sharedPagerSegments>div.active{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.sharedPagerSegments>div.mine{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}
+.sharedPagerSegments span{display:block;font-size:.65rem;font-weight:900;color:var(--muted)}
+.sharedPagerSegments b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:.74rem}
+.sharedPagerSegments small{display:block;margin-top:2px;font-size:.62rem;line-height:1.28;color:var(--muted)}
+.sharedPagerNow{margin:10px 0 0!important;color:var(--text)!important}
+.sharedPagerElapsed,.sharedPagerMine,.sharedPagerClock{margin:4px 0 0!important;font-size:.76rem!important;color:var(--muted)!important}
+.sharedPagerClock{margin-top:10px!important;padding-top:9px;border-top:1px solid color-mix(in srgb,var(--text) 8%,transparent)}
+.sharedPagerMiniOrder{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}
+.sharedPagerMiniOrder span{display:grid;gap:2px;border-radius:12px;background:var(--surface);padding:9px 10px}
+.sharedPagerMiniOrder b{font-size:.78rem}
+.sharedPagerMiniOrder small{font-size:.68rem;color:var(--muted)}
+.sharedPagerPending{font-weight:700;color:var(--accent-strong)!important}
+.sharedPagerRosterRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;border-top:1px solid color-mix(in srgb,var(--text) 7%,transparent);padding-top:11px}
+.sharedPagerRosterRow span{min-width:0;display:grid;gap:2px}
+.sharedPagerRosterRow b{font-size:.78rem;color:var(--accent-strong)}
+.sharedPagerRosterRow small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.7rem;color:var(--muted)}
+.sharedPagerRosterRow em{flex:0 0 auto;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,transparent);padding:5px 8px;font-size:.67rem;font-style:normal;font-weight:800;color:var(--accent-strong)}
+.sharedPagerLegacyWarningHidden{display:none!important}
+@media(max-width:430px){.sharedPagerSurface{padding:14px}.sharedPagerOrderEditor,.sharedPagerMiniOrder{grid-template-columns:1fr}.sharedPagerSegments{gap:4px}.sharedPagerSegments>div{padding:7px 5px}.sharedPagerSegments b{font-size:.68rem}.sharedPagerSegments small{font-size:.58rem}.sharedPagerDuration{font-size:.67rem}.sharedPagerActions{display:grid;grid-template-columns:1fr 1fr}.sharedPagerActions .primary{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.sharedPagerTrack>span i{transition:none}}
