@@ -1,13 +1,13 @@
 {
-  "version": "56.7",
+  "version": "56.8",
   "date": "24 October 2026",
-  "title": "Cleaner four-nurse changes screen",
-  "summary": "Keeps the mobile navigation fixed and simplifies the exceptional four-nurse allocation screen so it reads clearly on iPhone.",
+  "title": "Clear four-nurse allocation flow",
+  "summary": "Keeps the exceptional four-nurse Changes screen focused on the decision that actually remains.",
   "changes": [
-    "Keeps the bottom navigation fixed in one place on mobile with no scroll-driven translation.",
-    "Reflows the four-nurse theatre arrangement into a clean single-column mobile layout.",
-    "Turns the present-nurse list into compact readable chips and gives every theatre selector full width.",
-    "Reduces cramped side-by-side copy and improves spacing through the exceptional allocation flow."
+    "Removes the no-allocation-needed panel while the four-nurse theatre arrangement is incomplete.",
+    "Keeps the theatre-position editor as the single active task until all four positions are saved.",
+    "Leaves Review changes blocked until that arrangement is complete, without contradictory messaging.",
+    "Keeps staffing, shared Pager, DST, audit and synchronisation logic unchanged."
   ],
   "update_policy": "normal"
 }
