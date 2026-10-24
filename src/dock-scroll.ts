@@ -14,10 +14,8 @@ export function nextDockScroll(state: DockScrollState, position: number, maximum
 export function setupDockScroll() {
   const dock = document.querySelector<HTMLElement>('.bottom');
   if (!dock) return;
-  const mobile = window.matchMedia('(max-width: 1023px)');
   let state: DockScrollState = { y: window.scrollY, travel: 0, hidden: false };
   let frame = 0;
-  let touchingDock = false;
   let view = document.body.dataset.view;
   const reveal = () => {
     state = { y: window.scrollY, travel: 0, hidden: false };
@@ -25,23 +23,18 @@ export function setupDockScroll() {
   };
   const update = () => {
     frame = 0;
-    const active = document.activeElement;
-    const pinned = !mobile.matches || document.documentElement.hasAttribute('data-ios-standalone') || touchingDock || document.body.dataset.view === 'chat'
-      || document.body.classList.contains('authPending') || dock.classList.contains('actionsOpen')
-      || Boolean(document.querySelector('dialog[open]')) || Boolean(dock.querySelector(':focus-visible'))
-      || Boolean(active?.matches('input,textarea,select,[contenteditable="true"]'));
-    state = nextDockScroll(state, window.scrollY, document.documentElement.scrollHeight - window.innerHeight, pinned);
-    dock.classList.toggle('dockScrollHidden', state.hidden);
+    // Mobile fixed navigation must never translate with page scrolling. On iOS,
+    // transformed fixed elements can be composited at the wrong viewport position.
+    state = nextDockScroll(state, window.scrollY, document.documentElement.scrollHeight - window.innerHeight, true);
+    dock.classList.remove('dockScrollHidden');
   };
   window.addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(update); }, { passive: true });
   window.addEventListener('resize', reveal, { passive: true });
   document.addEventListener('visibilitychange', reveal);
-  // Keep the navigation available to keyboard and assistive-technology focus.
   document.addEventListener('focusin', reveal);
   document.addEventListener('keydown', event => { if (event.key === 'Tab') reveal(); });
-  dock.addEventListener('pointerdown', () => { touchingDock = true; reveal(); }, { passive: true });
-  for (const event of ['pointerup', 'pointercancel']) window.addEventListener(event, () => { touchingDock = false; }, { passive: true });
   new MutationObserver(() => {
     if (view !== document.body.dataset.view) { view = document.body.dataset.view; reveal(); }
   }).observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+  reveal();
 }
