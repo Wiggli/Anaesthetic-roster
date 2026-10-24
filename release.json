@@ -1,14 +1,14 @@
 {
-  "version": "56.2",
+  "version": "56.3",
   "date": "24 October 2026",
-  "title": "Move the Pager nurse into a vacant theatre position",
-  "summary": "Makes four-nurse nights fully editable by letting the remaining Pager nurse fill the absent theatre nurse’s position before Pager is shared.",
+  "title": "Manual four-person Pager order",
+  "summary": "Keeps the four-person Pager order completely manual instead of preselecting names from theatre parts.",
   "changes": [
-    "When one nurse is absent from the five-person establishment, Allocation now opens a four-nurse night-only role arrangement instead of leaving the theatre position unresolved.",
-    "The usual full-night Pager nurse is suggested automatically in the vacant theatre position, while all four working nurses remain available so the team can confirm the exact theatre arrangement.",
-    "The saved reassignment is shared, audited and used by Night, Full roster and the shared Pager display without changing the permanent rotation.",
-    "After theatre positions are confirmed, the four working nurses still choose their shared Pager order separately.",
-    "Clock-change timing remains based on real elapsed time, so tonight continues to use four two-hour Pager segments."
+    "A new four-person Shared Pager order now starts with four explicit Select nurse fields rather than prefilled names.",
+    "The app no longer assumes that Pager order should follow First Part or Second Part theatre order.",
+    "Each working nurse can be selected only once, and Save remains unavailable until all four Pager parts are assigned.",
+    "Existing saved Pager orders remain visible and editable, so previously agreed plans are not lost.",
+    "The theatre reassignment and shared Pager timing introduced in 56.2 remain unchanged."
   ],
   "update_policy": "important"
 }

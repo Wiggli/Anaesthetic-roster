@@ -18,6 +18,9 @@ assert.match(source, /Number\(timing\.endUtc\) - Number\(timing\.startUtc\)\) \/
 assert.match(source, /OLD.*NEW|OLD' : 'NEW'/, 'rollback labels must distinguish the repeated hour');
 assert.match(source, /Copy plan/, 'shared effective plan must support copy');
 assert.match(source, /Email plan/, 'shared effective plan must support email');
+assert.match(source, /Select nurse/, 'unsaved shared Pager parts must show an explicit Select nurse placeholder');
+assert.doesNotMatch(source, /stored\?\.nurse_order \|\| state\.nurses/, 'theatre order must never prefill a new shared Pager order');
+assert.match(source, /savedOrder \|\| \['', '', '', ''\]/, 'a new shared Pager order must start with four unselected slots');
 assert.match(source, /roster:night/, 'Night must consume the shared Pager plan');
 assert.match(source, /roster:breaks/, 'Breaks must consume the shared Pager plan');
 assert.match(source, /roster:full-roster/, 'Full roster must consume the shared Pager plan');
