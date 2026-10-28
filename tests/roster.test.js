@@ -489,7 +489,7 @@ assert.match(workflow, /version: 2\.45\.5/, 'Supabase CLI must use the reviewed 
 assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow the mutable latest Supabase CLI');
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
-assert.equal(checkedInMigrations.length, 33, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 34, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 assert.ok(checkedInMigrations.includes('20261024153714_shared_pager_four_nurse.sql'), 'the four-nurse shared Pager migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261024161000_four_nurse_role_override.sql'), 'the four-nurse theatre reassignment migration must stay checked in');
 assert.ok(checkedInMigrations.includes('20261002193000_recovery_longevity_v50.sql'), 'the schema-50 recovery and longevity migration must stay checked in');
