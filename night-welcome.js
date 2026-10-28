@@ -104,8 +104,82 @@ function patchFiveNursePagerSemantics(){
   patchedAllocationBreak.__original=original;
   window.allocationBreak=patchedAllocationBreak
 }
+function ensureNightPlanPolishStyles(){
+  if(el('nightPlanPolishStyles'))return;
+  var style=document.createElement('style');
+  style.id='nightPlanPolishStyles';
+  style.textContent='\n#today .nightTeamDetails>summary strong{letter-spacing:-.015em}\n#today #viewRosterBtn{display:none!important}\n#today .recentActivityPanel #recentActivityList{display:none!important}\n#today .recentActivityPanel>summary{cursor:pointer}\n#today .nightTeamDetails .rosterRowMeta{white-space:normal;text-overflow:clip}\n#today .fiveNurseSurface small{line-height:1.4}\n#today .nightRoleTools{gap:8px}\n';
+  document.head.appendChild(style)
+}
+function simplifyRoleMeta(text){
+  var value=normaliseName(text);
+  var part=value.match(/^(?:First Part|Second Part)\s*·\s*Works\s+(.+)$/i);
+  return part?part[1]:value
+}
+function openChangesFromNight(event){
+  if(event&&event.preventDefault)event.preventDefault();
+  if(event&&event.stopPropagation)event.stopPropagation();
+  if(typeof productHaptic==='function')safe(function(){productHaptic()},null);
+  if(typeof window.show==='function')window.show('changes')
+}
+function polishNightPlan(){
+  ensureNightPlanPolishStyles();
+  var team=document.querySelector('#today .nightTeamDetails');
+  if(team){
+    var heading=team.querySelector('summary strong');
+    if(heading&&heading.textContent!=='Tonight’s coverage')heading.textContent='Tonight’s coverage';
+  }
+  var staffing=document.querySelector('#today #nightStatusRow .nightTeamStaffing');
+  if(staffing&&/\bpresent\b/i.test(staffing.textContent||'')){
+    var concise=String(staffing.textContent||'').split(' · ')[0];
+    if(staffing.textContent!==concise)staffing.textContent=concise
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#today #roles .rosterRowMeta'),function(meta){
+    var concise=simplifyRoleMeta(meta.textContent||'');
+    if(concise&&meta.textContent!==concise)meta.textContent=concise
+  });
+  var tools=document.querySelectorAll('#today .nightRoleTools .jumpToMeButton');
+  if(tools[0]&&/Edit theatre \/ Pager/i.test(tools[0].textContent||''))tools[0].textContent='Edit coverage';
+  if(tools[1]&&/View breaks/i.test(tools[1].textContent||''))tools[1].textContent='Breaks';
+  var five=document.querySelector('#today .fiveNurseSurface');
+  if(five){
+    var label=five.querySelector('.fiveNurseLabel');
+    if(label&&label.textContent!=='Labour Ward / Pager · Full night')label.textContent='Labour Ward / Pager · Full night';
+    var detail=five.querySelector('small');
+    if(detail){
+      var clean=String(detail.textContent||'').replace(/^Labour Ward \/ Pager\s*·\s*/i,'').replace(/Break coordinated when clinical cover allows/i,'Break when clinical cover allows');
+      if(detail.textContent!==clean)detail.textContent=clean
+    }
+  }
+  var panel=document.querySelector('#today .recentActivityPanel');
+  if(panel){
+    panel.removeAttribute('open');
+    var summary=panel.querySelector('summary');
+    if(summary&&!summary.dataset.nightChangesRoute){
+      summary.dataset.nightChangesRoute='1';
+      summary.setAttribute('aria-label','Open Changes for tonight');
+      summary.addEventListener('click',openChangesFromNight)
+    }
+  }
+}
+var nightPolishQueued=false;
+function scheduleNightPlanPolish(){
+  if(nightPolishQueued)return;
+  nightPolishQueued=true;
+  requestAnimationFrame(function(){nightPolishQueued=false;polishNightPlan()})
+}
+function bindNightPlanPolish(){
+  polishNightPlan();
+  ['roster:night','roster:personal-night','roster:activity','roster:viewchange','roster:peer-revision'].forEach(function(name){window.addEventListener(name,scheduleNightPlanPolish)});
+  var host=document.querySelector('#today .nightOverviewPanel');
+  if(window.MutationObserver&&host){
+    var observer=new MutationObserver(scheduleNightPlanPolish);
+    observer.observe(host,{childList:true,subtree:true,characterData:true})
+  }
+}
 function initWelcome(){
   patchFiveNursePagerSemantics();
+  bindNightPlanPolish();
   if(!el('nightWelcomeHero'))return;
   ['roster:account','roster:personal-night','roster:night','roster:night-team-identity','roster:viewchange'].forEach(function(name){window.addEventListener(name,scheduleWelcome)});
   window.addEventListener('pageshow',scheduleWelcome);
@@ -119,5 +193,5 @@ function initWelcome(){
   scheduleWelcome()
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initWelcome,{once:true});else initWelcome();
-window.NightWelcome={render:renderWelcome,preferredFirstName:preferredFirstName};
+window.NightWelcome={render:renderWelcome,preferredFirstName:preferredFirstName,polishPlan:polishNightPlan};
 })();

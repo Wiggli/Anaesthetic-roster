@@ -27,6 +27,7 @@ const APP_SHELL = [
 // Vite injects the fingerprinted React/CSS assets here at build time.
 // Legacy app-shell URLs remain explicit so updates of installed 37.x PWAs
 // keep the existing network and update semantics.
+// 58.0 recovery refresh: reload the lean Night coverage presentation.
 const BUILD_SHELL = (self.__WB_MANIFEST || []).map(entry => new URL(entry.url, self.registration.scope).href);
 
 function isSupabaseLibrary(requestUrl) {
