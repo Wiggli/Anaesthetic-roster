@@ -2,7 +2,7 @@
   "version": "58.2",
   "date": "29 October 2026",
   "title": "Cleaner mobile workflow",
-  "summary": "Fixes narrow-screen staffing cards and removes duplicated information from Breaks.",
+  "summary": "Fixes narrow-screen staffing cards and removes duplicated information from the Breaks screen.",
   "changes": [
     "Fixes overtime cards on narrow phones so nurse names no longer collapse into letter-by-letter wrapping.",
     "Moves overtime role status beneath the nurse details so names, role badges and actions remain easy to scan.",
