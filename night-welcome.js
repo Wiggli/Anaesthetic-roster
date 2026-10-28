@@ -87,7 +87,25 @@ function renderWelcome(){
   typingTimer=setTimeout(typeNext,START_DELAY_MS)
 }
 function scheduleWelcome(){clearTimeout(retryTimer);retryTimer=setTimeout(renderWelcome,60)}
+function patchFiveNursePagerSemantics(){
+  if(typeof window.allocationBreak!=='function'||window.allocationBreak.__fiveNursePagerAware)return;
+  var original=window.allocationBreak;
+  function patchedAllocationBreak(key){
+    if(key==='pager'){
+      try{
+        var base=typeof window.cur==='function'?window.cur():null;
+        var plan=base&&typeof window.staffingPlan==='function'?window.staffingPlan(base):null;
+        if(base&&plan&&typeof window.baseEstablishmentSize==='function'&&window.baseEstablishmentSize(base)===5&&Number(plan.count||0)===5)return'Full night · 00:00–07:00 · Break when clinical cover allows'
+      }catch(error){}
+    }
+    return original(key)
+  }
+  patchedAllocationBreak.__fiveNursePagerAware=true;
+  patchedAllocationBreak.__original=original;
+  window.allocationBreak=patchedAllocationBreak
+}
 function initWelcome(){
+  patchFiveNursePagerSemantics();
   if(!el('nightWelcomeHero'))return;
   ['roster:account','roster:personal-night','roster:night','roster:night-team-identity','roster:viewchange'].forEach(function(name){window.addEventListener(name,scheduleWelcome)});
   window.addEventListener('pageshow',scheduleWelcome);
