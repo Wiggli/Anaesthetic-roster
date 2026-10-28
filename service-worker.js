@@ -60,7 +60,16 @@ async function repairCache() {
 }
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL.concat(BUILD_SHELL))));
+  const shell = APP_SHELL.concat(BUILD_SHELL).map(url => new Request(url, { cache: 'reload' }));
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(shell))
+      .then(() => {
+        // One-time recovery for the same-version 58.0 hotfix. A normal version
+        // bump changes CACHE_NAME, so future releases return to explicit activation.
+        if (CACHE_NAME === 'anaesthetic-night-roster-v58-0') return self.skipWaiting();
+      })
+  );
 });
 
 self.addEventListener('activate', event => {
