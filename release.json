@@ -1,13 +1,13 @@
 {
-  "version": "58.1",
+  "version": "58.2",
   "date": "29 October 2026",
-  "title": "Cleaner live Night coverage",
-  "summary": "Keeps Night focused on the current operational plan, while Changes remains the place to explain and manage staffing changes.",
+  "title": "Cleaner mobile workflow",
+  "summary": "Fixes narrow-screen staffing cards and removes duplicated information from Breaks.",
   "changes": [
-    "Renames the operational team section to Tonight’s coverage and keeps it focused on the current working plan.",
-    "Keeps absences, overtime and allocation explanations in Changes instead of duplicating them on Night.",
-    "Removes the old View full roster row from Night and routes Changes tonight directly to the Changes workflow.",
-    "Publishes the redesign as a new PWA release so installed iPhone apps receive a fresh cache namespace and asset URLs."
+    "Fixes overtime cards on narrow phones so nurse names no longer collapse into letter-by-letter wrapping.",
+    "Moves overtime role status beneath the nurse details so names, role badges and actions remain easy to scan.",
+    "Removes the duplicated Absences and Labour Ward summary from Breaks so the screen focuses on the rest plan.",
+    "Keeps Night, Changes and Breaks focused on current plan, staffing changes and rest planning respectively."
   ],
   "update_policy": "normal"
 }
