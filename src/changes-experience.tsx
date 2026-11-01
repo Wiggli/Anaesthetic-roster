@@ -1,3 +1,4 @@
+import { AvailableParts, type AvailablePartsModel } from './available-parts';
 import { useProductReducedMotion } from './product-motion';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
@@ -53,6 +54,7 @@ type RoleOverride = {
 };
 
 export type ChangesExperience = {
+  availableParts?: AvailablePartsModel;
   absences: StaffingRecord[];
   overtime: StaffingRecord[];
   history: HistoryRecord[];
@@ -104,11 +106,13 @@ function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; emp
           key={`overtime-${record.id}`}
           className="overtimeItem"
           title={record.name}
-          subtitle={record.meta}
-          trailing={<span className="tw:flex tw:items-center tw:gap-2">
+          subtitle={<><span className="overtimeRecordMeta">{record.meta}</span><span className="overtimeRecordStatus">
             {record.needsAllocation
-              ? <Pressable type="button" className="overtimeStatus taskStatus tw:rounded-full tw:bg-amber-500/12 tw:px-2.5 tw:py-1.5 tw:text-[0.68rem] tw:font-bold tw:text-amber-700 tw:dark:text-amber-300" onClick={() => dispatchAction({ action: 'allocation' })}>{record.status} ›</Pressable>
+              ? <Pressable type="button" className="overtimeAllocateButton" aria-label={`Choose part for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Choose part <span aria-hidden="true">›</span></Pressable>
               : <Badge tone="success">{record.status}</Badge>}
+            {record.needsAllocation && <span className="overtimePendingLabel">Awaiting allocation</span>}
+          </span></>}
+          trailing={<span>
             <Pressable
               type="button"
               className="recordMoreButton tw:grid tw:min-h-11 tw:min-w-11 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
@@ -356,6 +360,7 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 }
 
 export function renderChangesExperience(model: ChangesExperience) {
+  rootFor('changesAvailableParts')?.render(<AvailableParts model={model.availableParts} onAllocate={() => dispatchAction({ action: 'allocation' })} />);
   rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
   rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);

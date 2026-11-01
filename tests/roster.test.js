@@ -718,7 +718,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:10[\s\S]*changes:6[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:11[\s\S]*changes:7[\s\S]*breaks:5[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf('Your night stays first.') > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf('Only exceptions need your attention.') > onboardingSequence.indexOf('Your night stays first.'), 'the tutorial must explain the current decision-first Changes workflow');
