@@ -1,13 +1,11 @@
 {
-  "version": "59.0",
+  "version": "59.1",
   "date": "1 November 2026",
-  "title": "Available parts at a glance",
-  "summary": "See which parts remain open after absences and overtime, with readable allocation actions.",
+  "title": "Show where the seventh nurse moves from",
+  "summary": "Names the original part directly on the seventh-nurse decision card.",
   "changes": [
-    "Adds Available parts to Night and Changes, showing open roles with their duty periods and breaks.",
-    "Explains conditional seventh-nurse and Reliever choices before treating a part as available.",
-    "Replaces cramped overtime allocation badges with a readable Choose part action beneath each nurse.",
-    "Updates the app guide to explain where to check availability and allocate overtime."
+    "Shows the proposed seventh nurse\u2019s current role directly in the Night decision card and Changes guidance.",
+    "Keeps the existing allocation choices and overtime cover rules unchanged."
   ],
   "update_policy": "normal"
 }

@@ -11,6 +11,7 @@ c.nightOvertime[base.date]=[{id:'cover',nurse_name:'Cover Nurse',allocation_key:
 assert.deepEqual(clone(c.availablePartsModel(base).parts),[]);assert.equal(c.availablePartsModel(base).complete,true);
 reset();c.nightOvertime[base.date]=[{id:'a',nurse_name:'Extra A'},{id:'b',nurse_name:'Extra B'}];
 let m=c.availablePartsModel(base);assert.deepEqual(clone(m.parts.map(x=>x.key)),['reliever']);assert.equal(m.conditional.name,c.professionalName(c.staffingPlan(base).seventhChoice.nurse));assert.ok(m.conditional.rotation.key);assert.equal(m.conditional.overtime.key,'seventh');assert.equal(m.complete,false);
+assert.equal(c.workflowTaskDetails(base,c.staffingPlan(base))[0],'Choose whether '+m.conditional.name+' moves from '+m.conditional.rotation.label+' to Seventh nurse');
 c.seventhDecisionDrafts[base.date]='rotation';m=c.availablePartsModel(base);assert.equal(m.conditional,null);assert.ok(m.parts.some(x=>x.key===c.staffingPlan(base).seventhChoice.vacatedKey));
 c.seventhDecisionDrafts[base.date]='overtime';m=c.availablePartsModel(base);assert.ok(m.parts.some(x=>x.key==='seventh'));
 c.nightOvertime[base.date][0].allocation_key='reliever';c.nightOvertime[base.date][1].allocation_key='seventh';assert.equal(c.availablePartsModel(base).complete,true);assert.equal(c.availablePartsModel(base).parts.length,0);

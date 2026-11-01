@@ -233,6 +233,7 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`avai
  },{periods,theme});
  await expect(page.locator('#nightStatusRow .availableParts')).toContainText('Reliever');
  await expect(page.locator('#nightStatusRow .availableParts')).toContainText('seventh-nurse decision');
+ await expect(page.locator('#alerts .decisionTaskCopy')).toContainText('Michael Debono moves from First Part theatre · position 1 to Seventh nurse');
  await page.locator('#nightStatusRow .availablePartsAction').click();
  await expect(page.locator('#changesAllocationPane')).toBeVisible();
  await page.locator('[data-changes-step="staffing"]').first().click();
