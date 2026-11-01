@@ -1,0 +1,117 @@
+/* Information hierarchy: values and next actions first; explanations on demand. */
+.availableParts{margin:12px 0;padding:14px;border-radius:var(--unified-radius-card);box-shadow:none}
+.availablePartsHeading{align-items:baseline;gap:8px}
+.availablePartsHeading h3{font-size:var(--unified-type-body)}
+.availablePartsHeading>span{font-size:var(--unified-type-caption);text-align:right}
+.availableParts.partsComplete{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;border:0;padding:6px 0;background:transparent}
+.partsComplete .availablePartsHeading{flex:1;min-width:0}
+.partsComplete .availablePartsContent:empty{display:none}
+.availablePartsContent ul{margin-top:10px;gap:6px}
+.availablePartsContent li{padding:9px 10px}
+.availablePartsContent p{font-size:var(--unified-type-caption);line-height:1.5}
+.availablePartsDecision{padding-top:10px;margin-top:10px;font-size:var(--unified-type-caption)}
+.availablePartsDecision>strong{display:block;font-size:var(--unified-type-body);line-height:1.4}
+.availablePartsNurses{margin-top:8px;color:var(--text-secondary);font-size:var(--unified-type-caption)}
+.availablePartsNurses>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600}
+.availablePartsNurses>summary::after{content:'›';margin-left:auto;font-size:20px}
+.availablePartsNurses[open]>summary::after{transform:rotate(90deg)}
+.availablePartsNurses p{margin:0 0 8px}
+.availablePartsAction{margin-top:8px}
+#changes[data-step="allocation"] .availablePartsAction,
+#changes[data-step="confirm"] .availablePartsAction,
+#changes[data-has-open-parts="true"] #continueToAllocationBtn{display:none}
+#changes .staffingSection,#changes #changesStaffingPane>.staffingSection{padding:14px 16px;margin:0;border-radius:0;box-shadow:none}
+#changes .staffingSection>.stepHeader{padding:0;margin:0 0 8px;min-height:0}
+#changes .staffingSection>.stepHeader h3{font-size:var(--unified-type-body)}
+#changes .staffingActionRow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;min-height:44px;padding:0;gap:8px}
+#changes .staffingActionCopy{flex:1;min-width:90px}
+#changes .staffingActionCopy strong{font-size:var(--unified-type-caption);font-weight:500;color:var(--text-secondary)}
+#changes .staffingAddButton{min-height:44px;margin:0;padding:8px 12px;white-space:normal;font-size:var(--unified-type-caption)}
+#changes #overtimeList:not(:empty),#changes #changeList:not(:empty){margin-top:8px}
+#changes .changesRecordGroup>.overtimeItem,#changes .changesRecordGroup>.changeItem{padding:12px}
+#changes .overtimeRecordStatus{margin-top:6px;gap:8px}
+#changes .overtimePendingLabel{font-size:var(--unified-type-caption)}
+#changes .allocationSummary:empty{display:none}
+#changes .allocationSection>.time{margin:0 0 10px}
+#changes .seventhDecisionCard{padding:12px;border-radius:var(--unified-radius-control);box-shadow:none}
+#changes .seventhDecisionCard h3{font-size:var(--unified-type-body);line-height:1.4;margin:6px 0 12px}
+#changes .decisionButtons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#changes .decisionButtons button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:60px;padding:12px;text-align:left;white-space:normal}
+#changes .decisionButtons button b{font-size:var(--unified-type-caption);line-height:1.4}
+#changes .decisionButtons button small{font-size:var(--unified-type-caption);line-height:1.4;color:var(--text-secondary);font-weight:400}
+#changes .decisionButtons button.selected{outline:2px solid var(--accent-primary);outline-offset:-2px}
+#changes .decisionSaved{margin-top:10px;font-size:var(--unified-type-caption)}
+#changes .allocationRow{padding:12px}
+#changes .historyBox>summary{font-size:var(--unified-type-caption)}
+#changes .primaryScreenTitleRow>div,#breaks .primaryScreenTitleRow>div{padding-bottom:0}
+#today .personalHeroFactGrid{gap:0}
+#today .personalHeroFactGrid .personalHeroFact{padding-top:12px;padding-bottom:12px}
+#today .personalHeroFactGrid .personalHeroFact>span{font-size:var(--unified-type-caption);font-weight:400}
+#today .nightRoleTools .jumpToMeButton{font-size:var(--unified-type-caption);min-height:44px}
+#today .rosterRoleLine{border:0;border-bottom:1px solid var(--border-subtle);border-radius:0;box-shadow:none}
+#today .rosterRoleLine:last-child{border-bottom:0}
+#today .rosterRowCopy .rosterRowMeta{font-size:var(--unified-type-caption);line-height:1.4}
+#today .rosterShortcutRow{margin-top:8px}
+#breaks .personalBreakSummary{padding:16px}
+#breaks .personalBreakSummary h2{font-size:var(--unified-type-title)}
+#breaks .personalBreakPeriod{font-size:var(--unified-type-body);font-weight:600;color:var(--text-primary)}
+#breaks .breakTogether{font-size:var(--unified-type-caption);line-height:1.5}
+#breaks .breakPlanTitle{margin-top:16px;margin-bottom:8px}
+#breaks .breakScheduleHeader{padding:12px 14px;min-height:64px}
+#breaks .breakScheduleHeadingCopy small{font-size:var(--unified-type-caption);font-weight:400;color:var(--text-secondary)}
+#breaks .breakPerson{min-height:48px;padding:10px 14px}
+#breaks .breakNotesHeading{margin-top:16px}
+#breaks .breakNotesHeading h3{font-size:var(--unified-type-body)}
+#breaks .coverageRow{padding:12px}
+#quickActionsSheet .quickActionsExperience{gap:10px}
+#quickActionsSheet .quickPrimaryGrid,#quickActionsSheet .quickCommunicationGrid{grid-template-columns:minmax(0,1fr);gap:0;border:1px solid var(--border-subtle);border-radius:var(--unified-radius-card);overflow:hidden;background:var(--surface-secondary)}
+#quickActionsSheet .quickPrimaryAction,#quickActionsSheet .quickCompactAction{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:12px;min-height:52px;padding:10px 14px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left}
+#quickActionsSheet .quickPrimaryGrid>button+button,#quickActionsSheet .quickCommunicationGrid>button+button{border-top:1px solid var(--border-subtle)}
+#quickActionsSheet .quickPrimaryIcon,#quickActionsSheet .quickCompactIcon,#quickActionsSheet .quickReviewIcon{height:28px;width:28px;border-radius:0;background:transparent;padding:0}
+#quickActionsSheet .quickPrimaryIcon svg,#quickActionsSheet .quickCompactIcon svg,#quickActionsSheet .quickReviewIcon svg{height:24px;width:24px}
+#quickActionsSheet .quickPrimaryCopy strong,#quickActionsSheet .quickCompactAction strong,#quickActionsSheet .quickReviewCopy strong{font-size:var(--unified-type-body);line-height:1.4}
+#quickActionsSheet .quickReviewAction{min-height:52px;padding:10px 14px;gap:12px;border-radius:var(--unified-radius-card);box-shadow:none}
+#quickActionsSheet .quickReviewCopy{gap:2px}
+#quickActionsSheet .quickReviewCopy>span{font-size:var(--unified-type-caption);line-height:1.4}
+#quickActionsSheet .quickActionsContextBar{padding:10px 14px;gap:12px}
+#quickActionsSheet .quickActionsContextBar strong,#quickActionsSheet .quickActionsContextBar b{font-size:var(--unified-type-body)}
+#quickActionsSheet .quickContextPlan small,#quickActionsSheet .quickContextNight small{font-size:var(--unified-type-caption)}
+#quickActionsSheet .quickEditRestriction{margin:0;font-size:var(--unified-type-caption);line-height:1.5;color:var(--status-warning)}
+#chat .chatSafetyNotice{min-height:44px;padding:8px 12px;box-shadow:none;background:transparent;border:0}
+#chat .chatSafetyNotice span{font-size:var(--unified-type-caption)}
+#chat .chatPickerRow{min-height:56px}
+#chat .chatPickerRow .statusBadge{font-size:var(--unified-type-caption)}
+#roster .rosterExperienceCard{box-shadow:none;padding:14px}
+#roster .rosterDetailRow{grid-template-columns:100px minmax(0,1fr);gap:12px;padding:9px 0}
+#roster .rosterDetailLabel{font-size:var(--unified-type-caption);font-weight:500;line-height:1.4}
+#roster .rosterDetailValues{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+#roster .rosterRolePill{padding:0;border:0;border-radius:0;background:transparent;color:var(--text-primary);font-size:var(--unified-type-caption);font-weight:600;line-height:1.4;text-align:right}
+#roster .rosterDetail-first .rosterRolePill:last-child,#roster .rosterDetail-second .rosterRolePill:last-child{font-weight:400;color:var(--text-secondary)}
+#roster .rosterStaffingBadge{font-size:var(--unified-type-caption);line-height:1.4;white-space:normal}
+#accountSheet .informationDisclosure{margin:12px 0;border:1px solid var(--border-subtle);border-radius:var(--unified-radius-card);padding:0;background:var(--surface-secondary);box-shadow:none}
+#accountSheet .informationDisclosure>summary{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:12px 14px;font-size:var(--unified-type-body);font-weight:600;line-height:1.4;cursor:pointer;list-style:none;color:var(--text-primary)}
+#accountSheet .informationDisclosure>summary::-webkit-details-marker{display:none}
+#accountSheet .informationDisclosure>summary::after{content:'›';font-size:20px;line-height:1;margin-left:12px;color:var(--text-secondary)}
+#accountSheet .informationDisclosure[open]>summary::after{transform:rotate(90deg)}
+#accountSheet .informationDisclosure[open]>summary{border-bottom:1px solid var(--border-subtle)}
+#accountSheet .informationDisclosure>*:not(summary){margin:0;padding:14px}
+#accountSheet .informationDisclosure input[type="hidden"]{display:none}
+#accountSheet .informationDisclosure .personalisationPreviewCard{border:0;box-shadow:none;border-radius:0}
+#accountSheet .personalisationGroup{margin-top:12px;padding:14px;border-radius:var(--unified-radius-card);box-shadow:none}
+#accountSheet .personalisationGroupHeading h4{font-size:var(--unified-type-body)}
+#accountSheet .personalisationGroupHeading p{font-size:var(--unified-type-caption);line-height:1.5;margin-top:4px}
+#accountSheet .personalisationGroupHeading>span:empty{display:none}
+#accountSheet .personalisationStudioHeading{display:none}
+#accountSheet .accountIdentityVerified{padding:12px 14px}
+#accountSheet .accountIdentityVerified .accountIdentityCopy span{font-size:var(--unified-type-caption)}
+#accountSheet .accountIdentityVerified .accountIdentityCopy small{font-size:var(--unified-type-caption)}
+@media(max-width:359px){
+ #changes .decisionButtons{grid-template-columns:minmax(0,1fr)}
+ #roster .rosterDetailRow{grid-template-columns:82px minmax(0,1fr);gap:8px}
+}
+#admin .adminRotationHelp{padding:0 14px 12px;color:var(--text-secondary);font-size:var(--unified-type-caption);line-height:1.5}
+#admin .adminRotationHelp>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--accent-primary)}
+#admin .adminRotationHelp p{margin:4px 0 0}
+#accountSheet .personalisationStudio{gap:12px}
+#accountSheet .personalisationStudio>.personalisationGroup,#accountSheet .personalisationStudio>.informationDisclosure{margin:0}
+#accountSheet .personalisationGroup.informationDisclosure{padding:0}

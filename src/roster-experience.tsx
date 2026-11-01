@@ -67,7 +67,7 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
     <button type="button" className="rosterClearFilters" onClick={clearFilters}>Clear filters</button>
     {!!shown.length && <details className="rosterWorkload"><summary>Staff workload on shown nights</summary><p>Counts reflect the effective team after absences and overtime. Weekend means Saturday or Sunday; these totals inform review and do not rebalance the rotation.</p><label className="workloadSort">Sort workload<select aria-label="Sort staff workload" value={sort} onChange={event => setSort(event.target.value)}><option value="name">Name</option><option value="nights">Most nights</option><option value="weekends">Most weekends</option></select></label><ul>{[...totals].sort(([a,x], [b,y]) => (sort === 'nights' ? y.nights-x.nights : sort === 'weekends' ? y.weekends-x.weekends : 0) || a.localeCompare(b)).map(([name, total]) => <li key={name}><strong>{name}</strong><span>{total.nights} nights · {total.weekends} weekend</span></li>)}</ul></details>}
     {!shown.length && <div className="rosterEmpty" role="status"><strong>No nights match this view</strong><p>Try another month, clear the search and staffing filter, or show all published months.</p><button type="button" onClick={() => { const search = document.getElementById('search') as HTMLInputElement; const filter = document.getElementById('filter') as HTMLSelectElement; if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); } if (filter) { filter.value = 'all'; filter.dispatchEvent(new Event('change', { bubbles: true })); } setAllMonths(true); }}>Clear filters and show all nights</button></div>}
-    <p className="tw:m-0 tw:text-xs tw:font-semibold tw:text-[var(--muted)]">Select a night to open its live plan</p>
+
     <div className="tw:grid tw:gap-3 tw:lg:grid-cols-2">
     {shown.map((card, index) => <motion.button
       type="button"
@@ -84,7 +84,7 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
       <div className="tw:flex tw:items-start tw:justify-between tw:gap-3">
         <div className="tw:min-w-0">
           <strong className="tw:block tw:text-[1.05rem]">{card.date}</strong>
-          <span className="tw:mt-1 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{card.status}</span>
+          {card.status !== 'Standard calculated rotation' && <span className="tw:mt-1 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{card.status}</span>}
         </div>
         <span className={`rosterStaffingBadge ${card.short ? 'isShort' : card.needsReview ? 'needsReview' : ''}`}>{card.count} nurses{card.short ? ' · Short' : card.needsReview ? ' · Pending' : ' · Covered'}</span>
       </div>

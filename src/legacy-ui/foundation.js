@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V59.1 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V60.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -497,7 +497,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=59.1" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=60.0" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
@@ -570,7 +570,7 @@ function ensureRecordActionSheet(){
 
 function showRecordActions(kind,id,name){
   var dialog=ensureRecordActionSheet(),edit=byId('recordEditAction'),remove=byId('recordRemoveAction'),absence=kind==='absence';
-  byId('recordActionTitle').textContent=name;byId('recordActionDetail').textContent=absence?'Recorded absence':'Confirmed overtime nurse';edit.classList.toggle('hidden',!absence);edit.onclick=function(){dialog.close();editNightChange(id)};remove.textContent=absence?'Remove absence':'Remove overtime nurse';remove.onclick=function(){dialog.close();if(absence)removeNightChange(id);else removeOvertime(id)};if(!dialog.open)dialog.showModal();
+  byId('recordActionTitle').textContent=name;var record=(absence?changesFor(cur().date):overtimeFor(cur().date)).find(function(item){return item.id===id}),added=!absence&&record?earliestOvertimeAdd(cur().date,record.nurse_name):null;byId('recordActionDetail').textContent=record?(absence?(record.reason||'Absence')+' · Updated by '+(record.updated_by||'Shift member')+' · '+shortTime(record.updated_at):'Added by '+(added&&added.changed_by||record.updated_by||'Shift member')+' · '+shortTime(added&&added.changed_at||record.updated_at)):(absence?'Recorded absence':'Confirmed overtime nurse');edit.classList.toggle('hidden',!absence);edit.onclick=function(){dialog.close();editNightChange(id)};remove.textContent=absence?'Remove absence':'Remove overtime nurse';remove.onclick=function(){dialog.close();if(absence)removeNightChange(id);else removeOvertime(id)};if(!dialog.open)dialog.showModal();
 }
 
 function installedReleaseState(){var latest=RELEASE_HISTORY[0]&&RELEASE_HISTORY[0].version||'Unknown',cache=String(serviceWorkerCacheVersion||'').replace(/^anaesthetic-night-roster-v/,'').replace(/-/g,'.'),stale=cache!=='Checking…'&&cache!=='Not active'&&cache!==APP_VERSION;return{latest:latest,cache:serviceWorkerCacheVersion,stale:stale,waiting:!!(updateRegistration&&updateRegistration.waiting)}}

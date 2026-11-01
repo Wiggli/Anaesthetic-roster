@@ -232,8 +232,9 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`avai
   nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell'},{id:'b',nurse_name:'Daniel Santucci With A Long Display Name'}];render();show('today');
  },{periods,theme});
  await expect(page.locator('#nightStatusRow .availableParts')).toContainText('Reliever');
- await expect(page.locator('#nightStatusRow .availableParts')).toContainText('seventh-nurse decision');
- await expect(page.locator('#alerts .decisionTaskCopy')).toContainText('Michael Debono moves from First Part theatre · position 1 to Seventh nurse');
+ await expect(page.locator('#nightStatusRow .availableParts')).toContainText('Seventh nurse?');
+ await expect(page.locator('#alerts .decisionTaskCard')).toHaveCount(0);
+ await expect(page.locator('#nightStatusRow .availablePartsDecision')).toContainText('Michael Debono: First Part theatre · position 1 → Seventh nurse?');
  await page.locator('#nightStatusRow .availablePartsAction').click();
  await expect(page.locator('#changesAllocationPane')).toBeVisible();
  await page.locator('[data-changes-step="staffing"]').first().click();
@@ -246,6 +247,66 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`avai
  await page.screenshot({path:testInfo.outputPath('available-parts-changes.png'),fullPage:true});
  await page.getByRole('button',{name:'Choose part for Andre Seychell'}).click();await expect(page.locator('#changesAllocationPane')).toBeVisible();
  await page.evaluate(()=>{nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',allocation_key:'reliever'},{id:'b',nurse_name:'Daniel Santucci',allocation_key:'seventh'}];render();show('today')});
- await expect(page.locator('#nightStatusRow .availableParts')).toContainText('All required parts are assigned');
+ await expect(page.locator('#nightStatusRow .availableParts')).toContainText('All assigned');
  await page.screenshot({path:testInfo.outputPath('available-parts-night.png'),fullPage:true});
+});
+
+for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`whole app information stays readable ${width} ${theme} @iphone`,async({page},testInfo)=>{
+ test.setTimeout(60000);await page.setViewportSize({width,height:956});await ready(page);
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ const phase=process.env.UI_REVIEW_PHASE||'after';const fs=require('node:fs');const out='/tmp/roster-ui-'+phase;fs.mkdirSync(out,{recursive:true});
+ await page.evaluate(({periods,theme})=>{
+  rotationVersions=periods;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-11-01');schemaVersion=57;
+  currentUser={id:'ui-review',email:'review@example.test'};currentUserProfile={...currentUserProfile,active:true};
+  currentPrivateProfile={profile_name:'Andre Bartolo',job_title:'Senior Staff Nurse'};lastSuccessfulSyncAt=new Date().toISOString();
+  nightTeamIdentities[cur().date]={roster_date:cur().date,nickname:'L-Aghar Shift',tagline:'First to work, last to leave, ready for anything',accent_key:'rose',symbol:'cross'};
+  applyTheme(theme==='dark');render();show('today');
+ },{periods:require('./fixtures/establishment-periods.json'),theme});
+ const stats={};async function capture(name,selector){
+  await expect(page.locator(selector)).toBeVisible();await page.evaluate(()=>scrollTo(0,0));
+  expect(await page.locator(selector).evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+  stats[name]=await page.locator(selector).innerText();
+  if(width===440)await page.screenshot({path:`${out}/${name}-${theme}.png`,fullPage:true});
+ }
+ await capture('night','#today');await page.evaluate(()=>show('breaks'));await capture('breaks','#breaks');
+ await page.evaluate(()=>show('chat'));await capture('chat','#chat');
+ await page.evaluate(()=>show('roster'));await capture('roster','#roster');
+ await page.evaluate(()=>{show('today');showQuickActions()});await capture('actions','#quickActionsSheet');await page.locator('#closeQuickActionsSheet').click();
+ await page.evaluate(()=>{nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'},{id:'b',nurse_name:'Daniel Santucci',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'}];render();show('today')});
+ await capture('night-pending','#today');await page.evaluate(()=>{show('changes');setChangesStep('staffing',false)});await capture('changes','#changes');
+ await page.locator('[data-changes-step="allocation"]').first().click();await capture('roles','#changes');
+ await page.evaluate(()=>showAccountSheet());await capture('account','#accountSheet');
+ for(const section of ['profile','preferences','security','notifications','help']){await page.evaluate(s=>showAccountSection(s),section);await capture('account-'+section,'#accountSheet')}
+ fs.writeFileSync(`${out}/text-${width}-${theme}.json`,JSON.stringify(stats,null,2));
+ expect(errors).toEqual([]);
+});
+
+test('simplified views retain allocation choices, audit details and profile drafts @iphone',async({page})=>{
+ await page.setViewportSize({width:440,height:956});await ready(page);
+ await page.evaluate(periods=>{rotationVersions=periods;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-11-01');schemaVersion=57;nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'},{id:'b',nurse_name:'Daniel Santucci',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'}];render();show('today')},require('./fixtures/establishment-periods.json'));
+ await expect(page.locator('#today .availableParts')).toHaveCount(1);await expect(page.locator('#alerts .decisionTaskCard')).toHaveCount(0);await expect(page.locator('#personalAllocationNotice .personalTaskCard')).toHaveCount(0);
+ await expect(page.locator('#nightRecommendedAction')).toBeHidden();
+ await page.evaluate(()=>NightIntelligence.setCalmMode(true));await expect(page.locator('#nightRecommendedAction')).toBeVisible();await page.evaluate(()=>NightIntelligence.setCalmMode(false));
+ await expect(page.locator('.availablePartsDecision').first()).toContainText('First Part theatre · position 1 → Seventh nurse?');
+ await page.locator('#today .availablePartsNurses summary').click();await expect(page.locator('#today .availablePartsNurses')).toContainText('Andre Seychell');
+ await page.locator('#today .availablePartsAction').click();await expect(page.locator('#changesAllocationPane')).toBeVisible();
+ await expect(page.locator('#changes .workflowGuidance')).toHaveCount(0);
+ await page.locator('[data-seventh-decision="overtime"]').click();await expect(page.locator('[data-seventh-decision="overtime"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#changesAvailableParts')).toContainText('Seventh nurse');
+ await page.locator('[data-changes-step="staffing"]').first().click();await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'More actions for Andre Seychell'}).click();await expect(page.locator('#recordActionDetail')).toContainText('Added by Andre');await page.locator('#recordCancelAction').click();
+ await page.getByRole('button',{name:'Add absence',exact:true}).click();await expect(page.getByRole('dialog',{name:'Add absence',exact:true})).toBeVisible();await page.getByRole('button',{name:'Close Add absence'}).click();
+ await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});
+ await page.locator('#profileName').fill('Draft name');await page.locator('#profileJobTitle').fill('Draft title');await page.locator('#profileRosterName').selectOption('James');
+ await page.locator('#profileExperience .personalisationTabs').getByRole('button',{name:'Our Shift',exact:true}).click();await page.locator('#shiftStudioName').fill('Draft team');
+ await page.locator('#profileExperience .personalisationTabs').getByRole('button',{name:'Me',exact:true}).click();await expect(page.locator('#profileName')).toHaveValue('Draft name');await expect(page.locator('#profileJobTitle')).toHaveValue('Draft title');await expect(page.locator('#profileRosterName')).toHaveValue('James');
+ const preview=page.locator('#profileExperience .profilePreviewDisclosure');await expect(preview).not.toHaveAttribute('open','');await preview.locator('summary').click();await expect(preview).toContainText('Draft name');
+ const photo=page.locator('#profileExperience details').filter({has:page.getByText('Photo & avatar',{exact:true})});await photo.locator('summary').click();await expect(page.locator('#changeProfilePhoto')).toBeVisible();
+ await page.locator('#accountBackBtn').click();await page.evaluate(()=>showAccountSection('profile'));await expect(page.locator('#profileName')).toHaveValue('Draft name');
+ await page.evaluate(()=>{currentUserProfile={...currentUserProfile,email:'second@example.test',display_name:'Second Nurse'};currentPrivateProfile={profile_name:'Second Nurse',job_title:'Different title'};populateAccountSheet()});await expect(page.locator('#profileName')).toHaveValue('Second Nurse');await expect(page.locator('#profileJobTitle')).toHaveValue('Different title');
+});
+
+test('saved four-person arrangement keeps its provisional guidance visible @iphone',async({page})=>{
+ await ready(page);await page.evaluate(()=>{show('changes');window.dispatchEvent(new CustomEvent('roster:changes-workflow',{detail:{active:'allocation',provisional:true,allocationExplained:false,steps:[{id:'staffing',label:'Staffing',detail:'4 present',complete:true},{id:'allocation',label:'Arrangement',detail:'Recorded',complete:true},{id:'confirm',label:'Review',detail:'Provisional',disabled:true}],headline:'Four-nurse arrangement recorded',guidance:'Four-person cover remains provisional.',tone:'automatic',progressValue:2,progressMax:3,progressLabel:'Provisional'}}))});
+ await expect(page.locator('#changesWorkflowExperience .workflowGuidance')).toBeVisible();await expect(page.locator('#changesWorkflowExperience .workflowGuidance')).toContainText('provisional');await expect(page.locator('[data-changes-step="confirm"]')).toBeDisabled();
 });

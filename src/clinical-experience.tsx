@@ -79,6 +79,7 @@ type NightSummary = {
 };
 
 type PersonalNight = {
+  allocationExplained?: boolean;
   date: string;
   displayName: string;
   jobTitle: string;
@@ -262,10 +263,10 @@ function goToChanges(target: 'staffing' | 'allocation') {
   softHaptic();
   window.show?.('changes');
   window.dispatchEvent(new CustomEvent('roster:changes-step-request', { detail: { step: target } }));
-  window.setTimeout(() => {
+  window.requestAnimationFrame(() => {
     const selector = target === 'staffing' ? '#changesStaffingPane' : '#changesAllocationPane';
-    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 180);
+    document.querySelector(selector)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+  });
 }
 
 function goToConfirmation() {
@@ -352,20 +353,22 @@ function BreakScheduleSection({
   ordinal,
   title,
   names,
-  highlightedName
+  highlightedName,
+  period
 }: {
   className: string;
   ordinal: string;
   title: string;
   names: string[];
   highlightedName: string;
+  period: string;
 }) {
   return <section className={`breakScheduleSection ${className}`} aria-label={title}>
     <div className="breakScheduleHeader">
       <span className="breakScheduleOrdinal" aria-hidden="true">{ordinal}</span>
       <div className="breakScheduleHeadingCopy">
         <h3>{title}</h3>
-        <small>{names.length ? `${names.length} nurses` : 'Awaiting allocation'}</small>
+        <small>{period}{!names.length ? ' · Awaiting allocation' : ''}</small>
       </div>
     </div>
     <div className="breakScheduleRows">
@@ -409,11 +412,11 @@ function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
     {hasMine && <div className="breakPlanTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToBreak}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
     <div className="breakGrid breakScheduleBoard">
-      <BreakScheduleSection className="firstBreak" ordinal="1" title="First break" names={model.first} highlightedName={model.highlightedName} />
-      <BreakScheduleSection className="secondBreak" ordinal="2" title="Second break" names={model.second} highlightedName={model.highlightedName} />
+      <BreakScheduleSection className="firstBreak" ordinal="1" title="First break" period={model.firstDutyPeriod} names={model.first} highlightedName={model.highlightedName} />
+      <BreakScheduleSection className="secondBreak" ordinal="2" title="Second break" period={model.secondDutyPeriod} names={model.second} highlightedName={model.highlightedName} />
     </div>
     <section className="breakNotesBlock" aria-labelledby="breakNotesTitle">
-      <div className="breakNotesHeading"><span>Additional coverage</span><h3 id="breakNotesTitle">Labour Ward / Pager</h3></div>
+      <div className="breakNotesHeading"><h3 id="breakNotesTitle">Labour Ward / Pager</h3></div>
       <div className="breakNotesBoard coverageBoard">
         {model.notes.length
           ? model.notes.map(note => {
@@ -438,7 +441,7 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
   const mine = model.highlightedName;
   const first = model.first.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
   const second = model.second.some(name => name.toLocaleLowerCase() === mine.toLocaleLowerCase());
-  const assignment = model.provisionalFour ? (first ? 'First break · provisional' : second ? 'Second break · provisional' : 'Coordinate your break') : model.pending ? 'Awaiting allocation' : first ? 'First break' : second ? 'Second break' : 'Check the plan';
+  const assignment = model.provisionalFour ? (first ? 'First break · provisional' : second ? 'Second break · provisional' : 'Coordinate your break') : model.pending ? 'Awaiting allocation' : first ? 'First break' : second ? 'Second break' : 'When cover allows';
   return <section className="personalBreakSummary" aria-label="Your break">
     <span className="personalBreakEyebrow">Your break</span>
     <div className="personalBreakMain">
@@ -446,10 +449,7 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
       <span className="personalBreakMark" aria-hidden="true">{model.pending ? '…' : first ? '1' : second ? '2' : '·'}</span>
     </div>
     {!model.pending && (first || second) && <p className="breakTogether">With {(first ? model.first : model.second).filter(name => name.toLocaleLowerCase() !== mine.toLocaleLowerCase()).join(', ') || 'your allocated group'}</p>}
-    {!model.pending && <div className="breakCompactRail" aria-label="Night break periods">
-      <span className={current === 'first' ? 'current' : ''}><b>First break</b><small>{model.firstDutyPeriod}</small><small>{current === 'first' ? 'Current period' : current === 'second' ? 'Earlier period' : 'First Part'}</small></span>
-      <span className={current === 'second' ? 'current' : ''}><b>Second break</b><small>{model.secondDutyPeriod}</small><small>{current === 'second' ? 'Current period' : current === 'first' ? 'Upcoming period' : 'Second Part'}</small></span>
-    </div>}
+    {!model.pending && (first || second) && <p className="personalBreakPeriod">{first ? model.firstDutyPeriod : model.secondDutyPeriod}{current === (first ? 'first' : 'second') ? ' · Now' : ''}</p>}
     {!model.pending && !first && !second && <small>For full-night Labour Ward cover, coordinate your break when clinical cover allows.</small>}
   </section>;
 }
@@ -518,9 +518,10 @@ function NightStatus({ model }: { model: NightSummary }) {
 function NightAlerts({ model }: { model: NightSummary }) {
   const needsReview = model.nurseCount < 5 || Boolean(model.taskCount || model.labourPending);
   const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
+  const allocationExplained = Boolean(model.availableParts && (model.availableParts.parts.length || model.availableParts.conditional || model.availableParts.coverageChoices.length));
   return <>
     {model.alert && !hasSpecificDecision && needsReview && <div className="alert compactNotice warn">{model.alert}</div>}
-    {model.firstTask && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
+    {model.firstTask && !allocationExplained && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
       <span className="decisionTaskMark" aria-hidden="true">!</span>
       <span className="decisionTaskCopy"><small>Allocation decision</small><b>{model.firstTask}</b><strong>Review allocation</strong></span>
       <i aria-hidden="true">›</i>
@@ -763,12 +764,12 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openBreak}>
           <small>Break</small>
           <b>{model.breakLabel || 'Pending'}</b>
-          <span>Open Breaks</span>
+          <span aria-hidden="true">View break ›</span>
         </Pressable>
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openColleague}>
           <small>{scanContextLabel || 'Colleague'}</small>
           <b>{scanContext || 'Team'}</b>
-          <span>Team allocation</span>
+          <span aria-hidden="true">View team ›</span>
         </Pressable>
       </div>
 
@@ -781,7 +782,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
 }
 
 function PersonalPending({ model }: { model: PersonalNight }) {
-  if (!model.pending) return null;
+  if (!model.pending || model.allocationExplained) return null;
   return <Pressable type="button" className="personalTaskCard" onClick={() => goToChanges('allocation')}>
     <span>
       <b>Your allocation is not final yet</b>
@@ -875,7 +876,7 @@ function NightRoles({ model }: { model: NightSummary }) {
       {model.roles.map(role => {
         const liveState = roleLiveState(role, model.currentPart);
         return <div className="rosterRoleLine" key={role.key}><Pressable
-          data-colleague-names={role.names}
+          data-colleague-names={['Unassigned','Awaiting choice'].includes(role.names) ? '' : role.names}
           type="button"
           onClick={openRoleEditor}
           className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
@@ -886,13 +887,13 @@ function NightRoles({ model }: { model: NightSummary }) {
             <span className="rosterRowName">
               <span className="rosterRowPeople">{role.names}</span>
             </span>
-            <span className="rosterRowMeta">{role.label} · {role.detail}</span>
+            <span className="rosterRowMeta">{role.detail.replace(/^Works\s+/i, '')}</span>
           </span>
           {(role.mine || liveState) && <span className="rosterRowBadges">
             {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
             {liveState && <Badge tone={liveState === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{liveState}</Badge>}
           </span>}
-        </Pressable><Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable></div>;
+        </Pressable>{!['Unassigned','Awaiting choice'].includes(role.names) && <Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable>}</div>;
       })}
     </div>
     {model.extras.length > 0 && <div className="additionalStaff">

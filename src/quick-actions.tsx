@@ -27,11 +27,10 @@ function Icon({ kind }: { kind: 'absence' | 'overtime' | 'roles' | 'breaks' | 'r
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 12v7h14v-7"/></svg>;
 }
 
-function PrimaryAction({ action, icon, title, detail, disabled }: {
+function PrimaryAction({ action, icon, title, disabled }: {
   action: 'absence' | 'overtime' | 'roles' | 'breaks';
   icon: 'absence' | 'overtime' | 'review';
   title: string;
-  detail: string;
   disabled?: boolean;
 }) {
   return <Pressable
@@ -42,19 +41,18 @@ function PrimaryAction({ action, icon, title, detail, disabled }: {
     onClick={() => act(action)}
   >
     <span className="quickPrimaryIcon"><Icon kind={icon} /></span>
-    <span className="quickPrimaryCopy"><strong>{title}</strong><small>{detail}</small></span>
+    <span className="quickPrimaryCopy"><strong>{title}</strong></span>
   </Pressable>;
 }
 
-function CompactAction({ action, icon, title, detail }: {
+function CompactAction({ action, icon, title }: {
   action: 'private-chat' | 'share' | 'night-plan';
   icon: 'chat' | 'share';
   title: string;
-  detail: string;
 }) {
   return <Pressable type="button" className="quickCompactAction" onClick={() => act(action)} aria-label={title}>
     <span className="quickCompactIcon"><Icon kind={icon} /></span>
-    <span><strong>{title}</strong><small>{detail}</small></span>
+    <span><strong>{title}</strong></span>
   </Pressable>;
 }
 
@@ -65,7 +63,7 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
   const contextAria = model.contextLabel + ', ' + model.dateLabel + ', ' + model.staffingLabel + ', ' + model.planLabel;
   const attentionDetail = model.attentionCount
     ? model.attentionCount + ' item' + (model.attentionCount === 1 ? ' needs' : 's need') + ' attention'
-    : 'Staffing, allocation and confirmation';
+    : '';
 
   return <motion.div
     className="quickActionsExperience quickActionsFocused"
@@ -78,43 +76,42 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
       <span className="quickContextPlan"><b>{model.staffingLabel}</b><small>{model.planLabel}</small></span>
     </div>
 
+    {blocked && <p className="quickEditRestriction" role="status">{editReason}</p>}
     <section className="quickPrimaryGrid" aria-label="Staffing actions">
       <PrimaryAction
         action="absence"
         icon="absence"
         title="Someone is absent"
-        detail={blocked ? editReason : 'Leave or sickness'}
         disabled={blocked}
       />
       <PrimaryAction
         action="overtime"
         icon="overtime"
         title="Add overtime cover"
-        detail={blocked ? editReason : 'Cover this night'}
         disabled={blocked}
       />
-      <PrimaryAction action="roles" icon="review" title="Swap assignments" detail={blocked ? editReason : 'Theatre and Pager roles'} disabled={blocked} />
-      <PrimaryAction action="breaks" icon="review" title="View break arrangement" detail="Follows the latest saved roles" />
+      <PrimaryAction action="roles" icon="review" title="Swap assignments" disabled={blocked} />
+      <PrimaryAction action="breaks" icon="review" title="View break arrangement" />
     </section>
 
     <Pressable type="button" className="quickReviewAction" onClick={() => act('review')}>
       <span className="quickReviewIcon"><Icon kind="review" /></span>
       <span className="quickReviewCopy">
-        <small>{model.attentionCount ? 'Needs attention' : model.contextLabel}</small>
+
         <strong>{model.attentionCount ? 'Review changes' : 'Review this night'}</strong>
-        <span>{attentionDetail}</span>
+        {attentionDetail && <span>{attentionDetail}</span>}
       </span>
       {model.attentionCount ? <Badge tone="warning" className="quickReviewBadge">{model.attentionCount}</Badge> : null}
       <span className="quickActionChevron" aria-hidden="true">›</span>
     </Pressable>
 
     <div className="quickCommunicationGrid" aria-label="Communication">
-      <CompactAction action="private-chat" icon="chat" title="New private message" detail="One colleague" />
-      <CompactAction action="share" icon="share" title="Share the app" detail="QR or apps" />
+      <CompactAction action="private-chat" icon="chat" title="New private message" />
+      <CompactAction action="share" icon="share" title="Share the app" />
     </div>
 
-    <CompactAction action="night-plan" icon="share" title="Copy or email this night’s plan" detail="Preview names, times and saved Pager turns" />
-    <p className="quickActionsPrivacy">Account and roster data stay private.</p>
+    <CompactAction action="night-plan" icon="share" title="Copy or email this night’s plan" />
+
   </motion.div>;
 }
 

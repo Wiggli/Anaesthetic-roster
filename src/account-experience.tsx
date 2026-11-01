@@ -111,6 +111,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   const [tab, setTab] = useState<'me' | 'shift'>('me');
   const [previewName,setPreviewName] = useState(model.name);
   const [previewRole,setPreviewRole] = useState(model.jobTitle);
+  const [rosterName,setRosterName] = useState(model.rosterName);
   const [dirty, setDirty] = useState(!!model.changed);
   const [accent, setAccent] = useState<AccentKey>(model.accentKey || 'teal');
   const [textScale, setTextScale] = useState<TextScale>(model.textScale || 'standard');
@@ -141,9 +142,9 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
     aria-labelledby="profileHeading"
   >
     <div className="personalisationStudioHeading">
-      <span>Make it yours</span>
+
       <h3 id="profileHeading">Personalisation Studio</h3>
-      <p>Personal styling stays yours. Shift identity is shared with the whole anaesthetic team.</p>
+
     </div>
 
     <div className="personalisationTabs" role="group" aria-label="Personalisation">
@@ -152,6 +153,31 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
     </div>
 
     {tab === 'me' ? <>
+      <section className="personalisationGroup">
+        <div className="personalisationGroupHeading compact">
+
+          <h4>Profile details</h4>
+          <p>Your profile does not change your roster assignments.</p>
+        </div>
+        <div className="accountProfileFields tw:@container">
+          <div className="accountNameFields tw:@md:grid-cols-2">
+            <FieldShell label="Preferred name">
+              <input id="profileName" value={previewName} maxLength={60} autoComplete="name" placeholder="How the app greets you" onChange={event => { setPreviewName(event.currentTarget.value); markDirty(); }} className="accountProfileInput" />
+            </FieldShell>
+            <FieldShell label="Professional title" hint="Optional">
+              <input id="profileJobTitle" value={previewRole} maxLength={80} autoComplete="organization-title" placeholder="For example, Senior Staff Nurse" onChange={event => { setPreviewRole(event.currentTarget.value); markDirty(); }} className="accountProfileInput" />
+            </FieldShell>
+          </div>
+          <FieldShell label="Your roster name" hint="Private device highlight">
+            <select id="profileRosterName" value={rosterName} onChange={event => { setRosterName(event.target.value); markDirty(); }} className="accountProfileInput accountProfileSelect">
+              <option value="">Do not highlight a name</option>
+              {model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </FieldShell>
+        </div>
+      </section>
+
+      <details className="informationDisclosure profilePreviewDisclosure"><summary>Preview your profile</summary>
       <section className="personalisationPreviewCard" style={{ '--identity-accent': accentColour(accent) } as CSSProperties}>
         <div className="personalisationPreviewGlow" />
         <IdentityImage src={showPersonalPhoto ? photoUrl : undefined} fallback={personalFallback} className="personalisationPreviewAvatar" />
@@ -164,12 +190,9 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <div className="personalisationPreviewMini"><b>Night</b><span>Your allocation</span><small>Preview · {textScale === 'standard' ? 'Standard text' : textScale === 'large' ? 'Larger text' : 'Largest text'} · {motionPref === 'reduced' ? 'Reduced motion' : 'System motion'}</small></div>
       </section>
 
-      <section className="personalisationGroup">
-        <div className="personalisationGroupHeading">
-          <span>Identity</span>
-          <h4>Photo & avatar</h4>
-          <p>Choose how your account appears in the app. Your verified roster identity never changes.</p>
-        </div>
+      </details>
+
+      <details className="personalisationGroup informationDisclosure"><summary>Photo & avatar</summary>
         <div className="personalisationAvatarEditor">
           <div className="accountHeroPhotoWrap">
             <button
@@ -205,38 +228,11 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
             <button type="button" id="removeProfilePhoto" onClick={() => act('profile-photo-remove')} className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}>{model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}</button>
           </div>
         </div>
-      </section>
+      </details>
 
-      <section className="personalisationGroup">
-        <div className="personalisationGroupHeading compact">
-          <span>About you</span>
-          <h4>Profile details</h4>
-          <p>Preferred name and professional title are private presentation details, not shared roster data.</p>
-        </div>
-        <div className="accountProfileFields tw:@container">
-          <div className="accountNameFields tw:@md:grid-cols-2">
-            <FieldShell label="Preferred name">
-              <input id="profileName" defaultValue={model.name} maxLength={60} autoComplete="name" placeholder="How the app greets you" onInput={event => { setPreviewName(event.currentTarget.value); markDirty(); }} className="accountProfileInput" />
-            </FieldShell>
-            <FieldShell label="Professional title" hint="Optional">
-              <input id="profileJobTitle" defaultValue={model.jobTitle} maxLength={80} autoComplete="organization-title" placeholder="For example, Senior Staff Nurse" onInput={event => { setPreviewRole(event.currentTarget.value); markDirty(); }} className="accountProfileInput" />
-            </FieldShell>
-          </div>
-          <FieldShell label="Your roster name" hint="Private device highlight">
-            <select id="profileRosterName" defaultValue={model.rosterName} onChange={markDirty} className="accountProfileInput accountProfileSelect">
-              <option value="">Do not highlight a name</option>
-              {model.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-          </FieldShell>
-        </div>
-      </section>
 
-      <section className="personalisationGroup">
-        <div className="personalisationGroupHeading compact">
-          <span>Look & feel</span>
-          <h4>Personal accent</h4>
-          <p>Your accent colours identity details only. Clinical and warning colours stay fixed.</p>
-        </div>
+
+      <details className="personalisationGroup informationDisclosure"><summary>Personal accent</summary>
         <div className="personalisationSwatches" role="group" aria-label="Personal accent colour">
           {accentChoices.map(item => <button
             key={item.value}
@@ -248,11 +244,11 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
           ><i style={{ background: accentColour(item.value) }} /><span>{item.label}</span></button>)}
         </div>
         <input id="profileAccentKey" type="hidden" value={accent} readOnly />
-      </section>
+      </details>
 
       <section className="personalisationGroup personalisationComfort">
         <div className="personalisationGroupHeading compact">
-          <span>Comfort</span>
+
           <h4>Reading & motion</h4>
         </div>
         <div className="personalisationOptionGrid">
@@ -278,7 +274,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
             <input id="profileMotionPref" type="hidden" value={motionPref} readOnly />
           </div>
           <button type="button" className={'personalisationToggleRow ' + (greetingEnabled ? 'active' : '')} onClick={() => { setGreetingEnabled(!greetingEnabled); markDirty(); }} aria-pressed={greetingEnabled}>
-            <span><b>Personal greeting</b><small>Show “Welcome back” with your preferred name when Night Roster opens.</small></span>
+            <span><b>Personal greeting</b></span>
             <i>{greetingEnabled ? 'On' : 'Off'}</i>
           </button>
           <input id="profileGreetingEnabled" type="hidden" value={greetingEnabled ? '1' : '0'} readOnly />
@@ -291,7 +287,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
           <span>Verified account identity</span>
           <b id="profileApprovedName">{model.approvedName}</b>
           <small id="profileEmail">{model.email}</small>
-          <p>Shared roster actions continue to use this approved identity.</p>
+
         </div>
       </div>
 
@@ -301,6 +297,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={'primary accountProfileSave ' + (dirty ? '' : 'hidden')} disabled={!model.featureAvailable}>Save my personalisation</button>
       </div>
     </> : <>
+      <details className="informationDisclosure profilePreviewDisclosure"><summary>Preview shift identity</summary>
       <section className="personalisationPreviewCard shiftPreviewCard" data-shift-accent={shiftAccent} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
         <div className="personalisationPreviewGlow" />
         <IdentityImage src={shift?.photoUrl} fallback={shiftFallback || shift?.initials || 'AT'} className="personalisationPreviewAvatar shiftPreviewAvatar" />
@@ -313,11 +310,13 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <div className="personalisationPreviewMini"><span className="nightTeamIdentityContext"><span className="shiftIdentityMark" style={{ '--shift-identity-accent': accentColour(shiftAccent) } as CSSProperties}>{symbolGlyph(shiftSymbol)}</span><span className="shiftIdentityCopy"><strong>{shiftName.trim() || 'Anaesthetic Team'}</strong></span></span><small>Preview · Night, Changes, Breaks and Team Chat</small></div>
       </section>
 
+      </details>
+
       <section className="personalisationGroup">
         <div className="personalisationGroupHeading">
-          <span>Our Shift</span>
+
           <h4>Name, picture & personality</h4>
-          <p>Everyone on the roster sees the same identity across Night, Changes, Breaks and Team Chat.</p>
+          <p>Shared with the whole team.</p>
         </div>
         <div className="shiftPersonalisationPhotoRow">
           <button type="button" className="shiftPersonalisationPhoto" onClick={() => document.getElementById('shiftStudioPhotoInput')?.click()} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
@@ -352,7 +351,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
 
       <section className="personalisationGroup">
         <div className="personalisationGroupHeading compact">
-          <span>Signature</span>
+
           <h4>Shift accent & symbol</h4>
           <p>These style only the shift identity surfaces, never clinical statuses.</p>
         </div>
@@ -501,7 +500,7 @@ function Passkeys({ model }: { model: PasskeyExperience }) {
 }
 
 export function renderAccountExperience(model: AccountExperience) {
-  if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor model={model.profile} shift={model.shift} />);
+  if (model.profile) rootFor('profileExperience')?.render(<ProfileEditor key={model.profile.email} model={model.profile} shift={model.shift} />);
   rootFor('appearanceExperience')?.render(<Appearance key={model.theme} initial={model.theme} />);
   rootFor('accountActionsExperience')?.render(<AccountActions installed={model.installed} newRelease={model.newRelease} version={model.version} />);
 }

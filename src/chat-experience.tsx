@@ -74,13 +74,13 @@ function MemberPicker({ members }: { members: Member[] }) {
 
   return <div className="chatPickerExperience">
     <label className="chatPickerSearch"><span className="tw:sr-only">Search roster members</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search roster members" aria-label="Search roster members" /></label>
-    <div className="chatPickerCount" role="status">{visible.length} {visible.length === 1 ? 'member' : 'members'} shown</div>
+    {query && <div className="chatPickerCount" role="status">{visible.length} matching {visible.length === 1 ? 'member' : 'members'}</div>}
     {visible.length ? <GroupedList className="chatPickerList">{visible.map(member => <ListRow
       key={member.personKey}
       leading={<Avatar initial={member.initial} size="sm" />}
       title={member.displayName}
-      subtitle={member.available ? 'Available for private chat' : 'Has not registered in Night Roster yet'}
-      trailing={<Badge tone={member.available ? 'success' : 'neutral'}>{member.available ? 'Available' : 'Not registered'}</Badge>}
+      subtitle={member.available ? undefined : 'Not registered'}
+      trailing={member.available ? <span aria-hidden="true">›</span> : undefined}
       onClick={member.available ? () => act('member', member.personKey) : undefined}
       ariaLabel={member.available ? `Start a private chat with ${member.displayName}` : undefined}
       className={`chatPickerRow ${member.available ? '' : 'notRegistered'}`}

@@ -25,12 +25,13 @@ for(const theme of ['light','dark'])for(const width of [320,390,430])test(`share
  await expect(page.locator('#absenceFormExperience .staffingSheet')).toHaveAttribute('open','');
  expect(await page.locator('#absenceFormExperience .staffingSheet').evaluate(el=>el.contains(document.activeElement))).toBe(true);
  await page.keyboard.press('Escape');await expect(page.locator('#absenceFormExperience .staffingSheet')).toHaveCount(0);
- await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();
+ await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();await page.locator('#profileExperience details').filter({hasText:'Photo & avatar'}).locator('summary').click();
  expect(await page.locator('#profilePhotoInitial').evaluate(el=>getComputedStyle(el).color)).toBe(theme==='dark'?'rgb(145, 191, 255)':'rgb(0, 102, 204)');
  await page.locator('#profileName').fill('Preview Nurse');await expect(page.locator('.personalisationPreviewCopy strong')).toHaveText('Preview Nurse');
  await page.getByRole('button',{name:'Our Shift',exact:true}).click();await page.locator('#shiftStudioName').fill('The Night Team');
  await expect(page.locator('.shiftPreviewCard .shiftIdentityCopy strong')).toHaveText('The Night Team');
  await page.getByRole('button',{name:'Rose',exact:true}).click();await expect(page.locator('.shiftPreviewCard')).toHaveAttribute('data-shift-accent','rose');
+ await page.locator('#profileExperience .profilePreviewDisclosure>summary').click();
  const preview=await page.locator('.shiftPreviewCard').boundingBox();expect(preview.y).toBeGreaterThanOrEqual(60);expect(preview.y+preview.height).toBeLessThan(844);
  expect(await page.locator('#accountPageOutlet').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
  if(width===390)await page.screenshot({path:testInfo.outputPath('personalise.png')});

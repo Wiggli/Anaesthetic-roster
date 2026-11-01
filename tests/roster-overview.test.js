@@ -9,6 +9,9 @@ app.window.dispatchEvent = event => { if (event.type === 'roster:full-roster') m
 app.rebuildCalculatedRoster();
 app.renderRoster();
 assert.equal(model.cards.length, 138);
+const standardSix=model.cards.find(card=>card.isoDate==='2026-10-08');
+assert.equal(standardSix.count,6);assert.equal(standardSix.needsReview,false);
+assert.doesNotMatch(standardSix.status,/order still required/i,'a complete automatic six-person roster must not advertise a separate Labour Ward decision');
 assert.equal(model.selectedMonth, app.cur().date.slice(0,7));
 const date = '2026-10-20';
 app.nightChanges[date] = [{id:'absence-1',absent_name:'Andre',reason:'Leave'},{id:'absence-2',absent_name:'Michael D',reason:'Leave'}];

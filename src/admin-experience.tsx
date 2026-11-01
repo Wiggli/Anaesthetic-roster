@@ -47,7 +47,7 @@ function Stat({ value, label, tone }: { value: number; label: string; tone: 'tea
 function PendingRequests({ requests, online }: { requests: AccessRequest[]; online: boolean }) {
   if (!requests.length) return null;
   return <section className="tw:grid tw:gap-2" aria-labelledby="pendingAccessHeading">
-    <div className="tw:flex tw:items-center tw:justify-between tw:gap-3"><div><h3 id="pendingAccessHeading" className="tw:text-base tw:font-bold">Pending access</h3><p className="tw:mt-0.5 tw:text-xs tw:text-[var(--muted)]">Review people who signed in and requested roster access.</p></div><span className="tw:rounded-full tw:bg-amber-400/15 tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold tw:text-amber-800 tw:dark:text-amber-200">{requests.length} waiting</span></div>
+    <div className="tw:flex tw:items-center tw:justify-between tw:gap-3"><div><h3 id="pendingAccessHeading" className="tw:text-base tw:font-bold">Pending access</h3></div><span className="tw:rounded-full tw:bg-amber-400/15 tw:px-2.5 tw:py-1 tw:text-xs tw:font-bold tw:text-amber-800 tw:dark:text-amber-200">{requests.length} waiting</span></div>
     <AnimatePresence initial={false}>{requests.map(request => <motion.article layout key={request.userId} className="tw:rounded-2xl tw:border tw:border-amber-400/30 tw:bg-amber-400/8 tw:p-3.5">
       <div className="tw:flex tw:items-start tw:gap-3">
         <span className="tw:grid tw:h-10 tw:w-10 tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-amber-400/18 tw:text-sm tw:font-extrabold">{request.name.trim().charAt(0).toUpperCase() || '?'}</span>
