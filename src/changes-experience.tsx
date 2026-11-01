@@ -94,7 +94,7 @@ function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; emp
           key={`absence-${record.id}`}
           className="changeItem"
           title={<span className="tw:flex tw:items-center tw:gap-2"><span>{record.name}</span><Badge tone="danger">{record.status}</Badge></span>}
-          subtitle={record.meta}
+          subtitle={<><span>{record.meta.split(' · Updated by ')[0]}</span></>}
           trailing={<Pressable
             type="button"
             className="recordMoreButton tw:grid tw:min-h-11 tw:min-w-11 tw:place-items-center tw:rounded-full tw:bg-black/5 tw:px-2 tw:text-[var(--muted)] tw:dark:bg-white/8"
@@ -106,11 +106,11 @@ function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; emp
           key={`overtime-${record.id}`}
           className="overtimeItem"
           title={record.name}
-          subtitle={<><span className="overtimeRecordMeta">{record.meta}</span><span className="overtimeRecordStatus">
+          subtitle={<><span className="overtimeRecordStatus">
             {record.needsAllocation
               ? <Pressable type="button" className="overtimeAllocateButton" aria-label={`Choose part for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Choose part <span aria-hidden="true">›</span></Pressable>
               : <Badge tone="success">{record.status}</Badge>}
-            {record.needsAllocation && <span className="overtimePendingLabel">Awaiting allocation</span>}
+            {record.needsAllocation && <span className="overtimePendingLabel">Unassigned</span>}
           </span></>}
           trailing={<span>
             <Pressable
@@ -212,10 +212,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
 
   const inputClass = 'tw:min-h-12 tw:w-full tw:rounded-[14px] tw:border tw:border-black/[0.07] tw:bg-[var(--card)] tw:px-3.5 tw:text-sm tw:outline-none tw:focus:border-blue-500/45 tw:focus:ring-2 tw:focus:ring-blue-500/12 tw:dark:border-white/10';
   const title = mode === 'absence' ? (model.forms.editing ? 'Edit absence' : 'Add absence') : 'Add overtime nurse';
-  const summary = records.length ? `${records.length} ${mode === 'absence' ? (records.length === 1 ? 'absence' : 'absences') : 'recorded'}` : 'None recorded';
-  const detail = mode === 'absence'
-    ? (records.length ? 'Only confirmed absences are listed below.' : 'The published staffing plan is unchanged.')
-    : (records.length ? 'Confirmed overtime staff are listed below.' : 'No additional staff are recorded.');
+  const summary = records.length ? `${records.length} recorded` : 'None recorded';
   const close = () => {
     setOpen(false);
     if (mode === 'absence' && model.forms.editing) dispatchAction({ action: 'absence-cancel' });
@@ -268,14 +265,14 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
 
   return <div className="staffingEditor">
     <div className="staffingActionRow">
-      <span className="staffingActionCopy">{!records.length ? <EmptyState title={mode === 'absence' ? 'No absences tonight' : 'No overtime recorded'} detail={detail} /> : <><strong>{summary}</strong><small>{detail}</small></>}</span>
+      <span className="staffingActionCopy"><strong>{summary}</strong></span>
       <Pressable
         type="button"
         className="staffingAddButton"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
-      >{records.length ? 'Add another' : mode === 'absence' ? 'Someone is absent' : 'Add overtime cover'}</Pressable>
+      >{mode === 'absence' ? 'Add absence' : 'Add overtime'}</Pressable>
     </div>
     {open && <>
       <motion.dialog
@@ -316,7 +313,7 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 
   return <details className="nightRoleEditor" open={model.mode === '4' || model.open}>
     <summary>
-      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Theatre and Pager assignments'}</b><small>{model.summary}</small></span>
+      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Theatre and Pager assignments'}</b>{(model.stored || model.dirty || model.mode === '4') && <small>{model.summary}</small>}</span>
       <span aria-hidden="true">›</span>
     </summary>
     <div className="nightRoleEditorBody">

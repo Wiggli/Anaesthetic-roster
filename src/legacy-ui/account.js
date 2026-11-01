@@ -44,7 +44,7 @@ function renderNightTeamIdentityContext(date){
       else mark.textContent=shiftSymbolGlyph(model.symbol);
       var copy=document.createElement('span');copy.className='shiftIdentityCopy';
       var strong=document.createElement('strong');strong.textContent=nickname;copy.appendChild(strong);
-      if(model.tagline){var small=document.createElement('small');small.textContent=model.tagline;copy.appendChild(small)}
+
       node.appendChild(mark);node.appendChild(copy);
     }
     node.title=nickname?(row&&row.updated_by?'Shift identity · shared across every roster night · updated by '+row.updated_by:'Shift identity · shared across every roster night'):'';

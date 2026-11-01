@@ -1,11 +1,15 @@
 {
-  "version": "59.1",
+  "version": "60.0",
   "date": "1 November 2026",
-  "title": "Show where the seventh nurse moves from",
-  "summary": "Names the original part directly on the seventh-nurse decision card.",
+  "title": "A clearer night roster",
+  "summary": "Simplifies Night, Changes, Breaks, Actions and settings while keeping the working plan easy to scan.",
   "changes": [
-    "Shows the proposed seventh nurse\u2019s current role directly in the Night decision card and Changes guidance.",
-    "Keeps the existing allocation choices and overtime cover rules unchanged."
+    "Consolidates open parts and allocation choices into one summary, with supporting overtime names on demand.",
+    "Compacts absence and overtime entry; recorded details remain under each nurse\u2019s More menu and in Activity.",
+    "Shows break times beside their groups and makes full-night Pager break guidance explicit.",
+    "Replaces large Actions tiles with a readable list, simplifies roster name rows and removes repeated Chat availability labels.",
+    "Groups profile previews, photos and accent settings into expandable sections, and shortens the app guide.",
+    "Preserves unsaved profile fields when switching between Me and Our Shift."
   ],
   "update_policy": "normal"
 }

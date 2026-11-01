@@ -108,7 +108,7 @@ function ensureNightPlanPolishStyles(){
   if(el('nightPlanPolishStyles'))return;
   var style=document.createElement('style');
   style.id='nightPlanPolishStyles';
-  style.textContent='\n#today .nightTeamDetails>summary strong{letter-spacing:-.015em}\n#today #viewRosterBtn{display:none!important}\n#today .recentActivityPanel #recentActivityList{display:none!important}\n#today .recentActivityPanel>summary{cursor:pointer}\n#today .nightTeamDetails .rosterRowMeta{white-space:normal;text-overflow:clip}\n#today .fiveNurseSurface small{line-height:1.4}\n#today .nightRoleTools{gap:8px}\n';
+  style.textContent='\n#today .nightTeamDetails>summary strong{letter-spacing:-.015em}\n#today .recentActivityPanel #recentActivityList{display:none!important}\n#today .recentActivityPanel>summary{cursor:pointer}\n#today .nightTeamDetails .rosterRowMeta{white-space:normal;text-overflow:clip}\n#today .fiveNurseSurface small{line-height:1.4}\n#today .nightRoleTools{gap:8px}\n';
   document.head.appendChild(style)
 }
 function simplifyRoleMeta(text){

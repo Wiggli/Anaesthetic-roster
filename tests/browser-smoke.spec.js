@@ -290,7 +290,7 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
   await expect(clockException).toContainText('4h per part');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00¹');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00²');
-  await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('Open Breaks');
+  await expect(page.locator('#personalNightCard .personalHeroFactGrid')).toContainText('View break');
   await expect(page.locator('#personalNightCard')).toContainText('Changed this night');
   await expect(page.locator('#personalNightCard .nightTimelineSlimRail')).toHaveCount(1);
   await expect(page.locator('#personalNightCard .nightTimelineOwnBand.mine')).toHaveCount(1);
@@ -956,7 +956,7 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   await expect(page.locator('#breakList > .breakGrid')).toHaveCount(1);
   await expect(page.locator('#breakList .breakScheduleSection')).toHaveCount(2);
   await expect(page.locator('#breakList .breakScheduleOrdinal')).toHaveText(['1', '2']);
-  await expect(page.locator('#breakList .breakScheduleHeader').first().locator('small')).toHaveText(/\d+ nurses|Awaiting allocation/);
+  await expect(page.locator('#breakList .breakScheduleHeader').first().locator('small')).toHaveText(/00:00|03:30|03:00|04:00|Awaiting allocation/);
   await expect(page.locator('#breakList .breakPersonYou')).toContainText('You');
   await expect(page.locator('#breakPersonalSummary')).toContainText('Second break');
   await expect(page.locator('#breakPersonalSummary')).toContainText('André Bartolo');
@@ -1411,14 +1411,14 @@ test('typed Changes records render live staffing and expose stable actions', asy
   await expect(page.locator('#overtimeFormExperience #overtimeName')).toHaveAttribute('placeholder', "Type the nurse's name");
   await page.locator('#overtimeFormExperience .staffingSheetClose').evaluate(button => button.click());
   await expect(page.locator('#overtimeFormExperience .staffingSheet')).toHaveCount(0);
-  await expect(page.locator('#nightRoleOverrideStep')).toContainText('Change this night’s roles');
-  await expect(page.locator('#overtimeList')).toContainText('Awaiting allocation');
+  await expect(page.locator('#nightRoleOverrideStep')).toContainText('Theatre and Pager assignments');
+  await expect(page.locator('#overtimeList')).toContainText('Unassigned');
   await expect(page.locator('#overtimeList > .changesRecordGroup > .overtimeItem')).toHaveCount(1);
   await expect(page.locator('#allocationList > .changesAllocationGroup > .allocationRow')).toHaveCount(1);
   await expect(page.locator('#changeHistory')).toContainText('Show full history (16)');
   await page.locator('#changeList button[aria-label="More actions for André Bartolo"]').click();
   await page.locator('#recordCancelAction').click();
-  await page.locator('#overtimeList button', { hasText: 'Awaiting allocation' }).click();
+  await page.locator('#overtimeList button', { hasText: 'Choose part' }).click();
   await page.locator('#allocationList select').selectOption('overtime-1');
   const actions = await page.evaluate(() => window.__changesActions);
   expect(actions).toEqual(expect.arrayContaining([
@@ -1609,10 +1609,11 @@ test('typed account controls preserve appearance and app actions', async ({ page
   await expect(page.locator('#profileExperience')).toBeHidden();
   await page.locator('#accountHomeHub [data-account-section="profile"]').click();
   await expect(page.locator('#accountSheetTitle')).toHaveText('Profile & shift');
-  await expect(page.locator('#accountSheet')).toContainText('Shared roster actions continue to use this approved identity.');
+  await expect(page.locator('#accountSheet')).toContainText('Verified account identity');
   await expect(page.locator('#profileExperience')).toContainText('Personalisation Studio');
   await expect(page.locator('#profileName')).toHaveValue('Andre');
   await expect(page.locator('#profilePhotoPreview')).toBeHidden();
+  await page.locator('#profileExperience details').filter({hasText:'Photo & avatar'}).locator('summary').click();
   await expect(page.locator('#profilePhotoInitial')).toBeVisible();
   await expect(page.locator('#profileRosterName')).toContainText('Nurse One');
   await expect(page.locator('.personalisationTabs')).toContainText('Our Shift');

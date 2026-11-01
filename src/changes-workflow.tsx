@@ -8,6 +8,8 @@ type StepId = 'staffing' | 'allocation' | 'confirm';
 type Step = { id: StepId; label: string; detail: string; complete: boolean; attention: boolean; quiet: boolean; disabled?: boolean };
 export type ChangesWorkflowModel = {
   active: StepId;
+  allocationExplained?: boolean;
+  provisional?: boolean;
   steps: Step[];
   headline: string;
   guidance: string;
@@ -70,14 +72,13 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
         <span className="workflowStepCopy"><b>{step.label}</b><small>{step.detail}</small></span>
       </Pressable>)}
     </div>
-    <div className={`workflowGuidance workflowGuidance-${model.tone}`}>
+    {((!model.allocationExplained && (model.tone !== 'automatic' || model.provisional)) || model.draftLabel) && <div className={`workflowGuidance workflowGuidance-${model.tone}`}>
       <span className="workflowGuidanceMark" aria-hidden="true">{model.tone === 'attention' ? '!' : model.tone === 'ready' ? '→' : model.tone === 'complete' ? '✓' : '·'}</span>
       <div className="workflowGuidanceSummary">
-        <strong role="status" aria-live="polite">{model.headline}</strong>
-        <small>{model.guidance}</small>
+        {!model.allocationExplained && <><strong role="status" aria-live="polite">{model.headline}</strong><small>{model.guidance}</small></>}
         {model.draftLabel && <b className="workflowDraft" role="status">{model.draftLabel}</b>}
       </div>
-    </div>
+    </div>}
   </section>;
 }
 
