@@ -10793,3 +10793,24 @@ body.personalMotionReduced *,body.personalMotionReduced *::before,body.personalM
 .fourNursePresent>strong{font-size:.78rem;letter-spacing:.02em;color:var(--text)}
 .fourNursePresentList{display:flex;flex-wrap:wrap;gap:8px}
 .fourNursePresentList span{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border-radius:999px;background:var(--card);border:1px solid color-mix(in srgb,var(--text) 10%,transparent);font-size:.78rem;font-weight:700;color:var(--text)}
+
+/* Shared read-only availability, derived from the canonical selected-night plan. */
+.availableParts{margin:14px 0;padding:16px;border:1px solid var(--scene-line);border-radius:18px;background:var(--scene-surface);color:var(--text)}
+.availablePartsHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.availablePartsHeading h3{margin:0;font-size:17px;line-height:1.3}
+.availablePartsHeading>span{font-size:13px;font-weight:650;color:var(--scene-secondary)}
+.availablePartsContent p{margin:10px 0 0;font-size:14px;line-height:1.5;color:var(--scene-secondary)}
+.availablePartsContent ul{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px}
+.availablePartsContent li{padding:10px 12px;border-radius:12px;background:var(--scene-soft);display:grid;gap:4px;min-width:0}
+.availablePartsContent li strong{font-size:15px}.availablePartsContent li small{font-size:13px;color:var(--scene-secondary);line-height:1.4}
+.availablePartsDecision{margin-top:12px;padding-top:12px;border-top:1px solid var(--scene-line);font-size:14px;line-height:1.5}
+.availablePartsDecision p{margin-top:4px}.availablePartsNurses{display:grid;gap:3px}
+.availablePartsWarning{font-weight:650}.availablePartsAction,.overtimeAllocateButton{min-height:44px;border:0;border-radius:12px;padding:10px 14px;background:var(--scene-soft);color:var(--accent-strong);font:inherit;font-weight:650;text-align:left;cursor:pointer}
+.availablePartsAction{margin-top:12px;width:100%;display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:14px}
+#changes .changesRecordGroup>.overtimeItem{display:flex;align-items:flex-start;gap:10px;min-width:0}
+#changes .overtimeItem>span:nth-child(1){flex:1 1 0;min-width:0}
+#changes .overtimeItem>span:nth-child(2){flex:0 0 44px;margin-left:0}
+#changes .overtimeItem strong{overflow-wrap:anywhere}
+.overtimeRecordMeta{display:block}.overtimeRecordStatus{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-top:8px}
+.overtimeAllocateButton{display:inline-flex;gap:12px;align-items:center;font-size:14px;line-height:1.3;white-space:normal}
+.overtimePendingLabel{font-size:12px;line-height:1.4;color:var(--scene-secondary)}

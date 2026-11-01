@@ -222,3 +222,29 @@ for(const dark of [false,true])test('Night decision prompts separate label instr
  await page.evaluate(()=>{window.dispatchEvent(new CustomEvent('roster:night',{detail:{...window.formatReviewModel,firstTask:'',labourPending:true}}))});
  await expect(card).toContainText('Choose the Labour Ward order');await card.click();await expect(page.locator('#changes')).toBeVisible();
 });
+
+for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`available parts and overtime actions stay readable ${width} ${theme} @iphone`,async({page},testInfo)=>{
+ await page.setViewportSize({width,height:956});await ready(page);
+ const periods=require('./fixtures/establishment-periods.json');
+ await page.evaluate(({periods,theme})=>{
+  rotationVersions=periods;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-11-01');
+  nightChanges={};nightOvertime={};seventhDecisionDrafts={};applyTheme(theme==='dark');
+  nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell'},{id:'b',nurse_name:'Daniel Santucci With A Long Display Name'}];render();show('today');
+ },{periods,theme});
+ await expect(page.locator('#nightStatusRow .availableParts')).toContainText('Reliever');
+ await expect(page.locator('#nightStatusRow .availableParts')).toContainText('seventh-nurse decision');
+ await page.locator('#nightStatusRow .availablePartsAction').click();
+ await expect(page.locator('#changesAllocationPane')).toBeVisible();
+ await page.locator('[data-changes-step="staffing"]').first().click();
+ await expect(page.locator('#changesAvailableParts')).toContainText('Reliever');
+ await expect(page.getByRole('button',{name:'Choose part for Andre Seychell'})).toBeVisible();
+ const row=page.locator('.overtimeItem').first();
+ expect(await row.evaluate(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('*')].filter(child=>!child.classList.contains('tw:sr-only')&&getComputedStyle(child).display!=='contents').every(child=>{const b=child.getBoundingClientRect();return b.right<=r.right+1&&b.left>=r.left-1})})).toBe(true);
+ expect(await row.locator('strong').evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(120);
+ expect(await page.locator('body').evaluate(el=>el.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.screenshot({path:testInfo.outputPath('available-parts-changes.png'),fullPage:true});
+ await page.getByRole('button',{name:'Choose part for Andre Seychell'}).click();await expect(page.locator('#changesAllocationPane')).toBeVisible();
+ await page.evaluate(()=>{nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',allocation_key:'reliever'},{id:'b',nurse_name:'Daniel Santucci',allocation_key:'seventh'}];render();show('today')});
+ await expect(page.locator('#nightStatusRow .availableParts')).toContainText('All required parts are assigned');
+ await page.screenshot({path:testInfo.outputPath('available-parts-night.png'),fullPage:true});
+});

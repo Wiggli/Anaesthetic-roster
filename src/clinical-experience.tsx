@@ -1,3 +1,4 @@
+import { AvailableParts, type AvailablePartsModel } from './available-parts';
 import { productHaptic, scrollToProductElement, useProductReducedMotion } from './product-motion';
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
@@ -54,6 +55,7 @@ type NightRole = {
 };
 
 type NightSummary = {
+  availableParts?: AvailablePartsModel;
   date?: string;
   nurseCount: number;
   absenceCount: number;
@@ -918,7 +920,7 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
 
 export function renderNightExperience(model: NightSummary) {
   rootFor('nightClockChange')?.render(null);
-  rootFor('nightStatusRow')?.render(<NightStatus model={model} />);
+  rootFor('nightStatusRow')?.render(<><NightStatus model={model} /><AvailableParts model={model.availableParts} onAllocate={() => goToChanges('allocation')} /></>);
   rootFor('alerts')?.render(<NightAlerts model={model} />);
   rootFor('roles')?.render(<NightRoles model={model} />);
   rootFor('fiveArrangement')?.render(<FivePersonArrangement model={model} />);

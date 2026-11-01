@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict');
+const c=require('./helpers/roster-context');
+const clone=x=>JSON.parse(JSON.stringify(x));
+c.rotationVersions=require('./fixtures/establishment-periods.json');c.rebuildCalculatedRoster();
+const base=c.calculateNight('2026-11-01');
+function reset(){c.nightChanges={};c.nightOvertime={};c.nightRoleOverrides={};c.seventhDecisionDrafts={};c.fiveCovers={};}
+reset();assert.equal(c.availablePartsModel(base).complete,true);assert.deepEqual(clone(c.availablePartsModel(base).parts),[]);
+c.nightChanges[base.date]=[{absent_name:base.first1}];
+assert.equal(c.availablePartsModel(base).shortage,1);assert.deepEqual(clone(c.availablePartsModel(base).parts.map(x=>x.key)),['first1']);
+c.nightOvertime[base.date]=[{id:'cover',nurse_name:'Cover Nurse',allocation_key:'first1'}];
+assert.deepEqual(clone(c.availablePartsModel(base).parts),[]);assert.equal(c.availablePartsModel(base).complete,true);
+reset();c.nightOvertime[base.date]=[{id:'a',nurse_name:'Extra A'},{id:'b',nurse_name:'Extra B'}];
+let m=c.availablePartsModel(base);assert.deepEqual(clone(m.parts.map(x=>x.key)),['reliever']);assert.equal(m.conditional.name,c.professionalName(c.staffingPlan(base).seventhChoice.nurse));assert.ok(m.conditional.rotation.key);assert.equal(m.conditional.overtime.key,'seventh');assert.equal(m.complete,false);
+c.seventhDecisionDrafts[base.date]='rotation';m=c.availablePartsModel(base);assert.equal(m.conditional,null);assert.ok(m.parts.some(x=>x.key===c.staffingPlan(base).seventhChoice.vacatedKey));
+c.seventhDecisionDrafts[base.date]='overtime';m=c.availablePartsModel(base);assert.ok(m.parts.some(x=>x.key==='seventh'));
+c.nightOvertime[base.date][0].allocation_key='reliever';c.nightOvertime[base.date][1].allocation_key='seventh';assert.equal(c.availablePartsModel(base).complete,true);assert.equal(c.availablePartsModel(base).parts.length,0);
+c.nightOvertime[base.date].push({id:'c',nurse_name:'Extra C'});assert.equal(c.availablePartsModel(base).extras,1);
+reset();const six=c.calculateNight('2026-10-08');c.nightChanges[six.date]=[{absent_name:six.first1},{absent_name:six.second1}];c.nightOvertime[six.date]=[{id:'cover',nurse_name:'Cover Nurse'}];m=c.availablePartsModel(six);assert.equal(m.coverageChoices.length,2);assert.equal(m.parts.length,0);assert.equal(m.complete,false);
+reset();const dst=c.calculateNight('2026-10-24');c.nightChanges[dst.date]=[{absent_name:dst.first1}];assert.match(c.availablePartsModel(dst).parts[0].detail,/03:00 after/);
+console.log('Available parts: vacancies, saved cover, seventh alternatives, extra staff, Reliever priority and DST passed.');
