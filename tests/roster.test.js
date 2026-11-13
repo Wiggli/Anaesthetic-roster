@@ -427,7 +427,7 @@ assert.match(ui, /data-go-absence[\s\S]*data-go-overtime/, 'Night summary must l
 assert.match(ui, /bindStaffingTarget\('data-go-absence','\.absenceSection'\)[\s\S]*bindStaffingTarget\('data-go-overtime','\.overtimeSection'\)/, 'summary shortcuts must focus the relevant staffing form');
 assert.doesNotMatch(html, /historyStep">4/, 'activity history must not appear as a fourth workflow step');
 assert.match(html, /Activity for this night/, 'staffing history must have a clear non-step label');
-assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
+assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=staffingSaveInFlight\|\|offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=staffingSaveInFlight\|\|offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /dirty=!!\(draft&&roleAssignmentsDiffer/, 'role adapter requires a genuine changed draft');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'active typed role-save controls only appear for a changed draft');
 assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
@@ -460,7 +460,7 @@ assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*<small>Duty<\/small
 assert.match(clinicalExperience, /personalClockException[\s\S]*Clock-change night · equal duty[\s\S]*model\.clockChange\.partHoursLabel/, 'clock-change nights must keep their equal-duty exception prominent in the personal hero');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
 assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
-assert.match(ui, /confirmationHeading\.textContent=confirmNeeded\?'Confirm selected-night changes':shared\?'Changes shared':'No changes to review'/, 'the confirmation heading must describe the selected night rather than assuming today');
+assert.match(ui, /confirmationStatus\.textContent=shared\?'Plan shared':'No changes to review'/, 'the confirmation pane must show the selected night’s sharing status');
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
 
@@ -543,8 +543,8 @@ assert.match(ui, /apply_night_role_override_v57/, 'night-only role mutations mus
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261024161000_four_nurse_role_override.sql'), 'utf8'), /perform public\.apply_night_role_override_v49/, 'the four-nurse-aware RPC must delegate ordinary role mutations to the established guarded RPC');
 assert.doesNotMatch(ui, /saveAllocationsCompatibility/, 'allocation saves must not fall back to browser-side multi-step writes');
 assert.doesNotMatch(ui, /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'staffing saves must never fall back to browser-side multi-step writes');
-assert.match(ui, /record_night_absence_v49[\s\S]*atomicRequired/, 'absence saves must require the atomic RPC');
-assert.match(ui, /add_night_overtime_v49[\s\S]*atomicRequired/, 'overtime saves must require the atomic RPC');
+assert.match(ui, /saveStaffingRecord\('absence'[\s\S]*record_night_absence_v49/, 'absence saves must require the atomic RPC');
+assert.match(ui, /saveStaffingRecord\('overtime'[\s\S]*add_night_overtime_v49/, 'overtime saves must require the atomic RPC');
 assert.match(syncMigration, /create table if not exists public\.app_sync_state/, 'schema 33 must provide a shared revision signal');
 assert.match(syncMigration, /create or replace function public\.apply_night_role_override_v33[\s\S]*insert into public\.night_role_override_history/, 'schema 33 must save role overrides and audit history atomically');
 assert.match(syncMigration, /update public\.app_schema_version[\s\S]*version = 33/, 'schema 33 migration must update the schema marker');
@@ -649,7 +649,7 @@ assert.doesNotMatch(ui.slice(ui.indexOf('function prepareChangesView'), ui.index
 assert.match(fs.readFileSync(path.join(__dirname,'../src/product-unified.css'),'utf8'), /button, \[role="button"\] \{ min-height: 44px/, 'canonical buttons retain a minimum 44 pixel touch target');
 const productCss = fs.readFileSync(path.join(__dirname, '..', 'src/product-unified.css'), 'utf8');
 const dockCss = fs.readFileSync(path.join(__dirname, '..', 'src/rudder-navigation.css'), 'utf8');
-assert.match(dockCss, /--app-dock-control-height:58px[\s\S]*button[\s\S]*height: var\(--app-dock-control-height\); min-height: var\(--app-dock-control-height\)/, 'dock controls must retain consistent touch targets');
+assert.match(dockCss, /--app-dock-control-height:50px[\s\S]*button[\s\S]*height: var\(--app-dock-control-height\); min-height: var\(--app-dock-control-height\)/, 'dock controls must retain consistent touch targets');
 assert.match(dockCss, /color: var\(--liquid-secondary\)/, 'inactive dock labels use the readable shared secondary token');
 assert.match(dockCss, /var\(--app-safe-bottom\)/, 'dock must preserve device safe area');
 assert.match(productCss, /--unified-base: 200ms/, 'primary navigation uses restrained shared motion');

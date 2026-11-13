@@ -228,6 +228,9 @@ function fourNurseTheatreRoles(base){
   return FOUR_NIGHT_ROLE_KEYS.every(function(key){return working.some(function(name){return sameNurse(name,raw[key])})})?Object.assign({mode:'4'},raw):null;
 }
 function fourNurseWorkflow(base,plan){
+  var confirmationCard=document.querySelector('#changesConfirmPane .confirmationCard'),confirmationStatus=byId('confirmationStatus');
+  if(confirmationCard)confirmationCard.hidden=false;
+  if(confirmationStatus)confirmationStatus.classList.add('hidden');
   var roles=fourNurseTheatreRoles(base),pager=window.sharedPagerStatus&&window.sharedPagerStatus(base.date),ready=!!(roles&&pager&&pager.saved),headline=!roles?'Choose the vacant theatre position':!pager||!pager.saved?'Record the agreed Pager order':'Four-nurse arrangement recorded';
   byId('changes').classList.add('fourNurseWorkflow');
   byId('changesTaskBadge').textContent=ready?'':1;byId('changesTaskBadge').classList.toggle('hidden',ready);
@@ -288,7 +291,7 @@ function updateChangesWorkflow(base,plan){
   var published=nightPlanStatuses[base.date];if(allocationState)allocationState.textContent=tasks?tasks+' task'+(tasks===1?'':'s')+' remaining':'Current roles';if(confirmState)confirmState.textContent=tasks?'Resolve tasks':confirmNeeded?'Review changes':published&&published.published_at&&hasManualPlan?'Shared':'Not needed';
   var staffingTab=document.querySelector('[data-changes-step="staffing"]'),allocationTab=document.querySelector('[data-changes-step="allocation"]'),confirmTab=document.querySelector('[data-changes-step="confirm"]'),confirmationNotNeeded=!hasManualPlan&&!confirmNeeded,hasStaffingChanges=!!(changes.length||overtime.length),shared=!!(published&&published.published_at&&hasManualPlan&&!confirmNeeded);staffingTab.classList.toggle('complete',hasStaffingChanges);allocationTab.classList.toggle('complete',hasManualPlan&&!tasks);allocationTab.classList.toggle('hasTasks',!!tasks);confirmTab.classList.toggle('complete',shared);confirmTab.classList.toggle('notNeeded',confirmationNotNeeded);confirmTab.classList.toggle('hasTasks',!!confirmNeeded);
   if(state){state.innerHTML=tasks?'<b>'+esc(taskInstruction)+'</b><span>'+(tasks>1?esc((tasks-1)+' other allocation decision'+(tasks===2?' also remains.':'s also remain.')):'Select the nurse, then review the changes.')+'</span>':confirmNeeded?'<b>Ready to review</b><span>Check the selected night’s changes before sharing them with everyone.</span>':published&&published.published_at&&hasManualPlan?'<b>Changes shared</b><span>Updated by '+esc(published.published_by||'a shift member')+' at '+esc(shortTime(published.published_at))+'.</span>':'';
-  state.classList.toggle('hidden',plan.count>=5&&(plan.requiresSeventhDecision||plan.requiresCoverageChoice||plan.unresolved.length>0)||!tasks&&!confirmNeeded&&!hasManualPlan);
+  state.classList.toggle('hidden',plan.count>=5&&(plan.requiresSeventhDecision||plan.requiresCoverageChoice||plan.unresolved.length>0)||!tasks&&!confirmNeeded);
   state.classList.toggle('complete',!confirmNeeded);state.classList.toggle('ready',!tasks&&confirmNeeded);}
   var badgeCount=tasks||(confirmNeeded?1:0);badge.textContent=badgeCount;badge.classList.toggle('hidden',!badgeCount);var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.add('hidden');
   var allocationAction=byId('continueToAllocationBtn');allocationAction.textContent=tasks?'Resolve allocations':'Swap assignments';allocationAction.classList.toggle('quietAction',!tasks&&!confirmNeeded);
@@ -296,7 +299,15 @@ function updateChangesWorkflow(base,plan){
   var confirmButton=byId('continueToConfirmBtn');confirmButton.disabled=!!tasks;confirmButton.classList.toggle('hidden',!confirmNeeded);confirmButton.textContent='Review changes';var confirmReason=byId('continueToConfirmReason');if(confirmReason){confirmReason.textContent=tasks?'Complete the allocation above before reviewing changes.':'';confirmReason.classList.toggle('hidden',!tasks)}
   var allocationSection=document.querySelector('.allocationSection');if(allocationSection)allocationSection.classList.toggle('hidden',!tasks);
   var allocationHeading=document.querySelector('.allocationSection .stepHeader h3');if(allocationHeading)allocationHeading.textContent='Assign open parts';
-  var confirmationHeading=document.querySelector('#changesConfirmPane .stepHeader h3'),confirmationIntro=byId('confirmationIntro');if(confirmationHeading)confirmationHeading.textContent=confirmNeeded?'Confirm selected-night changes':shared?'Changes shared':'No changes to review';if(confirmationIntro)confirmationIntro.classList.toggle('hidden',!tasks&&!confirmNeeded);
+  var confirmationCard=document.querySelector('#changesConfirmPane .confirmationCard'),confirmationStatus=byId('confirmationStatus');
+  if(confirmationCard)confirmationCard.hidden=!tasks&&!confirmNeeded;
+  if(confirmationStatus){
+    confirmationStatus.classList.toggle('hidden',!!tasks||confirmNeeded);
+    confirmationStatus.classList.toggle('isShared',shared);
+    confirmationStatus.textContent=shared?'Plan shared':'No changes to review';
+  }
+  if(!tasks&&!confirmNeeded)formMessage('allocationFormMessage','');
+
   var progressValue=tasks?1:confirmNeeded?2:3,progressLabel=tasks?'1 of 3 resolved':confirmNeeded?'2 of 3 resolved':shared?'3 of 3 shared':'Automatic plan ready';
   lastChangesWorkflowModel={allocationExplained:plan.count>=5&&(plan.requiresSeventhDecision||plan.requiresCoverageChoice||plan.unresolved.length>0),active:activeChangesStep,steps:[
     {id:'staffing',label:'People',detail:changes.length||overtime.length?changes.length+' absent · '+overtime.length+' overtime':'Record people',complete:hasStaffingChanges,attention:false,quiet:false},
@@ -798,7 +809,7 @@ function renderChanges(base,nightPlan){
     availableParts:availablePartsModel(base,plan),
     absences:changes.map(function(c){return{id:c.id,kind:'absence',name:professionalName(c.absent_name),status:'Absent',meta:(c.reason||'Absence')+' · Updated by '+(c.updated_by||'Shift member')+' at '+shortTime(c.updated_at)}}),
     overtime:overtime.map(function(o){var valid=plan.validAssignments.some(function(item){return item.id===o.id}),extra=extraIds.indexOf(o.id)>=0,added=earliestOvertimeAdd(base.date,o.nurse_name),when=added?added.changed_at:o.updated_at,who=added?added.changed_by:o.updated_by;return{id:o.id,kind:'overtime',name:o.nurse_name,status:extra?'Additional staff · as required':valid?allocationLabel(o.allocation_key):'Awaiting allocation',needsAllocation:!valid&&!extra,meta:'Added by '+(who||'Shift member')+' at '+shortTime(when)}}),
-    history:visible.map(function(h){return{label:h.label,type:h.type,title:h.title,detail:h.detail||'',meta:(h.changed_by||'Shift member')+' · '+shortTime(h.changed_at)}}),historyTotal:history.length,historyStatus:historyErrorDates[base.date]?'error':historyLoadedDates[base.date]?'loaded':(!navigator.onLine||forcedOfflineSession)?'offline':'loading',historyExpanded:expanded,historyHasMore:!!(historyPageState[base.date]&&historyPageState[base.date].has_more),allocations:allocationRows,allocationMessage:allocationMessage,forms:{names:names.map(function(n){return{value:n,label:professionalName(n)}}),editing:!!editingAbsenceId,overtimeSuggestions:recentOvertimeNames()},roleOverride:nightRoleOverrideModel(base)
+    history:visible.map(function(h){return{label:h.label,type:h.type,title:h.title,detail:h.detail||'',meta:(h.changed_by||'Shift member')+' · '+shortTime(h.changed_at)}}),historyTotal:history.length,historyStatus:historyErrorDates[base.date]?'error':historyLoadedDates[base.date]?'loaded':(!navigator.onLine||forcedOfflineSession)?'offline':'loading',historyExpanded:expanded,historyHasMore:!!(historyPageState[base.date]&&historyPageState[base.date].has_more),allocations:allocationRows,allocationMessage:allocationMessage,forms:{names:names.map(function(n){return{value:n,label:professionalName(n)}}),editing:(changes.find(function(item){return item.id===editingAbsenceId})||null),overtimeSuggestions:recentOvertimeNames()},roleOverride:nightRoleOverrideModel(base)
   };
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:changes',{detail:changeDetail}));
   Array.prototype.forEach.call(document.querySelectorAll('[data-final-allocation]'),function(select){select.onchange=function(){var date=base.date,key=select.getAttribute('data-final-allocation');if(!allocationDrafts[date])allocationDrafts[date]={};allocationDrafts[date][key]=select.value;updateAllocationSaveControl(base);updateChangesWorkflow(base,plan);formMessage('allocationFormMessage','Selections ready to review.','')}});
@@ -808,22 +819,56 @@ function renderChanges(base,nightPlan){
   updateOfflineControls();
 }
 
+var staffingSaveInFlight=false;
 function updateStaffingActionAvailability(){
   var absence=byId('saveChangeBtn'),absenceName=byId('absentName'),overtime=byId('addOvertimeBtn'),overtimeName=byId('overtimeName'),offline=!navigator.onLine||forcedOfflineSession,writeBlocked=sharedWritesBlocked();
-  if(absence)absence.disabled=offline||!absenceName||!absenceName.value||writeBlocked;
-  if(overtime)overtime.disabled=offline||!overtimeName||!normaliseNurseName(overtimeName.value)||writeBlocked;
+  if(absence)absence.disabled=staffingSaveInFlight||offline||!absenceName||!absenceName.value||writeBlocked;
+  if(overtime)overtime.disabled=staffingSaveInFlight||offline||!overtimeName||!normaliseNurseName(overtimeName.value)||writeBlocked;
 }
-
 function editNightChange(id){
-  var item=changesFor(cur().date).find(function(c){return c.id===id});
-  if(!item)return;
-  editingAbsenceId=id;var option=document.createElement('option');option.value=item.absent_name;option.textContent=professionalName(item.absent_name)+' • editing';
-  byId('absentName').prepend(option);byId('absentName').value=item.absent_name;byId('changeReason').value=item.reason||'Leave';
-  byId('saveChangeBtn').textContent='Update absence';byId('cancelAbsenceEditBtn').classList.remove('hidden');updateStaffingActionAvailability();
-  byId('absentName').scrollIntoView({behavior:'smooth',block:'center'});
+  if(staffingSaveInFlight||!changesFor(cur().date).some(function(item){return item.id===id}))return;
+  editingAbsenceId=id;
+  renderChanges(cur());
+}
+function cancelAbsenceEdit(){editingAbsenceId=null;renderChanges(cur())}
+
+function staffingSaveState(mode,saving,saved){
+  staffingSaveInFlight=saving;
+  updateStaffingActionAvailability();
+  window.dispatchEvent(new CustomEvent('roster:staffing-save',{detail:{mode:mode,saving:saving,saved:saved}}));
 }
 
-function cancelAbsenceEdit(){editingAbsenceId=null;byId('absentName').value='';byId('changeReason').value='Leave';byId('saveChangeBtn').textContent='Save absence';byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage','');renderChanges(cur())}
+async function saveStaffingRecord(mode,base,key,execute,verify,success,undo,onSaved){
+  var messageId=mode==='absence'?'absenceFormMessage':'overtimeFormMessage',owner=currentUser,session=startupAttempt,result;
+  staffingSaveState(mode,true,false);
+  formMessage(messageId,'Saving…','');
+  setSync('saving','Saving staffing change');
+  try{
+    try{result=await runRosterMutation(key,execute,verify,true)}
+    catch(error){
+      if(currentUser!==owner||startupAttempt!==session)return;
+      setSync('error','Save unconfirmed');
+      formMessage(messageId,'We couldn’t confirm the save. Your entry is still here. Check the connection, then try again.','error');
+      return;
+    }
+    if(currentUser!==owner||startupAttempt!==session)return;
+    if(missingRpc(result))result={error:result.error,atomicRequired:true};
+    if(rpcError(result,messageId))return;
+    if(mode==='absence')editingAbsenceId=null;
+    if(onSaved)onSaved();
+    staffingSaveState(mode,true,true);
+    setSync('','Saved · refreshing');
+    toast(success);
+    if(!result.recovered)try{notifyRosterUpdate('staffing',base.date)}catch(error){recordAppDiagnostic('mutation',mode,'notification-failed')}
+    var refreshed=false;
+    try{refreshed=!!(await loadSharedData({background:true}))&&!forcedOfflineSession&&sharedSyncState==='live'}
+    catch(error){recordAppDiagnostic('mutation',mode,'post-save-refresh-failed')}
+    if(currentUser!==owner||startupAttempt!==session)return;
+    if(!refreshed||!verify()){scheduleSharedReload();setSync('stale','Saved · refresh pending')}
+    else if(undo&&!result.recovered)toast(success,{label:'Undo',run:undo});
+  }finally{staffingSaveState(mode,false,false)}
+}
+
 
 function buildNightPlan(base){
   base=base||cur();var plan=staffingPlan(base),r=applyChanges(base),timing=nightDutyTiming(base.date),provisional=plan.count<5||plan.requiresCoverageChoice||plan.requiresSeventhDecision||plan.unresolved.length>0,labour=labourOrderFor(r),tasks=workflowTaskDetails(base,plan),status=nightPlanStatuses[base.date]||null;
@@ -913,7 +958,7 @@ function normaliseNurseName(value){
 }
 
 function timedRequest(request){
-  return Promise.race([Promise.resolve(request),new Promise(function(_,reject){setTimeout(function(){reject(new Error('timeout'))},15000)})]);
+  return withTimeout(request,15000);
 }
 
 function missingRpc(result){
@@ -934,20 +979,16 @@ function rpcError(result,messageId){
 }
 
 async function saveNightChange(){
-  if(!requireOnline())return;
-  var base=cur(),absent=byId('absentName').value,reason=byId('changeReason').value;
-  if(!absent){markInvalid('absentName',true);formMessage('absenceFormMessage','Select the absent nurse before saving.','error');toast('Select the absent nurse first');byId('absentName').focus();return}
-  markInvalid('absentName',false);formMessage('absenceFormMessage','Saving '+absent+'…','');
-  setSync('saving','Saving absence');byId('saveChangeBtn').disabled=true;byId('saveChangeBtn').textContent='Saving…';
-  try{
-    var result=await runRosterMutation('absence:add:'+base.date+':'+canonicalNurseName(absent),function(commandId,expectedSyncRevision){return supa.rpc('record_night_absence_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_absent_name:absent,p_reason:reason})},function(){return changesFor(base.date).some(function(entry){return sameNurse(entry.absent_name,absent)})});
-    if(missingRpc(result))result={error:result.error,atomicRequired:true};
-    if(rpcError(result,'absenceFormMessage'))return;
-    byId('absentName').value='';editingAbsenceId=null;byId('cancelAbsenceEditBtn').classList.add('hidden');formMessage('absenceFormMessage',absent+' saved as absent.','success');
-    try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}notifyRosterUpdate('staffing',base.date);
-    formMessage('absenceFormMessage',absent+' saved as absent.','success');highlightSavedItem('changeList',absent,'data-absence-name');showButtonConfirmation(byId('saveChangeBtn'),'Save absence');toast('Absence saved for '+absent,{label:'Undo',run:function(){return undoAddedAbsence(base.date,absent)}});
-  }catch(error){setSync('error','Save failed');formMessage('absenceFormMessage','No response was received. Your selection is still here.','error');failedAction('Absence was not saved.',saveNightChange);}
-  finally{byId('saveChangeBtn').textContent=editingAbsenceId?'Update absence':'Save absence';updateOfflineControls()}
+  var nurse=byId('absentName'),reasonField=byId('changeReason');
+  if(staffingSaveInFlight||!nurse||!reasonField||!requireOnline())return;
+  var base=cur(),absent=nurse.value,reason=reasonField.value,editing=!!editingAbsenceId;
+  if(!absent){markInvalid('absentName',true);formMessage('absenceFormMessage','Select the absent nurse before saving.','error');nurse.focus();return}
+  markInvalid('absentName',false);
+  return saveStaffingRecord('absence',base,'absence:add:'+base.date+':'+canonicalNurseName(absent)+':'+reason,function(commandId,expectedSyncRevision){
+    return supa.rpc('record_night_absence_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_absent_name:absent,p_reason:reason});
+  },function(){
+    return changesFor(base.date).some(function(entry){return sameNurse(entry.absent_name,absent)&&entry.reason===reason});
+  },'Absence saved for '+professionalName(absent),editing?null:function(){return undoAddedAbsence(base.date,absent)});
 }
 
 function recordAlreadyRemoved(result){
@@ -980,24 +1021,19 @@ async function removeNightChange(id,button){
 }
 
 async function saveOvertime(){
-  if(!requireOnline())return;
+  if(staffingSaveInFlight||!byId('overtimeName')||!requireOnline())return;
   var base=cur(),name=normaliseNurseName(byId('overtimeName').value);
   if(!name){markInvalid('overtimeName',true);formMessage('overtimeFormMessage','Type the overtime nurse\'s name before adding.','error');toast('Type the overtime nurse\'s name first');byId('overtimeName').focus();return}
   if(activeNames(base).some(function(n){return n.toLowerCase()===name.toLowerCase()})){formMessage('overtimeFormMessage',name+' is already rostered for this night.','error');toast(name+' is already assigned on this night');return}
   if(overtimeFor(base.date).some(function(o){return o.nurse_name.toLowerCase()===name.toLowerCase()})){formMessage('overtimeFormMessage',name+' is already on the overtime list.','error');toast(name+' is already listed for overtime');return}
   var similar=overtimeFor(base.date).find(function(o){var a=o.nurse_name.trim().toLowerCase(),b=name.toLowerCase();return a.indexOf(b+' ')===0||b.indexOf(a+' ')===0});
   if(similar&&!confirm(name+' may be the same person as '+similar.nurse_name+'. Add both names as separate overtime nurses?')){formMessage('overtimeFormMessage','Check the existing entry for '+similar.nurse_name+' before adding another name.','error');return}
-  markInvalid('overtimeName',false);formMessage('overtimeFormMessage','Adding '+name+'…','');
-  setSync('saving','Adding overtime nurse');byId('addOvertimeBtn').disabled=true;byId('addOvertimeBtn').textContent='Adding…';
-  try{
-    var result=await runRosterMutation('overtime:add:'+base.date+':'+canonicalNurseName(name),function(commandId,expectedSyncRevision){return supa.rpc('add_night_overtime_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_nurse_name:name})},function(){return overtimeFor(base.date).some(function(entry){return sameNurse(entry.nurse_name,name)})});
-    if(missingRpc(result))result={error:result.error,atomicRequired:true};
-    if(rpcError(result,'overtimeFormMessage'))return;
-    byId('overtimeName').value='';rememberOvertimeName(name);formMessage('overtimeFormMessage',name+' added for overtime.','success');
-    try{await loadSharedData()}catch(refreshError){scheduleSharedReload()}notifyRosterUpdate('staffing',base.date);
-    formMessage('overtimeFormMessage',name+' added for overtime.','success');highlightSavedItem('overtimeList',name,'data-overtime-name');showButtonConfirmation(byId('addOvertimeBtn'),'Add overtime');toast(name+' added for overtime',{label:'Undo',run:function(){return undoAddedOvertime(base.date,name)}});
-  }catch(error){setSync('error','Save failed');formMessage('overtimeFormMessage','No response was received. The name remains here.','error');failedAction('Overtime nurse was not saved.',saveOvertime);}
-  finally{byId('addOvertimeBtn').textContent='Add overtime';updateOfflineControls()}
+  markInvalid('overtimeName',false);
+  await saveStaffingRecord('overtime',base,'overtime:add:'+base.date+':'+canonicalNurseName(name),function(commandId,expectedSyncRevision){
+    return supa.rpc('add_night_overtime_v49',{p_operation_id:commandId,p_expected_sync_revision:expectedSyncRevision,p_client_version:APP_VERSION,p_roster_date:base.date,p_nurse_name:name});
+  },function(){
+    return overtimeFor(base.date).some(function(entry){return sameNurse(entry.nurse_name,name)});
+  },name+' added for overtime',function(){return undoAddedOvertime(base.date,name)},function(){rememberOvertimeName(name)});
 }
 
 async function removeOvertime(id,button){

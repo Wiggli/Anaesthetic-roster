@@ -3,15 +3,15 @@
 :root {
   /* Semantic materials. Personal accents never recolour clinical statuses. */
   --app-header-top: var(--app-safe-top);
-  --surface-primary: #f3f5f8;
+  --surface-primary: #f2f2f7;
   --surface-secondary: #ffffff;
-  --surface-elevated: #eaf0f7;
+  --surface-elevated: #e5e5ea;
   --surface-floating: rgb(255 255 255 / .88);
-  --text-primary: #172333;
-  --text-secondary: #536174;
-  --text-muted: #5c6a7d;
-  --border-subtle: #d9e0e9;
-  --accent-primary: #0066cc;
+  --text-primary: #1c1c1e;
+  --text-secondary: #51515a;
+  --text-muted: #595962;
+  --border-subtle: #d5d5dc;
+  --accent-primary: #005ab8;
   --status-success: #23713a;
   --status-warning: #895000;
   --status-danger: #c11a29;
@@ -82,15 +82,15 @@
 }
 html[data-theme="dark"], body.dark {
   --personal-accent-readable: color-mix(in srgb,var(--personal-accent,var(--control-primary)) 35%,var(--on-accent));
-  --surface-primary: #0e141e;
-  --surface-secondary: #1a2330;
-  --surface-elevated: #253141;
-  --surface-floating: rgb(26 35 48 / .88);
-  --text-primary: #f2f5fa;
-  --text-secondary: #b6c2d2;
-  --text-muted: #a5b2c4;
-  --border-subtle: #354254;
-  --accent-primary: #91bfff;
+  --surface-primary: #111113;
+  --surface-secondary: #1c1c1e;
+  --surface-elevated: #2c2c2e;
+  --surface-floating: rgb(28 28 30 / .94);
+  --text-primary: #f5f5f7;
+  --text-secondary: #b9b9c2;
+  --text-muted: #aeafb8;
+  --border-subtle: #3a3a40;
+  --accent-primary: #80b7ff;
   --status-success: #85d9a0;
   --status-warning: #f5c374;
   --status-danger: #ff9da4;
@@ -100,7 +100,7 @@ html[data-theme="dark"], body.dark {
   --shadow-floating: 0 14px 36px rgb(0 0 0 / .36);
   --ambient-glow: rgb(112 164 255 / .055);
   --overlay-dim: rgb(0 0 0 / .48);
-  --hero-surface: #1a2330;
+  --hero-surface: #1c1c1e;
   --rail-base: #465872;
   --rail-active: #96c5ff;
   --rail-own: #3e699b;
@@ -179,7 +179,7 @@ body[data-text-scale="xlarge"] { --unified-type-scale: 1.125; }
 body.personalMotionReduced { --unified-fast: 0ms; --unified-base: 0ms; }
 body.personalMotionReduced .bottom.reactTabs *, body.personalMotionReduced *, body.personalMotionReduced *::before, body.personalMotionReduced *::after { transition: none; animation: none; scroll-behavior: auto; }
 html, body { min-height: 100dvh; }
-body { --personal-accent-readable: var(--personal-accent,var(--accent-primary)); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--liquid-label); background: radial-gradient(ellipse 100% 260px at 50% 0,var(--ambient-glow),transparent), var(--surface-primary); background-repeat: no-repeat; font-size: var(--unified-type-lead); line-height: 1.45; }
+body { --personal-accent-readable: var(--personal-accent,var(--accent-primary)); font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif; color: var(--liquid-label); background: var(--surface-primary); font-size: var(--unified-type-lead); line-height: 1.45; }
 /* A real fixed opaque element lets iOS sample a solid status-bar colour,
    avoiding its installed-web-app edge blur over the in-flow masthead. */
 html[data-ios-standalone] { --app-header-top: calc(var(--app-safe-top) + 24px); }
@@ -236,7 +236,7 @@ main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc
 .primaryHeaderAdmin { display: none; }
 .primaryScreenTitleRow, .nightSectionIdentity { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 0; }
 .primaryScreenTitleRow > div, .nightSectionIdentity > div { min-width: 0; flex: 1; }
-.primaryScreenTitleRow h1, .nightSectionIdentity h1 { margin: 0; font-size: calc(clamp(24px, 6.6vw, 28px) * var(--unified-type-scale)); font-weight: 750; line-height: 1.18; letter-spacing: -.035em; white-space: normal; overflow: visible; }
+.primaryScreenTitleRow h1, .nightSectionIdentity h1 { margin: 0; font-size: calc(2.125rem * var(--unified-type-scale)); font-weight: 700; line-height: 1.18; letter-spacing: -.035em; white-space: normal; overflow: visible; }
 .primaryScreenTitleRow p { margin: 4px 0 0; font-size: var(--unified-type-body); font-weight: 450; color: var(--liquid-secondary); line-height: 1.4; }
 .screenEyebrow { display: none; }
 .screenInfoButton, .chatHeaderCompose { width: 44px; min-width: 44px; height: 44px; padding: 10px; border: 0; border-radius: var(--unified-radius-control); color: var(--liquid-accent-strong); background: var(--unified-accent-soft); }
@@ -842,8 +842,8 @@ body.dark .rosterStaffingBadge.isShort, body.dark .rosterStaffingBadge.needsRevi
 #accountSheet :is(.accountProfileFields,.accountNameFields) { min-width:0; }
 
 /* One compact operating shell; detail belongs below the personal assignment. */
-.scrollGlassHeader.scrollGlassMode-compact{height:calc(44px + var(--app-header-top));min-height:calc(44px + var(--app-header-top));border-radius:0;overflow:hidden;background:var(--surface-primary)}
-.scrollGlassMode-compact .scrollGlassStack,.scrollGlassMode-compact .scrollGlassContent{min-height:44px;height:44px;padding-block:0}
+.scrollGlassHeader.scrollGlassMode-compact{height:calc(50px + var(--app-header-top));min-height:calc(50px + var(--app-header-top));border-radius:0;overflow:hidden;background:var(--surface-primary)}
+.scrollGlassMode-compact .scrollGlassStack,.scrollGlassMode-compact .scrollGlassContent{min-height:50px;height:50px;padding-block:0}
 .scrollGlassMode-compact .scrollGlassMaterial{border-radius:0;background:var(--surface-primary);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
 .scrollGlassHeader::before{display:none}
 #today .selectedNightContext,#changes .selectedNightContext,#breaks .selectedNightContext{padding:12px 14px;gap:8px}

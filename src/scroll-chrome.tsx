@@ -94,8 +94,8 @@ function rawScrollProgress(model: ChromeModel) {
     // The replacement rail starts forming only as the original rail reaches the top edge.
     return clamp((safeTop + 64 - rect.top) / 48);
   }
-  // Compact navigation forms continuously as the large page heading leaves the viewport.
-  return clamp((safeTop + 72 - rect.bottom) / 48);
+  // Wait until the original heading has cleared the safe area before drawing a second title.
+  return window.scrollY > 0 && rect.bottom <= safeTop ? 1 : 0;
 }
 
 function activateAdminRailItem(key: string) {

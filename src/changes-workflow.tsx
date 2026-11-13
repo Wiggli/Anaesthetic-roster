@@ -68,11 +68,11 @@ function Workflow({ model }: { model: ChangesWorkflowModel }) {
           transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 490, damping: 43, mass: 0.6 }}
           aria-hidden="true"
         />}
-        <span className="workflowStepNumber" aria-hidden="true">{step.complete ? '✓' : index + 1}</span>
+        <span className="workflowStepNumber" aria-hidden="true">{step.attention ? '•' : ''}</span>
         <span className="workflowStepCopy"><b>{step.label}</b><small>{step.detail}</small></span>
       </Pressable>)}
     </div>
-    {((!model.allocationExplained && (model.tone !== 'automatic' || model.provisional)) || model.draftLabel) && <div className={`workflowGuidance workflowGuidance-${model.tone}`}>
+    {((!model.allocationExplained && (model.tone === 'ready' || model.tone === 'attention' || model.provisional)) || model.draftLabel) && <div className={`workflowGuidance workflowGuidance-${model.tone}`}>
       <span className="workflowGuidanceMark" aria-hidden="true">{model.tone === 'attention' ? '!' : model.tone === 'ready' ? '→' : model.tone === 'complete' ? '✓' : '·'}</span>
       <div className="workflowGuidanceSummary">
         {!model.allocationExplained && <><strong role="status" aria-live="polite">{model.headline}</strong><small>{model.guidance}</small></>}

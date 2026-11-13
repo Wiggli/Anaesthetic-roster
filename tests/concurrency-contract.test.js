@@ -18,7 +18,6 @@ assert.match(ui, /renderChanges\(base,canonical\);renderRoster\(\);renderBreaks\
 assert.match(ui, /function runRosterMutation\(/, 'shared clinical writes must use a single guarded mutation path');
 assert.match(ui, /rosterCommandInFlight\[key\]/, 'duplicate in-flight commands must be collapsed');
 assert.match(ui, /var rosterCommandInFlight=\{\};var rosterCommandIds=\{\};/, 'ambiguous retries must retain operation ids by command key');
-assert.match(ui, /var commandId=rosterCommandIds\[key\]\|\|/, 'retrying the same ambiguous roster command must reuse its original operation id');
 assert.match(ui, /verified-after-timeout/, 'ambiguous roster timeouts must be verified against refreshed shared state');
 assert.match(ui, /incomingRevision<lastObservedSyncRevision/, 'an older shared snapshot must never replace newer state');
 assert.match(ui, /sharedSyncState='starting'/, 'shared synchronization must have named state');
@@ -145,6 +144,40 @@ async function checkSharedRecoveryBehaviour() {
   const recovered = await app.runRosterMutation('absence:add:' + date + ':Andre', async () => { throw new Error('timeout'); }, () => true);
   assert.equal(recovered.recovered, true, 'a successful online refresh may verify the requested result');
   assert.equal(app.rosterCommandIds['absence:add:' + date + ':Andre'], undefined);
+
+  for (const key of ['absence:add:' + date + ':andre:Leave', 'overtime:add:' + date + ':Cover Nurse']) {
+    reset();
+    const attempts = [];
+    app.ensureFreshBeforeMutation = async () => ({ ok: true, revision: 10 });
+    const retry = await app.runRosterMutation(key, async (id, revision) => {
+      attempts.push({ id, revision });
+      if (attempts.length === 1) return { status: 0, error: { message: 'Failed to fetch' } };
+      return { status: 204, data: null, error: null };
+    }, () => false, true);
+    assert.equal(retry.error, null);
+    assert.equal(attempts.length, 2, 'a lost response is retried once automatically');
+    assert.deepEqual(attempts[1], attempts[0], 'replay must keep the same operation and revision');
+    assert.equal(app.rosterCommandIds[key], undefined);
+  }
+  // A committed write is reported even when the post-save roster refresh fails.
+  reset();
+  app.currentUserProfile = profile;
+  app.requireOnline = () => true;
+  app.byId = id => ({ absentName: { value: 'Andre' }, changeReason: { value: 'Sick leave' } })[id] || null;
+  app.markInvalid = app.formMessage = app.updateStaffingActionAvailability = () => {};
+  const saveEvents = [], status = [], notices = [];
+  app.staffingSaveState = (mode, saving, saved) => { saveEvents.push({ mode, saving, saved }); };
+  app.setSync = (_state, message) => status.push(message);
+  app.toast = message => notices.push(message);
+  app.supa = { rpc: async () => ({ status: 204, data: null, error: null }) };
+  app.loadSharedData = async () => false;
+  app.scheduleSharedReload = () => {};
+  await app.saveNightChange();
+  assert.deepEqual(saveEvents.map(event => event.saved), [false, true, false]);
+  assert.match(notices[0], /Absence saved/);
+  assert.equal(status.at(-1), 'Saved · refresh pending');
+
+  app.ensureFreshBeforeMutation = ensureFreshBeforeMutation;
 
   for (const onlineRefresh of [false, true]) {
     reset();

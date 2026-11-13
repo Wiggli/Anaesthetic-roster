@@ -310,3 +310,58 @@ test('saved four-person arrangement keeps its provisional guidance visible @ipho
  await ready(page);await page.evaluate(()=>{show('changes');window.dispatchEvent(new CustomEvent('roster:changes-workflow',{detail:{active:'allocation',provisional:true,allocationExplained:false,steps:[{id:'staffing',label:'Staffing',detail:'4 present',complete:true},{id:'allocation',label:'Arrangement',detail:'Recorded',complete:true},{id:'confirm',label:'Review',detail:'Provisional',disabled:true}],headline:'Four-nurse arrangement recorded',guidance:'Four-person cover remains provisional.',tone:'automatic',progressValue:2,progressMax:3,progressLabel:'Provisional'}}))});
  await expect(page.locator('#changesWorkflowExperience .workflowGuidance')).toBeVisible();await expect(page.locator('#changesWorkflowExperience .workflowGuidance')).toContainText('provisional');await expect(page.locator('[data-changes-step="confirm"]')).toBeDisabled();
 });
+
+test('staffing sheets confirm writes independently of refresh and retain an unconfirmed draft @iphone', async ({page},testInfo) => {
+  await page.setViewportSize({width:440,height:956});
+  await ready(page);
+  const errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.evaluate(()=>{
+    applyTheme(true);
+    show('changes');
+    setChangesStep('staffing',false);
+    rosterCapabilities=()=>({freshnessBarrier:false});
+    window.staffingCalls=[];
+    window.pendingStaffingWrite=null;
+    scheduleSharedReload=()=>{};
+    window.dispatchRosterPush=()=>{};
+    loadSharedData=async()=>false;
+    supa.rpc=(name,params)=>{
+      if(!/record_night_absence|add_night_overtime/.test(name))return Promise.resolve({data:[],error:null});
+      window.staffingCalls.push({name,params});
+      return new Promise(resolve=>{window.pendingStaffingWrite=resolve});
+    };
+  });
+
+  await expect(page.locator('.scrollGlassCompactTitle')).toBeHidden();
+  await page.getByRole('button',{name:'Add absence',exact:true}).click();
+  const absent=page.locator('#absentName');
+  await absent.selectOption({index:1});
+  await page.locator('#changeReason').selectOption('Sick leave');
+  await page.screenshot({path:testInfo.outputPath('staffing-sheet-dark.png')});
+  await page.getByRole('button',{name:'Save absence',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Saving…',exact:true})).toBeDisabled();
+  await page.evaluate(()=>window.pendingStaffingWrite({data:null,error:null,status:204}));
+  await expect(page.getByRole('dialog',{name:'Add absence',exact:true})).toBeHidden();
+  await expect(page.locator('#toast')).toContainText('Absence saved for');
+  await expect(page.locator('#syncText')).toContainText('Saved · refresh pending');
+
+  await page.getByRole('button',{name:'Add overtime',exact:true}).click();
+  const overtime=page.locator('#overtimeName');
+  await overtime.fill('Review Cover Nurse');
+  await overtime.press('Enter');
+  await expect(overtime).toBeDisabled();
+  await page.evaluate(()=>window.pendingStaffingWrite({status:0,error:{message:'Failed to fetch'}}));
+  await expect.poll(()=>page.evaluate(()=>window.staffingCalls.length)).toBe(3);
+  await page.evaluate(()=>window.pendingStaffingWrite({status:504,error:{message:'Gateway timeout'}}));
+  await expect(page.locator('#overtimeFormMessage')).toContainText('couldn’t confirm');
+  await expect(overtime).toHaveValue('Review Cover Nurse');
+  await overtime.press('Enter');
+  await expect.poll(()=>page.evaluate(()=>window.staffingCalls.length)).toBe(4);
+  const operationIds=await page.evaluate(()=>window.staffingCalls.slice(1).map(call=>call.params.p_operation_id));
+  expect(new Set(operationIds).size).toBe(1);
+  await page.evaluate(()=>window.pendingStaffingWrite({status:204,data:null,error:null}));
+  await expect(page.getByRole('dialog',{name:'Add overtime nurse'})).toBeHidden();
+  await expect(page.locator('#toast')).toContainText('Review Cover Nurse added for overtime');
+  expect(errors).toEqual([]);
+});
