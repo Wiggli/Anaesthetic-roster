@@ -1,15 +1,14 @@
 {
-  "version": "60.0",
-  "date": "1 November 2026",
-  "title": "A clearer night roster",
-  "summary": "Simplifies Night, Changes, Breaks, Actions and settings while keeping the working plan easy to scan.",
+  "version": "60.1",
+  "date": "13 November 2026",
+  "title": "A cleaner iPhone roster and reliable staffing saves",
+  "summary": "Refreshes the iPhone layout and gives leave and overtime a clear save result.",
   "changes": [
-    "Consolidates open parts and allocation choices into one summary, with supporting overtime names on demand.",
-    "Compacts absence and overtime entry; recorded details remain under each nurse\u2019s More menu and in Activity.",
-    "Shows break times beside their groups and makes full-night Pager break guidance explicit.",
-    "Replaces large Actions tiles with a readable list, simplifies roster name rows and removes repeated Chat availability labels.",
-    "Groups profile previews, photos and accent settings into expandable sections, and shortens the app guide.",
-    "Preserves unsaved profile fields when switching between Me and Our Shift."
+    "Uses quieter light and dark colours, simpler segmented controls and a shorter bottom tab bar across the roster.",
+    "Keeps the compact title hidden until the in-page header has scrolled out of view.",
+    "Shows one confirmation status for a shared plan and groups People controls into a single list.",
+    "Keeps staffing entries during slow saves, retries a lost response once using the same operation ID and confirms successful saves independently of the roster refresh.",
+    "Opens Edit absence with the recorded nurse and reason already selected."
   ],
   "update_policy": "normal"
 }

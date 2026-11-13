@@ -25,7 +25,7 @@ assert.match(runtime,/STORAGE_PREFIX='anaes_'/,'device storage must use one faca
 assert.match(ui,/async function reconcileApplication\(reason\)[\s\S]*getSession[\s\S]*syncServerClock[\s\S]*checkSharedRevision[\s\S]*refreshAutomaticNightOnReturn[\s\S]*subscribeToChanges[\s\S]*verifyRuntimeHealth/,
   'resume reconciliation must validate session, clock, revision, night, realtime and worker health in one sequence');
 assert.match(ui,/ensureFreshBeforeMutation\(\)/,'mutations must perform a freshness barrier');
-assert.match(ui,/execute\(commandId,expectedSyncRevision\)/,'every guarded mutation must receive a stable operation id and expected revision');
+assert.match(ui,/execute\(operation.id,operation.revision\)/,'every guarded mutation must receive a stable operation id and expected revision');
 assert.match(ui,/verified-after-timeout/,'ambiguous responses must still be verified after refresh');
 assert.match(ui,/rosterCommandIds\[key\]/,'ambiguous roster retries must reuse their original command id');
 assert.match(ui,/realtimeSubscribed&&sharedSyncState==='live'\?60000:15000/,'revision polling must back off while realtime is healthy');

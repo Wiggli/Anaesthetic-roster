@@ -60,7 +60,7 @@ function conflictNotice(result){
 async function ensureFreshBeforeMutation(){
   if(!rosterCapabilities().freshnessBarrier)return{ok:true,revision:Number(lastObservedSyncRevision||0)};
   if(!navigator.onLine||forcedOfflineSession)return{ok:false,error:{message:'STALE_CLIENT',code:'STALE_CLIENT'}};
-  var result=await supa.from('app_sync_state').select('revision').eq('id',1).maybeSingle();
+  var result=await timedRequest(supa.from('app_sync_state').select('revision').eq('id',1).maybeSingle());
   if(result.error||!result.data)return{ok:false,error:result.error||{message:'STALE_CLIENT',code:'STALE_CLIENT'}};
   var revision=Number(result.data.revision||0);
   if(lastObservedSyncRevision===null){lastObservedSyncRevision=revision;return{ok:true,revision:revision}}
@@ -70,50 +70,87 @@ async function ensureFreshBeforeMutation(){
   }
   return{ok:true,revision:revision}
 }
-function runRosterMutation(key,execute,verify){
-  key=commandKey(key);if(rosterCommandInFlight[key])return rosterCommandInFlight[key];
-  var commandId=rosterCommandIds[key]||(window.AnaestheticDomain&&window.AnaestheticDomain.commandId?window.AnaestheticDomain.commandId():'command-'+Date.now()),date=mutationDateFromKey(key),beforePlan=conflictPlanSnapshot(date);
-  rosterCommandIds[key]=commandId;
-  recordAppDiagnostic('mutation',key,'start');
+function uncertainRosterResponse(result){
+  return result&&result.error&&[0,502,503,504].indexOf(result.status)>=0;
+}
+function uncertainRosterError(error){
+  return !!(error&&(error.message==='timeout'||error.name==='AbortError'||error.name==='TypeError'||error.code==='TIMEOUT'||error.code==='ROSTER_RESPONSE_UNCERTAIN'));
+}
+function runRosterMutation(key,execute,verify,retryUncertain){
+  if(rosterCommandInFlight[key])return rosterCommandInFlight[key];
+  var previous=rosterCommandIds[key];
+  if(previous&&(previous.owner!==currentUser||previous.session!==startupAttempt))previous=null;
+  var operation=previous||{id:window.AnaestheticDomain&&window.AnaestheticDomain.commandId?window.AnaestheticDomain.commandId():'command-'+Date.now(),revision:null,owner:currentUser,session:startupAttempt},date=mutationDateFromKey(key),beforePlan=conflictPlanSnapshot(date);
+  var owner=currentUser,session=startupAttempt,diagnostic=commandKey(key.split(':').slice(0,2).join(':'));
+  rosterCommandIds[key]=operation;
+  recordAppDiagnostic('mutation',diagnostic,'start');
+  function sameSession(){return currentUser===owner&&startupAttempt===session}
+  function verifiedResult(){
+    recordAppDiagnostic('mutation',diagnostic,'verified-after-timeout');
+    return{data:{verified:true,command_id:operation.id},error:null,recovered:true};
+  }
   var work=(async function(){
-    var ambiguous=false;
+    var uncertain=false,replayed=!!(previous&&previous.revision!==null);
     try{
-      var freshness=await ensureFreshBeforeMutation();
-      if(!freshness.ok){
-        delete rosterCommandIds[key];
-        var staleResult={data:null,error:freshness.error,conflictRefreshFailed:!!freshness.conflictRefreshFailed,conflictChanges:freshness.conflictRefreshFailed?[]:conflictSummary(beforePlan,conflictPlanSnapshot(date))};
-        recordAppDiagnostic('mutation',key,'stale-client');return staleResult
+      if(!retryUncertain||operation.revision===null){
+        var freshness=await ensureFreshBeforeMutation();
+        if(!freshness.ok){
+          recordAppDiagnostic('mutation',diagnostic,'stale-client');
+          return{data:null,error:freshness.error,conflictRefreshFailed:!!freshness.conflictRefreshFailed,conflictChanges:freshness.conflictRefreshFailed?[]:conflictSummary(beforePlan,conflictPlanSnapshot(date))};
+        }
+        operation.revision=Number(freshness.revision);
       }
-      var expectedSyncRevision=Number(freshness.revision);
-      var result=window.AnaestheticRuntime&&window.AnaestheticRuntime.latency?await window.AnaestheticRuntime.latency.measure('roster-mutation',function(){return timedRequest(execute(commandId,expectedSyncRevision))}):await timedRequest(execute(commandId,expectedSyncRevision));
+      if(!sameSession())return{error:{code:'PERMISSION_DENIED'}};
+      async function send(){
+        var response=await timedRequest(execute(operation.id,operation.revision));
+        if(uncertainRosterResponse(response)){
+          var error=new Error('The server response could not be confirmed.');
+          error.code='ROSTER_RESPONSE_UNCERTAIN';
+          throw error;
+        }
+        return response;
+      }
+      var sendMeasured=window.AnaestheticRuntime&&window.AnaestheticRuntime.latency?function(){return window.AnaestheticRuntime.latency.measure('roster-mutation',send)}:send;
+      var result;
+      try{result=await sendMeasured()}catch(error){
+        if(!retryUncertain||!uncertainRosterError(error)||!sameSession()||!navigator.onLine||forcedOfflineSession)throw error;
+        // The server's operation log makes replay safe even if the first request committed.
+        recordAppDiagnostic('mutation',diagnostic,'retrying-uncertain-response');
+        replayed=true;
+        result=await sendMeasured();
+      }
+      if(!sameSession())return{error:{code:'PERMISSION_DENIED'}};
       if(result&&result.error){
         var code=rosterErrorCode(result.error);
         if(code==='ROSTER_REVISION_CONFLICT'||String(result.error.message||'').indexOf('ROSTER_REVISION_CONFLICT')>=0){
-          var refreshed=await loadSharedData({background:true});result.conflictRefreshFailed=!(refreshed&&!forcedOfflineSession&&sharedSyncState==='live');result.conflictChanges=result.conflictRefreshFailed?[]:conflictSummary(beforePlan,conflictPlanSnapshot(date));recordAppDiagnostic('mutation',key,'revision-conflict');
+          var refreshed=await loadSharedData({background:true});
+          result.conflictRefreshFailed=!(refreshed&&!forcedOfflineSession&&sharedSyncState==='live');
+          if(retryUncertain&&replayed&&!result.conflictRefreshFailed&&sameSession()&&typeof verify==='function'&&verify())return verifiedResult();
+          result.conflictChanges=result.conflictRefreshFailed?[]:conflictSummary(beforePlan,conflictPlanSnapshot(date));
+          recordAppDiagnostic('mutation',diagnostic,'revision-conflict');
         }
-        delete rosterCommandIds[key];
-        return result
+        return result;
       }
-      delete rosterCommandIds[key];
-      recordAppDiagnostic('mutation',key,'committed');return result
+      recordAppDiagnostic('mutation',diagnostic,'committed');return result;
     }catch(error){
-      ambiguous=error&&error.message==='timeout'||error&&error.name==='AbortError'||error&&error.code==='TIMEOUT';
-      recordAppDiagnostic('mutation',key,error&&error.code||(ambiguous?'timeout':'error'));
-      if(typeof verify==='function'){
+      uncertain=uncertainRosterError(error)&&operation.revision!==null;
+      recordAppDiagnostic('mutation',diagnostic,error&&error.code||(uncertain?'timeout':'error'));
+      if(uncertain&&sameSession()&&typeof verify==='function'){
         try{
           var refreshed=await loadSharedData({background:true});
-          if(refreshed&&!forcedOfflineSession&&sharedSyncState==='live'&&await Promise.resolve(verify())){
-            delete rosterCommandIds[key];
-            recordAppDiagnostic('mutation',key,'verified-after-timeout');
-            return{data:{verified:true,command_id:commandId},error:null,recovered:true}
+          if(sameSession()&&refreshed&&!forcedOfflineSession&&sharedSyncState==='live'&&await Promise.resolve(verify())){
+            uncertain=false;
+            return verifiedResult();
           }
-        }catch(refreshError){recordAppDiagnostic('mutation',key,'verify-failed')}
+        }catch(refreshError){recordAppDiagnostic('mutation',diagnostic,'verify-failed')}
       }
-      if(!ambiguous)delete rosterCommandIds[key];
-      throw error
-    }finally{delete rosterCommandInFlight[key]}
+      throw error;
+    }finally{
+      if(!uncertain||!sameSession())delete rosterCommandIds[key];
+      delete rosterCommandInFlight[key];
+    }
   })();
-  rosterCommandInFlight[key]=work;return work
+  rosterCommandInFlight[key]=work;return work;
 }
 
 async function loadSharedData(options){

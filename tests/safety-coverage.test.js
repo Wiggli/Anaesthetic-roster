@@ -211,10 +211,10 @@ assert.match(source['app-ui.js'], /expectedRevision=nightPlanStatuses\[base\.dat
 assert.match(source['app-ui.js'], /p_expected_revision:expectedRevision/);
 assert.match(source['app-ui.js'], /changed on another device|revision/i, 'device conflicts must produce an explicit refresh/review path');
 assert.doesNotMatch(source['app-ui.js'], /saveAbsenceCompatibility|saveOvertimeCompatibility/, 'absence and overtime writes must remain atomic');
-assert.match(source['app-ui.js'], /failedAction\('Absence was not saved\.'/);
-assert.match(source['app-ui.js'], /failedAction\('Overtime nurse was not saved\.'/);
 assert.match(source['service-worker.js'], /requestUrl\.origin !== self\.location\.origin && !isSupabaseLibrary[\s\S]*return/, 'non-library Supabase requests must bypass caching');
 assert.doesNotMatch(source['service-worker.js'], /caches\.put\([^\n]*supabase/i);
+
+assert.match(source['app-ui.js'], /We couldn’t confirm the save\. Your entry is still here\./);
 
 // Runtime/cache alignment stays guarded independently of the main regression file.
 assert.equal(context.APP_VERSION, context.RELEASE_HISTORY[0].version);

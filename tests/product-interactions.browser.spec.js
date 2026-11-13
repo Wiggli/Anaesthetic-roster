@@ -42,11 +42,11 @@ for(const theme of ['light','dark'])for(const width of [320,390,430])test(`share
  expect(errors).toEqual([]);
 });
 
-test('Actions reconnects, selection travels and launch never moves the dock sideways @iphone',async({page})=>{
+test('Actions reconnects, the active tab is labelled and launch keeps the dock centred @iphone',async({page})=>{
  await openReview(page);await page.evaluate(()=>document.body.classList.add('appRevealing'));
  for(let i=0;i<4;i++)await expect.poll(async()=>{const r=await page.locator('.bottom').boundingBox();return Math.abs(r.x+r.width/2-(await page.evaluate(()=>innerWidth))/2)}).toBeLessThan(1);
  await page.evaluate(()=>document.body.classList.remove('appRevealing'));
- await page.locator('.bottom [data-v="breaks"]').click();await expect.poll(()=>page.locator('.bottom').evaluate(el=>getComputedStyle(el,'::before').transform)).not.toBe('none');
+ await page.locator('.bottom [data-v="breaks"]').click();await expect(page.locator('.bottom [data-v=breaks]')).toHaveAttribute('aria-current','page');
  await page.locator('[data-quick-rudder]').click();await expect(page.locator('[data-quick-rudder]')).toHaveAttribute('aria-expanded','true');
  await page.locator('#closeQuickActionsSheet').click();await expect(page.locator('#quickActionsSheet')).not.toBeVisible();await expect(page.locator('[data-quick-rudder]')).toHaveAttribute('aria-expanded','false');
 });

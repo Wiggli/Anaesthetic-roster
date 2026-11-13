@@ -115,3 +115,62 @@
 #accountSheet .personalisationStudio{gap:12px}
 #accountSheet .personalisationStudio>.personalisationGroup,#accountSheet .personalisationStudio>.informationDisclosure{margin:0}
 #accountSheet .personalisationGroup.informationDisclosure{padding:0}
+
+/* Compact, single-layer navigation and grouped settings-style surfaces. */
+#changes .primaryScreenTitleRow, #breaks .primaryScreenTitleRow, #chat .primaryScreenTitleRow { margin-bottom: 10px; }
+#changes .primaryScreenTitleRow h1, #breaks .primaryScreenTitleRow h1, #chat .primaryScreenTitleRow h1 {
+  font-size: calc(2.125rem * var(--unified-type-scale));
+  font-weight: 700;
+}
+.primaryScreenTitleRow .screenInfoButton, #chat .primaryScreenTitleRow .chatHeaderCompose {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: none;
+  background: transparent;
+  color: var(--liquid-accent-strong);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.screenInfoButton svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+#today .selectedNightContext, #changes .selectedNightContext, #breaks .selectedNightContext { padding: 6px 12px 0; gap: 0; }
+.selectedNightContext .rosterDateControl { border-top: 1px solid var(--border-subtle); border-radius: 0; }
+.selectedNightIdentity .shiftIdentityCopy strong { font-size: var(--unified-type-body); }
+#changes .ctop { margin: 0 0 8px; }
+#changes .workflowStepNumber:empty, #changes .changesWorkflowTabs > button > span { display: none; }
+#changes .workflowStepNumber { flex-basis: auto; width: auto; color: var(--status-warning); }
+#changes .workflowSteps, #changes .changesWorkflowTabs { gap: 2px; padding: 3px; }
+#changes .workflowStep, #changes .changesWorkflowTabs > button { min-height: 44px; }
+#changes .workflowStep.active { color: var(--text-primary); }
+#changes #changesStaffingPane {
+  border-radius: var(--unified-radius-card);
+  overflow: hidden;
+  background: var(--surface-secondary);
+}
+#changes #changesStaffingPane > .staffingSection + .staffingSection { border-top: 1px solid var(--border-subtle); }
+#changes #changesStaffingPane > .continueWorkflowBtn { margin: 0; border-radius: 0; }
+#changes .confirmationStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--unified-radius-control);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font-size: var(--unified-type-body);
+  font-weight: 600;
+}
+#changes .confirmationStatus.isShared::before { content: '✓' / ''; color: var(--status-success); }
+#changes .historyBox { margin-top: 12px; }
+#changes .historyBox > summary { min-height: 52px; }
+#changes .staffingSheetBody :is(input, select) { font-size: max(16px, var(--unified-type-body)); }
+#changes .staffingSheetHeader > h3 { margin: 0; font-size: var(--unified-type-title); }
+#changes .staffingSheetClose { min-width: 44px; min-height: 44px; }
+#quickActionsSheet .quickActionsContextBar { background: transparent; }
+#quickActionsSheet .quickPrimaryGrid, #quickActionsSheet .quickCommunicationGrid { border: 0; }
+#breaks .personalBreakMark { border-radius: 50%; }
+#chat .chatPickerRow { box-shadow: none; }
+.bottom .quickRudderDisc { width: 28px; height: 28px; }

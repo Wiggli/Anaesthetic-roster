@@ -1257,7 +1257,7 @@ test('shared Changes workflow becomes a calm completed state', async ({ page }) 
   });
   const journey = page.locator('#changesWorkflowExperience');
   await expect(journey.locator('.workflowExperience')).toHaveClass(/workflow-complete/);
-  await expect(journey).toContainText('Plan shared');
+  await expect(journey.locator('.workflowGuidance')).toHaveCount(0);
   await expect(journey).toContainText('Shared');
   await expect(journey.locator('.workflowProgress')).toHaveCount(0);
   const completedStepDetails = journey.locator('.workflowStepCopy small');
@@ -1769,9 +1769,9 @@ test('one quiet glossy scroll bar appears consistently after page headers leave 
       radius: parseFloat(style.borderRadius)
     };
   });
-  expect(compactMaterial.backdrop).not.toBe('none');
+  expect(compactMaterial.backdrop).toBe('none');
   expect(compactMaterial.alpha).toBeGreaterThanOrEqual(0.8);
-  expect(compactMaterial.alpha).toBeLessThan(1);
+  expect(compactMaterial.alpha).toBe(1);
   expect(compactMaterial.radius).toBeLessThanOrEqual(1);
 
   await page.evaluate(() => {
