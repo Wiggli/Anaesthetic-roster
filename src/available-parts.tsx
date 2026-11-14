@@ -9,9 +9,10 @@ export type AvailablePartsModel = {
   complete: boolean;
 };
 
-export function AvailableParts({ model, onAllocate }: { model?: AvailablePartsModel; onAllocate: () => void }) {
+export function AvailableParts({ model, onAllocate, hideWhenComplete }: { model?: AvailablePartsModel; onAllocate?: () => void; hideWhenComplete?: boolean }) {
   if (!model) return null;
   const pending = model.parts.length > 0 || Boolean(model.conditional) || model.coverageChoices.length > 0;
+  if (hideWhenComplete && !pending && !model.shortage && !model.extras) return null;
   const choices = Number(Boolean(model.conditional)) + Number(model.coverageChoices.length > 0);
   return <section className={`availableParts ${pending || model.shortage ? 'partsPending' : 'partsComplete'}`} aria-label="Available parts">
     <div className="availablePartsHeading"><h3>Available parts</h3><span>{[model.parts.length ? `${model.parts.length} open` : '', choices ? `${choices} choice${choices === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ') || (model.shortage ? 'Cover needed' : 'All assigned')}</span></div>
@@ -23,6 +24,6 @@ export function AvailableParts({ model, onAllocate }: { model?: AvailablePartsMo
       {!pending && model.extras > 0 && <p>{model.extras} additional {model.extras === 1 ? 'nurse' : 'nurses'} available as required.</p>}
       {model.unassigned.length > 0 && !model.complete && <details className="availablePartsNurses"><summary>{model.unassigned.length} overtime awaiting a part</summary><p>{model.unassigned.join(' · ')}</p></details>}
     </div>
-    {pending && <button type="button" className="availablePartsAction" onClick={onAllocate}>{model.conditional || model.coverageChoices.length ? 'Review allocation choices' : 'Allocate available parts'} <span aria-hidden="true">›</span></button>}
+    {pending && onAllocate && <button type="button" className="availablePartsAction" onClick={onAllocate}>{model.conditional || model.coverageChoices.length ? 'Review allocation choices' : 'Allocate available parts'} <span aria-hidden="true">›</span></button>}
   </section>;
 }

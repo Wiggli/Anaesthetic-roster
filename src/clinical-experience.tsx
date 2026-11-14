@@ -271,9 +271,7 @@ function goToChanges(target: 'staffing' | 'allocation') {
 
 function goToConfirmation() {
   window.show?.('changes');
-  window.setTimeout(() => {
-    document.querySelector<HTMLElement>('[data-changes-step="confirm"]')?.click();
-  }, 180);
+  window.dispatchEvent(new CustomEvent('roster:changes-step-request', { detail: { step: 'confirm' } }));
 }
 
 function openRoleEditor() {
@@ -350,14 +348,12 @@ function PendingBreakPlan({ model }: { model: BreakSummary }) {
 
 function BreakScheduleSection({
   className,
-  ordinal,
   title,
   names,
   highlightedName,
   period
 }: {
   className: string;
-  ordinal: string;
   title: string;
   names: string[];
   highlightedName: string;
@@ -365,7 +361,6 @@ function BreakScheduleSection({
 }) {
   return <section className={`breakScheduleSection ${className}`} aria-label={title}>
     <div className="breakScheduleHeader">
-      <span className="breakScheduleOrdinal" aria-hidden="true">{ordinal}</span>
       <div className="breakScheduleHeadingCopy">
         <h3>{title}</h3>
         <small>{period}{!names.length ? ' · Awaiting allocation' : ''}</small>
@@ -412,8 +407,8 @@ function BreakPlan({ model }: { model: BreakSummary }) {
   return <>
     {hasMine && <div className="breakPlanTools"><Pressable type="button" className="jumpToMeButton" onClick={jumpToBreak}>Jump to me <span aria-hidden="true">↓</span></Pressable></div>}
     <div className="breakGrid breakScheduleBoard">
-      <BreakScheduleSection className="firstBreak" ordinal="1" title="First break" period={model.firstDutyPeriod} names={model.first} highlightedName={model.highlightedName} />
-      <BreakScheduleSection className="secondBreak" ordinal="2" title="Second break" period={model.secondDutyPeriod} names={model.second} highlightedName={model.highlightedName} />
+      <BreakScheduleSection className="firstBreak" title="First break" period={model.firstDutyPeriod} names={model.first} highlightedName={model.highlightedName} />
+      <BreakScheduleSection className="secondBreak" title="Second break" period={model.secondDutyPeriod} names={model.second} highlightedName={model.highlightedName} />
     </div>
     <section className="breakNotesBlock" aria-labelledby="breakNotesTitle">
       <div className="breakNotesHeading"><h3 id="breakNotesTitle">Labour Ward / Pager</h3></div>
@@ -446,7 +441,6 @@ function PersonalBreak({ model }: { model: BreakSummary }) {
     <span className="personalBreakEyebrow">Your break</span>
     <div className="personalBreakMain">
       <div><h2>{assignment}</h2><p>{model.pending ? model.pendingReason : mine || 'Choose your name in Account to highlight your break.'}</p></div>
-      <span className="personalBreakMark" aria-hidden="true">{model.pending ? '…' : first ? '1' : second ? '2' : '·'}</span>
     </div>
     {!model.pending && (first || second) && <p className="breakTogether">With {(first ? model.first : model.second).filter(name => name.toLocaleLowerCase() !== mine.toLocaleLowerCase()).join(', ') || 'your allocated group'}</p>}
     {!model.pending && (first || second) && <p className="personalBreakPeriod">{first ? model.firstDutyPeriod : model.secondDutyPeriod}{current === (first ? 'first' : 'second') ? ' · Now' : ''}</p>}
@@ -547,16 +541,7 @@ function personalTone(model: PersonalNight) {
   return 'task';
 }
 
-function personalMark(tone: string) {
-  if (tone === 'first') return '1st';
-  if (tone === 'second') return '2nd';
-  if (tone === 'pager') return 'P';
-  if (tone === 'reliever') return 'R';
-  if (tone === 'seventh') return '7';
-  if (tone === 'full') return 'LW';
-  if (tone === 'absence') return '!';
-  return '•';
-}
+
 
 function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) {
   const reduced = useProductReducedMotion();
@@ -689,13 +674,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
   const tone = personalTone(model);
   const scanContextLabel = model.contextLabel === 'Working with' ? 'Colleague' : model.contextLabel;
   const scanContext = model.context.replace(/^With\s+/i, '');
-  const dutyLabel = model.dutyPart === 'first'
-    ? 'First Part'
-    : model.dutyPart === 'second'
-      ? 'Second Part'
-      : model.dutyPart === 'full'
-        ? 'Full night'
-        : model.period || 'Pending';
+
 
   const openNameSetup = () => {
     softHaptic();
@@ -712,11 +691,6 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
     scrollToProductElement(target);
     target?.classList.add('focusPulse');
     window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
-  };
-  const openDutyTiming = () => {
-    softHaptic();
-    if (model.clockChange) window.dispatchEvent(new CustomEvent('roster:clock-change-guide'));
-    else scrollToProductElement(document.querySelector<HTMLElement>('#personalNightCard .nightTimeline'));
   };
   const openClockGuide = () => {
     softHaptic();
@@ -742,10 +716,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       </div>}
 
       <div className={'personalAssignmentHero personalAssignmentHeroCompact personalRole-' + tone}>
-        <span className="personalRoleIcon" aria-hidden="true">{personalMark(tone)}</span>
         <span className="personalRoleCopy">
           <b>{model.title}</b>
-          <span>{model.detail}</span>
+          <span>{model.dutyPart ? [model.period, model.detail, model.clockChange && !model.pending ? clockDutyDuration(model) : ''].filter(Boolean).join(' · ') : model.detail}</span>
         </span>
       </div>
 
@@ -753,25 +726,17 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
       {model.clockChange && <Pressable type="button" className="personalClockException" onClick={openClockGuide}>
         <span className="personalClockExceptionCopy"><small>Clock-change night · equal duty</small><strong>Handover {model.clockChange.handoverDisplay}</strong><span>{model.clockChange.partHoursLabel} per part · {model.clockChange.totalHoursLabel} from midnight</span></span><i aria-hidden="true">›</i>
       </Pressable>}
-      <NightTimeline model={model} value={value} />
-
-      <div className="personalHeroFactGrid" aria-label="Your night at a glance">
-        <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openDutyTiming}>
-          <small>Duty</small>
-          <b>{dutyLabel}</b>
-          <span>{clockDutyDuration(model)}</span>
-        </Pressable>
+      {model.action === 'role' && <div className="personalHeroFactGrid" aria-label="Your break and colleague">
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openBreak}>
           <small>Break</small>
           <b>{model.breakLabel || 'Pending'}</b>
-          <span aria-hidden="true">View break ›</span>
         </Pressable>
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openColleague}>
           <small>{scanContextLabel || 'Colleague'}</small>
           <b>{scanContext || 'Team'}</b>
-          <span aria-hidden="true">View team ›</span>
         </Pressable>
-      </div>
+      </div>}
+      <NightTimeline model={model} value={value} />
 
       {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openNameSetup}>
         Choose your name
@@ -845,14 +810,7 @@ export function renderRecentActivityExperience(model: RecentActivity) {
   }
 }
 
-function roleMark(tone: NightRole['tone']) {
-  if (tone === 'first') return '1st';
-  if (tone === 'second') return '2nd';
-  if (tone === 'pager') return 'Pager';
-  if (tone === 'reliever') return 'Reliever';
-  if (tone === 'seventh') return '7th';
-  return 'Full night';
-}
+
 
 function roleLiveState(role: NightRole, currentPart?: NightSummary['currentPart']) {
   if (!currentPart) return '';
@@ -862,16 +820,7 @@ function roleLiveState(role: NightRole, currentPart?: NightSummary['currentPart'
 }
 
 function NightRoles({ model }: { model: NightSummary }) {
-  const hasMine = model.roles.some(role => role.mine);
-  const jumpToMine = () => {
-    softHaptic();
-    const target = document.querySelector<HTMLElement>('#roles .rosterRow.mine,#fiveArrangement .fiveNurseSurface.mine');
-    scrollToProductElement(target);
-    target?.classList.add('focusPulse');
-    window.setTimeout(() => target?.classList.remove('focusPulse'), 900);
-  };
   return <>
-    <div className="nightRoleTools"><Pressable type="button" className="jumpToMeButton" onClick={openRoleEditor}>Edit theatre / Pager</Pressable><Pressable type="button" className="jumpToMeButton" onClick={() => window.show?.('breaks')}>View breaks</Pressable>{hasMine && model.roles.length > 4 && <><Pressable type="button" className="jumpToMeButton" onClick={jumpToMine}>Jump to me <span aria-hidden="true">↓</span></Pressable></>}</div>
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => {
         const liveState = roleLiveState(role, model.currentPart);
@@ -882,7 +831,7 @@ function NightRoles({ model }: { model: NightSummary }) {
           className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
           aria-label={`Change this night's ${role.label} allocation`}
         >
-          <span className="rosterRoleMark">{roleMark(role.tone)}</span>
+          <span className="rosterRoleMark">{role.label}</span>
           <span className="rosterRowCopy">
             <span className="rosterRowName">
               <span className="rosterRowPeople">{role.names}</span>
@@ -914,14 +863,14 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
   >
     <span className="fiveNurseLabel">Labour Ward / Pager · Full night</span>
     <strong>{arrangement.name}</strong>
-    <small>Labour Ward / Pager · 00:00–07:00 · Break coordinated when clinical cover allows</small>
+    <small>00:00–07:00 · Break when cover allows</small>
     <i aria-hidden="true">›</i>
   </Pressable>;
 }
 
 export function renderNightExperience(model: NightSummary) {
   rootFor('nightClockChange')?.render(null);
-  rootFor('nightStatusRow')?.render(<><NightStatus model={model} /><AvailableParts model={model.availableParts} onAllocate={() => goToChanges('allocation')} /></>);
+  rootFor('nightStatusRow')?.render(<><NightStatus model={model} /><AvailableParts model={model.availableParts} hideWhenComplete onAllocate={() => goToChanges('allocation')} /></>);
   rootFor('alerts')?.render(<NightAlerts model={model} />);
   rootFor('roles')?.render(<NightRoles model={model} />);
   rootFor('fiveArrangement')?.render(<FivePersonArrangement model={model} />);

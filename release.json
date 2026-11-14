@@ -1,14 +1,13 @@
 {
-  "version": "60.1",
-  "date": "13 November 2026",
-  "title": "A cleaner iPhone roster and reliable staffing saves",
-  "summary": "Refreshes the iPhone layout and gives leave and overtime a clear save result.",
+  "version": "61.0",
+  "date": "14 November 2026",
+  "title": "The roster at a glance",
+  "summary": "Puts staffing and team assignments where nurses can find them during a shift.",
   "changes": [
-    "Uses quieter light and dark colours, simpler segmented controls and a shorter bottom tab bar across the roster.",
-    "Keeps the compact title hidden until the in-page header has scrolled out of view.",
-    "Shows one confirmation status for a shared plan and groups People controls into a single list.",
-    "Keeps staffing entries during slow saves, retries a lost response once using the same operation ID and confirms successful saves independently of the roster refresh.",
-    "Opens Edit absence with the recorded nurse and reason already selected."
+    "Changes puts absence, overtime, cover, sharing and Activity on one page.",
+    "Add absence and Add overtime are always visible at the top of the staffing list, and both forms show the selected date.",
+    "Night brings personal duty, break and colleague together above compact team assignments. The live shift timeline and clock-change details stay visible.",
+    "The main roster tabs reopen at the top, and the guide reflects the shorter workflow."
   ],
   "update_policy": "normal"
 }

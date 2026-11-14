@@ -167,10 +167,63 @@
 #changes .historyBox { margin-top: 12px; }
 #changes .historyBox > summary { min-height: 52px; }
 #changes .staffingSheetBody :is(input, select) { font-size: max(16px, var(--unified-type-body)); }
-#changes .staffingSheetHeader > h3 { margin: 0; font-size: var(--unified-type-title); }
+#changes .staffingSheetHeader h3 { margin: 0; font-size: var(--unified-type-title); }
 #changes .staffingSheetClose { min-width: 44px; min-height: 44px; }
 #quickActionsSheet .quickActionsContextBar { background: transparent; }
 #quickActionsSheet .quickPrimaryGrid, #quickActionsSheet .quickCommunicationGrid { border: 0; }
 #breaks .personalBreakMark { border-radius: 50%; }
 #chat .chatPickerRow { box-shadow: none; }
 .bottom .quickRudderDisc { width: 28px; height: 28px; }
+
+/* Read the roster first, with actions kept beside the information they affect. */
+#today .hospitalStrip { min-height: 44px; margin-bottom: 0; }
+#today .nightSectionIdentity { margin: 0 0 6px; }
+#today #nightWelcomeSubtitle { display: none; }
+#today .nightWelcomeTitle { font-size: calc(1.5rem * var(--unified-type-scale)); margin: 0; }
+#today .nightDateShell { margin-bottom: 0; }
+#today .selectedNightIdentity { padding-inline: 4px; }
+#today #personalNightCard > .personalHeroSurface { padding: 12px 14px; border: 0; box-shadow: none; }
+#today .personalAssignmentHero { display: block; min-height: 0; margin: 0; padding: 0; }
+#today .personalRoleCopy { gap: 2px; }
+#today .personalRoleCopy b { font-size: var(--unified-type-title); }
+#today .personalRoleCopy > span { font-size: var(--unified-type-caption); }
+#today .personalHeroFactGrid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 8px; padding-top: 4px; }
+#today .personalHeroFactGrid .personalHeroFact { min-height: 44px; padding: 4px 0; }
+#today .personalHeroFact b { margin-block: 3px 0; }
+#today .personalHeroFact small { text-transform: none; letter-spacing: 0; }
+#today .teamOverviewGroup { margin-top: 12px; }
+#today .nightSummaryTitle { margin: 0; }
+#today #nightStatusRow > .nightSignal { padding: 0 0 6px; }
+#today .nightTeamDetails { border: 0; }
+#today .nightTeamDetails > summary { display: none; }
+#today .nightSituationTimeline { background: var(--surface-secondary); border-radius: var(--unified-radius-card); overflow: hidden; }
+#today .nightSituationTimeline .rosterRoleLine { padding: 0; min-height: 0; }
+#today .nightSituationTimeline .rosterRow { min-height: 52px; padding: 8px 12px; gap: 10px; }
+#today .nightSituationTimeline .rosterRoleMark { width: auto; min-width: 0; max-width: none; color: var(--text-secondary); border: 0; border-radius: 0; box-shadow: none; background: transparent; font-size: var(--unified-type-micro); }
+#today .nightSituationTimeline .rosterRowPeople { font-size: var(--unified-type-body); }
+#today .nightSituationTimeline .rosterRowMeta { font-size: var(--unified-type-micro); }
+#today .nightSituationTimeline .roleShortcutButton { margin-inline-end: 4px; background: transparent; }
+#today .fiveNurseSurface { padding: 10px 12px; box-shadow: none; }
+
+#changes .staffingNext { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 12px; padding: 4px 12px; border-radius: 12px; background: var(--unified-accent-soft); }
+#changes .staffingNext > span { flex: 1 1 10rem; padding-block: 6px; font-weight: 600; }
+#changes .staffingNextLink { min-height: 44px; padding: 4px 0; color: var(--accent-primary); background: transparent; border: 0; box-shadow: none; font-weight: 650; }
+#changes .staffingNextLink::after { content: ' ›'; }
+#changes #changesStaffingPane > .staffingSection { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 8px; align-items: center; padding: 4px 12px; }
+#changes #changesStaffingPane .stepHeader { margin: 0; }
+#changes .staffingActionRow { justify-content: flex-end; gap: 0 6px; }
+#changes .staffingActionCopy { flex: 0 1 auto; min-width: 0; }
+#changes #changesStaffingPane :is(.changeList,.overtimeList) { grid-column: 1 / -1; }
+#changes #changesStaffingPane :is(.changeList,.overtimeList):empty { display: none; }
+#changes .staffingAddButton { color: var(--accent-primary); background: transparent; border: 0; box-shadow: none; }
+#changes #changesAllocationPane, #changes #changesConfirmPane, #changes #changesStaffingPane { scroll-margin-top: calc(64px + var(--app-safe-top)); }
+#changes #changesAllocationPane, #changes #changesConfirmPane { margin-top: 12px; }
+#changes #changesAllocationPane .nightRoleEditor { box-shadow: none; }
+#changes .allocationSection > h3 { margin: 0 0 8px; }
+#changes .confirmationCard { background: var(--surface-secondary); border: 0; box-shadow: none; }
+#changes .staffingSheetDate { margin: 2px 0 0; color: var(--text-secondary); font-size: var(--unified-type-caption); }
+
+#breaks .breakScheduleHeader { min-height: 44px; }
+#breaks .breakScheduleHeadingCopy { grid-column: 1 / -1; }
+#breaks .breakPerson { min-height: 44px; }
+#chat .chatHome .chatConversationList, #chat .chatHome .chatGroupCard { box-shadow: none; }

@@ -17,11 +17,11 @@ for(const width of [320,440])for(const theme of ['light','dark'])test(`four-nurs
  await page.setViewportSize({width,height:956});await fourNight(page);await page.evaluate(theme=>setThemePreference(theme),theme);
  await expect(page.locator('#changesModeStatus')).toContainText('4');
  await expect(page.locator('[data-night-role="first1"]')).toBeVisible();
- await expect(page.locator('#reactChangesTab-confirm')).toBeDisabled();
+ await expect(page.locator('#continueToConfirmBtn')).toBeHidden();
  const slots=page.locator('[data-shared-pager-index]');await expect(slots).toHaveCount(4);
  for(const [i,name] of ['Shaun','Michael G','Andre','Michael D'].entries())await page.locator(`[data-shared-pager-index="${i}"]`).selectOption(name);
  await expect(page.locator('[data-shared-pager-save]')).toBeEnabled();await page.locator('[data-shared-pager-save]').click();
- await expect(page.locator('#changesWorkflowExperience')).toContainText('Four-nurse arrangement recorded');
+ await expect(page.locator('#changesWorkflowExperience')).toContainText('Four nurses · provisional cover');
  await page.evaluate(()=>show('today'));
  const hero=page.locator('#sharedPagerHero');await expect(hero).toContainText('André Bartolo');await expect(hero).toContainText('02:00 OLD');await expect(hero).toContainText('Pager starts at 00:00');
  await expect(page.locator('#personalNightCard')).toContainText('Theatre parts start at 00:00');
@@ -76,7 +76,7 @@ for(const count of [5,6,7])test(`normal ${count}-nurse night has one visible pla
  await expect(page.locator('#roles')).toContainText('Second break');await expect(page.locator('#roles')).toContainText('First break');
  await expect(page.locator('#nightClockChange')).toBeEmpty();
  if(count===5){await expect(page.locator('#fiveArrangement')).toContainText('Full night');await expect(page.locator('#nightStatusRow')).toContainText('Plan ready')}
- await page.getByRole('button',{name:'Edit theatre / Pager',exact:true}).click();
+ await page.locator('#roles .rosterRow').first().click();
  await expect(page.locator('.nightRoleEditor')).toHaveAttribute('open','');
  await expect(page.locator('[data-night-role="first1"]')).toBeVisible();await expect(page.locator('.roleDutyHint').first()).toContainText('00:00–03:30');
  await page.evaluate(()=>performQuickAction('absence'));await expect(page.getByRole('dialog',{name:'Add absence',exact:true})).toBeVisible();

@@ -539,8 +539,8 @@ test('central Quick Actions rudder opens actions without becoming a fifth destin
   await expect(page.locator('#quickActionsSheet')).toHaveAttribute('open', '');
   await expect(page.locator('#quickActionsSheet')).toContainText('What do you need to do?');
   await expect(page.locator('#quickActionsSheet')).toContainText('Report an absence');
-  await expect(page.locator('#quickActionsSheet')).toContainText('Add overtime cover');
-  await expect(page.locator('#quickActionsSheet')).toContainText('Review this night');
+  await expect(page.locator('#quickActionsSheet')).toContainText('Add overtime');
+  await expect(page.locator('#quickActionsSheet')).toContainText('Open Changes');
   await expect(page.locator('#quickActionsSheet')).toContainText('New private message');
   await expect(page.locator('#quickActionsSheet')).toContainText('Share Night Roster');
   expect(await page.locator('body').getAttribute('data-view')).toBe(before);
@@ -549,7 +549,7 @@ test('central Quick Actions rudder opens actions without becoming a fifth destin
   expect(rudderBox).not.toBeNull();
   expect(rudderBox.height).toBeGreaterThanOrEqual(54);
 
-  await page.getByRole('button', { name: /Review this night|Review changes needing attention/ }).click();
+  await page.getByRole('button', { name: /Open Changes|Review changes needing attention/ }).click();
   await expect(page.locator('#quickActionsSheet')).not.toHaveAttribute('open', '');
   await expect(page.locator('#changes')).toBeVisible();
 
@@ -617,7 +617,7 @@ test('interactive controls keep horizontal gestures for themselves', async ({ pa
   test.skip(!isMobile, 'real phone gesture regression');
   await openShell(page);
   await page.evaluate(() => window.show('changes'));
-  const workflowButton = page.locator('#changes [data-changes-step]').first();
+  const workflowButton = page.locator('#changes .staffingAddButton').first();
   await workflowButton.scrollIntoViewIfNeeded();
   const box = await workflowButton.boundingBox();
   expect(box).not.toBeNull();
@@ -626,7 +626,7 @@ test('interactive controls keep horizontal gestures for themselves', async ({ pa
   await expect(page.locator('#changes')).toBeVisible();
 });
 
-test('saved vertical positions survive lightweight tab changes', async ({ page, isMobile }) => {
+test('main roster tabs reopen at the start of each page', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'mobile scroll-position regression');
   await openShell(page);
   await page.evaluate(() => window.show('breaks'));
@@ -645,7 +645,7 @@ test('saved vertical positions survive lightweight tab changes', async ({ page, 
 
   await page.locator('.bottom button[data-v="breaks"]').click();
   await expect(page.locator('#breaks')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(250);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });
 
 test('dragging across the dock chooses a destination only when the gesture ends', async ({ page, isMobile }) => {
@@ -929,19 +929,16 @@ test('typed clinical cards render Night and Breaks without legacy HTML strings',
   expect(nightSurfaces).not.toBeNull();
   expect(nightSurfaces.leftDelta).toBeLessThanOrEqual(2);
   expect(nightSurfaces.widthDelta).toBeLessThanOrEqual(2);
-  await expect(page.locator('#roles .jumpToMeButton')).toHaveText(/Jump to me/);
   await page.evaluate(() => { const button = document.querySelector('#today .prettyDateButton'); if (button) button.textContent = 'Saturday 26 Sep'; });
   await captureReview(page, 'night');
   await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); document.body.classList.add('dark'); });
   await captureReview(page, 'night-dark');
   await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'light'); document.body.classList.remove('dark'); });
-  await expect(page.locator('#today .nightTeamDetails')).not.toHaveAttribute('open');
-  await page.locator('#today .nightTeamDetails summary').click();
   await expect(page.locator('#today .nightTeamDetails')).toHaveAttribute('open');
   const dock = await page.locator('.bottom').boundingBox();
   const actionDisc = await page.locator('.bottom .quickRudderDisc').boundingBox();
   expect(dock).not.toBeNull();
-  expect(dock.height).toBe(64);
+  expect(dock.height).toBe(56);
   expect(actionDisc).not.toBeNull();
   expect(actionDisc.width).toBeLessThanOrEqual(38);
   expect(actionDisc.height).toBeLessThanOrEqual(38);
@@ -1224,46 +1221,9 @@ test('Night hero keeps assignment facts readable across Android phone widths', a
     expect(geometry.detailInside).toBe(true);
     expect(geometry.factsInside).toBe(true);
     expect(geometry.factWhiteSpace.every(value => value === 'normal')).toBe(true);
-    if (width > 360) {
-      expect(geometry.factTops[0]).toBe(geometry.factTops[1]);
-      expect(geometry.factTops[1]).toBe(geometry.factTops[2]);
-    }
-    if (width === 360) {
-      expect(geometry.factTops[0]).toBe(geometry.factTops[1]);
-      expect(geometry.factTops[2]).toBe(geometry.factTops[0]);
-    }
+    expect(geometry.factTops).toHaveLength(2);
+    expect(geometry.factTops[0]).toBe(geometry.factTops[1]);
   }
-});
-
-test('shared Changes workflow becomes a calm completed state', async ({ page }) => {
-  await openShell(page);
-  await page.evaluate(() => {
-    window.show('changes');
-    window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
-      active: 'staffing',
-      steps: [
-        { id: 'staffing', label: 'Staffing', detail: '1 overtime', complete: true, attention: false, quiet: false },
-        { id: 'allocation', label: 'Allocation', detail: 'Review roles', complete: true, attention: false, quiet: true },
-        { id: 'confirm', label: 'Shared', detail: 'Published', complete: true, attention: false, quiet: false }
-      ],
-      headline: 'Plan shared',
-      guidance: 'Staffing and roles are up to date for everyone.',
-      tone: 'complete',
-      progressValue: 3,
-      progressMax: 3,
-      progressLabel: '3 of 3 shared',
-      draftLabel: ''
-    }}));
-  });
-  const journey = page.locator('#changesWorkflowExperience');
-  await expect(journey.locator('.workflowExperience')).toHaveClass(/workflow-complete/);
-  await expect(journey.locator('.workflowGuidance')).toHaveCount(0);
-  await expect(journey).toContainText('Shared');
-  await expect(journey.locator('.workflowProgress')).toHaveCount(0);
-  const completedStepDetails = journey.locator('.workflowStepCopy small');
-  await expect(completedStepDetails).toHaveCount(3);
-  for (let index = 0; index < 3; index += 1) await expect(completedStepDetails.nth(index)).toBeHidden();
-  await captureReview(page, 'changes-shared');
 });
 
 test('unresolved seventh-nurse decision keeps recorded overtime in team information', async ({ page }) => {
@@ -1428,70 +1388,21 @@ test('typed Changes records render live staffing and expose stable actions', asy
   ]));
 });
 
-test('React Changes journey shows decisions and supports keyboard step selection', async ({ page }) => {
+test('Changes keeps both staffing actions visible while cover needs attention', async ({ page }) => {
   await openShell(page);
   await page.evaluate(() => {
     window.show('changes');
-    window.__workflowRequests = [];
-    window.addEventListener('roster:changes-step-request', event => window.__workflowRequests.push(event.detail.step));
-    window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
-      active: 'staffing',
-      steps: [
-        { id: 'staffing', label: 'Staffing', detail: '1 absent · 1 overtime', complete: true, attention: false, quiet: false },
-        { id: 'allocation', label: 'Allocation', detail: '1 decision', complete: false, attention: true, quiet: false },
-        { id: 'confirm', label: 'Confirm', detail: 'After allocation', complete: false, attention: false, quiet: false }
-      ],
-      headline: 'Choose a nurse for First Part 1',
-      guidance: 'Choose a nurse, then review the changes.',
-      tone: 'attention',
-      progressValue: 1,
-      progressMax: 3,
-      progressLabel: '1 of 3 resolved',
-      draftLabel: 'Unsaved allocation selections'
-    }}));
+    window.workflowTaskDetails = () => ['Choose a nurse for First Part'];
+    window.updateChangesWorkflow(window.cur(), window.staffingPlan(window.cur()));
   });
-  const journey = page.locator('#changesWorkflowExperience');
-  await expect(journey).toHaveAttribute('data-react-ready', 'true');
-  await expect(journey.locator('[role="status"]')).toContainText('Choose a nurse for First Part 1');
-  await expect(journey.locator('.workflowGuidance')).toContainText('Choose a nurse');
-  await expect(journey.locator('.workflowDraft')).toContainText('Unsaved allocation selections');
-  await expect(journey.locator('.workflowProgressTrack')).toHaveCount(0);
-  const activeWorkflow = journey.locator('[data-changes-step="staffing"]');
-  const workflowMetrics = await activeWorkflow.evaluate(el => {
-    const selection = el.querySelector('.workflowSelection');
-    const style = getComputedStyle(el);
-    const selectionStyle = selection ? getComputedStyle(selection) : null;
-    return {
-      height: el.getBoundingClientRect().height,
-      color: style.color,
-      selectionBorder: selectionStyle ? parseFloat(selectionStyle.borderTopWidth) : -1
-    };
-  });
-  expect(workflowMetrics.height).toBeLessThanOrEqual(54);
-  expect(workflowMetrics.selectionBorder).toBe(0);
-  await captureReview(page, 'changes');
-  await expect(page.locator('#changes .changesWorkflowTabs')).toBeHidden();
-  const staffing = journey.locator('[data-changes-step="staffing"]');
-  await expect(staffing).toHaveAttribute('aria-selected', 'true');
-  await staffing.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(journey.locator('[data-changes-step="allocation"]')).toBeFocused();
-  await journey.locator('[data-changes-step="confirm"]').click();
-  expect(await page.evaluate(() => window.__workflowRequests)).toEqual(['allocation', 'confirm']);
-});
-
-test.describe('Changes journey load failure', () => {
-test.use({ serviceWorkers: 'block' });
-test('retains the original controls when its optional chunk fails', async ({ page }) => {
-  await page.route('**/assets/changes-workflow-*.js', route => route.abort());
-  await openShell(page);
-  await page.evaluate(() => { window.show('changes'); window.dispatchEvent(new CustomEvent('roster:changes-workflow', { detail: {
-    active: 'staffing', steps: [], headline: '', guidance: '', tone: 'automatic', progressValue: 3, progressMax: 3, progressLabel: 'Automatic plan ready'
-  } })); });
-  await expect(page.locator('#changesWorkflowExperience')).not.toHaveAttribute('data-react-ready', 'true');
-  await expect(page.locator('#changes .changesWorkflowTabs')).toBeVisible();
-  await expect(page.locator('#changes .changesWorkflowTabs [data-changes-step]')).toHaveCount(3);
-});
+  await expect(page.locator('#changesWorkflowState')).toContainText('Cover to assign');
+  await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Add overtime',exact:true})).toBeVisible();
+  await expect(page.locator('#continueToConfirmBtn')).toBeHidden();
+  await page.locator('#continueToAllocationBtn').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#changesAllocationPane')).toBeFocused();
+  await expect(page.locator('#changesStaffingPane')).toBeVisible();
 });
 
 test('Changes confirmation uses a typed preview from the existing plan', async ({ page }) => {
@@ -1500,6 +1411,7 @@ test('Changes confirmation uses a typed preview from the existing plan', async (
     window.show('changes');
     window.setChangesStep('confirm', false);
     const base = window.cur();
+    document.querySelector('.confirmationCard').hidden = false;
     window.renderConfirmationPreview(base, window.staffingPlan(base), 1, true, 'Choose a nurse');
   });
   const preview = page.locator('#confirmationPreview');
@@ -1518,7 +1430,8 @@ test.describe('Changes confirmation load failure', () => {
     await page.evaluate(() => {
       window.show('changes');
       const base = window.cur();
-      window.renderConfirmationPreview(base, window.staffingPlan(base), 1, true, 'Choose a nurse');
+      document.querySelector('.confirmationCard').hidden = false;
+    window.renderConfirmationPreview(base, window.staffingPlan(base), 1, true, 'Choose a nurse');
     });
     const preview = page.locator('#confirmationPreview');
     await expect(preview).not.toHaveAttribute('data-react-ready', 'true');

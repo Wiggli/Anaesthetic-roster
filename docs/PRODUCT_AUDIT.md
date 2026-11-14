@@ -154,3 +154,9 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 - Transport failures on staffing writes can replay once with the original operation ID and expected revision. The server remains authoritative for revisions, duplicate handling and audit history. Regression coverage checks exact operation replay, draft retention and the acknowledged-write path when refresh fails.
 - The shared theme uses neutral materials and a 56px tab bar. Changes shows a grouped People list and one sharing status in Review. The compact title starts only after the original heading clears the safe area.
 - The local Chromium launch was blocked by the environment denying the browser socket. Physical iPhone and signed-in production writes remain open for verification.
+
+## Release 61.0 roster navigation
+
+- Night keeps the live timeline, personal duty band, elapsed timings and both clock-change treatments visible. The summary around it is shorter, with break and colleague shortcuts ahead of an always-visible team list.
+- Changes removes the three-stage navigation. Absence and overtime stay at the top with cover, review and activity on the same page. Sharing becomes available once prerequisites are met. The four-person arrangement stays provisional, with theatre and Pager setup in the same cover area.
+- Staffing forms display the selected date and retain the 60.1 guarded write and retry paths. Actions uses the same wording as Changes, and Breaks uses compact headings without duplicate ordinals.

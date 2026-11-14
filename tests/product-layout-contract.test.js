@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const read = f => fs.readFileSync(f,'utf8');
-const html=read('index.html'),workflow=read('src/changes-workflow.tsx'),account=read('src/legacy-ui/account.js'),context=read('src/selected-night.ts');
-assert.match(html,/id="changesWorkflowExperience">\s*<div class="changesWorkflowTabs"[\s\S]*id="changesWorkflowState"[^>]*><\/div>\s*<\/div>/,'working fallback must occupy the same host React replaces');
-assert.doesNotMatch(workflow,/fallback\?\.classList|legacyState\?\.classList/,'no separate duplicate fallback to hide');
-assert.equal((html.match(/class="changesWorkflowTabs"/g)||[]).length,1);
+const html=read('index.html'),account=read('src/legacy-ui/account.js'),context=read('src/selected-night.ts');
+assert.doesNotMatch(html,/data-changes-step=/,'Changes uses one continuous page');
+assert.match(html,/id="changesStaffingPane"[\s\S]*id="changesAllocationPane"[\s\S]*id="changesConfirmPane"/,'staffing comes before cover and review');
 assert.match(context,/composeSelectedNight/,'one selected-night layout composer');
 assert.match(context,/panel.replaceChildren\(context\)/,'remove obsolete context wrappers');
 assert.match(account,/outlet.replaceChildren\(target\)/,'one actual Account destination at a time');
@@ -64,3 +63,42 @@ assert.equal(advance(dockState,280,1000,true).hidden,false,'chat, focus, editing
 assert.equal(advance(dockState,1100,1000,false).hidden,false,'page end and bottom bounce restore navigation');
 assert.equal(advance(dockState,-30,1000,false).hidden,false,'top bounce restores navigation');
 assert.equal(advance(dockState,80,80,false).hidden,false,'short screens need no hidden navigation');
+
+// The staffing list stays available through every plan state and four-person cover cannot be shared.
+const clinical=read('src/legacy-ui/clinical.js');
+const workflow=clinical.match(/function updateChangesWorkflow\(base,plan\)\{[\s\S]*?\n\}/)[0];
+const node=()=>{const classes=new Set();return{hidden:false,disabled:false,textContent:'',classes,classList:{toggle(name,force){if(force)classes.add(name);else classes.delete(name)},add(name){classes.add(name)}}}};
+const controls=new Map();
+const control=id=>{if(!controls.has(id))controls.set(id,node());return controls.get(id)};
+const base={date:'2026-11-14'};
+const plan={count:6,availableKeys:[]};
+let tasks=[],needsShare=false,manual=false,pagerSaved=false;
+const workflowContext={
+ changesViewPrepared:true,byId:control,document:{querySelector:control},
+ workflowTaskDetails:()=>tasks,workflowNeedsConfirmation:()=>needsShare,workflowHasManualPlan:()=>manual,
+ fourNurseTheatreRoles:()=>true,window:{sharedPagerStatus:()=>({saved:pagerSaved})},
+ nightPlanStatuses:{},allocationSaveInFlight:false,formMessage(){},renderConfirmationPreview(){},updateConfirmationControls(){}
+};
+vm.runInNewContext(workflow,workflowContext);
+const update=()=>workflowContext.updateChangesWorkflow(base,plan);
+update();
+assert.equal(control('changesWorkflowExperience').hidden,true);
+tasks=['Assign First Part'];needsShare=true;plan.availableKeys=['first1'];update();
+assert.equal(control('continueToAllocationBtn').hidden,false);
+assert.equal(control('continueToConfirmBtn').hidden,true);
+assert.equal(control('#changesConfirmPane .confirmationCard').hidden,true);
+tasks=[];update();
+assert.equal(control('continueToAllocationBtn').hidden,true);
+assert.equal(control('continueToConfirmBtn').hidden,false);
+assert.equal(control('#changesConfirmPane .confirmationCard').hidden,false);
+manual=true;needsShare=false;workflowContext.nightPlanStatuses[base.date]={published_at:'2026-11-14T21:00Z'};update();
+assert.equal(control('confirmationStatus').textContent,'Plan shared');
+plan.count=4;update();
+assert.equal(control('continueToAllocationBtn').hidden,false);
+assert.equal(control('continueToConfirmBtn').hidden,true);
+assert.equal(control('#changesConfirmPane .confirmationCard').hidden,true);
+assert.equal(control('confirmationStatus').classes.has('hidden'),true);
+pagerSaved=true;update();
+assert.equal(control('continueToAllocationBtn').hidden,true);
+assert.match(control('changesWorkflowState').textContent,/provisional/);
+assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must leave the staffing section visible');

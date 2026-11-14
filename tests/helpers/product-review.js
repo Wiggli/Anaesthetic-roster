@@ -1,5 +1,5 @@
 const {expect}=require('@playwright/test');
-async function openReview(page, workflowFallback = false) {
+async function openReview(page) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ contentType: 'application/javascript', body: 'window.supabase={createClient(){return null}}' }));
   await page.goto('/index.html');
   await page.evaluate(() => {
@@ -20,7 +20,6 @@ async function openReview(page, workflowFallback = false) {
     rebuildCalculatedRoster(); idx = R.findIndex(r => r.date === '2026-10-08');
     render(); renderNightTeamIdentityContext(cur().date);
   });
-  if (!workflowFallback) await expect(page.locator('#changesWorkflowExperience')).toHaveAttribute('data-react-ready', 'true');
   await expect(page.locator('#personalNightCard .personalHeroSurface')).toBeVisible();
   await expect(page.locator('#nightSectionTitle')).toContainText('Andre', {timeout:10000});
 }
