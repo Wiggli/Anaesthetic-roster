@@ -10,19 +10,6 @@ const formatRosterDate = (value: string) => {
   }).format(date);
 };
 
-function openNativePicker(input: HTMLInputElement) {
-  if (input.disabled) return;
-  try {
-    const picker = input as HTMLInputElement & { showPicker?: () => void };
-    if (typeof picker.showPicker === 'function') {
-      picker.showPicker();
-      return;
-    }
-  } catch { /* fall through to the browser click path */ }
-  input.focus({ preventScroll: true });
-  input.click();
-}
-
 function removeLegacyDatePresentation(control: HTMLElement, input: HTMLInputElement) {
   const legacyWrapper = input.closest<HTMLElement>('.prettyDateControl');
   if (legacyWrapper && control.contains(legacyWrapper)) {
@@ -31,6 +18,7 @@ function removeLegacyDatePresentation(control: HTMLElement, input: HTMLInputElem
   }
 
   control.querySelectorAll<HTMLElement>('.prettyDateButton').forEach((button) => button.remove());
+  input.classList.remove('nativeDatePicker');
 }
 
 function enhanceRosterDateControl(control: HTMLElement) {
@@ -45,8 +33,7 @@ function enhanceRosterDateControl(control: HTMLElement) {
   if (!text) {
     text = document.createElement('span');
     text.className = 'rosterDateText';
-    text.setAttribute('role', 'button');
-    text.setAttribute('tabindex', '0');
+    text.setAttribute('aria-hidden', 'true');
     input.insertAdjacentElement('afterend', text);
   }
 
@@ -55,20 +42,9 @@ function enhanceRosterDateControl(control: HTMLElement) {
     const nextLabel = formatRosterDate(input.value) || supplied || 'Choose night';
     if (control.getAttribute('data-date-label') !== nextLabel) control.setAttribute('data-date-label', nextLabel);
     if (text && text.textContent !== nextLabel) text.textContent = nextLabel;
-    if (text) text.setAttribute('aria-label', `Choose roster night, ${nextLabel}`);
   };
 
   if (control.dataset.coherentDate !== 'true') {
-    const open = (event: Event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      openNativePicker(input);
-    };
-
-    text.addEventListener('click', open);
-    text.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.key === 'Enter' || event.key === ' ') open(event);
-    });
     input.addEventListener('change', sync);
     input.addEventListener('input', sync);
 
