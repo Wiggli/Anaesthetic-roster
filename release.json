@@ -1,11 +1,12 @@
 {
-  "version": "62.0",
+  "version": "63.0",
   "date": "14 November 2026",
-  "title": "Pick an opening tune",
-  "summary": "Choose a short tune to play when Night Roster opens.",
+  "title": "Longer opening riff and your own audio",
+  "summary": "Play a longer opening riff or choose an audio clip from your device.",
   "changes": [
-    "Adds two original opening tunes, a Bollywood-style riff and a softer Night chime.",
-    "Account → Appearance lets you preview tracks, choose one and turn opening playback on or off for this device."
+    "Extends the built-in Bollywood-style riff to about four seconds.",
+    "Adds a local audio file option in Account → Appearance, with an eight-second playback limit.",
+    "Enables opening tunes by default for devices without a saved preference."
   ],
   "update_policy": "normal"
 }

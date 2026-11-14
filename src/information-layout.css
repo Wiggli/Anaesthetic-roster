@@ -237,3 +237,7 @@
 #accountSheet .openingTuneControls select { flex: 1 1 160px; min-width: 0; }
 #accountSheet .openingTuneControls > * { min-height: 44px; }
 #accountSheet #openingTuneStatus:empty { display: none; }
+#accountSheet .openingTuneFile { display: block; margin-top: 12px; }
+#accountSheet #openingTuneFile { max-width: 100%; min-height: 44px; }
+#accountSheet #openingTuneFileName { overflow-wrap: anywhere; }
+#accountSheet #openingTuneFileName:empty { display: none; }

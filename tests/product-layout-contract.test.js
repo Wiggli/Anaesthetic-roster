@@ -103,14 +103,15 @@ assert.equal(control('continueToAllocationBtn').hidden,true);
 assert.match(control('changesWorkflowState').textContent,/provisional/);
 assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must leave the staffing section visible');
 
-// Keep launch audio off by default, and only play an enabled tune once after a gesture.
+// Keep launch audio on by default, and only play once after a gesture.
 (async () => {
-  const script = require('node:module').stripTypeScriptTypes(read('src/opening-tune.ts')).replace('export function', 'function');
+  const script = require('node:module').stripTypeScriptTypes(read('src/opening-tune.ts')).replace(/^import .*\n/m, '').replace('export function', 'function');
   class Control {
     listeners = {};
     addEventListener(name, callback) { this.listeners[name] = callback; }
   }
   const toggle = new Control(), picker = new Control(), preview = new Control(), status = new Control();
+  picker.querySelector = () => null;
   const elements = {openingTuneEnabled:toggle,openingTuneTrack:picker,openingTunePreview:preview,openingTuneStatus:status};
   const events = {}, stored = new Map(), sound = [];
   let ready = false, checkLaunch;
@@ -130,7 +131,9 @@ assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must
     MutationObserver:class {constructor(callback){checkLaunch=callback} observe(){} disconnect(){}}
   };
   vm.runInNewContext(script + '\nmountOpeningTune();', env);
-  assert.equal(toggle.checked,false);
+  assert.equal(toggle.checked,true);
+  toggle.checked=false;
+  toggle.listeners.change();
   picker.value='night';
   picker.listeners.change();
   await preview.listeners.click();
