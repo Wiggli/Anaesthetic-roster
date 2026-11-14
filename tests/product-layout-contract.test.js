@@ -102,3 +102,51 @@ pagerSaved=true;update();
 assert.equal(control('continueToAllocationBtn').hidden,true);
 assert.match(control('changesWorkflowState').textContent,/provisional/);
 assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must leave the staffing section visible');
+
+// Keep launch audio off by default, and only play an enabled tune once after a gesture.
+(async () => {
+  const script = require('node:module').stripTypeScriptTypes(read('src/opening-tune.ts')).replace('export function', 'function');
+  class Control {
+    listeners = {};
+    addEventListener(name, callback) { this.listeners[name] = callback; }
+  }
+  const toggle = new Control(), picker = new Control(), preview = new Control(), status = new Control();
+  const elements = {openingTuneEnabled:toggle,openingTuneTrack:picker,openingTunePreview:preview,openingTuneStatus:status};
+  const events = {}, stored = new Map(), sound = [];
+  let ready = false, checkLaunch;
+  const launch = {classList:{contains:()=>ready}};
+  class Audio {
+    state = 'suspended';
+    async resume() { this.state = 'running'; }
+    createGain() { return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}}, connect(target){return target}, disconnect(){}}; }
+    createOscillator() { return {frequency:{setValueAtTime:(value)=>sound.push(value),exponentialRampToValueAtTime(){}},connect(target){return target},start(){},stop(){}}; }
+  }
+  const activation = {hasBeenActive:false};
+  const env = {
+    window:{AudioContext:Audio,accountPresentationElement:id=>elements[id],setTimeout(){}},
+    document:{visibilityState:'visible',getElementById:()=>launch,addEventListener:(name,cb)=>events[name]=cb,removeEventListener:name=>delete events[name]},
+    HTMLButtonElement:Control, navigator:{userActivation:activation},
+    localStorage:{getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
+    MutationObserver:class {constructor(callback){checkLaunch=callback} observe(){} disconnect(){}}
+  };
+  vm.runInNewContext(script + '\nmountOpeningTune();', env);
+  assert.equal(toggle.checked,false);
+  picker.value='night';
+  picker.listeners.change();
+  await preview.listeners.click();
+  assert.equal(sound.length,5,'the chime can be previewed while launch audio is off');
+  toggle.checked=true;
+  toggle.listeners.change();
+  ready=true;
+  checkLaunch();
+  assert.equal(sound.length,5,'an opening tune waits for a user gesture in a restricted browser');
+  activation.hasBeenActive=true;
+  events.click();
+  await Promise.resolve();
+  assert.equal(sound.length,10,'the saved track plays once after the gesture');
+  assert.equal(events.click,undefined,'ordinary subsequent taps cannot replay the opening tune');
+  assert.deepEqual(JSON.parse(stored.get('anaes_opening_tune')),{enabled:true,track:'night'});
+  toggle.checked=false;
+  toggle.listeners.change();
+  assert.equal(JSON.parse(stored.get('anaes_opening_tune')).enabled,false);
+})().catch(error => { console.error(error); process.exitCode = 1; });

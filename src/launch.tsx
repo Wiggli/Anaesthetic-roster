@@ -1,3 +1,4 @@
+import { mountOpeningTune } from './opening-tune';
 import { useProductReducedMotion } from './product-motion';
 import { createRoot } from 'react-dom/client';
 import { motion } from 'motion/react';
@@ -21,6 +22,7 @@ function LaunchMotto() {
 }
 
 // The roster engine still owns operational views; React owns isolated shell regions.
+mountOpeningTune();
 const mount = document.getElementById('reactLaunchMotto');
 if (mount) createRoot(mount).render(<LaunchMotto />);
 

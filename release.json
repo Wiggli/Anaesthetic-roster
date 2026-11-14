@@ -1,11 +1,11 @@
 {
-  "version": "61.1",
+  "version": "62.0",
   "date": "14 November 2026",
-  "title": "Tap the date to open the calendar",
-  "summary": "Restores the calendar picker when you tap the roster date.",
+  "title": "Pick an opening tune",
+  "summary": "Choose a short tune to play when Night Roster opens.",
   "changes": [
-    "The date on Night, Changes and Breaks opens the browser’s native calendar directly.",
-    "The previous and next night arrows and the shared selected date continue to work alongside the calendar."
+    "Adds two original opening tunes, a Bollywood-style riff and a softer Night chime.",
+    "Account → Appearance lets you preview tracks, choose one and turn opening playback on or off for this device."
   ],
   "update_policy": "normal"
 }
