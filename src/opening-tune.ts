@@ -1,4 +1,5 @@
 import { localOpeningAudio } from './opening-audio-file';
+import openingClip from './mundian-opening.mp3?url';
 
 const tracks = {
   bollywood: {
@@ -14,11 +15,11 @@ const tracks = {
 };
 
 type BuiltInTrack = keyof typeof tracks;
-type Track = BuiltInTrack | 'file';
+type Track = BuiltInTrack | 'mundian' | 'file';
 const fileLimit = 20 * 1024 * 1024;
 const clipSeconds = 8;
 const setting = 'anaes_opening_tune';
-const defaultTrack: Track = 'bollywood';
+const defaultTrack: Track = 'mundian';
 
 export function mountOpeningTune() {
   // Account pages are detached until their menu item is opened.
@@ -38,30 +39,30 @@ export function mountOpeningTune() {
   let playing: GainNode | undefined;
   let filePlayer: HTMLAudioElement | undefined;
   let fileUrl: string | undefined;
+  let bundledUrl: string | undefined;
+  let bundledLoad: Promise<void> | undefined;
   let stopFileTimer: number | undefined;
   let enabled = true;
   let track: Track = defaultTrack;
   try {
     const saved = JSON.parse(localStorage.getItem(setting) || 'null');
     enabled = saved?.enabled !== false;
-    if (saved?.track === 'file' || Object.hasOwn(tracks, saved?.track)) track = saved.track;
+    if (saved?.track === 'file' || saved?.track === 'mundian' || Object.hasOwn(tracks, saved?.track)) track = saved.track;
   } catch { /* The feature is optional if storage is unavailable. */ }
 
   toggle.checked = enabled;
   picker.value = track;
-  toggle.disabled = !Audio && !fileInput;
-  picker.disabled = !Audio && !fileInput;
-  preview.disabled = !Audio;
+  preview.disabled = track === 'file' || (track !== 'mundian' && !Audio);
   if (fileOption) fileOption.disabled = true;
 
   function setFile(file?: File) {
-    stop();
+    if (track === 'file') stop();
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     fileUrl = file ? URL.createObjectURL(file) : undefined;
     if (fileOption) fileOption.disabled = !fileUrl;
     if (removeFile) removeFile.hidden = !fileUrl;
     if (fileLabel) fileLabel.textContent = file?.name ?? '';
-    if (preview) preview.disabled = track === 'file' ? !fileUrl : !Audio;
+    if (preview) preview.disabled = track === 'file' ? !fileUrl : track !== 'mundian' && !Audio;
   }
   const fileReady = fileInput ? localOpeningAudio().then(setFile).catch(() => {
     status.textContent = 'Saved audio files are unavailable in this browser.';
@@ -137,8 +138,9 @@ export function mountOpeningTune() {
     if (!launchPending || !enabled || Date.now() > openingDeadline ||
         document.visibilityState !== 'visible' || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
     try {
-      if (track === 'file') {
-        if (fileUrl && await playFile()) cancelOpening();
+      if (track === 'file' || track === 'mundian') {
+        const source = track === 'file' ? fileUrl : bundledUrl;
+        if (source && await playFile(source)) cancelOpening();
         return;
       }
       if (!Audio) return;
@@ -163,6 +165,7 @@ export function mountOpeningTune() {
     document.addEventListener('click', firstTap, true);
     window.setTimeout(cancelOpening, 6000);
     if (track === 'file') void fileReady.then(startOpening);
+    else if (track === 'mundian' && !bundledUrl) void prepareBundledClip().then(startOpening);
     else void startOpening();
   }
 
@@ -179,14 +182,24 @@ export function mountOpeningTune() {
     stop();
     track = next;
     picker!.value = next;
-    preview!.disabled = next === 'file' ? !fileUrl : !Audio;
+    preview!.disabled = next === 'file' ? !fileUrl : next !== 'mundian' && !Audio;
+    if (next === 'mundian') void prepareBundledClip();
     save();
   }
 
-  async function playFile() {
-    if (!fileUrl || filePlayer) return false;
+  // Fetch the whole small clip so Safari plays a local Blob, including offline.
+  function prepareBundledClip() {
+    bundledLoad ||= fetch(openingClip).then(async response => {
+      if (!response.ok) throw new Error('Opening clip unavailable');
+      bundledUrl = URL.createObjectURL(await response.blob());
+    }).catch(() => { bundledLoad = undefined; });
+    return bundledLoad;
+  }
+
+  async function playFile(source: string) {
+    if (filePlayer) return false;
     stop();
-    const player = new window.Audio(fileUrl);
+    const player = new window.Audio(source);
     filePlayer = player;
     try {
       await player.play();
@@ -201,7 +214,7 @@ export function mountOpeningTune() {
   }
 
   picker.addEventListener('change', () => {
-    if ((picker.value === 'file' && fileUrl) || Object.hasOwn(tracks, picker.value)) selectTrack(picker.value as Track);
+    if (picker.value === 'mundian' || (picker.value === 'file' && fileUrl) || Object.hasOwn(tracks, picker.value)) selectTrack(picker.value as Track);
   });
   fileInput?.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
@@ -244,9 +257,14 @@ export function mountOpeningTune() {
     cancelOpening();
     status.textContent = '';
     try {
-      if (track === 'file') {
+      if (track === 'file' || track === 'mundian') {
         stop();
-        await playFile();
+        const source = track === 'file' ? fileUrl : bundledUrl;
+        if (source) await playFile(source);
+        else {
+          void prepareBundledClip();
+          status.textContent = 'The tune is still loading. Tap Preview again.';
+        }
       } else if (Audio) {
         context ||= new Audio();
         if (context.state !== 'running') await context.resume();
@@ -254,6 +272,7 @@ export function mountOpeningTune() {
       }
     } catch { status.textContent = 'The tune could not play. Try another audio file or track.'; }
   });
+  if (track === 'mundian' && enabled) void prepareBundledClip();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') { cancelOpening(); stop(); }
   });

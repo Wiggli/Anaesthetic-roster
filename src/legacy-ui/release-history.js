@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["63.1","14 November 2026","Mundian To Bach Ke opening tune",["Includes an eight-second clip of Mundian To Bach Ke as the default opening tune, with no separate download.","Keeps the sound switch and all saved track preferences."],"normal"],
   ["63.0","14 November 2026","Longer opening riff and your own audio",["Extends the built-in Bollywood-style riff to about four seconds.","Adds a local audio file option in Account → Appearance, with an eight-second playback limit.","Enables opening tunes by default for devices without a saved preference."],"normal"],
   ["62.0","14 November 2026","Pick an opening tune",["Adds two original opening tunes, a Bollywood-style riff and a softer Night chime.","Account → Appearance lets you preview tracks, choose one and turn opening playback on or off for this device."],"normal"],
   ["61.1","14 November 2026","Tap the date to open the calendar",["The date on Night, Changes and Breaks opens the browser’s native calendar directly.","The previous and next night arrows and the shared selected date continue to work alongside the calendar."],"normal"],
