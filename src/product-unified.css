@@ -265,8 +265,20 @@ main { width: 100%; max-width: none; margin: 0; padding: 0; padding-bottom: calc
 .rosterDateControl > button { grid-row: 1; width: 44px; min-width: 44px; height: 44px; margin: 0; padding: 0; border: 0; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-title); box-shadow: none; }
 .rosterDateControl > button:first-child { grid-column: 1; }
 .rosterDateControl > button:last-child { grid-column: 3; }
-.rosterDateControl > input[type="date"] { position: static; inset: auto; transform: none; grid-column: 2; grid-row: 1; width: 100%; min-width: 0; max-width: 100%; height: 44px; margin: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
-.rosterDateText { grid-column: 2; grid-row: 1; z-index: 1; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 0 4px; color: var(--liquid-label); -webkit-text-fill-color: currentColor; font-size: var(--unified-type-body); font-weight: 650; line-height: 1.4; white-space: normal; text-align:center; cursor: pointer; }
+.rosterDateControl[data-coherent-date] > input[type="date"] {
+  position: relative; inset: auto; transform: none; grid-column: 2; grid-row: 1; z-index: 2;
+  width: 100%; min-width: 0; max-width: 100%; height: 100%; min-height: 44px;
+  margin: 0; padding: 0; border: 0; opacity: 0; pointer-events: auto; cursor: pointer;
+  -webkit-appearance: auto; appearance: auto;
+}
+.rosterDateControl[data-coherent-date] > input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute; inset: 0; box-sizing: border-box;
+  width: 100%; height: 100%; margin: 0; padding: 0; cursor: pointer;
+}
+.rosterDateText { grid-column: 2; grid-row: 1; z-index: 1; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 0 4px; color: var(--liquid-label); -webkit-text-fill-color: currentColor; font-size: var(--unified-type-body); font-weight: 650; line-height: 1.4; white-space: normal; text-align: center; pointer-events: none; }
+.rosterDateControl > input:focus-visible + .rosterDateText { outline: 2px solid var(--accent-primary); outline-offset: -2px; border-radius: var(--unified-radius-control); }
+.rosterDateControl > input:disabled + .rosterDateText { opacity: .6; }
+
 .dateResetBtn { justify-self: center; margin: 0; padding: 4px 8px; border: 0; background: transparent; color: var(--liquid-accent-strong); font-size: var(--unified-type-caption); }
 /* A single strong allocation surface, with spacing rather than nested borders. */
 .nightOverviewPanel, .changePanel { margin: 12px 0 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }

@@ -360,3 +360,29 @@ test('staffing sheets confirm writes independently of refresh and retain an unco
   await expect(page.locator('#toast')).toContainText('Review Cover Nurse added for overtime');
   expect(errors).toEqual([]);
 });
+
+test('all three roster dates put the native date input under the displayed date @iphone', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await ready(page);
+  for (const [view,id] of [['today','datePick'],['changes','changesDatePick'],['breaks','breakDatePick']]) {
+    await page.evaluate(view=>show(view),view);
+    const input=page.locator('#'+id);
+    const control=input.locator('..');
+    const label=control.locator('.rosterDateText');
+    await expect(label).toBeVisible();
+    await expect(label).toHaveAttribute('aria-hidden','true');
+    expect(await label.evaluate(el=>{
+      const rect=el.getBoundingClientRect();
+      const target=document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2);
+      return target instanceof HTMLInputElement && target.type==='date' && !target.disabled;
+    })).toBe(true);
+    await input.focus();
+    await expect(input).toBeFocused();
+  }
+  await page.locator('#breakDatePick').fill('2026-10-12');
+  for(const id of ['datePick','changesDatePick','breakDatePick']){
+    await expect(page.locator('#'+id)).toHaveValue('2026-10-12');
+  }
+  await page.locator('#breakNextNightBtn').click();
+  await expect(page.locator('#datePick')).toHaveValue('2026-10-16');
+});
