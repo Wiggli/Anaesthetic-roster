@@ -38,7 +38,7 @@ export default defineConfig({
       filename: 'service-worker.js',
       injectRegister: false,
       manifest: false,
-      injectManifest: { globPatterns: ['assets/**/*.{js,css}'], minify: false }
+      injectManifest: { globPatterns: ['assets/**/*.{js,css,mp3}'], minify: false }
     })
   ]
 });

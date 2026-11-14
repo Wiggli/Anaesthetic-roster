@@ -105,7 +105,7 @@ assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must
 
 // Keep launch audio on by default, and only play once after a gesture.
 (async () => {
-  const script = require('node:module').stripTypeScriptTypes(read('src/opening-tune.ts')).replace(/^import .*\n/m, '').replace('export function', 'function');
+  const script = require('node:module').stripTypeScriptTypes(read('src/opening-tune.ts')).replace(/^import .*\n/gm, '').replace('export function', 'function');
   class Control {
     listeners = {};
     addEventListener(name, callback) { this.listeners[name] = callback; }
@@ -113,7 +113,7 @@ assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must
   const toggle = new Control(), picker = new Control(), preview = new Control(), status = new Control();
   picker.querySelector = () => null;
   const elements = {openingTuneEnabled:toggle,openingTuneTrack:picker,openingTunePreview:preview,openingTuneStatus:status};
-  const events = {}, stored = new Map(), sound = [];
+  const events = {}, stored = new Map(), sound = [], media = [];
   let ready = false, checkLaunch;
   const launch = {classList:{contains:()=>ready}};
   class Audio {
@@ -122,16 +122,29 @@ assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must
     createGain() { return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}}, connect(target){return target}, disconnect(){}}; }
     createOscillator() { return {frequency:{setValueAtTime:(value)=>sound.push(value),exponentialRampToValueAtTime(){}},connect(target){return target},start(){},stop(){}}; }
   }
+  class Media {
+    constructor(source) { this.source = source; }
+    async play() { media.push(this.source); }
+    pause() {}
+    addEventListener() {}
+  }
   const activation = {hasBeenActive:false};
   const env = {
-    window:{AudioContext:Audio,accountPresentationElement:id=>elements[id],setTimeout(){}},
+    window:{AudioContext:Audio,Audio:Media,accountPresentationElement:id=>elements[id],setTimeout(){}},
     document:{visibilityState:'visible',getElementById:()=>launch,addEventListener:(name,cb)=>events[name]=cb,removeEventListener:name=>delete events[name]},
+    openingClip:'assets/mundian-opening.mp3',
+    fetch:async () => ({ok:true,blob:async()=>({})}),
+    URL:{createObjectURL:()=> 'blob:opening-clip'},
     HTMLButtonElement:Control, navigator:{userActivation:activation},
     localStorage:{getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
     MutationObserver:class {constructor(callback){checkLaunch=callback} observe(){} disconnect(){}}
   };
   vm.runInNewContext(script + '\nmountOpeningTune();', env);
   assert.equal(toggle.checked,true);
+  assert.equal(picker.value,'mundian','the supplied recording is the default');
+  await new Promise(resolve=>setImmediate(resolve));
+  await preview.listeners.click();
+  assert.deepEqual(media,['blob:opening-clip']);
   toggle.checked=false;
   toggle.listeners.change();
   picker.value='night';

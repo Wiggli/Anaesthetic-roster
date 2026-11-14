@@ -1,12 +1,11 @@
 {
-  "version": "63.0",
+  "version": "63.1",
   "date": "14 November 2026",
-  "title": "Longer opening riff and your own audio",
-  "summary": "Play a longer opening riff or choose an audio clip from your device.",
+  "title": "Mundian To Bach Ke opening tune",
+  "summary": "The Panjabi MC riff is now included as the default opening tune.",
   "changes": [
-    "Extends the built-in Bollywood-style riff to about four seconds.",
-    "Adds a local audio file option in Account → Appearance, with an eight-second playback limit.",
-    "Enables opening tunes by default for devices without a saved preference."
+    "Includes an eight-second clip of Mundian To Bach Ke as the default opening tune, with no separate download.",
+    "Keeps the sound switch and all saved track preferences."
   ],
   "update_policy": "normal"
 }
