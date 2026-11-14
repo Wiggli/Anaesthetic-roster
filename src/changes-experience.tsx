@@ -55,6 +55,8 @@ type RoleOverride = {
 
 export type ChangesExperience = {
   availableParts?: AvailablePartsModel;
+  dateLabel: string;
+  date: string;
   absences: StaffingRecord[];
   overtime: StaffingRecord[];
   history: HistoryRecord[];
@@ -93,7 +95,7 @@ function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; emp
       ? <ListRow
           key={`absence-${record.id}`}
           className="changeItem"
-          title={<span className="tw:flex tw:items-center tw:gap-2"><span>{record.name}</span><Badge tone="danger">{record.status}</Badge></span>}
+          title={<span className="tw:flex tw:items-center tw:gap-2"><span>{record.name}</span></span>}
           subtitle={<><span>{record.meta.split(' · Updated by ')[0]}</span></>}
           trailing={<Pressable
             type="button"
@@ -182,7 +184,8 @@ function AllocationList({ model }: { model: ChangesExperience }) {
 
 function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {
   const records = mode === 'absence' ? model.absences : model.overtime;
-  const [open, setOpen] = useState(false);
+  const [openFor, setOpenFor] = useState<{ date: string; label: string } | null>(null);
+  const open = Boolean(openFor);
   const sheet = useRef<HTMLDialogElement>(null);
   const editing = mode === 'absence' ? model.forms.editing : null;
   const [saving, setSaving] = useState(false);
@@ -193,18 +196,18 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
   }, [model, mode, open]);
 
   useEffect(() => {
-    if (editing?.id) setOpen(true);
-  }, [editing?.id]);
+    if (editing?.id) setOpenFor({ date: model.date, label: model.dateLabel });
+  }, [editing?.id, model.date, model.dateLabel]);
 
   useEffect(() => {
-    const openStaffing = (event: Event) => { if ((event as CustomEvent).detail?.mode === mode) setOpen(true); };
+    const openStaffing = (event: Event) => { if ((event as CustomEvent).detail?.mode === mode) setOpenFor({ date: model.date, label: model.dateLabel }); };
     const saveState = (event: Event) => {
       const detail = (event as CustomEvent).detail;
       if (detail.mode !== mode) return;
       setSaving(detail.saving);
       if (detail.saved) {
         sheet.current?.close();
-        setOpen(false);
+        setOpenFor(null);
       }
     };
     window.addEventListener('roster:open-staffing', openStaffing);
@@ -213,14 +216,14 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
       window.removeEventListener('roster:open-staffing', openStaffing);
       window.removeEventListener('roster:staffing-save', saveState);
     };
-  }, [mode]);
+  }, [mode, model.date, model.dateLabel]);
 
   const inputClass = 'tw:min-h-12 tw:w-full tw:rounded-[14px] tw:border tw:border-black/[0.07] tw:bg-[var(--card)] tw:px-3.5 tw:text-sm tw:outline-none tw:focus:border-blue-500/45 tw:focus:ring-2 tw:focus:ring-blue-500/12 tw:dark:border-white/10';
   const title = mode === 'absence' ? (editing ? 'Edit absence' : 'Add absence') : 'Add overtime nurse';
-  const summary = records.length ? `${records.length} recorded` : 'None recorded';
+  const summary = records.length ? `${records.length} recorded` : '';
   const close = () => {
     if (saving) return;
-    setOpen(false);
+    setOpenFor(null);
     if (editing) dispatchAction({ action: 'absence-cancel' });
   };
 
@@ -271,11 +274,11 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
 
   return <div className="staffingEditor">
     <div className="staffingActionRow">
-      <span className="staffingActionCopy"><strong>{summary}</strong></span>
+      {summary && <span className="staffingActionCopy"><strong>{summary}</strong></span>}
       <Pressable
         type="button"
         className="staffingAddButton"
-        onClick={() => setOpen(true)}
+        onClick={() => setOpenFor({ date: model.date, label: model.dateLabel })}
         aria-haspopup="dialog"
         aria-expanded={open}
       >{mode === 'absence' ? 'Add absence' : 'Add overtime'}</Pressable>
@@ -287,6 +290,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
         onCancel={event => { event.preventDefault(); close(); }}
         onClick={event => { const box = event.currentTarget.getBoundingClientRect(); if (event.target === event.currentTarget && (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)) close(); }}
         className="staffingSheet"
+        data-roster-night={openFor?.date}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -296,7 +300,7 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
       >
         <div className="staffingSheetHandle" aria-hidden="true" />
         <div className="staffingSheetHeader">
-          <h3>{title}</h3>
+          <div><h3>{title}</h3><p className="staffingSheetDate">{openFor?.label}</p></div>
           <button
             type="button"
             className="staffingSheetClose"
@@ -305,23 +309,19 @@ function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absen
             aria-label={`Close ${title}`}
           >×</button>
         </div>
-        <div className="staffingSheetBody">{form}</div>
+        <div className="staffingSheetBody">
+          {openFor?.date === model.date ? form : <p role="status">The selected night has changed. Reopen this form for the night you want to edit.</p>}
+        </div>
       </motion.dialog>
     </>}
   </div>;
 }
 function RoleOverrideEditor({ model }: { model: RoleOverride }) {
-  const fourPending = model.mode === '4' && !model.stored;
-  useLayoutEffect(() => {
-    const summary = document.getElementById('allocationSummary');
-    if (summary) summary.hidden = fourPending;
-    return () => { if (summary) summary.hidden = false; };
-  }, [fourPending]);
   if (model.notice) return <div className="time">{model.notice}</div>;
 
   return <details className="nightRoleEditor" open={model.mode === '4' || model.open}>
     <summary>
-      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Theatre and Pager assignments'}</b>{(model.stored || model.dirty || model.mode === '4') && <small>{model.summary}</small>}</span>
+      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Swap assignments'}</b>{(model.stored || model.dirty || model.mode === '4') && <small>{model.summary}</small>}</span>
       <span aria-hidden="true">›</span>
     </summary>
     <div className="nightRoleEditorBody">
@@ -365,7 +365,7 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 }
 
 export function renderChangesExperience(model: ChangesExperience) {
-  rootFor('changesAvailableParts')?.render(<AvailableParts model={model.availableParts} onAllocate={() => dispatchAction({ action: 'allocation' })} />);
+  rootFor('changesAvailableParts')?.render(<AvailableParts model={model.availableParts} hideWhenComplete />);
   rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
   rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);

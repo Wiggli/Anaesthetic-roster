@@ -34,15 +34,15 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Night Roster" />
-    <link rel="preload" href="icon-192.png?v=60.1" as="image" vite-ignore />
-    <script src="theme-bootstrap.js?v=60.1" vite-ignore></script>
-    <script src="night-welcome.js?v=60.1" defer vite-ignore></script>
-    <link rel="manifest" href="manifest.webmanifest?v=60.1" vite-ignore />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=60.1" vite-ignore />
+    <link rel="preload" href="icon-192.png?v=61.0" as="image" vite-ignore />
+    <script src="theme-bootstrap.js?v=61.0" vite-ignore></script>
+    <script src="night-welcome.js?v=61.0" defer vite-ignore></script>
+    <link rel="manifest" href="manifest.webmanifest?v=61.0" vite-ignore />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=61.0" vite-ignore />
     <title>Anaesthetic Night Roster</title>
-    <link rel="stylesheet" href="styles.css?v=60.1" vite-ignore />
-    <link rel="stylesheet" href="chat.css?v=60.1" vite-ignore />
-    <link rel="stylesheet" href="night-welcome.css?v=60.1" vite-ignore />
+    <link rel="stylesheet" href="styles.css?v=61.0" vite-ignore />
+    <link rel="stylesheet" href="chat.css?v=61.0" vite-ignore />
+    <link rel="stylesheet" href="night-welcome.css?v=61.0" vite-ignore />
   </head>
   <body class="authPending">
     <div class="appStatusBarBacking" aria-hidden="true"></div>
@@ -59,12 +59,12 @@
       </div>
       <div class="launchContent">
         <div class="launchHospital">
-          <img src="mater-dei-logo.png?v=60.1" alt="SPTAR Mater Dei" vite-ignore />
+          <img src="mater-dei-logo.png?v=61.0" alt="SPTAR Mater Dei" vite-ignore />
           <span>Main Operating Theatres</span>
         </div>
         <div class="launchMessage">
           <div class="launchMark" aria-hidden="true">
-            <span><img src="icon-192.png?v=60.1" alt="" vite-ignore /></span>
+            <span><img src="icon-192.png?v=61.0" alt="" vite-ignore /></span>
             <i></i>
           </div>
           <span>Anaesthetic Night Roster</span>
@@ -88,7 +88,7 @@
         <div class="authWelcome">
           <div class="authHospital">
             <img
-              src="mater-dei-logo.png?v=60.1"
+              src="mater-dei-logo.png?v=61.0"
               alt="Mater Dei Hospital"
             vite-ignore /><span>Main Operating Theatres</span>
           </div>
@@ -211,7 +211,7 @@
           <header id="appHeader">
           <div class="hospitalStrip">
             <div class="primaryInstitutionBrand">
-            <img src="mater-dei-logo.png?v=60.1" alt="Mater Dei Hospital" vite-ignore /><span
+            <img src="mater-dei-logo.png?v=61.0" alt="Mater Dei Hospital" vite-ignore /><span
               >Main Operating Theatres</span
             >
           </div>
@@ -299,7 +299,7 @@
 
           <section class="teamOverviewGroup" aria-labelledby="nightSummaryHeading">
             <div class="sectionHeadingRow nightSummaryTitle">
-              <h2 id="nightSummaryHeading" class="sectionTitle">Tonight’s plan</h2>
+              <h2 id="nightSummaryHeading" class="sectionTitle">Team assignments</h2>
               <button type="button" id="nightTeamInfoBtn" class="nightTeamInfoBtn" aria-label="Night brief and allocation explanations" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7v1"></path></svg></button>
             </div>
             <div class="nightOverviewBoard">
@@ -307,13 +307,7 @@
               <div id="alerts"></div>
 
               <details class="nightTeamDetails" open>
-                <summary>
-                  <span class="nightOverviewIcon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h16"></path><circle cx="8" cy="6.5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="11" cy="17.5" r="1"></circle></svg>
-                  </span>
-                  <span><strong>Theatre and Pager</strong></span>
-                  <span aria-hidden="true">›</span>
-                </summary>
+                <summary class="srOnly">Theatre and Pager</summary>
                 <div id="roles" class="roles"></div>
                 <div id="fiveArrangement"></div>
                 <div class="rosterShortcutRow">
@@ -344,7 +338,7 @@
       <section id="changes" class="view hidden">
         <div class="primaryScreenHeader appScreenHeader changesScreenHeader">
           <div class="primaryInstitution">
-            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=60.1" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
+            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=61.0" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
             <div class="primaryHeaderActions" aria-label="App controls">
               <button type="button" class="primaryHeaderAction primaryHeaderAdmin hidden" data-shell-settings aria-label="Roster management">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path></svg>
@@ -385,16 +379,12 @@
               <span class="liveDot"></span><span id="syncText">Connecting</span>
             </div>
           </div>
-          <div id="changesWorkflowExperience">
-          <div class="changesWorkflowTabs" role="tablist" aria-label="Changes steps">
-            <button type="button" class="active" data-changes-step="staffing" role="tab" aria-selected="true"><span>1</span><b>People</b><small id="staffingStepState">Record people</small></button>
-            <button type="button" data-changes-step="allocation" role="tab" aria-selected="false"><span>2</span><b>Roles</b><small id="allocationStepState">Review roles</small></button>
-            <button type="button" data-changes-step="confirm" role="tab" aria-selected="false"><span>3</span><b>Review</b><small id="confirmStepState">Review plan</small></button>
+          <div id="changesWorkflowExperience" class="staffingNext" hidden>
+            <span id="changesWorkflowState" role="status" aria-live="polite"></span>
+            <button type="button" id="continueToAllocationBtn" class="staffingNextLink">Assign cover</button>
+            <button type="button" id="continueToConfirmBtn" class="staffingNextLink" hidden>Review and share</button>
           </div>
-          <div id="changesWorkflowState" class="changesWorkflowState" role="status" aria-live="polite"></div>
-          </div>
-          <div id="changesAvailableParts"></div>
-          <div id="changesStaffingPane" class="changesStepPane" role="tabpanel" aria-label="Staffing">
+          <div id="changesStaffingPane" tabindex="-1" class="changesStepPane" aria-label="Staffing">
           <div class="staffingSection absenceSection">
             <div class="stepHeader">
               <span>1</span>
@@ -411,41 +401,31 @@
             <div id="overtimeFormExperience"></div>
             <div id="overtimeList" class="overtimeList"></div>
           </div>
-            <button type="button" id="continueToAllocationBtn" class="primary wide continueWorkflowBtn">Continue to allocation</button>
           </div>
-          <div id="changesAllocationPane" class="changesStepPane hidden" role="tabpanel" aria-label="Allocation">
+          <div id="changesAllocationPane" tabindex="-1" class="changesStepPane" aria-label="Cover and assignments">
+            <div id="changesAvailableParts"></div>
+            <div class="staffingSection allocationSection" hidden>
+              <h3>Assign cover</h3>
+              <div id="fiveCoverStep"></div>
+              <div id="allocationSummary" class="allocationSummary"></div>
+              <div id="allocationList" class="allocationList"></div>
+            </div>
             <div id="nightRoleOverrideStep" class="nightRoleOverrideStep"></div>
-            <details class="fixedAllocationBox"><summary id="fixedAllocationSummary">Already allocated roles</summary><div id="fixedAllocationList"></div></details>
-          <div class="staffingSection allocationSection">
-            <div class="stepHeader">
-              <span>2</span>
-              <h3>Finalise selected-night allocations</h3>
-            </div>
-            <div class="time">
-              Applies to this night only.
-            </div>
-            <div id="fiveCoverStep"></div>
-            <div id="allocationSummary" class="allocationSummary"></div>
-            <div id="allocationList" class="allocationList"></div>
+            <p id="continueToConfirmReason" class="disabledReason hidden" role="status"></p>
           </div>
-            <button type="button" id="continueToConfirmBtn" class="primary wide continueWorkflowBtn">Review changes</button>
-            <p id="continueToConfirmReason" class="disabledReason hidden" role="status" aria-live="polite"></p>
-          </div>
-          <div id="changesConfirmPane" class="changesStepPane hidden" role="tabpanel" aria-label="Confirm">
+          <div id="changesConfirmPane" tabindex="-1" class="changesStepPane" aria-label="Review and share">
             <p id="confirmationStatus" class="confirmationStatus hidden" role="status"></p>
             <div class="confirmationCard">
-              <div class="stepHeader"><span>3</span><h3>Confirm selected-night changes</h3></div>
-              <div class="time" id="confirmationIntro">Check the changed names and roles before sharing them with everyone.</div>
+              <div class="stepHeader"><span>3</span><h3>Review and share</h3></div>
               <div id="confirmationPreview" class="confirmationPreview"></div>
               <button class="primary wide" id="saveAllocationsBtn" type="button">Save selected-night allocations</button>
               <div id="allocationFormMessage" class="formMessage" role="status" aria-live="polite"></div>
             </div>
-            <div id="confirmHint" class="confirmHint hidden">Night and Breaks update together after the plan is confirmed.</div>
           </div>
           <details class="historyBox">
             <summary>
               <span class="historySummaryIcon" aria-hidden="true">↻</span>
-              <span class="historySummaryCopy"><strong>Activity for this night</strong><small>Staffing and allocation history</small></span>
+              <span class="historySummaryCopy"><strong>Activity</strong></span>
               <span class="historySummaryChevron" aria-hidden="true">›</span>
             </summary>
             <div id="changeHistory"></div>
@@ -475,7 +455,7 @@
       <section id="breaks" class="view hidden">
         <div class="primaryScreenHeader appScreenHeader breaksScreenHeader">
           <div class="primaryInstitution">
-            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=60.1" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
+            <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=61.0" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
             <div class="primaryHeaderActions" aria-label="App controls">
               <button type="button" class="primaryHeaderAction primaryHeaderAdmin hidden" data-shell-settings aria-label="Roster management">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path></svg>
@@ -522,7 +502,7 @@
         <div class="chatScreen">
           <div class="primaryScreenHeader appScreenHeader chatScreenHeader">
             <div class="primaryInstitution">
-              <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=60.1" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
+              <span class="primaryInstitutionBrand"><img src="mater-dei-logo.png?v=61.0" alt="Mater Dei Hospital" vite-ignore /><span>Main Operating Theatres</span></span>
               <div class="primaryHeaderActions" aria-label="App controls">
                 <button type="button" class="primaryHeaderAction primaryHeaderAdmin hidden" data-shell-settings aria-label="Roster management">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"></path></svg>
@@ -1339,8 +1319,7 @@
       <div class="sheetGrabber" aria-hidden="true"></div>
       <div class="quickActionsHead">
         <div>
-          <span>Actions</span>
-          <h2 id="quickActionsTitle">What do you need to do?</h2>
+          <h2 id="quickActionsTitle">Actions</h2>
         </div>
         <button type="button" id="closeQuickActionsSheet">Done</button>
       </div>
@@ -1353,9 +1332,9 @@
           <section class="quickActionGroup">
             <div class="quickActionGroupHeading"><span>This night</span></div>
             <div class="quickActionList">
-              <button type="button" id="quickAbsenceFallback" class="quickActionRow" data-quick-action="absence"><span class="quickActionCopy"><strong>Report an absence</strong><small>Record confirmed leave or sickness</small></span><span class="quickActionChevron">›</span></button>
-              <button type="button" id="quickOvertimeFallback" class="quickActionRow" data-quick-action="overtime"><span class="quickActionCopy"><strong>Add overtime cover</strong><small>Add a nurse covering this selected night</small></span><span class="quickActionChevron">›</span></button>
-              <button type="button" class="quickActionRow" data-quick-action="roles"><span class="quickActionCopy"><strong>Swap assignments</strong><small>Edit theatre and Pager roles</small></span></button><button type="button" class="quickActionRow" data-quick-action="breaks"><span class="quickActionCopy"><strong>View break arrangement</strong><small>Follows the latest saved roles</small></span></button><button type="button" class="quickActionRow" data-quick-action="review"><span class="quickActionCopy"><strong>Review this night’s changes</strong><small>People, roles and the updated plan</small></span><span class="quickActionChevron">›</span></button>
+              <button type="button" id="quickAbsenceFallback" class="quickActionRow" data-quick-action="absence"><span class="quickActionCopy"><strong>Add absence</strong><small>Record confirmed leave or sickness</small></span><span class="quickActionChevron">›</span></button>
+              <button type="button" id="quickOvertimeFallback" class="quickActionRow" data-quick-action="overtime"><span class="quickActionCopy"><strong>Add overtime</strong><small>Add a nurse covering this selected night</small></span><span class="quickActionChevron">›</span></button>
+              <button type="button" class="quickActionRow" data-quick-action="roles"><span class="quickActionCopy"><strong>Swap assignments</strong><small>Edit theatre and Pager roles</small></span></button><button type="button" class="quickActionRow" data-quick-action="breaks"><span class="quickActionCopy"><strong>View breaks</strong><small>Follows the latest saved roles</small></span></button><button type="button" class="quickActionRow" data-quick-action="review"><span class="quickActionCopy"><strong>Open Changes</strong></span><span class="quickActionChevron">›</span></button>
             </div>
           </section>
           <section class="quickActionGroup">
@@ -1431,12 +1410,12 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0" integrity="sha384-JWPr1lzjf+jjJ71qGLw1lHMKUHv7yDav6u6Tj3N20nSHfNNxj7XuXL437qT48zOD" crossorigin="anonymous"></script>
-    <script src="domain-logic.js?v=60.1" vite-ignore></script>
-    <script src="runtime-foundation.js?v=60.1" vite-ignore></script>
-    <script src="app-core.js?v=60.1" vite-ignore></script>
-    <script src="app-ui.js?v=60.1" vite-ignore></script>
-    <script src="push.js?v=60.1" vite-ignore></script>
-    <script src="chat.js?v=60.1" vite-ignore></script>
+    <script src="domain-logic.js?v=61.0" vite-ignore></script>
+    <script src="runtime-foundation.js?v=61.0" vite-ignore></script>
+    <script src="app-core.js?v=61.0" vite-ignore></script>
+    <script src="app-ui.js?v=61.0" vite-ignore></script>
+    <script src="push.js?v=61.0" vite-ignore></script>
+    <script src="chat.js?v=61.0" vite-ignore></script>
     <script type="module" src="/src/launch.tsx"></script>
   </body>
 </html>

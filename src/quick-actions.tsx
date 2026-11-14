@@ -1,7 +1,7 @@
 import { useProductReducedMotion } from './product-motion';
 import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Badge, Pressable } from './ui-system';
+import { Pressable } from './ui-system';
 
 export type QuickActionsModel = {
   contextLabel: string;
@@ -61,9 +61,6 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
   const blocked = !model.canEdit;
   const editReason = model.editReason || 'Shared editing is temporarily unavailable.';
   const contextAria = model.contextLabel + ', ' + model.dateLabel + ', ' + model.staffingLabel + ', ' + model.planLabel;
-  const attentionDetail = model.attentionCount
-    ? model.attentionCount + ' item' + (model.attentionCount === 1 ? ' needs' : 's need') + ' attention'
-    : '';
 
   return <motion.div
     className="quickActionsExperience quickActionsFocused"
@@ -72,8 +69,8 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
     transition={reduced ? { duration: 0 } : { duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
   >
     <div className="quickActionsContextBar" aria-label={contextAria}>
-      <span className="quickContextNight"><small>{model.contextLabel}</small><strong>{model.dateLabel}</strong></span>
-      <span className="quickContextPlan"><b>{model.staffingLabel}</b><small>{model.planLabel}</small></span>
+      <span className="quickContextNight"><strong>{model.dateLabel}</strong></span>
+      <span className="quickContextPlan"><b>{model.staffingLabel}</b></span>
     </div>
 
     {blocked && <p className="quickEditRestriction" role="status">{editReason}</p>}
@@ -81,27 +78,25 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
       <PrimaryAction
         action="absence"
         icon="absence"
-        title="Someone is absent"
+        title="Add absence"
         disabled={blocked}
       />
       <PrimaryAction
         action="overtime"
         icon="overtime"
-        title="Add overtime cover"
+        title="Add overtime"
         disabled={blocked}
       />
       <PrimaryAction action="roles" icon="review" title="Swap assignments" disabled={blocked} />
-      <PrimaryAction action="breaks" icon="review" title="View break arrangement" />
+      <PrimaryAction action="breaks" icon="review" title="View breaks" />
     </section>
 
     <Pressable type="button" className="quickReviewAction" onClick={() => act('review')}>
       <span className="quickReviewIcon"><Icon kind="review" /></span>
       <span className="quickReviewCopy">
 
-        <strong>{model.attentionCount ? 'Review changes' : 'Review this night'}</strong>
-        {attentionDetail && <span>{attentionDetail}</span>}
+        <strong>{model.attentionCount ? 'Review changes' : 'Open Changes'}</strong>
       </span>
-      {model.attentionCount ? <Badge tone="warning" className="quickReviewBadge">{model.attentionCount}</Badge> : null}
       <span className="quickActionChevron" aria-hidden="true">›</span>
     </Pressable>
 

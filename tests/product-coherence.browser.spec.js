@@ -49,10 +49,9 @@ for (const width of [320, 360, 390, 412, 430]) {
       }
     }
     await page.evaluate(() => show('changes'));
-    await expect(page.locator('#changes [role="tablist"]')).toHaveCount(1);
-    await expect(page.locator('#changes .changesWorkflowTabs')).toHaveCount(0);
-    await page.getByRole('tab', { name: /Allocation/ }).click();
-    await expect(page.locator('#changesAllocationPane')).toBeVisible();
+    await expect(page.locator('#changes [role="tablist"]')).toHaveCount(0);
+    await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Add overtime',exact:true})).toBeVisible();
     await page.evaluate(() => show('today'));
     const labels = page.locator('.nightTimelinePhaseLabels');
     const scale = page.locator('.nightTimelineScale');
@@ -95,16 +94,6 @@ test('Account child navigation preserves unsaved profile input and restores Noti
   expect(await page.locator('[data-push-mute]').first().evaluate(el=>typeof el.onclick)).toBe('function');
   await page.evaluate(()=>showAccountSection('home'));
   await expect(page.locator('#pushEnableBtn')).toHaveCount(0);
-});
-
-test('Changes keeps one functional fallback rail when its optional React module fails @iphone', async ({page}) => {
-  await page.route('**/assets/changes-workflow-*.js', route=>route.abort());
-  await openReview(page, true);
-  await page.evaluate(()=>show('changes'));
-  await expect(page.locator('#changes [role="tablist"]')).toHaveCount(1);
-  await expect(page.locator('#changes .changesWorkflowTabs')).toBeVisible();
-  await page.locator('#changes [data-changes-step="allocation"]').click();
-  await expect(page.locator('#changesAllocationPane')).toBeVisible();
 });
 
 module.exports = {openReview};

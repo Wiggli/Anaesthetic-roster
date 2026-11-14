@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const clinicalExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'clinical-experience.tsx'), 'utf8');
-const changesWorkflowExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-workflow.tsx'), 'utf8');
+
 const changesConfirmationExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'changes-confirmation.tsx'), 'utf8');
 const presentationCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'presentation.css'), 'utf8');
 const accountExperience = fs.readFileSync(path.join(__dirname, '..', 'src', 'account-experience.tsx'), 'utf8');
@@ -426,13 +426,13 @@ assert.match(html, /id="screenInfoSheet"[\s\S]*aria-labelledby="screenInfoTitle"
 assert.match(ui, /data-go-absence[\s\S]*data-go-overtime/, 'Night summary must link absences and overtime to their exact sections');
 assert.match(ui, /bindStaffingTarget\('data-go-absence','\.absenceSection'\)[\s\S]*bindStaffingTarget\('data-go-overtime','\.overtimeSection'\)/, 'summary shortcuts must focus the relevant staffing form');
 assert.doesNotMatch(html, /historyStep">4/, 'activity history must not appear as a fourth workflow step');
-assert.match(html, /Activity for this night/, 'staffing history must have a clear non-step label');
+assert.match(html, /<strong>Activity<\/strong>/, 'staffing history must have a clear non-step label');
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=staffingSaveInFlight\|\|offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=staffingSaveInFlight\|\|offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /dirty=!!\(draft&&roleAssignmentsDiffer/, 'role adapter requires a genuine changed draft');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'active typed role-save controls only appear for a changed draft');
 assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
-assert.match(ui, /changesSmartDefaultDate!==base\.date[\s\S]*activeChangesStep=smartChangesStep\(base\)/, 'the smart Changes default must apply once per selected night rather than fighting manual navigation');
-assert.match(changesWorkflowExperience, /role="status" aria-live="polite"[\s\S]*model.headline/, 'Changes must name the remaining decision in accessible live feedback');
+assert.doesNotMatch(html, /data-changes-step=/, 'staffing, cover and review share a continuous page');
+assert.match(html, /id="changesWorkflowState" role="status" aria-live="polite"/, 'Changes announces the next action');
 assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
 assert.match(ui, /function allLocalChangesDraftParts\(\)[\s\S]*allocationDrafts[\s\S]*nightRoleOverrideDrafts[\s\S]*protectLocalChangesDraft[\s\S]*beforeunload',protectLocalChangesDraft/, 'leaving or reloading must protect unfinished Changes work across selected nights');
 assert.match(ui, /function applyWaitingUpdate\(\)[\s\S]*allLocalChangesDraftParts\(\)[\s\S]*before updating so your work is not lost[\s\S]*ACTIVATE_UPDATE/, 'accepted PWA updates must not discard unfinished local Changes work');
@@ -454,13 +454,13 @@ assert.match(ui, /confirmationChangedRows\(base,r,order\)[\s\S]*confirmationReas
 assert.match(ui, /selectedNightCopy\(base\.date\)[\s\S]*assignmentLabel:nightCopy\.assignment[\s\S]*period:assignment\.period,breakLabel:assignment\.breakLabel/, 'Your night must pass date-aware assignment wording, time and break separately');
 assert.doesNotMatch(ui, /<small>Tonight’s assignment<\/small>/, 'Your night must not hard-code Tonight for a future selected roster night');
 assert.doesNotMatch(clinicalExperience, /View full night/, 'Your night must not duplicate the Team allocation route with a second full-night CTA');
-assert.match(html, /class="nightTeamDetails" open[\s\S]*<strong>Theatre and Pager<\/strong>[\s\S]*id="viewRosterBtn"[\s\S]*View full roster/, 'Team allocation must remain the canonical current-night detail route with Full roster secondary inside it');
+assert.match(html, /class="nightTeamDetails" open[\s\S]*Theatre and Pager[\s\S]*id="viewRosterBtn"[\s\S]*View full roster/, 'Team allocation must remain the canonical current-night detail route with Full roster secondary inside it');
 assert.match(clinicalExperience, /model\.action === 'choose'[\s\S]*Choose your name/, 'Your night must keep the account setup action when the user has not chosen a roster identity');
-assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*<small>Duty<\/small>[\s\S]*<small>Break<\/small>[\s\S]*scanContextLabel/, 'Your night must keep Duty, Break and Colleague as the three scan-first facts');
+assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*<small>Break<\/small>[\s\S]*scanContextLabel/, 'Your night must keep break and colleague next to the duty heading');
 assert.match(clinicalExperience, /personalClockException[\s\S]*Clock-change night · equal duty[\s\S]*model\.clockChange\.partHoursLabel/, 'clock-change nights must keep their equal-duty exception prominent in the personal hero');
 assert.match(css, /#today \.personalFacts\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, 'Your night facts must retain a readable responsive grid');
 assert.match(css, /#today \.personalContextAction\{[\s\S]*min-height:48px/, 'Your night contextual action must retain a large touch target');
-assert.match(ui, /confirmationStatus\.textContent=shared\?'Plan shared':'No changes to review'/, 'the confirmation pane must show the selected night’s sharing status');
+assert.match(ui, /status\.textContent=shared\?'Plan shared':''/, 'the confirmation pane must show the selected night’s sharing status');
 assert.doesNotMatch(html, /id="labourOrderStep"/, 'obsolete Labour Ward editor markup must stay removed');
 assert.doesNotMatch(ui, /function (?:labourRoleIsReady|setLabourOrderDraft|renderLabourOrder)\(/, 'obsolete Labour Ward editor helpers must stay removed');
 
@@ -639,7 +639,7 @@ assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.sh
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');
 assert.match(ui, /function showQuickActions\(\)[\s\S]*roster:quick-actions/, 'Quick Actions must build its context from the live selected night before opening');
 assert.match(ui, /function performQuickAction\(action\)[\s\S]*show\('changes'\)[\s\S]*setChangesStep/, 'staffing Quick Actions must route into the existing Changes workflow instead of creating a mutation shortcut');
-assert.match(quickActionsExperience, /Someone is absent[\s\S]*Add overtime cover[\s\S]*Swap assignments[\s\S]*View break arrangement[\s\S]*Review this night[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
+assert.match(quickActionsExperience, /Add absence[\s\S]*Add overtime[\s\S]*Swap assignments[\s\S]*View breaks[\s\S]*Open Changes[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(ui, /function openActivityDetail[\s\S]*item\.detail\|\|'No additional reason was recorded\.'/ , 'the activity detail sheet must retain the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
@@ -718,7 +718,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:12[\s\S]*changes:8[\s\S]*breaks:6[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:12[\s\S]*changes:9[\s\S]*breaks:6[\s\S]*chat:4/, 'the refreshed onboarding generation must be active for existing users and recently updated feature tips');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf("featureEducationPage('night')") > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf("featureEducationPage('changes')") > onboardingSequence.indexOf("featureEducationPage('night')"), 'the tutorial must explain the current decision-first Changes workflow');
@@ -729,7 +729,7 @@ assert.ok(onboardingSequence.indexOf("featureEducationPage('account')") > onboar
 assert.ok(onboardingSequence.indexOf('You can always find your way back.') > onboardingSequence.indexOf("featureEducationPage('account')"), 'the tutorial must finish with share, install, updates and reusable help');
 assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup forms must stay in Account rather than first-use onboarding');
 assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
-assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Your part, then the team\.[\s\S]*The centre \+ is your shortcut\.[\s\S]*Settings live under your avatar\.[\s\S]*See the wider roster\.[\s\S]*Team chat, when you need it\.[\s\S]*People → Roles → Review\.[\s\S]*Your break, then the groups\./, 'the reusable guide must cover Night, Actions, Account, Full roster, Chat, Changes and Breaks');
+assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Find your part and the team\.[\s\S]*The centre \+ is your shortcut\.[\s\S]*Settings live under your avatar\.[\s\S]*See the wider roster\.[\s\S]*Team chat, when you need it\.[\s\S]*Staffing changes in one place\.[\s\S]*Your break, then the groups\./, 'the reusable guide must cover Night, Actions, Account, Full roster, Chat, Changes and Breaks');
 assert.match(ui, /function appGuidePage\(\)[\s\S]*Replay complete tutorial[\s\S]*Night[\s\S]*Changes[\s\S]*Actions[\s\S]*Breaks[\s\S]*Team Chat[\s\S]*Full roster[\s\S]*Account & Personalise[\s\S]*Share & install[\s\S]*What’s new & version history/, 'App Guide must expose the complete tutorial and all current feature topics');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');
@@ -739,7 +739,7 @@ assert.match(clinicalExperience, /function NightTimeline[\s\S]*Clock back/, 'clo
 assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change rail must distinguish the first and second 02:xx hour');
 assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
 assert.match(clinicalExperience, /function nightVisualPhase[\s\S]*'upcoming'[\s\S]*'handover'[\s\S]*'first'[\s\S]*'second'[\s\S]*'complete'[\s\S]*host\.dataset\.shiftPhase = nightVisualPhase/, 'personal Night must still track the live stage of the shift without restoring a countdown or a duplicate handover block');
-assert.match(clinicalExperience, /function PersonalNightCard[\s\S]*const openBreak[\s\S]*const openColleague[\s\S]*const openDutyTiming[\s\S]*personalHeroFactGrid[\s\S]*onClick=\{openDutyTiming\}[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}/, 'Duty, Break and Colleague hero facts must remain directly actionable');
+assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}[\s\S]*<NightTimeline/, 'break and colleague are direct actions, alongside the live timeline');
 assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? model.decisionTasks \|\| model.labourPending \? 'Decision needed' : 'Review changes' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share the app[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');

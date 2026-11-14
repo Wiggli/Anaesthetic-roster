@@ -195,12 +195,12 @@ for(const dark of [false,true])test('staffing activity refresh and review contra
  });
  await expect(page.locator('#changeHistory')).toContainText('Added Cover Nurse for overtime');
  await expect(page.locator('#changeHistory')).toContainText('Recorded absence for Andre');
- await page.evaluate(()=>{const b=document.getElementById('continueToConfirmBtn');b.classList.remove('hidden');b.disabled=true});
- const disabled=await page.locator('#continueToConfirmBtn').evaluate(el=>{const s=getComputedStyle(el);return{fill:s.backgroundColor,label:s.color,web:s.webkitTextFillColor}});
+ await page.evaluate(()=>{const b=document.getElementById('saveAllocationsBtn');document.querySelector('.confirmationCard').hidden=false;b.classList.remove('hidden');b.disabled=true});
+ const disabled=await page.locator('#saveAllocationsBtn').evaluate(el=>{const s=getComputedStyle(el);return{fill:s.backgroundColor,label:s.color,web:s.webkitTextFillColor}});
  expect(disabled.label).toBe(disabled.web);expect(disabled.fill).not.toBe(disabled.label);
- await page.locator('#continueToConfirmBtn').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath('activity-review.png')});
- await page.evaluate(()=>document.getElementById('continueToConfirmBtn').disabled=false);
- await expect.poll(()=>page.locator('#continueToConfirmBtn').evaluate(el=>getComputedStyle(el).color)).toBe('rgb(255, 255, 255)');expect(await page.locator('#continueToConfirmBtn').evaluate(el=>getComputedStyle(el).webkitTextFillColor)).toBe('rgb(255, 255, 255)');
+ await page.locator('#saveAllocationsBtn').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath('activity-review.png')});
+ await page.evaluate(()=>document.getElementById('saveAllocationsBtn').disabled=false);
+ await expect.poll(()=>page.locator('#saveAllocationsBtn').evaluate(el=>getComputedStyle(el).color)).toBe('rgb(255, 255, 255)');expect(await page.locator('#saveAllocationsBtn').evaluate(el=>getComputedStyle(el).webkitTextFillColor)).toBe('rgb(255, 255, 255)');
  await page.evaluate(async()=>{historyLoadedDates={};changeHistory={};overtimeHistory={};supa.rpc=async()=>({error:{code:'NETWORK'}});await loadNightHistory(cur().date)});
  await expect(page.locator('#changeHistory')).toContainText('Activity could not be loaded');
  await page.evaluate(()=>{document.querySelector('#changeHistory').closest('details').open=true;supa.rpc=async()=>({data:{items:[]},error:null})});await page.getByRole('button',{name:'Retry activity'}).click();await expect(page.locator('#changeHistory')).toContainText('No staffing change history');
@@ -237,7 +237,7 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`avai
  await expect(page.locator('#nightStatusRow .availablePartsDecision')).toContainText('Michael Debono: First Part theatre · position 1 → Seventh nurse?');
  await page.locator('#nightStatusRow .availablePartsAction').click();
  await expect(page.locator('#changesAllocationPane')).toBeVisible();
- await page.locator('[data-changes-step="staffing"]').first().click();
+ await page.locator('#changesStaffingPane').scrollIntoViewIfNeeded();
  await expect(page.locator('#changesAvailableParts')).toContainText('Reliever');
  await expect(page.getByRole('button',{name:'Choose part for Andre Seychell'})).toBeVisible();
  const row=page.locator('.overtimeItem').first();
@@ -274,7 +274,7 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`whol
  await page.evaluate(()=>{show('today');showQuickActions()});await capture('actions','#quickActionsSheet');await page.locator('#closeQuickActionsSheet').click();
  await page.evaluate(()=>{nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'},{id:'b',nurse_name:'Daniel Santucci',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'}];render();show('today')});
  await capture('night-pending','#today');await page.evaluate(()=>{show('changes');setChangesStep('staffing',false)});await capture('changes','#changes');
- await page.locator('[data-changes-step="allocation"]').first().click();await capture('roles','#changes');
+ await page.locator('#changesAllocationPane').scrollIntoViewIfNeeded();await capture('roles','#changes');
  await page.evaluate(()=>showAccountSheet());await capture('account','#accountSheet');
  for(const section of ['profile','preferences','security','notifications','help']){await page.evaluate(s=>showAccountSection(s),section);await capture('account-'+section,'#accountSheet')}
  fs.writeFileSync(`${out}/text-${width}-${theme}.json`,JSON.stringify(stats,null,2));
@@ -293,7 +293,7 @@ test('simplified views retain allocation choices, audit details and profile draf
  await expect(page.locator('#changes .workflowGuidance')).toHaveCount(0);
  await page.locator('[data-seventh-decision="overtime"]').click();await expect(page.locator('[data-seventh-decision="overtime"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#changesAvailableParts')).toContainText('Seventh nurse');
- await page.locator('[data-changes-step="staffing"]').first().click();await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
+ await page.locator('#changesStaffingPane').scrollIntoViewIfNeeded();await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'More actions for Andre Seychell'}).click();await expect(page.locator('#recordActionDetail')).toContainText('Added by Andre');await page.locator('#recordCancelAction').click();
  await page.getByRole('button',{name:'Add absence',exact:true}).click();await expect(page.getByRole('dialog',{name:'Add absence',exact:true})).toBeVisible();await page.getByRole('button',{name:'Close Add absence'}).click();
  await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});
@@ -304,11 +304,6 @@ test('simplified views retain allocation choices, audit details and profile draf
  const photo=page.locator('#profileExperience details').filter({has:page.getByText('Photo & avatar',{exact:true})});await photo.locator('summary').click();await expect(page.locator('#changeProfilePhoto')).toBeVisible();
  await page.locator('#accountBackBtn').click();await page.evaluate(()=>showAccountSection('profile'));await expect(page.locator('#profileName')).toHaveValue('Draft name');
  await page.evaluate(()=>{currentUserProfile={...currentUserProfile,email:'second@example.test',display_name:'Second Nurse'};currentPrivateProfile={profile_name:'Second Nurse',job_title:'Different title'};populateAccountSheet()});await expect(page.locator('#profileName')).toHaveValue('Second Nurse');await expect(page.locator('#profileJobTitle')).toHaveValue('Different title');
-});
-
-test('saved four-person arrangement keeps its provisional guidance visible @iphone',async({page})=>{
- await ready(page);await page.evaluate(()=>{show('changes');window.dispatchEvent(new CustomEvent('roster:changes-workflow',{detail:{active:'allocation',provisional:true,allocationExplained:false,steps:[{id:'staffing',label:'Staffing',detail:'4 present',complete:true},{id:'allocation',label:'Arrangement',detail:'Recorded',complete:true},{id:'confirm',label:'Review',detail:'Provisional',disabled:true}],headline:'Four-nurse arrangement recorded',guidance:'Four-person cover remains provisional.',tone:'automatic',progressValue:2,progressMax:3,progressLabel:'Provisional'}}))});
- await expect(page.locator('#changesWorkflowExperience .workflowGuidance')).toBeVisible();await expect(page.locator('#changesWorkflowExperience .workflowGuidance')).toContainText('provisional');await expect(page.locator('[data-changes-step="confirm"]')).toBeDisabled();
 });
 
 test('staffing sheets confirm writes independently of refresh and retain an unconfirmed draft @iphone', async ({page},testInfo) => {
