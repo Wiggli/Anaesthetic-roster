@@ -1,7 +1,7 @@
 {
   "name": "anaesthetic-night-roster",
   "private": true,
-  "version": "61.1",
+  "version": "62.0",
   "engines": {
     "node": "22.x"
   },

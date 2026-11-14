@@ -227,3 +227,13 @@
 #breaks .breakScheduleHeadingCopy { grid-column: 1 / -1; }
 #breaks .breakPerson { min-height: 44px; }
 #chat .chatHome .chatConversationList, #chat .chatHome .chatGroupCard { box-shadow: none; }
+
+#accountSheet .openingTune { margin: 20px 0 0; padding: 8px 0 0; border: 0; border-top: 1px solid var(--border-subtle); min-width: 0; }
+#accountSheet .openingTune legend { padding: 0 6px 0 0; font-weight: 650; }
+#accountSheet .openingTuneToggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+#accountSheet .openingTuneToggle input { width: 22px; height: 22px; margin: 0; accent-color: var(--control-primary); }
+#accountSheet .openingTune p { margin: 0 0 12px; color: var(--text-secondary); font-size: var(--unified-type-caption); }
+#accountSheet .openingTuneControls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+#accountSheet .openingTuneControls select { flex: 1 1 160px; min-width: 0; }
+#accountSheet .openingTuneControls > * { min-height: 44px; }
+#accountSheet #openingTuneStatus:empty { display: none; }
