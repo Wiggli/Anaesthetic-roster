@@ -160,3 +160,9 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 - Night keeps the live timeline, personal duty band, elapsed timings and both clock-change treatments visible. The summary around it is shorter, with break and colleague shortcuts ahead of an always-visible team list.
 - Changes removes the three-stage navigation. Absence and overtime stay at the top with cover, review and activity on the same page. Sharing becomes available once prerequisites are met. The four-person arrangement stays provisional, with theatre and Pager setup in the same cover area.
 - Staffing forms display the selected date and retain the 60.1 guarded write and retry paths. Actions uses the same wording as Changes, and Breaks uses compact headings without duplicate ordinals.
+
+## Release 64.0 three-way Pager cover
+
+- From the 21 November 2026 roster night, the existing four theatre roles and three shared Labour Ward / Pager slots form the seven-person plan. Historical night calculations and stored allocation keys stay compatible. The team agrees Pager turns and breaks, while the established theatre break groups continue to follow the existing duty timings.
+- Verified the effective five-person establishment with two overtime nurses, pending cover, a theatre absence, additional staffing, an agreed seven-person role override, return to six and the historical seven-person calculations. The Node 22 verification gate and four light/dark phone and desktop Chromium fixtures pass. Browser fixtures use isolated data and do not authenticate to the production backend.
+- The compatibility migration requires release 64.0 for shared roster edits. Older clients can still view the roster and receive the update prompt.
