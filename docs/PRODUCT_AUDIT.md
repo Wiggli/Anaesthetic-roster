@@ -181,3 +181,8 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 
 - A complete seven-nurse plan can draw the three assigned Pager nurses from Night. The draw changes the three Pager slot values only, uses an unbiased shuffle and saves via the existing night-only override path with its revision check and audit trail.
 - The sheet reveals the persisted order and reopens the saved result. Theatre, staffing and Pager duration rules use their existing paths. The browser fixtures exercise normal and reduced motion against a simulated shared save.
+
+## Release 66.1 staffing clarity and cover saves
+
+- Night and Changes show the base roster count, recorded absences, replacement cover and overtime that contribute to the working count. A six-person plan explains the seven-nurse threshold for the Pager tombola.
+- Cover can be saved and shared beside the choices. The readiness check and save both require distinct, current overtime IDs for the open roles. Selecting a different night remounts the cover selections for its own roster date.

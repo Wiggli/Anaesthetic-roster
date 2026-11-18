@@ -1,11 +1,12 @@
 {
-  "version": "66.0",
-  "date": "18 November 2026",
-  "title": "Pager tombola",
-  "summary": "Draw the three Pager turns from the Night team list.",
+  "version": "66.1",
+  "date": "19 November 2026",
+  "title": "Clearer staffing and cover saves",
+  "summary": "See how staffing is counted and save cover beside the assignment choices.",
   "changes": [
-    "On a complete seven-nurse night, the Pager tombola shuffles the three Pager nurses and reveals their turns in order.",
-    "The app saves the draw in the shared roster, with optional reveal sounds and a reduced-motion mode."
+    "Night and Changes explain the staffing count when there are absences or overtime.",
+    "Save and share cover beside the role choices, with one nurse per role.",
+    "Night explains when the seven-nurse Pager tombola is waiting for staffing or cover assignments."
   ],
   "update_policy": "normal"
 }

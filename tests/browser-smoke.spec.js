@@ -1395,7 +1395,7 @@ test('Changes keeps both staffing actions visible while cover needs attention', 
     window.workflowTaskDetails = () => ['Choose a nurse for First Part'];
     window.updateChangesWorkflow(window.cur(), window.staffingPlan(window.cur()));
   });
-  await expect(page.locator('#changesWorkflowState')).toContainText('Cover to assign');
+  await expect(page.locator('#changesWorkflowState')).toContainText('to assign');
   await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Add overtime',exact:true})).toBeVisible();
   await expect(page.locator('#continueToConfirmBtn')).toBeHidden();

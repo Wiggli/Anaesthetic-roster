@@ -71,11 +71,11 @@ const node=()=>{const classes=new Set();return{hidden:false,disabled:false,textC
 const controls=new Map();
 const control=id=>{if(!controls.has(id))controls.set(id,node());return controls.get(id)};
 const base={date:'2026-11-14'};
-const plan={count:6,availableKeys:[]};
+const plan={count:6,availableKeys:[],unresolved:[]};
 let tasks=[],needsShare=false,manual=false,pagerSaved=false;
 const workflowContext={
  changesViewPrepared:true,byId:control,document:{querySelector:control},
- workflowTaskDetails:()=>tasks,workflowNeedsConfirmation:()=>needsShare,workflowHasManualPlan:()=>manual,
+ staffingCalculation:()=>'',workflowTaskDetails:()=>tasks,workflowNeedsConfirmation:()=>needsShare,workflowHasManualPlan:()=>manual,
  fourNurseTheatreRoles:()=>true,window:{sharedPagerStatus:()=>({saved:pagerSaved})},
  nightPlanStatuses:{},allocationSaveInFlight:false,formMessage(){},renderConfirmationPreview(){},updateConfirmationControls(){}
 };
@@ -83,11 +83,15 @@ vm.runInNewContext(workflow,workflowContext);
 const update=()=>workflowContext.updateChangesWorkflow(base,plan);
 update();
 assert.equal(control('changesWorkflowExperience').hidden,true);
-tasks=['Assign First Part'];needsShare=true;plan.availableKeys=['first1'];update();
+tasks=['Assign First Part'];needsShare=true;plan.availableKeys=['first1'];plan.unresolved=['first1'];update();
 assert.equal(control('continueToAllocationBtn').hidden,false);
 assert.equal(control('continueToConfirmBtn').hidden,true);
 assert.equal(control('#changesConfirmPane .confirmationCard').hidden,true);
 tasks=[];update();
+assert.equal(control('continueToAllocationBtn').hidden,false);
+assert.equal(control('continueToConfirmBtn').hidden,true);
+assert.equal(control('changesWorkflowState').textContent,'Cover ready to save');
+plan.unresolved=[];update();
 assert.equal(control('continueToAllocationBtn').hidden,true);
 assert.equal(control('continueToConfirmBtn').hidden,false);
 assert.equal(control('#changesConfirmPane .confirmationCard').hidden,false);
