@@ -383,8 +383,8 @@ function BreakScheduleSection({
 }
 
 function coverageRow(note: string) {
-  const shared = note.match(/^Shared Labour Ward \/ Pager:\s*(.+?)\s*•\s*(.+?)\.?$/i);
-  if (shared) return { label: 'Shared Labour Ward / Pager', value: shared[1], detail: shared[2] };
+  const turn = note.match(/^(Pager turn [1-3]):\s*(.+?)\s*•\s*(.+?)\.?$/i);
+  if (turn) return { label: turn[1], value: turn[2], detail: turn[3] };
   const first = note.match(/^First part Labour Ward \/ Pager:\s*(.+?)\s*•\s*(.+?)\.?$/i);
   if (first) return { label: 'First part', value: first[1], detail: first[2] };
   const second = note.match(/^Second part Labour Ward \/ Pager:\s*(.+?)\s*•\s*(.+?)\.?$/i);

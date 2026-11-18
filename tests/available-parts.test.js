@@ -20,6 +20,9 @@ reset();const six=c.calculateNight('2026-10-08');c.nightChanges[six.date]=[{abse
 reset();const dst=c.calculateNight('2026-10-24');c.nightChanges[dst.date]=[{absent_name:dst.first1}];assert.match(c.availablePartsModel(dst).parts[0].detail,/03:00 after/);
 reset();
 const shared=c.calculateNight('2026-11-21');
+assert.deepEqual(clone(c.threeWayPagerPeriods(shared.date)),['23:30–02:00','02:00–04:30','04:30–07:00']);
+assert.deepEqual(clone(c.threeWayPagerPeriods('2027-03-27')),['23:30–01:40','01:40–04:50','04:50–07:00']);
+assert.deepEqual(clone(c.threeWayPagerPeriods('2027-10-30')),['23:30–02:20 (before clock change)','02:20 (before clock change)–04:10','04:10–07:00']);
 const theatre=['first1','first2','second1','second2'];
 const pagerExtra={id:'pager-extra',nurse_name:'Pager Extra',allocation_key:'reliever'};
 const pagerThird={id:'pager-third',nurse_name:'Pager Third'};
@@ -27,6 +30,7 @@ c.nightOvertime[shared.date]=[pagerExtra,pagerThird];
 m=c.availablePartsModel(shared);
 assert.equal(m.conditional,null,'the historical rotation decision must not appear after cutover');
 assert.deepEqual(clone(m.parts.map(x=>x.label)),['Shared Pager · slot 3']);
+assert.equal(m.parts[0].detail,'04:30–07:00');
 assert.equal(c.buildNightPlan(shared).provisional,true);
 c.allocationDrafts[shared.date]={seventh:'pager-third'};
 assert.equal(c.threeWayPagerNames(c.allocationPreview(shared))[2],'Pager Third');
@@ -40,9 +44,10 @@ for(const key of theatre)assert.equal(night.effective[key],shared[key],'overtime
 const breaks=c.breakData(night.effective,night);
 assert.deepEqual(clone(breaks.first),[shared.second1,shared.second2]);
 assert.deepEqual(clone(breaks.second),[shared.first1,shared.first2]);
-assert.match(breaks.notes[0],/Shared Labour Ward \/ Pager.*Pager Extra.*Pager Third/);
-assert.match(c.selectedNightSummary(shared.date),/Shared Labour Ward \/ Pager.*Pager Extra.*Pager Third/);
-assert.equal(c.personalAllocation(shared,night.effective,pagerThird.nurse_name).title,'Shared Labour Ward / Pager');
+assert.match(breaks.notes[1],/Pager turn 2: Pager Extra • 02:00–04:30/);
+assert.match(breaks.notes[2],/Pager turn 3: Pager Third • 04:30–07:00/);
+assert.match(c.selectedNightSummary(shared.date),/Pager Extra · 02:00–04:30\nPager Third · 04:30–07:00/);
+assert.equal(c.personalAllocation(shared,night.effective,pagerThird.nurse_name).period,'04:30–07:00');
 
 c.nightChanges[shared.date]=[{absent_name:shared.first1}];
 c.nightOvertime[shared.date].push({id:'theatre',nurse_name:'Theatre Cover',allocation_key:'first1'});
