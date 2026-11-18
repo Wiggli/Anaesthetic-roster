@@ -87,3 +87,33 @@ for(const count of [5,6,7])test(`normal ${count}-nurse night has one visible pla
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.evaluate(()=>show('today'));await page.screenshot({path:`/tmp/unified-normal-${count}.png`,fullPage:true});
 });
+
+for(const theme of ['light','dark'])test(`seven nurses share Pager cover in ${theme} mode`,async({page},info)=>{
+ await openReview(page);
+ await page.evaluate(({periods,theme})=>{
+  rotationVersions=periods;schemaVersion=57;rebuildCalculatedRoster();
+  idx=R.findIndex(r=>r.date==='2026-11-21');
+  const base=cur();
+  localStorage.setItem('anaes_my_name',base.pager);
+  currentUserProfile.display_name=professionalName(base.pager);
+  nightOvertime[base.date]=[
+   {id:'pager-2',nurse_name:'Second Cover Nurse',allocation_key:'reliever'},
+   {id:'pager-3',nurse_name:'Third Cover Nurse',allocation_key:null}
+  ];
+  setThemePreference(theme);render();show('changes');
+ },{periods,theme});
+ await expect(page.locator('#changes')).toContainText('Shared Pager · slot 3');
+ await expect(page.locator('[data-seventh-decision]')).toHaveCount(0);
+ await page.evaluate(()=>{
+  nightOvertime[cur().date][1].allocation_key='seventh';
+  render();show('today');
+ });
+ await expect(page.locator('#personalNightCard')).toContainText('Shared Labour Ward / Pager');
+ await expect(page.locator('#personalNightCard')).toContainText('Third Cover Nurse');
+ await expect(page.locator('#today')).toContainText('Second Cover Nurse');
+ await page.screenshot({path:`/tmp/three-way-pager-${info.project.name}-${theme}.png`,fullPage:true});
+ await page.evaluate(()=>show('breaks'));
+ await expect(page.locator('#breaks')).toContainText('Third Cover Nurse');
+ await expect(page.locator('#breaks')).toContainText('Agree who takes each Pager turn');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});

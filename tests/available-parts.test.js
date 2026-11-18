@@ -18,4 +18,53 @@ c.nightOvertime[base.date][0].allocation_key='reliever';c.nightOvertime[base.dat
 c.nightOvertime[base.date].push({id:'c',nurse_name:'Extra C'});assert.equal(c.availablePartsModel(base).extras,1);
 reset();const six=c.calculateNight('2026-10-08');c.nightChanges[six.date]=[{absent_name:six.first1},{absent_name:six.second1}];c.nightOvertime[six.date]=[{id:'cover',nurse_name:'Cover Nurse'}];m=c.availablePartsModel(six);assert.equal(m.coverageChoices.length,2);assert.equal(m.parts.length,0);assert.equal(m.complete,false);
 reset();const dst=c.calculateNight('2026-10-24');c.nightChanges[dst.date]=[{absent_name:dst.first1}];assert.match(c.availablePartsModel(dst).parts[0].detail,/03:00 after/);
+reset();
+const shared=c.calculateNight('2026-11-21');
+const theatre=['first1','first2','second1','second2'];
+const pagerExtra={id:'pager-extra',nurse_name:'Pager Extra',allocation_key:'reliever'};
+const pagerThird={id:'pager-third',nurse_name:'Pager Third'};
+c.nightOvertime[shared.date]=[pagerExtra,pagerThird];
+m=c.availablePartsModel(shared);
+assert.equal(m.conditional,null,'the historical rotation decision must not appear after cutover');
+assert.deepEqual(clone(m.parts.map(x=>x.label)),['Shared Pager · slot 3']);
+assert.equal(c.buildNightPlan(shared).provisional,true);
+c.allocationDrafts[shared.date]={seventh:'pager-third'};
+assert.equal(c.threeWayPagerNames(c.allocationPreview(shared))[2],'Pager Third');
+delete c.allocationDrafts[shared.date];
+pagerThird.allocation_key='seventh';
+let night=c.buildNightPlan(shared);
+assert.equal(night.staffing.complete,true);
+assert.equal(night.labourPending,false,'a two-person Labour Ward order cannot be required');
+assert.deepEqual(clone(c.threeWayPagerNames(night.effective)),[shared.pager,'Pager Extra','Pager Third']);
+for(const key of theatre)assert.equal(night.effective[key],shared[key],'overtime must not displace a rostered theatre nurse');
+const breaks=c.breakData(night.effective,night);
+assert.deepEqual(clone(breaks.first),[shared.second1,shared.second2]);
+assert.deepEqual(clone(breaks.second),[shared.first1,shared.first2]);
+assert.match(breaks.notes[0],/Shared Labour Ward \/ Pager.*Pager Extra.*Pager Third/);
+assert.match(c.selectedNightSummary(shared.date),/Shared Labour Ward \/ Pager.*Pager Extra.*Pager Third/);
+assert.equal(c.personalAllocation(shared,night.effective,pagerThird.nurse_name).title,'Shared Labour Ward / Pager');
+
+c.nightChanges[shared.date]=[{absent_name:shared.first1}];
+c.nightOvertime[shared.date].push({id:'theatre',nurse_name:'Theatre Cover',allocation_key:'first1'});
+night=c.buildNightPlan(shared);
+assert.equal(night.effective.first1,'Theatre Cover');
+assert.equal(night.staffing.complete,true);
+c.nightOvertime[shared.date].push({id:'extra',nurse_name:'Additional Cover'});
+assert.deepEqual(clone(c.additionalNurses(c.staffingPlan(shared)).map(x=>x.nurse_name)),['Additional Cover']);
+
+delete c.nightChanges[shared.date];
+c.nightOvertime[shared.date]=[pagerExtra,pagerThird];
+c.nightRoleOverrides[shared.date]={assignments:{
+  mode:'7',first1:'Pager Extra',first2:shared.first2,second1:shared.second1,second2:shared.second2,
+  pager:shared.pager,reliever:shared.first1,seventh:'Pager Third'
+}};
+night=c.buildNightPlan(shared);
+assert.equal(night.provisional,false,'a complete agreed arrangement supersedes the automatic plan');
+assert.equal(night.effective.first1,'Pager Extra');
+assert.deepEqual(clone(c.threeWayPagerNames(night.effective)),[shared.pager,shared.first1,'Pager Third']);
+reset();
+c.nightOvertime[shared.date]=[pagerExtra];
+night=c.buildNightPlan(shared);
+assert.equal(night.effective.sharedPagerThree,false,'a six-nurse plan still uses the two-person rule');
+assert.equal(night.staffing.count,6);
 console.log('Available parts: vacancies, saved cover, seventh alternatives, extra staff, Reliever priority and DST passed.');

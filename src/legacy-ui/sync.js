@@ -38,6 +38,8 @@ function conflictPlanSnapshot(date){try{var base=date&&baseForDate(date);if(!bas
 function conflictSummary(before,after){
   if(!before||!after)return[];
   var changes=[],labels={first1:'First Part · position 1',first2:'First Part · position 2',second1:'Second Part · position 1',second2:'Second Part · position 2',pager:'Pager',reliever:'Reliever',seventh:'Seventh nurse',fullLW:'Labour Ward / Pager'};
+  var sharedPager=!!((before.effective&&before.effective.sharedPagerThree)||(after.effective&&after.effective.sharedPagerThree));
+  if(sharedPager)['pager','reliever','seventh'].forEach(function(key){labels[key]=allocationLabel(key,true)});
   Object.keys(labels).forEach(function(key){
     var left=before.effective&&before.effective[key],right=after.effective&&after.effective[key];
     if(JSON.stringify(left)!==JSON.stringify(right))changes.push({label:labels[key],before:left||'Unassigned',after:right||'Unassigned'})
@@ -45,7 +47,7 @@ function conflictSummary(before,after){
   var beforeCount=before.staffing&&Number(before.staffing.count),afterCount=after.staffing&&Number(after.staffing.count);
   if(Number.isFinite(beforeCount)&&Number.isFinite(afterCount)&&beforeCount!==afterCount)changes.push({label:'Staffing',before:beforeCount+' nurses',after:afterCount+' nurses'});
   var beforeTasks=before.staffing&&before.staffing.unresolved||[],afterTasks=after.staffing&&after.staffing.unresolved||[];
-  if(JSON.stringify(beforeTasks)!==JSON.stringify(afterTasks))changes.push({label:'Outstanding decisions',before:beforeTasks.length?beforeTasks.join(', '):'None',after:afterTasks.length?afterTasks.join(', '):'None'});
+  if(JSON.stringify(beforeTasks)!==JSON.stringify(afterTasks))changes.push({label:'Outstanding decisions',before:beforeTasks.length?beforeTasks.map(function(key){return allocationLabel(key,!!(before.effective&&before.effective.sharedPagerThree))}).join(', '):'None',after:afterTasks.length?afterTasks.map(function(key){return allocationLabel(key,!!(after.effective&&after.effective.sharedPagerThree))}).join(', '):'None'});
   if(!!before.confirmed!==!!after.confirmed)changes.push({label:'Confirmation',before:before.confirmed?'Confirmed':'Not confirmed',after:after.confirmed?'Confirmed':'Not confirmed'});
   if(JSON.stringify(before.labourOrder||null)!==JSON.stringify(after.labourOrder||null))changes.push({label:'Labour Ward order',before:before.labourOrder?'Changed':'Not set',after:after.labourOrder?'Changed':'Not set'});
   return changes.slice(0,8)
@@ -345,10 +347,10 @@ function chooseDate(inputId){
 function csvCell(value){return '"'+String(value==null?'':value).replaceAll('"','""')+'"'}
 
 function exportCSV(){
-  var headers=['Date','Actual nurse count','Status','First Part','Second Part','Pager','Reliever','Full-night Labour Ward / Pager','Seventh nurse','Additional staff','Absences','Overtime','Reliever cover choice','Notes'];
+  var headers=['Date','Actual nurse count','Status','First Part','Second Part','Pager','Reliever','Full-night Labour Ward / Pager','Third Pager nurse / historical seventh nurse','Additional staff','Absences','Overtime','Reliever cover choice','Notes'];
   var rows=R.map(function(original){
     var base=Object.assign({},original);base.mode=String(baseEstablishmentSize(base));var r=applyChanges(base),plan=staffingPlan(base),extras=additionalNurses(plan),changes=changesFor(base.date),overtime=overtimeFor(base.date);
-    return[base.date,plan.count,planIsProvisional(base)?'Provisional':extras.length?'Core finalised; additional staff as required':'Final',r.first1+' + '+r.first2,r.second1+' + '+r.second2,r.mode==='5'?'':r.pager,r.mode==='5'?'':r.reliever,r.mode==='5'?r.fullLW:'',r.mode==='7'?r.seventh:'',extras.map(function(o){return o.nurse_name}).join(' + '),changes.map(function(c){return c.absent_name+' ('+(c.reason||'Unavailable')+')'}).join('; '),overtime.map(function(o){return o.nurse_name+' ('+(o.allocation_key?allocationLabel(o.allocation_key):'Awaiting allocation')+')'}).join('; '),plan.coverageKey?allocationLabel(plan.coverageKey):'',r.notes||''].map(csvCell).join(',');
+    return[base.date,plan.count,planIsProvisional(base)?'Provisional':extras.length?'Core finalised; additional staff as required':'Final',r.first1+' + '+r.first2,r.second1+' + '+r.second2,r.mode==='5'?'':r.pager,r.mode==='5'?'':r.reliever,r.mode==='5'?r.fullLW:'',r.mode==='7'?r.seventh:'',extras.map(function(o){return o.nurse_name}).join(' + '),changes.map(function(c){return c.absent_name+' ('+(c.reason||'Unavailable')+')'}).join('; '),overtime.map(function(o){return o.nurse_name+' ('+(o.allocation_key?allocationLabel(o.allocation_key,plan.sharedPagerThree):'Awaiting allocation')+')'}).join('; '),plan.coverageKey?allocationLabel(plan.coverageKey):'',r.notes||''].map(csvCell).join(',');
   });
   download('anaesthetic-roster-v'+APP_VERSION.replace('.','-')+'.csv',headers.map(csvCell).join(',')+'\n'+rows.join('\n'),'text/csv');
 }

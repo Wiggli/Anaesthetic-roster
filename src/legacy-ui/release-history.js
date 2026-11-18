@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["64.0","18 November 2026","Three-way Pager cover",["From the night of 21 November, the Pager is shared by three nurses and the seventh-nurse rotation choice is retired.","Night, Changes, Breaks and the shared plan show who is on the Pager team. The three nurses agree their turns and breaks together."],"normal"],
   ["63.1","14 November 2026","Mundian To Bach Ke opening tune",["Includes an eight-second clip of Mundian To Bach Ke as the default opening tune, with no separate download.","Keeps the sound switch and all saved track preferences."],"normal"],
   ["63.0","14 November 2026","Longer opening riff and your own audio",["Extends the built-in Bollywood-style riff to about four seconds.","Adds a local audio file option in Account → Appearance, with an eight-second playback limit.","Enables opening tunes by default for devices without a saved preference."],"normal"],
   ["62.0","14 November 2026","Pick an opening tune",["Adds two original opening tunes, a Bollywood-style riff and a softer Night chime.","Account → Appearance lets you preview tracks, choose one and turn opening playback on or off for this device."],"normal"],
