@@ -1,11 +1,11 @@
 {
-  "version": "65.1",
+  "version": "66.0",
   "date": "18 November 2026",
-  "title": "Pager timeline matches staffing",
-  "summary": "Pager nurses see the times for their own coverage arrangement.",
+  "title": "Pager tombola",
+  "summary": "Draw the three Pager turns from the Night team list.",
   "changes": [
-    "The Pager timeline starts at midnight with five or six nurses and at 23:30 for the three-way Pager split.",
-    "The full roster and copied plan show the Pager duty times alongside the theatre timings."
+    "On a complete seven-nurse night, the Pager tombola shuffles the three Pager nurses and reveals their turns in order.",
+    "The app saves the draw in the shared roster, with optional reveal sounds and a reduced-motion mode."
   ],
   "update_policy": "normal"
 }

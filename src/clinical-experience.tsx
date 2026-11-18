@@ -1,3 +1,4 @@
+import { PagerTombola, type PagerTombolaModel } from './pager-tombola';
 import { AvailableParts, type AvailablePartsModel } from './available-parts';
 import { productHaptic, scrollToProductElement, useProductReducedMotion } from './product-motion';
 import { useEffect, useRef, useState } from 'react';
@@ -55,6 +56,7 @@ type NightRole = {
 };
 
 type NightSummary = {
+  pagerTombola?: PagerTombolaModel | null;
   availableParts?: AvailablePartsModel;
   date?: string;
   nurseCount: number;
@@ -863,6 +865,7 @@ function NightRoles({ model }: { model: NightSummary }) {
         </Pressable>{!['Unassigned','Awaiting choice'].includes(role.names) && <Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable>}</div>;
       })}
     </div>
+    {model.pagerTombola && <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} />}
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}
