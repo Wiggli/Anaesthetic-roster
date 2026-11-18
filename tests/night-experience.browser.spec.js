@@ -139,3 +139,50 @@ for(const count of [5,6])test(`Pager timeline starts at midnight with ${count} n
  await expect(pagerTimeline.locator('li b')).toHaveText(count===5?['00:00–07:00']:['00:00–03:30','03:30–07:00']);
  await expect(page.locator('#roles')).toContainText('00:00–03:30');
 });
+
+for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola saves one draw with motion ${reducedMotion}`, async ({page},info) => {
+ await page.emulateMedia({reducedMotion});
+ await openReview(page);
+ await page.evaluate(periods=>{
+   rotationVersions=periods; schemaVersion=57; rebuildCalculatedRoster();
+   idx=R.findIndex(r=>r.date==='2026-11-21');
+   const date=cur().date;
+   nightOvertime[date]=[
+     {id:'cover-a',nurse_name:'Cover Nurse One',allocation_key:'reliever'},
+     {id:'cover-b',nurse_name:'Cover Nurse Two',allocation_key:'seventh'}
+   ];
+   window.beforeDraw=applyChanges(cur());
+   window.pagerWriteCount=0;
+   runRosterMutation=(_key,commit)=>commit('fixture-operation',0);
+   supa.rpc=async (name, args)=>{
+     if(name!=='apply_night_role_override_v57')return{data:[],error:null};
+     window.pagerWriteCount++;
+     const {p_assignments:assignments,p_override_reason:reason}=args;
+     nightRoleOverrides[date]={assignments,reason};
+     return{data:null,error:null};
+   };
+   loadSharedData=async()=>{render();return true};
+   notifyRosterUpdate=()=>{};
+   render();show('today');
+ },periods);
+ const opener=page.getByRole('button',{name:/Pager tombola/});
+ await opener.click();
+ const sheet=page.getByRole('dialog',{name:'Pager draw'});
+ await expect(sheet.locator('.pagerDrawTurnTime strong')).toHaveText(['23:30–02:00','02:00–04:30','04:30–07:00']);
+ await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(['Pending','Pending','Pending']);
+ await sheet.getByRole('button',{name:'Sound on'}).click();
+ await sheet.getByRole('button',{name:'Draw Pager turns',exact:true}).click();
+ if(reducedMotion==='no-preference'){
+   await expect(sheet.locator('.isSpinning')).toBeVisible();
+   await sheet.screenshot({path:`/tmp/pager-draw-${info.project.name}.png`});
+ }
+ await expect(sheet.getByRole('status')).toHaveText('Draw complete',{timeout:12000});
+ const expected=await page.evaluate(()=>['pager','reliever','seventh'].map(key=>professionalName(nightRoleOverrides[cur().date].assignments[key])));
+ await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(expected);
+ expect(await page.evaluate(()=>['first1','first2','second1','second2'].every(key=>window.beforeDraw[key]===nightRoleOverrides[cur().date].assignments[key]))).toBeTruthy();
+ expect(await page.evaluate(()=>window.pagerWriteCount)).toBe(1);
+ await sheet.getByRole('button',{name:'Done',exact:true}).click();
+ await page.getByRole('button',{name:/Pager draw result/}).click();
+ await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(expected);
+ await expect(sheet.getByRole('button',{name:'Draw Pager turns',exact:true})).toHaveCount(0);
+});

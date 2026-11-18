@@ -176,3 +176,8 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 
 - Pager staff see a separate timeline matching their one, two or three coverage turns. Theatre retains its live timeline. The archive and plan summary show the same Pager duty periods as Night and Breaks.
 - A complete two-person Pager plan resolves its automatic order before the first render. A compatible saved order is respected, and a stale draft cannot reintroduce a nurse who is no longer assigned.
+
+## Release 66.0 Pager tombola
+
+- A complete seven-nurse plan can draw the three assigned Pager nurses from Night. The draw changes the three Pager slot values only, uses an unbiased shuffle and saves via the existing night-only override path with its revision check and audit trail.
+- The sheet reveals the persisted order and reopens the saved result. Theatre, staffing and Pager duration rules use their existing paths. The browser fixtures exercise normal and reduced motion against a simulated shared save.
