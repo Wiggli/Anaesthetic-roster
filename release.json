@@ -1,11 +1,11 @@
 {
-  "version": "65.0",
+  "version": "65.1",
   "date": "18 November 2026",
-  "title": "Pager turns from 23:30",
-  "summary": "The three shared Pager turns now show their handover times.",
+  "title": "Pager timeline matches staffing",
+  "summary": "Pager nurses see the times for their own coverage arrangement.",
   "changes": [
-    "On normal nights, the Pager turns run from 23:30 to 02:00, 02:00 to 04:30 and 04:30 to 07:00.",
-    "Night, Changes, Breaks and the shared plan show the assigned turns. Clock-change nights divide the time equally by real elapsed time."
+    "The Pager timeline starts at midnight with five or six nurses and at 23:30 for the three-way Pager split.",
+    "The full roster and copied plan show the Pager duty times alongside the theatre timings."
   ],
   "update_policy": "normal"
 }

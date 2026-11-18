@@ -171,3 +171,8 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 
 - The three saved Pager slots map to consecutive turns from 23:30 to 07:00 in Night, Changes, Breaks, Full roster and the copied plan. Clock-change turns use equal elapsed time, with repeated local times labelled.
 - Allocation and break-group rules continue to use their existing inputs and write paths. The timing checks cover a normal night and both Malta clock changes. Browser fixtures use isolated staffing data.
+
+## Release 65.1 Pager timeline and exact coverage times
+
+- Pager staff see a separate timeline matching their one, two or three coverage turns. Theatre retains its live timeline. The archive and plan summary show the same Pager duty periods as Night and Breaks.
+- A complete two-person Pager plan resolves its automatic order before the first render. A compatible saved order is respected, and a stale draft cannot reintroduce a nurse who is no longer assigned.
