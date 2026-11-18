@@ -186,3 +186,8 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 
 - Night and Changes show the base roster count, recorded absences, replacement cover and overtime that contribute to the working count. A six-person plan explains the seven-nurse threshold for the Pager tombola.
 - Cover can be saved and shared beside the choices. The readiness check and save both require distinct, current overtime IDs for the open roles. Selecting a different night remounts the cover selections for its own roster date.
+
+## Release 67.0 simpler Pager workflow
+
+- The seven-nurse Night view leads with the draw or its setup shortcut. Changes shows one assignment form and a direct return to Night after saving grouped cover.
+- If the working count is seven and the overtime count matches the open roles, the user chooses any theatre cover. Existing valid Pager allocations are retained where possible, and the remaining overtime nurses fill the open Pager places before the draw. Other staffing layouts still use explicit selection.

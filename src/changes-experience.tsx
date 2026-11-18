@@ -54,6 +54,8 @@ type RoleOverride = {
 };
 
 export type ChangesExperience = {
+  groupPager?: boolean;
+  simplifiedCover?: boolean;
   availableParts?: AvailablePartsModel;
   dateLabel: string;
   date: string;
@@ -87,7 +89,7 @@ function dispatchAction(detail: Record<string, unknown>) {
   window.dispatchEvent(new CustomEvent('roster:changes-action', { detail }));
 }
 
-function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; empty: string }) {
+function RecordList({ records, empty: _empty, simplifiedCover }: { records: StaffingRecord[]; empty: string; simplifiedCover?: boolean }) {
   if (!records.length) return null;
 
   return <GroupedList className="changesRecordGroup tw:shadow-none">
@@ -109,10 +111,10 @@ function RecordList({ records, empty: _empty }: { records: StaffingRecord[]; emp
           className="overtimeItem"
           title={record.name}
           subtitle={<><span className="overtimeRecordStatus">
-            {record.needsAllocation
+            {record.needsAllocation && simplifiedCover ? 'Unassigned' : record.needsAllocation
               ? <Pressable type="button" className="overtimeAllocateButton" aria-label={`Choose part for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Choose part <span aria-hidden="true">›</span></Pressable>
               : <Badge tone="success">{record.status}</Badge>}
-            {record.needsAllocation && <span className="overtimePendingLabel">Unassigned</span>}
+            {record.needsAllocation && !simplifiedCover && <span className="overtimePendingLabel">Unassigned</span>}
           </span></>}
           trailing={<span>
             <Pressable
@@ -158,11 +160,13 @@ function AllocationList({ model }: { model: ChangesExperience }) {
   }, [model]);
 
   if (model.roleOverride?.mode === '4' && !model.roleOverride.stored) return null;
-  if (!model.allocations.length) return <Surface className="tw:shadow-none">
+  if (!model.allocations.length && !model.groupPager) return <Surface className="tw:shadow-none">
     <EmptyState title={model.allocationMessage || 'No allocation decisions are waiting'} />
   </Surface>;
 
-  return <GroupedList className="changesAllocationGroup tw:shadow-none">
+  return <>
+   {model.groupPager && <p className="pagerCoverNote">Choose theatre cover below if needed. The remaining nurses join the Pager draw.</p>}
+   {model.allocations.length > 0 && <GroupedList className="changesAllocationGroup tw:shadow-none">
     {model.allocations.map(row => <div
       key={model.date+':'+row.key+':'+row.selectedId}
       className="allocationRow"
@@ -179,7 +183,8 @@ function AllocationList({ model }: { model: ChangesExperience }) {
         {row.options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
       </select></label>
     </div>)}
-  </GroupedList>;
+  </GroupedList>}
+  </>;
 }
 
 function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {
@@ -365,11 +370,11 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 }
 
 export function renderChangesExperience(model: ChangesExperience) {
-  rootFor('changesAvailableParts')?.render(<AvailableParts model={model.availableParts} hideWhenComplete />);
+  rootFor('changesAvailableParts')?.render(model.simplifiedCover ? null : <AvailableParts model={model.availableParts} hideWhenComplete />);
   rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
   rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);
-  rootFor('overtimeList')?.render(<RecordList records={model.overtime} empty="No overtime nurses recorded for this night." />);
+  rootFor('overtimeList')?.render(<RecordList records={model.overtime} simplifiedCover={model.simplifiedCover} empty="No overtime nurses recorded for this night." />);
   rootFor('changeHistory')?.render(<History model={model} />);
   rootFor('allocationList')?.render(<AllocationList model={model} />);
   if (model.roleOverride) rootFor('nightRoleOverrideStep')?.render(<RoleOverrideEditor model={model.roleOverride} />);

@@ -57,6 +57,8 @@ type NightRole = {
 
 type NightSummary = {
   pagerTombola?: PagerTombolaModel | null;
+  pagerDrawFlow?: boolean;
+  pagerCoverPending?: boolean;
   pagerTombolaNotice?: string;
   staffingCalculation?: string;
   availableParts?: AvailablePartsModel;
@@ -501,7 +503,7 @@ function NightStatus({ model }: { model: NightSummary }) {
     model.overtimeCount ? `${model.overtimeCount} overtime` : ''
   ].filter(Boolean).join(' · ');
   const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
-  const openParts = model.availableParts?.parts.length || 0;
+  const openParts = model.pagerDrawFlow ? model.decisionTasks : model.availableParts?.parts.length || 0;
   const decisionLabel = openParts && !model.availableParts?.conditional
     ? `${openParts} ${openParts === 1 ? 'role' : 'roles'} to assign`
     : 'Decision needed';
@@ -762,7 +764,9 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
         </Pressable>
       </div>}
       {model.pagerTimeline && <PagerTimeline {...model.pagerTimeline} />}
-      <NightTimeline model={model} value={value} />
+      {model.pagerTimeline?.periods.length === 3
+        ? <details className="pagerTheatreTimeline"><summary>Theatre timeline</summary><NightTimeline model={model} value={value} /></details>
+        : <NightTimeline model={model} value={value} />}
 
       {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openNameSetup}>
         Choose your name
@@ -871,7 +875,7 @@ function NightRoles({ model }: { model: NightSummary }) {
         </Pressable>{!['Unassigned','Awaiting choice'].includes(role.names) && <Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable>}</div>;
       })}
     </div>
-    {model.pagerTombola ? <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} /> : model.pagerTombolaNotice && <p className="pagerDrawAvailability">{model.pagerTombolaNotice}</p>}
+    {model.pagerTombolaNotice && <p className="pagerDrawAvailability">{model.pagerTombolaNotice}</p>}
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}
@@ -897,7 +901,12 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
 
 export function renderNightExperience(model: NightSummary) {
   rootFor('nightClockChange')?.render(null);
-  rootFor('nightStatusRow')?.render(<><NightStatus model={model} /><AvailableParts model={model.availableParts} hideWhenComplete onAllocate={() => goToChanges('allocation')} /></>);
+  rootFor('nightPagerAction')?.render(model.pagerTombola
+    ? <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} />
+    : model.pagerDrawFlow && model.pagerCoverPending
+      ? <Pressable type="button" className="pagerDrawLauncher" onClick={() => goToChanges('allocation')}><span><strong>Set up Pager draw</strong><small>Save the cover assignments first</small></span><span aria-hidden="true">›</span></Pressable>
+      : null);
+  rootFor('nightStatusRow')?.render(<><NightStatus model={model} />{!model.pagerDrawFlow && <AvailableParts model={model.availableParts} hideWhenComplete onAllocate={() => goToChanges('allocation')} />}</>);
   rootFor('alerts')?.render(<NightAlerts model={model} />);
   rootFor('roles')?.render(<NightRoles model={model} />);
   rootFor('fiveArrangement')?.render(<FivePersonArrangement model={model} />);

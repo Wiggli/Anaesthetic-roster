@@ -327,14 +327,26 @@ function staffingCalculation(base,plan){
   return rostered+' rostered'+(absent?' − '+absent+' absent':'')+(replacements?' + '+replacements+' replacement cover':'')+(overtime?' + '+overtime+' overtime':'')+' = '+plan.count+' working';
 }
 
+function canGroupPagerCover(plan){
+  return plan.sharedPagerThree&&plan.count===7&&plan.availableKeys.some(isSharedPagerSlot)&&plan.overtime.length===plan.availableKeys.length;
+}
+
 function selectedCoverAssignments(base,plan){
-  var assignments={},used=new Set(),missing=[];
+  var assignments={},used=new Set(),missing=[],groupPager=canGroupPagerCover(plan);
   var valid=new Set(plan.overtime.map(function(entry){return String(entry.id)}));
-  plan.availableKeys.forEach(function(key){
+  var keys=groupPager?plan.availableKeys.filter(function(key){return !isSharedPagerSlot(key)}).concat(plan.availableKeys.filter(isSharedPagerSlot)):plan.availableKeys;
+  keys.forEach(function(key){
     var id=String(selectedAllocationId(base,key,plan)||'');
     if(!id||!valid.has(id)||used.has(id)){missing.push(key);return}
     used.add(id);assignments[key]=id;
   });
+  if(groupPager&&missing.every(isSharedPagerSlot)){
+    var remaining=Array.from(valid).filter(function(id){return !used.has(id)});
+    if(remaining.length===missing.length){
+      missing.forEach(function(key,index){assignments[key]=remaining[index]});
+      missing=[];
+    }
+  }
   return{assignments:assignments,missing:missing};
 }
 
@@ -343,7 +355,7 @@ function workflowTaskDetails(base,plan){
   if(plan.count===4)return fourNurseTheatreRoles(base)?[]:['Choose and save the four theatre positions'];
   if(plan.requiresCoverageChoice)tasks.push('Choose the theatre role the rostered Reliever will cover');
   if(plan.requiresSeventhDecision)tasks.push('Choose whether '+professionalName(plan.seventhNurse)+' moves from '+allocationLabel(plan.seventhVacatedKey)+' to Seventh nurse');
-  selectedCoverAssignments(base,plan).missing.forEach(function(key){tasks.push('Choose a nurse for '+allocationLabel(key,plan.sharedPagerThree))});
+  selectedCoverAssignments(base,plan).missing.filter(function(key){return !canGroupPagerCover(plan)||!isSharedPagerSlot(key)}).forEach(function(key){tasks.push('Choose a nurse for '+allocationLabel(key,plan.sharedPagerThree))});
   return tasks;
 }
 
@@ -386,7 +398,9 @@ function updateChangesWorkflow(base,plan){
   var quickAttention=byId('quickActionAttention');if(quickAttention)quickAttention.classList.add('hidden');
   var allocationSection=document.querySelector('#changes .allocationSection');
   if(allocationSection)allocationSection.hidden=four||!(plan.requiresCoverageChoice||plan.requiresSeventhDecision||plan.availableKeys.length);
-  byId('coverAssignmentsHeading').textContent=needsCover?'Assign cover':'Cover assignments';
+  var groupPager=canGroupPagerCover(plan)&&coverPending;
+  byId('coverAssignmentsHeading').textContent=groupPager?'Set up Pager draw':needsCover?'Assign cover':'Cover assignments';
+  if(!allocationSaveInFlight)byId('saveCoverAllocationsBtn').textContent=groupPager?'Save cover and go to draw':'Save and share cover';
   byId('allocationSummary').hidden=four;
   var reason=byId('continueToConfirmReason');
   reason.classList.toggle('hidden',!four);
@@ -551,7 +565,7 @@ function applyChanges(r){
   }
   if(plan.overtime.length){
     var pendingNames=plan.unassigned.map(function(o){return o.nurse_name});
-    var pending=plan.count<5?'Uncovered • additional cover required':pendingNames.length===1?pendingNames[0]+' • allocation to decide':pendingNames.length?'Allocation to decide • '+pendingNames.length+' overtime nurses available':'Allocation pending';
+    var pending=plan.count<5?'Uncovered • additional cover required':plan.sharedPagerThree?'Cover pending':pendingNames.length===1?pendingNames[0]+' • allocation to decide':pendingNames.length?'Allocation to decide • '+pendingNames.length+' overtime nurses available':'Allocation pending';
     plan.unresolved.forEach(function(key){copy[key]=pending});
     if(plan.count===5&&plan.coverageKey)applyFiveVacancy(copy,plan.coverageKey);
     copy.mode=String(Math.max(5,Math.min(7,plan.count)));
@@ -638,8 +652,10 @@ function personalAllocation(base,r,name){
     var pagerTeam=threeWayPagerNames(r);
     var turnIndex=pagerTeam.findIndex(function(nurse){return nurse!=='Unassigned'&&sameNurse(nurse,name)});
     if(turnIndex>=0){
+      var colleagues=pagerTeam.filter(function(nurse){return nurse!=='Unassigned'&&!sameNurse(nurse,name)}).map(professionalName);
+      var pagerPending=(r.pendingAllocations||[]).some(isSharedPagerSlot);
       var turnPeriod=threeWayPagerPeriods(r.date)[turnIndex];
-      return{key:'sharedPagerThree',icon:'pager',title:'Shared Labour Ward / Pager',detail:'Pager turn '+(turnIndex+1)+' of 3 · '+turnPeriod,period:turnPeriod,breakLabel:THREE_WAY_PAGER_GUIDANCE,context:'With '+pagerTeam.filter(function(nurse){return !sameNurse(nurse,name)}).map(professionalName).join(' and '),pending:false};
+      return{key:'sharedPagerThree',icon:'pager',title:'Shared Labour Ward / Pager',detail:pagerPending?'Pager team being assigned':'Pager turn '+(turnIndex+1)+' of 3 · '+turnPeriod,period:turnPeriod,breakLabel:THREE_WAY_PAGER_GUIDANCE,context:colleagues.length?'With '+colleagues.join(' and '):'Cover pending',pending:false};
     }
   }
   if(!r.sharedPagerThree&&r.mode!=='5'&&(sameNurse(r.pager,name)||sameNurse(r.reliever,name))){
@@ -686,7 +702,7 @@ function renderPersonalNight(base,r){
   var name=myName(),preferred=currentPrivateProfile&&currentPrivateProfile.profile_name||'',jobTitle=currentPrivateProfile&&currentPrivateProfile.job_title||'',displayName=preferred||professionalName(name)||'Choose your name',assignment=personalAllocation(base,r,name),changed=personalAssignmentChanged(base,r,name,assignment),initial=displayName.trim().charAt(0).toUpperCase()||'?',contextLabel=assignment.key==='absence'||assignment.key==='unallocated'?'Status':assignment.key==='unselected'?'Personal view':assignment.key==='fullLW'?'Coverage':assignment.key==='seventh'?'Team':'Working with',nightCopy=selectedNightCopy(base.date),nightTiming=nightDutyTiming(base.date),detail={date:base.date,displayName:displayName,jobTitle:jobTitle,avatarUrl:profileAvatarUrl||'',initial:initial,assignmentLabel:nightCopy.assignment,title:assignment.title,detail:assignment.detail||'',period:assignment.period,breakLabel:assignment.breakLabel,contextLabel:contextLabel,context:assignment.context,changedLabel:changed?nightCopy.changed:'',action:assignment.key==='absence'?'absence':name&&assignment.key!=='unallocated'?'role':'choose',pending:!!assignment.pending,pendingOther:professionalName(assignment.other),liveStatus:personalLiveStatus(base,assignment),dutyPart:assignment.dutyPart||'',dutyStartUtc:nightTiming.startUtc,handoverUtc:nightTiming.handoverUtc,dutyEndUtc:nightTiming.endUtc,handoverLabel:nightTiming.handoverDisplay,transitionUtc:nightTiming.transitionUtc||0,changed:changed,clockChange:clockChangeDetailFor(base.date)};
   if(assignment.key==='sharedPagerThree'){
     var names=threeWayPagerNames(r);
-    detail.pagerTimeline={periods:threeWayPagerPeriods(r.date),mine:names.findIndex(function(nurse){return sameNurse(nurse,name)})};
+    detail.pagerTimeline={periods:threeWayPagerPeriods(r.date),mine:(r.pendingAllocations||[]).some(isSharedPagerSlot)?-1:names.findIndex(function(nurse){return sameNurse(nurse,name)})};
   }else if(assignment.key==='fullLW'){
     detail.pagerTimeline={periods:[assignment.period],mine:0};
   }else if((assignment.key==='pager'||assignment.key==='reliever')&&!assignment.pending){
@@ -772,7 +788,10 @@ function render(){
   ensureAutomaticLabourOrder(base,r);
   var labourPending=!r.sharedPagerThree&&r.mode!=='5'&&!planIsProvisional(base)&&!labourOrderFor(r);
   var roles=[['bFirst','First Part',r.first1+' + '+r.first2,'Works '+dutyTiming.firstPeriodDisplay+(dutyTiming.isClockChange?' · '+formatDutyHours(dutyTiming.partHours)+' actual':'')+' • Second break'],['bSecond','Second Part',r.second1+' + '+r.second2,'Works '+dutyTiming.secondPeriod+(dutyTiming.isClockChange?' · '+formatDutyHours(dutyTiming.partHours)+' actual':'')+' • First break']];
-  if(r.sharedPagerThree)roles.push(['bPager','Shared Labour Ward / Pager',threeWayPagerNames(r).join(' + '),'In order · '+threeWayPagerPeriods(r.date).join(' / ')]);
+  if(r.sharedPagerThree){
+    var pagerNames=threeWayPagerNames(r),openPager=pagerNames.filter(function(nurse){return nurse==='Unassigned'}).length;
+    roles.push(['bPager','Shared Pager',pagerNames.filter(function(nurse){return nurse!=='Unassigned'}).join(' + ')||'Cover pending',openPager?openPager+' '+(openPager===1?'place':'places')+' to fill':threeWayPagerPeriods(r.date).join(' / ')]);
+  }
   else if(r.mode!=='5'){
     if(count!==4)roles.push(['bPager','Pager',r.pager,labourRoleDetail(r.pager,r)]);
     if(count!==4)roles.push(['bReliever','Reliever',r.reliever,labourRoleDetail(r.reliever,r)]);
@@ -781,11 +800,11 @@ function render(){
   byId('modeStatus').textContent=count+' nurse'+(count===1?'':'s');
   if(byId('changesModeStatus'))byId('changesModeStatus').textContent=count+' nurse'+(count===1?'':'s');
   byId('breakModeStatus').textContent=count+' nurse'+(count===1?'':'s');
-  var decisionTasks=workflowTaskCount(base,plan,r),confirmNeeded=workflowNeedsConfirmation(base,decisionTasks),taskCount=decisionTasks||(confirmNeeded?1:0),absenceCount=changesFor(base.date).length,overtimeEntries=overtimeFor(base.date),overtimeCount=overtimeEntries.length;
+  var decisionTasks=workflowTaskCount(base,plan,r),confirmNeeded=workflowNeedsConfirmation(base,decisionTasks),taskCount=decisionTasks||(confirmNeeded||plan.unresolved.length?1:0),absenceCount=changesFor(base.date).length,overtimeEntries=overtimeFor(base.date),overtimeCount=overtimeEntries.length;
   var firstTask=workflowTaskDetails(base,plan)[0]||'';
   if(r.mode==='7'&&!r.sharedPagerThree)roles.push(['b7','Seventh nurse',r.seventh,'Additional nurse · Break coordinated as required']);
   var extras=additionalNurses(plan);
-  var roleModel=roles.map(function(c){var tone=roleIconType(c[0]);return{key:c[0],label:c[1],names:c[0]==='bReliever'&&plan.unresolved.indexOf('reliever')>=0?'Unassigned':c[0]==='b7'&&plan.requiresSeventhDecision?'Awaiting choice':professionalNames(c[2]),detail:c[0]==='bReliever'&&plan.unresolved.indexOf('reliever')>=0?'Choose a nurse in Changes':c[3],tone:tone==='first'||tone==='second'||tone==='pager'||tone==='reliever'||tone==='seventh'?tone:'full',mine:isMine(c[2])}}),fivePerson=r.mode==='5'&&count>=5&&r.fullLW?{name:professionalName(r.fullLW),reason:'One nurse covers Labour Ward and Pager for the full night. Their break is coordinated when clinical cover allows.',mine:isMine(r.fullLW)}:null,nightDetail={staffingCalculation:staffingCalculation(base,plan),pagerTombolaNotice:base.date>=SHARED_PAGER_START_DATE?(plan.count===6&&(plan.changes.length||plan.overtime.length)?'Pager tombola opens when seven nurses are working. Six are recorded for this night.':plan.count===7&&!plan.complete?'Save the open cover assignments to unlock Pager tombola.':''):'',pagerTombola:pagerTombolaModel(base,plan,r),availableParts:availablePartsModel(base,plan),date:base.date,nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount,overtimeNames:overtimeEntries.map(function(o){return professionalName(o.nurse_name)}),taskCount:taskCount,decisionTasks:decisionTasks,confirmNeeded:confirmNeeded,alert:count!==6&&r.mode!=='5'?e.alert:'',firstTask:decisionTasks?firstTask:'',labourPending:labourPending&&!(personal&&personal.pending),breakLabel:personal&&personal.breakLabel||'',chatUnread:Number(byId('chatUnreadBadge')&&byId('chatUnreadBadge').textContent||0)||0,liveState:personalLiveStatus(base,personal),roles:roleModel,extras:extras.map(function(o){return o.nurse_name}),fivePerson:fivePerson,clockChange:clockChangeDetailFor(base.date),contextLabel:planIsProvisional(base)?'Provisional':nightDutyTiming(base.date).isClockChange?'Clock change':r.mode==='5'?'5-nurse arrangement':r.mode==='7'?'7-nurse arrangement':absenceCount||overtimeCount||workflowHasManualPlan(base)?'Updated night':'Standard night',currentPart:(function(){var context=resolveNightContext(null,base.date);if(!context.isCurrent||!context.selectedIsAutomatic||context.nowMs<context.timing.startUtc||context.nowMs>=context.timing.endUtc)return'';return context.nowMs<context.timing.handoverUtc?'first':'second'})(),dataFreshness:window.AnaestheticDomain&&window.AnaestheticDomain.freshness?window.AnaestheticDomain.freshness(lastSuccessfulSyncAt,navigator.onLine&&!forcedOfflineSession,appNowMs()).label:''};
+  var roleModel=roles.map(function(c){var tone=roleIconType(c[0]);return{key:c[0],label:c[1],names:c[0]==='bReliever'&&plan.unresolved.indexOf('reliever')>=0?'Unassigned':c[0]==='b7'&&plan.requiresSeventhDecision?'Awaiting choice':professionalNames(c[2]),detail:c[0]==='bReliever'&&plan.unresolved.indexOf('reliever')>=0?'Choose a nurse in Changes':c[3],tone:tone==='first'||tone==='second'||tone==='pager'||tone==='reliever'||tone==='seventh'?tone:'full',mine:isMine(c[2])}}),fivePerson=r.mode==='5'&&count>=5&&r.fullLW?{name:professionalName(r.fullLW),reason:'One nurse covers Labour Ward and Pager for the full night. Their break is coordinated when clinical cover allows.',mine:isMine(r.fullLW)}:null,nightDetail={staffingCalculation:staffingCalculation(base,plan),pagerCoverPending:plan.unresolved.length>0,pagerDrawFlow:!!(plan.sharedPagerThree&&count===7),pagerTombolaNotice:base.date>=SHARED_PAGER_START_DATE&&count===6&&(plan.changes.length||plan.overtime.length)?'Pager draw opens when seven nurses are working.':'',pagerTombola:pagerTombolaModel(base,plan,r),availableParts:availablePartsModel(base,plan),date:base.date,nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount,overtimeNames:overtimeEntries.map(function(o){return professionalName(o.nurse_name)}),taskCount:taskCount,decisionTasks:decisionTasks,confirmNeeded:confirmNeeded,alert:count!==6&&r.mode!=='5'?e.alert:'',firstTask:decisionTasks?firstTask:'',labourPending:labourPending&&!(personal&&personal.pending),breakLabel:personal&&personal.breakLabel||'',chatUnread:Number(byId('chatUnreadBadge')&&byId('chatUnreadBadge').textContent||0)||0,liveState:personalLiveStatus(base,personal),roles:roleModel,extras:extras.map(function(o){return o.nurse_name}),fivePerson:fivePerson,clockChange:clockChangeDetailFor(base.date),contextLabel:planIsProvisional(base)?'Provisional':nightDutyTiming(base.date).isClockChange?'Clock change':r.mode==='5'?'5-nurse arrangement':r.mode==='7'?'7-nurse arrangement':absenceCount||overtimeCount||workflowHasManualPlan(base)?'Updated night':'Standard night',currentPart:(function(){var context=resolveNightContext(null,base.date);if(!context.isCurrent||!context.selectedIsAutomatic||context.nowMs<context.timing.startUtc||context.nowMs>=context.timing.endUtc)return'';return context.nowMs<context.timing.handoverUtc?'first':'second'})(),dataFreshness:window.AnaestheticDomain&&window.AnaestheticDomain.freshness?window.AnaestheticDomain.freshness(lastSuccessfulSyncAt,navigator.onLine&&!forcedOfflineSession,appNowMs()).label:''};
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:night',{detail:nightDetail}));
   appStorage.setItem('anaes_selected_date',base.date);
   renderChanges(base,canonical);renderRoster();renderBreaks(canonical);bindTaskLinks();queueClockChangeAttention(base.date);maybeUpcomingClockChangeReminder();
@@ -885,7 +904,7 @@ function updateConfirmationControls(confirmNeeded,tasks,coverPending){
     coverButton.classList.toggle('hidden',!coverPending);
     coverButton.dataset.workflowBlocked=tasks||allocationSaveInFlight?'true':'false';
     coverButton.disabled=!!tasks||allocationSaveInFlight||!navigator.onLine||forcedOfflineSession||sharedWritesBlocked();
-    coverButton.textContent=allocationSaveInFlight?'Saving…':'Save and share cover';
+    if(allocationSaveInFlight)coverButton.textContent='Saving…';
   }
 }
 
@@ -920,8 +939,9 @@ function renderChanges(base,nightPlan){
   byId('fiveCoverStep').innerHTML=fiveCoverHtml(base,plan);
   var seventhInfo=seventhDecisionCard(plan);
   byId('allocationSummary').innerHTML=seventhInfo;
+  var groupPager=canGroupPagerCover(plan)&&plan.unresolved.length>0;
   var allocationDraft=allocationDrafts[base.date]||{},pagerPeriods=plan.sharedPagerThree?threeWayPagerPeriods(base.date):null;
-  var allocationRows=overtime.length&&plan.availableKeys.length?plan.availableKeys.map(function(key){
+  var allocationRows=overtime.length&&plan.availableKeys.length?plan.availableKeys.filter(function(key){return !groupPager||!isSharedPagerSlot(key)}).map(function(key){
     var assigned=plan.validAssignments.find(function(o){return o.allocation_key===key});
     var selectedId=Object.prototype.hasOwnProperty.call(allocationDraft,key)?allocationDraft[key]:(assigned?assigned.id:'');
     return{key:key,label:allocationLabel(key,plan.sharedPagerThree),breakLabel:pagerPeriods&&isSharedPagerSlot(key)?pagerPeriods[THREE_WAY_PAGER_KEYS.indexOf(key)]:allocationBreak(key),selectedId:selectedId,options:overtime.map(function(o){return{id:o.id,name:o.nurse_name}})};
@@ -930,7 +950,7 @@ function renderChanges(base,nightPlan){
   updateAllocationSaveControl(base);renderOvertimeSuggestions();
   var visible=expanded?history:history.slice(0,15);
   var changeDetail={
-    date:base.date,dateLabel:fmt(base.date),availableParts:availablePartsModel(base,plan),
+    date:base.date,dateLabel:fmt(base.date),groupPager:groupPager,simplifiedCover:!!(plan.sharedPagerThree&&plan.count===7),availableParts:availablePartsModel(base,plan),
     absences:changes.map(function(c){return{id:c.id,kind:'absence',name:professionalName(c.absent_name),status:'Absent',meta:(c.reason||'Absence')+' · Updated by '+(c.updated_by||'Shift member')+' at '+shortTime(c.updated_at)}}),
     overtime:overtime.map(function(o){var valid=plan.validAssignments.some(function(item){return item.id===o.id}),extra=extraIds.indexOf(o.id)>=0,added=earliestOvertimeAdd(base.date,o.nurse_name),when=added?added.changed_at:o.updated_at,who=added?added.changed_by:o.updated_by;return{id:o.id,kind:'overtime',name:o.nurse_name,status:extra?'Additional staff · as required':valid?allocationLabel(plan.validAssignments.find(function(item){return item.id===o.id}).allocation_key,plan.sharedPagerThree):'Awaiting allocation',needsAllocation:!valid&&!extra,meta:'Added by '+(who||'Shift member')+' at '+shortTime(when)}}),
     history:visible.map(function(h){return{label:h.label,type:h.type,title:h.title,detail:h.detail||'',meta:(h.changed_by||'Shift member')+' · '+shortTime(h.changed_at)}}),historyTotal:history.length,historyStatus:historyErrorDates[base.date]?'error':historyLoadedDates[base.date]?'loaded':(!navigator.onLine||forcedOfflineSession)?'offline':'loading',historyExpanded:expanded,historyHasMore:!!(historyPageState[base.date]&&historyPageState[base.date].has_more),allocations:allocationRows,allocationMessage:allocationMessage,forms:{names:names.map(function(n){return{value:n,label:professionalName(n)}}),editing:(changes.find(function(item){return item.id===editingAbsenceId})||null),overtimeSuggestions:recentOvertimeNames()},roleOverride:nightRoleOverrideModel(base)
@@ -1219,7 +1239,7 @@ async function saveFinalAllocationsV2510(event){
   if(event&&event.preventDefault)event.preventDefault();
   if(allocationSaveInFlight)return false;
   var button=event&&event.currentTarget||byId('saveAllocationsBtn'),base,chosen={},chosenCount=0,confirmationOnly=false;
-  var buttonLabel=button.id==='saveCoverAllocationsBtn'?'Save and share cover':'Confirm and share changes';
+  var buttonLabel=button.textContent.trim()||(button.id==='saveCoverAllocationsBtn'?'Save and share cover':'Confirm and share changes');
   formMessage('allocationFormMessage','Preparing your allocations…','');
   try{
     if(!requireOnline()){formMessage('allocationFormMessage','Reconnect to the internet, then press Confirm and share again.','error');return false}
@@ -1231,6 +1251,7 @@ async function saveFinalAllocationsV2510(event){
       formMessage('allocationFormMessage','Choose a different nurse for each open role before saving.','error');
       return false;
     }
+    var goToPager=button.id==='saveCoverAllocationsBtn'&&canGroupPagerCover(currentPlan)&&currentPlan.unresolved.length>0;
     chosen=selection.assignments;
     chosenCount=Object.keys(chosen).length;
     confirmationOnly=!chosenCount&&currentPlan.coreComplete&&!currentPlan.requiresCoverageChoice&&!currentPlan.requiresSeventhDecision&&!currentPlan.unresolved.length;
@@ -1252,7 +1273,7 @@ async function saveFinalAllocationsV2510(event){
     }
     delete allocationDrafts[base.date];delete labourOrderDrafts[base.date];delete seventhDecisionDrafts[base.date];await loadSharedData();notifyRosterUpdate('allocation',base.date);var plan=staffingPlan(baseForDate(base.date)),saved=chosenCount-plan.unresolved.filter(function(key){return Object.prototype.hasOwnProperty.call(chosen,key)}).length;
     var success=plan.unresolved.length?(saved?saved+' allocation'+(saved===1?'':'s')+' saved':'No allocation saved')+' • '+plan.unresolved.length+' still to decide':confirmationOnly?'This night\'s plan confirmed for everyone':additionalNurses(plan).length?'Core plan published; additional staff remain as required':'This night\'s plan published for everyone';
-    formMessage('allocationFormMessage',success,'success');showButtonConfirmation(button,buttonLabel);toast(success);return false;
+    formMessage('allocationFormMessage',success,'success');showButtonConfirmation(button,buttonLabel);toast(success);if(goToPager&&cur().date===base.date&&plan.complete)show('today');return false;
   }catch(error){setSync('error','Save failed');formMessage('allocationFormMessage','Save stopped: '+(error&&error.message==='timeout'?'the connection timed out. Your selections are still here.':'the allocations could not be confirmed. Your selections are still here.'),'error');failedAction('The allocations could not be saved.',function(){return saveFinalAllocationsV2510()});return false}
   finally{allocationSaveInFlight=false;if(button&&button.isConnected)button.textContent=buttonLabel;updateAllocationSaveControl(cur());updateOfflineControls()}
 }

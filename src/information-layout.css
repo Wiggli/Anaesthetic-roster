@@ -245,3 +245,9 @@
 .staffingCalculation, .pagerDrawAvailability { margin: 8px 0 12px; color: var(--text-secondary); font-size: .9rem; line-height: 1.4; }
 #saveCoverAllocationsBtn { margin-top: 12px; }
 #coverAllocationFeedback:empty { display: none; }
+
+#nightPagerAction { margin-bottom: 12px; }
+#nightPagerAction:empty { display: none; }
+.pagerCoverNote { margin: 3px 0 10px; color: var(--text-secondary); line-height: 1.4; }
+
+.pagerTheatreTimeline summary { padding-block: 9px; color: var(--text-secondary); cursor: pointer; }
