@@ -430,7 +430,7 @@ assert.match(html, /<strong>Activity<\/strong>/, 'staffing history must have a c
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=staffingSaveInFlight\|\|offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=staffingSaveInFlight\|\|offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /dirty=!!\(draft&&roleAssignmentsDiffer/, 'role adapter requires a genuine changed draft');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'active typed role-save controls only appear for a changed draft');
-assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
+assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\|\|plan\.unresolved\.length\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
 assert.doesNotMatch(html, /data-changes-step=/, 'staffing, cover and review share a continuous page');
 assert.match(html, /id="changesWorkflowState" role="status" aria-live="polite"/, 'Changes announces the next action');
 assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
@@ -741,7 +741,7 @@ assert.match(clinicalExperience, /02:00¹[\s\S]*02:00²/, 'autumn clock-change r
 assert.match(clinicalExperience, /function liveClockLabel[\s\S]*First[\s\S]*Second[\s\S]*winter time/, 'live Night clock must explain which repeated 02:xx the nurse is seeing');
 assert.match(clinicalExperience, /function nightVisualPhase[\s\S]*'upcoming'[\s\S]*'handover'[\s\S]*'first'[\s\S]*'second'[\s\S]*'complete'[\s\S]*host\.dataset\.shiftPhase = nightVisualPhase/, 'personal Night must still track the live stage of the shift without restoring a countdown or a duplicate handover block');
 assert.match(clinicalExperience, /personalHeroFactGrid[\s\S]*onClick=\{openBreak\}[\s\S]*onClick=\{openColleague\}[\s\S]*<NightTimeline/, 'break and colleague are direct actions, alongside the live timeline');
-assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? model.decisionTasks \|\| model.labourPending \? 'Decision needed' : 'Review changes' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
+assert.match(clinicalExperience, /nightTeamStatusLine[\s\S]*provisional \? model.decisionTasks \|\| model.labourPending \? decisionLabel : 'Review changes' : 'Plan ready'/, 'compact Night staffing must preserve the real plan readiness state');
 assert.match(accountExperience, /SHARE_QR_TARGET = 'https:\/\/wiggli\.github\.io\/Anaesthetic-roster\/\?welcome=1'/, 'the QR matrix target must match the public shared-entry URL');
 assert.match(accountExperience, /Share the app[\s\S]*QR code, WhatsApp, Messages and more/, 'Account must make peer-to-peer sharing obvious');
 assert.match(accountExperience, /function shareAct\(action:[\s\S]*roster:share-action/, 'share buttons must dispatch through the dedicated share event channel');

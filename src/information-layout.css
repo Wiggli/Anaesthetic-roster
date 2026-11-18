@@ -241,3 +241,7 @@
 #accountSheet #openingTuneFile { max-width: 100%; min-height: 44px; }
 #accountSheet #openingTuneFileName { overflow-wrap: anywhere; }
 #accountSheet #openingTuneFileName:empty { display: none; }
+
+.staffingCalculation, .pagerDrawAvailability { margin: 8px 0 12px; color: var(--text-secondary); font-size: .9rem; line-height: 1.4; }
+#saveCoverAllocationsBtn { margin-top: 12px; }
+#coverAllocationFeedback:empty { display: none; }

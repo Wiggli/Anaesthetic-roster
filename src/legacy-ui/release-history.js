@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["66.1","19 November 2026","Clearer staffing and cover saves",["Night and Changes explain the staffing count when there are absences or overtime.","Save and share cover beside the role choices, with one nurse per role.","Night explains when the seven-nurse Pager tombola is waiting for staffing or cover assignments."],"normal"],
   ["66.0","18 November 2026","Pager tombola",["On a complete seven-nurse night, the Pager tombola shuffles the three Pager nurses and reveals their turns in order.","The app saves the draw in the shared roster, with optional reveal sounds and a reduced-motion mode."],"normal"],
   ["65.1","18 November 2026","Pager timeline matches staffing",["The Pager timeline starts at midnight with five or six nurses and at 23:30 for the three-way Pager split.","The full roster and copied plan show the Pager duty times alongside the theatre timings."],"normal"],
   ["65.0","18 November 2026","Pager turns from 23:30",["On normal nights, the Pager turns run from 23:30 to 02:00, 02:00 to 04:30 and 04:30 to 07:00.","Night, Changes, Breaks and the shared plan show the assigned turns. Clock-change nights divide the time equally by real elapsed time."],"normal"],

@@ -57,6 +57,8 @@ type NightRole = {
 
 type NightSummary = {
   pagerTombola?: PagerTombolaModel | null;
+  pagerTombolaNotice?: string;
+  staffingCalculation?: string;
   availableParts?: AvailablePartsModel;
   date?: string;
   nurseCount: number;
@@ -499,13 +501,17 @@ function NightStatus({ model }: { model: NightSummary }) {
     model.overtimeCount ? `${model.overtimeCount} overtime` : ''
   ].filter(Boolean).join(' · ');
   const hasSpecificDecision = Boolean(model.firstTask || model.labourPending);
+  const openParts = model.availableParts?.parts.length || 0;
+  const decisionLabel = openParts && !model.availableParts?.conditional
+    ? `${openParts} ${openParts === 1 ? 'role' : 'roles'} to assign`
+    : 'Decision needed';
 
   return <section className={'nightSignal ' + (provisional ? 'needsReview' : '')} aria-label="Tonight at a glance">
     <div className="nightTeamStatusLine">
-      <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : 'nightTeamStaffing'}>{feedback || staffingLabel}</span>
+      <span role="status" aria-live="polite" className={feedback ? 'productUpdateText' : 'nightTeamStaffing'}>{feedback || model.staffingCalculation || staffingLabel}</span>
       <span className="nightSignalState">
         <span className="nightSignalGlyph" aria-hidden="true">{provisional ? '!' : <svg className={'productStatusCheck' + (completed ? ' justCompleted' : '')} viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>}</span>
-        <b>{model.nurseCount < 5 ? 'Provisional cover' : provisional ? model.decisionTasks || model.labourPending ? 'Decision needed' : 'Review changes' : 'Plan ready'}</b>
+        <b>{model.nurseCount < 5 ? 'Provisional cover' : provisional ? model.decisionTasks || model.labourPending ? decisionLabel : 'Review changes' : 'Plan ready'}</b>
       </span>
     </div>
     {model.taskCount > 0 && !hasSpecificDecision && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
@@ -865,7 +871,7 @@ function NightRoles({ model }: { model: NightSummary }) {
         </Pressable>{!['Unassigned','Awaiting choice'].includes(role.names) && <Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable>}</div>;
       })}
     </div>
-    {model.pagerTombola && <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} />}
+    {model.pagerTombola ? <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} /> : model.pagerTombolaNotice && <p className="pagerDrawAvailability">{model.pagerTombolaNotice}</p>}
     {model.extras.length > 0 && <div className="additionalStaff">
       <b>Additional staff · allocation as required</b>
       {model.extras.map(name => <span key={name} className="additionalName">{name}</span>)}

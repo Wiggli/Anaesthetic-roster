@@ -186,3 +186,55 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
  await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(expected);
  await expect(sheet.getByRole('button',{name:'Draw Pager turns',exact:true})).toHaveCount(0);
 });
+
+test('one absence and two overtime show six and save cover without a detour',async({page})=>{
+ await openReview(page);
+ await page.evaluate(periods=>{
+   rotationVersions=periods; schemaVersion=57; rebuildCalculatedRoster();
+   idx=R.findIndex(r=>r.date==='2026-11-21');
+   const base=cur();
+   nightChanges[base.date]=[{id:'away',absent_name:base.first1,reason:'Leave'}];
+   nightOvertime[base.date]=[
+     {id:'cover-a',nurse_name:'Overtime A',allocation_key:null},
+     {id:'cover-b',nurse_name:'Overtime B',allocation_key:null}
+   ];
+   runRosterMutation=(_key,commit)=>commit('fixture-operation',0);
+   supa.rpc=async (name,args)=>{
+     if(name!=='finalise_night_plan_v49')return{data:[],error:null};
+     nightOvertime[base.date].forEach(record=>{
+       record.allocation_key=Object.keys(args.p_assignments).find(key=>args.p_assignments[key]===record.id)||null;
+     });
+     nightPlanStatuses[base.date]={published_at:new Date().toISOString(),revision:1};
+     return{data:{},error:null};
+   };
+   loadSharedData=async()=>{render();return true};
+   notifyRosterUpdate=()=>{};
+   render();show('today');
+ },periods);
+ await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 2 overtime = 6 working');
+ await expect(page.locator('#roles')).toContainText('Six are recorded for this night');
+ await page.evaluate(()=>show('changes'));
+ const save=page.getByRole('button',{name:'Save and share cover'});
+ await expect(save).toBeDisabled();
+ await page.locator('[data-final-allocation="first1"]').selectOption('cover-a');
+ await page.locator('[data-final-allocation="reliever"]').selectOption('cover-a');
+ await expect(save).toBeDisabled();
+ await page.locator('[data-final-allocation="reliever"]').selectOption('cover-b');
+ await expect(save).toBeEnabled();
+ await expect(page.getByRole('button',{name:'Review and share',exact:true})).toBeHidden();
+ await save.click();
+ await expect(save).toBeHidden();
+ await expect(page.locator('#coverAssignmentsHeading')).toHaveText('Cover assignments');
+ await page.evaluate(()=>{
+   nightOvertime[cur().date].push({id:'cover-c',nurse_name:'Overtime C',allocation_key:null});
+   render();show('today');
+ });
+ await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 3 overtime = 7 working');
+ await expect(page.locator('#roles')).toContainText('Save the open cover assignments to unlock Pager tombola');
+ await page.evaluate(()=>show('changes'));
+ await page.locator('[data-final-allocation="seventh"]').selectOption('cover-c');
+ await save.click();
+ await expect(save).toBeHidden();
+ await page.evaluate(()=>show('today'));
+ await expect(page.getByRole('button',{name:/Pager tombola/})).toBeVisible();
+});

@@ -164,7 +164,7 @@ function AllocationList({ model }: { model: ChangesExperience }) {
 
   return <GroupedList className="changesAllocationGroup tw:shadow-none">
     {model.allocations.map(row => <div
-      key={row.key}
+      key={model.date+':'+row.key+':'+row.selectedId}
       className="allocationRow"
     >
       <span className="allocationRowCopy"><strong>{row.label}</strong><small>{row.breakLabel}</small></span>
