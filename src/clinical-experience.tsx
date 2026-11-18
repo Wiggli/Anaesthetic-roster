@@ -80,6 +80,7 @@ type NightSummary = {
 
 type PersonalNight = {
   allocationExplained?: boolean;
+  pagerTimeline?: { periods: string[]; mine: number };
   date: string;
   displayName: string;
   jobTitle: string;
@@ -545,6 +546,20 @@ function personalTone(model: PersonalNight) {
 
 
 
+function PagerTimeline({ periods, mine }: NonNullable<PersonalNight['pagerTimeline']>) {
+  return <section className="nightProgressRail nightTimeline pagerTimeline" aria-label="Pager timeline">
+    <div className="nightTimelineHead"><span><b>Pager timeline</b></span></div>
+    <ol className="pagerTimelineTurns">
+      {periods.map((period, index) => (
+        <li key={period} className={index === mine ? 'pagerTimelineMine' : undefined}>
+          <small>{index === mine ? 'Your turn' : `Turn ${index + 1}`}</small>
+          <b>{period}</b>
+        </li>
+      ))}
+    </ol>
+  </section>;
+}
+
 function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) {
   const reduced = useProductReducedMotion();
   const progress = nightProgress(model, value);
@@ -567,7 +582,7 @@ function NightTimeline({ model, value }: { model: PersonalNight; value: Date }) 
     aria-label={model.clockChange ? 'Clock-change night timeline with equal-duty handover.' : 'Night timeline from 00:00 to 07:00.'}
   >
     <div className="nightTimelineHead">
-      <span><small>Night timeline</small><b>{currentSide}</b></span>
+      <span><small>{model.pagerTimeline ? 'Theatre timeline' : 'Night timeline'}</small><b>{currentSide}</b></span>
       {liveLabel && <motion.em
         key={liveLabel}
         initial={reduced ? false : { opacity: 0, y: 3 }}
@@ -726,7 +741,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
 
       {pager?.eligible && <Pressable type="button" className="personalPagerBrief" onClick={() => pagerApi.openSharedPagerEditor?.()}><span><small>{pager.title}</small><b>{pager.label}</b></span><i aria-hidden="true">›</i></Pressable>}
       {model.clockChange && <Pressable type="button" className="personalClockException" onClick={openClockGuide}>
-        <span className="personalClockExceptionCopy"><small>Clock-change night · equal duty</small><strong>Handover {model.clockChange.handoverDisplay}</strong><span>{model.clockChange.partHoursLabel} per part · {model.clockChange.totalHoursLabel} from midnight</span></span><i aria-hidden="true">›</i>
+        <span className="personalClockExceptionCopy"><small>Clock-change night · equal duty</small><strong>Theatre handover {model.clockChange.handoverDisplay}</strong><span>{model.clockChange.partHoursLabel} per part · {model.clockChange.totalHoursLabel} from midnight</span></span><i aria-hidden="true">›</i>
       </Pressable>}
       {model.action === 'role' && <div className="personalHeroFactGrid" aria-label="Your break and colleague">
         <Pressable type="button" className="personalHeroFact personalFactButton" onClick={openBreak}>
@@ -738,6 +753,7 @@ function PersonalNightCard({ model }: { model: PersonalNight }) {
           <b>{scanContext || 'Team'}</b>
         </Pressable>
       </div>}
+      {model.pagerTimeline && <PagerTimeline {...model.pagerTimeline} />}
       <NightTimeline model={model} value={value} />
 
       {model.action === 'choose' && <Pressable type="button" className="personalContextAction personalHeroPrimaryAction" onClick={openNameSetup}>

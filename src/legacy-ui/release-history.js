@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["65.1","18 November 2026","Pager timeline matches staffing",["The Pager timeline starts at midnight with five or six nurses and at 23:30 for the three-way Pager split.","The full roster and copied plan show the Pager duty times alongside the theatre timings."],"normal"],
   ["65.0","18 November 2026","Pager turns from 23:30",["On normal nights, the Pager turns run from 23:30 to 02:00, 02:00 to 04:30 and 04:30 to 07:00.","Night, Changes, Breaks and the shared plan show the assigned turns. Clock-change nights divide the time equally by real elapsed time."],"normal"],
   ["64.0","18 November 2026","Three-way Pager cover",["From the night of 21 November, the Pager is shared by three nurses and the seventh-nurse rotation choice is retired.","Night, Changes, Breaks and the shared plan show who is on the Pager team. The three nurses agree their turns and breaks together."],"normal"],
   ["63.1","14 November 2026","Mundian To Bach Ke opening tune",["Includes an eight-second clip of Mundian To Bach Ke as the default opening tune, with no separate download.","Keeps the sound switch and all saved track preferences."],"normal"],
