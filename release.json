@@ -1,12 +1,12 @@
 {
-  "version": "66.1",
+  "version": "67.0",
   "date": "19 November 2026",
-  "title": "Clearer staffing and cover saves",
-  "summary": "See how staffing is counted and save cover beside the assignment choices.",
+  "title": "A simpler Pager draw",
+  "summary": "Find the Pager draw at the top of Night and choose theatre cover once.",
   "changes": [
-    "Night and Changes explain the staffing count when there are absences or overtime.",
-    "Save and share cover beside the role choices, with one nurse per role.",
-    "Night explains when the seven-nurse Pager tombola is waiting for staffing or cover assignments."
+    "On a seven-nurse night, the Pager draw has a shortcut above your assignment and a direct route back from saving cover.",
+    "When theatre choices determine the Pager team, the remaining overtime nurses are grouped before the draw.",
+    "Night and Changes show fewer repeated vacancy notices and assignment controls."
   ],
   "update_policy": "normal"
 }

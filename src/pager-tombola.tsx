@@ -138,7 +138,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
 
   return <>
     <Pressable ref={launcher} type="button" className="pagerDrawLauncher" onClick={open}>
-      <span><strong>{model.saved ? 'Pager draw result' : 'Pager tombola'}</strong><small>{model.saved ? 'View the saved order' : 'Randomly assign the three Pager turns'}</small></span>
+      <span><strong>{model.saved ? 'Pager draw result' : 'Draw Pager turns'}</strong><small>{model.saved ? 'View the saved order' : 'Randomise the three Pager turns'}</small></span>
       <span aria-hidden="true">›</span>
     </Pressable>
     <dialog

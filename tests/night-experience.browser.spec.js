@@ -102,8 +102,8 @@ for(const theme of ['light','dark'])test(`seven nurses share Pager cover in ${th
   ];
   setThemePreference(theme);render();show('changes');
  },{periods,theme});
- await expect(page.locator('#changes')).toContainText('Shared Pager · slot 3');
- await expect(page.locator('#changes')).toContainText('04:30–07:00');
+ await expect(page.locator('#changes')).toContainText('The remaining nurses join the Pager draw');
+ await expect(page.locator('[data-final-allocation="seventh"]')).toHaveCount(0);
  await expect(page.locator('[data-seventh-decision]')).toHaveCount(0);
  await page.evaluate(()=>{
   nightOvertime[cur().date][1].allocation_key='seventh';
@@ -165,7 +165,7 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
    notifyRosterUpdate=()=>{};
    render();show('today');
  },periods);
- const opener=page.getByRole('button',{name:/Pager tombola/});
+ const opener=page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager turns/});
  await opener.click();
  const sheet=page.getByRole('dialog',{name:'Pager draw'});
  await expect(sheet.locator('.pagerDrawTurnTime strong')).toHaveText(['23:30–02:00','02:00–04:30','04:30–07:00']);
@@ -212,7 +212,7 @@ test('one absence and two overtime show six and save cover without a detour',asy
    render();show('today');
  },periods);
  await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 2 overtime = 6 working');
- await expect(page.locator('#roles')).toContainText('Six are recorded for this night');
+ await expect(page.locator('#roles')).toContainText('Pager draw opens when seven nurses are working');
  await page.evaluate(()=>show('changes'));
  const save=page.getByRole('button',{name:'Save and share cover'});
  await expect(save).toBeDisabled();
@@ -226,15 +226,19 @@ test('one absence and two overtime show six and save cover without a detour',asy
  await expect(save).toBeHidden();
  await expect(page.locator('#coverAssignmentsHeading')).toHaveText('Cover assignments');
  await page.evaluate(()=>{
+   nightOvertime[cur().date].forEach(record=>record.allocation_key=null);
    nightOvertime[cur().date].push({id:'cover-c',nurse_name:'Overtime C',allocation_key:null});
    render();show('today');
  });
  await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 3 overtime = 7 working');
- await expect(page.locator('#roles')).toContainText('Save the open cover assignments to unlock Pager tombola');
- await page.evaluate(()=>show('changes'));
- await page.locator('[data-final-allocation="seventh"]').selectOption('cover-c');
- await save.click();
- await expect(save).toBeHidden();
- await page.evaluate(()=>show('today'));
- await expect(page.getByRole('button',{name:/Pager tombola/})).toBeVisible();
+ await expect(page.locator('#nightStatusRow')).not.toContainText('Available parts');
+ await page.getByRole('button',{name:/Set up Pager draw/}).click();
+ await expect(page.locator('#changesAvailableParts')).toBeEmpty();
+ await expect(page.locator('[data-final-allocation]')).toHaveCount(1);
+ const proceed=page.getByRole('button',{name:'Save cover and go to draw'});
+ await expect(proceed).toBeDisabled();
+ await page.locator('[data-final-allocation="first1"]').selectOption('cover-c');
+ await proceed.click();
+ expect(await page.evaluate(()=>nightOvertime[cur().date].find(entry=>entry.id==='cover-c').allocation_key)).toBe('first1');
+ await expect(page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager turns/})).toBeVisible();
 });
