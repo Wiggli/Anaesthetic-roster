@@ -1,11 +1,11 @@
 {
-  "version": "64.0",
+  "version": "65.0",
   "date": "18 November 2026",
-  "title": "Three-way Pager cover",
-  "summary": "Four nurses cover theatre and three share the Pager on seven-nurse nights.",
+  "title": "Pager turns from 23:30",
+  "summary": "The three shared Pager turns now show their handover times.",
   "changes": [
-    "From the night of 21 November, the Pager is shared by three nurses and the seventh-nurse rotation choice is retired.",
-    "Night, Changes, Breaks and the shared plan show who is on the Pager team. The three nurses agree their turns and breaks together."
+    "On normal nights, the Pager turns run from 23:30 to 02:00, 02:00 to 04:30 and 04:30 to 07:00.",
+    "Night, Changes, Breaks and the shared plan show the assigned turns. Clock-change nights divide the time equally by real elapsed time."
   ],
   "update_policy": "normal"
 }

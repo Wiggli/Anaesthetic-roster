@@ -166,3 +166,8 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 - From the 21 November 2026 roster night, the existing four theatre roles and three shared Labour Ward / Pager slots form the seven-person plan. Historical night calculations and stored allocation keys stay compatible. The team agrees Pager turns and breaks, while the established theatre break groups continue to follow the existing duty timings.
 - Verified the effective five-person establishment with two overtime nurses, pending cover, a theatre absence, additional staffing, an agreed seven-person role override, return to six and the historical seven-person calculations. The Node 22 verification gate and four light/dark phone and desktop Chromium fixtures pass. Browser fixtures use isolated data and do not authenticate to the production backend.
 - The compatibility migration requires release 64.0 for shared roster edits. Older clients can still view the roster and receive the update prompt.
+
+## Release 65.0 Pager turn times
+
+- The three saved Pager slots map to consecutive turns from 23:30 to 07:00 in Night, Changes, Breaks, Full roster and the copied plan. Clock-change turns use equal elapsed time, with repeated local times labelled.
+- Allocation and break-group rules continue to use their existing inputs and write paths. The timing checks cover a normal night and both Malta clock changes. Browser fixtures use isolated staffing data.

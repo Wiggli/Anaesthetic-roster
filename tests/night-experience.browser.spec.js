@@ -103,6 +103,7 @@ for(const theme of ['light','dark'])test(`seven nurses share Pager cover in ${th
   setThemePreference(theme);render();show('changes');
  },{periods,theme});
  await expect(page.locator('#changes')).toContainText('Shared Pager · slot 3');
+ await expect(page.locator('#changes')).toContainText('04:30–07:00');
  await expect(page.locator('[data-seventh-decision]')).toHaveCount(0);
  await page.evaluate(()=>{
   nightOvertime[cur().date][1].allocation_key='seventh';
@@ -110,10 +111,11 @@ for(const theme of ['light','dark'])test(`seven nurses share Pager cover in ${th
  });
  await expect(page.locator('#personalNightCard')).toContainText('Shared Labour Ward / Pager');
  await expect(page.locator('#personalNightCard')).toContainText('Third Cover Nurse');
+ await expect(page.locator('#personalNightCard')).toContainText('23:30–02:00');
  await expect(page.locator('#today')).toContainText('Second Cover Nurse');
  await page.screenshot({path:`/tmp/three-way-pager-${info.project.name}-${theme}.png`,fullPage:true});
  await page.evaluate(()=>show('breaks'));
  await expect(page.locator('#breaks')).toContainText('Third Cover Nurse');
- await expect(page.locator('#breaks')).toContainText('Agree who takes each Pager turn');
+ await expect(page.locator('#breaks')).toContainText('04:30–07:00');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
