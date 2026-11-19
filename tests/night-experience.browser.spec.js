@@ -168,6 +168,10 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
  const opener=page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager turns/});
  await opener.click();
  const sheet=page.getByRole('dialog',{name:'Pager draw'});
+ const closeButton=sheet.getByRole('button',{name:'Close Pager draw'});
+ const closeBounds=await closeButton.boundingBox();
+ expect(closeBounds.width).toBeCloseTo(44,0);
+ expect(closeBounds.height).toBeCloseTo(44,0);
  await expect(sheet.locator('.pagerDrawTurnTime strong')).toHaveText(['23:30–02:00','02:00–04:30','04:30–07:00']);
  await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(['Pending','Pending','Pending']);
  await sheet.getByRole('button',{name:'Sound on'}).click();

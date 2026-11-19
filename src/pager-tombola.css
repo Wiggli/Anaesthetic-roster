@@ -31,9 +31,15 @@
 .pagerDrawHeader { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
 .pagerDrawHeader h2 { margin: 0; font-size: 31px; line-height: 1.08; letter-spacing: -.045em; }
 .pagerDrawHeader p { margin: 5px 0 0; font-size: 13px; }
-.pagerDrawClose {
-  min-width: 38px;
-  min-height: 38px;
+.pagerDrawSheet .pagerDrawClose {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  line-height: 1;
   flex: none;
   border-radius: 50%;
   background: var(--surface-elevated);

@@ -1,12 +1,11 @@
 {
-  "version": "67.0",
+  "version": "67.1",
   "date": "19 November 2026",
-  "title": "A simpler Pager draw",
-  "summary": "Find the Pager draw at the top of Night and choose theatre cover once.",
+  "title": "Pager draw saves correctly",
+  "summary": "Save the Pager draw before revealing the assigned turns.",
   "changes": [
-    "On a seven-nurse night, the Pager draw has a shortcut above your assignment and a direct route back from saving cover.",
-    "When theatre choices determine the Pager team, the remaining overtime nurses are grouped before the draw.",
-    "Night and Changes show fewer repeated vacancy notices and assignment controls."
+    "Fixed the database error that rejected Pager draws and left the three turns pending.",
+    "Made the close button circular and clarified the status if a draw fails."
   ],
   "update_policy": "normal"
 }

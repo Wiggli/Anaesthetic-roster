@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["67.1","19 November 2026","Pager draw saves correctly",["Fixed the database error that rejected Pager draws and left the three turns pending.","Made the close button circular and clarified the status if a draw fails."],"normal"],
   ["67.0","19 November 2026","A simpler Pager draw",["On a seven-nurse night, the Pager draw has a shortcut above your assignment and a direct route back from saving cover.","When theatre choices determine the Pager team, the remaining overtime nurses are grouped before the draw.","Night and Changes show fewer repeated vacancy notices and assignment controls."],"normal"],
   ["66.1","19 November 2026","Clearer staffing and cover saves",["Night and Changes explain the staffing count when there are absences or overtime.","Save and share cover beside the role choices, with one nurse per role.","Night explains when the seven-nurse Pager tombola is waiting for staffing or cover assignments."],"normal"],
   ["66.0","18 November 2026","Pager tombola",["On a complete seven-nurse night, the Pager tombola shuffles the three Pager nurses and reveals their turns in order.","The app saves the draw in the shared roster, with optional reveal sounds and a reduced-motion mode."],"normal"],

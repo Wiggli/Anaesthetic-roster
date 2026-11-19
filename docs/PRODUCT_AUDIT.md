@@ -191,3 +191,8 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 
 - The seven-nurse Night view leads with the draw or its setup shortcut. Changes shows one assignment form and a direct return to Night after saving grouped cover.
 - If the working count is seven and the overtime count matches the open roles, the user chooses any theatre cover. Existing valid Pager allocations are retained where possible, and the remaining overtime nurses fill the open Pager places before the draw. Other staffing layouts still use explicit selection.
+
+## Release 67.1 Pager draw save
+
+- Production database logs identified a text concatenation error in the guarded night-role write delegation. A forward migration corrects it while preserving the operation key, revision checks and permissions.
+- The PostgreSQL fixture reproduces the failed seven-nurse write before migration and verifies the saved draw afterward. The browser checks the circular close control and the normal draw reveal.

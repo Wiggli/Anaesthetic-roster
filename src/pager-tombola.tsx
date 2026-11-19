@@ -166,7 +166,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
         </div>
       </div>
       <p className="pagerDrawStatus" role="status">
-        {phase === 'complete' ? 'Draw complete' : phase === 'shuffling' ? 'Shuffling' : phase === 'revealing' ? 'Drawing Pager turns' : 'Ready to draw'}
+        {error ? 'Draw not saved' : phase === 'complete' ? 'Draw complete' : phase === 'shuffling' ? 'Shuffling' : phase === 'revealing' ? 'Drawing Pager turns' : 'Ready to draw'}
       </p>
       <ol className="pagerDrawTurns" aria-label="Pager turns">
         {model.periods.map((period, index) => {
