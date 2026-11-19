@@ -212,3 +212,9 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 - The full deterministic gate passes. Focused browser coverage includes eight normal/enlarged-text typography cases, six phone/desktop light/dark layout cases, four Pager typography cases with long names, and normal/reduced-motion saved draws. Updated stale typography assertions to the existing two-fact hero and expandable roster structure.
 - The clinical presentation, shared-Pager hero, domain and runtime foundation source match 68.0 exactly. Pager writes, ordering and save validation are retained. The source-only compatibility budget grows by 1 KiB to retain the new release notes; built performance budgets are retained.
 - The visible browser confirmed the deployed sign-in screen renders text, but cannot reach the local fixture server. Headless screenshots still omit glyphs, so operational checks use DOM font metrics, text content, dimensions, wrapping and element geometry. WebKit dependencies are unavailable without system installation privileges. Physical iPhone and VoiceOver review remain unverified.
+
+## 20 November 2026 · Typography and alignment recheck
+
+- Confirmed the public app serves 68.1 and the reviewed runtime source matches main.
+- Eighteen additional Chromium checks pass across Night, Changes, Breaks, Chat, Full roster, Actions, all Account sections and administrator navigation. Coverage includes 320/440px normal and enlarged text, 1280px layouts, light/dark themes, long transcripts and simulated keyboard viewport changes.
+- No new overflow, font-size, control-reachability or navigation failure was reproduced by this pass. Runtime files and the existing hero/timing implementation retain release 68.1. Physical iPhone, VoiceOver and glyph-level screenshot review retain the preceding verification limits.
