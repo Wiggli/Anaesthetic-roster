@@ -7,7 +7,7 @@ const size = file => fs.statSync(path.join(root, file)).size;
 const kib = value => Math.round(value / 1024);
 
 const budgets = {
-  'app-ui.js': 491 * 1024, // 67.0 groups Pager cover behind theatre choices; built budgets remain unchanged.
+  'app-ui.js': 492 * 1024, // 68.1 retains additional release notes; built budgets remain unchanged.
   'app-core.js': 100 * 1024,
   'runtime-foundation.js': 64 * 1024,
   'chat.js': 100 * 1024,

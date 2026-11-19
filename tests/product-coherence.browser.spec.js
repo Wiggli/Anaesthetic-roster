@@ -167,3 +167,62 @@ for (const width of [320, 430, 1280]) for (const theme of ['light', 'dark']) {
     expect(await page.evaluate(() => cur().date)).toBe('2026-11-21');
   });
 }
+
+for (const width of [320, 430]) for (const enlarged of [false, true]) {
+  test(`Pager typography and alignment ${width} ${enlarged ? 'large dark' : 'standard light'} @iphone`, async ({page}, info) => {
+    await page.setViewportSize({width, height: 932});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await openReview(page);
+    await page.evaluate(({periods, enlarged}) => {
+      rotationVersions = periods;
+      schemaVersion = 57;
+      rebuildCalculatedRoster();
+      idx = R.findIndex(night => night.date === '2026-11-21');
+      const date = cur().date;
+      nightOvertime[date] = [
+        {id: 'pager-2', nurse_name: 'Alexandra Maria Example With A Long Surname', allocation_key: 'reliever'},
+        {id: 'pager-3', nurse_name: 'Christopher Example With Another Long Surname', allocation_key: 'seventh'}
+      ];
+      runRosterMutation = (_key, commit) => commit('typography-fixture', 0);
+      supa.rpc = async (name, args) => {
+        if (name === 'apply_night_role_override_v57') nightRoleOverrides[date] = {assignments: args.p_assignments, reason: args.p_override_reason};
+        return {data: null, error: null};
+      };
+      loadSharedData = async () => { render(); return true; };
+      notifyRosterUpdate = () => {};
+      applyTheme(enlarged);
+      document.documentElement.style.fontSize = enlarged ? '20px' : '16px';
+      render();
+      show('today');
+    }, {periods: require('./fixtures/establishment-periods.json'), enlarged});
+    await page.locator('#nightPagerAction .pagerDrawLauncher').click();
+    const sheet = page.getByRole('dialog', {name: 'Pager draw'});
+    const close = sheet.getByRole('button', {name: 'Close Pager draw'});
+    const bounds = await close.boundingBox();
+    expect(bounds.width).toBeCloseTo(44, 0);
+    expect(bounds.height).toBeCloseTo(44, 0);
+    await assertNoOverflow(page, '.pagerDrawSheet');
+    for (const token of await sheet.locator('.pagerDrawToken').all()) {
+      const tokenBounds = await token.boundingBox();
+      const arenaBounds = await sheet.locator('.pagerDrawArena').boundingBox();
+      expect(tokenBounds.x).toBeGreaterThanOrEqual(arenaBounds.x);
+      expect(tokenBounds.x + tokenBounds.width).toBeLessThanOrEqual(arenaBounds.x + arenaBounds.width);
+    }
+    await sheet.getByRole('button', {name: 'Sound on', exact: true}).click();
+    await sheet.getByRole('button', {name: 'Draw Pager times', exact: true}).click();
+    await expect(sheet.getByRole('status')).toHaveText('Saved');
+    for (const row of await sheet.locator('.pagerDrawTurn').all()) {
+      const name = row.locator('.pagerDrawTurnName');
+      const time = row.locator('.pagerDrawTurnTime');
+      expect(await name.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+      expect(await name.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      expect((await name.boundingBox()).y).toBeGreaterThanOrEqual((await time.boundingBox()).y + (await time.boundingBox()).height);
+    }
+    await sheet.screenshot({path: info.outputPath('pager-readable-result.png')});
+    await sheet.getByRole('button', {name: 'Done', exact: true}).click();
+    await page.evaluate(() => { show('roster'); renderRoster(); });
+    const badge = page.locator('.rosterStaffingBadge').first();
+    expect(await badge.evaluate(el => getComputedStyle(el).maxWidth)).toBe('none');
+    await assertNoOverflow(page, '#roster');
+  });
+}
