@@ -1,11 +1,12 @@
 {
-  "version": "67.1",
+  "version": "68.0",
   "date": "19 November 2026",
-  "title": "Pager draw saves correctly",
-  "summary": "Save the Pager draw before revealing the assigned turns.",
+  "title": "A clearer night view",
+  "summary": "Compact screens, readable team assignments and direct access to the Pager draw.",
   "changes": [
-    "Fixed the database error that rejected Pager draws and left the three turns pending.",
-    "Made the close button circular and clarified the status if a draw fails."
+    "Compact headers, grouped staffing and individual nurse rows.",
+    "Shared Pager times, clearer draw controls and expandable roster nights.",
+    "Hero progress, live timing and clock-change behaviour retained."
   ],
   "update_policy": "normal"
 }

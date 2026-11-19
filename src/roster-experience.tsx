@@ -69,27 +69,24 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
     {!shown.length && <div className="rosterEmpty" role="status"><strong>No nights match this view</strong><p>Try another month, clear the search and staffing filter, or show all published months.</p><button type="button" onClick={() => { const search = document.getElementById('search') as HTMLInputElement; const filter = document.getElementById('filter') as HTMLSelectElement; if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); } if (filter) { filter.value = 'all'; filter.dispatchEvent(new Event('change', { bubbles: true })); } setAllMonths(true); }}>Clear filters and show all nights</button></div>}
 
     <div className="tw:grid tw:gap-3 tw:lg:grid-cols-2">
-    {shown.map((card, index) => <motion.button
-      type="button"
+    {shown.map((card, index) => <motion.details
       key={`${card.date}-${card.index}`}
       data-roster-date={card.isoDate}
       initial={reduced ? false : { opacity: 0, y: 7 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduced ? 0 : 0.2, delay: reduced ? 0 : Math.min(index * 0.02, 0.12) }}
-      whileTap={{ scale: reduced ? 1 : 0.99 }}
-      onClick={() => openNight(card.index)}
-      aria-label={`Open roster for ${card.date}`}
-      className="rosterExperienceCard tw:w-full tw:rounded-[22px] tw:border tw:border-black/8 tw:bg-[var(--card)] tw:p-4 tw:text-left tw:shadow-sm tw:dark:border-white/10"
+      className="rosterExperienceCard"
     >
-      <div className="tw:flex tw:items-start tw:justify-between tw:gap-3">
-        <div className="tw:min-w-0">
-          <strong className="tw:block tw:text-[1.05rem]">{card.date}</strong>
-          {card.status !== 'Standard calculated rotation' && <span className="tw:mt-1 tw:block tw:text-xs tw:leading-relaxed tw:text-[var(--muted)]">{card.status}</span>}
-        </div>
+      <summary className="rosterNightSummary">
+        <strong>{card.date}</strong>
         <span className={`rosterStaffingBadge ${card.short ? 'isShort' : card.needsReview ? 'needsReview' : ''}`}>{card.count} nurses{card.short ? ' · Short' : card.needsReview ? ' · Pending' : ' · Covered'}</span>
+      </summary>
+      <div className="rosterNightDetails">
+        {card.status !== 'Standard calculated rotation' && <p className="rosterNightStatus">{card.status}</p>}
+        {card.details.map((detail, row) => <DetailRow key={`${detail.label}-${row}`} detail={detail} />)}
+        <button type="button" className="rosterOpenNight" onClick={() => openNight(card.index)} aria-label={`Open roster for ${card.date}`}>Open night <span aria-hidden="true">›</span></button>
       </div>
-      <div className="tw:mt-3">{card.details.map((detail, row) => <DetailRow key={`${detail.label}-${row}`} detail={detail} />)}</div>
-    </motion.button>)}
+    </motion.details>)}
     </div>
   </div>;
 }

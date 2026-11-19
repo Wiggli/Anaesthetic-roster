@@ -220,9 +220,9 @@ for (const dutyPart of ['first', 'second', 'full']) for (const width of [320, 44
   }, { model, dark });
   await expect(page.locator('#today')).toHaveAttribute('data-shift-phase', 'second');
   const hero = page.locator('#personalNightCard');
-  await expect(hero.locator('.personalClockException')).toContainText('Handover 03:00 after clock change');
+  await expect(hero.locator('.personalClockException')).toContainText('handover 03:00 after clock change');
   await expect(hero.locator('.nightTimelineHead em')).toContainText('NEW clock');
-  await expect(hero.locator('.personalHeroFact').first()).toContainText(dutyPart === 'full' ? '8h actual' : '4h actual');
+  await expect(hero.locator('.personalRoleCopy')).toContainText(dutyPart === 'full' ? '8h actual' : '4h actual');
   expect(await hero.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   const overlaps = await hero.locator('.nightTimelineScale > span').evaluateAll(nodes => {
     const rects = nodes.map(n => n.getBoundingClientRect());
@@ -286,7 +286,7 @@ test('Night hero exposes the richer rail and Share Night Roster stays scan-first
 
   const clockException = page.locator('#personalNightCard .personalClockException');
   await expect(clockException).toContainText('Clock-change night · equal duty');
-  await expect(clockException).toContainText('Handover 03:00 after clock change');
+  await expect(clockException).toContainText('handover 03:00 after clock change');
   await expect(clockException).toContainText('4h per part');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00¹');
   await expect(page.locator('#personalNightCard .nightTimeline')).toContainText('02:00²');

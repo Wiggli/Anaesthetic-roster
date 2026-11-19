@@ -126,3 +126,44 @@ test('Account menu and headers stay below the installed iPhone status-bar edge @
   await page.locator('#accountBackBtn').click();
   await close.click();
 });
+
+for (const width of [320, 430, 1280]) for (const theme of ['light', 'dark']) {
+  test(`compact operational layout ${width} ${theme} @iphone`, async ({page}, info) => {
+    await page.setViewportSize({width, height: 932});
+    await openReview(page);
+    await page.evaluate(({periods, theme}) => {
+      rotationVersions = periods;
+      schemaVersion = 57;
+      rebuildCalculatedRoster();
+      idx = R.findIndex(night => night.date === '2026-11-21');
+      nightOvertime[cur().date] = [
+        {id: 'cover-a', nurse_name: 'Alexandra Long Professional Surname', allocation_key: 'reliever'},
+        {id: 'cover-b', nurse_name: 'Christopher Another Professional Surname', allocation_key: 'seventh'}
+      ];
+      setThemePreference(theme);
+      render();
+      show('today');
+    }, {periods: require('./fixtures/establishment-periods.json'), theme});
+    await expect(page.locator('#roles .rosterRow-first .nightNurseLine')).toHaveCount(2);
+    await expect(page.locator('#roles .rosterRow-second .nightNurseLine')).toHaveCount(2);
+    await expect(page.locator('#roles .rosterRow-pager .nightNurseLine small')).toHaveText(['23:30–02:00', '02:00–04:30', '04:30–07:00']);
+    await expect(page.locator('#nightPagerAction').getByRole('button', {name: /Draw Pager times/})).toBeVisible();
+    for (const view of ['today', 'changes', 'breaks', 'chat']) {
+      await page.evaluate(view => show(view), view);
+      await assertNoOverflow(page, '#' + view);
+      await page.screenshot({path: info.outputPath(`${view}-${theme}.png`), fullPage: true});
+    }
+    await page.evaluate(() => { show('roster'); renderRoster(); });
+    await page.locator('input[aria-label="Roster month"]').fill('2026-11');
+    const night = page.locator('[data-roster-date="2026-11-21"]');
+    await expect(night).not.toHaveAttribute('open', '');
+    await night.locator('summary').click();
+    await expect(night).toHaveAttribute('open', '');
+    await expect(night.locator('.rosterNightDetails')).toContainText('Alexandra Long Professional Surname');
+    await assertNoOverflow(page, '#roster');
+    await page.screenshot({path: info.outputPath(`roster-${theme}.png`)});
+    await night.locator('.rosterOpenNight').click();
+    await expect(page.locator('#today')).toBeVisible();
+    expect(await page.evaluate(() => cur().date)).toBe('2026-11-21');
+  });
+}

@@ -114,7 +114,6 @@ function RecordList({ records, empty: _empty, simplifiedCover }: { records: Staf
             {record.needsAllocation && simplifiedCover ? 'Unassigned' : record.needsAllocation
               ? <Pressable type="button" className="overtimeAllocateButton" aria-label={`Choose part for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Choose part <span aria-hidden="true">›</span></Pressable>
               : <Badge tone="success">{record.status}</Badge>}
-            {record.needsAllocation && !simplifiedCover && <span className="overtimePendingLabel">Unassigned</span>}
           </span></>}
           trailing={<span>
             <Pressable
@@ -370,7 +369,9 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 }
 
 export function renderChangesExperience(model: ChangesExperience) {
-  rootFor('changesAvailableParts')?.render(model.simplifiedCover ? null : <AvailableParts model={model.availableParts} hideWhenComplete />);
+  const parts = model.availableParts;
+  const coverFormExplainsParts = model.allocations.length > 0 && !parts?.conditional && !parts?.coverageChoices.length && !parts?.shortage && !parts?.extras;
+  rootFor('changesAvailableParts')?.render(model.simplifiedCover || coverFormExplainsParts ? null : <AvailableParts model={parts} hideWhenComplete />);
   rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
   rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);
