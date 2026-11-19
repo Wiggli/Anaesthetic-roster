@@ -196,3 +196,11 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 
 - Production database logs identified a text concatenation error in the guarded night-role write delegation. A forward migration corrects it while preserving the operation key, revision checks and permissions.
 - The PostgreSQL fixture reproduces the failed seven-nurse write before migration and verifies the saved draw afterward. The browser checks the circular close control and the normal draw reveal.
+
+## 19 November 2026 · Release 68.0 · Compact operational screens
+
+- Reduced header and shift-identity spacing, grouped staffing and break surfaces, and removed duplicate ordinary available-parts explanations when the cover form already lists those roles. Conditional seventh choices, Reliever priority, shortage warnings and additional staffing retain their explanations.
+- Team roles put the role above individual nurse names, with the canonical three-way Pager period beside each nurse. Pending cover opens the allocation destination. Full roster dates expand for names and times, with a separate Open night action. Four-person provisional Pager detail stays inside the expanded date.
+- Pager draw controls distinguish awaiting draw, drawing/saving, saved result and retry. The existing server-confirmed reveal, guarded mutation, revision checks and draw algorithm continue to own persistence. Profile uses plain wording and existing draft retention.
+- Compared the complete personal hero, Pager timeline, live rail and four-person shared-Pager hero functions against main and confirmed identical source. Domain and runtime foundation sources are identical. The clinical adapter adds display-only nurse/period pairs using the existing timing function.
+- The deterministic release gate passes. Browser review covers phone and desktop widths, light/dark appearance, long names, staffing counts, roster disclosures, Pager draws and clock-change heroes with isolated data. Physical iPhone, VoiceOver and signed-in production writes remain outside this fixture review. The local screenshot renderer omits text even on a standalone font test, so text content, visibility, geometry and overlap are checked through the browser DOM.

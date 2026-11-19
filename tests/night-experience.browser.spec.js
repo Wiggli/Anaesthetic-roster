@@ -165,7 +165,7 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
    notifyRosterUpdate=()=>{};
    render();show('today');
  },periods);
- const opener=page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager turns/});
+ const opener=page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager times/});
  await opener.click();
  const sheet=page.getByRole('dialog',{name:'Pager draw'});
  const closeButton=sheet.getByRole('button',{name:'Close Pager draw'});
@@ -173,22 +173,22 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
  expect(closeBounds.width).toBeCloseTo(44,0);
  expect(closeBounds.height).toBeCloseTo(44,0);
  await expect(sheet.locator('.pagerDrawTurnTime strong')).toHaveText(['23:30–02:00','02:00–04:30','04:30–07:00']);
- await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(['Pending','Pending','Pending']);
+ await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(['Awaiting draw','Awaiting draw','Awaiting draw']);
  await sheet.getByRole('button',{name:'Sound on'}).click();
- await sheet.getByRole('button',{name:'Draw Pager turns',exact:true}).click();
+ await sheet.getByRole('button',{name:'Draw Pager times',exact:true}).click();
  if(reducedMotion==='no-preference'){
    await expect(sheet.locator('.isSpinning')).toBeVisible();
    await sheet.screenshot({path:`/tmp/pager-draw-${info.project.name}.png`});
  }
- await expect(sheet.getByRole('status')).toHaveText('Draw complete',{timeout:12000});
+ await expect(sheet.getByRole('status')).toHaveText('Saved',{timeout:12000});
  const expected=await page.evaluate(()=>['pager','reliever','seventh'].map(key=>professionalName(nightRoleOverrides[cur().date].assignments[key])));
  await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(expected);
  expect(await page.evaluate(()=>['first1','first2','second1','second2'].every(key=>window.beforeDraw[key]===nightRoleOverrides[cur().date].assignments[key]))).toBeTruthy();
  expect(await page.evaluate(()=>window.pagerWriteCount)).toBe(1);
  await sheet.getByRole('button',{name:'Done',exact:true}).click();
- await page.getByRole('button',{name:/Pager draw result/}).click();
+ await page.getByRole('button',{name:/View draw result/}).click();
  await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(expected);
- await expect(sheet.getByRole('button',{name:'Draw Pager turns',exact:true})).toHaveCount(0);
+ await expect(sheet.getByRole('button',{name:'Draw Pager times',exact:true})).toHaveCount(0);
 });
 
 test('one absence and two overtime show six and save cover without a detour',async({page})=>{
@@ -244,5 +244,5 @@ test('one absence and two overtime show six and save cover without a detour',asy
  await page.locator('[data-final-allocation="first1"]').selectOption('cover-c');
  await proceed.click();
  expect(await page.evaluate(()=>nightOvertime[cur().date].find(entry=>entry.id==='cover-c').allocation_key)).toBe('first1');
- await expect(page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager turns/})).toBeVisible();
+ await expect(page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager times/})).toBeVisible();
 });

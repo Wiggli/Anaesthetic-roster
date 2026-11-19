@@ -18,7 +18,8 @@ for(const width of [320,440])for(const theme of ['light','dark'])test(`roster pl
  await expect(page.locator('.rosterStaffingBadge')).toContainText('Short');
  await page.locator('#search').fill('no such staff');await expect(page.locator('.rosterEmpty')).toBeVisible();
  await page.getByRole('button',{name:'Clear filters and show all nights'}).click();await expect(page.locator('.rosterExperienceCard')).toHaveCount(138);
- await page.locator('[data-roster-date="2026-11-01"]').click();
+ await page.locator('[data-roster-date="2026-11-01"] > summary').click();
+ await page.locator('[data-roster-date="2026-11-01"] .rosterOpenNight').click();
  expect(await page.evaluate(()=>nightSelectionMode)).toBe('manual');
  expect(await page.evaluate(()=>{refreshAutomaticNightOnReturn();return cur().date})).toBe('2026-11-01');
 });
@@ -36,7 +37,7 @@ async function ready(page,fallback=false,userRole='member'){
  document.getElementById('authGate').classList.add('hidden');document.querySelector('main').style.display='block';
  document.querySelector('.bottom').style.display='grid';
  currentPrivateProfile={profile_name:'Review Nurse'};localStorage.setItem('anaes_my_name','Andre');schemaVersion=53;
- supa={rpc:async()=>({data:[],error:null})};appCompatibility={write_allowed:true,write_status:'allowed'};rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-08');render();show('today');
+ supa={rpc:async()=>({data:[],error:null}),from:()=>({select(){return this},eq(){return this},maybeSingle:async()=>({data:null,error:null})})};appCompatibility={write_allowed:true,write_status:'allowed'};rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-10-08');render();show('today');
  },userRole);
  if(!fallback)await expect(page.locator('[data-react-navigation]')).toBeVisible();
 }

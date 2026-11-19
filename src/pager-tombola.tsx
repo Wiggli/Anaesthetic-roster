@@ -138,7 +138,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
 
   return <>
     <Pressable ref={launcher} type="button" className="pagerDrawLauncher" onClick={open}>
-      <span><strong>{model.saved ? 'Pager draw result' : 'Draw Pager turns'}</strong><small>{model.saved ? 'View the saved order' : 'Randomise the three Pager turns'}</small></span>
+      <span><strong>{model.saved ? 'View draw result' : 'Draw Pager times'}</strong><small>{model.saved ? 'Saved for this night' : 'Randomly assign the three nurses to their times'}</small></span>
       <span aria-hidden="true">›</span>
     </Pressable>
     <dialog
@@ -166,7 +166,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
         </div>
       </div>
       <p className="pagerDrawStatus" role="status">
-        {error ? 'Draw not saved' : phase === 'complete' ? 'Draw complete' : phase === 'shuffling' ? 'Shuffling' : phase === 'revealing' ? 'Drawing Pager turns' : 'Ready to draw'}
+        {error ? 'Draw not saved' : phase === 'complete' ? 'Saved' : phase === 'shuffling' ? 'Drawing and saving…' : phase === 'revealing' ? 'Drawing Pager turns' : 'Ready to draw'}
       </p>
       <ol className="pagerDrawTurns" aria-label="Pager turns">
         {model.periods.map((period, index) => {
@@ -175,7 +175,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
           return <li key={period} className={`pagerDrawTurn pagerDrawColour${colour} ${name ? 'isRevealed' : ''}`}>
             <span className="pagerDrawTurnNumber" aria-hidden="true">{index + 1}</span>
             <span className="pagerDrawTurnTime"><small>Pager turn {index + 1}</small><strong>{period}</strong></span>
-            <span ref={node => { results.current[index] = node; }} className="pagerDrawTurnName" aria-live="polite">{name ? label(name) : 'Pending'}</span>
+            <span ref={node => { results.current[index] = node; }} className="pagerDrawTurnName" aria-live="polite">{name ? label(name) : 'Awaiting draw'}</span>
           </li>;
         })}
       </ol>
@@ -185,7 +185,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
         {phase === 'complete'
           ? <Pressable type="button" className="primary wide" onClick={() => dialog.current?.close()}>Done</Pressable>
           : <Pressable type="button" className="primary wide" disabled={busy || !model.canDraw} onClick={() => void draw()}>
-            {busy ? 'Drawing Pager turns…' : 'Draw Pager turns'}
+            {busy ? 'Drawing and saving…' : error ? 'Retry Pager draw' : 'Draw Pager times'}
           </Pressable>}
         {phase === 'ready' && !model.canDraw && <p>Connect to the shared roster to draw.</p>}
         <Pressable type="button" className="pagerDrawSound" aria-pressed={sound} disabled={busy} onClick={() => setSound(!sound)}>Sound {sound ? 'on' : 'off'}</Pressable>

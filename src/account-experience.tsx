@@ -143,7 +143,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   >
     <div className="personalisationStudioHeading">
 
-      <h3 id="profileHeading">Personalisation Studio</h3>
+      <h3 id="profileHeading">Profile</h3>
 
     </div>
 

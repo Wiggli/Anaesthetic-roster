@@ -53,6 +53,7 @@ type NightRole = {
   detail: string;
   tone: 'first' | 'second' | 'pager' | 'reliever' | 'seventh' | 'full';
   mine: boolean;
+  people?: { name: string; period?: string }[];
 };
 
 type NightSummary = {
@@ -854,19 +855,23 @@ function NightRoles({ model }: { model: NightSummary }) {
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => {
         const liveState = roleLiveState(role, model.currentPart);
+        const needsCover = /Allocation to decide|Unassigned|Awaiting choice|Cover pending/.test(role.names) || role.people?.some(person => person.name === 'Unassigned');
+        const people = role.people || (role.tone === 'first' || role.tone === 'second' ? role.names.split(' + ').map(name => ({ name: name.replace(/^Allocation to decide.*$/, 'Awaiting cover'), period: undefined })) : []);
         return <div className="rosterRoleLine" key={role.key}><Pressable
           data-colleague-names={['Unassigned','Awaiting choice'].includes(role.names) ? '' : role.names}
           type="button"
-          onClick={openRoleEditor}
+          onClick={needsCover ? () => goToChanges('allocation') : openRoleEditor}
           className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
-          aria-label={`Change this night's ${role.label} allocation`}
+          aria-label={needsCover ? `Assign cover for ${role.label}` : `Change this night's ${role.label} allocation`}
         >
           <span className="rosterRoleMark">{role.label}</span>
           <span className="rosterRowCopy">
             <span className="rosterRowName">
-              <span className="rosterRowPeople">{role.names}</span>
+              <span className="rosterRowPeople">{people.length
+                ? people.map((person, index) => <span className="nightNurseLine" key={`${person.name}-${index}`}><span>{person.name}</span>{person.period && <small>{person.period}</small>}</span>)
+                : role.names}</span>
             </span>
-            <span className="rosterRowMeta">{role.detail.replace(/^Works\s+/i, '')}</span>
+            {!people.some(person => person.period) && <span className="rosterRowMeta">{role.detail.replace(/^Works\s+/i, '')}</span>}
           </span>
           {(role.mine || liveState) && <span className="rosterRowBadges">
             {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
