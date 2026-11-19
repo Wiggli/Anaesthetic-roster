@@ -1,12 +1,12 @@
 {
-  "version": "68.0",
+  "version": "68.1",
   "date": "19 November 2026",
-  "title": "A clearer night view",
-  "summary": "Compact screens, readable team assignments and direct access to the Pager draw.",
+  "title": "Clearer type and spacing",
+  "summary": "Readable labels, aligned controls and more room for Pager results.",
   "changes": [
-    "Compact headers, grouped staffing and individual nurse rows.",
-    "Shared Pager times, clearer draw controls and expandable roster nights.",
-    "Hero progress, live timing and clock-change behaviour retained."
+    "Larger Pager names and times with room to wrap.",
+    "Aligned staffing, roster, chat and account text and controls.",
+    "Removed a width limit that squeezed roster status labels."
   ],
   "update_policy": "normal"
 }

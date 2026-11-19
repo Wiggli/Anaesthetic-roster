@@ -81,7 +81,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
     copy.style.width = origin.width + 'px';
     effects.current.append(copy);
     source.style.visibility = 'hidden';
-    const dx = destination.right - 12 - origin.right;
+    const dx = destination.left - origin.left;
     const dy = destination.top - origin.top + (destination.height - origin.height) / 2;
     const flight = copy.animate([
       { transform: 'translate(0, 0) scale(1)', opacity: 1 },
