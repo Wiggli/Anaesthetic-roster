@@ -186,7 +186,7 @@ async function drawPagerTurns(date){
       });
     },storedDraw,true);
     var conflict=result&&result.error&&(result.error.code==='ROSTER_REVISION_CONFLICT'||String(result.error.message||'').indexOf('ROSTER_REVISION_CONFLICT')>=0);
-    if(result&&result.error&&!conflict)return{error:'The Pager draw could not be confirmed. Check the connection and try again.'};
+    if(result&&result.error&&!conflict)return{error:'The roster could not confirm the Pager draw. Try again.'};
     if(!await loadSharedData({background:true})||forcedOfflineSession)return{error:'Refresh the roster to check whether the draw was saved.'};
     var refreshedBase=baseForDate(date),refreshed=pagerTombolaModel(refreshedBase,staffingPlan(refreshedBase),applyChanges(refreshedBase));
     if(!refreshed||!refreshed.saved||!sameNightNameSet(refreshed.names,model.names))

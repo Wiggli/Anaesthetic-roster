@@ -7,6 +7,8 @@ const require=createRequire(import.meta.url);
 const {PGlite}=await import(process.env.PGLITE_MODULE||'@electric-sql/pglite');
 const db=new PGlite();
 const source=fs.readFileSync('supabase/migrations/20261009070210_effective_roster_establishment_v55.sql','utf8');
+// The establishment and its correction were approved before 12 October 2026.
+const asOfApprovalDay=sql=>sql.replaceAll("(now() at time zone 'Europe/Malta')::date", "date '2026-10-09'");
 const block=(file,name)=>{const s=fs.readFileSync(file,'utf8');const a=s.indexOf('create or replace function public.'+name+'(');const b=s.indexOf('\n$$;',a);return s.slice(a,b+4);};
 // Auth service and shared-operation dependencies are test doubles; the migration,
 // period constraints, guarded v49 endpoint, clinical validator and RLS are real SQL.
@@ -51,7 +53,7 @@ await db.query('insert into rotation_versions(effective_from,first1,first2,secon
 await db.exec(block('supabase/migrations/20261002153000_reliability_architecture_v48.sql','upsert_rotation_version_v48'));
 await db.exec(block('supabase/migrations/20261002180000_trust_boundary_v49.sql','upsert_rotation_version_v49'));
 await db.exec('grant execute on function public.upsert_rotation_version_v49(date,text,text,text,text,text,text,text,jsonb,text,uuid,bigint,text) to authenticated;');
-await db.exec(source);
+await db.exec(asOfApprovalDay(source));
 const correction=fs.readFileSync('supabase/migrations/20261009072739_correct_pager_continuity_v56.sql','utf8');
 await db.exec(`create table night_change_history(id integer,roster_date date); create table night_overtime_history(id integer,roster_date date); create table night_five_cover(roster_date date);
 insert into night_change_history values(1,'2026-10-08'); insert into night_overtime_history values(1,'2026-10-08');`);
@@ -59,14 +61,14 @@ const originalBefore=(await db.query("select to_jsonb(r) as row from rotation_ve
 // Expired corrections fail before any mutation, and a mismatched seed fails closed.
 await assert.rejects(db.exec(correction.replace("(now() at time zone 'Europe/Malta')::date", "date '2026-10-12'")),/TRANSITION_CORRECTION_NO_LONGER_FUTURE/);
 await db.exec('rollback');
-await assert.rejects(db.exec(correction.replace("array['Shaun','James','Michael G','Michael D','Andre']", "array['James','Shaun','Michael G','Michael D','Andre']")),/TRANSITION_CORRECTION_UNEXPECTED_SEED/);
+await assert.rejects(db.exec(asOfApprovalDay(correction).replace("array['Shaun','James','Michael G','Michael D','Andre']", "array['James','Shaun','Michael G','Michael D','Andre']")),/TRANSITION_CORRECTION_UNEXPECTED_SEED/);
 await db.exec('rollback');
-await db.exec(correction);
+await db.exec(asOfApprovalDay(correction));
 assert.deepEqual((await db.query("select to_jsonb(r) as row from rotation_versions r where effective_from='2026-06-30'")).rows[0].row,originalBefore);
 assert.equal((await db.query('select count(*) as n from night_change_history')).rows[0].n,1);
 assert.equal((await db.query('select count(*) as n from night_overtime_history')).rows[0].n,1);
 assert.equal((await db.query("select tgenabled from pg_trigger where tgname='guard_rotation_period_v55'")).rows[0].tgenabled,'O');
-await assert.rejects(db.exec(correction),/TRANSITION_CORRECTION_SCHEMA_MISMATCH/);await db.exec('rollback');
+await assert.rejects(db.exec(asOfApprovalDay(correction)),/TRANSITION_CORRECTION_SCHEMA_MISMATCH/);await db.exec('rollback');
 const c=require('../tests/helpers/roster-context.js');c.rotationVersions=require('../tests/fixtures/establishment-periods.json');
 for(let date='2026-06-30';date<='2027-12-30';date=c.addDays(date,4)){
  const sql=(await db.query('select calculated_roster_v55($1) as night',[date])).rows[0].night;
@@ -103,5 +105,28 @@ assert.equal((await db.query("select calculated_roster_v55('2026-11-01') as nigh
 assert.equal((await db.query("select calculated_roster_v55('2026-10-12') as night")).rows[0].night.pager,'Andre');
 await assert.rejects(db.query(rpc,args),/ROTATION_VERSION_EXISTS/);
 await db.exec('set role anon;');await assert.rejects(db.exec('select * from rotation_versions'),/permission denied/);await db.exec('reset role;');
+// Exercise the same public RPC and seven-person payload used by Pager tombola.
+await db.exec(block('supabase/migrations/20261002153000_reliability_architecture_v48.sql','apply_night_role_override_v48'));
+await db.exec(block('supabase/migrations/20261002180000_trust_boundary_v49.sql','apply_night_role_override_v49'));
+await db.exec(fs.readFileSync('supabase/migrations/20261024161000_four_nurse_role_override.sql','utf8'));
+const pagerDate='2026-10-12';
+const pagerBase=(await db.query('select calculated_roster_v55($1) as night',[pagerDate])).rows[0].night;
+await db.query('insert into night_changes(roster_date,absent_name) values($1,$2)',[pagerDate,pagerBase.first1]);
+for(const name of ['Theatre Cover','Pager Cover A','Pager Cover B']){
+ await db.query('insert into night_overtime(roster_date,nurse_name) values($1,$2)',[pagerDate,name]);
+}
+const payload={mode:'7',first1:'Theatre Cover',first2:pagerBase.first2,second1:pagerBase.second1,second2:pagerBase.second2,pager:'Pager Cover B',reliever:pagerBase.pager,seventh:'Pager Cover A'};
+const draw='select public.apply_night_role_override_v57($1,$2,$3,$4,$4,$5,$6,$7)';
+const drawArgs=[pagerDate,'save',JSON.stringify(payload),'Pager tombola draw','00000000-0000-4000-8000-000000000003',0,'54.0'];
+await db.exec('set role authenticated');
+await assert.rejects(db.query(draw,drawArgs),/operator does not exist: unknown \+ text/);
+await db.exec('reset role');
+await db.exec(fs.readFileSync('supabase/migrations/20261119003500_fix_night_role_operation_key.sql','utf8'));
+await db.exec('set role authenticated');
+await db.query(draw,drawArgs);
+await db.exec('reset role');
+const savedDraw=await db.query('select assignments,reason,updated_by from night_role_overrides where roster_date=$1',[pagerDate]);
+assert.deepEqual(savedDraw.rows,[{assignments:payload,reason:'Pager tombola draw',updated_by:'Verified test actor'}]);
+console.log('Pager tombola save reproduced the PostgreSQL operator failure before migration and verified the saved order afterward.');
 console.log('PostgreSQL migration, 138-night client/server parity, old-client view, clinical staffing, period immutability, admin/member/anon permissions and 5-to-6 RPC checks passed.');
 await db.close();
