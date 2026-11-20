@@ -57,6 +57,7 @@ type NightRole = {
 };
 
 type NightSummary = {
+  nextShiftClockChange?: { info: ClockChangeInfo; dateLabel: string } | null;
   pagerTombola?: PagerTombolaModel | null;
   pagerDrawFlow?: boolean;
   pagerCoverPending?: boolean;
@@ -294,13 +295,13 @@ function openAccount() {
   document.getElementById('accountBtn')?.click();
 }
 
-function ClockChangeNotice({ info, context }: { info?: ClockChangeInfo | null; context: 'night' | 'breaks' }) {
+function ClockChangeNotice({ info, context, nextShiftDate }: { info?: ClockChangeInfo | null; context: 'night' | 'breaks'; nextShiftDate?: string }) {
   const reduced = useProductReducedMotion();
   if (!info) return null;
   return <motion.section
     className={`clockChangeNotice clockChange-${info.direction} clockChange-${context}`}
     role="status"
-    aria-label={`${info.transitionLabel}. Equal-duty handover ${info.handoverDisplay}. ${info.partHoursLabel} each.`}
+    aria-label={`${nextShiftDate ? `Next roster shift, ${nextShiftDate}. ` : ''}${info.transitionLabel}. Equal-duty handover ${info.handoverDisplay}. ${info.partHoursLabel} each.`}
     initial={reduced ? false : { opacity: 0, y: 8, scale: 0.99 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32, mass: 0.65 }}
@@ -315,17 +316,19 @@ function ClockChangeNotice({ info, context }: { info?: ClockChangeInfo | null; c
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3 2" /><path d={info.direction === 'back' ? 'M8 4H4v4' : 'M16 4h4v4'} /></svg>
     </motion.span>
     <span className="clockChangeCopy">
-      <small>{info.transitionLabel}</small>
-      <strong>Equal handover · {info.handoverDisplay}</strong>
-      <span>{info.firstPeriod} · {info.partHoursLabel} actual</span>
-      <span>{info.secondPeriod} · {info.partHoursLabel} actual</span>
+      <small>{nextShiftDate ? `Next roster shift · ${nextShiftDate}` : info.transitionLabel}</small>
+      <strong>{nextShiftDate ? info.transitionLabel : `Equal handover · ${info.handoverDisplay}`}</strong>
+      {nextShiftDate
+        ? <span>Theatre handover {info.handoverDisplay} · {info.partHoursLabel} each</span>
+        : <><span>{info.firstPeriod} · {info.partHoursLabel} actual</span>
+          <span>{info.secondPeriod} · {info.partHoursLabel} actual</span></>}
     </span>
     <Pressable
       type="button"
       className="clockChangeLearn"
-      onClick={() => window.dispatchEvent(new CustomEvent('roster:clock-change-guide'))}
+      onClick={() => window.dispatchEvent(new CustomEvent('roster:clock-change-guide', { detail: nextShiftDate ? { date: info.date } : undefined }))}
     >
-      Why? <span aria-hidden="true">›</span>
+      {nextShiftDate ? 'Timing details' : 'Why?'} <span aria-hidden="true">›</span>
     </Pressable>
   </motion.section>;
 }
@@ -905,7 +908,8 @@ function FivePersonArrangement({ model }: { model: NightSummary }) {
 }
 
 export function renderNightExperience(model: NightSummary) {
-  rootFor('nightClockChange')?.render(null);
+  const notice = model.nextShiftClockChange;
+  rootFor('nightClockChange')?.render(notice ? <ClockChangeNotice info={notice.info} context="night" nextShiftDate={notice.dateLabel} /> : null);
   rootFor('nightPagerAction')?.render(model.pagerTombola
     ? <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} />
     : model.pagerDrawFlow && model.pagerCoverPending

@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["69.1","20 November 2026","Clock change notice one shift ahead",["Night flags the next rostered shift when its clocks change.","Timing details shows the adjusted theatre handover and the three equal elapsed-time Pager turns for seven-nurse cover."],"normal"],
   ["69.0","20 November 2026","Quiet startup and remembered tutorials",["Removed startup music, audio settings and the bundled track.","The introductory tutorial stays dismissed after completion, Skip or Escape.","App updates and tab changes keep guides available through Account without reopening them."],"normal"],
   ["68.1","19 November 2026","Clearer type and spacing",["Larger Pager names and times with room to wrap.","Aligned staffing, roster, chat and account text and controls.","Removed a width limit that squeezed roster status labels."],"normal"],
   ["68.0","19 November 2026","A clearer night view",["Compact headers, grouped staffing and individual nurse rows.","Shared Pager times, clearer draw controls and expandable roster nights.","Hero progress, live timing and clock-change behaviour retained."],"normal"],

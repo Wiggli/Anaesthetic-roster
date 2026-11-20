@@ -23,6 +23,22 @@ const shared=c.calculateNight('2026-11-21');
 assert.deepEqual(clone(c.threeWayPagerPeriods(shared.date)),['23:30–02:00','02:00–04:30','04:30–07:00']);
 assert.deepEqual(clone(c.threeWayPagerPeriods('2027-03-27')),['23:30–01:40','01:40–04:50','04:50–07:00']);
 assert.deepEqual(clone(c.threeWayPagerPeriods('2027-10-30')),['23:30–02:20 (before clock change)','02:20 (before clock change)–04:10','04:10–07:00']);
+const rosterBeforeNoticeChecks=c.R;
+for (const [previous, changeDate, direction] of [
+  ['2027-03-23','2027-03-27','forward'],
+  ['2027-10-26','2027-10-30','back']
+]) {
+  const earlier=c.addDays(previous,-4);
+  c.R=[earlier,previous,changeDate,c.addDays(changeDate,4)].map(date=>({date}));
+  const notice=c.nextShiftClockChangeNotice(previous);
+  assert.equal(notice.info.date,changeDate);
+  assert.equal(notice.info.direction,direction);
+  assert.equal(c.nextShiftClockChangeNotice(earlier),null,'no notice two roster shifts ahead');
+  assert.equal(c.nextShiftClockChangeNotice(c.addDays(changeDate,-1)),null,'unrostered days cannot trigger the notice');
+  assert.equal(c.nextShiftClockChangeNotice(changeDate),null,'the affected shift uses its live clock-change guidance');
+  assert.equal(c.nextShiftClockChangeNotice(c.addDays(changeDate,4)),null,'the last published row has no following shift');
+}
+c.R=rosterBeforeNoticeChecks;
 const theatre=['first1','first2','second1','second2'];
 const pagerExtra={id:'pager-extra',nurse_name:'Pager Extra',allocation_key:'reliever'};
 const pagerThird={id:'pager-third',nurse_name:'Pager Third'};
