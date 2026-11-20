@@ -226,3 +226,9 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 - Removed obsolete sound instructions from the Account lesson, aligned the Actions preview wording and retained manual guides under Account. Clock-change help still opens on request and remembers its date-specific acknowledgement.
 - The full deterministic gate passes. Behavioural storage tests cover queued prompts, Skip, Escape, legacy completion and content-generation upgrades. Twenty-two focused browser cases cover reload persistence, complete/skip/Escape, old saved-night devices, guide access, silent startup with old enabled settings, date-specific help, clock-change heroes and saved Pager draws.
 - Hero, clinical presentation, shared-Pager, domain, runtime timing and Pager draw source match 68.1 exactly. The existing physical iPhone and VoiceOver verification limits continue to apply.
+
+### Clock-change notice and Pager timing (69.1)
+
+Compared the 69.0 timing, allocation and hero sources with the pre-update release and confirmed that the startup changes did not alter the clocks or duty calculations. The advance notice uses the next published roster row, replaces the earlier one-off toast and opens the affected date’s contextual guide without changing the selected night. The advance notice is in-app. The existing same-night notification still uses the device’s granted permission.
+
+Deterministic coverage checks spring and autumn notices on the preceding rostered night, no early notice two shifts ahead, and no notice on an unrostered date or after the published roster ends. The three-way Pager continues to divide 23:30 to 07:00 in elapsed time: 130 minutes per nurse in spring, 150 normally and 170 in autumn.

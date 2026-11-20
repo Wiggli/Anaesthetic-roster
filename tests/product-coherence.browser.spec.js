@@ -330,3 +330,39 @@ test('returning devices with an earlier skipped tour do not get another intro @i
   await expect(page.locator('#onboardingDialog')).toBeHidden();
   expect(await page.evaluate(() => educationSeen('main', 1))).toBe(true);
 });
+
+for (const [direction, previous, clockNight, label, periods] of [
+  ['forward', '2027-03-23', '2027-03-27', '27 Mar 2027', ['23:30–01:40', '01:40–04:50', '04:50–07:00']],
+  ['back', '2027-10-26', '2027-10-30', '30 Oct 2027', ['23:30–02:20 (before clock change)', '02:20 (before clock change)–04:10', '04:10–07:00']]
+]) {
+  test(`Night announces clocks moving ${direction} one roster shift ahead @iphone`, async ({page}, testInfo) => {
+    if (testInfo.project.name.startsWith('mobile')) await page.setViewportSize({width:320,height:740});
+    await openReview(page);
+    await page.evaluate(({previous, clockNight, direction}) => {
+      queueClockChangeAttention = () => {};
+      setThemePreference(direction === 'back' ? 'dark' : 'light');
+      R = [addDays(previous, -4), previous, clockNight].map(date => calculateNight(date));
+      idx = 0;
+      render();
+    }, {previous, clockNight, direction});
+    const notice = page.locator('#nightClockChange');
+    await expect(notice).toBeEmpty();
+    const next = page.locator('#nextNightBtn');
+    await next.click();
+    await expect(notice).toContainText(label);
+    await expect(notice).toContainText(`Clocks move ${direction} one hour`);
+    await assertNoOverflow(page, '#nightClockChange .clockChangeNotice');
+    await notice.screenshot({path:testInfo.outputPath('advance-clock-notice.png')});
+    await expect(page.locator('#onboardingDialog')).toBeHidden();
+    await notice.getByRole('button', {name:/Timing details/}).click();
+    const guide = page.locator('#onboardingDialog');
+    await expect(guide).toBeVisible();
+    for (const period of periods) await expect(guide).toContainText(period);
+    await guide.getByRole('button', {name:'Got it',exact:true}).click();
+    await expect(page.locator('#datePick')).toHaveValue(previous);
+    await expect(notice).toContainText(label);
+    await next.click();
+    await expect(notice).toBeEmpty();
+    await expect(page.locator('.personalClockException')).toContainText('Theatre handover');
+  });
+}

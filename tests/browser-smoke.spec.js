@@ -116,7 +116,7 @@ test('mobile shell keeps core views navigable', async ({ page }) => {
   await expect(page.locator('#chatMentionMenu')).toHaveCount(1);
 });
 
-test('clock-change nights show equal-duty guidance on Night, Breaks and onboarding', async ({ page }) => {
+test('clock-change nights keep the separate equal-duty guidance on Breaks and onboarding', async ({ page }) => {
   await openShell(page);
   const clockChange = {
     direction: 'back',
@@ -147,9 +147,7 @@ test('clock-change nights show equal-duty guidance on Night, Breaks and onboardi
     }}));
   }, clockChange);
 
-  await expect(page.locator('#nightClockChange .clockChangeNotice')).toContainText('Equal handover · 03:00 after clock change');
-  await expect(page.locator('#nightClockChange .clockChangeNotice')).toContainText('4h actual');
-  await captureReview(page, 'clock-change-night');
+  await expect(page.locator('#nightClockChange')).toBeEmpty();
   await page.evaluate(() => window.show('breaks'));
   await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('Clocks move back one hour');
   await expect(page.locator('#breakClockChange .clockChangeNotice')).toContainText('03:00–07:00');

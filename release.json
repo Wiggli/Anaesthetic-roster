@@ -1,12 +1,11 @@
 {
-  "version": "69.0",
+  "version": "69.1",
   "date": "20 November 2026",
-  "title": "Quiet startup and remembered tutorials",
-  "summary": "Startup music removed and tutorial dismissals remembered.",
+  "title": "Clock change notice one shift ahead",
+  "summary": "See the clock change on the preceding rostered night, with theatre and Pager timings.",
   "changes": [
-    "Removed startup music, audio settings and the bundled track.",
-    "The introductory tutorial stays dismissed after completion, Skip or Escape.",
-    "App updates and tab changes keep guides available through Account without reopening them."
+    "Night flags the next rostered shift when its clocks change.",
+    "Timing details shows the adjusted theatre handover and the three equal elapsed-time Pager turns for seven-nurse cover."
   ],
   "update_policy": "normal"
 }
