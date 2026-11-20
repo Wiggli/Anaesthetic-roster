@@ -218,3 +218,11 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 - Confirmed the public app serves 68.1 and the reviewed runtime source matches main.
 - Eighteen additional Chromium checks pass across Night, Changes, Breaks, Chat, Full roster, Actions, all Account sections and administrator navigation. Coverage includes 320/440px normal and enlarged text, 1280px layouts, light/dark themes, long transcripts and simulated keyboard viewport changes.
 - No new overflow, font-size, control-reachability or navigation failure was reproduced by this pass. Runtime files and the existing hero/timing implementation retain release 68.1. Physical iPhone, VoiceOver and glyph-level screenshot review retain the preceding verification limits.
+
+## 20 November 2026 · Release 69.0 · Quiet startup and remembered tutorials
+
+- Removed the startup-audio mount, player, custom-audio helper, bundled MP3, Appearance controls and their styling. Build checks verify the startup track is absent from the deployed assets and offline cache. The Pager draw audio remains owned by its existing separate component.
+- Intro prompts use durable completion/dismissal status across content generations. Skip and Escape persist, pending open callbacks recheck dismissal/authentication, and devices with an existing saved night are recognised on upgrade even when an earlier Skip was session-only. Ordinary tab navigation and release destination links no longer trigger feature-tour popups.
+- Removed obsolete sound instructions from the Account lesson, aligned the Actions preview wording and retained manual guides under Account. Clock-change help still opens on request and remembers its date-specific acknowledgement.
+- The full deterministic gate passes. Behavioural storage tests cover queued prompts, Skip, Escape, legacy completion and content-generation upgrades. Twenty-two focused browser cases cover reload persistence, complete/skip/Escape, old saved-night devices, guide access, silent startup with old enabled settings, date-specific help, clock-change heroes and saved Pager draws.
+- Hero, clinical presentation, shared-Pager, domain, runtime timing and Pager draw source match 68.1 exactly. The existing physical iPhone and VoiceOver verification limits continue to apply.

@@ -1,12 +1,12 @@
 {
-  "version": "68.1",
-  "date": "19 November 2026",
-  "title": "Clearer type and spacing",
-  "summary": "Readable labels, aligned controls and more room for Pager results.",
+  "version": "69.0",
+  "date": "20 November 2026",
+  "title": "Quiet startup and remembered tutorials",
+  "summary": "Startup music removed and tutorial dismissals remembered.",
   "changes": [
-    "Larger Pager names and times with room to wrap.",
-    "Aligned staffing, roster, chat and account text and controls.",
-    "Removed a width limit that squeezed roster status labels."
+    "Removed startup music, audio settings and the bundled track.",
+    "The introductory tutorial stays dismissed after completion, Skip or Escape.",
+    "App updates and tab changes keep guides available through Account without reopening them."
   ],
   "update_policy": "normal"
 }

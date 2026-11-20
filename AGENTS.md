@@ -114,6 +114,7 @@ These are safety-critical domain rules. Do not casually “simplify” them or r
 - Use the `apple-web-design` skill when it is available. If it is unavailable, the Apple-inspired design requirements in this file remain mandatory and the task must not invent a competing visual language.
 - Preserve light, dark, and automatic appearance choices; safe-area padding; portrait PWA behaviour; legible high-contrast action text/icons; responsive small-phone layouts; and `prefers-reduced-motion` fallbacks.
 - Maintain semantic HTML and accessibility: labels for controls, useful button text/ARIA labels, visible focus behaviour, `aria-live` feedback for asynchronous state, dialog labelling, keyboard activation for interactive cards, `aria-current` navigation, and non-colour indicators for status.
+- The introductory tour is a once-per-device prompt. Completion, Skip and Escape persist across releases, and existing saved-night devices return quietly. Keep the current guides available through Account without automatic feature-tour popups on tab navigation.
 - User-facing language is concise, calm, and operational. Say exactly what is automatic, pending, saved, provisional, or unavailable. Do not imply clinical completeness until the underlying plan is complete.
 - Any perceptible UI change must be inspected at representative mobile and desktop sizes, in light and dark modes where relevant. Capture a screenshot when the task/environment instructions require it.
 

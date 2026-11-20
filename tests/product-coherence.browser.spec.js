@@ -226,3 +226,107 @@ for (const width of [320, 430]) for (const enlarged of [false, true]) {
     await assertNoOverflow(page, '#roster');
   });
 }
+
+async function requestIntroForReview(page) {
+  await page.evaluate(() => {
+    cinematicMotionAllowed = () => false;
+    releaseNotesQueued = false;
+    onboardingDeferredSession = false;
+    showOnboardingIfNeeded();
+  });
+}
+
+for (const dismissal of ['skip', 'escape', 'complete']) {
+  test(`intro stays dismissed after ${dismissal} and reload @iphone`, async ({page}) => {
+    await openReview(page);
+    await requestIntroForReview(page);
+    const dialog = page.locator('#onboardingDialog');
+    await expect(dialog).toBeVisible();
+    if (dismissal === 'skip') await dialog.getByRole('button', {name: 'Skip tutorial', exact: true}).click();
+    if (dismissal === 'escape') await page.keyboard.press('Escape');
+    if (dismissal === 'complete') {
+      const pages = await page.evaluate(() => onboardingPages().length);
+      for (let step = 0; step < pages - 1; step++) await dialog.getByRole('button', {name: 'Continue', exact: true}).click();
+      await dialog.getByRole('button', {name: 'Open my night', exact: true}).click();
+    }
+    await expect(dialog).toBeHidden();
+    expect(await page.evaluate(() => educationSeen('main', 1))).toBe(true);
+    await openReview(page);
+    await page.evaluate(() => {
+      const previous = educationVersions();
+      educationVersions = () => ({...previous, main: previous.main + 1});
+    });
+    await requestIntroForReview(page);
+    await page.waitForTimeout(100);
+    await expect(dialog).toBeHidden();
+  });
+}
+
+test('legacy completion and ordinary tab changes keep tutorials quiet @iphone', async ({page}) => {
+  await page.addInitScript(() => localStorage.setItem('anaes_onboarding_complete_v34', '1'));
+  await openReview(page);
+  await requestIntroForReview(page);
+  for (const view of ['changes', 'breaks', 'chat', 'today']) await page.evaluate(view => show(view), view);
+  await page.waitForTimeout(100);
+  await expect(page.locator('#onboardingDialog')).toBeHidden();
+  await expect(page.locator('.bottom .educationNew')).toHaveCount(0);
+});
+
+test('Account keeps an updated guide available on request @iphone', async ({page}) => {
+  await openReview(page);
+  await page.evaluate(() => { markEducationSeen('main', educationVersion('main')); showAccountSheet(); showAccountSection('help'); });
+  await page.getByRole('button', {name: /^Tutorial & app guide/}).click();
+  const dialog = page.locator('#onboardingDialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', {name: /Account & Personalise/}).click();
+  await expect(dialog).toContainText('Settings live under your avatar');
+  await expect(dialog).not.toContainText('opening tune');
+  await expect(dialog).not.toContainText('Play on launch');
+  await dialog.getByRole('button', {name: 'Got it', exact: true}).click();
+  await expect(dialog).toBeHidden();
+});
+
+test('saved startup audio preferences cannot start music @iphone', async ({page}) => {
+  const requests = [];
+  page.on('request', request => { if (/\.mp3(?:\?|$)/.test(request.url())) requests.push(request.url()); });
+  await page.addInitScript(() => {
+    localStorage.setItem('anaes_opening_tune', JSON.stringify({enabled: true, track: 'mundian'}));
+    window.reviewStartupPlays = 0;
+    HTMLMediaElement.prototype.play = function () { window.reviewStartupPlays++; return Promise.resolve(); };
+  });
+  await openReview(page);
+  await page.locator('.bottom [data-v="changes"]').click();
+  await page.locator('.bottom [data-v="today"]').click();
+  await page.evaluate(() => { showAccountSheet(); showAccountSection('preferences'); });
+  await expect(page.locator('#accountPageOutlet')).toContainText('Appearance');
+  await expect(page.locator('#accountPageOutlet')).not.toContainText('Opening tune');
+  await expect(page.locator('.openingTune')).toHaveCount(0);
+  expect(await page.evaluate(() => window.reviewStartupPlays)).toBe(0);
+  expect(requests).toEqual([]);
+});
+
+test('clock-change help remains available and remembers acknowledgement @iphone', async ({page}) => {
+  await openReview(page);
+  await page.evaluate(() => {
+    markEducationSeen('main', educationVersion('main'));
+    cinematicMotionAllowed = () => false;
+    showClockChangeEducation('2026-10-24', true);
+  });
+  const dialog = page.locator('#onboardingDialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('03:00 after clock change');
+  await dialog.getByRole('button', {name: 'Got it', exact: true}).click();
+  await expect(dialog).toBeHidden();
+  await page.evaluate(() => showClockChangeEducation('2026-10-24', false));
+  await page.waitForTimeout(80);
+  await expect(dialog).toBeHidden();
+});
+
+test('returning devices with an earlier skipped tour do not get another intro @iphone', async ({page}) => {
+  await page.addInitScript(() => localStorage.setItem('anaes_selected_date', '2026-10-08'));
+  await openReview(page);
+  await requestIntroForReview(page);
+  await page.waitForTimeout(100);
+  await expect(page.locator('#onboardingDialog')).toBeHidden();
+  expect(await page.evaluate(() => educationSeen('main', 1))).toBe(true);
+});

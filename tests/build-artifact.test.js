@@ -55,6 +55,5 @@ assert.doesNotMatch(worker, /caches\.put\([^\n]*supabase/i);
 assert.equal(JSON.parse(read('release.json')).version, version);
 console.log('Pages artifact, installed identity and custom worker checks passed.');
 
-const openingClip = fs.readdirSync(path.join(dist, 'assets')).find(file => /^mundian-opening-.*\.mp3$/.test(file));
-assert.ok(openingClip, 'the default opening MP3 must ship with Pages');
-assert.ok(worker.includes(`assets/${openingClip}`), 'the opening MP3 must be cached for installed offline playback');
+assert.equal(fs.readdirSync(path.join(dist, 'assets')).some(file => /mundian-opening.*\.mp3$/.test(file)), false, 'startup music must be absent from the deployed app');
+assert.doesNotMatch(worker, /mundian-opening.*\.mp3/, 'startup music must be absent from the offline cache');

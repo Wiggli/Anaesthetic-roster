@@ -107,66 +107,48 @@ assert.equal(control('continueToAllocationBtn').hidden,true);
 assert.match(control('changesWorkflowState').textContent,/provisional/);
 assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must leave the staffing section visible');
 
-// Keep launch audio on by default, and only play once after a gesture.
-(async () => {
-  const script = require('node:module').stripTypeScriptTypes(read('src/opening-tune.ts')).replace(/^import .*\n/gm, '').replace('export function', 'function');
-  class Control {
-    listeners = {};
-    addEventListener(name, callback) { this.listeners[name] = callback; }
+// Startup audio is removed from the launch path and Appearance controls.
+assert.doesNotMatch(read('src/launch.tsx'), /mountOpeningTune|opening-tune/);
+assert.doesNotMatch(html, /openingTune|Play on launch/);
+assert.equal(fs.existsSync('src/opening-tune.ts'), false);
+assert.equal(fs.existsSync('src/opening-audio-file.ts'), false);
+assert.equal(fs.existsSync('src/mundian-opening.mp3'), false);
+
+// Tutorial dismissal persists across sessions and content-generation changes.
+{
+  function educationContext(stored = new Map()) {
+    const callbacks = [];
+    const dialog = {open:false, listeners:{}, showModal(){this.open=true}, close(){this.open=false}, addEventListener(name, callback){this.listeners[name]=callback}};
+    const elements = {onboardingDialog:dialog, onboardingNextBtn:{}, onboardingBackBtn:{}, onboardingSkipBtn:{}};
+    const context = {
+      appStorage:{getItem:key=>stored.get(key)||null,setItem:(key,value)=>stored.set(key,value)},
+      document:{querySelector:()=>null}, currentUserProfile:{}, releaseNotesQueued:false,
+      onboardingDeferredSession:false, onboardingCandidate:true, onboardingReplay:false,
+      onboardingGuideMenu:false, onboardingFeatureKey:'', onboardingChatIntro:false,
+      onboardingClockChangeDate:'', onboardingProfileDraft:null,
+      byId:id=>elements[id]||null, cinematicMotionAllowed:()=>false,
+      setTimeout:callback=>callbacks.push(callback), toast(){}, render(){}
+    };
+    vm.runInNewContext(read('src/legacy-ui/education.js'),context);
+    context.renderOnboarding=()=>{};
+    return {context,dialog,stored,flush:()=>{while(callbacks.length)callbacks.shift()()}};
   }
-  const toggle = new Control(), picker = new Control(), preview = new Control(), status = new Control();
-  picker.querySelector = () => null;
-  const elements = {openingTuneEnabled:toggle,openingTuneTrack:picker,openingTunePreview:preview,openingTuneStatus:status};
-  const events = {}, stored = new Map(), sound = [], media = [];
-  let ready = false, checkLaunch;
-  const launch = {classList:{contains:()=>ready}};
-  class Audio {
-    state = 'suspended';
-    async resume() { this.state = 'running'; }
-    createGain() { return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}}, connect(target){return target}, disconnect(){}}; }
-    createOscillator() { return {frequency:{setValueAtTime:(value)=>sound.push(value),exponentialRampToValueAtTime(){}},connect(target){return target},start(){},stop(){}}; }
-  }
-  class Media {
-    constructor(source) { this.source = source; }
-    async play() { media.push(this.source); }
-    pause() {}
-    addEventListener() {}
-  }
-  const activation = {hasBeenActive:false};
-  const env = {
-    window:{AudioContext:Audio,Audio:Media,accountPresentationElement:id=>elements[id],setTimeout(){}},
-    document:{visibilityState:'visible',getElementById:()=>launch,addEventListener:(name,cb)=>events[name]=cb,removeEventListener:name=>delete events[name]},
-    openingClip:'assets/mundian-opening.mp3',
-    fetch:async () => ({ok:true,blob:async()=>({})}),
-    URL:{createObjectURL:()=> 'blob:opening-clip'},
-    HTMLButtonElement:Control, navigator:{userActivation:activation},
-    localStorage:{getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
-    MutationObserver:class {constructor(callback){checkLaunch=callback} observe(){} disconnect(){}}
-  };
-  vm.runInNewContext(script + '\nmountOpeningTune();', env);
-  assert.equal(toggle.checked,true);
-  assert.equal(picker.value,'mundian','the supplied recording is the default');
-  await new Promise(resolve=>setImmediate(resolve));
-  await preview.listeners.click();
-  assert.deepEqual(media,['blob:opening-clip']);
-  toggle.checked=false;
-  toggle.listeners.change();
-  picker.value='night';
-  picker.listeners.change();
-  await preview.listeners.click();
-  assert.equal(sound.length,5,'the chime can be previewed while launch audio is off');
-  toggle.checked=true;
-  toggle.listeners.change();
-  ready=true;
-  checkLaunch();
-  assert.equal(sound.length,5,'an opening tune waits for a user gesture in a restricted browser');
-  activation.hasBeenActive=true;
-  events.click();
-  await Promise.resolve();
-  assert.equal(sound.length,10,'the saved track plays once after the gesture');
-  assert.equal(events.click,undefined,'ordinary subsequent taps cannot replay the opening tune');
-  assert.deepEqual(JSON.parse(stored.get('anaes_opening_tune')),{enabled:true,track:'night'});
-  toggle.checked=false;
-  toggle.listeners.change();
-  assert.equal(JSON.parse(stored.get('anaes_opening_tune')).enabled,false);
-})().catch(error => { console.error(error); process.exitCode = 1; });
+  const fresh=educationContext();
+  fresh.context.showOnboardingIfNeeded();fresh.context.showOnboardingIfNeeded();
+  fresh.context.skipOnboardingForNow();fresh.flush();
+  assert.equal(fresh.dialog.open,false,'a queued intro must not reopen after Skip');
+  const returned=educationContext(fresh.stored);
+  returned.context.showOnboardingIfNeeded();returned.flush();
+  assert.equal(returned.dialog.open,false,'Skip stays dismissed on the next launch');
+  const escaped=educationContext();escaped.context.bindOnboarding();
+  escaped.context.showOnboardingIfNeeded();escaped.flush();
+  escaped.dialog.listeners.cancel({preventDefault(){}});
+  assert.equal(escaped.dialog.open,false);
+  assert.equal(educationContext(escaped.stored).context.educationSeen('main',1),true,'Escape persists tutorial dismissal');
+  const legacy=educationContext(new Map([['anaes_onboarding_complete_v34','1']]));
+  legacy.context.showOnboardingIfNeeded();legacy.flush();assert.equal(legacy.dialog.open,false,'older completed tours remain recognised');
+  const upgraded=educationContext(new Map([['anaes_education_state_v1',JSON.stringify({main:2})]]));
+  upgraded.context.educationVersions=()=>({main:999,changes:999});
+  upgraded.context.showOnboardingIfNeeded();upgraded.context.showFeatureEducation('changes',false);upgraded.flush();
+  assert.equal(upgraded.dialog.open,false,'new guide content and tab navigation do not reopen completed tours');
+}
