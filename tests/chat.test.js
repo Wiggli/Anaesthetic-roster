@@ -51,7 +51,7 @@ assert.doesNotMatch(html.slice(html.indexOf('<section id="chat"'), html.indexOf(
 assert.match(html, new RegExp(`chat\\.css\\?v=${releaseVersionPattern}`), 'chat styling must be versioned with the app');
 assert.match(html, new RegExp(`chat\\.js\\?v=${releaseVersionPattern}`), 'chat client must be versioned with the app');
 assert.match(ui, /function featureEducationPage\(key\)[\s\S]*if\(key==='chat'\)[\s\S]*Team chat, when you need it\./, 'Chat must retain a dedicated contextual education page');
-assert.match(ui, /roster:viewchange[\s\S]*showFeatureEducation\(view,false\)/, 'Chat education must be triggered contextually when the user opens the view');
+assert.doesNotMatch(ui, /showFeatureEducation\(view,false\)/, 'opening a tab must not replay tutorial popups');
 assert.match(ui, /anaes_chat_intro_v37_31/, 'the contextual Chat education must preserve the earlier one-time device marker for compatibility');
 assert.match(ui, /markEducationSeen\(key,educationVersion\(key\)\)/, 'completed feature education must record the current education generation once per device');
 assert.match(ui.slice(ui.indexOf('function onboardingPages'), ui.indexOf('function bindGuideActions')), /featureEducationPage\('chat'\)/, 'the complete first-use tutorial must include the current Team Chat lesson');
