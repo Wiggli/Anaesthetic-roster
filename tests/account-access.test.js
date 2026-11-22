@@ -30,3 +30,34 @@ vm.createContext(context);vm.runInContext(region,context);
  assert.match(core,/queryParams:\{prompt:'select_account'\}/);
  console.log('Account access permissions, verified saves, stale changes, duplicate protection and network recovery passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+// Google account photos are a display fallback, separate from access decisions.
+(async()=>{
+ const account=fs.readFileSync('src/legacy-ui/account.js','utf8');
+ const region=account.slice(account.indexOf('function googleProfilePhotoUrl('),account.indexOf('function paintAccountPhoto('));
+ let resolvePhoto;
+ const c={
+  URL,currentUser:{id:'one',app_metadata:{provider:'google'},user_metadata:{avatar_url:'https://lh3.googleusercontent.com/a/example'}},
+  currentPrivateProfile:{avatar_path:null},profileFeatureAvailable:true,profileAvatarUrl:'',
+  applyProfileIdentity(){},
+  supa:{storage:{from(){return{createSignedUrl:async()=>({data:{signedUrl:'https://example.test/private-photo'}})}}}}
+ };
+ vm.createContext(c);vm.runInContext(region,c);
+ await c.refreshProfileAvatar();assert.equal(c.profileAvatarUrl,'https://lh3.googleusercontent.com/a/example');
+ c.currentPrivateProfile.avatar_path='one/avatar.jpg';await c.refreshProfileAvatar();
+ assert.equal(c.profileAvatarUrl,'https://example.test/private-photo','uploaded photo wins');
+ c.currentUser.user_metadata.avatar_url='https://googleusercontent.com.evil.test/photo';
+ assert.equal(c.googleProfilePhotoUrl(),'','only Google photo hosts are accepted');
+ c.currentUser.user_metadata.avatar_url='javascript:alert(1)';assert.equal(c.googleProfilePhotoUrl(),'');
+ c.currentUser.app_metadata.provider='email';c.currentUser.user_metadata.avatar_url='https://lh3.googleusercontent.com/a/example';
+ assert.equal(c.googleProfilePhotoUrl(),'','a Google identity is required');
+ c.currentUser.identities=[{provider:'google',identity_data:{picture:'https://lh3.googleusercontent.com/a/identity'}}];
+ assert.equal(c.googleProfilePhotoUrl(),'https://lh3.googleusercontent.com/a/identity');
+ c.supa.storage.from=()=>({createSignedUrl:()=>new Promise(resolve=>{resolvePhoto=resolve})});
+ const pending=c.refreshProfileAvatar();
+ c.currentUser={id:'two'};c.currentPrivateProfile={avatar_path:null};c.profileAvatarUrl='second-user-photo';
+ resolvePhoto({data:{signedUrl:'https://example.test/old-user'}});
+ await pending;
+ assert.equal(c.profileAvatarUrl,'second-user-photo','late signed URLs cannot overwrite the next account');
+ console.log('Google photo fallback, uploaded-photo priority, URL validation and account isolation passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});

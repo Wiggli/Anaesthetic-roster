@@ -1,7 +1,8 @@
 import { useProductReducedMotion } from './product-motion';
 import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
-import { useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
+import { Fragment, useEffect, useState, type CSSProperties } from 'react';
 import { Badge, FieldShell, GroupedList, ListRow, Pressable, SegmentedControl } from './ui-system';
 
 type ThemeChoice = 'light' | 'system' | 'dark';
@@ -19,6 +20,8 @@ type ProfileExperience = {
   options: { value: string; label: string }[];
   initial: string;
   photoUrl?: string;
+  customPhoto?: boolean;
+  googlePhotoAvailable?: boolean;
   featureAvailable: boolean;
   pendingPhoto: boolean;
   message?: string;
@@ -102,13 +105,33 @@ function symbolGlyph(key: ShiftSymbol) {
 }
 
 function IdentityImage({ src, fallback, className = '' }: { src?: string; fallback: string; className?: string }) {
+  const [failed, setFailed] = useState('');
   return <span className={'personalisationIdentityImage ' + className}>
-    {src ? <img src={src} alt="" /> : <b aria-hidden="true">{fallback}</b>}
+    {src && src !== failed ? <img src={src} alt="" referrerPolicy="no-referrer" onError={() => setFailed(src)} /> : <b aria-hidden="true">{fallback}</b>}
   </span>;
 }
 
 function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: ShiftExperience }) {
-  const [tab, setTab] = useState<'me' | 'shift'>('me');
+  const initialSection = document.getElementById('accountSheet')?.dataset.accountPage || 'home';
+  const [section, setSection] = useState(initialSection);
+  const [tab, setTab] = useState<'me' | 'shift'>(initialSection === 'shift' ? 'shift' : 'me');
+  const [photo, setPhoto] = useState({ url: model.photoUrl || '', custom: !!model.customPhoto, pending: model.pendingPhoto });
+  useEffect(() => {
+    const changeSection = (event: Event) => {
+      const next = (event as CustomEvent).detail.section;
+      setSection(next);
+      setTab(next === 'shift' ? 'shift' : 'me');
+    };
+    const changePhoto = (event: Event) => setPhoto((event as CustomEvent).detail);
+    window.addEventListener('roster:account-section', changeSection);
+    window.addEventListener('roster:profile-photo', changePhoto);
+    return () => {
+      window.removeEventListener('roster:account-section', changeSection);
+      window.removeEventListener('roster:profile-photo', changePhoto);
+    };
+  }, []);
+  useEffect(() => { act('profile-input'); }, [section]);
+  useEffect(() => setPhoto({ url: model.photoUrl || '', custom: !!model.customPhoto, pending: model.pendingPhoto }), [model.photoUrl, model.customPhoto, model.pendingPhoto]);
   const [previewName,setPreviewName] = useState(model.name);
   const [previewRole,setPreviewRole] = useState(model.jobTitle);
   const [rosterName,setRosterName] = useState(model.rosterName);
@@ -124,7 +147,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   const [shiftSymbol, setShiftSymbol] = useState<ShiftSymbol>(shift?.symbol || 'spark');
   const [shiftDirty, setShiftDirty] = useState(false);
   const reduced = useProductReducedMotion() || motionPref === 'reduced';
-  const photoUrl = model.photoUrl || '';
+  const photoUrl = photo.url;
   const initial = model.initial || '?';
   const displayName = previewName.trim() || model.approvedName || 'Your profile';
   const displayRole = previewRole.trim() || 'Anaesthetic team member';
@@ -133,6 +156,69 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   const personalFallback = avatarStyle === 'spark' ? '✦' : initial;
   const showPersonalPhoto = avatarStyle === 'photo' && !!photoUrl;
   const shiftFallback = shift?.photoUrl ? '' : (symbolGlyph(shiftSymbol) || shift?.initials || 'AT');
+
+  const accountHost = (id: string) => (window as Window & { accountPresentationElement?: (id: string) => HTMLElement | null }).accountPresentationElement?.(id) || document.getElementById(id);
+  const comfortHost = accountHost('accountComfortHost');
+  const preferenceSaveHost = accountHost('accountPreferencesSave');
+  const personalSave = (
+      <div className="accountSaveRow accountSaveRowPro">
+        <div id="profileMessage" className={'formMessage ' + (model.messageType || '')} role="status" aria-live="polite">{model.message || ''}</div>
+        <button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={'primary accountProfileSave ' + (dirty ? '' : 'hidden')} disabled={!model.featureAvailable}>Save my personalisation</button>
+      </div>
+  );
+  const comfort = (
+    <>
+      <section className="personalisationGroup"><h4>Accent colour</h4>
+        <div className="personalisationSwatches" role="group" aria-label="Personal accent colour">
+          {accentChoices.map(item => <button
+            key={item.value}
+            type="button"
+            className={accent === item.value ? 'active' : ''}
+            aria-label={item.label}
+            aria-pressed={accent === item.value}
+            onClick={() => { setAccent(item.value); markDirty(); }}
+          ><i style={{ background: accentColour(item.value) }} /><span>{item.label}</span></button>)}
+        </div>
+        <input id="profileAccentKey" type="hidden" value={accent} readOnly />
+      </section>
+
+      <section className="personalisationGroup personalisationComfort">
+        <div className="personalisationGroupHeading compact">
+
+          <h4>Reading & motion</h4>
+        </div>
+        <div className="personalisationOptionGrid">
+          <div>
+            <b>Text size</b>
+            <div className="personalisationChoiceRow" role="group" aria-label="Text size">
+              {([
+                ['standard', 'Normal'],
+                ['large', 'Large'],
+                ['xlarge', 'Extra large']
+              ] as [TextScale, string][]).map(([value, label]) => <button key={value} type="button" className={textScale === value ? 'active' : ''} aria-pressed={textScale === value} onClick={() => { setTextScale(value); markDirty(); }}>{label}</button>)}
+            </div>
+            <input id="profileTextScale" type="hidden" value={textScale} readOnly />
+          </div>
+          <div>
+            <b>Motion</b>
+            <div className="personalisationChoiceRow" role="group" aria-label="Motion preference">
+              {([
+                ['system', 'Device setting'],
+                ['reduced', 'Reduced']
+              ] as [MotionPref, string][]).map(([value, label]) => <button key={value} type="button" className={motionPref === value ? 'active' : ''} aria-pressed={motionPref === value} onClick={() => { setMotionPref(value); markDirty(); }}>{label}</button>)}
+            </div>
+            <input id="profileMotionPref" type="hidden" value={motionPref} readOnly />
+          </div>
+          <button type="button" className={'personalisationToggleRow ' + (greetingEnabled ? 'active' : '')} onClick={() => { setGreetingEnabled(!greetingEnabled); markDirty(); }} aria-pressed={greetingEnabled}>
+            <span><b>Personal greeting</b></span>
+            <i>{greetingEnabled ? 'On' : 'Off'}</i>
+          </button>
+          <input id="profileGreetingEnabled" type="hidden" value={greetingEnabled ? '1' : '0'} readOnly />
+        </div>
+      </section>
+
+    </>
+  );
 
   return <motion.section
     initial={reduced ? false : { opacity: 0, y: 6 }}
@@ -147,12 +233,10 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
 
     </div>
 
-    <div className="personalisationTabs" role="group" aria-label="Personalisation">
-      <button type="button" className={tab === 'me' ? 'active' : ''} aria-pressed={tab === 'me'} onClick={() => setTab('me')}>Me</button>
-      <button type="button" className={tab === 'shift' ? 'active' : ''} aria-pressed={tab === 'shift'} onClick={() => setTab('shift')}>Our Shift</button>
-    </div>
 
-    {tab === 'me' ? <>
+    {comfortHost && createPortal(comfort, comfortHost)}
+    {section === 'preferences' && preferenceSaveHost && createPortal(personalSave, preferenceSaveHost)}
+    {tab === 'me' ? <Fragment key="profile">
       <section className="personalisationGroup">
         <div className="personalisationGroupHeading compact">
 
@@ -192,7 +276,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
 
       </details>
 
-      <details className="personalisationGroup informationDisclosure"><summary>Photo & avatar</summary>
+      <section className="personalisationGroup accountPhotoSection"><h4>Photo & avatar</h4>
         <div className="personalisationAvatarEditor">
           <div className="accountHeroPhotoWrap">
             <button
@@ -203,7 +287,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
               className="accountPhotoButton accountHeroPhoto"
               style={{ '--identity-accent': accentColour(accent) } as CSSProperties}
             >
-              <img id="profilePhotoPreview" src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='} alt="Your profile photo" className={showPersonalPhoto ? '' : 'hidden'} />
+              <img id="profilePhotoPreview" src={photoUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='} alt="Your profile photo" referrerPolicy="no-referrer" onError={event => { event.currentTarget.classList.add('hidden'); document.getElementById('profilePhotoInitial')?.classList.remove('hidden'); }} className={showPersonalPhoto ? '' : 'hidden'} />
               <span id="profilePhotoInitial" className={showPersonalPhoto ? 'hidden' : ''}>{personalFallback}</span>
               <span className="accountPhotoEditBadge" aria-hidden="true">+</span>
             </button>
@@ -213,73 +297,28 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
               event.currentTarget.value = '';
             }} />
           </div>
+          <div className="accountPhotoControls">
+            <button type="button" id="changeProfilePhoto" className="soft" onClick={() => document.getElementById('profilePhotoInput')?.click()}>Change photo</button>
+            <small>{photo.custom ? 'Your uploaded photo' : photoUrl ? 'Your Google account photo' : 'Choose a photo or use your initials'}</small>
+          </div>
           <div className="personalisationAvatarStyles" role="group" aria-label="Avatar style">
             {([
               ['photo', 'Photo'],
               ['monogram', 'Initials'],
               ['spark', 'Spark']
             ] as [AvatarStyle, string][]).map(([value, label]) =>
-              <button key={value} type="button" className={avatarStyle === value ? 'active' : ''} onClick={() => { setAvatarStyle(value); markDirty(); }}>{label}</button>
+              <button key={value} type="button" className={avatarStyle === value ? 'active' : ''} aria-pressed={avatarStyle === value} onClick={() => { setAvatarStyle(value); markDirty(); }}>{label}</button>
             )}
           </div>
           <input id="profileAvatarStyle" type="hidden" value={avatarStyle} readOnly />
           <div className="accountPhotoActions accountPhotoActionsPro">
-            <button type="button" id="changeProfilePhoto" onClick={() => document.getElementById('profilePhotoInput')?.click()}>Choose photo</button>
-            <button type="button" id="removeProfilePhoto" onClick={() => act('profile-photo-remove')} className={model.photoUrl || model.pendingPhoto ? '' : 'hidden'}>{model.pendingPhoto ? 'Cancel photo' : 'Remove photo'}</button>
+            <button type="button" id="removeProfilePhoto" onClick={() => act('profile-photo-remove')} className={photo.custom || photo.pending ? '' : 'hidden'}>{photo.pending ? 'Cancel photo' : model.googlePhotoAvailable ? 'Use Google photo' : 'Remove photo'}</button>
           </div>
-        </div>
-      </details>
-
-
-
-      <details className="personalisationGroup informationDisclosure"><summary>Personal accent</summary>
-        <div className="personalisationSwatches" role="group" aria-label="Personal accent colour">
-          {accentChoices.map(item => <button
-            key={item.value}
-            type="button"
-            className={accent === item.value ? 'active' : ''}
-            aria-label={item.label}
-            aria-pressed={accent === item.value}
-            onClick={() => { setAccent(item.value); markDirty(); }}
-          ><i style={{ background: accentColour(item.value) }} /><span>{item.label}</span></button>)}
-        </div>
-        <input id="profileAccentKey" type="hidden" value={accent} readOnly />
-      </details>
-
-      <section className="personalisationGroup personalisationComfort">
-        <div className="personalisationGroupHeading compact">
-
-          <h4>Reading & motion</h4>
-        </div>
-        <div className="personalisationOptionGrid">
-          <div>
-            <b>Text size</b>
-            <div className="personalisationChoiceRow" role="group" aria-label="Text size">
-              {([
-                ['standard', 'Normal'],
-                ['large', 'Large'],
-                ['xlarge', 'Extra large']
-              ] as [TextScale, string][]).map(([value, label]) => <button key={value} type="button" className={textScale === value ? 'active' : ''} onClick={() => { setTextScale(value); markDirty(); }}>{label}</button>)}
-            </div>
-            <input id="profileTextScale" type="hidden" value={textScale} readOnly />
-          </div>
-          <div>
-            <b>Motion</b>
-            <div className="personalisationChoiceRow" role="group" aria-label="Motion preference">
-              {([
-                ['system', 'Device setting'],
-                ['reduced', 'Calmer']
-              ] as [MotionPref, string][]).map(([value, label]) => <button key={value} type="button" className={motionPref === value ? 'active' : ''} onClick={() => { setMotionPref(value); markDirty(); }}>{label}</button>)}
-            </div>
-            <input id="profileMotionPref" type="hidden" value={motionPref} readOnly />
-          </div>
-          <button type="button" className={'personalisationToggleRow ' + (greetingEnabled ? 'active' : '')} onClick={() => { setGreetingEnabled(!greetingEnabled); markDirty(); }} aria-pressed={greetingEnabled}>
-            <span><b>Personal greeting</b></span>
-            <i>{greetingEnabled ? 'On' : 'Off'}</i>
-          </button>
-          <input id="profileGreetingEnabled" type="hidden" value={greetingEnabled ? '1' : '0'} readOnly />
         </div>
       </section>
+
+
+
 
       <div className="accountIdentity accountIdentityVerified">
         <span className="accountIdentityIcon" aria-hidden="true">✓</span>
@@ -292,11 +331,9 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
       </div>
 
       {!model.featureAvailable && <p className="formMessage error" role="alert">Personal profile storage is not available yet.</p>}
-      <div className="accountSaveRow accountSaveRowPro">
-        <div id="profileMessage" className={'formMessage ' + (model.messageType || '')} role="status" aria-live="polite">{model.message || ''}</div>
-        <button type="button" id="saveProfileBtn" onClick={() => act('profile-save')} className={'primary accountProfileSave ' + (dirty ? '' : 'hidden')} disabled={!model.featureAvailable}>Save my personalisation</button>
-      </div>
-    </> : <>
+      {section !== 'preferences' && personalSave}
+
+    </Fragment> : <Fragment key="shift">
       <details className="informationDisclosure profilePreviewDisclosure"><summary>Preview shift identity</summary>
       <section className="personalisationPreviewCard shiftPreviewCard" data-shift-accent={shiftAccent} style={{ '--identity-accent': accentColour(shiftAccent) } as CSSProperties}>
         <div className="personalisationPreviewGlow" />
@@ -371,7 +408,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <div id="shiftStudioMessage" className={'formMessage ' + (shift?.messageType || '')} role="status" aria-live="polite">{shift?.message || ''}</div>
         <button type="button" id="saveShiftPersonalisationBtn" onClick={() => act('shift-save')} className={'primary accountProfileSave ' + (shiftDirty || shift?.pendingPhoto ? '' : 'hidden')} disabled={!shift?.featureAvailable}>Save for everyone</button>
       </div>
-    </>}
+    </Fragment>}
   </motion.section>;
 }
 

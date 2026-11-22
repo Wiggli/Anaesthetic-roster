@@ -1,11 +1,12 @@
 {
-  "version": "71.0",
+  "version": "72.0",
   "date": "22 November 2026",
-  "title": "Smoother navigation feedback",
-  "summary": "The selected tab moves with a short worker-rendered highlight on supported devices.",
+  "title": "Clearer account settings and Google photos",
+  "summary": "Find your profile, appearance and team settings in a simpler menu.",
   "changes": [
-    "Navigation uses OffscreenCanvas for the selection highlight on supported browsers, with a CSS fallback.",
-    "Animation work pauses after each transition and when the app is hidden. Reduced Motion keeps the selection feedback still."
+    "Settings opens with your profile card, grouped app settings and a separate Our shift page.",
+    "Appearance brings theme, text size, colour and motion together, with draft changes retained between pages.",
+    "Your Google account photo appears by default when you have no uploaded photo. Initials remain available."
   ],
   "update_policy": "normal"
 }

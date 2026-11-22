@@ -1,4 +1,4 @@
-/* Anaesthetic Night Roster V71.0 interface, staffing, allocation and PWA features. */
+/* Anaesthetic Night Roster V72.0 interface, staffing, allocation and PWA features. */
 var historyExpandedDates={};
 var historyLoadedDates={};
 var historyLoadingDates={};
@@ -349,7 +349,7 @@ function hideLaunchRecovery(){
 function syncPrimaryHeaderActions(){
   var admin=byId('adminSettingsBtn'),account=byId('accountBtn'),sourceAvatar=byId('accountAvatar'),sourceInitial=byId('accountInitial'),adminHidden=!admin||admin.classList.contains('hidden'),hasAvatar=!!(sourceAvatar&&!sourceAvatar.classList.contains('hidden')&&sourceAvatar.src),initial=(sourceInitial&&sourceInitial.textContent||'A').trim().charAt(0)||'A';
   Array.prototype.forEach.call(document.querySelectorAll('[data-shell-settings]'),function(button){button.classList.toggle('hidden',adminHidden);button.onclick=function(){if(admin)admin.click()}});
-  Array.prototype.forEach.call(document.querySelectorAll('[data-shell-account]'),function(button){var image=button.querySelector('.primaryHeaderAccountAvatar'),letter=button.querySelector('.primaryHeaderAccountInitial');button.onclick=function(){if(account)account.click()};button.title=account&&account.title||'Open account';if(image){image.classList.toggle('hidden',!hasAvatar);if(hasAvatar)image.src=sourceAvatar.src}if(letter){letter.classList.toggle('hidden',hasAvatar);letter.textContent=initial}});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-shell-account]'),function(button){var image=button.querySelector('.primaryHeaderAccountAvatar'),letter=button.querySelector('.primaryHeaderAccountInitial');button.onclick=function(){if(account)account.click()};button.title=account&&account.title||'Open account';if(image){image.classList.toggle('hidden',!hasAvatar);if(hasAvatar){image.referrerPolicy='no-referrer';image.onerror=function(){image.classList.add('hidden');if(letter)letter.classList.remove('hidden')};image.src=sourceAvatar.src}}if(letter){letter.classList.toggle('hidden',hasAvatar);letter.textContent=initial}});
 }
 
 function prepareAuthorisedShell(profile){
@@ -499,7 +499,7 @@ function installGuideSteps(){
   else if(ios){label='Four simple taps in Safari. No App Store account is needed.';steps=['Open Night Roster in Safari.','Tap the Share button.','Choose Add to Home Screen and keep Open as Web App enabled.','Tap Add, then open Night Roster from your Home Screen.'];}
   else if(android){label=deferredInstallPrompt?'This phone can install Night Roster now.':'Install Night Roster once and keep it on your Home Screen.';steps=deferredInstallPrompt?['Tap Install Night Roster below.','Confirm Install app.','Open Night Roster from your Home Screen or app launcher.']:['Open the browser menu.','Choose Install app or Add to Home screen.','Confirm Install, then open Night Roster from your Home Screen or app launcher.'];}
   else{label='Install Night Roster for a standalone app window.';steps=['Open your browser menu.','Choose Install app or Add to Home screen if available.','Launch Night Roster from the installed app icon.'];}
-  return'<div class="installGuideHero"><img src="icon-192.png?v=71.0" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
+  return'<div class="installGuideHero"><img src="icon-192.png?v=72.0" alt=""><div><b>'+esc(standalone?'Installed':'Night Roster')+'</b><span>'+esc(label)+'</span></div></div><div class="installSteps">'+steps.map(function(step,index){return'<div class="installStep"><b>'+(index+1)+'</b><span>'+esc(step)+'</span></div>'}).join('')+'</div>'+(deferredInstallPrompt&&!standalone?'<button type="button" class="primary wide installGuidePrimary" id="installGuidePrimaryBtn">Install Night Roster</button>':'')+'<p class="installGuideFootnote">No App Store or Play Store account is required. Installing only adds the app to this device, and roster access still requires an approved Night Roster account.</p>';
 }
 async function runInstallPrompt(){
   if(!deferredInstallPrompt){showInstallGuide();return}
