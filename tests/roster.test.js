@@ -490,7 +490,7 @@ assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow t
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
 assert.ok(checkedInMigrations.includes('20261118233000_three_way_pager_client_compatibility.sql'), 'older writing clients must be gated when the Pager policy changes');
-assert.equal(checkedInMigrations.length, 37, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 38, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 const pagerDrawMigration=fs.readFileSync(path.join(migrationDirectory,'20261119003500_fix_night_role_operation_key.sql'),'utf8');
 assert.match(pagerDrawMigration,/claim_roster_operation_v48\(p_operation_id,\s*'roles-'\s*\|\|\s*coalesce\(p_action,'unknown'\)/,'Pager draws and night-role edits must claim a valid PostgreSQL text operation key');
 assert.ok(checkedInMigrations.includes('20261024153714_shared_pager_four_nurse.sql'), 'the four-nurse shared Pager migration must stay checked in');

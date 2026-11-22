@@ -1,11 +1,11 @@
 {
-  "version": "70.0",
+  "version": "70.1",
   "date": "22 November 2026",
-  "title": "Agree Pager parts with six nurses",
-  "summary": "Choose who takes Pager First Part and save both parts with the night plan.",
+  "title": "Save cover after the Pager team changes",
+  "summary": "Current cover saves after a previous seven-nurse Pager draw becomes outdated.",
   "changes": [
-    "Six-nurse nights show a shared Pager vacancy while cover is open.",
-    "Once the two Pager nurses agree, choose who takes First Part in Changes. The app shows who takes Second Part and saves both together."
+    "A stored seven-nurse draw no longer prevents saving valid cover and agreed Pager parts after staffing changes.",
+    "Swap assignments shows active arrangements for the current team."
   ],
   "update_policy": "normal"
 }

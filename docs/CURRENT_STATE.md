@@ -71,3 +71,5 @@ Release 69.0 removes startup music and its settings/assets. Intro completion and
 Release 69.1 shows a persistent in-app notice on the published roster row immediately before a night affected by Malta’s clock change. Timing details opens the affected night’s guide while keeping the selected shift in place. Seven-nurse Pager guidance uses the existing three-way elapsed-time calculation. The live hero, theatre handover, Pager draw save path and existing live device notification are unchanged.
 
 Release 70.0 records the agreed two-nurse Pager order on six-nurse roster dates from 21 November 2026. Choices in Changes save atomically with cover through the existing guarded finaliser. Schema 58 validates the proposed pair against current staffing and allows an earlier pair to be superseded. Earlier nights retain their historical rule, and the three-way draw uses its existing save path.
+
+Release 70.1 repairs validation of a stored seven-person Pager override after its team changes. The validator ignores the superseded record in the same circumstances as the client. Schema contract 58 and existing saved records are retained.

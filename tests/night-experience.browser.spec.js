@@ -202,6 +202,10 @@ test('one absence and two overtime save the agreed six-nurse Pager order with co
      {id:'cover-a',nurse_name:'Overtime A',allocation_key:null},
      {id:'cover-b',nurse_name:'Overtime B',allocation_key:null}
    ];
+   nightRoleOverrides[base.date]={reason:'Pager tombola draw',assignments:{
+     mode:'7',first1:'Overtime B',first2:base.first2,second1:base.second1,second2:base.second2,
+     pager:'Departed Pager',reliever:'Overtime A',seventh:base.pager
+   }};
    runRosterMutation=(_key,commit)=>commit('fixture-operation',0);
    supa.rpc=async (name,args)=>{
      if(name!=='finalise_night_plan_v49')return{data:[],error:null};
@@ -217,6 +221,7 @@ test('one absence and two overtime save the agreed six-nurse Pager order with co
    render();show('today');
  },periods);
  await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 2 overtime = 6 working');
+ await expect(page.locator('#nightRoleOverrideStep')).not.toContainText('Night-only roles are active');
  await expect(page.locator('#roles')).toContainText('Pager draw opens when seven nurses are working');
  await page.evaluate(()=>show('changes'));
  const save=page.getByRole('button',{name:'Save cover and Pager parts'});
