@@ -144,7 +144,7 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
  await page.emulateMedia({reducedMotion});
  await openReview(page);
  await page.evaluate(periods=>{
-   rotationVersions=periods; schemaVersion=57; rebuildCalculatedRoster();
+   rotationVersions=periods; schemaVersion=EXPECTED_SCHEMA_VERSION; rebuildCalculatedRoster();
    idx=R.findIndex(r=>r.date==='2026-11-21');
    const date=cur().date;
    nightOvertime[date]=[
@@ -191,10 +191,10 @@ for (const reducedMotion of ['no-preference','reduce']) test(`Pager tombola save
  await expect(sheet.getByRole('button',{name:'Draw Pager times',exact:true})).toHaveCount(0);
 });
 
-test('one absence and two overtime show six and save cover without a detour',async({page})=>{
+test('one absence and two overtime save the agreed six-nurse Pager order with cover',async({page},info)=>{
  await openReview(page);
  await page.evaluate(periods=>{
-   rotationVersions=periods; schemaVersion=57; rebuildCalculatedRoster();
+   rotationVersions=periods; schemaVersion=EXPECTED_SCHEMA_VERSION; rebuildCalculatedRoster();
    idx=R.findIndex(r=>r.date==='2026-11-21');
    const base=cur();
    nightChanges[base.date]=[{id:'away',absent_name:base.first1,reason:'Leave'}];
@@ -208,7 +208,8 @@ test('one absence and two overtime show six and save cover without a detour',asy
      nightOvertime[base.date].forEach(record=>{
        record.allocation_key=Object.keys(args.p_assignments).find(key=>args.p_assignments[key]===record.id)||null;
      });
-     nightPlanStatuses[base.date]={published_at:new Date().toISOString(),revision:1};
+     if(args.p_labour_first)labourOrders[base.date]={first_part_name:args.p_labour_first,second_part_name:args.p_labour_second};
+     nightPlanStatuses[base.date]={published_at:new Date().toISOString(),revision:args.p_expected_revision+1};
      return{data:{},error:null};
    };
    loadSharedData=async()=>{render();return true};
@@ -218,17 +219,33 @@ test('one absence and two overtime show six and save cover without a detour',asy
  await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 2 overtime = 6 working');
  await expect(page.locator('#roles')).toContainText('Pager draw opens when seven nurses are working');
  await page.evaluate(()=>show('changes'));
- const save=page.getByRole('button',{name:'Save and share cover'});
+ const save=page.getByRole('button',{name:'Save cover and Pager parts'});
  await expect(save).toBeDisabled();
  await page.locator('[data-final-allocation="first1"]').selectOption('cover-a');
  await page.locator('[data-final-allocation="reliever"]').selectOption('cover-a');
  await expect(save).toBeDisabled();
  await page.locator('[data-final-allocation="reliever"]').selectOption('cover-b');
+ await expect(save).toBeDisabled();
+ await expect(page.locator('#changesAvailableParts')).not.toContainText('Labour Ward / Reliever');
+ const pagerFirst=page.getByLabel('Shared Pager · First Part');
+ await expect(pagerFirst).toHaveValue('');
+ expect(await pagerFirst.evaluate(node=>node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.locator('#twoNursePagerOrder').screenshot({path:info.outputPath('shared-pager-parts.png')});
+ await pagerFirst.selectOption('Overtime B');
+ await expect(page.locator('#twoNursePagerSecond')).toContainText('Second Part');
  await expect(save).toBeEnabled();
  await expect(page.getByRole('button',{name:'Review and share',exact:true})).toBeHidden();
  await save.click();
  await expect(save).toBeHidden();
- await expect(page.locator('#coverAssignmentsHeading')).toHaveText('Cover assignments');
+ await expect(page.locator('#coverAssignmentsHeading')).toHaveText('Pager parts');
+ await expect(pagerFirst).toHaveValue('Overtime B');
+ expect(await page.evaluate(()=>labourOrders[cur().date].first_part_name)).toBe('Overtime B');
+ await page.evaluate(()=>{render();show('today')});
+ await expect(page.locator('#roles')).toContainText('Overtime B');
+ await expect(page.locator('#roles')).toContainText('00:00–03:30');
+ await page.evaluate(()=>show('breaks'));
+ await expect(page.locator('#breakList')).toContainText('Overtime B');
  await page.evaluate(()=>{
    nightOvertime[cur().date].forEach(record=>record.allocation_key=null);
    nightOvertime[cur().date].push({id:'cover-c',nurse_name:'Overtime C',allocation_key:null});

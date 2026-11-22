@@ -232,3 +232,9 @@ Publication gate: Node 22.23.4 verify:ci passes on the final source. The last in
 Compared the 69.0 timing, allocation and hero sources with the pre-update release and confirmed that the startup changes did not alter the clocks or duty calculations. The advance notice uses the next published roster row, replaces the earlier one-off toast and opens the affected date’s contextual guide without changing the selected night. The advance notice is in-app. The existing same-night notification still uses the device’s granted permission.
 
 Deterministic coverage checks spring and autumn notices on the preceding rostered night, no early notice two shifts ahead, and no notice on an unrostered date or after the published roster ends. The three-way Pager continues to divide 23:30 to 07:00 in elapsed time: 130 minutes per nurse in spring, 150 normally and 170 in autumn.
+
+### Release 70.0 · Agreed two-nurse Pager parts
+
+Six-nurse cover from 21 November offers a shared Pager place. Changes requires an agreed First Part before sharing the six-nurse plan and saves both parts with the selected cover. Night, Breaks and the roster show the saved agreement. Existing timing calculations determine duty periods and break groups.
+
+The isolated PostgreSQL fixture tested a paired cover and order save, rejection before agreement, inactive names, conflicting plan revisions, replacing a departed Pager nurse and returning to five nurses. Browser fixtures exercise the six-nurse example with one absence and two overtime nurses and the transition to the three-way draw. Physical iPhone, VoiceOver and signed-in production writes were outside fixture coverage.

@@ -430,3 +430,11 @@
   font-size: var(--unified-type-caption);
   white-space: normal;
 }
+
+#twoNursePagerOrder:not([hidden]) {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+#twoNursePagerOrder select { width: 100%; min-height: 44px; }
+#twoNursePagerOrder p { margin: 0; }

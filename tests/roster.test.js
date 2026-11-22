@@ -490,7 +490,7 @@ assert.doesNotMatch(workflow, /version:\s*latest/, 'deployment must not follow t
 const migrationDirectory = path.join(__dirname, '..', 'supabase', 'migrations');
 const checkedInMigrations = fs.readdirSync(migrationDirectory).filter(name => /^\d{14}_.+\.sql$/.test(name)).sort();
 assert.ok(checkedInMigrations.includes('20261118233000_three_way_pager_client_compatibility.sql'), 'older writing clients must be gated when the Pager policy changes');
-assert.equal(checkedInMigrations.length, 36, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
+assert.equal(checkedInMigrations.length, 37, 'all deployed and pending release Supabase migrations must remain checked in under supabase/migrations');
 const pagerDrawMigration=fs.readFileSync(path.join(migrationDirectory,'20261119003500_fix_night_role_operation_key.sql'),'utf8');
 assert.match(pagerDrawMigration,/claim_roster_operation_v48\(p_operation_id,\s*'roles-'\s*\|\|\s*coalesce\(p_action,'unknown'\)/,'Pager draws and night-role edits must claim a valid PostgreSQL text operation key');
 assert.ok(checkedInMigrations.includes('20261024153714_shared_pager_four_nurse.sql'), 'the four-nurse shared Pager migration must stay checked in');
@@ -583,7 +583,7 @@ for (const action of ['select', 'insert', 'update', 'delete']) {
 }
 assert.doesNotMatch(rlsPerformanceMigration, /(?<!select )auth\.(?:uid|jwt)\(\)/, 'schema 40 policies must not evaluate Auth helpers once per row');
 assert.match(rlsPerformanceMigration, /update public\.app_schema_version[\s\S]*version = 40/, 'schema 40 migration must update the schema marker');
-assert.equal(context.EXPECTED_SCHEMA_VERSION, 57, 'the application must require the establishment schema');
+assert.equal(context.EXPECTED_SCHEMA_VERSION, 58, 'the application must require the establishment schema');
 assert.match(globalShiftIdentityMigration, /set_night_team_identity_v51[\s\S]*values\(\s*v_anchor/, 'schema 52 must store one canonical shift identity regardless of selected night');
 assert.match(globalShiftIdentityMigration, /generate_series\([\s\S]*interval '4 days'/, 'schema 52 startup snapshots must project the shift identity across every roster date');
 assert.match(globalShiftIdentityMigration, /update public\.app_schema_version[\s\S]*version=52/, 'schema 52 migration must advance the schema marker');
@@ -721,7 +721,7 @@ assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\
 assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:18[\s\S]*changes:12[\s\S]*breaks:8[\s\S]*chat:4/, 'guide content generations track the current tutorial without forcing completed tours to replay');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:18[\s\S]*changes:13[\s\S]*breaks:8[\s\S]*chat:4/, 'guide content generations track the current tutorial without forcing completed tours to replay');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf("featureEducationPage('night')") > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf("featureEducationPage('changes')") > onboardingSequence.indexOf("featureEducationPage('night')"), 'the tutorial must explain the current decision-first Changes workflow');
