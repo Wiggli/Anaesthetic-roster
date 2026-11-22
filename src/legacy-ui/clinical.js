@@ -947,6 +947,7 @@ function nightRoleOverrideModel(base){
   if(!nightRoleOverrideAvailable)return{notice:'Night-only role changes need the current database update. The normal calculated roster remains available.'};
   var working=nightWorkingNames(base);if(working.length<4)return{notice:'Custom roles are unavailable while fewer than four nurses are working. Restore enough cover for both theatre parts first.'};
   var stored=nightRoleOverrides[base.date],draft=nightRoleOverrideDrafts[base.date],current=roleEditorAssignments(base),baseline=currentRoleAssignments(base);if(!current||!baseline)return{notice:'Night roles are not available for this night yet.'};
+  if(stored&&!validRoleAssignmentsForNight(base,stored.assignments))stored=null;
   var keys=roleAssignmentKeys(current),fourMode=current.mode==='4',fiveMode=current.mode==='5',sevenMode=current.mode==='7',dirty=!!(draft&&roleAssignmentsDiffer(draft.assignments,baseline)),valid=validRoleAssignmentsForNight(base,current),labels={first1:'First Part · nurse 1',first2:'First Part · nurse 2',second1:'Second Part · nurse 1',second2:'Second Part · nurse 2',pager:'Pager',reliever:'Reliever',fullLW:'Full-night Labour Ward / Pager',seventh:'Seventh nurse'},names=(fourMode||fiveMode||sevenMode)?working:keys.map(function(key){return current[key]});
   var sharedPager=sevenMode&&usesThreeWayPager(base.date,working.length);
   if(usesAgreedPagerOrder(base.date,working.length)){labels.pager='Pager nurse 1';labels.reliever='Pager nurse 2';}

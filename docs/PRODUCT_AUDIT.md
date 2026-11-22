@@ -238,3 +238,9 @@ Deterministic coverage checks spring and autumn notices on the preceding rostere
 Six-nurse cover from 21 November offers a shared Pager place. Changes requires an agreed First Part before sharing the six-nurse plan and saves both parts with the selected cover. Night, Breaks and the roster show the saved agreement. Existing timing calculations determine duty periods and break groups.
 
 The isolated PostgreSQL fixture tested a paired cover and order save, rejection before agreement, inactive names, conflicting plan revisions, replacing a departed Pager nurse and returning to five nurses. Browser fixtures exercise the six-nurse example with one absence and two overtime nurses and the transition to the three-way draw. Physical iPhone, VoiceOver and signed-in production writes were outside fixture coverage.
+
+### Release 70.1 · Superseded Pager draw validation
+
+The six-nurse cover save failed because the database validated a stored seven-person draw containing a departed overtime nurse. The client already ignored that arrangement. The validator now ignores the same superseded seven-person record from the policy cutover, while continuing to validate the submitted cover and agreed Pager names. The old draw remains in history. The role editor only describes an arrangement as active when it applies to the current staff.
+
+Reproduced the production error in isolated PostgreSQL, applied the forward repair, and verified the screenshot's current cover and order. Checks retain rejection of inactive names, duplicate cover, repeated Pager names, missing agreement, and an invalid ordinary override. The validator stays private. The deterministic release gate passes. Production staffing records were read for diagnosis and remain unchanged by the repair.

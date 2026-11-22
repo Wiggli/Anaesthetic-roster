@@ -119,3 +119,23 @@ delete c.labourOrderDrafts[shared.date];
 reset();
 assert.match(c.selectedNightSummary(shared.date),/Full-night Pager: .* · 00:00–07:00/);
 console.log('Available parts: vacancies, saved cover, seventh alternatives, extra staff, Reliever priority and DST passed.');
+
+// A saved draw may outlive one of its nurses. Current six-person cover still wins.
+reset();
+c.nightChanges[shared.date]=[{absent_name:shared.first1}];
+c.nightOvertime[shared.date]=[
+  {id:'cover-a',nurse_name:'Daniel S'},
+  {id:'cover-b',nurse_name:'Andre S'}
+];
+c.nightRoleOverrides[shared.date]={assignments:{
+ mode:'7',first1:'Andre S',first2:shared.first2,second1:shared.second1,second2:shared.second2,
+ pager:'Departed Pager',reliever:'Daniel S',seventh:shared.pager
+}};
+c.allocationDrafts[shared.date]={first1:'cover-a',reliever:'cover-b'};
+c.labourOrderDrafts[shared.date]={first:shared.pager,second:'Andre S'};
+const currentPager=c.pagerOrderForm(shared,c.staffingPlan(shared));
+assert.equal(currentPager.first,shared.pager);
+assert.equal(currentPager.second,'Andre S');
+assert.equal(currentPager.preview.first1,'Daniel S');
+assert.equal(c.nightRoleOverrideModel(shared).stored,false);
+delete c.allocationDrafts[shared.date];delete c.labourOrderDrafts[shared.date];
