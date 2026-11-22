@@ -244,3 +244,5 @@ The isolated PostgreSQL fixture tested a paired cover and order save, rejection 
 The six-nurse cover save failed because the database validated a stored seven-person draw containing a departed overtime nurse. The client already ignored that arrangement. The validator now ignores the same superseded seven-person record from the policy cutover, while continuing to validate the submitted cover and agreed Pager names. The old draw remains in history. The role editor only describes an arrangement as active when it applies to the current staff.
 
 Reproduced the production error in isolated PostgreSQL, applied the forward repair, and verified the screenshot's current cover and order. Checks retain rejection of inactive names, duplicate cover, repeated Pager names, missing agreement, and an invalid ordinary override. The validator stays private. The deterministic release gate passes. Production staffing records were read for diagnosis and remain unchanged by the repair.
+
+The stale-draw browser case also exposed an outdated saved-result badge after returning to seven nurses. Saved draw status now requires all current assignments to match the persisted draw.

@@ -146,7 +146,7 @@ function pagerTombolaModel(base,plan,r){
     names:threeWayPagerNames(r),
     labels:threeWayPagerNames(r).map(professionalName),
     periods:threeWayPagerPeriods(base.date),
-    saved:!!(stored&&stored.reason===PAGER_TOMBOLA_REASON&&stored.assignments&&stored.assignments.mode==='7'),
+    saved:!!(stored&&stored.reason===PAGER_TOMBOLA_REASON&&stored.assignments&&stored.assignments.mode==='7'&&SEVEN_NIGHT_ROLE_KEYS.every(function(key){return sameNurse(stored.assignments[key],assignments[key])})),
     canDraw:!!(navigator.onLine&&!forcedOfflineSession&&!sharedWritesBlocked())
   };
 }
