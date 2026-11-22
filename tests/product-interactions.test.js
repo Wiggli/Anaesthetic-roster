@@ -29,3 +29,36 @@ const mobilePolish=fs.readFileSync('src/mobile-four-nurse-polish.css','utf8');as
 const changesExperience=fs.readFileSync('src/changes-experience.tsx','utf8');assert.match(changesExperience,/roleOverride\?\.mode === '4'[\s\S]*return null/,'four-nurse pending state hides the generic allocation empty state');assert.match(source,/byId\('allocationSummary'\)\.hidden=four/,'four-nurse pending state hides contradictory legacy allocation summary');
 const account=fs.readFileSync('src/account-experience.tsx','utf8');for(const hue of [...account.matchAll(/(teal|blue|violet|rose|amber|graphite): '(#[\da-f]{6})'/g)])assert.ok(contrast(hue[2],'#ffffff')>=4.5,`${hue[1]} identity glyph contrast`);
 console.log('Return summary lifecycle, bounded storage, dual-theme text and identity contrast passed.');
+
+// Exercise the actual worker scheduler, including interruption and idle cleanup.
+{
+ const {stripTypeScriptTypes}=require('node:module');
+ const code=stripTypeScriptTypes(fs.readFileSync('src/dock-feedback.worker.ts','utf8')).replace('export {};','');
+ let clock=0,serial=0;
+ const timers=new Map(),messages=[],positions=[];
+ const drawing={setTransform(){},clearRect(){},beginPath(){},roundRect(x){positions.push(x)},fill(){},stroke(){}};
+ const workerContext={
+  performance:{now:()=>clock},
+  setTimeout(fn,delay){const id=++serial;timers.set(id,{fn,at:clock+delay});return id},
+  clearTimeout(id){timers.delete(id)},
+  postMessage(message){messages.push(message)}
+ };
+ vm.createContext(workerContext);vm.runInContext(code,workerContext);
+ const paint={width:440,height:54,ratio:3,target:{x:10,y:3,width:70,height:46},fill:'#eee',stroke:'#aaa',animate:false};
+ workerContext.onmessage({data:{type:'init',canvas:{width:0,height:0,getContext:()=>drawing},paint}});
+ assert.equal(timers.size,0,'initial render stays idle');
+ workerContext.onmessage({data:{type:'paint',paint:{...paint,target:{...paint.target,x:300},animate:true}}});
+ for(let guard=0;timers.size&&guard<100;guard++){
+  const [id,task]=timers.entries().next().value;timers.delete(id);clock=task.at;task.fn();
+ }
+ assert.equal(timers.size,0,'a completed transition owns no timer');
+ assert.equal(positions.at(-1),300);
+ assert.ok(positions.length>24,'short worker animation can draw more than 60 Hz DOM frames');
+ workerContext.onmessage({data:{type:'paint',paint:{...paint,animate:true}}});
+ workerContext.onmessage({data:{type:'pause'}});
+ assert.equal(timers.size,0,'background and reduced-motion pauses cancel the pending frame');
+ workerContext.onmessage({data:{type:'paint',paint:{...paint,animate:false}}});
+ assert.equal(timers.size,0,'resume can restore the final frame immediately');
+ assert.equal(positions.at(-1),10);
+ assert.equal(messages.some(message=>message.type==='failed'),false);
+}

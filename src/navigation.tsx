@@ -2,6 +2,7 @@ import { productHaptic, useProductReducedMotion } from './product-motion';
 import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion } from 'motion/react';
+import { setupDockFeedback } from './dock-feedback';
 
 type Destination = 'today' | 'changes' | 'breaks' | 'chat';
 type Badge = { text: string; hidden: boolean };
@@ -175,6 +176,7 @@ function Navigation({ badges }: { badges: Badges }) {
     };
 
     bar.classList.add('reactTabs', 'liquidTabBar');
+    const cleanupFeedback = setupDockFeedback(bar);
 
     document.addEventListener('touchstart', onStart, { passive: true });
     document.addEventListener('touchmove', onMove, { passive: false });
@@ -183,6 +185,7 @@ function Navigation({ badges }: { badges: Badges }) {
     document.addEventListener('click', onClickCapture, true);
 
     return () => {
+      cleanupFeedback();
       quickObserver?.disconnect();
       window.clearTimeout(clickTimer);
       document.removeEventListener('touchstart', onStart);
