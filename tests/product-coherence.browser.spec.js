@@ -66,7 +66,7 @@ for (const width of [320, 360, 390, 412, 430]) {
       await page.evaluate(s => showAccountSection(s), section);
       await expect(page.locator('#accountHomeHub')).toHaveCount(0);
       await expect(page.locator('#accountPageOutlet > *')).toHaveCount(1);
-      await expect(page.locator('#closeAccountSheet')).toBeHidden();
+      await expect(page.locator('#closeAccountSheet')).toBeVisible();
       await expect(page.locator('#accountBackBtn')).toBeVisible();
       await assertNoOverflow(page, '#accountPageOutlet');
       if(width===390 && ['profile','preferences'].includes(section)) await page.screenshot({path:path.join(__dirname,`../visual-review/coherence-${section}.png`)});
@@ -107,14 +107,14 @@ test('Account menu and headers stay below the installed iPhone status-bar edge @
   await page.evaluate(() => document.documentElement.style.setProperty('--app-safe-top','62px'));
   expect((await page.locator('#appHeader').boundingBox()).y).toBeGreaterThanOrEqual(86);
   await page.evaluate(() => showAccountSheet());
-  await expect(page.locator('#accountHomeHub')).toContainText('Profile & shift');
+  await expect(page.locator('#accountHomeHub')).toContainText('Edit profile');
   await expect(page.locator('#accountHomeHub')).toContainText('Appearance');
-  await expect(page.locator('#accountHomeHub')).toContainText('Help & sharing');
+  await expect(page.locator('#accountHomeHub')).toContainText('Help & app information');
   await expect(page.locator('.accountHubIcon svg')).toHaveCount(6);
   await expect(page.locator('.accountSheetHeader > div > span')).toBeHidden();
   await expect(page.locator('#accountVersion')).not.toContainText('Database');
   const title = await page.locator('#accountSheetTitle').boundingBox();
-  expect(title.y).toBeGreaterThanOrEqual(86);
+  expect(title.y).toBeGreaterThanOrEqual(62);
   const close=page.locator('#closeAccountSheet');
   expect(await close.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
   for(const theme of ['light','dark']) {
@@ -122,7 +122,7 @@ test('Account menu and headers stay below the installed iPhone status-bar edge @
     await page.screenshot({path:testInfo.outputPath(`account-menu-${theme}.png`)});
   }
   await page.locator('[data-account-section="profile"]').click();
-  await expect(page.locator('#accountSheetTitle')).toHaveText('Profile & shift');
+  await expect(page.locator('#accountSheetTitle')).toHaveText('Your profile');
   await page.locator('#accountBackBtn').click();
   await close.click();
 });
@@ -298,7 +298,7 @@ test('saved startup audio preferences cannot start music @iphone', async ({page}
   await page.locator('.bottom [data-v="changes"]').click();
   await page.locator('.bottom [data-v="today"]').click();
   await page.evaluate(() => { showAccountSheet(); showAccountSection('preferences'); });
-  await expect(page.locator('#accountPageOutlet')).toContainText('Appearance');
+  await expect(page.locator('#accountSheetTitle')).toContainText('Appearance');
   await expect(page.locator('#accountPageOutlet')).not.toContainText('Opening tune');
   await expect(page.locator('.openingTune')).toHaveCount(0);
   expect(await page.evaluate(() => window.reviewStartupPlays)).toBe(0);

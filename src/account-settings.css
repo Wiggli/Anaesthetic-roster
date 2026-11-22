@@ -1,0 +1,77 @@
+/* Account settings share one page stack and the existing profile form state. */
+.accountSheet[open] {
+  inset: 0 0 0 auto; width: min(100vw, 520px); max-width: 520px;
+  height: min(100dvh,var(--app-viewport-height,100dvh)); max-height: min(100dvh,var(--app-viewport-height,100dvh)); border-radius: 24px 0 0 24px;
+  background: var(--surface-primary);
+}
+.accountSheetHeader {
+  min-height: calc(64px + var(--app-safe-top));
+  padding: calc(8px + var(--app-safe-top)) max(18px,var(--app-safe-right)) 8px max(18px,var(--app-safe-left));
+  background: var(--surface-primary);
+}
+.accountSheetHeader h2 { font-size: clamp(22px, 5vw, 28px); letter-spacing: -.025em; }
+.accountSheetHeader .accountBackBtn { width: 44px; padding: 0; font-size: 34px; }
+.accountSheetScroll {
+  padding: 12px max(18px,var(--app-safe-right)) calc(28px + var(--app-safe-bottom)) max(18px,var(--app-safe-left));
+  background: var(--surface-primary);
+}
+.accountHomeHub { gap: 24px; }
+#accountSheet button.accountHomeIdentity {
+  display: flex; width: 100%; gap: 16px; padding: 20px; min-height: 108px;
+  text-align: left; background: var(--surface-secondary); color: var(--text-primary);
+  border: 1px solid var(--border-subtle); border-radius: 22px;
+}
+#accountSheet .accountHomeIdentity .accountHomeAvatar { width: 64px; height: 64px; flex: 0 0 64px; overflow: hidden; font-size: 24px; }
+.accountHomeAvatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.accountHomeIdentityCopy { display: grid; gap: 3px; min-width: 0; }
+.accountHomeIdentityCopy > strong { font-size: var(--unified-type-section); line-height: 1.3; overflow-wrap: anywhere; }
+.accountHomeIdentityCopy > span:not(.accountEditProfile), .accountHomeIdentityCopy > small { color: var(--text-secondary); font-size: var(--unified-type-caption); overflow-wrap: anywhere; }
+.accountHomeIdentity .accountEditProfile { color: var(--accent-primary); font-size: var(--unified-type-caption); margin-top: 5px; }
+.accountSettingsGroup > h3 {
+  margin: 0 0 8px 14px; font-size: var(--unified-type-caption);
+  font-weight: 600; color: var(--text-secondary);
+}
+#accountSheet .accountHubList { background: var(--surface-secondary); border: 1px solid var(--border-subtle); border-radius: 18px; }
+#accountSheet .accountHubRow { min-height: 68px; padding: 13px 15px; gap: 13px; }
+#accountSheet .accountHubRow small { margin-top: 3px; font-weight: 400; }
+#accountSheet .accountHubRow .accountHubIcon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
+#accountSheet .accountHubRow i { font-size: 24px; font-weight: 400; }
+#accountSheet .accountSignOut { margin-top: -4px; min-height: 50px; border-radius: 16px; }
+#accountSheet .accountVersion { margin-top: -12px; }
+#accountSheet .accountDetailPane.accountGroup { padding: 0; background: transparent; }
+#accountSheet .accountGroup > h3 { margin: 8px 0; }
+#accountSheet .accountGroupDescription { font-size: var(--unified-type-caption); margin-bottom: 16px; }
+#accountSheet .appearanceControl { margin: 0 0 20px; }
+#accountComfortHost .personalisationGroup, #accountSheet .personalisationGroup {
+  padding: 18px; border: 1px solid var(--border-subtle); border-radius: 18px;
+  background: var(--surface-secondary); margin: 0 0 16px;
+}
+#accountSheet .personalisationGroup h4 { margin: 0 0 14px; font-size: var(--unified-type-body); }
+#accountSheet .personalisationGroupHeading p { font-size: var(--unified-type-caption); }
+#accountSheet .personalisationAvatarEditor { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+#accountSheet .accountPhotoControls { display: grid; gap: 6px; flex: 1; min-width: 135px; }
+#accountSheet .accountPhotoControls > button { min-height: 44px; margin: 0; justify-self: start; }
+#accountSheet .accountPhotoControls > small { color: var(--text-secondary); font-size: var(--unified-type-caption); }
+#accountSheet .personalisationAvatarStyles { flex-basis: 100%; }
+#accountSheet .personalisationOptionGrid { display: grid; gap: 20px; }
+#accountSheet .personalisationChoiceRow { display: flex; flex-wrap: wrap; gap: 6px; }
+#accountSheet .personalisationChoiceRow button { min-height: 44px; flex: 1; font-size: var(--unified-type-caption); }
+#accountSheet .personalisationSwatches { gap: 8px; }
+#accountSheet .personalisationSwatches button { min-height: 50px; }
+#accountSheet .accountSaveRowPro {
+  position: sticky; bottom: 0; z-index: 2; padding: 12px 0 4px;
+  background: var(--surface-primary); margin: 0;
+}
+#accountSheet .accountSaveRowPro:has(.accountProfileSave.hidden) { padding: 0; }
+#accountSheet .accountProfileSave { width: 100%; min-height: 48px; border-radius: 14px; }
+.accountLoginIdentity { padding: 16px; margin: 16px 0; border-radius: 16px; background: var(--surface-secondary); display: grid; gap: 4px; }
+.accountLoginIdentity span { font-size: var(--unified-type-caption); color: var(--text-secondary); }
+.accountLoginIdentity strong { font-size: var(--unified-type-body); overflow-wrap: anywhere; }
+#accountSheet .securityGroup .accountSectionHeading > svg { display: none; }
+#accountSheet .accountActions .accountActionIcon { background: var(--unified-accent-soft); color: var(--accent-primary); }
+@media (max-width: 600px) { .accountSheet[open] { width: 100%; max-width: none; border-radius: 0; } }
+@media (prefers-reduced-motion: reduce) { .accountSheet[open] { animation: none; } }
+
+.accountHomeAvatar > span { display: grid; place-items: center; width: 100%; height: 100%; }
+#accountSheet .accountPhotoButton { width: 72px; height: 72px; min-width: 72px; border-radius: 50%; }
+#profilePhotoInitial { display: grid; place-items: center; width: 100%; height: 100%; }

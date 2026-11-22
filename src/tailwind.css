@@ -16,6 +16,7 @@
 @import "./product-unified.css";
 
 @import "./information-layout.css";
+@import "./account-settings.css";
 
 /* Semantic visibility, the only important declaration in the product system. */
 .hidden, [hidden] { display: none !important; }

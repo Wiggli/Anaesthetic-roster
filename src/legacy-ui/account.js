@@ -69,27 +69,55 @@ function applyPersonalProfilePreferences(){
 }
 window.applyPersonalProfilePreferences=applyPersonalProfilePreferences;
 
+function googleProfilePhotoUrl(){
+  var user=currentUser,identities=user&&user.identities||[];
+  var identity=identities.find(function(item){return item.provider==='google'});
+  var providers=user&&user.app_metadata&&user.app_metadata.providers||[];
+  if(!identity&&providers.indexOf('google')<0&&!(user&&user.app_metadata&&user.app_metadata.provider==='google'))return'';
+  var metadata=identity&&identity.identity_data||user&&user.user_metadata||{};
+  try{
+    var url=new URL(metadata.avatar_url||metadata.picture||'');
+    return url.protocol==='https:'&&!url.username&&!url.password&&(url.hostname==='googleusercontent.com'||url.hostname.endsWith('.googleusercontent.com'))?url.href:'';
+  }catch(error){return''}
+}
+
 async function refreshProfileAvatar(){
-  profileAvatarUrl='';var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;
-  if(path&&profileFeatureAvailable){var result=await supa.storage.from('profile-photos').createSignedUrl(path,3600);if(!result.error&&result.data)profileAvatarUrl=result.data.signedUrl||''}
+  var owner=currentUser&&currentUser.id,path=currentPrivateProfile&&currentPrivateProfile.avatar_path,url=googleProfilePhotoUrl();
+  if(path&&profileFeatureAvailable){
+    try{var result=await supa.storage.from('profile-photos').createSignedUrl(path,3600);if(!result.error&&result.data)url=result.data.signedUrl||url}catch(error){}
+  }
+  if(!currentUser||currentUser.id!==owner||path!==(currentPrivateProfile&&currentPrivateProfile.avatar_path))return;
+  profileAvatarUrl=url;
   applyProfileIdentity();
+}
+
+function paintAccountPhoto(image,initial,url){
+  if(!image||!initial)return;
+  var show=!!url&&image.dataset.failedPhoto!==url;
+  image.classList.toggle('hidden',!show);initial.classList.toggle('hidden',show);
+  if(!show){image.removeAttribute('src');return}
+  image.referrerPolicy='no-referrer';
+  image.onerror=function(){image.dataset.failedPhoto=url;image.classList.add('hidden');initial.classList.remove('hidden')};
+  if(image.getAttribute('src')!==url)image.src=url;
 }
 
 function applyProfileIdentity(){
   if(!currentUserProfile)return;
   var name=privateProfileName(),style=profileAvatarStyle(),fallback=style==='spark'?'✦':profileInitialText(name||currentUserProfile.display_name||currentUserProfile.email||'?'),headerImage=byId('accountAvatar'),headerInitial=byId('accountInitial'),previewUrl=pendingProfilePhotoUrl||profileAvatarUrl,showPhoto=style==='photo'&&!!profileAvatarUrl;
-  headerInitial.textContent=fallback;headerImage.classList.toggle('hidden',!showPhoto);headerInitial.classList.toggle('hidden',showPhoto);if(showPhoto)headerImage.src=profileAvatarUrl;
+  headerInitial.textContent=fallback;paintAccountPhoto(headerImage,headerInitial,showPhoto?profileAvatarUrl:'');
   byId('accountBtn').title=name+' · Open account';byId('accountBtn').style.setProperty('--personal-accent',accentColourFor(currentPrivateProfile&&currentPrivateProfile.accent_key));syncPrimaryHeaderActions();
   var preview=byId('profilePhotoPreview'),previewInitial=byId('profilePhotoInitial'),showPreview=style==='photo'&&!!previewUrl;
   if(preview){preview.classList.toggle('hidden',!showPreview);previewInitial.classList.toggle('hidden',showPreview);previewInitial.textContent=fallback;if(showPreview)preview.src=previewUrl}
-  var remove=byId('removeProfilePhoto');if(remove){remove.classList.toggle('hidden',!profileAvatarUrl&&!pendingProfilePhoto);remove.textContent=pendingProfilePhoto?'Cancel photo':'Remove photo'}
-  var homeAvatar=byId('accountHomeAvatar');if(homeAvatar)homeAvatar.textContent=fallback;
+  var custom=!!(currentPrivateProfile&&currentPrivateProfile.avatar_path);var remove=byId('removeProfilePhoto');if(remove){remove.classList.toggle('hidden',!custom&&!pendingProfilePhoto);remove.textContent=pendingProfilePhoto?'Cancel photo':googleProfilePhotoUrl()?'Use Google photo':'Remove photo'}
+  var homeAvatar=byId('accountHomeAvatar');if(homeAvatar)homeAvatar.textContent=fallback;paintAccountPhoto(byId('accountHomePhoto'),homeAvatar,showPhoto?profileAvatarUrl:'');
+  if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:profile-photo',{detail:{url:previewUrl,custom:custom,pending:!!pendingProfilePhoto}}));
   applyPersonalProfilePreferences()
 }
 
 async function loadOwnProfile(){
-  if(!currentUser)return;var result=await supa.from('user_profiles').select('user_id,profile_name,job_title,avatar_path,accent_key,text_scale,motion_pref,avatar_style,greeting_enabled,updated_at').eq('user_id',currentUser.id).maybeSingle();
-  if(result.error){profileFeatureAvailable=false;currentPrivateProfile=null;applyPersonalProfilePreferences();return}
+  var owner=currentUser;if(!owner)return;var result=await supa.from('user_profiles').select('user_id,profile_name,job_title,avatar_path,accent_key,text_scale,motion_pref,avatar_style,greeting_enabled,updated_at').eq('user_id',owner.id).maybeSingle();
+  if(currentUser!==owner)return;
+  if(result.error){profileFeatureAvailable=false;currentPrivateProfile=null;await refreshProfileAvatar();applyPersonalProfilePreferences();return}
   profileFeatureAvailable=true;currentPrivateProfile=result.data||{user_id:currentUser.id,profile_name:'',job_title:'',avatar_path:null,accent_key:'teal',text_scale:'standard',motion_pref:'system',avatar_style:'photo',greeting_enabled:true};
   await refreshProfileAvatar();applyPersonalProfilePreferences();
 }
@@ -130,6 +158,7 @@ function prepareAccountInformationArchitecture(){
     }});
   }
   accountPresentationPages.home=home;
+  accountPresentationPages.shift=profile;
   var notifications=document.createElement('section');notifications.className='accountPage accountNotificationPage';notifications.setAttribute('data-account-pane','notifications');
   var card=document.getElementById('pushNotificationCard');if(card)notifications.appendChild(card);
   accountPresentationPages.notifications=notifications;
@@ -143,15 +172,16 @@ function prepareAccountInformationArchitecture(){
 }
 function showAccountSection(section){
   prepareAccountInformationArchitecture();
-  var labels={profile:'Profile & shift',preferences:'Appearance',notifications:'Notifications',security:'Sign-in & security',help:'Help & sharing'},key=accountPresentationPages[section]?section:'home';
+  var labels={profile:'Your profile',shift:'Our shift',preferences:'Appearance',notifications:'Notifications',security:'Sign-in & security',help:'Help & sharing'},key=accountPresentationPages[section]?section:'home';
   var target=accountPresentationPages[key],outlet=byId('accountPageOutlet'),back=byId('accountBackBtn'),close=byId('closeAccountSheet'),title=byId('accountSheetTitle'),eyebrow=document.querySelector('#accountSheet .accountSheetHeader>div>span');
   if(outlet&&target)outlet.replaceChildren(target);
   var dialog=byId('accountSheet');if(dialog)dialog.dataset.accountPage=key;
   if(back)back.classList.toggle('hidden',key==='home');
-  if(close)close.classList.toggle('hidden',key!=='home');
-  if(title)title.textContent=key==='home'?'Account':labels[key];
+  if(close)close.classList.remove('hidden');
+  if(title)title.textContent=key==='home'?'Settings':labels[key];
   if(eyebrow)eyebrow.textContent=key==='home'?'Night Roster':'Account';
   var scroll=document.querySelector('#accountSheet .accountSheetScroll');if(scroll)scroll.scrollTop=0;
+  window.dispatchEvent(new CustomEvent('roster:account-section',{detail:{section:key}}));
   if(key==='notifications'&&window.refreshPushSettings)window.refreshPushSettings();
   if(key!=='home'&&title){title.setAttribute('tabindex','-1');title.focus({preventScroll:true})}
 }
@@ -160,6 +190,7 @@ function populateAccountSheet(){
   prepareAccountInformationArchitecture();
   var profile=currentPrivateProfile||{},name=privateProfileName(),rosterName=myName(),shift=shiftIdentityModel(cur&&cur().date);
   profileSavedSignature=JSON.stringify([(profile.profile_name||'').trim(),(profile.job_title||'').trim(),rosterName||'',profile.accent_key||'teal',profile.text_scale||'standard',profile.motion_pref||'system',profile.avatar_style||'photo',profile.greeting_enabled===false?'0':'1']);
+  var securityEmail=byId('accountSecurityEmail');if(securityEmail)securityEmail.textContent=currentUserProfile.email||'';
   var accountVersion=byId('accountVersion');if(accountVersion)accountVersion.textContent='Night Roster '+APP_VERSION;
   var homeName=byId('accountHomeName'),homeRole=byId('accountHomeRole'),homeEmail=byId('accountHomeEmail'),homeAvatar=byId('accountHomeAvatar'),adminRow=byId('accountAdminHubRow');
   if(adminRow)adminRow.classList.toggle('hidden',!(currentUserProfile&&currentUserProfile.user_role==='admin'));
@@ -167,7 +198,7 @@ function populateAccountSheet(){
   showProfileMessage(profileFeatureAvailable?'':'Personal profile storage is not available yet.','error');updateProfileSaveState();updateAppearanceButtons();applyProfileIdentity();
   if(window.dispatchEvent&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('roster:account',{detail:{
     theme:themePreference(),installed:isStandaloneApp(),newRelease:releaseNeedsAttention(),version:APP_VERSION,
-    profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:profileInitialText(name||currentUserProfile.email||'?'),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Personal profile storage is not available yet.',messageType:profileFeatureAvailable?'':'error',changed:false,accentKey:normaliseAccentKey(profile.accent_key),textScale:['standard','large','xlarge'].indexOf(profile.text_scale)>=0?profile.text_scale:'standard',motionPref:profile.motion_pref==='reduced'?'reduced':'system',avatarStyle:profileAvatarStyle(),greetingEnabled:profile.greeting_enabled!==false},
+    profile:{name:profile.profile_name||'',jobTitle:profile.job_title||'',rosterName:rosterName||'',approvedName:currentUserProfile.display_name||'',email:currentUserProfile.email||'',options:TEAM.map(function(item){return{value:item,label:professionalName(item)}}),initial:profileInitialText(name||currentUserProfile.email||'?'),photoUrl:pendingProfilePhotoUrl||profileAvatarUrl||'',customPhoto:!!profile.avatar_path,googlePhotoAvailable:!!googleProfilePhotoUrl(),featureAvailable:profileFeatureAvailable,pendingPhoto:!!pendingProfilePhoto,message:profileFeatureAvailable?'':'Personal profile storage is not available yet.',messageType:profileFeatureAvailable?'':'error',changed:false,accentKey:normaliseAccentKey(profile.accent_key),textScale:['standard','large','xlarge'].indexOf(profile.text_scale)>=0?profile.text_scale:'standard',motionPref:profile.motion_pref==='reduced'?'reduced':'system',avatarStyle:profileAvatarStyle(),greetingEnabled:profile.greeting_enabled!==false},
     shift:{name:shift.name,tagline:shift.tagline,accentKey:shift.accentKey,symbol:shift.symbol,initials:shift.initials,photoUrl:pendingShiftPhotoUrl||shiftAvatarUrl||'',pendingPhoto:!!pendingShiftPhoto,featureAvailable:!!(rosterCapabilities().personalisationStudio&&!forcedOfflineSession),updatedBy:shift.updatedBy||'',message:'',messageType:''}
   }}));
 }
@@ -255,7 +286,7 @@ async function saveProfile(){
 }
 
 async function removeProfilePhoto(){
-  if(!profileFeatureAvailable)return;if(pendingProfilePhoto){pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';applyProfileIdentity();updateProfileSaveState();showProfileMessage('Photo change cancelled.');return}var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;if(path){var removed=await supa.storage.from('profile-photos').remove([path]);if(removed.error){showProfileMessage('The photo could not be removed.','error');return}var updated=await supa.from('user_profiles').update({avatar_path:null,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);if(updated.error){showProfileMessage('The photo record could not be updated.','error');return}currentPrivateProfile.avatar_path=null}profileAvatarUrl='';applyProfileIdentity();updateProfileSaveState();render();showProfileMessage('Profile photo removed.','success')
+  if(!profileFeatureAvailable)return;if(pendingProfilePhoto){pendingProfilePhoto=null;if(pendingProfilePhotoUrl)URL.revokeObjectURL(pendingProfilePhotoUrl);pendingProfilePhotoUrl='';applyProfileIdentity();updateProfileSaveState();showProfileMessage('Photo change cancelled.');return}var path=currentPrivateProfile&&currentPrivateProfile.avatar_path;if(path){var removed=await supa.storage.from('profile-photos').remove([path]);if(removed.error){showProfileMessage('The photo could not be removed.','error');return}var updated=await supa.from('user_profiles').update({avatar_path:null,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);if(updated.error){showProfileMessage('The photo record could not be updated.','error');return}currentPrivateProfile.avatar_path=null}await refreshProfileAvatar();updateProfileSaveState();render();showProfileMessage(googleProfilePhotoUrl()?'Google photo restored.':'Profile photo removed.','success')
 }
 
 function showShiftStudioMessage(message,type){var el=byId('shiftStudioMessage');if(!el)return;el.textContent=message||'';el.className='formMessage'+(type?' '+type:'')}

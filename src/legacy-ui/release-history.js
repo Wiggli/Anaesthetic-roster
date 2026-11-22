@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["72.0","22 November 2026","Clearer account settings and Google photos",["Settings opens with your profile card, grouped app settings and a separate Our shift page.","Appearance brings theme, text size, colour and motion together, with draft changes retained between pages.","Your Google account photo appears by default when you have no uploaded photo. Initials remain available."],"normal"],
   ["71.0","22 November 2026","Smoother navigation feedback",["Navigation uses OffscreenCanvas for the selection highlight on supported browsers, with a CSS fallback.","Animation work pauses after each transition and when the app is hidden. Reduced Motion keeps the selection feedback still."],"normal"],
   ["70.1","22 November 2026","Save cover after the Pager team changes",["A stored seven-nurse draw no longer prevents saving valid cover and agreed Pager parts after staffing changes.","Swap assignments shows active arrangements for the current team."],"normal"],
   ["70.0","22 November 2026","Agree Pager parts with six nurses",["Six-nurse nights show a shared Pager vacancy while cover is open.","Once the two Pager nurses agree, choose who takes First Part in Changes. The app shows who takes Second Part and saves both together."],"normal"],

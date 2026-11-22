@@ -7,7 +7,10 @@ for(const theme of ['light','dark'])for(const width of [320,390,430])test(`share
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.evaluate(theme=>{applyTheme(theme==='dark');show('today')},theme);
  expect(await page.locator('main').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
- expect(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe(theme==='dark'?'rgb(14, 20, 30)':'rgb(243, 245, 248)');
+ expect(await page.locator('body').evaluate(el=>{
+  const expected=document.createElement('span');expected.style.backgroundColor='var(--surface-primary)';el.append(expected);
+  const matches=getComputedStyle(el).backgroundColor===getComputedStyle(expected).backgroundColor;expected.remove();return matches;
+ })).toBe(true);
  await page.evaluate(()=>setSharedSyncState('reconnecting','Reconnecting live updates…'));
  await expect(page.locator('#syncStatus')).toHaveAttribute('data-status-tone','info');
  expect(await page.locator('#syncStatus').evaluate(el=>getComputedStyle(el).color)).toBe(theme==='dark'?'rgb(144, 201, 255)':'rgb(23, 102, 165)');
@@ -25,10 +28,13 @@ for(const theme of ['light','dark'])for(const width of [320,390,430])test(`share
  await expect(page.locator('#absenceFormExperience .staffingSheet')).toHaveAttribute('open','');
  expect(await page.locator('#absenceFormExperience .staffingSheet').evaluate(el=>el.contains(document.activeElement))).toBe(true);
  await page.keyboard.press('Escape');await expect(page.locator('#absenceFormExperience .staffingSheet')).toHaveCount(0);
- await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();await page.locator('#profileExperience details').filter({hasText:'Photo & avatar'}).locator('summary').click();
- expect(await page.locator('#profilePhotoInitial').evaluate(el=>getComputedStyle(el).color)).toBe(theme==='dark'?'rgb(145, 191, 255)':'rgb(0, 102, 204)');
+ await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});await expect(page.locator('#profileName')).toBeVisible();
+ expect(await page.locator('#profilePhotoInitial').evaluate(el=>{
+  const expected=document.createElement('span');expected.style.color='var(--accent-primary)';el.append(expected);
+  const matches=getComputedStyle(el).color===getComputedStyle(expected).color;expected.remove();return matches;
+ })).toBe(true);
  await page.locator('#profileName').fill('Preview Nurse');await expect(page.locator('.personalisationPreviewCopy strong')).toHaveText('Preview Nurse');
- await page.getByRole('button',{name:'Our Shift',exact:true}).click();await page.locator('#shiftStudioName').fill('The Night Team');
+ await page.evaluate(()=>showAccountSection('shift'));await page.locator('#shiftStudioName').fill('The Night Team');
  await expect(page.locator('.shiftPreviewCard .shiftIdentityCopy strong')).toHaveText('The Night Team');
  await page.getByRole('button',{name:'Rose',exact:true}).click();await expect(page.locator('.shiftPreviewCard')).toHaveAttribute('data-shift-accent','rose');
  await page.locator('#profileExperience .profilePreviewDisclosure>summary').click();
@@ -183,4 +189,86 @@ test('system Reduced Motion avoids starting navigation feedback workers @iphone'
  await expect(bar).toHaveAttribute('data-feedback-renderer','css');
  await expect(bar.locator('canvas')).toHaveCount(0);
  await expect(bar.locator('[data-v="breaks"]')).toHaveAttribute('aria-current','page');
+});
+
+for(const theme of ['light','dark'])for(const width of [320,440,1280])test(`account settings redesign ${theme} ${width}px @iphone`,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await openReview(page);
+ await page.evaluate(theme=>{setThemePreference(theme);showAccountSheet()},theme);
+ const account=page.locator('#accountSheet');
+ await expect(page.locator('#accountSheetTitle')).toHaveText('Settings');
+ await expect(page.locator('#accountHomeHub')).toContainText('App settings');
+ await expect(page.locator('#accountAdminHubRow')).toBeHidden();
+ expect(await account.evaluate(node=>node.scrollWidth<=node.clientWidth+1)).toBe(true);
+ await account.screenshot({path:info.outputPath('settings-home.png')});
+ for(const section of ['profile','shift','preferences','notifications','security','help']){
+  await page.evaluate(section=>showAccountSection(section),section);
+  await expect(page.locator('#accountPageOutlet > *')).toHaveCount(1);
+  await expect(page.locator('#accountBackBtn')).toBeVisible();
+  await expect(page.locator('#closeAccountSheet')).toBeVisible();
+  expect(await page.locator('#accountPageOutlet').evaluate(node=>node.scrollWidth<=node.clientWidth+1)).toBe(true);
+  if(section==='preferences'){
+   await expect(page.locator('#profileTextScale')).toBeAttached();
+   await expect(page.getByRole('group',{name:'Text size',exact:true})).toBeVisible();
+   await expect(page.getByRole('group',{name:'Motion preference',exact:true})).toBeVisible();
+   await account.screenshot({path:info.outputPath('settings-appearance.png')});
+  }
+  if(section==='profile')await expect(page.locator('#changeProfilePhoto')).toBeVisible();
+  await page.locator('#accountBackBtn').click();
+ }
+ await page.evaluate(()=>{currentUserProfile.user_role='admin';populateAccountSheet()});
+ await expect(page.locator('#accountAdminHubRow')).toBeVisible();
+ await page.locator('#closeAccountSheet').click();await expect(account).toBeHidden();
+});
+
+test('Google account photo appears in the account button and settings @iphone',async({page})=>{
+ await page.route('https://lh3.googleusercontent.com/**',route=>route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNQaPjwHwAE5AKQBYzgxgAAAABJRU5ErkJggg==','base64')}));
+ await openReview(page);
+ await page.evaluate(async()=>{
+  currentUser={id:'review',app_metadata:{provider:'google'},user_metadata:{avatar_url:'https://lh3.googleusercontent.com/a/review'}};
+  currentPrivateProfile={...currentPrivateProfile,avatar_path:null,avatar_style:'photo'};
+  await refreshProfileAvatar();await showAccountSheet();
+ });
+ await expect(page.locator('#accountAvatar')).toBeVisible();
+ await expect(page.locator('#accountHomePhoto')).toBeVisible();
+ await page.locator('[data-account-section="profile"]').click();
+ await expect(page.locator('#profilePhotoPreview')).toBeVisible();
+ await expect(page.locator('#removeProfilePhoto')).toBeHidden();
+ await expect(page.locator('.accountPhotoControls')).toContainText('Google account photo');
+});
+
+test('profile and Appearance drafts share one verified save and survive page navigation @iphone',async({page})=>{
+ await openReview(page);
+ await page.evaluate(()=>{
+  currentUser={id:'review'};
+  supa.from=()=>({upsert(row){window.savedAccountProfile=row;return{select(){return{single:async()=>({data:row,error:null})}}}}});
+  showAccountSheet();showAccountSection('profile');
+ });
+ await page.locator('#profileName').fill('Draft nurse');
+ await page.evaluate(()=>showAccountSection('shift'));
+ await page.locator('#shiftStudioName').fill('Draft shift');
+ await page.evaluate(()=>showAccountSection('preferences'));
+ await page.getByRole('button',{name:'Large',exact:true}).click();
+ await page.getByRole('button',{name:'Reduced',exact:true}).click();
+ await expect(page.locator('#accountPreferencesSave #saveProfileBtn')).toBeVisible();
+ await page.locator('#saveProfileBtn').click();
+ await expect(page.locator('#profileMessage')).toContainText('saved');
+ const saved=await page.evaluate(()=>window.savedAccountProfile);
+ expect(saved.profile_name).toBe('Draft nurse');expect(saved.text_scale).toBe('large');expect(saved.motion_pref).toBe('reduced');
+ await expect(page.locator('#saveProfileBtn')).toBeHidden();
+ await page.evaluate(()=>showAccountSection('profile'));await expect(page.locator('#profileName')).toHaveValue('Draft nurse');
+ await expect(page.locator('#saveProfileBtn')).toBeHidden();
+ await page.evaluate(()=>showAccountSection('shift'));await expect(page.locator('#shiftStudioName')).toHaveValue('Draft shift');
+});
+
+test('unavailable Google photos fall back to initials @iphone',async({page})=>{
+ await page.route('https://lh3.googleusercontent.com/**',route=>route.abort());
+ await openReview(page);
+ await page.evaluate(async()=>{
+  currentUser={id:'review',identities:[{provider:'google',identity_data:{picture:'https://lh3.googleusercontent.com/a/unavailable'}}]};
+  currentPrivateProfile.avatar_path=null;
+  await refreshProfileAvatar();await showAccountSheet();
+ });
+ await expect(page.locator('#accountInitial')).toBeVisible();
+ await expect(page.locator('#accountHomeAvatar')).toBeVisible();
+ await expect(page.locator('#accountHomePhoto')).toBeHidden();
 });
