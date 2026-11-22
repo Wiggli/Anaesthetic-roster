@@ -1,5 +1,6 @@
 /* Retained release notes. Data only; presentation stays in foundation.js. */
 var RELEASE_HISTORY=[
+  ["70.0","22 November 2026","Agree Pager parts with six nurses",["Six-nurse nights show a shared Pager vacancy while cover is open.","Once the two Pager nurses agree, choose who takes First Part in Changes. The app shows who takes Second Part and saves both together."],"normal"],
   ["69.1","20 November 2026","Clock change notice one shift ahead",["Night flags the next rostered shift when its clocks change.","Timing details shows the adjusted theatre handover and the three equal elapsed-time Pager turns for seven-nurse cover."],"normal"],
   ["69.0","20 November 2026","Quiet startup and remembered tutorials",["Removed startup music, audio settings and the bundled track.","The introductory tutorial stays dismissed after completion, Skip or Escape.","App updates and tab changes keep guides available through Account without reopening them."],"normal"],
   ["68.1","19 November 2026","Clearer type and spacing",["Larger Pager names and times with room to wrap.","Aligned staffing, roster, chat and account text and controls.","Removed a width limit that squeezed roster status labels."],"normal"],

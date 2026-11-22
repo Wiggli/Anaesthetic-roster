@@ -47,6 +47,7 @@ type BreakSummary = {
 };
 
 type NightRole = {
+  pagerOrder?: boolean;
   key: string;
   label: string;
   names: string;
@@ -863,9 +864,9 @@ function NightRoles({ model }: { model: NightSummary }) {
         return <div className="rosterRoleLine" key={role.key}><Pressable
           data-colleague-names={['Unassigned','Awaiting choice'].includes(role.names) ? '' : role.names}
           type="button"
-          onClick={needsCover ? () => goToChanges('allocation') : openRoleEditor}
+          onClick={needsCover || role.pagerOrder ? () => goToChanges('allocation') : openRoleEditor}
           className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
-          aria-label={needsCover ? `Assign cover for ${role.label}` : `Change this night's ${role.label} allocation`}
+          aria-label={needsCover ? `Assign cover for ${role.label}` : role.pagerOrder ? 'Review shared Pager parts' : `Change this night's ${role.label} allocation`}
         >
           <span className="rosterRoleMark">{role.label}</span>
           <span className="rosterRowCopy">

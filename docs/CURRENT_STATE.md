@@ -8,7 +8,7 @@ This file is the short continuity note for the Anaesthetic Night Roster. It is i
 - `docs/PRODUCT_AUDIT.md` tracks the standing production-improvement brief, verified findings and remaining audit work; resume from the earliest unresolved priority.
 - `release.json` is the source of truth for the deployable app version and release notes.
 - `.project-state.json` contains machine-readable release, schema, verification and CI continuity data.
-- The current database contract is schema 57. Any later schema change must be a new forward-only migration and must update the machine-readable state.
+- The current database contract is schema 58. Any later schema change must be a new forward-only migration and must update the machine-readable state.
 - `AGENTS.md` contains the permanent product, clinical, security, design and deployment invariants.
 
 ## Runtime ownership
@@ -69,3 +69,5 @@ Release 68.1 standardises supporting type and spacing, removes a roster-badge wi
 Release 69.0 removes startup music and its settings/assets. Intro completion and dismissal persist across updates, returning saved-night devices open quietly, and normal navigation does not trigger feature-guide modals. Manual guides remain in Account and clock-change help retains date-specific acknowledgement. Education content generations are main 18/account 9; the generation number does not force the full tour to replay. Hero, allocation and timing implementations retain 68.1 ownership.
 
 Release 69.1 shows a persistent in-app notice on the published roster row immediately before a night affected by Malta’s clock change. Timing details opens the affected night’s guide while keeping the selected shift in place. Seven-nurse Pager guidance uses the existing three-way elapsed-time calculation. The live hero, theatre handover, Pager draw save path and existing live device notification are unchanged.
+
+Release 70.0 records the agreed two-nurse Pager order on six-nurse roster dates from 21 November 2026. Choices in Changes save atomically with cover through the existing guarded finaliser. Schema 58 validates the proposed pair against current staffing and allows an earlier pair to be superseded. Earlier nights retain their historical rule, and the three-way draw uses its existing save path.

@@ -1,11 +1,11 @@
 {
-  "version": "69.1",
-  "date": "20 November 2026",
-  "title": "Clock change notice one shift ahead",
-  "summary": "See the clock change on the preceding rostered night, with theatre and Pager timings.",
+  "version": "70.0",
+  "date": "22 November 2026",
+  "title": "Agree Pager parts with six nurses",
+  "summary": "Choose who takes Pager First Part and save both parts with the night plan.",
   "changes": [
-    "Night flags the next rostered shift when its clocks change.",
-    "Timing details shows the adjusted theatre handover and the three equal elapsed-time Pager turns for seven-nurse cover."
+    "Six-nurse nights show a shared Pager vacancy while cover is open.",
+    "Once the two Pager nurses agree, choose who takes First Part in Changes. The app shows who takes Second Part and saves both together."
   ],
   "update_policy": "normal"
 }
