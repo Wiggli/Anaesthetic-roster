@@ -246,3 +246,5 @@ The six-nurse cover save failed because the database validated a stored seven-pe
 Reproduced the production error in isolated PostgreSQL, applied the forward repair, and verified the screenshot's current cover and order. Checks retain rejection of inactive names, duplicate cover, repeated Pager names, missing agreement, and an invalid ordinary override. The validator stays private. The deterministic release gate passes. Production staffing records were read for diagnosis and remain unchanged by the repair.
 
 The stale-draw browser case also exposed an outdated saved-result badge after returning to seven nurses. Saved draw status now requires all current assignments to match the persisted draw.
+
+Release 70.1 deployment encountered artifact metadata propagation delay, followed by duplicate github-pages uploads during the retry. Pages uploads now use the run-attempt number in their name, and deployment uses the same name after a short metadata propagation wait. The tested pages-dist artifact remains the deployment input.
