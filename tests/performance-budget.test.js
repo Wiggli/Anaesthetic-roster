@@ -7,7 +7,7 @@ const size = file => fs.statSync(path.join(root, file)).size;
 const kib = value => Math.round(value / 1024);
 
 const budgets = {
-  'app-ui.js': 501 * 1024, // Includes the six-nurse Pager editor and save adapter.
+  'app-ui.js': 502 * 1024, // Retains the 71.0 release entry and guide text.
   'app-core.js': 100 * 1024,
   'runtime-foundation.js': 64 * 1024,
   'chat.js': 100 * 1024,

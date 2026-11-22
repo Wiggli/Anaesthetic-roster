@@ -57,3 +57,7 @@ console.log('Pages artifact, installed identity and custom worker checks passed.
 
 assert.equal(fs.readdirSync(path.join(dist, 'assets')).some(file => /mundian-opening.*\.mp3$/.test(file)), false, 'startup music must be absent from the deployed app');
 assert.doesNotMatch(worker, /mundian-opening.*\.mp3/, 'startup music must be absent from the offline cache');
+
+const feedbackWorker = fs.readdirSync(path.join(dist, 'assets')).find(file => /^dock-feedback\.worker-.*\.js$/.test(file));
+assert.ok(feedbackWorker, 'navigation feedback worker must ship in the build');
+assert.ok(worker.includes(feedbackWorker), 'the navigation worker must be available in the offline app shell');

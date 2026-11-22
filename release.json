@@ -1,11 +1,11 @@
 {
-  "version": "70.1",
+  "version": "71.0",
   "date": "22 November 2026",
-  "title": "Save cover after the Pager team changes",
-  "summary": "Current cover saves after a previous seven-nurse Pager draw becomes outdated.",
+  "title": "Smoother navigation feedback",
+  "summary": "The selected tab moves with a short worker-rendered highlight on supported devices.",
   "changes": [
-    "A stored seven-nurse draw no longer prevents saving valid cover and agreed Pager parts after staffing changes.",
-    "Swap assignments shows active arrangements for the current team."
+    "Navigation uses OffscreenCanvas for the selection highlight on supported browsers, with a CSS fallback.",
+    "Animation work pauses after each transition and when the app is hidden. Reduced Motion keeps the selection feedback still."
   ],
   "update_policy": "normal"
 }

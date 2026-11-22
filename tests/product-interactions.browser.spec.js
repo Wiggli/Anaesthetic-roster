@@ -127,3 +127,60 @@ for (const theme of ['light','dark']) test(`Chat controls stay reachable with a 
  await page.locator('#chatBackBtn').click({trial:true});expect((await page.locator('#chatBackBtn').boundingBox()).y).toBeGreaterThanOrEqual(59);
  await page.screenshot({path:testInfo.outputPath(`chat-${theme}-private.png`)});
 });
+
+for(const theme of ['light','dark'])for(const width of [320,440,1280])test(`worker navigation feedback ${theme} ${width}px @iphone`,async({page},info)=>{
+ await page.setViewportSize({width,height:844});
+ await openReview(page);
+ await page.evaluate(theme=>setThemePreference(theme),theme);
+ const bar=page.locator('.bottom');
+ await expect(page.locator('[data-react-navigation="ready"]')).toHaveCount(1);
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await bar.locator('[data-v="breaks"]').click();
+ await expect(bar.locator('[data-v="breaks"]')).toHaveAttribute('aria-current','page');
+ await expect(bar).toHaveAttribute('data-feedback-renderer','worker');
+ await expect(bar).not.toHaveAttribute('data-feedback-animating');
+ await expect(page.locator('.dockRefreshBoost')).toHaveCount(0);
+ expect(await bar.locator('canvas').evaluate(canvas=>canvas.width>0&&canvas.height>0)).toBe(true);
+ await bar.screenshot({path:info.outputPath('navigation-feedback.png')});
+ const bounds=await bar.boundingBox();
+ expect(bounds.width).toBeLessThanOrEqual(width+1);
+ await bar.locator('[data-quick-rudder]').click();
+ await expect(page.locator('#quickActionsSheet')).toBeVisible();
+ await page.locator('#closeQuickActionsSheet').click();
+ await expect(bar.locator('[data-v="breaks"]')).toHaveAttribute('aria-current','page');
+ await page.evaluate(()=>document.body.classList.add('personalMotionReduced'));
+ await expect(bar).toHaveAttribute('data-feedback-renderer','css');
+ await expect(bar).not.toHaveAttribute('data-feedback-animating');
+ await bar.locator('[data-v="today"]').click();
+ await expect(bar.locator('[data-v="today"]')).toHaveAttribute('aria-current','page');
+ await page.evaluate(()=>document.body.classList.remove('personalMotionReduced'));
+ await bar.locator('[data-v="changes"]').click();
+ await expect(bar).toHaveAttribute('data-feedback-renderer','worker');
+ await expect(bar).not.toHaveAttribute('data-feedback-animating');
+ expect(errors).toEqual([]);
+});
+
+for(const failure of ['unsupported','worker-error','worker-download'])test(`navigation feedback survives ${failure} @iphone`,async({page})=>{
+ await page.addInitScript(failure=>{
+  if(failure==='unsupported')Object.defineProperty(HTMLCanvasElement.prototype,'transferControlToOffscreen',{value:undefined});
+  else if(failure==='worker-error')window.Worker=class{constructor(){throw new Error('Worker blocked for fixture')}};
+ },failure);
+ if(failure==='worker-download')await page.route('**/assets/dock-feedback.worker-*.js',route=>route.abort());
+ await openReview(page);
+ const bar=page.locator('.bottom');
+ await bar.locator('[data-v="breaks"]').click();
+ await expect(bar).toHaveAttribute('data-feedback-renderer','css');
+ await expect(bar.locator('[data-v="breaks"]')).toHaveAttribute('aria-current','page');
+ await expect(bar.locator('.dockSelectionLens')).toBeVisible();
+ await expect(page.locator('.dockRefreshBoost')).toHaveCount(0);
+});
+
+test('system Reduced Motion avoids starting navigation feedback workers @iphone',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await openReview(page);
+ const bar=page.locator('.bottom');
+ await bar.locator('[data-v="breaks"]').click();
+ await expect(bar).toHaveAttribute('data-feedback-renderer','css');
+ await expect(bar.locator('canvas')).toHaveCount(0);
+ await expect(bar.locator('[data-v="breaks"]')).toHaveAttribute('aria-current','page');
+});

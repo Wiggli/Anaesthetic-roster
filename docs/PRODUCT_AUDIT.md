@@ -248,3 +248,11 @@ Reproduced the production error in isolated PostgreSQL, applied the forward repa
 The stale-draw browser case also exposed an outdated saved-result badge after returning to seven nurses. Saved draw status now requires all current assignments to match the persisted draw.
 
 Release 70.1 deployment encountered artifact metadata propagation delay, followed by duplicate github-pages uploads during the retry. Pages uploads now use the run-attempt number in their name, and deployment uses the same name after a short metadata propagation wait. The tested pages-dist artifact remains the deployment input.
+
+### Release 71.0 · Worker-rendered navigation feedback
+
+Applied the OffscreenCanvas placeholder approach described at https://rida.dev/blog/bypassing-ios-safari-60-fps-limit to the bottom navigation selection highlight. The highlight moves beneath ordinary semantic buttons. A worker draws a 240ms transition at a requested cadence of 120Hz, independently of main-thread requestAnimationFrame. The brief iOS scroll/CSS compositor boost stops on settlement or after 400ms. No animation timer runs while the highlight is idle. Visibility, sign-out and Reduced Motion pause or release the rendering work. Worker creation, transfer or loading failure retains CSS feedback and working navigation.
+
+The source technique reports high-refresh behaviour on iOS. This implementation has not been measured on a physical ProMotion iPhone and does not establish 120 displayed frames per second or battery impact. It applies to the decorative tab highlight. Existing DOM animations retain their browser-controlled cadence. Unit coverage exercises worker settlement and pause cancellation. Browser coverage checks selection, Actions, small and wide layouts, both themes, failure fallbacks and personal/system Reduced Motion. The generated worker is included in the offline shell.
+
+The full deterministic gate and 24 focused Chromium cases pass. Light/dark dock screenshots were inspected alongside DOM labels and geometry, because the headless image renderer omits text glyphs. Routing, keyboard access and badges remain covered through the normal navigation controls. The clinical presentation, domain and timing sources match 70.1.
