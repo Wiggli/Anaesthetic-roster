@@ -1,6 +1,4 @@
-import { productMotion, useProductReducedMotion } from './product-motion';
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
-import { LayoutGroup, motion, type HTMLMotionProps } from 'motion/react';
+import type { ComponentPropsWithRef, CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
 export function cx(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(' ');
@@ -12,14 +10,11 @@ export function Pressable({
   children,
   className = '',
   ...props
-}: HTMLMotionProps<'button'> & { children: ReactNode }) {
-  const reduced = useProductReducedMotion();
-  return <motion.button
+}: ComponentPropsWithRef<'button'> & { children: ReactNode }) {
+  return <button
     {...props}
-    whileTap={props.disabled || reduced ? undefined : { scale: 0.98 }}
-    transition={productMotion.settle}
-    className={cx('tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-blue-500/42 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
-  >{children}</motion.button>;
+    className={cx('productPressable tw:touch-manipulation tw:select-none tw:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-blue-500/42 tw:focus-visible:ring-offset-2 tw:focus-visible:ring-offset-[var(--bg)]', className)}
+  >{children}</button>;
 }
 
 export function Surface({
@@ -88,7 +83,7 @@ export function Avatar({ initial, src, size = 'md', className = '' }: {
     lg: 'tw:h-14 tw:w-14 tw:text-lg'
   };
   return <span className={cx(
-    'tw:grid tw:shrink-0 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-blue-500/12 tw:font-bold tw:text-[var(--accent-strong)] tw:ring-1 tw:ring-black/5 tw:dark:ring-white/10',
+    'tw:grid tw:shrink-0 tw:place-items-center tw:overflow-hidden tw:rounded-full tw:bg-blue-500/12 tw:font-semibold tw:text-[var(--accent-strong)] tw:ring-1 tw:ring-black/5 tw:dark:ring-white/10',
     sizes[size],
     className
   )}>
@@ -152,41 +147,24 @@ export function SegmentedControl<T extends string>({
   ariaLabel: string;
   compact?: boolean;
 }) {
-  const reduced = useProductReducedMotion();
-  return <LayoutGroup id={ariaLabel}>
-    <div
-      role="group"
-      aria-label={ariaLabel}
-      className="tw:grid tw:grid-cols-[repeat(var(--segment-count),minmax(0,1fr))] tw:gap-1 tw:rounded-[15px] tw:border tw:border-black/[0.045] tw:bg-black/[0.035] tw:p-1 tw:dark:border-white/[0.07] tw:dark:bg-white/[0.055]"
-      style={{ '--segment-count': options.length } as CSSProperties}
+  const selectedIndex = options.findIndex(option => option.value === value);
+  return <div
+    role="group"
+    aria-label={ariaLabel}
+    className={cx('productSegmentedControl', compact && 'isCompact')}
+    style={{ '--segment-count': options.length, '--segment-index': Math.max(0, selectedIndex) } as CSSProperties}
+  >
+    {selectedIndex >= 0 && <span className="productSegmentSelection" aria-hidden="true" />}
+    {options.map(option => <Pressable
+      key={option.value}
+      type="button"
+      aria-pressed={value === option.value}
+      onClick={() => onChange(option.value)}
     >
-      {options.map(option => {
-        const selected = value === option.value;
-        return <Pressable
-          key={option.value}
-          type="button"
-          aria-pressed={selected}
-          onClick={() => onChange(option.value)}
-          className={cx(
-            'tw:relative tw:isolate tw:min-w-0 tw:rounded-[14px] tw:bg-transparent tw:px-2 tw:text-center',
-            compact ? 'tw:min-h-11 tw:py-2' : 'tw:min-h-13 tw:py-2.5',
-            selected ? 'tw:text-[var(--text)]' : 'tw:text-[var(--muted)]'
-          )}
-        >
-          {selected ? <motion.span
-            layoutId="selection"
-            transition={reduced ? { duration: 0 } : productMotion.selection}
-            className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[12px] tw:border tw:border-black/[0.045] tw:bg-[var(--card)] tw:shadow-[0_1px_2px_rgba(0,0,0,0.035)] tw:dark:border-white/[0.07]"
-          /> : null}
-          <span className="tw:flex tw:items-center tw:justify-center tw:gap-1.5">
-            {option.icon}
-            <strong className="tw:whitespace-normal tw:text-[0.8rem] tw:font-bold">{option.label}</strong>
-          </span>
-          {!compact && option.detail ? <small className="tw:mt-1 tw:block tw:whitespace-normal tw:text-[0.7rem] tw:leading-tight tw:opacity-75">{option.detail}</small> : null}
-        </Pressable>;
-      })}
-    </div>
-  </LayoutGroup>;
+      <span>{option.icon}<strong>{option.label}</strong></span>
+      {!compact && option.detail && <small>{option.detail}</small>}
+    </Pressable>)}
+  </div>;
 }
 
 export function FieldShell({ label, hint, children, className = '' }: {
@@ -196,7 +174,7 @@ export function FieldShell({ label, hint, children, className = '' }: {
   className?: string;
 }) {
   return <label className={cx('tw:grid tw:min-w-0 tw:gap-1.5', className)}>
-    <span className="tw:text-[0.8rem] tw:font-bold tw:text-[var(--muted)]">{label}</span>
+    <span className="tw:text-[0.8rem] tw:font-semibold tw:text-[var(--muted)]">{label}</span>
     {children}
     {hint ? <small className="tw:text-[0.76rem] tw:leading-relaxed tw:text-[var(--muted)]">{hint}</small> : null}
   </label>;

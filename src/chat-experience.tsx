@@ -1,5 +1,5 @@
 import { useProductReducedMotion } from './product-motion';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -28,21 +28,14 @@ function conversationPreview(item: Conversation) {
 }
 
 function ConversationList({ items }: { items: Conversation[] }) {
-  const reduced = useProductReducedMotion();
   if (!items.length) return <Surface>
     <EmptyState title="No private chats yet" detail="Tap New private chat to message one colleague." />
   </Surface>;
 
   return <div className="reactConversationGroup chatInboxList">
-    <AnimatePresence initial={false}>
-      {items.map((item, index) => <motion.div
-        layout
+      {items.map(item => <div
         key={item.id}
         className="chatInboxListItem"
-        initial={reduced ? false : { opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={reduced ? undefined : { opacity: 0, y: -3 }}
-        transition={{ duration: reduced ? 0 : 0.15, delay: reduced ? 0 : Math.min(index * 0.016, 0.08) }}
       >
         <Pressable
           type="button"
@@ -60,8 +53,7 @@ function ConversationList({ items }: { items: Conversation[] }) {
             {item.unread > 0 && <Badge tone="accent" className="chatInboxUnread">{item.unread > 99 ? '99+' : item.unread}</Badge>}
           </span>
         </Pressable>
-      </motion.div>)}
-    </AnimatePresence>
+      </div>)}
   </div>;
 }
 

@@ -19,7 +19,7 @@
 #accountSheet button.accountHomeIdentity {
   display: flex; width: 100%; gap: 16px; padding: 20px; min-height: 108px;
   text-align: left; background: var(--surface-secondary); color: var(--text-primary);
-  border: 1px solid var(--border-subtle); border-radius: 22px;
+  border: 0; border-radius: 14px;
 }
 #accountSheet .accountHomeIdentity .accountHomeAvatar { width: 64px; height: 64px; flex: 0 0 64px; overflow: hidden; font-size: 24px; }
 .accountHomeAvatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -31,10 +31,10 @@
   margin: 0 0 8px 14px; font-size: var(--unified-type-caption);
   font-weight: 600; color: var(--text-secondary);
 }
-#accountSheet .accountHubList { background: var(--surface-secondary); border: 1px solid var(--border-subtle); border-radius: 18px; }
+#accountSheet .accountHubList { background: var(--surface-secondary); border: 0; border-radius: 14px; }
 #accountSheet .accountHubRow { min-height: 68px; padding: 13px 15px; gap: 13px; }
 #accountSheet .accountHubRow small { margin-top: 3px; font-weight: 400; }
-#accountSheet .accountHubRow .accountHubIcon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
+#accountSheet .accountHubRow .accountHubIcon { width: 28px; height: 28px; flex-basis: 28px; border-radius: 0; background: transparent; color: var(--text-secondary); }
 #accountSheet .accountHubRow i { font-size: 24px; font-weight: 400; }
 #accountSheet .accountSignOut { margin-top: -4px; min-height: 50px; border-radius: 16px; }
 #accountSheet .accountVersion { margin-top: -12px; }
@@ -43,7 +43,7 @@
 #accountSheet .accountGroupDescription { font-size: var(--unified-type-caption); margin-bottom: 16px; }
 #accountSheet .appearanceControl { margin: 0 0 20px; }
 #accountComfortHost .personalisationGroup, #accountSheet .personalisationGroup {
-  padding: 18px; border: 1px solid var(--border-subtle); border-radius: 18px;
+  padding: 18px; border: 0; border-radius: 14px;
   background: var(--surface-secondary); margin: 0 0 16px;
 }
 #accountSheet .personalisationGroup h4 { margin: 0 0 14px; font-size: var(--unified-type-body); }
@@ -68,7 +68,7 @@
 .accountLoginIdentity span { font-size: var(--unified-type-caption); color: var(--text-secondary); }
 .accountLoginIdentity strong { font-size: var(--unified-type-body); overflow-wrap: anywhere; }
 #accountSheet .securityGroup .accountSectionHeading > svg { display: none; }
-#accountSheet .accountActions .accountActionIcon { background: var(--unified-accent-soft); color: var(--accent-primary); }
+#accountSheet .accountActions .accountActionIcon { background: transparent; color: var(--text-secondary); }
 @media (max-width: 600px) { .accountSheet[open] { width: 100%; max-width: none; border-radius: 0; } }
 @media (prefers-reduced-motion: reduce) { .accountSheet[open] { animation: none; } }
 

@@ -1,13 +1,15 @@
 /* Information hierarchy: values and next actions first; explanations on demand. */
-.availableParts{margin:12px 0;padding:14px;border-radius:var(--unified-radius-card);box-shadow:none}
+.availableParts{margin:16px 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .availablePartsHeading{align-items:baseline;gap:8px}
 .availablePartsHeading h3{font-size:var(--unified-type-body)}
 .availablePartsHeading>span{font-size:var(--unified-type-caption);text-align:right}
 .availableParts.partsComplete{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;border:0;padding:6px 0;background:transparent}
 .partsComplete .availablePartsHeading{flex:1;min-width:0}
 .partsComplete .availablePartsContent:empty{display:none}
-.availablePartsContent ul{margin-top:10px;gap:6px}
-.availablePartsContent li{padding:9px 10px}
+.availablePartsContent ul{margin:8px 0 0;padding:0;gap:0;list-style:none}
+.availablePartsContent li{padding:12px 0;border:0;border-bottom:1px solid var(--border-subtle);border-radius:0;background:transparent}
+.availablePartsContent li strong{font-size:var(--unified-type-body);font-weight:600}
+.availablePartsContent li small{font-size:var(--unified-type-caption);color:var(--text-secondary)}
 .availablePartsContent p{font-size:var(--unified-type-caption);line-height:1.5}
 .availablePartsDecision{padding-top:10px;margin-top:10px;font-size:var(--unified-type-caption)}
 .availablePartsDecision>strong{display:block;font-size:var(--unified-type-body);line-height:1.4}
@@ -16,7 +18,7 @@
 .availablePartsNurses>summary::after{content:'›';margin-left:auto;font-size:20px}
 .availablePartsNurses[open]>summary::after{transform:rotate(90deg)}
 .availablePartsNurses p{margin:0 0 8px}
-.availablePartsAction{margin-top:8px}
+.availablePartsAction{margin-top:8px;padding:10px 0;border:0;border-radius:0;background:transparent;color:var(--accent-primary);font-size:var(--unified-type-body);font-weight:600;text-align:left;box-shadow:none}
 #changes[data-step="allocation"] .availablePartsAction,
 #changes[data-step="confirm"] .availablePartsAction,
 #changes[data-has-open-parts="true"] #continueToAllocationBtn{display:none}
@@ -196,11 +198,11 @@
 #today #nightStatusRow > .nightSignal { padding: 0 0 6px; }
 #today .nightTeamDetails { border: 0; }
 #today .nightTeamDetails > summary { display: none; }
-#today .nightSituationTimeline { background: var(--surface-secondary); border-radius: var(--unified-radius-card); overflow: hidden; }
+#today .nightSituationTimeline { background: transparent; border: 0; border-radius: 0; overflow: hidden; }
 #today .nightSituationTimeline .rosterRoleLine { padding: 0; min-height: 0; }
 #today .nightSituationTimeline .rosterRow { min-height: 52px; padding: 8px 12px; gap: 10px; }
 #today .nightSituationTimeline .rosterRoleMark { width: auto; min-width: 0; max-width: none; color: var(--text-secondary); border: 0; border-radius: 0; box-shadow: none; background: transparent; font-size: var(--unified-type-micro); }
-#today .nightSituationTimeline .rosterRowPeople { font-size: var(--unified-type-body); }
+#today .nightSituationTimeline .rosterRowPeople { font-size: var(--unified-type-body); font-weight: 600; }
 #today .nightSituationTimeline .rosterRowMeta { font-size: var(--unified-type-micro); }
 #today .nightSituationTimeline .roleShortcutButton { margin-inline-end: 4px; background: transparent; }
 #today .fiveNurseSurface { padding: 10px 12px; box-shadow: none; }
@@ -348,7 +350,7 @@
 #breaks .coverageBoard { overflow: hidden; border: 0; border-radius: var(--unified-radius-card); background: var(--surface-secondary); }
 #breaks .coverageRow { padding: 12px 14px; }
 
-#roster .rosterExperienceCard { border: 0; border-radius: var(--unified-radius-card); padding: 0; background: var(--surface-secondary); color: var(--text-primary); }
+#roster .rosterExperienceCard { border: 0; border-bottom: 1px solid var(--border-subtle); border-radius: 0; padding: 0; background: transparent; color: var(--text-primary); }
 #roster .rosterNightSummary { display: grid; grid-template-columns: minmax(0,1fr) auto 16px; align-items: center; gap: 10px; min-height: 64px; padding: 12px 14px; cursor: pointer; list-style: none; }
 #roster .rosterNightSummary::-webkit-details-marker { display: none; }
 #roster .rosterNightSummary::after { content: '›'; font-size: 22px; color: var(--text-secondary); }

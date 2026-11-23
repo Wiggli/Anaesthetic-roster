@@ -1,12 +1,13 @@
 {
-  "version": "72.0",
-  "date": "22 November 2026",
-  "title": "Clearer account settings and Google photos",
-  "summary": "Find your profile, appearance and team settings in a simpler menu.",
+  "version": "73.0",
+  "date": "23 November 2026",
+  "title": "A quieter interface with smoother controls",
+  "summary": "Less visual clutter and more responsive everyday navigation.",
   "changes": [
-    "Settings opens with your profile card, grouped app settings and a separate Our shift page.",
-    "Appearance brings theme, text size, colour and motion together, with draft changes retained between pages.",
-    "Your Google account photo appears by default when you have no uploaded photo. Initials remain available."
+    "Available parts and roster details use clear rows and separators instead of nested cards.",
+    "Settings, Chat and Actions use quieter icons, consistent type and simpler surfaces.",
+    "Buttons and segmented controls use browser-driven motion, with fewer list animations and full Reduced Motion support.",
+    "Fixed navigation feedback repeatedly updating itself when Full roster is open."
   ],
   "update_policy": "normal"
 }

@@ -104,7 +104,11 @@ export function setupDockFeedback(bar: HTMLElement) {
     if (disposed) return;
     const visible = document.visibilityState === 'visible' && !document.body.classList.contains('authPending') &&
       !bar.classList.contains('dockScrollHidden') && !document.body.classList.contains('keyboardVisible');
-    bar.classList.toggle('dockFeedbackPaused', !visible);
+    const active = button || bar.querySelector<HTMLElement>(bar.classList.contains('actionsOpen') ? '[data-quick-rudder]' : 'button.active[data-v]');
+    const shouldPause = !visible || !active;
+    // Secondary pages have no active dock button. Do not remove and re-add
+    // the paused class: that feeds our own class observer indefinitely.
+    if (bar.classList.contains('dockFeedbackPaused') !== shouldPause) bar.classList.toggle('dockFeedbackPaused', shouldPause);
     if (!visible) {
       if (document.body.classList.contains('authPending') && worker) {
         window.clearTimeout(readyTimer);
@@ -120,10 +124,8 @@ export function setupDockFeedback(bar: HTMLElement) {
       stopBoost();
       return;
     }
-    const active = button || bar.querySelector<HTMLElement>(bar.classList.contains('actionsOpen') ? '[data-quick-rudder]' : 'button.active[data-v]');
     if (!active) {
       paused = true;
-      bar.classList.add('dockFeedbackPaused');
       worker?.postMessage({ type: 'pause' });
       stopBoost();
       return;

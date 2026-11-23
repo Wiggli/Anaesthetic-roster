@@ -1,11 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { useReducedMotion } from 'motion/react';
 
-export const productMotion = {
-  settle: { duration: 0.2, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] },
-  selection: { type: 'spring' as const, stiffness: 500, damping: 42, mass: 0.55 }
-};
-
 const listeners = new Set<() => void>();
 let preferenceObserver: MutationObserver | undefined;
 function subscribe(listener: () => void) {
