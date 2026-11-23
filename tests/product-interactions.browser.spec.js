@@ -272,3 +272,41 @@ test('unavailable Google photos fall back to initials @iphone',async({page})=>{
  await expect(page.locator('#accountHomeAvatar')).toBeVisible();
  await expect(page.locator('#accountHomePhoto')).toBeHidden();
 });
+
+for(const theme of ['light','dark'])for(const width of [320,440,1280])test(`restrained surfaces and native selection ${theme} ${width}px @iphone`,async({page},info)=>{
+ await page.setViewportSize({width,height:956});await openReview(page);
+ await page.evaluate(({theme,periods})=>{
+  setThemePreference(theme);rotationVersions=periods;rebuildCalculatedRoster();R=R.filter(n=>n.date>='2026-10-24'&&n.date<='2026-11-21');idx=R.findIndex(n=>n.date==='2026-11-01');schemaVersion=58;
+  nightOvertime[cur().date]=[{id:'a',nurse_name:'Example Overtime Nurse'},{id:'b',nurse_name:'Second Overtime Nurse'}];render();show('today');
+ },{theme,periods:require('./fixtures/establishment-periods.json')});
+ await expect(page.locator('#today .availablePartsContent li').first()).toBeVisible();
+ expect(await page.locator('#today .availablePartsContent li').first().evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+ expect(await page.locator('#today .teamOverviewGroup').evaluate(el=>getComputedStyle(el).borderRadius)).toBe('0px');
+ await page.screenshot({path:info.outputPath('restrained-night.png'),fullPage:true});
+ for(const view of ['changes','breaks','chat','roster']){
+  await page.evaluate(view=>show(view),view);
+  await expect(page.locator('#'+view)).toBeVisible();
+  expect(await page.locator('#'+view).evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+  if(view==='roster'){
+   await expect(page.locator('.rosterExperienceCard').first()).toBeVisible();
+   expect(await page.locator('.rosterExperienceCard').first().evaluate(el=>el.getAnimations().length)).toBe(0);
+   await expect(page.locator('.bottom')).toHaveClass(/dockFeedbackPaused/);
+  }
+  await page.screenshot({path:info.outputPath(`restrained-${view}.png`),fullPage:true});
+ }
+ await page.evaluate(()=>{showAccountSheet();showAccountSection('preferences')});
+ const group=page.locator('#appearanceExperience .productSegmentedControl');
+ await expect(group).toBeVisible();
+ for(const mode of ['Light','Dark','Automatic','Dark'])await group.getByRole('button',{name:mode}).click();
+ await expect(group.getByRole('button',{name:'Dark'})).toHaveAttribute('aria-pressed','true');
+ await expect.poll(()=>group.evaluate(el=>{
+  const selected=el.querySelector('[aria-pressed="true"]').getBoundingClientRect(),pill=el.querySelector('.productSegmentSelection').getBoundingClientRect();
+  return Math.max(Math.abs(selected.left-pill.left),Math.abs(selected.width-pill.width));
+ })).toBeLessThan(1);
+ expect(await group.locator('.productSegmentSelection').evaluate(el=>getComputedStyle(el).transitionProperty)).toBe('transform');
+ expect(await group.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+ await page.screenshot({path:info.outputPath('restrained-appearance.png')});
+ await page.evaluate(()=>document.body.classList.add('personalMotionReduced'));
+ expect(await group.locator('.productSegmentSelection').evaluate(el=>getComputedStyle(el).transitionDuration)).toBe('0s');
+ await page.locator('#closeAccountSheet').click();
+});

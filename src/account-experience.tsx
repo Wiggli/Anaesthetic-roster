@@ -146,7 +146,6 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
   const [shiftAccent, setShiftAccent] = useState<AccentKey>(shift?.accentKey || 'teal');
   const [shiftSymbol, setShiftSymbol] = useState<ShiftSymbol>(shift?.symbol || 'spark');
   const [shiftDirty, setShiftDirty] = useState(false);
-  const reduced = useProductReducedMotion() || motionPref === 'reduced';
   const photoUrl = photo.url;
   const initial = model.initial || '?';
   const displayName = previewName.trim() || model.approvedName || 'Your profile';
@@ -220,10 +219,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
     </>
   );
 
-  return <motion.section
-    initial={reduced ? false : { opacity: 0, y: 6 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={reduced ? { duration: 0 } : { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
+  return <section
     className="accountProfilePanel personalisationStudio"
     aria-labelledby="profileHeading"
   >
@@ -409,7 +405,7 @@ function ProfileEditor({ model, shift }: { model: ProfileExperience; shift?: Shi
         <button type="button" id="saveShiftPersonalisationBtn" onClick={() => act('shift-save')} className={'primary accountProfileSave ' + (shiftDirty || shift?.pendingPhoto ? '' : 'hidden')} disabled={!shift?.featureAvailable}>Save for everyone</button>
       </div>
     </Fragment>}
-  </motion.section>;
+  </section>;
 }
 
 function Appearance({ initial }: { initial: ThemeChoice }) {

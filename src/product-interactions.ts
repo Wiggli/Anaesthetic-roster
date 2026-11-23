@@ -10,7 +10,7 @@ export function closeProductDialog(dialog: HTMLDialogElement) {
   if (!dialog.open || dialog.dataset.closing === 'true') return;
   if (motionIsReduced() || typeof dialog.animate !== 'function') { dialog.close(); return; }
   dialog.dataset.closing = 'true';
-  const animation = dialog.animate([{ opacity: 1, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: 'translateY(16px) scale(.98)' }], { duration: 150, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  const animation = dialog.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(12px)' }], { duration: 150, easing: 'cubic-bezier(.2,.8,.2,1)' });
   const finish = () => { delete dialog.dataset.closing; if (dialog.open) dialog.close(); animation.cancel(); };
   animation.finished.then(finish, finish);
 }
@@ -98,7 +98,7 @@ function setupRefresh() {
       indicator.append(document.createElement('span'), document.createElement('b')); document.body.append(indicator);
     }
     indicator.hidden = false; indicator.dataset.state = state;
-    indicator.firstElementChild!.textContent = state === 'complete' ? '✓' : state === 'problem' ? '!' : '✦';
+    indicator.firstElementChild!.textContent = state === 'complete' ? '✓' : state === 'problem' ? '!' : '↻';
     indicator.lastElementChild!.textContent = label;
     indicator.style.transform = `translate(-50%,${Math.min(distance / 2, 32)}px)`;
   };

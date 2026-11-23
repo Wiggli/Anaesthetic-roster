@@ -1,5 +1,3 @@
-import { useProductReducedMotion } from './product-motion';
-import { motion } from 'motion/react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useState } from 'react';
 
@@ -31,7 +29,6 @@ function DetailRow({ detail }: { detail: RosterDetail }) {
 }
 
 function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: string }) {
-  const reduced = useProductReducedMotion();
   const [month, setMonth] = useState(selectedMonth || currentMonth());
   const [allMonths, setAllMonths] = useState(false);
   const [sort, setSort] = useState('name');
@@ -69,12 +66,9 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
     {!shown.length && <div className="rosterEmpty" role="status"><strong>No nights match this view</strong><p>Try another month, clear the search and staffing filter, or show all published months.</p><button type="button" onClick={() => { const search = document.getElementById('search') as HTMLInputElement; const filter = document.getElementById('filter') as HTMLSelectElement; if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); } if (filter) { filter.value = 'all'; filter.dispatchEvent(new Event('change', { bubbles: true })); } setAllMonths(true); }}>Clear filters and show all nights</button></div>}
 
     <div className="tw:grid tw:gap-3 tw:lg:grid-cols-2">
-    {shown.map((card, index) => <motion.details
+    {shown.map(card => <details
       key={`${card.date}-${card.index}`}
       data-roster-date={card.isoDate}
-      initial={reduced ? false : { opacity: 0, y: 7 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduced ? 0 : 0.2, delay: reduced ? 0 : Math.min(index * 0.02, 0.12) }}
       className="rosterExperienceCard"
     >
       <summary className="rosterNightSummary">
@@ -86,7 +80,7 @@ function Cards({ cards, selectedMonth }: { cards: RosterCard[]; selectedMonth?: 
         {card.details.map((detail, row) => <DetailRow key={`${detail.label}-${row}`} detail={detail} />)}
         <button type="button" className="rosterOpenNight" onClick={() => openNight(card.index)} aria-label={`Open roster for ${card.date}`}>Open night <span aria-hidden="true">›</span></button>
       </div>
-    </motion.details>)}
+    </details>)}
     </div>
   </div>;
 }
