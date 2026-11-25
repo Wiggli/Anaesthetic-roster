@@ -102,7 +102,7 @@ for(const theme of ['light','dark'])test(`seven nurses share Pager cover in ${th
   ];
   setThemePreference(theme);render();show('changes');
  },{periods,theme});
- await expect(page.locator('#changes')).toContainText('The remaining nurses join the Pager draw');
+ await expect(page.getByRole('region',{name:'Seven-nurse assignments'})).toContainText('The draw only decides which of the three Pager nurses takes each turn.');
  await expect(page.locator('[data-final-allocation="seventh"]')).toHaveCount(0);
  await expect(page.locator('[data-seventh-decision]')).toHaveCount(0);
  await page.evaluate(()=>{
@@ -258,13 +258,104 @@ test('one absence and two overtime save the agreed six-nurse Pager order with co
  });
  await expect(page.locator('#nightStatusRow')).toContainText('5 rostered − 1 absent + 3 overtime = 7 working');
  await expect(page.locator('#nightStatusRow')).not.toContainText('Available parts');
- await page.getByRole('button',{name:/Set up Pager draw/}).click();
+ await page.getByRole('button',{name:/Review assignments/}).click();
  await expect(page.locator('#changesAvailableParts')).toBeEmpty();
  await expect(page.locator('[data-final-allocation]')).toHaveCount(1);
- const proceed=page.getByRole('button',{name:'Save cover and go to draw'});
+ const proceed=page.getByRole('button',{name:'Save assignments and review Pager times'});
  await expect(proceed).toBeDisabled();
  await page.locator('[data-final-allocation="first1"]').selectOption('cover-c');
  await proceed.click();
  expect(await page.evaluate(()=>nightOvertime[cur().date].find(entry=>entry.id==='cover-c').allocation_key)).toBe('first1');
- await expect(page.locator('#nightPagerAction').getByRole('button',{name:/Draw Pager times/})).toBeVisible();
+ await expect(page.getByRole('dialog',{name:'Pager draw'})).toBeVisible();
+});
+
+async function sevenAssignmentFixture(page,{absence=false,fail=false}={}){
+ await openReview(page);
+ await page.evaluate(({periods,absence,fail})=>{
+  rotationVersions=periods;schemaVersion=EXPECTED_SCHEMA_VERSION;rebuildCalculatedRoster();idx=R.findIndex(r=>r.date==='2026-11-25');
+  const base=cur(),date=base.date;
+  nightOvertime[date]=[{id:'one',nurse_name:'Daniel Santucci'},{id:'two',nurse_name:'Andre Seychell'}];
+  if(absence){nightChanges[date]=[{id:'absent',absent_name:base.first1,reason:'Leave'}];nightOvertime[date].push({id:'three',nurse_name:'Third Cover Nurse'});}
+  window.assignmentWrites=0;window.pagerWrites=0;window.assignmentBefore=Object.fromEntries(['first1','first2','second1','second2'].map(k=>[k,base[k]]));
+  runRosterMutation=(_key,commit)=>commit('fixture-operation',0);
+  supa.rpc=async(name,args)=>{
+   if(fail)return{data:null,error:{message:'Fixture save unavailable',code:'XX000'}};
+   if(name==='finalise_night_plan_v49'){
+    window.assignmentWrites++;
+    for(const [key,id]of Object.entries(args.p_assignments||{}))nightOvertime[date].find(r=>r.id===id).allocation_key=key;
+    nightPlanStatuses[date]={published_at:new Date().toISOString(),revision:1};return{data:null,error:null};
+   }
+   if(name==='apply_night_role_override_v57'){
+    window.pagerWrites++;nightRoleOverrides[date]={assignments:args.p_assignments,reason:args.p_override_reason};return{data:null,error:null};
+   }
+   return{data:[],error:null};
+  };
+  readStoredAllocations=async()=>({matches:true,error:null});loadSharedData=async()=>{render();return true};notifyRosterUpdate=()=>{};
+  render();show('changes');
+ },{periods,absence,fail});
+}
+for(const theme of ['light','dark'])for(const width of [320,440,1280])test(`seven-person overtime review explains and saves assignments ${theme} ${width}px @iphone`,async({page},info)=>{
+ await page.setViewportSize({width,height:956});await page.emulateMedia({reducedMotion:'reduce'});await sevenAssignmentFixture(page);await page.evaluate(theme=>setThemePreference(theme),theme);
+ await expect(page.locator('#changesWorkflowState')).toHaveText('Review the 7 assignments');
+ await expect(page.locator('#overtimeList')).not.toContainText('Unassigned');
+ await expect(page.locator('#overtimeList')).toContainText('Proposed Pager team · not saved');
+ await page.getByRole('button',{name:'Review assignment for Daniel Santucci'}).click();
+ const review=page.getByRole('region',{name:'Seven-nurse assignments'});
+ await expect(review).toContainText('Proposed assignments · not saved yet');
+ await expect(review.locator('dd span')).toHaveCount(7);
+ await expect(review).toContainText('Daniel Santucci');await expect(review).toContainText('Andre Seychell');
+ expect(await page.locator('#changesAllocationPane').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+ await review.screenshot({path:info.outputPath('seven-assignment-review.png')});
+ await page.getByRole('button',{name:'Save assignments and review Pager times'}).click();
+ const sheet=page.getByRole('dialog',{name:'Pager draw'});await expect(sheet).toBeVisible();
+ expect(await page.evaluate(()=>window.assignmentWrites)).toBe(1);expect(await page.evaluate(()=>window.pagerWrites)).toBe(0);
+ await expect(sheet).toContainText('Theatre assignments stay unchanged');
+ await expect(sheet.locator('.pagerDrawTurnName')).toHaveText(['Awaiting draw','Awaiting draw','Awaiting draw']);
+ await sheet.getByRole('button',{name:'Draw Pager times',exact:true}).click();await expect(sheet.getByRole('status')).toHaveText('Saved',{timeout:10000});
+ expect(await page.evaluate(()=>window.pagerWrites)).toBe(1);
+ expect(await page.evaluate(()=>Object.entries(window.assignmentBefore).every(([key,name])=>nightRoleOverrides[cur().date].assignments[key]===name))).toBe(true);
+ await sheet.getByRole('button',{name:'Done',exact:true}).click();await page.evaluate(()=>show('changes'));
+ await expect(review).toContainText('Pager times are saved');
+ await expect(page.getByRole('button',{name:'Review assignment for Daniel Santucci'})).toHaveCount(0);
+});
+test('seven-person review updates theatre and Pager proposals from the selected nurse @iphone',async({page})=>{
+ await sevenAssignmentFixture(page,{absence:true});
+ const review=page.getByRole('region',{name:'Seven-nurse assignments'}),save=page.getByRole('button',{name:'Save assignments and review Pager times'});
+ await expect(save).toBeDisabled();await expect(review).toContainText('Choose cover above');
+ await page.locator('[data-final-allocation="first1"]').selectOption('one');
+ await expect(save).toBeEnabled();await expect(review.locator('dl>div').first()).toContainText('Daniel Santucci');
+ const pager=review.locator('dl>div').last();await expect(pager).not.toContainText('Daniel Santucci');await expect(pager).toContainText('Andre Seychell');await expect(pager).toContainText('Third Cover Nurse');
+ await page.locator('[data-final-allocation="first1"]').selectOption('three');await expect(pager).toContainText('Daniel Santucci');await expect(pager).not.toContainText('Third Cover Nurse');
+});
+test('failed assignment save retains the review and does not open or run a draw @iphone',async({page})=>{
+ await sevenAssignmentFixture(page,{fail:true});
+ await page.getByRole('button',{name:'Save assignments and review Pager times'}).click();
+ await expect(page.getByRole('region',{name:'Seven-nurse assignments'})).toContainText('not saved yet');
+ await expect(page.getByRole('dialog',{name:'Pager draw'})).toBeHidden();expect(await page.evaluate(()=>window.pagerWrites)).toBe(0);
+ await expect(page.getByRole('button',{name:'Save assignments and review Pager times'})).toBeEnabled();
+});
+
+test('theatre and Pager nurses can be swapped after saving and before the draw @iphone',async({page})=>{
+ await sevenAssignmentFixture(page);const first=await page.evaluate(()=>professionalName(cur().first1));
+ await page.getByRole('button',{name:'Save assignments and review Pager times'}).click();
+ const sheet=page.getByRole('dialog',{name:'Pager draw'});await expect(sheet).toBeVisible();
+ await sheet.getByRole('button',{name:'Change theatre / Pager team'}).click();
+ const editor=page.locator('.nightRoleEditor');await expect(editor).toHaveAttribute('open','');
+ await page.locator('[data-night-role="first1"]').selectOption('Daniel Santucci');
+ await page.locator('#nightRoleReason').fill('Agreed theatre cover');await page.locator('#saveNightRolesBtn').click();
+ const review=page.getByRole('region',{name:'Seven-nurse assignments'});
+ await expect(review.locator('dl>div').first()).toContainText('Daniel Santucci');
+ await expect(review.locator('dl>div').last()).toContainText(first);await expect(review.locator('dl>div').last()).not.toContainText('Daniel Santucci');
+ expect((await page.locator('#continueToAllocationBtn').boundingBox()).width).toBeGreaterThanOrEqual(44);
+ await page.locator('#continueToAllocationBtn').click();await expect(sheet).toBeVisible();
+ await expect(sheet.locator('.pagerDrawToken')).toContainText([first,'Andre Seychell']);
+ expect(await page.evaluate(()=>nightRoleOverrides[cur().date].reason)).toBe('Agreed theatre cover');
+ await expect(sheet.getByRole('status')).toHaveText('Ready to draw');
+});
+test('duplicate theatre choices cannot be saved in the seven-nurse review @iphone',async({page})=>{
+ await sevenAssignmentFixture(page,{absence:true});
+ await page.evaluate(()=>{nightChanges[cur().date].push({id:'second',absent_name:cur().first2,reason:'Leave'});nightOvertime[cur().date].push({id:'four',nurse_name:'Fourth Nurse'});render()});
+ await page.locator('[data-final-allocation="first1"]').selectOption('one');await page.locator('[data-final-allocation="first2"]').selectOption('one');
+ await expect(page.getByRole('button',{name:'Save assignments and review Pager times'})).toBeDisabled();
+ expect(await page.evaluate(()=>window.assignmentWrites)).toBe(0);
 });

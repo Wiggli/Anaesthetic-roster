@@ -914,7 +914,7 @@ export function renderNightExperience(model: NightSummary) {
   rootFor('nightPagerAction')?.render(model.pagerTombola
     ? <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} />
     : model.pagerDrawFlow && model.pagerCoverPending
-      ? <Pressable type="button" className="pagerDrawLauncher" onClick={() => goToChanges('allocation')}><span><strong>Set up Pager draw</strong><small>Save the cover assignments first</small></span><span aria-hidden="true">›</span></Pressable>
+      ? <Pressable type="button" className="pagerDrawLauncher" onClick={() => goToChanges('allocation')}><span><strong>Review assignments</strong><small>Check theatre cover and the three Pager nurses</small></span><span aria-hidden="true">›</span></Pressable>
       : null);
   rootFor('nightStatusRow')?.render(<><NightStatus model={model} />{!model.pagerDrawFlow && <AvailableParts model={model.availableParts} hideWhenComplete onAllocate={() => goToChanges('allocation')} />}</>);
   rootFor('alerts')?.render(<NightAlerts model={model} />);
