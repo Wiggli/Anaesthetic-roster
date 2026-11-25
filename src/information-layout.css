@@ -209,7 +209,7 @@
 
 #changes .staffingNext { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 12px; padding: 4px 12px; border-radius: 12px; background: var(--unified-accent-soft); }
 #changes .staffingNext > span { flex: 1 1 10rem; padding-block: 6px; font-weight: 600; }
-#changes .staffingNextLink { min-height: 44px; padding: 4px 0; color: var(--accent-primary); background: transparent; border: 0; box-shadow: none; font-weight: 650; }
+#changes .staffingNextLink { min-width: 44px; max-width: 100%; flex: 0 0 auto; min-height: 44px; padding: 4px 0; color: var(--accent-primary); background: transparent; border: 0; box-shadow: none; font-weight: 650; }
 #changes .staffingNextLink::after { content: ' ›'; }
 #changes #changesStaffingPane > .staffingSection { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 8px; align-items: center; padding: 4px 12px; }
 #changes #changesStaffingPane .stepHeader { margin: 0; }
@@ -440,3 +440,20 @@
 }
 #twoNursePagerOrder select { width: 100%; min-height: 44px; }
 #twoNursePagerOrder p { margin: 0; }
+
+/* Make the proposed seven-person team visible before any allocation is saved. */
+.sevenAssignmentReview { margin: 12px 0; }
+.sevenAssignmentReview > p, .sevenAssignmentDraw p { margin: 8px 0; color: var(--text-secondary); font-size: var(--unified-type-caption); line-height: 1.5; }
+.sevenAssignmentReview .sevenAssignmentState { color: var(--text-primary); font-weight: 600; }
+.sevenAssignmentGroups { margin: 12px 0; }
+.sevenAssignmentGroups > div { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.3fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--border-subtle); }
+.sevenAssignmentGroups dt { font-weight: 600; font-size: var(--unified-type-body); }
+.sevenAssignmentGroups dt small { display: block; margin-top: 4px; font-weight: 400; color: var(--text-secondary); font-size: var(--unified-type-caption); }
+.sevenAssignmentGroups dd { display: grid; gap: 6px; margin: 0; font-size: var(--unified-type-body); overflow-wrap: anywhere; }
+.sevenAssignmentDraw { padding-top: 14px; border-top: 1px solid var(--border-subtle); }
+.sevenAssignmentDraw h4 { margin: 0; font-size: var(--unified-type-body); }
+.sevenAssignmentDraw ol { margin: 10px 0; padding-left: 22px; color: var(--text-secondary); font-size: var(--unified-type-caption); font-variant-numeric: tabular-nums; }
+.sevenAssignmentDraw li { padding: 4px 0; }
+.overtimeRecordStatus { display: grid; justify-items: start; gap: 4px; }
+.pagerDrawExplanation { color: var(--text-secondary); font-size: var(--unified-type-caption); line-height: 1.5; }
+#changes .changesStepPane:focus { outline: none; }

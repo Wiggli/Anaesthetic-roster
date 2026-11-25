@@ -75,7 +75,7 @@ const plan={count:6,availableKeys:[],unresolved:[]};
 let tasks=[],needsShare=false,manual=false,pagerSaved=false;
 const workflowContext={
  changesViewPrepared:true,byId:control,document:{querySelector:control},
- canGroupPagerCover:()=>false,staffingCalculation:()=>'',workflowTaskDetails:()=>tasks,workflowNeedsConfirmation:()=>needsShare,workflowHasManualPlan:()=>manual,
+ sevenNurseAssignmentReview:()=>null,refreshSevenNurseAssignmentReview(){},canGroupPagerCover:()=>false,staffingCalculation:()=>'',workflowTaskDetails:()=>tasks,workflowNeedsConfirmation:()=>needsShare,workflowHasManualPlan:()=>manual,
  fourNurseTheatreRoles:()=>true,window:{sharedPagerStatus:()=>({saved:pagerSaved})},
  nightPlanStatuses:{},allocationSaveInFlight:false,formMessage(){},renderConfirmationPreview(){},updateConfirmationControls(){},
  pagerOrderForm:()=>null,usesAgreedPagerOrder:()=>false,renderPagerOrderForm(){}

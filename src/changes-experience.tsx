@@ -53,7 +53,14 @@ type RoleOverride = {
   periods?: { first: string; second: string };
 };
 
+type SevenNurseReview = {
+  date: string; ready: boolean; saved: boolean; drawSaved: boolean;
+  theatre: { key: string; label: string; name: string; period: string }[];
+  pager: string[]; periods: string[];
+};
+
 export type ChangesExperience = {
+  sevenNurseReview?: SevenNurseReview | null;
   groupPager?: boolean;
   simplifiedCover?: boolean;
   availableParts?: AvailablePartsModel;
@@ -89,7 +96,7 @@ function dispatchAction(detail: Record<string, unknown>) {
   window.dispatchEvent(new CustomEvent('roster:changes-action', { detail }));
 }
 
-function RecordList({ records, empty: _empty, simplifiedCover }: { records: StaffingRecord[]; empty: string; simplifiedCover?: boolean }) {
+function RecordList({ records, empty: _empty, review }: { records: StaffingRecord[]; empty: string; review?: SevenNurseReview | null }) {
   if (!records.length) return null;
 
   return <GroupedList className="changesRecordGroup tw:shadow-none">
@@ -111,9 +118,9 @@ function RecordList({ records, empty: _empty, simplifiedCover }: { records: Staf
           className="overtimeItem"
           title={record.name}
           subtitle={<><span className="overtimeRecordStatus">
-            {record.needsAllocation && simplifiedCover ? 'Unassigned' : record.needsAllocation
+            {record.needsAllocation && review ? <><span>{review.pager.includes(record.name) ? 'Proposed Pager team · not saved' : review.theatre.some(row => row.name === record.name) ? 'Proposed theatre cover · not saved' : 'Choose cover below'}</span><Pressable type="button" className="overtimeAllocateButton" aria-label={`Review assignment for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Review assignment <span aria-hidden="true">›</span></Pressable></> : record.needsAllocation
               ? <Pressable type="button" className="overtimeAllocateButton" aria-label={`Choose part for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Choose part <span aria-hidden="true">›</span></Pressable>
-              : <Badge tone="success">{record.status}</Badge>}
+              : <Badge tone="success">{review?.theatre.find(row => row.name === record.name)?.label || (review?.pager.includes(record.name) ? review.drawSaved ? `Pager · ${review.periods[review.pager.indexOf(record.name)]}` : 'Pager team · times to draw' : record.status)}</Badge>}
           </span></>}
           trailing={<span>
             <Pressable
@@ -159,12 +166,13 @@ function AllocationList({ model }: { model: ChangesExperience }) {
   }, [model]);
 
   if (model.roleOverride?.mode === '4' && !model.roleOverride.stored) return null;
+  if (model.sevenNurseReview && !model.allocations.length) return null;
   if (!model.allocations.length && !model.groupPager) return <Surface className="tw:shadow-none">
     <EmptyState title={model.allocationMessage || 'No allocation decisions are waiting'} />
   </Surface>;
 
   return <>
-   {model.groupPager && <p className="pagerCoverNote">Choose theatre cover below if needed. The remaining nurses join the Pager draw.</p>}
+   {model.groupPager && model.allocations.length > 0 && <p className="pagerCoverNote">Choose who covers each open theatre position. The other three nurses will share Labour Ward / Pager.</p>}
    {model.allocations.length > 0 && <GroupedList className="changesAllocationGroup tw:shadow-none">
     {model.allocations.map(row => <div
       key={model.date+':'+row.key+':'+row.selectedId}
@@ -185,6 +193,38 @@ function AllocationList({ model }: { model: ChangesExperience }) {
   </GroupedList>}
   </>;
 }
+
+function SevenNurseAssignmentReview({ review }: { review?: SevenNurseReview | null }) {
+  if (!review) return null;
+  const changeTeam = () => window.dispatchEvent(new CustomEvent('roster:quick-action', { detail: { action: 'roles' } }));
+  return <section className="sevenAssignmentReview" aria-label="Seven-nurse assignments">
+    <p className="sevenAssignmentState">{review.saved ? 'Assignments saved for this night' : 'Proposed assignments · not saved yet'}</p>
+    <p>Four nurses cover theatre and three share Labour Ward / Pager.</p>
+    <dl className="sevenAssignmentGroups">
+      {['first','second'].map(part => {
+        const rows = review.theatre.filter(row => row.key.startsWith(part));
+        return <div key={part}><dt>{part === 'first' ? 'First Part theatre' : 'Second Part theatre'}<small>{rows[0]?.period}</small></dt><dd>{rows.map(row => <span key={row.key}>{row.name || 'Choose cover above'}</span>)}</dd></div>;
+      })}
+      <div><dt>Labour Ward / Pager<small>Three nurses share the night</small></dt><dd>{review.pager.map(name => <span key={name}>{name}</span>)}{review.pager.length < 3 && <span>Remaining places depend on theatre cover above</span>}</dd></div>
+    </dl>
+    {review.saved ? <Pressable type="button" className="quietAction wide" onClick={changeTeam}>Change theatre / Pager team</Pressable> : <p className="sevenAssignmentHint">Save these assignments to continue. You can swap theatre and Pager nurses before drawing the times.</p>}
+    <div className="sevenAssignmentDraw">
+      <h4>{review.drawSaved ? 'Pager times are saved' : 'Next: draw the Pager times'}</h4>
+      <p>The draw only decides which of the three Pager nurses takes each turn. It does not change the theatre team.</p>
+      <ol>{review.periods.map(period => <li key={period}>{period}</li>)}</ol>
+      {review.saved && <Pressable type="button" className="primary wide" onClick={() => dispatchAction({ action: 'pager-draw' })}>{review.drawSaved ? 'View Pager times' : 'Draw Pager times'}</Pressable>}
+    </div>
+  </section>;
+}
+let currentChangesModel: ChangesExperience | undefined;
+function renderAssignmentReview(review?: SevenNurseReview | null) {
+  rootFor('sevenNurseAssignmentReview')?.render(<SevenNurseAssignmentReview review={review} />);
+  if (currentChangesModel) rootFor('overtimeList')?.render(<RecordList records={currentChangesModel.overtime} review={review} empty="No overtime nurses recorded for this night." />);
+}
+window.addEventListener('roster:allocation-review', event => {
+  const detail = (event as CustomEvent).detail;
+  if (detail?.date === currentChangesModel?.date) renderAssignmentReview(detail.review);
+});
 
 function StaffingForms({ model, mode }: { model: ChangesExperience; mode: 'absence' | 'overtime' }) {
   const records = mode === 'absence' ? model.absences : model.overtime;
@@ -369,13 +409,14 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
 }
 
 export function renderChangesExperience(model: ChangesExperience) {
+  currentChangesModel = model;
   const parts = model.availableParts;
   const coverFormExplainsParts = model.allocations.length > 0 && !parts?.conditional && !parts?.coverageChoices.length && !parts?.shortage && !parts?.extras;
   rootFor('changesAvailableParts')?.render(model.simplifiedCover || coverFormExplainsParts ? null : <AvailableParts model={parts} hideWhenComplete />);
   rootFor('absenceFormExperience')?.render(<StaffingForms model={model} mode="absence" />);
   rootFor('overtimeFormExperience')?.render(<StaffingForms model={model} mode="overtime" />);
   rootFor('changeList')?.render(<RecordList records={model.absences} empty="No absences recorded for this night." />);
-  rootFor('overtimeList')?.render(<RecordList records={model.overtime} simplifiedCover={model.simplifiedCover} empty="No overtime nurses recorded for this night." />);
+  renderAssignmentReview(model.sevenNurseReview);
   rootFor('changeHistory')?.render(<History model={model} />);
   rootFor('allocationList')?.render(<AllocationList model={model} />);
   if (model.roleOverride) rootFor('nightRoleOverrideStep')?.render(<RoleOverrideEditor model={model.roleOverride} />);

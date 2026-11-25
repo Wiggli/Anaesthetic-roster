@@ -139,3 +139,31 @@ assert.equal(currentPager.second,'Andre S');
 assert.equal(currentPager.preview.first1,'Daniel S');
 assert.equal(c.nightRoleOverrideModel(shared).stored,false);
 delete c.allocationDrafts[shared.date];delete c.labourOrderDrafts[shared.date];
+
+// Assignment review must describe the existing save selections without mutating them.
+reset();c.allocationDrafts={};c.nightOvertime[shared.date]=[{id:'one',nurse_name:'Daniel Santucci'},{id:'two',nurse_name:'Andre Seychell'}];
+let reviewPlan=c.staffingPlan(shared),beforeReview=clone(c.nightOvertime[shared.date]);
+let review=c.sevenNurseAssignmentReview(shared,reviewPlan);
+assert.equal(review.ready,true);assert.equal(review.saved,false);assert.equal(review.drawSaved,false);
+assert.deepEqual(clone(review.pager),[c.professionalName(shared.pager),'Daniel Santucci','Andre Seychell']);
+for(const row of review.theatre)assert.equal(row.name,c.professionalName(shared[row.key]));
+assert.deepEqual(clone(c.nightOvertime[shared.date]),beforeReview,'reviewing must not save or reorder overtime');
+// A theatre vacancy remains an explicit decision, and changing it updates the proposed Pager team.
+c.nightChanges[shared.date]=[{absent_name:shared.first1}];c.nightOvertime[shared.date].push({id:'three',nurse_name:'Third Nurse'});
+review=c.sevenNurseAssignmentReview(shared,c.staffingPlan(shared));assert.equal(review.ready,false);assert.equal(review.theatre[0].name,'');
+c.allocationDrafts[shared.date]={first1:'one'};
+review=c.sevenNurseAssignmentReview(shared,c.staffingPlan(shared));assert.equal(review.ready,true);assert.equal(review.theatre[0].name,'Daniel Santucci');assert.ok(!review.pager.includes('Daniel Santucci'));
+// A saved draw's effective roles take precedence over the older overtime slot keys.
+reset();c.allocationDrafts={};c.nightOvertime[shared.date]=[{id:'one',nurse_name:'Daniel Santucci',allocation_key:'reliever'},{id:'two',nurse_name:'Andre Seychell',allocation_key:'seventh'}];
+c.nightRoleOverrides[shared.date]={reason:c.PAGER_TOMBOLA_REASON,assignments:{mode:'7',first1:shared.first1,first2:shared.first2,second1:shared.second1,second2:shared.second2,pager:'Andre Seychell',reliever:shared.pager,seventh:'Daniel Santucci'}};
+review=c.sevenNurseAssignmentReview(shared,c.staffingPlan(shared));assert.equal(review.drawSaved,true);assert.deepEqual(clone(review.pager),['Andre Seychell',c.professionalName(shared.pager),'Daniel Santucci']);
+console.log('Seven-nurse assignment review, theatre choices and saved draw precedence passed.');
+{
+ const vm=require('node:vm'),timers=[];let date=shared.date,view='changes',clicks=0;
+ const user={id:'review'},browser={currentUser:user,cur:()=>({date}),show:value=>{view=value},toast(){},document:{body:{classList:{contains:()=>false},getAttribute:()=>view},querySelector:()=>null},window:{setTimeout:fn=>timers.push(fn)}};
+ vm.runInNewContext(c.openPagerDrawForNight.toString(),browser);
+ browser.openPagerDrawForNight(date);assert.equal(timers.length,1);
+ date='2026-11-25';timers.shift()();assert.equal(timers.length,0,'a delayed handoff must stop after changing night');
+ browser.openPagerDrawForNight(date);browser.currentUser={id:'other'};timers.shift()();assert.equal(timers.length,0,'a delayed handoff must stop after changing account');
+ browser.document.querySelector=()=>({click:()=>clicks++});browser.openPagerDrawForNight(date);assert.equal(clicks,1,'the saved handoff opens the review launcher, without invoking the draw');
+}

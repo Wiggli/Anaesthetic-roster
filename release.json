@@ -1,13 +1,13 @@
 {
-  "version": "73.0",
-  "date": "23 November 2026",
-  "title": "A quieter interface with smoother controls",
-  "summary": "Less visual clutter and more responsive everyday navigation.",
+  "version": "74.0",
+  "date": "25 November 2026",
+  "title": "Clear overtime assignments",
+  "summary": "See who covers theatre and who joins Pager before saving.",
   "changes": [
-    "Available parts and roster details use clear rows and separators instead of nested cards.",
-    "Settings, Chat and Actions use quieter icons, consistent type and simpler surfaces.",
-    "Buttons and segmented controls use browser-driven motion, with fewer list animations and full Reduced Motion support.",
-    "Fixed navigation feedback repeatedly updating itself when Full roster is open."
+    "Each overtime nurse has a visible Review assignment action.",
+    "The seven-nurse review shows four theatre assignments and all three Pager nurses before saving.",
+    "Saving opens the Pager time review. The draw only starts when you choose Draw Pager times.",
+    "Pager results show the effective saved team and its times."
   ],
   "update_policy": "normal"
 }
