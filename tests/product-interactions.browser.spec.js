@@ -58,9 +58,13 @@ test('Actions reconnects, the active tab is labelled and launch keeps the dock c
 });
 
 test('Return updates acknowledge once and later updates still appear @iphone',async({page})=>{
- await openReview(page);await page.evaluate(()=>{const date=cur().date;activityOpenedThisSession[date]={previous:Date.now()-3600000,opened:Date.now()};overtimeHistory[date]=[{action:'added',nurse_name:'Example Nurse',changed_by:'Roster nurse',changed_at:new Date().toISOString()}];renderRecentActivity(date)});
- await expect(page.locator('.recentActivityDigest')).toContainText('1 change');await page.locator('.recentActivityPanel > summary').click();await page.getByRole('button',{name:'Got it',exact:true}).click();await expect(page.locator('.recentActivityDigest')).toHaveCount(0);
- await page.evaluate(()=>{render();show('changes');show('today')});await expect(page.locator('.recentActivityDigest')).toHaveCount(0);
+ await page.clock.setFixedTime(new Date('2026-11-25T20:00:00Z'));await openReview(page);
+ await page.evaluate(()=>{const date=cur().date;activityOpenedThisSession[date]={previous:Date.now()-3600000,opened:Date.now()};overtimeHistory[date]=[{action:'added',nurse_name:'Example Nurse',changed_by:'Roster nurse',changed_at:new Date().toISOString()}];renderRecentActivity(date)});
+ await expect(page.locator('.recentActivityDigest')).toContainText('1 change');await page.locator('.recentActivityPanel > summary').click();await expect(page.locator('#changes')).toBeVisible();
+ await page.evaluate(()=>{render();show('today')});await expect(page.locator('.recentActivityDigest')).toHaveCount(0);
+ await page.clock.setFixedTime(new Date('2026-11-25T20:01:00Z'));
+ await page.evaluate(()=>{overtimeHistory[cur().date].push({action:'added',nurse_name:'Later Nurse',changed_by:'Roster nurse',changed_at:new Date().toISOString()});renderRecentActivity(cur().date)});
+ await expect(page.locator('.recentActivityDigest')).toContainText('1 change');
 });
 
 test('Installed pull to refresh keeps content, resolves and cancels horizontal gestures @iphone',async({page})=>{

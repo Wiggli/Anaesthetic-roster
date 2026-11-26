@@ -24,6 +24,6 @@ export function AvailableParts({ model, onAllocate, hideWhenComplete }: { model?
       {!pending && model.extras > 0 && <p>{model.extras} additional {model.extras === 1 ? 'nurse' : 'nurses'} available as required.</p>}
       {model.unassigned.length > 0 && !model.complete && <details className="availablePartsNurses"><summary>{model.unassigned.length} overtime awaiting a part</summary><p>{model.unassigned.join(' · ')}</p></details>}
     </div>
-    {pending && onAllocate && <button type="button" className="availablePartsAction" onClick={onAllocate}>{model.conditional || model.coverageChoices.length ? 'Review allocation choices' : 'Allocate available parts'} <span aria-hidden="true">›</span></button>}
+    {pending && onAllocate && <button type="button" className="availablePartsAction" onClick={onAllocate}>Assignments <span aria-hidden="true">›</span></button>}
   </section>;
 }

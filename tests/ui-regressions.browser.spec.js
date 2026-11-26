@@ -171,8 +171,8 @@ for(const fallback of [false,true])for(const dark of [false,true])test(`startup 
   document.body.classList.toggle('dark',dark);document.body.classList.remove('appRevealing');
   const bar=document.querySelector('.bottom');void bar.offsetWidth;document.body.classList.add('appRevealing');
   const animation=bar.getAnimations().find(a=>a.animationName==='operationalDockReveal');
-  if(!animation)throw new Error('Startup dock animation missing');animation.pause();
-  return [0,120,300,600,880].map(time=>{animation.currentTime=time;const r=bar.getBoundingClientRect();return{time,centre:r.x+r.width/2,viewport:innerWidth,left:r.x,right:r.right}});
+  if(!animation && innerWidth>=1024 && !matchMedia('(prefers-reduced-motion: reduce)').matches)throw new Error('Desktop startup dock animation missing');animation?.pause();
+  return [0,120,300,600,880].map(time=>{if(animation)animation.currentTime=time;const r=bar.getBoundingClientRect();return{time,centre:r.x+r.width/2,viewport:innerWidth,left:r.x,right:r.right}});
  },dark);
  for(const frame of frames){expect(Math.abs(frame.centre-frame.viewport/2),`dock centre at ${frame.time}ms`).toBeLessThan(1);expect(frame.left).toBeGreaterThanOrEqual(0);expect(frame.right).toBeLessThanOrEqual(frame.viewport);}
  await page.screenshot({path:testInfo.outputPath('centred-startup-dock.png')});
@@ -204,6 +204,7 @@ for(const dark of [false,true])test('staffing activity refresh and review contra
  await expect.poll(()=>page.locator('#saveAllocationsBtn').evaluate(el=>getComputedStyle(el).color)).toBe('rgb(255, 255, 255)');expect(await page.locator('#saveAllocationsBtn').evaluate(el=>getComputedStyle(el).webkitTextFillColor)).toBe('rgb(255, 255, 255)');
  await page.evaluate(async()=>{historyLoadedDates={};changeHistory={};overtimeHistory={};supa.rpc=async()=>({error:{code:'NETWORK'}});await loadNightHistory(cur().date)});
  await expect(page.locator('#changeHistory')).toContainText('Activity could not be loaded');
+ await page.getByRole('button',{name:'Close assignments',exact:true}).click();
  await page.evaluate(()=>{document.querySelector('#changeHistory').closest('details').open=true;supa.rpc=async()=>({data:{items:[]},error:null})});await page.getByRole('button',{name:'Retry activity'}).click();await expect(page.locator('#changeHistory')).toContainText('No staffing change history');
 });
 
@@ -238,17 +239,17 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`avai
  await expect(page.locator('#nightStatusRow .availablePartsDecision')).toContainText('Michael Debono: First Part theatre · position 1 → Seventh nurse?');
  await page.locator('#nightStatusRow .availablePartsAction').click();
  await expect(page.locator('#changesAllocationPane')).toBeVisible();
- await page.locator('#changesStaffingPane').scrollIntoViewIfNeeded();
- await expect(page.locator('#changesAvailableParts')).toContainText('Reliever');
- await expect(page.getByRole('button',{name:'Choose part for Andre Seychell'})).toBeVisible();
+ await page.getByRole('button',{name:'Close assignments',exact:true}).click();
+ await expect(page.locator('#overtimeList')).toContainText('Awaiting assignment');
+ await expect(page.locator('#overtimeList .overtimeAllocateButton')).toHaveCount(0);
  const row=page.locator('.overtimeItem').first();
  expect(await row.evaluate(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('*')].filter(child=>!child.classList.contains('tw:sr-only')&&getComputedStyle(child).display!=='contents').every(child=>{const b=child.getBoundingClientRect();return b.right<=r.right+1&&b.left>=r.left-1})})).toBe(true);
  expect(await row.locator('strong').evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(120);
  expect(await page.locator('body').evaluate(el=>el.scrollWidth<=innerWidth+1)).toBe(true);
  await page.screenshot({path:testInfo.outputPath('available-parts-changes.png'),fullPage:true});
- await page.getByRole('button',{name:'Choose part for Andre Seychell'}).click();await expect(page.locator('#changesAllocationPane')).toBeVisible();
+ await page.locator('#continueToAllocationBtn').click();await expect(page.locator('#changesAllocationPane')).toBeVisible();
  await page.evaluate(()=>{nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',allocation_key:'reliever'},{id:'b',nurse_name:'Daniel Santucci',allocation_key:'seventh'}];render();show('today')});
- await expect(page.locator('#nightStatusRow .availableParts')).toContainText('All assigned');
+ await expect(page.locator('#nightStatusRow .availableParts')).toHaveCount(0);await expect(page.locator('#roles')).toContainText('Andre Seychell');
  await page.screenshot({path:testInfo.outputPath('available-parts-night.png'),fullPage:true});
 });
 
@@ -275,7 +276,7 @@ for(const width of [320,440,1280])for(const theme of ['light','dark'])test(`whol
  await page.evaluate(()=>{show('today');showQuickActions()});await capture('actions','#quickActionsSheet');await page.locator('#closeQuickActionsSheet').click();
  await page.evaluate(()=>{nightOvertime[cur().date]=[{id:'a',nurse_name:'Andre Seychell',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'},{id:'b',nurse_name:'Daniel Santucci',updated_by:'Andre',updated_at:'2026-11-01T11:00:00Z'}];render();show('today')});
  await capture('night-pending','#today');await page.evaluate(()=>{show('changes');setChangesStep('staffing',false)});await capture('changes','#changes');
- await page.locator('#changesAllocationPane').scrollIntoViewIfNeeded();await capture('roles','#changes');
+ await page.locator('#continueToAllocationBtn').click();await capture('roles','#assignmentSheet');await page.getByRole('button',{name:'Close assignments',exact:true}).click();
  await page.evaluate(()=>showAccountSheet());await capture('account','#accountSheet');
  for(const section of ['profile','preferences','security','notifications','help']){await page.evaluate(s=>showAccountSection(s),section);await capture('account-'+section,'#accountSheet')}
  fs.writeFileSync(`${out}/text-${width}-${theme}.json`,JSON.stringify(stats,null,2));
@@ -294,7 +295,7 @@ test('simplified views retain allocation choices, audit details and profile draf
  await expect(page.locator('#changes .workflowGuidance')).toHaveCount(0);
  await page.locator('[data-seventh-decision="overtime"]').click();await expect(page.locator('[data-seventh-decision="overtime"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#changesAllocationPane')).toContainText('Seventh nurse');
- await page.locator('#changesStaffingPane').scrollIntoViewIfNeeded();await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Close assignments',exact:true}).click();await expect(page.getByRole('button',{name:'Add absence',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'More actions for Andre Seychell'}).click();await expect(page.locator('#recordActionDetail')).toContainText('Added by Andre');await page.locator('#recordCancelAction').click();
  await page.getByRole('button',{name:'Add absence',exact:true}).click();await expect(page.getByRole('dialog',{name:'Add absence',exact:true})).toBeVisible();await page.getByRole('button',{name:'Close Add absence'}).click();
  await page.evaluate(()=>{showAccountSheet();showAccountSection('profile')});

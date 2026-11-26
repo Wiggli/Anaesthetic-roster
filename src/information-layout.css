@@ -21,7 +21,6 @@
 .availablePartsAction{margin-top:8px;padding:10px 0;border:0;border-radius:0;background:transparent;color:var(--accent-primary);font-size:var(--unified-type-body);font-weight:600;text-align:left;box-shadow:none}
 #changes[data-step="allocation"] .availablePartsAction,
 #changes[data-step="confirm"] .availablePartsAction,
-#changes[data-has-open-parts="true"] #continueToAllocationBtn{display:none}
 #changes .staffingSection,#changes #changesStaffingPane>.staffingSection{padding:14px 16px;margin:0;border-radius:0;box-shadow:none}
 #changes .staffingSection>.stepHeader{padding:0;margin:0 0 8px;min-height:0}
 #changes .staffingSection>.stepHeader h3{font-size:var(--unified-type-body)}
@@ -207,10 +206,6 @@
 #today .nightSituationTimeline .roleShortcutButton { margin-inline-end: 4px; background: transparent; }
 #today .fiveNurseSurface { padding: 10px 12px; box-shadow: none; }
 
-#changes .staffingNext { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 12px; padding: 4px 12px; border-radius: 12px; background: var(--unified-accent-soft); }
-#changes .staffingNext > span { flex: 1 1 10rem; padding-block: 6px; font-weight: 600; }
-#changes .staffingNextLink { min-width: 44px; max-width: 100%; flex: 0 0 auto; min-height: 44px; padding: 4px 0; color: var(--accent-primary); background: transparent; border: 0; box-shadow: none; font-weight: 650; }
-#changes .staffingNextLink::after { content: ' ›'; }
 #changes #changesStaffingPane > .staffingSection { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 8px; align-items: center; padding: 4px 12px; }
 #changes #changesStaffingPane .stepHeader { margin: 0; }
 #changes .staffingActionRow { justify-content: flex-end; gap: 0 6px; }
@@ -457,3 +452,30 @@
 .overtimeRecordStatus { display: grid; justify-items: start; gap: 4px; }
 .pagerDrawExplanation { color: var(--text-secondary); font-size: var(--unified-type-caption); line-height: 1.5; }
 #changes .changesStepPane:focus { outline: none; }
+
+/* One assignment destination, with the same hierarchy as an iOS grouped form. */
+#changes .assignmentEntry { margin: 0 0 16px; }
+#changes .assignmentEntryButton { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 72px; padding: 14px 16px; text-align: left; border: 1px solid var(--border-subtle); border-radius: 14px; background: var(--surface); color: var(--text-primary); box-shadow: none; }
+.assignmentEntryButton > span:first-child { display: grid; gap: 4px; min-width: 0; }
+.assignmentEntryButton strong { font-size: var(--unified-type-body); font-weight: 600; }
+.assignmentEntryButton small { color: var(--text-secondary); font-size: var(--unified-type-caption); font-weight: 400; line-height: 1.4; }
+.assignmentEntryButton > span:last-child { color: var(--text-secondary); font-size: 24px; }
+body:has(#assignmentSheet[open]) { overflow: hidden; }
+#changes .assignmentSheet { box-sizing: border-box; width: min(600px,calc(100% - 24px)); max-width: none; max-height: calc(var(--app-viewport-height,100dvh) - 32px); padding: 0; border: 1px solid var(--border-subtle); border-radius: 20px; background: var(--bg); color: var(--text-primary); overflow: hidden; }
+.assignmentSheet::backdrop { background: rgb(0 0 0 / .45); }
+#changes .assignmentSheet[open] { display: flex; flex-direction: column; }
+.assignmentSheetHeader { background: var(--bg); color: var(--text-primary); flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); }
+.assignmentSheetHeader > div { min-width: 0; }
+.assignmentSheetHeader h2 { overflow-wrap: anywhere; margin: 0; font-size: var(--unified-type-title); }
+.assignmentSheetHeader p { margin: 4px 0 0; color: var(--text-secondary); font-size: var(--unified-type-caption); }
+#closeAssignmentSheet { flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--unified-accent-soft); color: var(--accent-primary); font-size: 28px; }
+.assignmentSheetBody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; max-height: calc(var(--app-viewport-height,100dvh) - 140px); padding: 16px 20px max(20px,env(safe-area-inset-bottom)); }
+#changes .assignmentSheet .changesStepPane { padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+#changes .assignmentSheet .allocationSection { padding: 0; border: 0; background: transparent; }
+#changes .assignmentSheet #changesAvailableParts { display: none; }
+#changes:not(.fourNurseWorkflow) .assignmentSheet:has(#nightRoleOverrideStep:not([hidden]) .nightRoleEditor[open]) :is(.allocationSection,#changesConfirmPane,#currentNightAssignments) { display: none; }
+#changes:not(.fourNurseWorkflow) .assignmentSheet:has(#nightRoleOverrideStep:not([hidden]) .nightRoleEditor[open]) #sharedPagerEditor { display: none; }
+@media(max-width: 600px) {
+  #changes .assignmentSheet { width: 100%; max-height: calc(var(--app-viewport-height,100dvh) - max(16px,env(safe-area-inset-top))); margin: auto 0 0; border-radius: 20px 20px 0 0; border-bottom: 0; }
+  .assignmentSheetBody { max-height: calc(var(--app-viewport-height,100dvh) - max(16px,env(safe-area-inset-top)) - 94px); padding-inline: 16px; }
+}

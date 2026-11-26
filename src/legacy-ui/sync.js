@@ -320,6 +320,7 @@ async function reconcileApplication(reason){
 function updateOfflineControls(){
   var offline=!navigator.onLine||forcedOfflineSession,writeBlocked=sharedWritesBlocked(),ids=['saveAllocationsBtn','saveCoverAllocationsBtn','saveNightRolesBtn','resetNightRolesBtn','saveTeamVersionBtn','confirmTeamVersionBtn','previewExtendBtn','extendBtn'];
   ids.forEach(function(id){var el=byId(id);if(el)el.disabled=offline||writeBlocked||((id==='saveTeamVersionBtn'||id==='confirmTeamVersionBtn')&&teamPeriodSaving)||el.dataset.workflowBlocked==='true'});
+  var connection=byId('assignmentConnection');if(connection){connection.hidden=!offline&&!writeBlocked;connection.textContent=offline?'Offline · reconnect to save.':writeBlocked?sharedWriteNotice():'';}
   updateTeamSavingControls();
   var addAccount=byId('addAccountBtn');if(addAccount)addAccount.disabled=offline;
   var cover=byId('saveFiveCoverBtn');if(cover)cover.disabled=offline||writeBlocked;

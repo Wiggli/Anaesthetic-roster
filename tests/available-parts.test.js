@@ -160,7 +160,7 @@ review=c.sevenNurseAssignmentReview(shared,c.staffingPlan(shared));assert.equal(
 console.log('Seven-nurse assignment review, theatre choices and saved draw precedence passed.');
 {
  const vm=require('node:vm'),timers=[];let date=shared.date,view='changes',clicks=0;
- const user={id:'review'},browser={currentUser:user,cur:()=>({date}),show:value=>{view=value},toast(){},document:{body:{classList:{contains:()=>false},getAttribute:()=>view},querySelector:()=>null},window:{setTimeout:fn=>timers.push(fn)}};
+ const user={id:'review'},browser={byId:()=>null,currentUser:user,cur:()=>({date}),show:value=>{view=value},toast(){},document:{body:{classList:{contains:()=>false},getAttribute:()=>view},querySelector:()=>null},window:{setTimeout:fn=>timers.push(fn)}};
  vm.runInNewContext(c.openPagerDrawForNight.toString(),browser);
  browser.openPagerDrawForNight(date);assert.equal(timers.length,1);
  date='2026-11-25';timers.shift()();assert.equal(timers.length,0,'a delayed handoff must stop after changing night');

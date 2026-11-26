@@ -429,8 +429,8 @@ assert.doesNotMatch(html, /historyStep">4/, 'activity history must not appear as
 assert.match(html, /<strong>Activity<\/strong>/, 'staffing history must have a clear non-step label');
 assert.match(ui, /function updateStaffingActionAvailability\(\)[\s\S]*absence\.disabled=staffingSaveInFlight\|\|offline\|\|!absenceName\|\|!absenceName\.value[\s\S]*overtime\.disabled=staffingSaveInFlight\|\|offline\|\|!overtimeName\|\|!normaliseNurseName/, 'staffing actions must remain disabled until their required value is entered');
 assert.match(ui, /dirty=!!\(draft&&roleAssignmentsDiffer/, 'role adapter requires a genuine changed draft');
-assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save night-only change/, 'active typed role-save controls only appear for a changed draft');
-assert.match(ui, /function smartChangesStep\(base\)[\s\S]*if\(tasks\|\|plan\.unresolved\.length\)return'allocation'[\s\S]*workflowNeedsConfirmation\(base,tasks\)\)return'confirm'[\s\S]*return'staffing'/, 'Changes must smart-default to the step that actually needs attention');
+assert.match(fs.readFileSync(path.join(__dirname,'../src/changes-experience.tsx'),'utf8'), /model\.dirty &&[\s\S]*Unsaved night-only change[\s\S]*Save assignments/, 'active typed role-save controls only appear for a changed draft');
+assert.doesNotMatch(ui, /smartChangesStep/, 'Open Changes opens staffing rather than a second hidden assignment entry');
 assert.doesNotMatch(html, /data-changes-step=/, 'staffing, cover and review share a continuous page');
 assert.match(html, /id="changesWorkflowState" role="status" aria-live="polite"/, 'Changes announces the next action');
 assert.match(ui, /function localChangesDraftParts\(base\)[\s\S]*allocationDrafts\[date\][\s\S]*nightRoleOverrideDrafts\[date\][\s\S]*overtime entry/, 'unfinished local Changes work must be detected across allocation, role and staffing inputs');
@@ -642,7 +642,7 @@ assert.match(navigation, /data-quick-rudder[\s\S]*Quick actions[\s\S]*window\.sh
 assert.match(navigation, /target\.closest\('\[data-quick-rudder\]'\)\) return/, 'the rudder must not accidentally start a destination drag gesture');
 assert.match(ui, /function showQuickActions\(\)[\s\S]*roster:quick-actions/, 'Quick Actions must build its context from the live selected night before opening');
 assert.match(ui, /function performQuickAction\(action\)[\s\S]*show\('changes'\)[\s\S]*setChangesStep/, 'staffing Quick Actions must route into the existing Changes workflow instead of creating a mutation shortcut');
-assert.match(quickActionsExperience, /Add absence[\s\S]*Add overtime[\s\S]*Swap assignments[\s\S]*View breaks[\s\S]*Open Changes[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
+assert.match(quickActionsExperience, /Add absence[\s\S]*Add overtime[\s\S]*View breaks[\s\S]*Open Changes[\s\S]*New private message[\s\S]*Share the app/, 'the typed Quick Actions sheet must keep the compact operational action set');
 assert.match(ui, /type:item\.type,title:item\.title/, 'recent activity must expose its semantic type to the typed interface');
 assert.match(ui, /function openActivityDetail[\s\S]*item\.detail\|\|'No additional reason was recorded\.'/ , 'the activity detail sheet must retain the saved reason or allocation detail');
 assert.match(html, /id="activityDetailSheet"[\s\S]*id="activityDetailContent"/, 'recent activity must provide a labelled native-style detail sheet');
@@ -718,10 +718,10 @@ assert.doesNotMatch(retrySource, /hideLaunchRecovery\(/, 'retry must not hide al
 assert.doesNotMatch(ui, /online'[\s\S]{0,160}forcedOfflineSession\)forcedOfflineSession=false/, 'browser online status alone must not re-enable shared writes');
 assert.match(ui, /nurseCount:count,absenceCount:absenceCount,overtimeCount:overtimeCount/, 'Night must pass its derived clinical summary into the typed interface');
 assert.match(clinicalExperience, /function NightStatus[\s\S]*model\.nurseCount[\s\S]*model\.absenceCount[\s\S]*model\.overtimeCount[\s\S]*model\.taskCount[\s\S]*function PersonalNightCard/, 'the typed Night interface must preserve staffing, exceptions, tasks and the personal allocation surface');
-assert.match(clinicalExperience, /Review \{model\.taskCount\} \{model\.decisionTasks \? \(model\.taskCount === 1 \? 'allocation' : 'allocations'\) : 'confirmation'\}/, 'Night tasks must use an explicit allocation review label');
+assert.match(clinicalExperience, /className="nightSignalTask"[\s\S]*Assignments →/, 'Night tasks open the shared Assignments destination');
 assert.match(ui, /Saved for this night only\. The permanent rotation is unchanged\./, 'night-only role save must state its scope');
 const onboardingSequence = ui.slice(ui.indexOf('  return[', ui.indexOf('function onboardingPages')), ui.indexOf('\n  ]', ui.indexOf('function onboardingPages')));
-assert.match(ui, /function educationVersions\(\)[\s\S]*main:18[\s\S]*changes:14[\s\S]*breaks:8[\s\S]*chat:4/, 'guide content generations track the current tutorial without forcing completed tours to replay');
+assert.match(ui, /function educationVersions\(\)[\s\S]*main:18[\s\S]*changes:15[\s\S]*breaks:8[\s\S]*chat:4/, 'guide content generations track the current tutorial without forcing completed tours to replay');
 assert.ok(onboardingSequence.indexOf('First, which roster name is yours?') >= 0, 'first-use onboarding must begin by identifying the signed-in nurse');
 assert.ok(onboardingSequence.indexOf("featureEducationPage('night')") > onboardingSequence.indexOf('First, which roster name is yours?'), 'the tutorial must teach the current Night hierarchy after identity');
 assert.ok(onboardingSequence.indexOf("featureEducationPage('changes')") > onboardingSequence.indexOf("featureEducationPage('night')"), 'the tutorial must explain the current decision-first Changes workflow');
@@ -732,7 +732,7 @@ assert.ok(onboardingSequence.indexOf("featureEducationPage('account')") > onboar
 assert.ok(onboardingSequence.indexOf('You can always find your way back.') > onboardingSequence.indexOf("featureEducationPage('account')"), 'the tutorial must finish with share, install, updates and reusable help');
 assert.equal(onboardingSequence.includes('Optional profile'), false, 'optional profile setup forms must stay in Account rather than first-use onboarding');
 assert.equal(onboardingSequence.includes('Optional faster sign-in'), false, 'optional passkey setup must stay in Account rather than first-use onboarding');
-assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Find your part and the team\.[\s\S]*The centre \+ is your shortcut\.[\s\S]*Settings live under your avatar\.[\s\S]*See the wider roster\.[\s\S]*Team chat, when you need it\.[\s\S]*Staffing changes in one place\.[\s\S]*Your break, then the groups\./, 'the reusable guide must cover Night, Actions, Account, Full roster, Chat, Changes and Breaks');
+assert.match(ui, /function featureEducationPage\(key\)[\s\S]*Find your part and the team\.[\s\S]*The centre \+ is your shortcut\.[\s\S]*Settings live under your avatar\.[\s\S]*See the wider roster\.[\s\S]*Team chat, when you need it\.[\s\S]*Staffing first, assignments together\.[\s\S]*Your break, then the groups\./, 'the reusable guide must cover Night, Actions, Account, Full roster, Chat, Changes and Breaks');
 assert.match(ui, /function appGuidePage\(\)[\s\S]*Replay complete tutorial[\s\S]*Night[\s\S]*Changes[\s\S]*Actions[\s\S]*Breaks[\s\S]*Team Chat[\s\S]*Full roster[\s\S]*Account & Personalise[\s\S]*Share & install[\s\S]*What’s new & version history/, 'App Guide must expose the complete tutorial and all current feature topics');
 
 console.log('All roster, staffing, operational-night and PWA safety checks passed.');

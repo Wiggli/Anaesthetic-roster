@@ -37,6 +37,7 @@ type ChangesForms = {
 };
 
 type RoleOverride = {
+  saving?: boolean;
   notice?: string;
   mode?: string;
   present?: { value: string; label: string }[];
@@ -60,6 +61,7 @@ type SevenNurseReview = {
 };
 
 export type ChangesExperience = {
+  currentAssignments?: { label: string; value: string; detail: string }[];
   sevenNurseReview?: SevenNurseReview | null;
   groupPager?: boolean;
   simplifiedCover?: boolean;
@@ -118,8 +120,7 @@ function RecordList({ records, empty: _empty, review }: { records: StaffingRecor
           className="overtimeItem"
           title={record.name}
           subtitle={<><span className="overtimeRecordStatus">
-            {record.needsAllocation && review ? <><span>{review.pager.includes(record.name) ? 'Proposed Pager team · not saved' : review.theatre.some(row => row.name === record.name) ? 'Proposed theatre cover · not saved' : 'Choose cover below'}</span><Pressable type="button" className="overtimeAllocateButton" aria-label={`Review assignment for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Review assignment <span aria-hidden="true">›</span></Pressable></> : record.needsAllocation
-              ? <Pressable type="button" className="overtimeAllocateButton" aria-label={`Choose part for ${record.name}`} onClick={() => dispatchAction({ action: 'allocation' })}>Choose part <span aria-hidden="true">›</span></Pressable>
+            {record.needsAllocation ? <span>{review?.pager.includes(record.name) ? 'Proposed Pager team · not saved' : review?.theatre.some(row => row.name === record.name) ? 'Proposed theatre cover · not saved' : 'Awaiting assignment'}</span>
               : <Badge tone="success">{review?.theatre.find(row => row.name === record.name)?.label || (review?.pager.includes(record.name) ? review.drawSaved ? `Pager · ${review.periods[review.pager.indexOf(record.name)]}` : 'Pager team · times to draw' : record.status)}</Badge>}
           </span></>}
           trailing={<span>
@@ -166,7 +167,7 @@ function AllocationList({ model }: { model: ChangesExperience }) {
   }, [model]);
 
   if (model.roleOverride?.mode === '4' && !model.roleOverride.stored) return null;
-  if (model.sevenNurseReview && !model.allocations.length) return null;
+  if ((model.sevenNurseReview || model.currentAssignments?.length) && !model.allocations.length) return null;
   if (!model.allocations.length && !model.groupPager) return <Surface className="tw:shadow-none">
     <EmptyState title={model.allocationMessage || 'No allocation decisions are waiting'} />
   </Surface>;
@@ -196,7 +197,6 @@ function AllocationList({ model }: { model: ChangesExperience }) {
 
 function SevenNurseAssignmentReview({ review }: { review?: SevenNurseReview | null }) {
   if (!review) return null;
-  const changeTeam = () => window.dispatchEvent(new CustomEvent('roster:quick-action', { detail: { action: 'roles' } }));
   return <section className="sevenAssignmentReview" aria-label="Seven-nurse assignments">
     <p className="sevenAssignmentState">{review.saved ? 'Assignments saved for this night' : 'Proposed assignments · not saved yet'}</p>
     <p>Four nurses cover theatre and three share Labour Ward / Pager.</p>
@@ -207,12 +207,12 @@ function SevenNurseAssignmentReview({ review }: { review?: SevenNurseReview | nu
       })}
       <div><dt>Labour Ward / Pager<small>Three nurses share the night</small></dt><dd>{review.pager.map(name => <span key={name}>{name}</span>)}{review.pager.length < 3 && <span>Remaining places depend on theatre cover above</span>}</dd></div>
     </dl>
-    {review.saved ? <Pressable type="button" className="quietAction wide" onClick={changeTeam}>Change theatre / Pager team</Pressable> : <p className="sevenAssignmentHint">Save these assignments to continue. You can swap theatre and Pager nurses before drawing the times.</p>}
+    {!review.saved && <p className="sevenAssignmentHint">Save the team first, then review the Pager times. Use Edit assignments after saving to move someone between theatre and Pager.</p>}
     <div className="sevenAssignmentDraw">
       <h4>{review.drawSaved ? 'Pager times are saved' : 'Next: draw the Pager times'}</h4>
       <p>The draw only decides which of the three Pager nurses takes each turn. It does not change the theatre team.</p>
       <ol>{review.periods.map(period => <li key={period}>{period}</li>)}</ol>
-      {review.saved && <Pressable type="button" className="primary wide" onClick={() => dispatchAction({ action: 'pager-draw' })}>{review.drawSaved ? 'View Pager times' : 'Draw Pager times'}</Pressable>}
+      {review.saved && <Pressable type="button" className="primary wide" onClick={() => dispatchAction({ action: 'pager-draw' })}>{review.drawSaved ? 'View Pager times' : 'Continue to Pager draw'}</Pressable>}
     </div>
   </section>;
 }
@@ -364,18 +364,20 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
   if (model.notice) return <div className="time">{model.notice}</div>;
 
   return <details className="nightRoleEditor" open={model.mode === '4' || model.open}>
-    <summary>
-      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Swap assignments'}</b>{(model.stored || model.dirty || model.mode === '4') && <small>{model.summary}</small>}</span>
+    <summary onClick={event => { if (model.saving) event.preventDefault(); }}>
+      <span><b>{model.mode === '4' ? 'Theatre positions · 4 nurses' : 'Edit assignments'}</b>{(model.stored || model.dirty || model.mode === '4') && <small>{model.summary}</small>}</span>
       <span aria-hidden="true">›</span>
     </summary>
     <div className="nightRoleEditorBody">
       {model.mode === '4' && model.present?.length ? <div className="fourNursePresent"><strong>Present tonight · {model.present.length} nurses</strong><div className="fourNursePresentList">{model.present.map(name => <span key={name.value}>{name.label}</span>)}</div></div> : null}
       <p className="time">{model.guidance}</p>
+      <p id="nightRoleFeedback" className="formMessage" role="status" aria-live="polite"></p>
       <div className="editGrid">
         {model.keys.map(row => <label key={row.key} className={row.fullWidth ? 'fullWidth' : ''}>
           <span>{row.label}</span>
           {model.periods && /^(first|second)/.test(row.key) && <small className="roleDutyHint">{row.key.startsWith('first') ? model.periods.first + ' · Second break' : model.periods.second + ' · First break'}</small>}
           <select
+            disabled={model.saving}
             data-night-role={row.key}
             value={model.assignments[row.key] || ''}
             onChange={event => dispatchAction({ action: 'role-select', key: row.key, value: event.target.value })}
@@ -391,17 +393,19 @@ function RoleOverrideEditor({ model }: { model: RoleOverride }) {
           Reason for the change
           <input
             id="nightRoleReason"
+            disabled={model.saving}
             defaultValue={model.reason}
             maxLength={120}
             placeholder="For example, agreed role arrangement"
             onInput={event => dispatchAction({ action: 'role-reason', value: event.currentTarget.value })}
           />
         </label>
-        <button type="button" id="saveNightRolesBtn" className="primary wide" disabled={!model.canSave} onClick={() => dispatchAction({ action: 'role-save' })}>
-          Save night-only change
+        <button type="button" id="saveNightRolesBtn" className="primary wide" data-workflow-blocked={!model.canSave ? 'true' : 'false'} disabled={!model.canSave} onClick={() => dispatchAction({ action: 'role-save' })}>
+          {model.saving ? 'Saving…' : 'Save assignments'}
         </button>
       </>}
-      {model.stored && <button type="button" id="resetNightRolesBtn" className="soft wide" onClick={() => dispatchAction({ action: 'role-reset' })}>
+      {model.mode !== '4' && <button type="button" className="quietAction wide" disabled={model.saving} onClick={() => dispatchAction({ action: 'role-cancel' })}>Cancel editing</button>}
+      {model.stored && <button type="button" id="resetNightRolesBtn" className="soft wide" data-workflow-blocked={model.saving ? 'true' : 'false'} disabled={model.saving} onClick={() => dispatchAction({ action: 'role-reset' })}>
         Restore rostered roles
       </button>}
     </div>
@@ -419,5 +423,6 @@ export function renderChangesExperience(model: ChangesExperience) {
   renderAssignmentReview(model.sevenNurseReview);
   rootFor('changeHistory')?.render(<History model={model} />);
   rootFor('allocationList')?.render(<AllocationList model={model} />);
+  rootFor('currentNightAssignments')?.render(model.currentAssignments?.length ? <section aria-label="Current assignments"><dl className="sevenAssignmentGroups">{model.currentAssignments.map(row => <div key={row.label + row.value}><dt>{row.label}<small>{row.detail}</small></dt><dd>{row.value}</dd></div>)}</dl></section> : null);
   if (model.roleOverride) rootFor('nightRoleOverrideStep')?.render(<RoleOverrideEditor model={model.roleOverride} />);
 }
