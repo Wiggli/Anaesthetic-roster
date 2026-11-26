@@ -87,7 +87,6 @@ function QuickActions({ model }: { model: QuickActionsModel }) {
         title="Add overtime"
         disabled={blocked}
       />
-      <PrimaryAction action="roles" icon="review" title="Swap assignments" disabled={blocked} />
       <PrimaryAction action="breaks" icon="review" title="View breaks" />
     </section>
 

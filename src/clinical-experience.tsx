@@ -284,14 +284,6 @@ function goToConfirmation() {
   window.dispatchEvent(new CustomEvent('roster:changes-step-request', { detail: { step: 'confirm' } }));
 }
 
-function openRoleEditor() {
-  goToChanges('allocation');
-  window.setTimeout(() => {
-    const editor = document.querySelector<HTMLDetailsElement>('.nightRoleEditor');
-    if (editor) editor.open = true;
-  }, 260);
-}
-
 function openAccount() {
   document.getElementById('accountBtn')?.click();
 }
@@ -522,7 +514,7 @@ function NightStatus({ model }: { model: NightSummary }) {
       </span>
     </div>
     {model.taskCount > 0 && !hasSpecificDecision && <Pressable type="button" className="nightSignalTask" onClick={model.decisionTasks ? () => goToChanges('allocation') : goToConfirmation}>
-      Review {model.taskCount} {model.decisionTasks ? (model.taskCount === 1 ? 'allocation' : 'allocations') : 'confirmation'} →
+      Assignments →
     </Pressable>}
   </section>;
 }
@@ -535,12 +527,12 @@ function NightAlerts({ model }: { model: NightSummary }) {
     {model.alert && !hasSpecificDecision && needsReview && <div className="alert compactNotice warn">{model.alert}</div>}
     {model.firstTask && !allocationExplained && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
       <span className="decisionTaskMark" aria-hidden="true">!</span>
-      <span className="decisionTaskCopy"><small>Allocation decision</small><b>{model.firstTask}</b><strong>Review allocation</strong></span>
+      <span className="decisionTaskCopy"><small>Allocation decision</small><b>{model.firstTask}</b><strong>Assignments</strong></span>
       <i aria-hidden="true">›</i>
     </button>}
     {model.labourPending && <button type="button" className="decisionTaskCard" onClick={() => goToChanges('allocation')}>
       <span className="decisionTaskMark" aria-hidden="true">!</span>
-      <span className="decisionTaskCopy"><small>Labour Ward</small><b>Choose the Labour Ward order</b><strong>Review allocation</strong></span>
+      <span className="decisionTaskCopy"><small>Labour Ward</small><b>Choose the Labour Ward order</b><strong>Assignments</strong></span>
       <i aria-hidden="true">›</i>
     </button>}
   </>;
@@ -787,7 +779,7 @@ function PersonalPending({ model }: { model: PersonalNight }) {
     <span>
       <b>Your allocation is not final yet</b>
       <small>Labour Ward / Pager is shared with {model.pendingOther}.</small>
-      <strong>Complete allocation ›</strong>
+      <strong>Assignments ›</strong>
     </span>
   </Pressable>;
 }
@@ -859,14 +851,10 @@ function NightRoles({ model }: { model: NightSummary }) {
     <div className="liquidRosterList nightSituationTimeline">
       {model.roles.map(role => {
         const liveState = roleLiveState(role, model.currentPart);
-        const needsCover = /Allocation to decide|Unassigned|Awaiting choice|Cover pending/.test(role.names) || role.people?.some(person => person.name === 'Unassigned');
         const people = role.people || (role.tone === 'first' || role.tone === 'second' ? role.names.split(' + ').map(name => ({ name: name.replace(/^Allocation to decide.*$/, 'Awaiting cover'), period: undefined })) : []);
-        return <div className="rosterRoleLine" key={role.key}><Pressable
+        return <div className="rosterRoleLine" key={role.key}><div
           data-colleague-names={['Unassigned','Awaiting choice'].includes(role.names) ? '' : role.names}
-          type="button"
-          onClick={needsCover || role.pagerOrder ? () => goToChanges('allocation') : openRoleEditor}
           className={`rosterRow rosterRow-${role.tone} ${role.mine ? 'mine' : ''}`}
-          aria-label={needsCover ? `Assign cover for ${role.label}` : role.pagerOrder ? 'Review shared Pager parts' : `Change this night's ${role.label} allocation`}
         >
           <span className="rosterRoleMark">{role.label}</span>
           <span className="rosterRowCopy">
@@ -881,7 +869,7 @@ function NightRoles({ model }: { model: NightSummary }) {
             {role.mine && <Badge tone="accent" className="rosterYouBadge">You</Badge>}
             {liveState && <Badge tone={liveState === 'Now' ? 'success' : 'info'} className="rosterLiveBadge">{liveState}</Badge>}
           </span>}
-        </Pressable>{!['Unassigned','Awaiting choice'].includes(role.names) && <Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable>}</div>;
+        </div>{!['Unassigned','Awaiting choice'].includes(role.names) && <Pressable type="button" className="roleShortcutButton" aria-label={`Shortcuts for ${role.names}`} onClick={() => window.dispatchEvent(new CustomEvent('roster:colleague-shortcuts', { detail: { names: role.names } }))}>•••</Pressable>}</div>;
       })}
     </div>
     {model.pagerTombolaNotice && <p className="pagerDrawAvailability">{model.pagerTombolaNotice}</p>}
@@ -895,17 +883,13 @@ function NightRoles({ model }: { model: NightSummary }) {
 function FivePersonArrangement({ model }: { model: NightSummary }) {
   const arrangement = model.fivePerson;
   if (!arrangement) return null;
-  return <Pressable
-    type="button"
+  return <div
     className={`fiveNurseSurface ${arrangement.mine ? 'mine' : ''}`}
-    onClick={openRoleEditor}
-    aria-label={`Change the full-night Labour Ward or Pager allocation for ${arrangement.name}`}
   >
     <span className="fiveNurseLabel">Labour Ward / Pager · Full night</span>
     <strong>{arrangement.name}</strong>
     <small>00:00–07:00 · Break when cover allows</small>
-    <i aria-hidden="true">›</i>
-  </Pressable>;
+  </div>;
 }
 
 export function renderNightExperience(model: NightSummary) {
@@ -914,7 +898,7 @@ export function renderNightExperience(model: NightSummary) {
   rootFor('nightPagerAction')?.render(model.pagerTombola
     ? <PagerTombola key={model.pagerTombola.date} model={model.pagerTombola} />
     : model.pagerDrawFlow && model.pagerCoverPending
-      ? <Pressable type="button" className="pagerDrawLauncher" onClick={() => goToChanges('allocation')}><span><strong>Review assignments</strong><small>Check theatre cover and the three Pager nurses</small></span><span aria-hidden="true">›</span></Pressable>
+      ? <Pressable type="button" className="pagerDrawLauncher" onClick={() => goToChanges('allocation')}><span><strong>Assignments</strong><small>Check theatre cover and the three Pager nurses</small></span><span aria-hidden="true">›</span></Pressable>
       : null);
   rootFor('nightStatusRow')?.render(<><NightStatus model={model} />{!model.pagerDrawFlow && <AvailableParts model={model.availableParts} hideWhenComplete onAllocate={() => goToChanges('allocation')} />}</>);
   rootFor('alerts')?.render(<NightAlerts model={model} />);

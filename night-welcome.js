@@ -120,6 +120,7 @@ function openChangesFromNight(event){
   if(event&&event.preventDefault)event.preventDefault();
   if(event&&event.stopPropagation)event.stopPropagation();
   if(typeof productHaptic==='function')safe(function(){productHaptic()},null);
+  if(typeof acknowledgeNightActivity==='function'&&typeof cur==='function'){acknowledgeNightActivity(cur().date);if(typeof renderRecentActivity==='function')renderRecentActivity(cur().date)}
   if(typeof window.show==='function')window.show('changes')
 }
 function polishNightPlan(){

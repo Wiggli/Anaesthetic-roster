@@ -1,13 +1,13 @@
 {
-  "version": "74.0",
+  "version": "75.0",
   "date": "25 November 2026",
-  "title": "Clear overtime assignments",
-  "summary": "See who covers theatre and who joins Pager before saving.",
+  "title": "One place for assignments",
+  "summary": "Open Assignments in Changes to choose cover, review the team and edit this night.",
   "changes": [
-    "Each overtime nurse has a visible Review assignment action.",
-    "The seven-nurse review shows four theatre assignments and all three Pager nurses before saving.",
-    "Saving opens the Pager time review. The draw only starts when you choose Draw Pager times.",
-    "Pager results show the effective saved team and its times."
+    "One Assignments sheet replaces the scattered cover and role controls.",
+    "Required cover appears first; optional edits are available after saving.",
+    "Overtime rows show their status without repeating allocation buttons.",
+    "Saving the team stays in the sheet. Draw Pager times is a separate next step."
   ],
   "update_policy": "normal"
 }

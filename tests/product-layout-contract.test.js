@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const read = f => fs.readFileSync(f,'utf8');
 const html=read('index.html'),account=read('src/legacy-ui/account.js'),context=read('src/selected-night.ts');
-assert.doesNotMatch(html,/data-changes-step=/,'Changes uses one continuous page');
+assert.doesNotMatch(html,/data-changes-step=/,'Changes has one assignment entry');
 assert.match(html,/id="changesStaffingPane"[\s\S]*id="changesAllocationPane"[\s\S]*id="changesConfirmPane"/,'staffing comes before cover and review');
 assert.match(context,/composeSelectedNight/,'one selected-night layout composer');
 assert.match(context,/panel.replaceChildren\(context\)/,'remove obsolete context wrappers');
@@ -77,34 +77,32 @@ const workflowContext={
  changesViewPrepared:true,byId:control,document:{querySelector:control},
  sevenNurseAssignmentReview:()=>null,refreshSevenNurseAssignmentReview(){},canGroupPagerCover:()=>false,staffingCalculation:()=>'',workflowTaskDetails:()=>tasks,workflowNeedsConfirmation:()=>needsShare,workflowHasManualPlan:()=>manual,
  fourNurseTheatreRoles:()=>true,window:{sharedPagerStatus:()=>({saved:pagerSaved})},
- nightPlanStatuses:{},allocationSaveInFlight:false,formMessage(){},renderConfirmationPreview(){},updateConfirmationControls(){},
+ nightPlanStatuses:{},nightRoleOverrideDrafts:{},allocationSaveInFlight:false,formMessage(){},renderConfirmationPreview(){},updateConfirmationControls(){},
  pagerOrderForm:()=>null,usesAgreedPagerOrder:()=>false,renderPagerOrderForm(){}
 };
 vm.runInNewContext(workflow,workflowContext);
 const update=()=>workflowContext.updateChangesWorkflow(base,plan);
 update();
-assert.equal(control('changesWorkflowExperience').hidden,true);
-tasks=['Assign First Part'];needsShare=true;plan.availableKeys=['first1'];plan.unresolved=['first1'];update();
+assert.equal(control('changesWorkflowExperience').hidden,false);
+tasks=['Assign First Part'];needsShare=true;plan.complete=false;plan.availableKeys=['first1'];plan.unresolved=['first1'];update();
 assert.equal(control('continueToAllocationBtn').hidden,false);
-assert.equal(control('continueToConfirmBtn').hidden,true);
 assert.equal(control('#changesConfirmPane .confirmationCard').hidden,true);
 tasks=[];update();
 assert.equal(control('continueToAllocationBtn').hidden,false);
-assert.equal(control('continueToConfirmBtn').hidden,true);
 assert.equal(control('changesWorkflowState').textContent,'Cover ready to save');
-plan.unresolved=[];update();
-assert.equal(control('continueToAllocationBtn').hidden,true);
-assert.equal(control('continueToConfirmBtn').hidden,false);
+assert.equal(control('nightRoleOverrideStep').hidden,true,'pending cover has no competing role matrix');
+plan.unresolved=[];plan.complete=true;update();
+assert.equal(control('nightRoleOverrideStep').hidden,false,'optional editing becomes available for the completed team');
+assert.equal(control('continueToAllocationBtn').hidden,false);
 assert.equal(control('#changesConfirmPane .confirmationCard').hidden,false);
 manual=true;needsShare=false;workflowContext.nightPlanStatuses[base.date]={published_at:'2026-11-14T21:00Z'};update();
 assert.equal(control('confirmationStatus').textContent,'Plan shared');
 plan.count=4;update();
 assert.equal(control('continueToAllocationBtn').hidden,false);
-assert.equal(control('continueToConfirmBtn').hidden,true);
 assert.equal(control('#changesConfirmPane .confirmationCard').hidden,true);
 assert.equal(control('confirmationStatus').classes.has('hidden'),true);
 pagerSaved=true;update();
-assert.equal(control('continueToAllocationBtn').hidden,true);
+assert.equal(control('continueToAllocationBtn').hidden,false);
 assert.match(control('changesWorkflowState').textContent,/provisional/);
 assert.equal(controls.has('changesStaffingPane'),false,'next-action updates must leave the staffing section visible');
 
@@ -153,3 +151,12 @@ assert.equal(fs.existsSync('src/mundian-opening.mp3'), false);
   upgraded.context.showOnboardingIfNeeded();upgraded.context.showFeatureEducation('changes',false);upgraded.flush();
   assert.equal(upgraded.dialog.open,false,'new guide content and tab navigation do not reopen completed tours');
 }
+
+assert.equal((html.match(/id="continueToAllocationBtn"/g)||[]).length,1,'Changes has one assignments entry');
+assert.match(html,/dialog id="assignmentSheet"[\s\S]*id="changesAllocationPane"[\s\S]*id="changesConfirmPane"[\s\S]*<\/dialog>/,'all allocation and confirmation controls share one sheet');
+assert.doesNotMatch(html,/id="continueToConfirmBtn"|data-quick-action="roles"/,'remove secondary entry points instead of hiding duplicates');
+assert.doesNotMatch(read('src/changes-experience.tsx'),/overtimeAllocateButton|Change theatre \/ Pager team/,'overtime rows and the saved review contain no competing assignment editors');
+
+plan.count=3;plan.complete=false;update();
+assert.equal(control('continueToConfirmReason').classes.has('hidden'),false,'short staffing keeps an explanation in the sheet');
+assert.match(control('continueToConfirmReason').textContent,/Add overtime.*provisional/);

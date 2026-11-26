@@ -138,7 +138,7 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
 
   return <>
     <Pressable ref={launcher} type="button" className="pagerDrawLauncher" data-pager-draw-date={model.date} onClick={open}>
-      <span><strong>{model.saved ? 'View draw result' : 'Draw Pager times'}</strong><small>{model.saved ? 'Saved for this night' : 'Randomly assign the three nurses to their times'}</small></span>
+      <span><strong>{model.saved ? 'View draw result' : 'Pager draw'}</strong><small>{model.saved ? 'Saved for this night' : 'Randomly assign the three nurses to their times'}</small></span>
       <span aria-hidden="true">›</span>
     </Pressable>
     <dialog
@@ -153,7 +153,6 @@ export function PagerTombola({ model }: { model: PagerTombolaModel }) {
         <Pressable type="button" className="pagerDrawClose" aria-label="Close Pager draw" disabled={busy} onClick={() => dialog.current?.close()}>×</Pressable>
       </div>
       <p className="pagerDrawExplanation">Theatre assignments stay unchanged. This draw gives the three Pager nurses one turn each, covering 23:30–07:00.</p>
-      {!busy && phase === 'ready' && <Pressable type="button" className="quietAction wide" onClick={() => { dialog.current?.close(); window.dispatchEvent(new CustomEvent('roster:quick-action', { detail: { action: 'roles' } })); }}>Change theatre / Pager team</Pressable>}
       <div className={`pagerDrawArena ${busy ? 'isSpinning' : ''} ${reduced ? 'isReduced' : ''}`} aria-hidden="true">
         <div className="pagerDrawChamber">
           <div className="pagerDrawSweep" />
